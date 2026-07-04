@@ -1,3 +1,5 @@
 node_modules
 .env
 gun-builds/
+commands/settings.js
+models
