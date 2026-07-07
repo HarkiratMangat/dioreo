@@ -114,7 +114,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('calendar')
         .setDescription('View the live timeline and start dates for upcoming in-game events!')
-        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it')),
+        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
 

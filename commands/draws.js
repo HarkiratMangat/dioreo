@@ -142,7 +142,8 @@ module.exports = {
         .setName('draws')
         .setDescription('View the upcoming New and Returning Lucky Draws!')
         .addStringOption(option => option.setName('category').setDescription('Jump directly to a specific draws page').addChoices({ name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }))
-        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it')),
+        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
 

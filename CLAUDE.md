@@ -14,7 +14,8 @@ maintained by Harkirat (Discord ID `1139845545754632283`), the sole admin.
 - `xlsx` — NOT used at bot runtime anymore (see MP loadout system below); only referenced by
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
-- Deployed manually — no CI/CD, no GitHub push yet as of this handoff
+- Pushed to GitHub (`origin/main`); deployed on both Render and Railway via git-connected
+  auto-deploy — no separate CI/CD pipeline, a push to `main` is the deploy trigger on both.
 
 ## Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain
@@ -87,6 +88,38 @@ this kind of failure is expected to happen occasionally under normal use — the
 should degrade to "that one click didn't work," never "the bot crashed." If you add new
 branches to this handler, you don't need your own try/catch around them (the outer one
 covers it), but don't let anything inside intentionally rethrow past it.
+
+**The outer try/catch alone wasn't enough — a real Railway crash got past it (2026-07-07).**
+A `deferReply()` failed with 10062 (`Unknown interaction`, expired token), which was caught by
+the error-fallback in `index.js`'s slash-command router. That fallback then did
+`return interaction.reply(...)` — but the interaction was *already* effectively acknowledged from
+Discord's side, so this second call rejected too (40060 `already acknowledged`). Because it was
+an unawaited `return <promise>` inside a `try` block, the `try` had already exited by the time
+that promise rejected — the outer top-level `catch` above was no longer "in scope" to catch it,
+and it surfaced as a raw unhandled promise rejection, which crashes the whole Node process by
+default (since Node 15). Fixed by `await`-ing the fallback reply/editReply/followUp calls and
+wrapping *those* in their own try/catch too (see the slash-command router and the nav-button
+router in `index.js`) — a doubly-failed error-notification can now only fail silently (logged),
+never crash. Also added a `process.on('unhandledRejection', ...)` logger near the top of
+`index.js` as a last-resort net for any other unawaited `return interaction.X(...)` call site that
+gets missed — **this is not a substitute for awaiting properly**, just a backstop. The general
+rule: any `return interaction.reply/editReply/followUp(...)` inside a `catch` block MUST be
+awaited (or wrapped in its own try/catch) — a bare `return <promise>` does not keep the enclosing
+try/catch "listening" for that promise's eventual rejection.
+
+## User-install / DM support — must be set per-command, not inherited
+Discord requires each slash command to individually opt in to being usable outside a guild via
+`.setIntegrationTypes([1]).setContexts([0, 1, 2])` on its `SlashCommandBuilder` — there's no
+bot-level toggle that applies this to every command at once. `/timestamp`, `/all`, and the
+auto-generated `/<category>` MP commands had this from an earlier session, but `/draws`,
+`/calendar`, `/patch notes`, `/draw prices`, `/dmz`, `/season end`, and `/settings` didn't — so
+they silently never showed up when DMing the bot or using it as a user-installed app, even though
+the bot as a whole is set up for user-install. Fixed by adding the same
+`.setIntegrationTypes([1]).setContexts([0, 1, 2])` to all of them. `/update` and `/manage` are
+deliberately left out — they're admin-only bulk data-entry gateways gated by
+`setDefaultMemberPermissions(0)`, which has no real meaning in a DM (no guild permissions to
+check), so keeping them guild-only is intentional, not an oversight. **If you add a new
+public-facing command, add this line too, or it'll have the same DM/user-install gap.**
 
 ## `/timestamp`'s style-select dropdown (de-duplicated)
 Used to be a documented exception to the reuse pattern below — `index.js`'s `tsmenu|`

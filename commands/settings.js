@@ -13,7 +13,8 @@ const { withShareButton } = require('../utils/shareButton');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('settings')
-        .setDescription('Configure your custom loadout, timestamp, and timezone preferences!'),
+        .setDescription('Configure your custom loadout, timestamp, and timezone preferences!')
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
         const userId = interaction.user.id;

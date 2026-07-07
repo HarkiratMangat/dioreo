@@ -25,7 +25,8 @@ module.exports = {
             .setDescription('Check the exact dates and countdowns for when the current seasons end!')
             .addBooleanOption(option =>
                 option.setName('private')
-                    .setDescription('Hide this response so only you can see it'))),
+                    .setDescription('Hide this response so only you can see it')))
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
         const userId = interaction.user.id;

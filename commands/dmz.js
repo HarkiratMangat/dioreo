@@ -16,7 +16,8 @@ module.exports = {
             option.setName('weapon')
                 .setDescription('The name of the weapon you want a DMZ build for')
                 .setRequired(true)
-                .setAutocomplete(true)), // Autocomplete hooked dynamically in index.js
+                .setAutocomplete(true)) // Autocomplete hooked dynamically in index.js
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
         const userId = interaction.user.id;

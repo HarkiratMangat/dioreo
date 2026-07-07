@@ -16,6 +16,18 @@ app.listen(port, "0.0.0.0", () => {
     console.log(`📡 Keep-alive web infrastructure listening on port ${port}`);
 });
 
+// SAFETY NET: Node crashes the whole process on an unhandled promise rejection by default
+// (since Node 15). The interactionCreate handler's own try/catch already covers most Discord
+// API failures, but a rejection from a `return interaction.reply(...)`-style call inside a catch
+// block can still slip past it -- the try/catch has already exited by the time that promise
+// settles, so nothing downstream is listening. This is exactly what took the bot offline on
+// Railway (10062 Unknown interaction -> fallback reply -> 40060 already acknowledged -> crash).
+// Logging instead of crashing here is a last-resort net, not a substitute for fixing the actual
+// unawaited call sites -- see the fixed handlers in PHASE 6 for the real fix.
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled promise rejection (bot stays alive):', reason);
+});
+
 // ==========================================
 // PHASE 2: CORE MODULES & DEPENDENCY IMPORTS
 // ==========================================
@@ -259,11 +271,25 @@ client.on('interactionCreate', async interaction => {
                 return await command.execute(interaction);
             } catch (error) {
                 console.error(`Error executing modular slash command ${commandName}:`, error);
-                if (interaction.deferred || interaction.replied) {
-                    return interaction.editReply({ content: 'There was an error executing this command!' });
-                } else {
-                    return interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
+                // NOTE (fixed during review): this used to `return interaction.reply(...)` unawaited.
+                // A `return <promise>` inside a try block exits the try/catch synchronously -- if that
+                // returned promise rejects later (e.g. the interaction token is ALSO already expired,
+                // which is exactly what happens after a 10062 on the original deferReply), nothing is
+                // listening for it anymore, not even the outer try/catch around this whole handler. That
+                // turned into a raw unhandled promise rejection and crashed the entire Node process
+                // (seen on Railway: 10062 Unknown interaction -> fallback reply -> 40060 already
+                // acknowledged -> process exit). Awaiting + catching here keeps a doubly-failed fallback
+                // reply from ever being able to crash the bot.
+                try {
+                    if (interaction.deferred || interaction.replied) {
+                        await interaction.editReply({ content: 'There was an error executing this command!' });
+                    } else {
+                        await interaction.reply({ content: 'There was an error executing this command!', ephemeral: true });
+                    }
+                } catch (notifyError) {
+                    console.error(`Failed to notify user of command error for ${commandName} (interaction likely expired):`, notifyError);
                 }
+                return;
             }
         }
 
@@ -537,7 +563,16 @@ client.on('interactionCreate', async interaction => {
                 return await targetCommand.execute(syntheticInteraction);
             } catch (error) {
                 console.error(`UI Navigation Routing Error for ${interaction.customId}:`, error);
-                return interaction.followUp({ content: '❌ An error occurred while swapping the interface view.', ephemeral: true });
+                // See the matching comment in the slash-command error handler above -- an unawaited
+                // `return interaction.followUp(...)` here can reject after this try/catch has already
+                // exited, escaping as an unhandled rejection that crashes the whole process instead of
+                // just failing this one nav click.
+                try {
+                    await interaction.followUp({ content: '❌ An error occurred while swapping the interface view.', ephemeral: true });
+                } catch (notifyError) {
+                    console.error(`Failed to notify user of nav routing error for ${interaction.customId} (interaction likely expired):`, notifyError);
+                }
+                return;
             }
         }
 

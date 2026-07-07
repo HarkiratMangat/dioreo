@@ -141,7 +141,8 @@ module.exports = {
             .setDescription('View the CP cost breakdown for Lucky Draws!')
             // Optional direct-jump flag
             .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '30 CP Region', value: 'region_30' }))
-            .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))),
+            .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it')))
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer, // Expose to the root router
 

@@ -111,7 +111,8 @@ module.exports = {
             .setName('notes')
             .setDescription('View the latest weapon balance changes!')
             .addStringOption(option => option.setName('version').setDescription('Search for specific previous patch notes').setAutocomplete(true))
-            .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))),
+            .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it')))
+        .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
 
