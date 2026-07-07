@@ -1,0 +1,369 @@
+# Dior's Builds — CODM Discord Bot
+
+## What this is
+A Discord bot for Call of Duty Mobile (CODM) content: lucky draw info, patch notes,
+seasonal calendars, CP pricing, weapon loadouts, and countdown timers. Built and
+maintained by Harkirat (Discord ID `1139845545754632283`), the sole admin.
+
+## Stack
+- discord.js v14 (`^14.26.4`), Node.js v26, run locally on a Mac (`node index.js`)
+- MongoDB Atlas via Mongoose
+- `chrono-node` for natural-language date parsing (admin input)
+- `dayjs` (+ utc/timezone plugins) for user-facing timestamp conversion
+- `jimp` for accent-color extraction (pure JS, no native binary — see Accent color system below)
+- `xlsx` — NOT used at bot runtime anymore (see MP loadout system below); only referenced by
+  `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
+  bot itself ever calls.
+- Deployed manually — no CI/CD, no GitHub push yet as of this handoff
+
+## Maintaining context comments — please keep doing this
+This codebase has inline comments explaining **why** something is written a certain
+way, not just what it does — especially around bugs that were fixed, Discord platform
+quirks, and non-obvious design decisions. When you edit a file:
+- Keep existing context comments accurate — update or remove them if your change
+  makes them stale, don't just leave outdated explanations sitting next to new code.
+- Add a comment in the same style when you fix a bug, make a non-obvious choice, or
+  work around a platform limitation, so both Harkirat and any other AI agent working
+  in this repo later understands what happened and why without re-deriving it.
+- Prefer explaining *reasoning* over narrating *what* the code does line-by-line.
+
+## Command architecture
+Base commands use subcommands to group related functionality:
+- `/season end` — `seasonend.js`
+- `/draws` — `draws.js` (flat command, no subcommand)
+- `/patch notes` — `patchnotes.js`
+- `/calendar` — `calendar.js` (flat command)
+- `/draw prices` — `drawprices.js`
+- `/settings`, `/timestamp` — flat commands
+- `/dmz` — `dmz.js` (flat command; standalone DMZ loadout lookup, up to 9 attachments)
+- `/all`, `/<category>` (`/ar`, `/lmg`, `/sniper`, etc.) — MP loadout lookup. NOT files in
+  `commands/` — auto-generated in `index.js`'s `handleBotReady()` from whatever categories
+  currently exist in MongoDB (`Loadout.distinct('category', {mode:'MP'})`), so they only show up
+  after the bot's first successful boot post-data-import. See MP loadout system below.
+- `/update` (admin-only, hidden via `setDefaultMemberPermissions(0)`) — bulk data entry gateway
+- `/manage` (admin-only) — loadout CRUD + season title editing
+
+**Important:** `client.commands` is keyed by the exact `SlashCommandBuilder.setName()`
+value. Several nav buttons use shorter custom_id suffixes than their actual command
+name (e.g. button `nav_prices` → command `draw`). `index.js` has a
+`NAV_COMMAND_ALIASES` map bridging these — check it before assuming
+`client.commands.get(strippedCustomId)` will just work.
+
+## Components V2 — hard-won lessons
+This bot uses Discord's Components V2 (`flags: 32768`) throughout: Containers
+(type 17), Sections (type 9) with thumbnail accessories, Text Displays (type 10),
+Separators (type 14), Media Galleries (type 12). A few things that will bite you:
+
+1. **Selects and buttons still need an Action Row (type 1) wrapper**, even nested
+   inside a Container. Pushing a bare `type: 3` select or `type: 2` button directly
+   into a container's `components` array is invalid — this bug has recurred twice
+   already (drawprices.js, patchnotes.js) during past sessions. Always wrap.
+2. **40 total components per message, counted recursively** — containers, sections,
+   text, buttons, thumbnails, everything nested inside everything. A Section with a
+   thumbnail accessory costs 3 (section + text + thumbnail), a plain Text Display
+   costs 1. `draws.js` and `calendar.js` both implement chunked pagination
+   (`CHUNK_SIZE` constants) specifically to stay under this ceiling once bulk imports
+   add a lot of entries — this was a real production crash
+   (`COMPONENT_MAX_TOTAL_COMPONENTS_EXCEEDED`), not preemptive paranoia. Any new
+   list-rendering command should consider the same pattern.
+3. **Buttons cannot have custom hex colors** — only 5 fixed native styles (Primary/
+   blurple, Secondary/gray, Success/green, Danger/red, Link/gray-with-URL). Container
+   `accent_color` *does* support full hex though. Current convention: inactive nav
+   buttons are gray (style 2), the active/current page's button is red + disabled
+   (style 4, `disabled: true`).
+4. **A button's `label` is plain text only** — pasting a raw emoji mention string like
+   `<a:NewDraws:123>` into `label` just displays that literal text, it does NOT render
+   the emoji (this bit `draws.js`'s category-toggle buttons). Emoji has to go through the
+   dedicated `emoji: { id, name, animated }` field instead. `emojiMap.js`'s `parseEmoji()`
+   converts the mention strings already stored there into that shape.
+
+## Crash resilience
+`index.js`'s entire `interactionCreate` handler (~650 lines) is wrapped in a single
+top-level `try/catch` that just logs to console on error. This was added after a real
+crash: a button interaction whose token had already expired (Discord error 10062,
+`Unknown interaction`) threw an unhandled rejection that took the whole bot offline
+until a manual restart. Interaction tokens are only valid for a few seconds/minutes, so
+this kind of failure is expected to happen occasionally under normal use — the handler
+should degrade to "that one click didn't work," never "the bot crashed." If you add new
+branches to this handler, you don't need your own try/catch around them (the outer one
+covers it), but don't let anything inside intentionally rethrow past it.
+
+## `/timestamp`'s style-select dropdown (de-duplicated)
+Used to be a documented exception to the reuse pattern below — `index.js`'s `tsmenu|`
+handler re-implemented both of `commands/timestamp.js`'s view layouts inline instead of
+calling back into that file, because it needed to re-render an already-parsed timestamp
+under a different style without re-running chrono (a relative input like "tomorrow"
+would resolve to a different date if re-parsed later). The two copies drifted out of
+sync across two separate redesigns before this got fixed. Now `timestamp.js`'s
+`execute(interaction, overrideState)` accepts an optional second argument —
+`{ unix, tz, queryInput, style }` — so `index.js` can pass in the already-known values
+via a synthetic interaction instead of re-deriving them from slash command options, and
+both code paths share one render implementation. If you add more ways to reach this
+render logic in the future, extend `overrideState` rather than branching a third copy.
+
+## The "synthetic interaction" pattern (button/select → reused slash command logic)
+Several buttons and select menus re-invoke a slash command's own `execute()` function
+instead of duplicating render logic (e.g. clicking "Draw Prices" in the nav bar calls
+`drawprices.js`'s `execute()` the same way the slash command does). To make a
+`ButtonInteraction`/`StringSelectMenuInteraction` look enough like the original
+interaction for this to work, `index.js` builds a "synthetic interaction" via
+`buildSyntheticInteraction(interaction, overrides)`.
+
+**Do not replace this with a hand-rolled `Object.assign(Object.create(...), interaction, {...})`.**
+discord.js sets `client` and `token` on every interaction via
+`Object.defineProperty(this, 'client'/'token', { value })` with no `enumerable: true`.
+`Object.assign` only copies *enumerable* own properties, so it silently drops both —
+this caused two separate real crashes (`Cannot read properties of undefined (reading
+'rest')` and a dropped-argument bug in the price-region dropdown) before the shared
+helper was introduced. Always use `buildSyntheticInteraction`.
+
+Also note: `ButtonInteraction`/`StringSelectMenuInteraction` have no `.options`
+resolver at all — commands called this way get a stubbed `options` object with every
+getter returning `null`, and check `interaction.isChatInputCommand()` before trusting
+`interaction.options.getX()`.
+
+## Database schema gotcha
+Mongoose only persists fields **declared in the schema**. Several past bugs were
+exactly this: code setting `doc.someNewField = x; await doc.save()` where
+`someNewField` was never added to the Mongoose schema — it looked like it worked
+(in-memory) but silently reverted on the next fresh fetch. **Whenever you add a new
+field anywhere in the codebase, add it to the corresponding schema in `models/` in
+the same change**, or it will not actually save.
+
+## Data models (`models/`)
+- `SeasonalData.js` — one global document (`docType: 'global'`). Holds
+  `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`, `bpEnd`/`rankEnd`/`dmzEnd`,
+  `patchNotes[]` (title = season # & name, NOT "Balance Changes for..." — see
+  patchnotes.js), `newDraws[]`/`returningDraws[]`, `calendar[]` (with `endDate`/
+  `isOngoing` for "All Season" events).
+- `UserPreference.js` — per-user. `seasonalVisibility` is a **shared** toggle
+  covering `/season end`, `/draws`, `/patch notes`, `/calendar`, `/draw prices`
+  together (Option A design decision — see below). `timestampVisibility`,
+  `settingsVisibility`, `defaultRegion`, `loadoutVisibility`, `dmzVisibility` are
+  each independent. `accentColorStyle` (`'avatar'|'banner'|'preset'`, default `'avatar'`;
+  `'default'` is the old value name for `'preset'`, still treated identically) plus the
+  independently-cached `avatarColorHex`/`avatarColorSource` and
+  `bannerColorHex`/`bannerColorSource` pairs back the accent color system — see below.
+- `Loadout.js` — weapon loadouts, `mode: 'MP' | 'DMZ'` (MP max 5 attachments, DMZ max 9).
+  `description` (optional flavor text) and `shareCode` (the actual copyable in-game Gunsmith
+  code) were added during the builds.xlsx migration — see MP loadout system below for why
+  `shareCode` is separate from `buildName` despite `/manage`'s modal labeling the latter
+  "Build Name / Share Code".
+
+## Design decision log (so you don't re-litigate these)
+- **"Seasonal Content" visibility is one shared toggle (Option A)**, not five
+  separate ones. Deliberately chosen over per-command granularity — if you're asked
+  to add a 6th seasonal command, wire it to `prefs.seasonalVisibility` too, don't add
+  a new field.
+- **Admin dates are always UTC-0.** `adminParser.js`'s `parseAdminDate` forces
+  `chrono.parseDate(str, new Date(), { timezone: 0 })` specifically to avoid
+  depending on the host machine's local timezone/DST — a past bug (DMZ season-end
+  showing 1 hour off) was traced to exactly this kind of local-timezone dependency.
+  Don't reintroduce ambient-timezone parsing.
+- **chrono-node defaults a bare date (no time-of-day given) to NOON, not midnight.**
+  `timestampHelper.js`'s `generateTimestamps` (used by `/timestamp`) checks
+  `parsedComponents.isCertain('hour')` and manually zeroes the time back to midnight
+  in the target timezone when the user's input had no explicit time — otherwise
+  something like `/timestamp datetime:july 17 timezone:UTC` silently came out as
+  July 17 **noon** UTC. `adminParser.js`'s `parseAdminDate` was never affected by this
+  (it already force-normalizes everything to midnight UTC unconditionally), so this
+  was isolated to the user-facing command.
+- **Bulk-import text formats are bullet/comma-delimited, not one-per-line JSON**,
+  because Harkirat pastes from a notes app export. See `parseBulkDraws` (comma-
+  separated) and `parseBulkEvents` (bullet-separated, `M/D - M/D | Title` or
+  `M/D - All Season | Title`) in `adminParser.js`. Titles in bulk imports are
+  preserved verbatim (no auto title-casing) because CODM content is full of
+  acronyms (MP/BR/DMZ) that naive title-casing mangles into "Mp"/"Br"/"Dmz".
+  Because the whole line is comma-delimited, a date containing its own comma (e.g.
+  "July 16, 2026") used to fracture across two fields and silently drop the year —
+  `parseBulkDraws` now re-merges a trailing bare-4-digit-year field back onto the
+  previous field before parsing it as a date. Keep that in mind if you touch this
+  parser: any fix here needs to stay comma-in-date-safe, not just comma-delimiter-safe.
+- **Bulk imports REPLACE, they don't append.** Both `modal_draws_bulk` and
+  `modal_calendar_bulk` (index.js) overwrite `newDraws`/`returningDraws`/`calendar`
+  wholesale rather than pushing onto the existing array. A bulk paste represents the
+  complete current list for the season, so re-running it (e.g. to fix a typo) replaces
+  the old entries instead of duplicating on top of them.
+- **"All Season" calendar events resolve their end date to `bpEnd`, not a literal
+  "Ongoing" label.** The Battle Pass ending is what actually closes out an all-season
+  event; `calendar.js` only falls back to showing "Ongoing" text if `bpEnd` hasn't been
+  set yet.
+- **The most recent `patchNotes[]` entry's title stays synced to `currentSeasonTitle`.**
+  Older patch note entries keep their own historical title forever (so a past season's
+  patch notes don't get renamed retroactively), but the entry representing the
+  currently-live season needs to track the live season title — see index.js's
+  `edit_season_titles` handler, which updates both when the admin renames a season.
+  Separately, some entries created before the heading redesign still have the full
+  legacy sentence ("Balance Changes for Season 6...") baked into their stored title
+  instead of just the bare season name — `patchnotes.js`'s exported `cleanPatchTitle()`
+  strips that prefix at every display site (heading, history dropdown, autocomplete in
+  index.js) rather than requiring old DB entries to be edited by hand.
+- **`/draw prices`' `REGION_DATA`/`COMBO_NOTES` had real math mistakes**, found by
+  cross-referencing against Harkirat's raw combo-notes export: a displayed total not
+  matching its own draws curve (mythicCharacter said 7,200, its draws summed to 7,220),
+  a wrong draw value (mythicGun's 6th pull was listed as 350, should be 320, making the
+  total 5,810 not 5,840), and a typo'd draw value (legendaryGunReactive's 9th pull said
+  1,110, should be 1,100). If you edit this data again, sum each `draws` string and
+  confirm it equals its own `total` before saving — don't assume existing values are
+  correct just because they're already in the file.
+- **Color palette assignment follows nav button order** (Calendar, Draws, Draw Prices,
+  Patch Notes, Season End — see the `globalNavigationRow` in any command), exact hex →
+  decimal for `accent_color`: Police Blue `#355070` (3494000, **Calendar**, 1st) ·
+  Chinese Violet `#6D597A` (7166330, **Draws**, 2nd) · China Rose `#B56576` (11887990,
+  **Draw Prices**, 3rd) · Light Coral `#E56B6F` (15035247, **Patch Notes**, 4th) ·
+  Tumbleweed `#EAAC8B` (15379595, **Season End**, 5th). These are each command's
+  `PRESET_ACCENT` constant — see Accent color system below for when they're actually
+  used vs. overridden. This mapping got rotated out of sync with the nav buttons once
+  already (after the buttons themselves were reordered in an earlier session) — if the
+  nav button order ever changes again, re-derive this mapping from scratch rather than
+  assuming the existing `PRESET_ACCENT` values are still aligned to it.
+- **`emojiMap.js`** is the single source of truth for emoji IDs (tiers, BP/rank/DMZ/CP
+  icons, and the animated command-header icons). Reuse from there rather than
+  hardcoding emoji strings inline in new code. Also exports `parseEmoji()` for
+  converting a mention string into the `{id, name, animated}` shape a button's `emoji`
+  field needs (see Components V2 point 4 above).
+
+## Accent color system (`utils/accentColor.js`, `utils/colorExtract.js`)
+Discord's legacy `accent_color`/`hexAccentColor` user field is only populated for
+accounts with **no banner set** (the client shows one or the other) — it comes back
+`null` for almost every active user, and Discord doesn't expose their newer Nitro
+profile-theme colors over the bot API at all. So there's no reliable way to read a
+user's "actual" profile color directly; instead we extract one ourselves:
+- `colorExtract.js`'s `getDominantColor(url)` downloads an image (avatar or banner) via
+  `jimp` and averages a ~2500-pixel sample of it into one hex value.
+- **Avatar-matching is the actual default** (`accentColorStyle` schema default is
+  `'avatar'`, not a "keep everything as-is" option) — Harkirat wanted every embed to
+  match a user's avatar out of the box, not just `/settings`. `'preset'` (labeled
+  "Pre-Designed Palette" in the `/settings` dropdown) is the opt-out that restores each
+  command's own fixed brand color; `/settings` itself has no brand color of its own so
+  it falls back to avatar even under `'preset'`.
+- `accentColor.js`'s `resolveAccentColor()` resolves `prefs.accentColorStyle` accordingly,
+  and `getAccentColorForCommand()` is what the 5 preset-color commands (calendar/draws/
+  patchnotes/drawprices/seasonend) call. **It now creates-and-saves a `UserPreference`
+  doc if the user doesn't have one yet at all** — before this, only `/settings` ever
+  created that doc, so a user whose first-ever interaction was e.g. `/calendar` would
+  have `prefs === null`, and the whole accent system (including the schema default)
+  would silently never engage until they happened to run `/settings` first. Only
+  `'preset'` skips the Discord user-object fetch; `'avatar'` (now the common case) always
+  resolves+caches.
+- Avatar and banner colors are cached **independently** on `UserPreference`
+  (`avatarColorHex`/`avatarColorSource`, `bannerColorHex`/`bannerColorSource`) — a user
+  might switch back and forth between styles, so both get remembered rather than
+  invalidating one when the other changes. Each `*Source` field is the Discord image
+  hash the cached hex was computed from; a fresh CDN download + re-extraction only
+  happens if that specific image actually changed.
+
+## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`)
+Two small helpers introduced when calendar/draws/patchnotes/drawprices were redesigned
+to a consistent look, specifically to avoid four copies of the same layout drifting out
+of sync the way the `/timestamp` duplication already has (see above):
+- `buildTitleBlock(topLine, emoji, label)` — the two-line header pattern used by all
+  four: a smaller context line (season title, patch name, or CP region) on top, the
+  command's own animated-emoji header below it as the bigger line.
+- `buildPaginationRow({ totalChunks, currentPage, prevCustomId, nextCustomId,
+  indicatorCustomId })` — the Prev/Next row used by `/calendar` and `/draws`' sub-page
+  navigation: emoji-only Left/Right buttons (`emojiMap.js`'s `left`/`right`, no text
+  label), a numbers-only page counter (no "Page" word). Returns `null` when
+  `totalChunks <= 1` — **callers must check for that and skip pushing the row**, don't
+  assume it's always safe to push directly. Reuse this for any future paginated command
+  rather than hand-rolling another slightly-different prev/next row.
+
+## MP loadout system (`utils/loadoutRender.js`, `scripts/migrateBuildsToMongo.js`)
+`builds.xlsx` used to be the sole source of truth for MP loadouts: a `loadBuildsFromExcel()` in
+`index.js` parsed it into an in-memory object at boot, and `/all` + auto-generated `/<category>`
+commands (`/ar`, `/lmg`, etc.) read from it directly. At some point autocomplete for those same
+commands got rewired to query MongoDB's `Loadout` collection (`mode: 'MP'`) instead — but the data
+itself was never migrated, and the actual render still read the old Excel object. Net effect: the
+autocomplete dropdown (Mongo-backed, empty collection) showed nothing, and even a manually-typed
+weapon name would have hit the still-Excel-backed render with an incompatible key scheme. Fixed by:
+- Running `scripts/migrateBuildsToMongo.js` once to import all 106 rows / 58 unique weapons from
+  `builds.xlsx` into `Loadout` (mode `'MP'`), grouping duplicate weapon-name rows into separate
+  `buildName: "Build 1"/"Build 2"/...` documents. Safe to re-run (clears existing `mode:'MP'` docs
+  first) if the spreadsheet is ever updated and needs re-importing.
+- Removing `loadBuildsFromExcel()`/the in-memory `builds` object/`createBuildEmbed()` from
+  `index.js` entirely — MP now reads from Mongo exclusively, same as DMZ.
+- Moving the `/all`+`/<category>` command *registration* (not just autocomplete) into
+  `handleBotReady()`, querying `Loadout.distinct('category', {mode:'MP'})` — this can't happen at
+  module-load time anymore since it needs a DB round-trip. Safe even before the Mongo connection
+  fully establishes: Mongoose buffers queries by default until connected, it doesn't throw.
+- Extracting `buildImageUrl()`/`buildLoadoutCard()` into `utils/loadoutRender.js`, shared by
+  `/dmz` and the new MP handler — `buildImageUrl` handles `imageKey` being EITHER a bare Cloudinary
+  key (the original admin-added-loadout design, and what `migrateBuildsToMongo.js` extracts for
+  104 of builds.xlsx's 106 rows — same Cloudinary account already used by `draws.js`) OR a full
+  external URL (needed for the other 2 rows, both LOCUS builds, which are hosted on imgur instead).
+  Don't assume every row is one or the other — check `ImageURL.startsWith(CLOUDINARY_BASE)` per row
+  like the migration script does, rather than treating the whole sheet as one format.
+- Discovering along the way that `buildName` was doing double duty as both the display label AND
+  the "Copy Share Code" button's payload — which meant admin-added loadouts never had a real code,
+  just whatever label was typed. Added a separate `shareCode` field (populated from the
+  spreadsheet's actual `Code` column during migration) that the copy button now prefers, falling
+  back to `buildName` for loadouts that don't have one.
+- Discovering a second half-wired preference along the way: `/settings`' single "Weapon Builds"
+  toggle writes to `prefs.loadoutVisibility`, but `/dmz` was checking a completely different field
+  (`prefs.dmzVisibility`) that was never exposed in the `/settings` UI at all — so that toggle did
+  nothing for `/dmz`, ever. Fixed `/dmz` to read `loadoutVisibility` (now shared with the new MP
+  commands too, one toggle covering every loadout lookup, same Option A pattern as
+  `seasonalVisibility`) and removed the dead `dmzVisibility` field entirely rather than leaving it
+  as unreachable state.
+
+`buildLoadoutCard()` was originally a legacy `EmbedBuilder` card (Harkirat's actual, older design —
+category overline, bold weapon title, side-by-side "Attachments"/"Gunsmith Code" embed fields,
+image, "Build N of M | Last updated" footer, Back/Next/Copy Code buttons). It got flattened into a
+generic V2-styled card during the Mongo migration above, which was a real visual regression, not an
+intentional redesign — rebuilt to match that original identity as closely as Components V2 allows.
+**V2 has no equivalent to an embed's inline fields** — "Attachments" and "Gunsmith Code" stack
+vertically now instead of sitting side-by-side; everything else (heading hierarchy, image, footer
+line, button labels/order) matches. Since this card moved off `EmbedBuilder` entirely, its send
+sites (`dmz.js`, the MP fallback and pagination handler in `index.js`) had to switch from
+`interaction.followUp()`/`interaction.update()` to the same raw `rest.patch('@original')` bypass
+every other V2 command already uses — discord.js's high-level methods don't reliably serialize raw
+V2 JSON (there's no builder class for a type-17 Container). If you touch this card again, remember
+`accent_color` needs a **decimal**, not a hex string like `EmbedBuilder.setColor()` took.
+
+Buttons (pagination + Copy Code) live INSIDE the container now, not as a sibling row — with a
+divider between them and the image/caption above, per Harkirat's request. Prev/Next also switched
+to the shared Left/Right-emoji pagination style (`utils/paginationRow.js`) instead of plain
+"Back"/"Next" text buttons, matching `/calendar` and `/draws`. Pagination + Copy Code were also
+combined into one row instead of two — flagged as a judgment call in the code comment in case
+that's not wanted. "Share Publicly" is still its own row OUTSIDE the container (unlike the other
+buttons), consistent with every other command.
+
+## "Share Publicly" (`utils/shareButton.js`)
+Every ephemeral response across the bot gets one extra button appended below its existing
+components: clicking it re-posts the exact same content as a real, public channel message,
+without touching the original ephemeral message at all. The mechanism is simpler than it sounds —
+**Discord includes the full original message (content/embeds/components) directly in a button
+click's own interaction payload, even when that message is ephemeral.** There's no need to store
+or reconstruct any state: `index.js`'s `share_public` handler just reads `interaction.message`,
+strips the `EPHEMERAL` flag (64) and the share button's own row, and `POST`s a new message to the
+same channel with everything else intact — including any dropdowns/pagination buttons the original
+had, which keep working on the public copy since they're already all stateless (`tsmenu|...`,
+`calsubpage_N`, etc. encode everything they need in their own `custom_id`).
+- `withShareButton(components, isEphemeral)` is what every command calls at the point it builds its
+  final payload — appends a **new** action row (never packed into an existing row) specifically so
+  commands whose nav row is already at Discord's 5-button cap don't need special-casing.
+- Every command with an ephemeral option now threads `isEphemeral` through to wherever its final
+  payload gets built (`buildContainer()` for calendar/draws/drawprices/patchnotes, inline for
+  seasonend, `buildLoadoutCard()` for dmz/MP, and settings.js's own payload). Any RE-RENDER path
+  (pagination, dropdowns, region-swap) needs this too, or the button silently disappears after the
+  first interaction — `/timestamp`'s dropdown-driven re-render is the one exception that couldn't
+  just re-derive it from `prefs` (it skips normal option-resolution entirely via `overrideState`),
+  so `index.js` explicitly reads `interaction.message.flags` and passes `ephemeral` through
+  alongside `unix`/`tz`/`queryInput`/`style`. The DMZ/MP pagination handler does the same for the
+  same reason (editing an existing message, no `execute()` re-run to re-resolve prefs from).
+- If you add a new ephemeral-capable command, remember: (1) call `withShareButton` on the final
+  components array, (2) make sure every re-render path (not just the initial slash command) also
+  gets `isEphemeral` passed through correctly.
+
+## Known open issues (not yet fixed — flagged, not silently patched)
+- `calendar.js` and `draws.js` both have defensive component-count chunking;
+  `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
+  patch note screenshots per entry are usually few, but not empirically verified
+  the way draws/calendar chunking was).
+
+## Next planned work
+Harkirat wants to reorganize the admin commands (`/update` + `/manage`) to be more
+"centralized" — currently split across two commands with some overlapping/missing
+functionality. Nothing has been designed yet; start by asking what "centralized"
+should look like (one command with subcommand groups? a different UX entirely?)
+rather than assuming.

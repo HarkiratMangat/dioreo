@@ -17,13 +17,26 @@ function generateTimestamps(textString, userTimezone = 'America/Toronto') {
     // 1. Establish an anchor time relative to the target timezone
     const referenceDate = dayjs().tz(userTimezone).toDate();
 
-    // 2. Parse the string using the anchor
-    const parsedResult = chrono.parseDate(textString, referenceDate, { forwardDate: true });
-    if (!parsedResult) return null;
+    // 2. Parse the string using the anchor. Using chrono.parse() (not the parseDate() shortcut)
+    // because we need access to the ParsedComponents, not just the final Date -- see step 3.
+    const parseResults = chrono.parse(textString, referenceDate, { forwardDate: true });
+    if (!parseResults || parseResults.length === 0) return null;
+
+    const parsedComponents = parseResults[0].start;
+    const parsedResult = parsedComponents.date();
 
     // 3. Build a clean dayjs instance enforcing the exact date parts extracted
-    const localTarget = dayjs(parsedResult).tz(userTimezone, true);
-    
+    let localTarget = dayjs(parsedResult).tz(userTimezone, true);
+
+    // FIXED: a bare date with no time-of-day (e.g. "july 17") used to silently become NOON, not
+    // midnight -- chrono-node's default "implied" hour when none is stated is 12:00, not 00:00.
+    // isCertain('hour') tells us whether the input text actually specified a time vs. chrono just
+    // inferring one, so we can zero it back out to true midnight in the target timezone whenever
+    // the user only gave a date.
+    if (!parsedComponents.isCertain('hour')) {
+        localTarget = localTarget.hour(0).minute(0).second(0).millisecond(0);
+    }
+
     // 4. Derive the Unix epoch in seconds
     const unixSeconds = Math.floor(localTarget.valueOf() / 1000);
 

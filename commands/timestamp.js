@@ -1,6 +1,25 @@
 // commands/timestamp.js
 const { SlashCommandBuilder, Routes } = require('discord.js'); // Standard Packages — Added 'Routes' for native API endpoint mappings
 const { generateTimestamps } = require('../utils/timestampHelper');
+const UserPreference = require('../models/UserPreference');
+const emojis = require('../utils/emojiMap');
+const { withShareButton } = require('../utils/shareButton');
+
+// Shared option list for the style-switch dropdown, used by both view modes below. index.js's
+// 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather
+// than duplicating this list, so there's only ever one copy to keep in sync.
+const STYLE_SELECT_OPTIONS = [
+    { label: "All Formats Overview", value: "all_formats", description: "Shows every format together as a summary" },
+    { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 16:20" },
+    { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 16:20" },
+    { label: "Long Date (D)", value: "longDate", description: "e.g., April 20, 2021" },
+    { label: "Short Date (d)", value: "shortDate", description: "e.g., 20/04/2021" },
+    { label: "Medium Time (T)", value: "mediumTime", description: "e.g., 16:20:30" },
+    { label: "Short Time (t)", value: "shortTime", description: "e.g., 16:20" },
+    { label: "Short Date, Short Time (s)", value: "shortDateTimeShort", description: "e.g., 20/04/2021, 16:20" },
+    { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
+    { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
+];
 
 // Global lookup table mapping standard IANA timezones to descriptive user-facing labels
 const tzLabels = {
@@ -103,49 +122,92 @@ module.exports = {
         // Context configuration ensuring the command works in Guilds, DMs, and User-installed apps seamlessly
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
-    async execute(interaction) {
-        const queryInput = interaction.options.getString('datetime');
-        const tz = interaction.options.getString('timezone') || 'America/Toronto';
-        const style = interaction.options.getString('style');
-        const ephemeral = interaction.options.getBoolean('ephemeral') || false;
+    // NOTE (de-duplicated during review): this used to have a full second copy of both view
+    // layouts living in index.js's 'tsmenu|' select handler, because that handler needed to
+    // re-render the SAME already-parsed timestamp under a different style without re-running
+    // chrono (a relative input like "tomorrow" would resolve to a different date if re-parsed
+    // later). The two copies had already drifted out of sync twice across earlier redesigns.
+    // Fixed properly now via the same synthetic-interaction pattern every other command uses:
+    // `overrideState` lets index.js pass in the already-known { unix, tz, queryInput, style }
+    // instead of re-deriving them from slash command options, while both code paths still share
+    // this single render implementation below.
+    async execute(interaction, overrideState = null) {
+        let queryInput, tz, style, unix, ephemeral;
 
-        // FIXED V14 EPHEMERAL DEFERRAL FORMAT:
-        // discord.js v14 strictly expects a boolean payload configuration object { ephemeral: true } 
-        if (ephemeral) {
-            await interaction.deferReply({ ephemeral: true });
+        if (overrideState) {
+            // Invoked from index.js's tsmenu dropdown handler — reuse the exact original parse
+            // instead of re-parsing. Never ephemeral here since the dropdown-driven re-render
+            // path never applied the ephemeral flag (matches prior behavior).
+            ({ unix, tz, queryInput, style } = overrideState);
+            // Preserve whatever ephemeral state the message already had (Discord can't change it
+            // via edit anyway) — needed so the "Share Publicly" button doesn't disappear the moment
+            // someone switches timestamp styles. index.js passes this in from the message being
+            // edited since overrideState skips the normal ephemeral-resolution logic entirely.
+            ephemeral = Boolean(overrideState.ephemeral);
         } else {
-            await interaction.deferReply();
+            queryInput = interaction.options.getString('datetime');
+            tz = interaction.options.getString('timezone') || 'America/Toronto';
+
+            // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving
+            // it blank meant "all formats" no matter what a user had saved as their default Timestamp
+            // Style in /settings — that saved preference was stored and shown in the dashboard but
+            // never actually consulted (flagged as a known gap in CLAUDE.md). Now falls back the same
+            // way `ephemeral` already does below: explicit option > saved preference > "all formats".
+            // `prefs.timestampStyle` defaults to the literal string 'all_formats' in the schema, which
+            // needs to be treated as "no specific style" (i.e. `style = null`) here, since that's how
+            // the rest of this function distinguishes the two view modes.
+            const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            const argStyle = interaction.options.getString('style');
+            const savedStyle = prefs?.timestampStyle;
+            style = argStyle !== null ? argStyle : (savedStyle && savedStyle !== 'all_formats' ? savedStyle : null);
+
+            // NOTE (Option A wiring): /timestamp previously never checked any saved preference —
+            // the `ephemeral` option always defaulted to false if you didn't type it. Now it falls
+            // back to the "Timestamps" toggle from /settings (prefs.timestampVisibility) when the
+            // option is left blank, same priority pattern used by the other commands: explicit
+            // option > saved preference > public default.
+            const argEphemeral = interaction.options.getBoolean('ephemeral');
+            ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
+
+            // FIXED V14 EPHEMERAL DEFERRAL FORMAT:
+            // discord.js v14 strictly expects a boolean payload configuration object { ephemeral: true }
+            if (ephemeral) {
+                await interaction.deferReply({ ephemeral: true });
+            } else {
+                await interaction.deferReply();
+            }
+
+            // Clean text input and expand shorthand variations into complete words for the chrono parser engine
+            let processedQuery = queryInput.toLowerCase().trim();
+            const expansions = {
+                '\\btom\\b|\\btomorr\\b|\\btomorrow\\b': 'tomorrow',
+                '\\btod\\b|\\btoday\\b': 'today',
+                '\\byest\\b|\\byesterday\\b': 'yesterday',
+                '\\bsun\\b|\\bsunday\\b': 'Sunday',
+                '\\bmon\\b|\\bmonday\\b': 'Monday',
+                '\\btue\\b|\\btues\\b|\\btuesday\\b': 'Tuesday',
+                '\\bwed\\b|\\bweds\\b|\\bwednesday\\b': 'Wednesday',
+                '\\bthu\\b|\\bthur\\b|\\bthurs\\b|\\bthursday\\b': 'Thursday',
+                '\\bfri\\b|\\bfriday\\b': 'Friday',
+                '\\bsat\\b|\\bsaturday\\b': 'Saturday'
+            };
+
+            for (const [regex, replacement] of Object.entries(expansions)) {
+                processedQuery = processedQuery.replace(new RegExp(regex, 'g'), replacement);
+            }
+
+            const timestampsBase = generateTimestamps(processedQuery, tz);
+            if (!timestampsBase || !timestampsBase.unix) {
+                // LIBRARY SERIALIZATION BYPASS PROTOCOL (ON ERROR RENDER):
+                return interaction.client.rest.patch(
+                    Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
+                    { body: { content: `❌ Could not parse your time input from "${queryInput}".\n• Try formats like: \`tomorrow\`, \`sun at 4:30pm\`, \`july17 8pm\`, or \`19:30\`.` } }
+                );
+            }
+
+            unix = timestampsBase.unix;
         }
 
-        // Clean text input and expand shorthand variations into complete words for the chrono parser engine
-        let processedQuery = queryInput.toLowerCase().trim();
-        const expansions = {
-            '\\btom\\b|\\btomorr\\b|\\btomorrow\\b': 'tomorrow',
-            '\\btod\\b|\\btoday\\b': 'today',
-            '\\byest\\b|\\byesterday\\b': 'yesterday',
-            '\\bsun\\b|\\bsunday\\b': 'Sunday',
-            '\\bmon\\b|\\bmonday\\b': 'Monday',
-            '\\btue\\b|\\btues\\b|\\btuesday\\b': 'Tuesday',
-            '\\bwed\\b|\\bweds\\b|\\bwednesday\\b': 'Wednesday',
-            '\\bthu\\b|\\bthur\\b|\\bthurs\\b|\\bthursday\\b': 'Thursday',
-            '\\bfri\\b|\\bfriday\\b': 'Friday',
-            '\\bsat\\b|\\bsaturday\\b': 'Saturday'
-        };
-
-        for (const [regex, replacement] of Object.entries(expansions)) {
-            processedQuery = processedQuery.replace(new RegExp(regex, 'g'), replacement);
-        }
-
-        const timestampsBase = generateTimestamps(processedQuery, tz);
-        if (!timestampsBase || !timestampsBase.unix) {
-            // LIBRARY SERIALIZATION BYPASS PROTOCOL (ON ERROR RENDER):
-            return interaction.client.rest.patch(
-                Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-                { body: { content: `❌ Could not parse your time input from "${queryInput}".\n• Try formats like: \`tomorrow\`, \`sun at 4:30pm\`, \`july17 8pm\`, or \`19:30\`.` } }
-            );
-        }
-
-        const unix = timestampsBase.unix;
         const currentFullTzLabel = getTimezoneLabel(tz, tzLabels[tz]);
 
         const styleCharMap = {
@@ -154,20 +216,43 @@ module.exports = {
             shortDateTimeMedium: 'S', relative: 'R'
         };
 
+        // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key.
+        // Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong).
+        const cleanQueryText = queryInput.substring(0, 40).replace(/\|/g, ' ');
+        const statelessCustomId = `tsmenu|${unix}|${tz}|${cleanQueryText}`;
+        const parsedLine = `-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\``;
+
         let componentPayload = [];
 
         if (style) {
             // VIEW MODE: SINGULAR TARGET LAYOUT
+            // NOTE (redesigned during review): this view previously told users to "use the dropdown
+            // below" without actually including one — the only place a dropdown ever appeared for
+            // this view was if you arrived here via the all-formats select menu (see index.js's
+            // 'tsmenu|' handler, which reuses the incoming select component). Landing here directly
+            // via `/timestamp style:...` showed no dropdown at all. Now always included, nested at
+            // the bottom of the container per the redesign, with the selected style pre-marked.
             const char = styleCharMap[style];
+            // Layout per redesign: timestamp > divider > parsed line > "use dropdown" line > dropdown
+            // (parsed line moved back above the divider, under the timestamp itself).
             componentPayload = [
                 {
                     type: 17, // Components v2: Section Container
                     accent_color: 16741953, // Precious Persimmon (#ff7641)
                     components: [
                         { type: 10, content: `### \`<t:${unix}:${char}>\` — <t:${unix}:${char}>` }, // Type 10: Text Block
-                        { type: 14, spacing: 1, divider: true }, // Type 14: Interactive Separator/Divider
-                        // Removed double line break gap between descriptor and parsed context
-                        { type: 10, content: `-# Use the dropdown below to change timestamp style\n-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\`` }
+                        { type: 14, spacing: 2, divider: true }, // Type 14: Interactive Separator/Divider
+                        { type: 10, content: parsedLine },
+                        { type: 10, content: `-# Use the dropdown below to change timestamp style` },
+                        {
+                            type: 1,
+                            components: [{
+                                type: 3,
+                                custom_id: statelessCustomId,
+                                placeholder: "Switch to a singular layout style...",
+                                options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === style }))
+                            }]
+                        }
                     ]
                 }
             ];
@@ -185,42 +270,29 @@ module.exports = {
                 `\`<t:${unix}:R>\` — <t:${unix}:R>`
             ].join('\n');
 
-            // STATE STORAGE ID DESIGN: We encode critical query context properties inside the string key.
-            // Using a pipe (|) delimiter completely prevents crashes with timezone names containing underscores (e.g., Asia/Hong_Kong).
-            const cleanQueryText = queryInput.substring(0, 40).replace(/\|/g, ' ');
-            const statelessCustomId = `tsmenu|${unix}|${tz}|${cleanQueryText}`;
-
+            // Layout per redesign: title > divider > timestamps+tap-on-any > divider > parsed line >
+            // "select a specific layout" line > dropdown (parsed line moved back down below the
+            // timestamps list, not directly under the title).
             componentPayload = [
                 {
                     type: 17, // Components v2: Section Container
                     accent_color: 16741953, // Precious Persimmon (#ff7641)
                     components: [
-                        { type: 10, content: "### Time Converted to Each User’s Local Timezone" },
-                        // Injected the ✦ prompt directly below the timestamps list with a double line break for clean padding
+                        { type: 10, content: `## ${emojis.timestamp} Time Converted to Each User’s Local Timezone` },
+                        { type: 14, spacing: 2, divider: true },
                         { type: 10, content: lines + `\n\n-# ✦ Tap on any \`<t:###:F>\` text above to instantly copy it` },
-                        { type: 14, spacing: 1, divider: true },
-                        // Removed double line break gap between descriptor and parsed context
-                        { type: 10, content: `-# Select a specific layout below to change views\n-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\`` }
-                    ]
-                },
-                {
-                    type: 1, // Action Row Container
-                    components: [
+                        { type: 14, spacing: 2, divider: true },
+                        { type: 10, content: parsedLine },
+                        { type: 10, content: `-# Select a specific layout below to change views` },
                         {
-                            type: 3, // String Select Menu Component
-                            custom_id: statelessCustomId, // Uses the newly formatted pipe-delimited ID
-                            placeholder: "Switch to a singular layout style...",
-                            options: [
-                                { label: "All Formats Overview", value: "all_formats", default: true },
-                                { label: "Full Date, Short Time (F)", value: "fullDateTime", description: "e.g., Tuesday, April 20, 2021 at 16:20" },
-                                { label: "Long Date, Short Time (f)", value: "longDateTime", description: "e.g., April 20, 2021 at 16:20" },
-                                { label: "Long Date (D)", value: "longDate", description: "e.g., April 20, 2021" },
-                                { label: "Short Date (d)", value: "shortDate", description: "e.g., 20/04/2021" },
-                                { label: "Medium Time (T)", value: "mediumTime", description: "e.g., 16:20:30" },
-                                { label: "Short Time (t)", value: "shortTime", description: "e.g., 16:20" },
-                                { label: "Short Date, Short Time (s)", value: "shortDateTimeShort", description: "e.g., 20/04/2021, 16:20" },
-                                { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
-                                { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
+                            type: 1, // Action Row Container — nested inside the container, not a sibling
+                            components: [
+                                {
+                                    type: 3, // String Select Menu Component
+                                    custom_id: statelessCustomId, // Uses the newly formatted pipe-delimited ID
+                                    placeholder: "Switch to a singular layout style...",
+                                    options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === 'all_formats' }))
+                                }
                             ]
                         }
                     ]
@@ -235,7 +307,7 @@ module.exports = {
             {
                 body: {
                     content: "",
-                    components: componentPayload,
+                    components: withShareButton(componentPayload, ephemeral),
                     flags: ephemeral ? (32768 | 64) : 32768
                 }
             }
