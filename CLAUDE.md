@@ -89,6 +89,21 @@ should degrade to "that one click didn't work," never "the bot crashed." If you 
 branches to this handler, you don't need your own try/catch around them (the outer one
 covers it), but don't let anything inside intentionally rethrow past it.
 
+**`client.on('error', ...)` MUST be registered, or a rejection can crash the bot even with the
+outer try/catch in place (found locally, 2026-07-07).** discord.js's `BaseClient` constructs
+itself with `super({ captureRejections: true })` — a Node `EventEmitter` option that reroutes a
+rejected promise from an async event listener (our `client.on('interactionCreate', async
+interaction => {...})`) into an `error` event emitted **on the client itself**, instead of
+surfacing through Node's normal `process.on('unhandledRejection')`. With no listener for a plain
+`error` event on the client, EventEmitter's default behavior for an unhandled `error` event is to
+throw synchronously and crash the process — completely bypassing both the outer try/catch *and*
+any `process.on('unhandledRejection')` net, since captureRejections intercepts the rejection before
+it ever becomes a "global" unhandled rejection. This is a well-known discord.js gotcha (their own
+guide calls it out) and is now fixed with a permanent `client.on('error', ...)` listener right after
+the client is instantiated. If you ever see a crash log with "Emitted 'error' event on Client
+instance" in the stack, this is why — check that this listener is still registered before assuming
+some other Component-count/interaction-routing bug.
+
 **The outer try/catch alone wasn't enough — a real Railway crash got past it (2026-07-07).**
 A `deferReply()` failed with 10062 (`Unknown interaction`, expired token), which was caught by
 the error-fallback in `index.js`'s slash-command router. That fallback then did
@@ -172,11 +187,15 @@ the same change**, or it will not actually save.
 - `UserPreference.js` — per-user. `seasonalVisibility` is a **shared** toggle
   covering `/season end`, `/draws`, `/patch notes`, `/calendar`, `/draw prices`
   together (Option A design decision — see below). `timestampVisibility`,
-  `settingsVisibility`, `defaultRegion`, `loadoutVisibility`, `dmzVisibility` are
-  each independent. `accentColorStyle` (`'avatar'|'banner'|'preset'`, default `'avatar'`;
-  `'default'` is the old value name for `'preset'`, still treated identically) plus the
-  independently-cached `avatarColorHex`/`avatarColorSource` and
-  `bannerColorHex`/`bannerColorSource` pairs back the accent color system — see below.
+  `settingsVisibility`, `defaultRegion`, `loadoutVisibility` are each independent.
+  `calendarEventFilter` (`'active'|'all'`, default `'all'`) backs `/calendar`'s
+  "Show Active Events Only"/"Show All Events" toggle — deliberately NOT exposed in
+  `/settings` (Harkirat's request); `/calendar`'s own button reads/writes it directly,
+  it's the only place this field is ever touched. `accentColorStyle`
+  (`'avatar'|'banner'|'preset'`, default `'avatar'`; `'default'` is the old value name
+  for `'preset'`, still treated identically) plus the independently-cached
+  `avatarColorHex`/`avatarColorSource` and `bannerColorHex`/`bannerColorSource` pairs
+  back the accent color system — see below.
 - `Loadout.js` — weapon loadouts, `mode: 'MP' | 'DMZ'` (MP max 5 attachments, DMZ max 9).
   `description` (optional flavor text) and `shareCode` (the actual copyable in-game Gunsmith
   code) were added during the builds.xlsx migration — see MP loadout system below for why
@@ -202,21 +221,45 @@ the same change**, or it will not actually save.
   (it already force-normalizes everything to midnight UTC unconditionally), so this
   was isolated to the user-facing command.
 - **Bulk-import text formats are bullet/comma-delimited, not one-per-line JSON**,
-  because Harkirat pastes from a notes app export. See `parseBulkDraws` (comma-
+  because Harkirat pastes from a notes app export. See `parseBulkDrawList` (comma-
   separated) and `parseBulkEvents` (bullet-separated, `M/D - M/D | Title` or
   `M/D - All Season | Title`) in `adminParser.js`. Titles in bulk imports are
   preserved verbatim (no auto title-casing) because CODM content is full of
   acronyms (MP/BR/DMZ) that naive title-casing mangles into "Mp"/"Br"/"Dmz".
   Because the whole line is comma-delimited, a date containing its own comma (e.g.
   "July 16, 2026") used to fracture across two fields and silently drop the year —
-  `parseBulkDraws` now re-merges a trailing bare-4-digit-year field back onto the
+  `parseBulkDrawList` now re-merges a trailing bare-4-digit-year field back onto the
   previous field before parsing it as a date. Keep that in mind if you touch this
   parser: any fix here needs to stay comma-in-date-safe, not just comma-delimiter-safe.
-- **Bulk imports REPLACE, they don't append.** Both `modal_draws_bulk` and
-  `modal_calendar_bulk` (index.js) overwrite `newDraws`/`returningDraws`/`calendar`
-  wholesale rather than pushing onto the existing array. A bulk paste represents the
-  complete current list for the season, so re-running it (e.g. to fix a typo) replaces
-  the old entries instead of duplicating on top of them.
+- **`/update`'s bulk draws import is split into two independent flows — New and
+  Returning each have their own modal** (`modal_draws_bulk_new` /
+  `modal_draws_bulk_returning` in index.js, `parseBulkDrawList` in `adminParser.js`
+  returns a flat array for whichever one category was submitted). This used to be ONE
+  modal covering both, distinguished per-line by a leading `n `/`r ` prefix token, and
+  a single submit replaced BOTH `newDraws` and `returningDraws` together — re-running
+  the import to fix one typo in New Draws silently re-wrote Returning Draws too (even
+  if unchanged content-wise, it reordered/re-saved it). Splitting means each submit
+  only ever touches its own array. If you add a third draws-like category in the
+  future, give it its own modal/custom_id rather than reintroducing a type-prefix line.
+- **Bulk imports REPLACE, they don't append.** `modal_draws_bulk_new`/
+  `modal_draws_bulk_returning` each overwrite only their own array
+  (`newDraws`/`returningDraws`), and `modal_calendar_bulk` (index.js) overwrites
+  `calendar` wholesale rather than pushing onto the existing array. A bulk paste
+  represents the complete current list for that category/season, so re-running it
+  (e.g. to fix a typo) replaces the old entries instead of duplicating on top of them.
+- **`toTitleCase` (`adminParser.js`) preserves already-uppercase acronyms, skips
+  leading punctuation, AND capitalizes each side of a hyphen independently** rather than
+  blanket-lowercasing the whole string first. The old implementation did
+  `str.toLowerCase()` on the entire string, then re-capitalized only the character
+  immediately after whitespace — that mangled "FSS Hurricane" into "Fss Hurricane"
+  (acronym torn down), "(Operator)" into "(operator)" (the char after the space was "(",
+  not a letter, so nothing got recapitalized), and "Blood-Red" into "Blood-red" (a
+  hyphenated word is one whitespace-delimited token, so only its very first letter ever
+  got capitalized). Now: each whitespace-delimited word is further split on its own
+  hyphens, and each hyphen segment independently either gets preserved verbatim (if
+  already fully uppercase, 2+ letters — an acronym like "FSS") or has its first actual
+  *letter* capitalized, skipping over leading punctuation like `(`. Applies to draw/item
+  titles in both the bulk parser and the single-add/edit modals in index.js.
 - **"All Season" calendar events resolve their end date to `bpEnd`, not a literal
   "Ongoing" label.** The Battle Pass ending is what actually closes out an all-season
   event; `calendar.js` only falls back to showing "Ongoing" text if `bpEnd` hasn't been
@@ -231,6 +274,27 @@ the same change**, or it will not actually save.
   instead of just the bare season name — `patchnotes.js`'s exported `cleanPatchTitle()`
   strips that prefix at every display site (heading, history dropdown, autocomplete in
   index.js) rather than requiring old DB entries to be edited by hand.
+- **`/calendar`'s active/all events toggle button only appears if at least one event has
+  actually ended.** Computed fresh on every render (not cached/stored) via
+  `calendar.js`'s `isEventEnded()`/`hasEndedEvents` — if every event this season still
+  ends in the future, "Active Only" and "All" would render an identical list, so the
+  toggle (and its description line) are omitted entirely rather than shown doing
+  visibly nothing. This was a real point of confusion during testing before the check
+  existed — Harkirat toggled it, saw no change, and reasonably assumed it was broken,
+  when actually the underlying filter logic was correct and there just wasn't anything
+  to filter yet. Defaults to `'all'` for anyone without a saved preference. An "All
+  Season" event only counts as ended once `bpEnd` is BOTH set AND passed (it has no
+  fixed end of its own — see the next bullet); if `bpEnd` hasn't been configured yet,
+  it's treated as still active rather than guessed at. The persisted choice lives in
+  `UserPreference.calendarEventFilter` (see above).
+- **`/season end`'s per-deadline heading went `## ` → `### ` → back to `## `.** It was
+  originally one line combining emoji + season title + " ends..." at H2, which wrapped
+  awkwardly on mobile; that got fixed by dropping to H3, which then felt visually
+  smaller than the rest of the bot's uniform heading sizes. The real fix was moving
+  "ends.../that's..." OFF the heading line entirely and onto the timestamp lines below
+  it (`✦ **Ends...** <t:X:F>` / `✦ **That's...** <t:X:R>`) — the heading is now just
+  `## {emoji} **{title}**`, short enough to never wrap, so it was safe to go back to the
+  bigger H2 size without reintroducing the original wrapping bug.
 - **`/draw prices`' `REGION_DATA`/`COMBO_NOTES` had real math mistakes**, found by
   cross-referencing against Harkirat's raw combo-notes export: a displayed total not
   matching its own draws curve (mythicCharacter said 7,200, its draws summed to 7,220),
@@ -291,8 +355,24 @@ Two small helpers introduced when calendar/draws/patchnotes/drawprices were rede
 to a consistent look, specifically to avoid four copies of the same layout drifting out
 of sync the way the `/timestamp` duplication already has (see above):
 - `buildTitleBlock(topLine, emoji, label)` — the two-line header pattern used by all
-  four: a smaller context line (season title, patch name, or CP region) on top, the
-  command's own animated-emoji header below it as the bigger line.
+  four: the command's own animated-emoji header as the bigger `#` line FIRST, with a
+  context line (season title, patch name, or CP region) styled via
+  `toBoldItalicUnicode()` underneath it as a caption (reordered per Harkirat's request —
+  originally the context line was on top). `toBoldItalicUnicode()` maps Latin letters to Unicode
+  Mathematical Bold Italic codepoints (used instead of Discord markdown `***text***`
+  because heading lines don't reliably render nested inline emphasis on every Discord
+  client — real Unicode glyphs render identically everywhere), and wraps each run of
+  digits in markdown italic (`*...*`) around Mathematical Bold digit codepoints (Unicode
+  has no bold-italic digit variant, so this hybrid is the closest match to the
+  surrounding bold-italic letters — e.g. "Season 6" -> "𝑺𝒆𝒂𝒔𝒐𝒏 *𝟔*"). Non-letter/digit
+  characters (spaces, colons, em dashes) pass through unchanged.
+  **`topLine` is deliberately NOT a real heading** (no leading `#`/`##`/`###`) — it used
+  to be its own `### ` heading stacked directly above the `# ` emoji/label heading, but
+  two adjacent headings in one Text Display each carry Discord's own heading-level
+  vertical margin that doesn't collapse just because the source only has one `\n`
+  between them, which showed up as a disproportionately large gap between the two
+  lines. Dropping the `#` prefix removes that margin while `toBoldItalicUnicode()`
+  keeps the same visual weight without literal heading markup.
 - `buildPaginationRow({ totalChunks, currentPage, prevCustomId, nextCustomId,
   indicatorCustomId })` — the Prev/Next row used by `/calendar` and `/draws`' sub-page
   navigation: emoji-only Left/Right buttons (`emojiMap.js`'s `left`/`right`, no text
@@ -300,6 +380,14 @@ of sync the way the `/timestamp` duplication already has (see above):
   `totalChunks <= 1` — **callers must check for that and skip pushing the row**, don't
   assume it's always safe to push directly. Reuse this for any future paginated command
   rather than hand-rolling another slightly-different prev/next row.
+
+## Loadout commands (`/dmz`, `/all`, `/<category>`) have `build`/`private` options
+All three accept an optional `build` (integer, 1-based, matching the "Build N of M" footer text —
+clamped into range rather than rejected if out of bounds) to jump straight to a specific build
+instead of always landing on the first and clicking Next repeatedly, and an optional `private`
+boolean (same explicit-option > saved-`loadoutVisibility`-preference > default priority every other
+command already uses) to land already-public/ephemeral in one shot. Added specifically so a user
+doesn't have to rely on "Share Publicly" after the fact just to get the same result up front.
 
 ## MP loadout system (`utils/loadoutRender.js`, `scripts/migrateBuildsToMongo.js`)
 `builds.xlsx` used to be the sole source of truth for MP loadouts: a `loadBuildsFromExcel()` in
@@ -361,17 +449,45 @@ combined into one row instead of two — flagged as a judgment call in the code 
 that's not wanted. "Share Publicly" is still its own row OUTSIDE the container (unlike the other
 buttons), consistent with every other command.
 
+## This bot is user-installed only — it is NEVER a guild member with roles/permissions
+`Dior's Builds` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every
+public-facing command). It is never added to any server as a bot with a role, so it has **zero
+standing guild permissions** — no View Channel, no Send Messages, nothing — in any server it
+responds in. The only reason it can respond to a slash command in a guild at all is Discord's
+interaction-response webhook system (`deferReply`/`deferUpdate` + editing `@original` via the
+interaction token), which is authorized per-interaction and doesn't check normal channel
+permissions. **Any code that tries to act on a channel a different way — a raw bot-token REST call
+like `rest.post(Routes.channelMessages(channelId))`, or anything else that isn't answering an
+interaction — will fail with `DiscordAPIError[50001] Missing Access`,** because that path DOES
+require real channel permissions this bot will never have. This bit "Share Publicly" for exactly
+that reason (see below) — if you add a feature that needs to independently post/edit/react in a
+channel outside of directly responding to the interaction that triggered it, it needs to go through
+this same interaction-response mechanism (a `deferReply`/`followUp` on that interaction), not a
+generic bot-token channel call.
+
 ## "Share Publicly" (`utils/shareButton.js`)
 Every ephemeral response across the bot gets one extra button appended below its existing
-components: clicking it re-posts the exact same content as a real, public channel message,
-without touching the original ephemeral message at all. The mechanism is simpler than it sounds —
-**Discord includes the full original message (content/embeds/components) directly in a button
-click's own interaction payload, even when that message is ephemeral.** There's no need to store
-or reconstruct any state: `index.js`'s `share_public` handler just reads `interaction.message`,
-strips the `EPHEMERAL` flag (64) and the share button's own row, and `POST`s a new message to the
-same channel with everything else intact — including any dropdowns/pagination buttons the original
-had, which keep working on the public copy since they're already all stateless (`tsmenu|...`,
-`calsubpage_N`, etc. encode everything they need in their own `custom_id`).
+components: clicking it answers that button click with the exact same content as a public message.
+The mechanism is simpler than it sounds — **Discord includes the full original message
+(content/embeds/components) directly in a button click's own interaction payload, even when that
+message is ephemeral.** There's no need to store or reconstruct any state: `index.js`'s
+`share_public` handler just reads `interaction.message`, strips the `EPHEMERAL` flag (64) and the
+share button's own row, then answers the button click itself with a non-ephemeral
+`deferReply()` + `rest.patch('@original')` — everything else intact, including any
+dropdowns/pagination buttons the original had, which keep working on the public copy since they're
+already all stateless (`tsmenu|...`, `calsubpage_N`, etc. encode everything they need in their own
+`custom_id`).
+
+**This used to POST a brand-new message directly to the channel via `rest.post(Routes.
+channelMessages(...))` using the bot's own token — found live to fail with `DiscordAPIError[50001]
+Missing Access`** the moment it was tested in a real server channel, precisely because of this
+bot's user-installed-only nature (see above): that raw channel POST needs real Send Messages
+permission this bot never has. Fixed by routing through the interaction-response mechanism instead
+(answering the button's own interaction, non-ephemeral) — works everywhere the bot can already
+respond to a command, no channel permissions to check or configure, and one message instead of two
+(no separate "✅ Shared publicly below!" confirmation needed anymore — the response IS the public
+copy). This also means Share Publicly can't work in a context the bot can't respond in at all
+(shouldn't come up in practice), and a Group DM only works if the bot's actually been added to it.
 - `withShareButton(components, isEphemeral)` is what every command calls at the point it builds its
   final payload — appends a **new** action row (never packed into an existing row) specifically so
   commands whose nav row is already at Discord's 5-button cap don't need special-casing.

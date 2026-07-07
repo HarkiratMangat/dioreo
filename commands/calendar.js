@@ -32,9 +32,26 @@ const PRESET_ACCENT = 3494000; // Police Blue (#355070) — 1st nav button (Cale
 // under that per page rather than under the 40-component ceiling.
 const CHUNK_SIZE = 20;
 
-function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false) {
+// An "All Season" event has no fixed end date of its own -- it runs until the Battle Pass ends
+// (see the rangeText logic below), so an ongoing event only counts as "ended" once bpEnd has both
+// been set AND passed. If bpEnd hasn't been configured yet, treat it as still active rather than
+// guessing.
+function isEventEnded(event, seasonalDoc, nowMs) {
+    if (event.isOngoing) {
+        return Boolean(seasonalDoc.bpEnd) && new Date(seasonalDoc.bpEnd).getTime() <= nowMs;
+    }
+    return new Date(event.endDate).getTime() <= nowMs;
+}
+
+function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all') {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
-    const sortedEvents = [...seasonalDoc.calendar].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const allEventsSorted = [...seasonalDoc.calendar].sort((a, b) => new Date(a.date) - new Date(b.date));
+    // "Active Events Only" hides anything that's already ended by wall-clock time -- computed fresh
+    // on every render (not cached), so an event silently drops out of this view the moment it ends
+    // without needing any admin action.
+    const sortedEvents = filterMode === 'active'
+        ? allEventsSorted.filter(event => !isEventEnded(event, seasonalDoc, Date.now()))
+        : allEventsSorted;
 
     const totalChunks = Math.max(1, Math.ceil(sortedEvents.length / CHUNK_SIZE));
     const safeSubPage = Math.min(Math.max(0, subPage), totalChunks - 1);
@@ -48,7 +65,10 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
     ];
 
     if (sortedEvents.length === 0) {
-        calendarComponents.push({ type: 10, content: `*There are currently no events scheduled for this season.*` });
+        const emptyText = filterMode === 'active' && allEventsSorted.length > 0
+            ? `*No active or upcoming events right now — every event this season has already ended. Switch to "Show All Events" to see them.*`
+            : `*There are currently no events scheduled for this season.*`;
+        calendarComponents.push({ type: 10, content: emptyText });
     } else {
         // Redesigned per calendar_update_ui.json: bold title line + a subtext date-range line below
         // it (was a single combined line), using the new static "b1" bullet emoji and `D` (Long
@@ -85,7 +105,28 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
         nextCustomId: `calsubpage_${safeSubPage + 1}`,
         indicatorCustomId: 'calsubpage_indicator'
     });
-    if (paginationRow) {
+    // VIEW TOGGLE: switches between "Show Active Events Only" and "Show All Events". Only shown
+    // when there's actually at least one ENDED event to hide -- if every event this season ends in
+    // the future, "Active Only" and "All" render identically, and a toggle that visibly does
+    // nothing just reads as broken (this confused Harkirat during testing before this check
+    // existed). Persisted directly via prefs.calendarEventFilter (see UserPreference schema)
+    // rather than a /settings toggle -- Harkirat specifically didn't want this cluttering the
+    // settings dashboard, so /calendar reads/writes it itself.
+    const hasEndedEvents = allEventsSorted.some(event => isEventEnded(event, seasonalDoc, Date.now()));
+    if (hasEndedEvents) {
+        // Merged into the same row as pagination (still well under the 5-button cap:
+        // Left/counter/Right/toggle = 4) rather than a second row, matching the pattern
+        // established in utils/loadoutRender.js.
+        const toggleButton = {
+            type: 2, style: 2,
+            label: filterMode === 'active' ? 'Show All Events' : 'Show Active Events Only',
+            custom_id: filterMode === 'active' ? 'calendar_filter_all' : 'calendar_filter_active'
+        };
+        const controlsRow = { type: 1, components: paginationRow ? [...paginationRow.components, toggleButton] : [toggleButton] };
+        calendarComponents.push({ type: 14, spacing: 2, divider: true });
+        calendarComponents.push({ type: 10, content: `-# Use the button below to toggle between every event or only active/upcoming ones — your choice is remembered for next time.` });
+        calendarComponents.push(controlsRow);
+    } else if (paginationRow) {
         calendarComponents.push({ type: 14, spacing: 2, divider: true });
         calendarComponents.push(paginationRow);
     }
@@ -119,7 +160,7 @@ module.exports = {
 
     buildContainer,
 
-    async execute(interaction, subPageOverride = 0) {
+    async execute(interaction, subPageOverride = 0, filterOverride = null) {
         const userId = interaction.user.id;
 
         const prefs = await UserPreference.findOne({ discordId: userId });
@@ -137,8 +178,14 @@ module.exports = {
             return interaction.followUp({ content: '❌ The global seasonal database document has not been initialized yet.' });
         }
 
+        // filterOverride is passed by index.js's toggle-button handler right after it saves the new
+        // choice to prefs.calendarEventFilter; every other entry point (the slash command itself,
+        // pagination clicks) re-reads the persisted value fresh so it always reflects the last choice
+        // regardless of which button got clicked.
+        const filterMode = filterOverride || prefs?.calendarEventFilter || 'all';
+
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-        const components = buildContainer(seasonalDoc, subPageOverride, accentColor, isEphemeral);
+        const components = buildContainer(seasonalDoc, subPageOverride, accentColor, isEphemeral, filterMode);
 
         return await interaction.client.rest.patch(
             Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),

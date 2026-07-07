@@ -77,6 +77,23 @@ function buildSyntheticInteraction(interaction, overrides = {}) {
 // Instantiate internal client data models
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+// CRASH FIX (found live on Railway, 2026-07-07): discord.js's BaseClient constructs itself with
+// `super({ captureRejections: true })` (node_modules/discord.js/src/client/BaseClient.js) -- this
+// is a Node EventEmitter option that reroutes a rejected promise from an async event listener
+// (e.g. our `client.on('interactionCreate', async interaction => {...})` below) into an `error`
+// event emitted ON THE CLIENT ITSELF, instead of surfacing through Node's normal global
+// `process.on('unhandledRejection')` mechanism. Since nothing was listening for a plain `error`
+// event on the client, and EventEmitter's default behavior for an unhandled `error` event is to
+// throw synchronously, ANY interaction handler code that ever let a rejection escape (even
+// somewhere our top-level try/catch below doesn't cover, or in a future edit that misses it) would
+// crash the whole process — completely bypassing the `process.on('unhandledRejection')` net
+// further down, since captureRejections intercepts it before it ever becomes a "global" unhandled
+// rejection. This IS the standard discord.js gotcha their own guide warns about; the fix is simply
+// to always have a listener here so EventEmitter's default "throw when no listener" never triggers.
+client.on('error', (error) => {
+    console.error('Discord client error (bot stays alive):', error);
+});
+
 // Initialize command collections and staging cache array
 client.commands = new Collection();
 const commands = [];
@@ -91,6 +108,8 @@ commands.push(
         .setName('all')
         .setDescription('Search through all available gunsmiths')
         .addStringOption(opt => opt.setName('weapon').setDescription('Type weapon name').setAutocomplete(true).setRequired(true))
+        .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
+        .addBooleanOption(opt => opt.setName('private').setDescription('Hide this response so only you can see it'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
 );
 
@@ -132,6 +151,8 @@ async function handleBotReady() {
                 .setName(cmdName)
                 .setDescription(`Search through ${cat} gunsmiths only`)
                 .addStringOption(opt => opt.setName('weapon').setDescription(`Select a ${cat}`).setAutocomplete(true).setRequired(true))
+                .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
+                .addBooleanOption(opt => opt.setName('private').setDescription('Hide this response so only you can see it'))
                 .setIntegrationTypes([1]).setContexts([0, 1, 2])
         );
     });
@@ -302,9 +323,13 @@ client.on('interactionCreate', async interaction => {
         const { buildLoadoutCard } = require('./utils/loadoutRender');
 
         // Same "Weapon Builds" toggle /dmz reads — one shared preference across every loadout
-        // lookup command (Option A pattern, matches `seasonalVisibility`).
+        // lookup command (Option A pattern, matches `seasonalVisibility`). `private` option
+        // overrides it explicitly, same explicit-option > saved-preference > default priority
+        // every other command uses — lets a user land already-public in one shot instead of
+        // relying on "Share Publicly" to flip it after the fact.
         const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
-        const isEphemeral = prefs ? prefs.loadoutVisibility === 'ephemeral' : false;
+        const argPrivate = interaction.options.getBoolean('private');
+        const isEphemeral = argPrivate !== null ? argPrivate : (prefs ? prefs.loadoutVisibility === 'ephemeral' : false);
         await interaction.deferReply({ ephemeral: isEphemeral });
 
         const weaponKey = interaction.options.getString('weapon');
@@ -314,10 +339,16 @@ client.on('interactionCreate', async interaction => {
             return interaction.followUp({ content: '❌ No MP builds were found for that weapon.' });
         }
 
+        // `build` lets a user jump straight to a specific build number (1-based, matching the
+        // "Build N of M" footer text) instead of always landing on the first. Clamped into range
+        // rather than rejected outright if it's out of bounds.
+        const requestedBuild = interaction.options.getInteger('build');
+        const buildIndex = requestedBuild ? Math.min(Math.max(requestedBuild - 1, 0), mpBuilds.length - 1) : 0;
+
         // LIBRARY SERIALIZATION BYPASS: raw rest.patch instead of interaction.followUp(), same
         // reasoning as every other Components V2 command — discord.js's high-level methods don't
         // reliably handle raw V2 JSON (no builder class exists for Container/type 17).
-        const cardPayload = buildLoadoutCard(mpBuilds, 0, { color: 2829617, idPrefix: 'mp', isEphemeral }); // #2b2d31
+        const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: 2829617, idPrefix: 'mp', isEphemeral }); // #2b2d31
         return interaction.client.rest.patch(
             Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
             { body: { content: '', components: cardPayload.components, flags: cardPayload.flags } }
@@ -423,12 +454,24 @@ client.on('interactionCreate', async interaction => {
         // utils/shareButton.js). Doesn't touch the original ephemeral message at all — Discord
         // hands us the FULL original message (content/embeds/components) directly in this click's
         // own interaction payload, ephemeral or not, so there's nothing to look up or reconstruct.
-        // We just strip the ephemeral flag and the share button itself, then post a real message.
+        // We just strip the ephemeral flag and the share button itself, then respond to THIS
+        // button click with that same content as a public message.
+        //
+        // NOTE (fixed during review): this used to defer ephemeral, then try to POST a brand new
+        // message directly to the channel via `rest.post(Routes.channelMessages(...))` using the
+        // bot's own token. That requires the bot to actually hold View Channel/Send Messages
+        // permission in that channel -- but this bot is USER-INSTALLED ONLY, never added to any
+        // guild as a member with roles/permissions, so that raw channel POST always fails with
+        // DiscordAPIError[50001] "Missing Access" in a real server channel (confirmed live). The
+        // fix: don't touch the channel directly at all -- just answer the button-click interaction
+        // itself with a NON-ephemeral deferReply + rest.patch('@original'), the exact same
+        // interaction-response webhook mechanism every other command in this bot already uses
+        // successfully in guilds it was never added to. Interaction responses don't need any
+        // standing channel permissions, which is the whole reason a user-installed bot can answer
+        // slash commands in a server at all -- so routing "Share Publicly" through that same
+        // mechanism (instead of a raw bot-token channel message) makes it work everywhere the bot
+        // can already respond, no permissions to check or configure.
         if (interaction.customId === 'share_public') {
-            // PRO FIX: defer first, same reasoning as the tsmenu handler — the channel-message POST
-            // below is normally fast but there's no reason to risk the 3-second ack window on it.
-            await interaction.deferReply({ ephemeral: true });
-
             const { SHARE_BUTTON_CUSTOM_ID } = require('./utils/shareButton');
             const msg = interaction.message;
 
@@ -443,16 +486,15 @@ client.on('interactionCreate', async interaction => {
                 return !(entry.components || []).some(c => c.custom_id === SHARE_BUTTON_CUSTOM_ID);
             });
 
-            // Preserve the Components V2 flag (32768) if present, but strip EPHEMERAL (64) — that
-            // flag only means anything on an interaction response, not a normal channel message,
-            // and would otherwise carry over from the original ephemeral message's flags.
+            // Preserve the Components V2 flag (32768) if present, but strip EPHEMERAL (64) — this
+            // response IS the public copy now, not a private confirmation about one.
             const flags = (msg.flags?.bitfield || 0) & ~64;
 
-            await interaction.client.rest.post(Routes.channelMessages(interaction.channelId), {
-                body: { content: msg.content || '', embeds, components, flags }
-            });
-
-            return interaction.followUp({ content: '✅ Shared publicly below!', ephemeral: true });
+            await interaction.deferReply(); // public — no ephemeral flag
+            return interaction.client.rest.patch(
+                Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
+                { body: { content: msg.content || '', embeds, components, flags } }
+            );
         }
 
         // A. SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
@@ -523,6 +565,26 @@ client.on('interactionCreate', async interaction => {
 
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             return await calendarCommand.execute(syntheticInteraction, targetSubPage);
+        }
+
+        // B.4 CALENDAR EVENT-FILTER TOGGLE ("Show All Events" <-> "Show Active Events Only")
+        // Persisted straight to UserPreference.calendarEventFilter -- deliberately NOT a /settings
+        // toggle (Harkirat's request), so this is the only place that field ever gets written.
+        // Resets to sub-page 0 on every toggle since the filtered event count (and therefore chunk
+        // layout) changes along with the filter.
+        if (interaction.customId === 'calendar_filter_all' || interaction.customId === 'calendar_filter_active') {
+            await interaction.deferUpdate();
+            const targetFilter = interaction.customId === 'calendar_filter_all' ? 'all' : 'active';
+
+            const UserPreference = require('./models/UserPreference');
+            let prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            if (!prefs) prefs = new UserPreference({ discordId: interaction.user.id });
+            prefs.calendarEventFilter = targetFilter;
+            await prefs.save();
+
+            const calendarCommand = client.commands.get('calendar');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await calendarCommand.execute(syntheticInteraction, 0, targetFilter);
         }
 
         // C. GLOBAL UI NAVIGATION BAR
@@ -653,25 +715,27 @@ client.on('interactionCreate', async interaction => {
             return interaction.followUp({ content: `✅ **Success:** Purged old data and initialized **${seasonalDoc.currentSeasonTitle}**!` });
         }
 
-        // --- ADMIN ROUTE B: BULK IMPORT DRAWS (WITH AUTO-SORT) ---
-        if (customId === 'modal_draws_bulk') {
+        // --- ADMIN ROUTE B: BULK IMPORT DRAWS (WITH AUTO-SORT, New/Returning split) ---
+        // NOTE (split during review): each modal now only replaces ITS OWN array -- re-running the
+        // New Draws import to fix a typo no longer touches seasonalDoc.returningDraws at all (used
+        // to overwrite both together). See utils/adminParser.js's parseBulkDrawList and
+        // commands/update.js's Route B for the rest of this change.
+        if (customId === 'modal_draws_bulk_new' || customId === 'modal_draws_bulk_returning') {
             await interaction.deferReply({ ephemeral: true });
+            const isNew = customId === 'modal_draws_bulk_new';
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
-            const { parseBulkDraws } = require('./utils/adminParser');
-            const { newDraws, returningDraws } = parseBulkDraws(bulkText);
+            const { parseBulkDrawList } = require('./utils/adminParser');
+            const parsedDraws = parseBulkDrawList(bulkText);
 
-            // OVERRIDE, not append: each bulk paste is the full current draw list, not an addition
-            // to whatever was already there — re-running the import (e.g. to fix a typo) should
-            // replace the old entries, not pile duplicates on top of them.
-            seasonalDoc.newDraws = newDraws;
-            seasonalDoc.returningDraws = returningDraws;
-
-            // AUTO-SORT: Chronological sorting by release date so your UI is always perfectly ordered
-            seasonalDoc.newDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
-            seasonalDoc.returningDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
+            // OVERRIDE, not append: each bulk paste is the full current list for this category, not
+            // an addition to whatever was already there — re-running the import (e.g. to fix a typo)
+            // should replace the old entries, not pile duplicates on top of them.
+            parsedDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (isNew) seasonalDoc.newDraws = parsedDraws;
+            else seasonalDoc.returningDraws = parsedDraws;
 
             await seasonalDoc.save();
-            return interaction.followUp({ content: `✅ **Bulk Import Complete!**\nReplaced the draw list with **${newDraws.length}** New Draws and **${returningDraws.length}** Returning Draws. Sorted chronologically.` });
+            return interaction.followUp({ content: `✅ **Bulk Import Complete!**\nReplaced the ${isNew ? 'New' : 'Returning'} Draws list with **${parsedDraws.length}** entries. Sorted chronologically.` });
         }
 
         // --- ADMIN ROUTE C: BULK IMPORT CALENDAR EVENTS ---

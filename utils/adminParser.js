@@ -1,8 +1,31 @@
 // utils/adminParser.js
 const chrono = require('chrono-node');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+dayjs.extend(utc);
+
+// NOTE (fixed during review): the old implementation did `str.toLowerCase()` on the WHOLE string
+// first, then re-capitalized only the character immediately following whitespace. Real bugs fell
+// out of that: (1) an already-uppercase acronym like "FSS Hurricane" got globally lowercased first
+// and only its "F"/"H" recapitalized, producing "Fss Hurricane"; (2) a parenthesized word like
+// "(Operator)" has "(" — not a letter — as the character right after the space, so nothing got
+// recapitalized and "operator" stayed lowercase inside the parens; (3) a HYPHENATED word like
+// "Blood-Red" was treated as ONE whitespace-delimited token, so only its very first letter ("B")
+// got capitalized and everything else — including the "R" in "Red" — got lowercased into
+// "Blood-red". Fixed by additionally splitting each whitespace-delimited word on its own hyphens
+// and running the same acronym-preserve-or-capitalize logic on each hyphen segment independently,
+// so "Blood-Red" capitalizes both "Blood" AND "Red" instead of just the first.
+function capitalizeSegment(segment) {
+    const letters = segment.replace(/[^A-Za-z]/g, '');
+    if (letters.length > 1 && letters === letters.toUpperCase()) return segment; // acronym, e.g. "FSS"
+    return segment.replace(/^(\P{L}*)(\p{L})(.*)$/u, (_, lead, first, rest) => lead + first.toUpperCase() + rest.toLowerCase());
+}
 
 function toTitleCase(str) {
-    return str.toLowerCase().replace(/(?:^|\s)\S/g, (a) => a.toUpperCase());
+    return str.split(/(\s+)/).map(word => {
+        if (/^\s*$/.test(word)) return word; // preserve whitespace runs as-is
+        return word.split(/(-)/).map(part => part === '-' ? part : capitalizeSegment(part)).join('');
+    }).join('');
 }
 
 function resolveTier(shorthand) {
@@ -33,24 +56,28 @@ function parseAdminDate(dateStr) {
 }
 
 /**
- * Parses bulk comma-separated strings into Draw objects
- * Format: [n/r] Title, [tier] Item 1, [tier] Item 2, Date, URL
+ * Parses a bulk comma-separated string into Draw objects for ONE category (New or Returning).
+ * Format: Title, [tier] Item 1, [tier] Item 2, Date, URL
+ *
+ * NOTE (redesigned during review): this used to parse both categories out of one combined modal,
+ * distinguishing them via a leading "n "/"r " prefix on each line (and replacing BOTH
+ * seasonalDoc.newDraws and seasonalDoc.returningDraws together on every submit). Split into two
+ * separate admin flows (/update > "Bulk Add New Draws" / "Bulk Add Returning Draws") so each one
+ * only ever touches its own array -- re-running the New Draws import to fix a typo no longer risks
+ * silently overwriting/reordering a Returning Draws list you weren't even touching. The per-line
+ * format is otherwise unchanged, just without the type-prefix token.
  */
-function parseBulkDraws(bulkText) {
+function parseBulkDrawList(bulkText) {
     const lines = bulkText.split('\n').filter(line => line.trim().length > 0);
-    const parsedDraws = { newDraws: [], returningDraws: [] };
+    const parsedDraws = [];
 
     for (const line of lines) {
         const parts = line.split(',').map(p => p.trim());
         if (parts.length < 4) continue; // Skip malformed lines
 
-        // 1. Extract Type and Title (First part)
-        const firstPart = parts[0];
-        const typeMatch = firstPart.match(/^(n|r|new|returning)\s+(.+)$/i);
-        const isNew = typeMatch ? typeMatch[1].toLowerCase().startsWith('n') : true;
-        const title = toTitleCase(typeMatch ? typeMatch[2] : firstPart);
+        const title = toTitleCase(parts[0]);
 
-        // 2. Extract URL and Date (Last two parts)
+        // Extract URL and Date (Last two parts)
         const url = parts.pop();
         let dateStr = parts.pop();
         // Bulk entries are comma-delimited overall, so a date written as "July 16, 2026" itself
@@ -64,7 +91,7 @@ function parseBulkDraws(bulkText) {
         }
         const parsedDate = parseAdminDate(dateStr);
 
-        // 3. Extract Items (Everything left in the middle)
+        // Extract Items (everything left in the middle)
         const items = parts.slice(1).map(itemStr => {
             // Match the first word as the tier shorthand, the rest as the name
             const match = itemStr.match(/^(\S+)\s+(.+)$/);
@@ -74,15 +101,12 @@ function parseBulkDraws(bulkText) {
             return { tier: 'epic', name: toTitleCase(itemStr) }; // Fallback
         });
 
-        const drawObj = {
+        parsedDraws.push({
             title: title,
             date: parsedDate,
             thumbnailUrl: url.startsWith('http') ? url : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${url}`,
             items: items
-        };
-
-        if (isNew) parsedDraws.newDraws.push(drawObj);
-        else parsedDraws.returningDraws.push(drawObj);
+        });
     }
     return parsedDraws;
 }
@@ -125,4 +149,24 @@ function parseBulkEvents(bulkText) {
     return parsedEvents;
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseBulkDraws, parseBulkEvents };
+// Reverse of resolveTier's shorthand->full-word mapping, used to reconstruct the compact bulk-add
+// tier token ("m"/"l"/"ll"/"e") from what's actually stored in the DB ("mythic"/"legendary"/
+// "legacy"/"epic"). Falls back to the stored value itself for anything unrecognized (shouldn't
+// happen from data that went through resolveTier, but keeps this from ever throwing).
+const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'll', epic: 'e' };
+
+/**
+ * Reconstructs the bulk-add text format (see parseBulkDrawList) from Draw documents already in
+ * the database -- lets Harkirat re-export the current New/Returning Draws list as re-importable
+ * text (e.g. after losing his original notes-app source file), fix a typo in the resulting text,
+ * and paste it right back into the matching Bulk Add modal.
+ */
+function formatDrawsAsBulkText(draws) {
+    return draws.map(draw => {
+        const itemsStr = draw.items.map(item => `${TIER_SHORTHAND[item.tier] || item.tier} ${item.name}`).join(', ');
+        const dateStr = dayjs.utc(draw.date).format('MMMM D, YYYY');
+        return `${draw.title}, ${itemsStr}, ${dateStr}, ${draw.thumbnailUrl}`;
+    }).join('\n');
+}
+
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText };

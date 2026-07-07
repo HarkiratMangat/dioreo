@@ -20,6 +20,11 @@ const UserPreferenceSchema = new mongoose.Schema({
     timestampVisibility: { type: String, default: 'public' },
     settingsVisibility: { type: String, default: 'public' },
     defaultRegion: { type: String, default: 'region_10' },
+    // /calendar's "Show Active Events Only" vs "Show All Events" toggle. Deliberately NOT exposed
+    // in /settings (Harkirat's request) -- /calendar's own toggle button reads/writes this directly
+    // instead of routing through the settings dashboard, unlike every other visibility preference.
+    // Defaults to 'all' until the user has explicitly toggled it at least once.
+    calendarEventFilter: { type: String, default: 'all' },
 
     // ACCENT COLOR SYSTEM (utils/accentColor.js): 'avatar' is the default (avatar-matching is meant
     // to be what a brand-new user sees everywhere, per Harkirat's request) -- 'preset' keeps each

@@ -5,6 +5,8 @@
 // Generates custom contextual overlay modals based on the dropdown category selected.
 
 const { SlashCommandBuilder } = require('discord.js');
+const SeasonalData = require('../models/SeasonalData');
+const { formatDrawsAsBulkText } = require('../utils/adminParser');
 
 // SECURITY GATEWAY: Administrative override locks
 const ALLOWED_ADMIN_ID = '1139845545754632283';
@@ -21,7 +23,9 @@ module.exports = {
                 .setRequired(true)
                 .addChoices(
                     { name: '🛑 START NEW SEASON (Wipes Old Data)', value: 'wipe_season' },
-                    { name: '🎉 Bulk Add Draws', value: 'draws_bulk' },
+                    { name: '🎉 Bulk Add New Draws', value: 'draws_bulk_new' },
+                    { name: '🔁 Bulk Add Returning Draws', value: 'draws_bulk_returning' },
+                    { name: '📤 Export Draws (Bulk Text)', value: 'draws_export' },
                     { name: '📅 Bulk Import Calendar Events', value: 'add_calendar' },
                     { name: '📝 Add Patch Notes', value: 'add_patchnotes' },
                     { name: '⏳ Edit Season Deadlines', value: 'edit_deadlines' }
@@ -49,20 +53,53 @@ module.exports = {
             return await interaction.showModal(payload);
         }
 
-        // --- ROUTE B: BULK DRAWS IMPORT ---
-        if (category === 'draws_bulk') {
+        // --- ROUTE B: BULK DRAWS IMPORT (New / Returning, separately) ---
+        // NOTE (split during review): this used to be ONE modal covering both categories at once,
+        // distinguished per-line by a leading "n "/"r " prefix, and a single submit replaced BOTH
+        // seasonalDoc.newDraws and seasonalDoc.returningDraws together. Split into two independent
+        // modals/custom_ids so re-running one category (e.g. to fix a typo in New Draws) can never
+        // touch the other category's list. See utils/adminParser.js's parseBulkDrawList.
+        if (category === 'draws_bulk_new' || category === 'draws_bulk_returning') {
+            const isNew = category === 'draws_bulk_new';
             const payload = {
-                title: "Bulk Import Lucky Draws", custom_id: "modal_draws_bulk",
+                title: isNew ? "Bulk Import New Draws" : "Bulk Import Returning Draws",
+                custom_id: isNew ? "modal_draws_bulk_new" : "modal_draws_bulk_returning",
                 components: [{
                     type: 1, components: [{
                         type: 4, custom_id: "bulk_text", style: 2,
                         label: "Comma-Separated Data",
-                        placeholder: "n Title, m Item 1, e Item 2, july 10, url.jpg\nr Title 2, l Item, aug 5, url.jpg",
+                        placeholder: "Title, m Item 1, e Item 2, july 10, url.jpg\nTitle 2, l Item, aug 5, url.jpg",
                         required: true
                     }]
                 }]
             };
             return await interaction.showModal(payload);
+        }
+
+        // --- ROUTE B.5: EXPORT DRAWS AS RE-IMPORTABLE BULK TEXT ---
+        // No modal needed -- this just reads what's already saved and hands it back in the exact
+        // format Route B's modals expect, so a lost/misplaced original notes-app source file isn't
+        // a dead end: re-export, edit the .txt, paste it back into the matching Bulk Add modal.
+        // Sent as file attachments rather than inline message content since the combined New +
+        // Returning text can easily exceed Discord's 2000-character message cap once there are more
+        // than a handful of draws.
+        if (category === 'draws_export') {
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            if (!seasonalDoc) {
+                return interaction.reply({ content: '❌ The global seasonal database document has not been initialized yet.', ephemeral: true });
+            }
+
+            const newText = formatDrawsAsBulkText(seasonalDoc.newDraws) || '(no New Draws currently saved)';
+            const returningText = formatDrawsAsBulkText(seasonalDoc.returningDraws) || '(no Returning Draws currently saved)';
+
+            return interaction.reply({
+                content: '📤 **Exported the current draw lists in Bulk Add format.** Edit either file as needed, then paste its contents back into the matching modal (New Draws / Returning Draws).',
+                files: [
+                    { attachment: Buffer.from(newText, 'utf-8'), name: 'new_draws_bulk.txt' },
+                    { attachment: Buffer.from(returningText, 'utf-8'), name: 'returning_draws_bulk.txt' }
+                ],
+                ephemeral: true
+            });
         }
 
         // --- ROUTE C: BULK CALENDAR EVENTS ---

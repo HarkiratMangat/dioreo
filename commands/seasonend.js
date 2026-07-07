@@ -62,23 +62,33 @@ module.exports = {
         // are now parsed the same UTC-anchored way regardless of the bot's local system settings.
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
 
-        // NOTE (fixed during review): headers were H2 (##) with emoji + season title + " ends..." —
-        // on narrow (mobile) widths that combined string routinely wrapped onto a second line, which
-        // looked broken given the whole point of a countdown header is to read at a glance. Dropped
-        // to H3 (###) rather than removing "ends..." entirely — keeps the wording (removing it would
-        // make "Battle Pass" alone read ambiguously, not obviously a countdown) while buying back
-        // enough width that it fits on one line for the season titles Harkirat actually uses.
+        // NOTE (redesigned during review): headers used to be H2 (##) with emoji + season title +
+        // " ends..." all on one line — on narrow (mobile) widths that combined string routinely
+        // wrapped onto a second line, which looked broken given the whole point of a countdown
+        // header is to read at a glance. Previously fixed by dropping to H3 (###), but that made the
+        // titles feel smaller than the rest of the bot's uniform heading sizes. Real fix: move
+        // "ends..."/"that's..." OFF the heading line entirely and onto the timestamp lines below it
+        // ("✦ **Ends...** <timestamp>" / "✦ **That's...** <relative>") — the heading is now just
+        // "{emoji} **{title}**", short enough to stay on one line even on mobile, which means it's
+        // safe to go back to the bigger H2 (##) size.
+        const buildEndBlock = (emoji, title, unix) => {
+            const body = unix
+                ? `✦ **Ends...** <t:${unix}:F>\n✦ **That's...** <t:${unix}:R>`
+                : '*Date has not been set yet.*';
+            return { type: 10, content: `## ${emoji} **${title}**\n${body}` };
+        };
+
         const containerPayload = {
             type: 17,
             accent_color: accentColor,
             components: [
-                { type: 10, content: `### <:BP_CODM1:1523190109065707560> **${seasonalDoc?.bpTitle || 'Battle Pass'} ends...**\n${bpUnix ? `✦ <t:${bpUnix}:F>\n✦ <t:${bpUnix}:R>` : '*Date has not been set yet.*'}` },
+                buildEndBlock('<:BP_CODM1:1523190109065707560>', seasonalDoc?.bpTitle || 'Battle Pass', bpUnix),
                 { type: 14, spacing: 2, divider: true }, // Structural Separator
 
-                { type: 10, content: `### ${emojis.rank || '🏆'} **${seasonalDoc?.rankTitle || 'Ranked Series'} ends...**\n${rankUnix ? `✦ <t:${rankUnix}:F>\n✦ <t:${rankUnix}:R>` : '*Date has not been set yet.*'}` },
+                buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix),
                 { type: 14, spacing: 2, divider: true },
 
-                { type: 10, content: `### ${emojis.dmz || '💀'} **${seasonalDoc?.dmzTitle || 'DMZ Season'} ends...**\n${dmzUnix ? `✦ <t:${dmzUnix}:F>\n✦ <t:${dmzUnix}:R>` : '*Date has not been set yet.*'}` }
+                buildEndBlock(emojis.dmz || '💀', seasonalDoc?.dmzTitle || 'DMZ Season', dmzUnix)
             ]
         };
 

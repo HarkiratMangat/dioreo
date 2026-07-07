@@ -109,7 +109,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                         type: 3, custom_id: "select_price_region", placeholder: "Select CP Region Base...",
                         options: [
                             { label: "10 CP Region", value: "region_10", default: regionKey === 'region_10' },
-                            { label: "30 CP Region (Global)", value: "region_30", default: regionKey === 'region_30' }
+                            { label: "30 CP Region", value: "region_30", default: regionKey === 'region_30' }
                         ]
                     }
                 ]
