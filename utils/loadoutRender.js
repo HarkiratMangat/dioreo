@@ -2,6 +2,34 @@
 const { withShareButton } = require('./shareButton');
 const { buildPaginationRow } = require('./paginationRow');
 
+// MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated
+// mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the
+// exact uppercase string stored in `Loadout.category` (AR/LMG/MARKSMAN/SHOTGUN/SMG/SNIPER, plus
+// SECONDARIES which has no loadouts yet — see index.js's category-registration merge for why the
+// /secondaries command still exists ahead of any data). `/all` looks a weapon's OWN category up in
+// here at render time (it isn't locked to one category the way /ar or /smg are), so its accent
+// color changes per weapon instead of using one fixed color. `/<category>` commands hit the exact
+// same lookup — they just always resolve to the same entry since every result they query shares
+// one category.
+const MP_CATEGORY_ACCENT = {
+    AR: 16726876,          // FF3B5C — Crimson Pop
+    SMG: 16765503,         // FFD23F — Electric Gold
+    LMG: 8675010,          // 845EC2 — Grape Purple
+    MARKSMAN: 4054167,     // 3DDC97 — Tactical Green
+    SNIPER: 4415982,       // 4361EE — Electric Blue
+    SHOTGUN: 16165179,     // F6A93B — Amber Alert
+    SECONDARIES: 143431    // 023047 — Deep Ice
+};
+const DEFAULT_MP_ACCENT = 2829617; // #2b2d31 — fallback for a category not in the map above
+
+// Looks up the accent color for a given `Loadout.category` value, case-insensitively (stored
+// values are already uppercase, but this doesn't assume that stays true forever). Falls back to
+// the neutral default rather than throwing if the category is ever missing/unrecognized.
+function getMpCategoryAccent(category) {
+    if (!category) return DEFAULT_MP_ACCENT;
+    return MP_CATEGORY_ACCENT[category.toUpperCase()] ?? DEFAULT_MP_ACCENT;
+}
+
 // `Loadout.imageKey` supports EITHER a bare Cloudinary key (prefixed with the Cloudinary base URL
 // below, the original design used by admin-added loadouts) OR a full external URL -- needed
 // because builds.xlsx's images are hosted on imgur, not Cloudinary, and that data now lives in
@@ -82,4 +110,4 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
     return { components, flags: 32768 };
 }
 
-module.exports = { buildImageUrl, buildLoadoutCard };
+module.exports = { buildImageUrl, buildLoadoutCard, getMpCategoryAccent };

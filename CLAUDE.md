@@ -389,6 +389,33 @@ boolean (same explicit-option > saved-`loadoutVisibility`-preference > default p
 command already uses) to land already-public/ephemeral in one shot. Added specifically so a user
 doesn't have to rely on "Share Publicly" after the fact just to get the same result up front.
 
+## MP loadout accent colors are per-weapon-category, not one fixed color
+`utils/loadoutRender.js`'s `MP_CATEGORY_ACCENT` maps each `Loadout.category` value
+(`AR`/`SMG`/`LMG`/`MARKSMAN`/`SNIPER`/`SHOTGUN`/`SECONDARIES`) to a color from the "Custom Class"
+palette — a curated mix Harkirat picked across several palette proposals (see the palette spec
+sheet artifact from that session; not a file in this repo). `getMpCategoryAccent(category)` looks
+it up (case-insensitive, falls back to a neutral default `#2b2d31` if a category is ever
+unrecognized). This is what makes `/all`'s accent color change depending on which weapon was
+searched (e.g. a CX-9 result renders in SMG's color, an LK24 result in AR's) — `/all` isn't locked
+to one category the way `/ar`/`/smg`/etc. are, so it resolves the color from the query result
+itself (`mpBuilds[0].category`) rather than a fixed value. `/<category>` commands hit the exact
+same lookup in the exact same shared handler (they're the same dynamically-generated fallback
+route in index.js) — they just always land on the same entry since every result they can ever
+return already shares one category. Applied at BOTH render sites: the initial slash-command
+response AND the Prev/Next pagination re-render (`index.js`'s `dmz`/`mp`-prefixed button handler) —
+missing the second one would have made paging between builds silently revert to the old flat
+color. `/dmz` keeps its own separate fixed identity color (`#1c1c1c`), intentionally NOT part of
+this MP-specific category mapping.
+
+**`SECONDARIES` has no loadouts saved yet, but `/secondaries` is already registered as a command.**
+`handleBotReady()`'s category-registration loop used to derive its command list purely from
+`Loadout.distinct('category', {mode:'MP'})` — a category with zero entries would just never get a
+command. Since Harkirat wants `/secondaries` ready to go the moment he starts adding those
+loadouts (rather than it silently appearing only after the first one is saved), that distinct-query
+result is now merged with a hardcoded `'SECONDARIES'` before the registration loop runs. If you add
+another category ahead of its data existing, extend that same merge rather than waiting on real
+loadouts to exist first.
+
 ## MP loadout system (`utils/loadoutRender.js`, `scripts/migrateBuildsToMongo.js`)
 `builds.xlsx` used to be the sole source of truth for MP loadouts: a `loadBuildsFromExcel()` in
 `index.js` parsed it into an in-memory object at boot, and `/all` + auto-generated `/<category>`

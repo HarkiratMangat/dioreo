@@ -143,7 +143,12 @@ async function handleBotReady() {
     console.log(`✅ Dior's Builds instance fully authenticated!`);
 
     const Loadout = require('./models/Loadout');
-    const mpCategories = await Loadout.distinct('category', { mode: 'MP' });
+    const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
+    // Secondaries has no loadouts saved yet -- Harkirat wants the command ready to go the moment
+    // he starts adding them, rather than it silently appearing only after the first /manage entry.
+    // Merged in (not just appended) so re-running this after real Secondaries data exists doesn't
+    // register it twice.
+    const mpCategories = Array.from(new Set([...dbCategories, 'SECONDARIES']));
     mpCategories.forEach(cat => {
         const cmdName = cat.toLowerCase().replace(/\s+/g, '');
         commands.push(
@@ -320,7 +325,7 @@ client.on('interactionCreate', async interaction => {
         // mirroring /dmz's pattern — see utils/loadoutRender.js for the shared card builder.
         const Loadout = require('./models/Loadout');
         const UserPreference = require('./models/UserPreference');
-        const { buildLoadoutCard } = require('./utils/loadoutRender');
+        const { buildLoadoutCard, getMpCategoryAccent } = require('./utils/loadoutRender');
 
         // Same "Weapon Builds" toggle /dmz reads — one shared preference across every loadout
         // lookup command (Option A pattern, matches `seasonalVisibility`). `private` option
@@ -345,10 +350,20 @@ client.on('interactionCreate', async interaction => {
         const requestedBuild = interaction.options.getInteger('build');
         const buildIndex = requestedBuild ? Math.min(Math.max(requestedBuild - 1, 0), mpBuilds.length - 1) : 0;
 
+        // NOTE (added during review): color used to be one fixed value (#2b2d31) for every MP
+        // loadout regardless of weapon type. Now resolved per-weapon via the queried build's own
+        // `category` -- every row for a given weaponKey shares the same category, so mpBuilds[0]
+        // is a safe representative. This is what makes /all's accent color change depending on
+        // which weapon was searched (e.g. CX9 -> SMG's color, LK24 -> Marksman's color) while
+        // /<category> commands like /ar or /smg just always resolve to their own one category's
+        // color, since every result they can ever return already shares it. See
+        // utils/loadoutRender.js's MP_CATEGORY_ACCENT for the actual color-per-category mapping.
+        //
         // LIBRARY SERIALIZATION BYPASS: raw rest.patch instead of interaction.followUp(), same
         // reasoning as every other Components V2 command — discord.js's high-level methods don't
         // reliably handle raw V2 JSON (no builder class exists for Container/type 17).
-        const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: 2829617, idPrefix: 'mp', isEphemeral }); // #2b2d31
+        const accentColor = getMpCategoryAccent(mpBuilds[0].category);
+        const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: accentColor, idPrefix: 'mp', isEphemeral });
         return interaction.client.rest.patch(
             Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
             { body: { content: '', components: cardPayload.components, flags: cardPayload.flags } }
@@ -644,7 +659,7 @@ client.on('interactionCreate', async interaction => {
         // is the only real difference in what gets queried.
         if (interaction.customId.startsWith('dmz') || interaction.customId.startsWith('mp')) {
             const Loadout = require('./models/Loadout');
-            const { buildLoadoutCard } = require('./utils/loadoutRender');
+            const { buildLoadoutCard, getMpCategoryAccent } = require('./utils/loadoutRender');
             const isDmz = interaction.customId.startsWith('dmz');
             const mode = isDmz ? 'DMZ' : 'MP';
 
@@ -677,10 +692,14 @@ client.on('interactionCreate', async interaction => {
             // the "Share Publicly" button after paging to a different build.
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
-            // Reassemble the updated visual frame card for the new page
+            // Reassemble the updated visual frame card for the new page. MP's accent color is
+            // resolved per-category (see utils/loadoutRender.js's MP_CATEGORY_ACCENT) same as the
+            // initial /all + /<category> render, so paging Prev/Next doesn't flip the card back to
+            // the old flat color -- DMZ keeps its own separate fixed identity color, unaffected by
+            // this MP-specific category mapping.
             const cardPayload = buildLoadoutCard(matchingBuilds, newIndex, isDmz
                 ? { color: 1842204, idPrefix: 'dmz', isEphemeral } // #1c1c1c
-                : { color: 2829617, idPrefix: 'mp', isEphemeral }); // #2b2d31
+                : { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: 'mp', isEphemeral });
 
             return await interaction.client.rest.patch(
                 Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
