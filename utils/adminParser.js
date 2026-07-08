@@ -171,18 +171,33 @@ function formatDrawsAsBulkText(draws) {
 
 /**
  * Parses the loadout "badges" segment of /manage's "Category | Mode | Badges" modal field into
- * `{ isMeta, categoryRank }` (see models/Loadout.js). Comma-separated, case-insensitive, e.g.
- * "meta, best" or "top3" or "" (no badges). Discord modals cap at 5 fields, and the loadout modal
- * already uses all 5, so this rides along as a 3rd pipe-delimited segment on the existing
- * "Category | Mode" field rather than getting its own input.
+ * `{ isMeta, categoryRank, unrecognized }` (see models/Loadout.js). Comma-separated, case-
+ * insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord modals cap at 5
+ * fields, and the loadout modal already uses all 5, so this rides along as a 3rd pipe-delimited
+ * segment on the existing "Category | Mode" field rather than getting its own input.
+ *
+ * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" --
+ * typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3)
+ * silently matched nothing, with no feedback that it had been ignored. Now accepts any `topN`
+ * (with or without a space before the number), and anything that still doesn't match ends up in
+ * `unrecognized` so the caller (index.js's add/edit-loadout handlers) can tell the admin exactly
+ * which token didn't take instead of the change just silently not applying.
  */
 function parseLoadoutBadges(badgesStr) {
     const tokens = (badgesStr || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
-    const isMeta = tokens.includes('meta');
+    let isMeta = false;
     let categoryRank = null;
-    if (tokens.includes('best')) categoryRank = 'best';
-    else if (tokens.includes('top3') || tokens.includes('top 3')) categoryRank = 'top3';
-    return { isMeta, categoryRank };
+    const unrecognized = [];
+
+    for (const token of tokens) {
+        if (token === 'meta') { isMeta = true; continue; }
+        if (token === 'best') { categoryRank = 'best'; continue; }
+        const topMatch = token.match(/^top\s*(\d+)$/);
+        if (topMatch) { categoryRank = `top${topMatch[1]}`; continue; }
+        unrecognized.push(token);
+    }
+
+    return { isMeta, categoryRank, unrecognized };
 }
 
 module.exports = { toTitleCase, resolveTier, parseAdminDate, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };

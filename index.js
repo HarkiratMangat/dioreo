@@ -197,6 +197,13 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isAutocomplete()) {
         const focusedValue = interaction.options.getFocused().toLowerCase();
         const commandName = interaction.commandName;
+        // NOTE (fixed during review): every autocomplete site below used a plain `.includes()` (or
+        // an equivalent raw Mongo $regex), which requires the query to appear as a literal,
+        // contiguous substring of the stored name -- so typing "dlq" never matched "DL Q33", since
+        // the space between "DL" and "Q33" breaks that literal sequence. fuzzyMatch() strips
+        // spaces/punctuation from both sides first, so this now matches. Applied consistently
+        // across every autocomplete route in the bot, not just one.
+        const { fuzzyMatch } = require('./utils/search');
 
         try {
             // === ROUTE A: ADMIN MANAGEMENT AUTOCOMPLETE ===
@@ -211,7 +218,7 @@ client.on('interactionCreate', async interaction => {
                     // Combine both arrays (New & Returning) and map them for the dropdown
                     const allDraws = [...doc.newDraws, ...doc.returningDraws];
                     const filtered = allDraws
-                        .filter(d => d.title.toLowerCase().includes(focusedValue))
+                        .filter(d => fuzzyMatch(focusedValue, d.title))
                         .slice(0, 25);
 
                     return await interaction.respond(filtered.map(d => ({
@@ -222,13 +229,14 @@ client.on('interactionCreate', async interaction => {
 
                 if (group === 'loadouts') {
                     const Loadout = require('./models/Loadout');
-                    // Find loadouts matching weapon name or build name specifically
-                    const matching = await Loadout.find({
-                        $or: [
-                            { weaponName: { $regex: focusedValue, $options: 'i' } },
-                            { buildName: { $regex: focusedValue, $options: 'i' } }
-                        ]
-                    }).limit(25);
+                    // Fetch everything and filter in JS (same pattern as the weapon dictionary
+                    // block below) rather than a raw Mongo $regex -- fuzzyMatch's punctuation
+                    // stripping can't be expressed as a single regex against the stored field, and
+                    // this collection is small enough that fetching it all is cheap.
+                    const allLoadouts = await Loadout.find({});
+                    const matching = allLoadouts
+                        .filter(l => fuzzyMatch(focusedValue, l.weaponName) || fuzzyMatch(focusedValue, l.buildName))
+                        .slice(0, 25);
 
                     return await interaction.respond(matching.map(l => ({
                         name: `[${l.mode}] ${l.weaponName} - ${l.buildName}`,
@@ -248,7 +256,7 @@ client.on('interactionCreate', async interaction => {
                 // Strip the legacy "Balance Changes for..." prefix here too, same as the main
                 // render + history dropdown, so pre-redesign entries don't look inconsistent here.
                 const filtered = doc.patchNotes
-                    .filter(p => cleanPatchTitle(p.title).toLowerCase().includes(focusedValue))
+                    .filter(p => fuzzyMatch(focusedValue, cleanPatchTitle(p.title)))
                     .slice(0, 25);
 
                 return await interaction.respond(filtered.map(p => ({ name: cleanPatchTitle(p.title), value: p._id.toString() })));
@@ -270,7 +278,7 @@ client.on('interactionCreate', async interaction => {
             const distinctChoices = Array.from(uniqueMap.values());
 
             const filteredChoices = distinctChoices
-                .filter(w => w.weaponName.toLowerCase().includes(focusedValue))
+                .filter(w => fuzzyMatch(focusedValue, w.weaponName))
                 .slice(0, 25); // Hard Discord API limit of 25 choices maximum
 
             return await interaction.respond(filteredChoices.map(w => ({
@@ -864,21 +872,46 @@ client.on('interactionCreate', async interaction => {
             // added alongside Category|Mode rather than as its own field since modals cap at 5.
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-            const { isMeta, categoryRank } = parseLoadoutBadges(metaParts[2]);
+            const { isMeta, categoryRank, unrecognized } = parseLoadoutBadges(metaParts[2]);
+
+            const weaponName = interaction.fields.getTextInputValue('weapon');
+            const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
+            const buildName = interaction.fields.getTextInputValue('build');
+            const mode = metaParts[1]?.toUpperCase() || 'MP';
 
             await Loadout.findByIdAndUpdate(targetId, {
-                weaponName: interaction.fields.getTextInputValue('weapon'),
-                weaponKey: interaction.fields.getTextInputValue('weapon').toLowerCase().replace(/\s+/g, ''),
-                buildName: interaction.fields.getTextInputValue('build'),
+                weaponName,
+                weaponKey,
+                buildName,
                 attachments: attachmentsArray,
                 imageKey: interaction.fields.getTextInputValue('image'),
                 category: metaParts[0]?.toUpperCase() || 'AR',
-                mode: metaParts[1]?.toUpperCase() || 'MP',
+                mode,
                 isMeta,
                 categoryRank
             });
 
-            return interaction.followUp({ content: `✅ **Loadout Updated Successfully!**` });
+            // NOTE (fixed during review): badges describe the WEAPON, not one specific build
+            // variant -- setting "Meta" while editing Build 1 used to leave Build 2/3/etc. of the
+            // same weapon showing no badge at all, which read as broken/inconsistent. Propagate the
+            // same isMeta/categoryRank to every other build sharing this weaponKey+mode. Only done
+            // on edit (not on creating a brand-new build) -- the add-loadout modal has no badges
+            // pre-filled, so propagating from there would silently wipe existing siblings' badges
+            // any time a new build is added without retyping them.
+            const propagateResult = await Loadout.updateMany(
+                { weaponKey, mode, _id: { $ne: targetId } },
+                { isMeta, categoryRank }
+            );
+
+            let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
+            if (propagateResult.modifiedCount > 0) {
+                confirmation += `\n-# Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.`;
+            }
+            if (unrecognized.length > 0) {
+                confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, or \`topN\` (e.g. \`top3\`, \`top5\`).`;
+            }
+
+            return interaction.followUp({ content: confirmation });
         }
 
         // --- ADMIN ROUTE H: SAVE NEW SINGLE DRAW ---
@@ -923,7 +956,12 @@ client.on('interactionCreate', async interaction => {
 
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-            const { isMeta, categoryRank } = parseLoadoutBadges(metaParts[2]);
+            // NOTE: unlike edit_loadout_ above, this does NOT propagate badges to sibling builds of
+            // the same weapon -- this modal has nothing pre-filled, so a blank badges field here
+            // (the common case when just adding another build variant) would silently wipe any
+            // badges already set on the weapon's existing builds. Re-editing an existing build is
+            // the supported way to (re)sync badges across all of a weapon's builds.
+            const { isMeta, categoryRank, unrecognized } = parseLoadoutBadges(metaParts[2]);
 
             const newLoadout = new Loadout({
                 weaponName: interaction.fields.getTextInputValue('weapon'),
@@ -938,7 +976,11 @@ client.on('interactionCreate', async interaction => {
             });
 
             await newLoadout.save();
-            return interaction.followUp({ content: `✅ **Successfully saved Loadout: ${newLoadout.weaponName} (${newLoadout.mode})!**` });
+            let confirmation = `✅ **Successfully saved Loadout: ${newLoadout.weaponName} (${newLoadout.buildName}, ${newLoadout.mode})!**`;
+            if (unrecognized.length > 0) {
+                confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, or \`topN\` (e.g. \`top3\`, \`top5\`).`;
+            }
+            return interaction.followUp({ content: confirmation });
         }
 
         // --- ADMIN ROUTE J: SAVE EDITED SEASON TITLES ---

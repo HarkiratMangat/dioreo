@@ -23,12 +23,17 @@ const LoadoutSchema = new mongoose.Schema({
     description: { type: String, default: '' },
     shareCode: { type: String, default: '' },
     // "Badges" shown under the weapon name in the loadout card (utils/loadoutRender.js) — only
-    // rendered when actually granted, never both `categoryRank` values at once (a build can be
-    // flagged Meta independently, but "Best in category" and "Top 3 in category" are mutually
-    // exclusive tiers of the same ranking, not two separate flags). Parsed from the 3rd
-    // pipe-delimited segment of /manage's "Category | Mode | Badges" modal field.
+    // rendered when actually granted, never both a "best" AND a "topN" tier at once (a build can be
+    // flagged Meta independently, but "Best in category" and "Top N in category" are mutually
+    // exclusive tiers of the same ranking, not two separate flags). `categoryRank` is intentionally
+    // NOT a fixed enum -- not every category tops out at exactly 3, so this stores 'best' or a
+    // free-form 'top{N}' (e.g. 'top3', 'top4', 'top5'), validated by adminParser.js's
+    // parseLoadoutBadges() rather than a rigid Mongoose enum. Parsed from the 3rd pipe-delimited
+    // segment of /manage's "Category | Mode | Badges" modal field, and propagated across every
+    // build sharing the same weaponKey/mode on edit (see index.js's edit_loadout_ handler) since
+    // badges describe the weapon, not one specific build variant.
     isMeta: { type: Boolean, default: false },
-    categoryRank: { type: String, enum: ['best', 'top3', null], default: null },
+    categoryRank: { type: String, default: null },
     lastUpdated: { type: Date, default: Date.now }
 });
 

@@ -39,17 +39,37 @@ function buildImageUrl(imageKey) {
     return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
 }
 
-// "Badges" shown under the weapon name (Meta / Best-in-category / Top-3-in-category) -- only
+// "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category) -- only
 // rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji
-// rather than a visible separator character when both are present. Returns null (render nothing)
-// if the build has no badges at all.
+// rather than a visible separator character when both are present. `categoryRank` is free-form
+// ('best' or 'top{N}', not a fixed "top3" enum) since not every category tops out at exactly 3 --
+// see adminParser.js's parseLoadoutBadges(). Returns null (render nothing) if the build has no
+// badges at all.
 function buildBadgesLine(build) {
     const badges = [];
     if (build.isMeta) badges.push(`${emojis.meta} Meta`);
-    if (build.categoryRank === 'best') badges.push(`${emojis.best} Best ${build.category}`);
-    else if (build.categoryRank === 'top3') badges.push(`${emojis.best} Top 3 ${build.category}`);
+    if (build.categoryRank === 'best') {
+        badges.push(`${emojis.best} Best ${build.category}`);
+    } else if (build.categoryRank) {
+        const topMatch = build.categoryRank.match(/^top(\d+)$/);
+        if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${build.category}`);
+    }
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
+}
+
+// Capitalizes just the first letter (sentence case), leaving everything else untouched -- unlike
+// toTitleCase (adminParser.js), which capitalizes every word. Descriptions come from freeform admin
+// text (originally builds.xlsx's flavor-text column) that isn't always typed starting with a
+// capital, so this is applied at render time rather than trusting the stored casing.
+function toSentenceCase(str) {
+    return str.replace(/^(\s*)([a-z])/, (_, lead, first) => lead + first.toUpperCase());
+}
+
+// Discord blockquote syntax ("> " per line) -- handles a multi-line description, not just a single
+// line, even though every description seen so far has been one line.
+function toBlockquote(str) {
+    return str.split('\n').map(line => `> ${line}`).join('\n');
 }
 
 // Shared Components V2 card builder for /dmz and the MP category commands (/all, /<category>) --
@@ -77,13 +97,17 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
         { type: 10, content: titleContent }
     ];
 
+    containerComponents.push({ type: 14, spacing: 1, divider: true });
+
     // Optional flavor text (e.g. "No suppressor build... FMJ allows 1 tap through walls") — omitted
-    // entirely when blank, matching the established pattern elsewhere (e.g. patchnotes.js).
+    // entirely when blank, matching the established pattern elsewhere (e.g. patchnotes.js). Moved
+    // below the divider (was above it) and switched from italic to a real blockquote (`> `) per
+    // Harkirat's request; toSentenceCase() guards against admin-typed descriptions that didn't
+    // start with a capital letter.
     if (activeBuild.description) {
-        containerComponents.push({ type: 10, content: `*${activeBuild.description}*` });
+        containerComponents.push({ type: 10, content: toBlockquote(toSentenceCase(activeBuild.description)) });
     }
 
-    containerComponents.push({ type: 14, spacing: 1, divider: true });
     containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName —

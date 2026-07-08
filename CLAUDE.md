@@ -478,32 +478,60 @@ button here without splitting the row. "Share Publicly" is still its own row OUT
 (unlike the other buttons), consistent with every other command.
 
 **Card layout, second pass (per `loadouts_ui.json`):** weapon name is now the top `# ` heading, with
-optional Meta/Best-in-category/Top-3-in-category "badges" directly below it as one bold line (see
+optional Meta/Best-in-category/Top-N-in-category "badges" directly below it as one bold line (see
 `buildBadgesLine()`) — the category label that used to sit as a small overline above the weapon name
 moved down into the footer instead (`{category} • Build N of M • Last updated <t:X:D>`).
 "Attachments"/"Gunsmith Code" are real `### ` H3 headings now (not bold text), each attachment line
 is backtick-wrapped, and the divider that used to sit between Gunsmith Code and the image was
 removed entirely — the image now sits directly under whichever text block precedes it. Divider
 `spacing` on this specific card is `1`, not the `2` used elsewhere in the bot (calendar/draws/etc.) —
-intentional per this reference file, not an oversight.
-- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` enum `'best'|'top3'|null`) only
-  render when actually granted — `buildBadgesLine()` returns `null` (nothing shown) if neither is
-  set. `categoryRank` is ONE field, not two independent booleans, because "Best in category" and
-  "Top 3 in category" are mutually exclusive tiers of the same ranking, not two separate flags a
-  build could have simultaneously. Badges are joined with `emojiMap.js`'s `blank` spacer emoji when
-  both are present, matching the reference file's exact spacing (no space before `blank`, one space
-  after it).
+intentional per this reference file, not an oversight. The optional flavor-text `description` sits
+right below the top divider (above Attachments, was above the divider before) as a real Discord
+blockquote (`> `) instead of italic text, run through `toSentenceCase()` first since admin-typed
+descriptions aren't always capitalized correctly.
+- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` free-form string) only render when
+  actually granted — `buildBadgesLine()` returns `null` (nothing shown) if neither is set.
+  `categoryRank` is intentionally NOT a fixed `'best'|'top3'` enum — not every category tops out at
+  exactly 3, so it stores `'best'` or `'top{N}'` (`'top3'`, `'top4'`, `'top5'`, ...), one field not
+  two independent booleans, because "Best in category" and "Top N in category" are mutually
+  exclusive tiers of the same ranking. "Best" and "Top N" use two DIFFERENT emojis
+  (`emojiMap.js`'s `best` vs `top`) — don't reuse one for the other. Badges are joined with the
+  `blank` spacer emoji when both Meta and a rank are present, matching the reference file's exact
+  spacing (no space before `blank`, one space after it).
 - **Admin input for badges rides along on the existing "Category | Mode" modal field** as a 3rd
-  pipe-delimited segment (`"AR | MP | meta,best"`) rather than getting its own field — `/manage`'s
-  add/edit-loadout modals already use all 5 of Discord's per-modal field slots, so there was no room
-  for a dedicated badges input. See `adminParser.js`'s `parseLoadoutBadges()` for the parser (comma-
-  separated, case-insensitive tokens: `meta`, `best`, `top3`). The edit modal reconstructs the
-  current badges token list from the DB so re-opening it to change something unrelated doesn't
-  silently clear existing badges.
+  pipe-delimited segment (`"AR | MP | meta,best"` or `"AR | MP | meta,top5"`) rather than getting
+  its own field — `/manage`'s add/edit-loadout modals already use all 5 of Discord's per-modal field
+  slots, so there was no room for a dedicated badges input. `adminParser.js`'s
+  `parseLoadoutBadges()` parses comma-separated, case-insensitive tokens (`meta`, `best`, `topN` in
+  any spacing like `top 5`) and returns any tokens it didn't recognize (e.g. a typo like `bset`) so
+  the admin gets told exactly what didn't apply, instead of a badge silently failing to save with no
+  feedback. The edit modal reconstructs the current badges token list from the DB so re-opening it
+  to change something unrelated doesn't silently clear existing badges.
+- **Badges are a weapon-level property, not a per-build one.** Editing one build's badges via
+  `edit_loadout_` now propagates the same `isMeta`/`categoryRank` to every OTHER build sharing that
+  weaponKey+mode (`Loadout.updateMany(...)`) — setting "Meta" while editing Build 1 used to leave
+  Build 2/3 of the same weapon showing no badge at all. This propagation only happens on **edit**,
+  not on **add** — the add-loadout modal has nothing pre-filled, so a blank badges field there (the
+  common case when just adding another build variant) would silently wipe existing siblings'
+  badges. Re-editing an existing build is the supported way to (re)sync badges across a weapon's
+  builds; adding a new build doesn't currently inherit them automatically.
 - **"Copy Attachments"** is a new button next to Copy Code, replying with the plain attachment list
   (one per line, no bullets/backticks/formatting — meant to be pasted straight into Gunsmith)
   ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared
   `dmz`/`mp`-prefixed button router, alongside the existing `copy`/`next`/`prev` actions.
+
+## Autocomplete search is punctuation/whitespace-insensitive, not just substring (`utils/search.js`)
+Every autocomplete route in the bot (loadout weapon search across `/dmz`/`/all`/`/<category>`,
+`/manage`'s draws + loadouts search, `/patch notes`' version search) used a plain `.includes()` (or
+an equivalent raw Mongo `$regex`), which requires the typed query to appear as one literal,
+contiguous substring of the stored name — so typing `dlq` never matched `DL Q33`, since the space
+between "DL" and "Q33" breaks that literal character sequence. `fuzzyMatch()` strips
+spaces/hyphens/underscores/periods from both sides before comparing, which fixes that whole class of
+miss (also covers `cx9` matching `CX-9`) without going as far as true fuzzy/subsequence matching
+(skipping letters), which would start returning noisy, hard-to-predict matches for a dataset this
+size. `/manage`'s loadouts autocomplete switched from a raw Mongo `$regex` to fetching everything and
+filtering in JS (same pattern the weapon-dictionary block already used) since punctuation-stripping
+can't be expressed as a single regex against the stored field — fine at this collection's size.
 
 ## This bot is user-installed only — it is NEVER a guild member with roles/permissions
 `Dior's Builds` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every

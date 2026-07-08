@@ -138,7 +138,7 @@ module.exports = {
                     // already used all 5 -- so the new Meta/Best/Top-3 "badges" ride along as a 3rd
                     // pipe-delimited segment here rather than getting their own field. See
                     // adminParser.js's parseLoadoutBadges() for how this text gets parsed.
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Mode | Badges').setStyle(TextInputStyle.Short).setPlaceholder('AR | MP | meta,best').setRequired(true))
+                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Mode | Badges').setStyle(TextInputStyle.Short).setPlaceholder('AR | MP | meta,best  (or top3/top5/etc.)').setRequired(true))
                 );
                 return await interaction.showModal(modal);
             }
