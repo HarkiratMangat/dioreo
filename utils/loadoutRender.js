@@ -1,6 +1,7 @@
 // utils/loadoutRender.js
 const { withShareButton } = require('./shareButton');
 const { buildPaginationRow } = require('./paginationRow');
+const emojis = require('./emojiMap');
 
 // MP LOADOUT ACCENT COLORS — one per weapon category, from the "Custom Class" palette (a curated
 // mix Harkirat picked across several palette proposals, see the palette spec sheet). Keyed by the
@@ -38,24 +39,42 @@ function buildImageUrl(imageKey) {
     return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
 }
 
+// "Badges" shown under the weapon name (Meta / Best-in-category / Top-3-in-category) -- only
+// rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji
+// rather than a visible separator character when both are present. Returns null (render nothing)
+// if the build has no badges at all.
+function buildBadgesLine(build) {
+    const badges = [];
+    if (build.isMeta) badges.push(`${emojis.meta} Meta`);
+    if (build.categoryRank === 'best') badges.push(`${emojis.best} Best ${build.category}`);
+    else if (build.categoryRank === 'top3') badges.push(`${emojis.best} Top 3 ${build.category}`);
+    if (badges.length === 0) return null;
+    return `**${badges.join(`${emojis.blank} `)}**`;
+}
+
 // Shared Components V2 card builder for /dmz and the MP category commands (/all, /<category>) --
 // same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs
 // 'mp') so index.js's interaction router can tell a click apart and query the right mode.
 //
-// NOTE (rebuilt during review): this used to be a legacy EmbedBuilder card (title/description/
-// image/footer via embed-native fields), which is what every other command in this bot moved away
-// from. Recreated here to match that original embed's exact visual identity as closely as
-// Components V2 allows -- V2 has no equivalent to an embed's *inline fields* though (the
-// side-by-side "Attachments" / "Gunsmith Code" columns), so those stack vertically instead of
-// sitting side-by-side; everything else (category overline, bold weapon title, image, "Build N of
-// M" + last-updated footer line, Back/Next/Copy Code buttons) matches the original design.
+// NOTE (redesigned during review, per Harkirat's loadouts_ui.json reference): weapon name is now
+// the top heading with optional Meta/Best/Top-3 badges directly below it (see buildBadgesLine
+// above), rather than a small category overline -- the category moved down into the footer line
+// instead ("{category} • Build N of M • Last updated..."). The divider between Gunsmith Code and
+// the image was removed. "Attachments"/"Gunsmith Code" are now real H3 headings (### ) rather than
+// bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block
+// styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack
+// vertically rather than sitting side-by-side.
 function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false }) {
     const activeBuild = builds[index];
-    const attachmentLines = activeBuild.attachments.map(att => `• ${att}`).join('\n');
+    const attachmentLines = activeBuild.attachments.map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
 
+    let titleContent = `# ${activeBuild.weaponName}`;
+    const badgesLine = buildBadgesLine(activeBuild);
+    if (badgesLine) titleContent += `\n${badgesLine}`;
+
     const containerComponents = [
-        { type: 10, content: `-# ${activeBuild.category}\n# ${activeBuild.weaponName}` }
+        { type: 10, content: titleContent }
     ];
 
     // Optional flavor text (e.g. "No suppressor build... FMJ allows 1 tap through walls") — omitted
@@ -64,32 +83,34 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
         containerComponents.push({ type: 10, content: `*${activeBuild.description}*` });
     }
 
-    containerComponents.push({ type: 14, spacing: 2, divider: true });
-    containerComponents.push({ type: 10, content: `**Attachments**\n${attachmentLines}` });
+    containerComponents.push({ type: 14, spacing: 1, divider: true });
+    containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName —
     // see models/Loadout.js for why these are two separate fields. Omitted entirely if neither is
     // set (shouldn't happen in practice — buildName always defaults to something — but harmless).
     const codeText = activeBuild.shareCode || activeBuild.buildName;
     if (codeText) {
-        containerComponents.push({ type: 10, content: `**Gunsmith Code**\n\`${codeText}\`` });
+        containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
     }
 
-    containerComponents.push({ type: 14, spacing: 2, divider: true });
+    // NOTE (removed during review, per Harkirat's request): there used to be a divider here between
+    // Gunsmith Code and the image -- dropped so the image sits directly under the text above it.
     containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
-    containerComponents.push({ type: 10, content: `-# Build ${index + 1} of ${builds.length} • Last updated <t:${lastUpdatedUnix}:f>` });
+    containerComponents.push({ type: 10, content: `-# ${activeBuild.category} • Build ${index + 1} of ${builds.length} • Last updated <t:${lastUpdatedUnix}:D>` });
 
     // NOTE (moved during review): buttons live INSIDE the container now (were a separate row
     // outside it), with a divider between them and the image/caption above — per Harkirat's
     // request. Prev/Next also switched from plain "Back"/"Next" text buttons to the same
     // Left/Right-emoji + numbers-only pagination style used everywhere else in the bot
     // (utils/paginationRow.js), for consistency.
-    containerComponents.push({ type: 14, spacing: 2, divider: true });
+    containerComponents.push({ type: 14, spacing: 1, divider: true });
 
-    // DESIGN TWEAK (flagging in case you want it reverted): combined pagination + Copy Code into
-    // ONE row instead of two separate ones — still comfortably under the 5-buttons-per-row cap
-    // (Left/counter/Right/Copy Code = 4), and reads as a single "actions" row rather than splitting
-    // navigation from the copy action for no strong reason.
+    // Pagination + Copy Attachments + Copy Code all share one row -- exactly 5 buttons in the
+    // worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap.
+    // "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/
+    // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see index.js's
+    // dmz/mp-prefixed button handler's `copyatt` action.
     const paginationRow = buildPaginationRow({
         totalChunks: builds.length,
         currentPage: index,
@@ -98,6 +119,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
         indicatorCustomId: `${idPrefix}_page_indicator`
     });
     const buttonComponents = paginationRow ? [...paginationRow.components] : [];
+    buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}` });
     buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: `${idPrefix}copy_${activeBuild.weaponKey}_${index}` });
     containerComponents.push({ type: 1, components: buttonComponents });
 

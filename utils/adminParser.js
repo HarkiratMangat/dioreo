@@ -169,4 +169,20 @@ function formatDrawsAsBulkText(draws) {
     }).join('\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText };
+/**
+ * Parses the loadout "badges" segment of /manage's "Category | Mode | Badges" modal field into
+ * `{ isMeta, categoryRank }` (see models/Loadout.js). Comma-separated, case-insensitive, e.g.
+ * "meta, best" or "top3" or "" (no badges). Discord modals cap at 5 fields, and the loadout modal
+ * already uses all 5, so this rides along as a 3rd pipe-delimited segment on the existing
+ * "Category | Mode" field rather than getting its own input.
+ */
+function parseLoadoutBadges(badgesStr) {
+    const tokens = (badgesStr || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+    const isMeta = tokens.includes('meta');
+    let categoryRank = null;
+    if (tokens.includes('best')) categoryRank = 'best';
+    else if (tokens.includes('top3') || tokens.includes('top 3')) categoryRank = 'top3';
+    return { isMeta, categoryRank };
+}
+
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };

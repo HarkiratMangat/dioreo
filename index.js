@@ -679,6 +679,12 @@ client.on('interactionCreate', async interaction => {
                 const build = matchingBuilds[newIndex];
                 return interaction.reply({ content: build.shareCode || build.buildName, ephemeral: true });
             }
+            if (action === 'copyatt') {
+                // Plain list, one per line, no bullets/backticks/formatting -- unlike the card's own
+                // "### Attachments" display, this is meant to be pasted straight into Gunsmith.
+                const build = matchingBuilds[newIndex];
+                return interaction.reply({ content: build.attachments.join('\n'), ephemeral: true });
+            }
 
             // PRO FIX: defer first — same "LIBRARY SERIALIZATION BYPASS" reasoning used everywhere
             // else in this bot: discord.js's own `interaction.update()` doesn't reliably handle raw
@@ -852,9 +858,13 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply({ ephemeral: true });
             const targetId = customId.replace('edit_loadout_', '');
             const Loadout = require('./models/Loadout');
+            const { parseLoadoutBadges } = require('./utils/adminParser');
 
+            // 3rd pipe segment is the badges token list (see manage.js's modal + parseLoadoutBadges) --
+            // added alongside Category|Mode rather than as its own field since modals cap at 5.
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            const { isMeta, categoryRank } = parseLoadoutBadges(metaParts[2]);
 
             await Loadout.findByIdAndUpdate(targetId, {
                 weaponName: interaction.fields.getTextInputValue('weapon'),
@@ -863,7 +873,9 @@ client.on('interactionCreate', async interaction => {
                 attachments: attachmentsArray,
                 imageKey: interaction.fields.getTextInputValue('image'),
                 category: metaParts[0]?.toUpperCase() || 'AR',
-                mode: metaParts[1]?.toUpperCase() || 'MP'
+                mode: metaParts[1]?.toUpperCase() || 'MP',
+                isMeta,
+                categoryRank
             });
 
             return interaction.followUp({ content: `✅ **Loadout Updated Successfully!**` });
@@ -907,9 +919,11 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'add_loadout') {
             await interaction.deferReply({ ephemeral: true });
             const Loadout = require('./models/Loadout');
+            const { parseLoadoutBadges } = require('./utils/adminParser');
 
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            const { isMeta, categoryRank } = parseLoadoutBadges(metaParts[2]);
 
             const newLoadout = new Loadout({
                 weaponName: interaction.fields.getTextInputValue('weapon'),
@@ -918,7 +932,9 @@ client.on('interactionCreate', async interaction => {
                 attachments: attachmentsArray,
                 imageKey: interaction.fields.getTextInputValue('image'),
                 category: metaParts[0]?.toUpperCase() || 'AR',
-                mode: metaParts[1]?.toUpperCase() || 'MP'
+                mode: metaParts[1]?.toUpperCase() || 'MP',
+                isMeta,
+                categoryRank
             });
 
             await newLoadout.save();

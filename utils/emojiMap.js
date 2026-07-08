@@ -32,5 +32,11 @@ module.exports = {
     // page row, not just one specific command's list.
     left: '<:Left:1523864238836154449>',
     right: '<:Right:1523864237972127775>',
+    // Loadout "badges" (utils/loadoutRender.js) — Meta/Best-or-Top-3-in-category flags shown under
+    // the weapon name. `blank` is a zero-width spacer emoji used to separate two badges on one line
+    // without a visible bullet/divider character.
+    meta: '<a:Meta:1524183479997169714>',
+    best: '<a:Best:1524235235070312488>',
+    blank: '<:blank:1524243739206352906>',
     parseEmoji
 };

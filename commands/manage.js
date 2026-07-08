@@ -134,7 +134,11 @@ module.exports = {
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('build').setLabel('Build Name / Share Code').setStyle(TextInputStyle.Short).setPlaceholder('e.g. Aggressive Flex').setRequired(true)),
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setRequired(true)),
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key').setStyle(TextInputStyle.Short).setPlaceholder('e.g. bp50_flex_v1').setRequired(true)),
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category & Mode (e.g., AR | MP)').setStyle(TextInputStyle.Short).setPlaceholder('AR | MP').setRequired(true))
+                    // NOTE (extended during review): Discord modals cap at 5 fields, and this one
+                    // already used all 5 -- so the new Meta/Best/Top-3 "badges" ride along as a 3rd
+                    // pipe-delimited segment here rather than getting their own field. See
+                    // adminParser.js's parseLoadoutBadges() for how this text gets parsed.
+                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Mode | Badges').setStyle(TextInputStyle.Short).setPlaceholder('AR | MP | meta,best').setRequired(true))
                 );
                 return await interaction.showModal(modal);
             }
@@ -151,12 +155,19 @@ module.exports = {
             if (action === 'edit') {
                 const modal = new ModalBuilder().setCustomId(`edit_loadout_${targetId}`).setTitle('Edit Loadout');
 
+                // Reconstruct the badges token list from what's currently saved, so re-opening
+                // this modal to tweak something else doesn't silently clear existing badges.
+                const existingBadges = [
+                    targetLoadout.isMeta ? 'meta' : null,
+                    targetLoadout.categoryRank
+                ].filter(Boolean).join(',');
+
                 modal.addComponents(
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(targetLoadout.weaponName)),
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('build').setLabel('Build Name / Code').setStyle(TextInputStyle.Short).setValue(targetLoadout.buildName)),
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setValue(targetLoadout.attachments.join('\n'))),
                     new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key').setStyle(TextInputStyle.Short).setValue(targetLoadout.imageKey)),
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category & Mode (e.g., AR | MP)').setStyle(TextInputStyle.Short).setValue(`${targetLoadout.category} | ${targetLoadout.mode}`))
+                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Mode | Badges').setStyle(TextInputStyle.Short).setValue(`${targetLoadout.category} | ${targetLoadout.mode} | ${existingBadges}`))
                 );
                 return await interaction.showModal(modal);
             }
