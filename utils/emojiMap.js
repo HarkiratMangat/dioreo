@@ -40,6 +40,7 @@ module.exports = {
     meta: '<a:Meta:1524259849745989723>',
     best: '<a:Best:1524235235070312488>',
     top: '<a:Top:1524183479997169714>',
+    toxic: '<a:Toxic:1524535298380402859>',
     blank: '<:blank:1524243739206352906>',
     parseEmoji
 };

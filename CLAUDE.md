@@ -527,32 +527,43 @@ intentional per this reference file, not an oversight. The optional flavor-text 
 right below the top divider (above Attachments, was above the divider before) as a real Discord
 blockquote (`> `) instead of italic text, run through `toSentenceCase()` first since admin-typed
 descriptions aren't always capitalized correctly.
-- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` free-form string) only render when
-  actually granted — `buildBadgesLine()` returns `null` (nothing shown) if neither is set.
-  `categoryRank` is intentionally NOT a fixed `'best'|'top3'` enum — not every category tops out at
-  exactly 3, so it stores `'best'` or `'top{N}'` (`'top3'`, `'top4'`, `'top5'`, ...), one field not
-  two independent booleans, because "Best in category" and "Top N in category" are mutually
-  exclusive tiers of the same ranking. "Best" and "Top N" use two DIFFERENT emojis
-  (`emojiMap.js`'s `best` vs `top`) — don't reuse one for the other. Badges are joined with the
-  `blank` spacer emoji when both Meta and a rank are present, matching the reference file's exact
-  spacing (no space before `blank`, one space after it).
+- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` free-form string + `Loadout.isToxic`
+  boolean) only render when actually granted — `buildBadgesLine()` returns `null` (nothing shown) if
+  none are set. `categoryRank` is intentionally NOT a fixed `'best'|'top3'` enum — not every category
+  tops out at exactly 3, so it stores `'best'` or `'top{N}'` (`'top3'`, `'top4'`, `'top5'`, ...), one
+  field not two independent booleans, because "Best in category" and "Top N in category" are
+  mutually exclusive tiers of the same ranking. `isToxic` ("Toxic" — Harkirat's term for an
+  unbalanced/cheese pick) is a fully separate, independent flag — a build can be Toxic regardless of
+  its Meta status or category rank (e.g. NA-45 is Toxic-only with no Meta/rank; Striker is
+  Meta+Best+Toxic all at once), added after badges already existed once real data needed it. "Best",
+  "Top N", and "Toxic" each use a DIFFERENT emoji (`emojiMap.js`'s `best`/`top`/`toxic`) — don't reuse
+  one for another. Badges are joined with the `blank` spacer emoji between each granted badge,
+  matching the reference file's exact spacing (no space before `blank`, one space after it).
 - **Admin input for badges rides along on the existing "Category | Mode" modal field** as a 3rd
-  pipe-delimited segment (`"AR | MP | meta,best"` or `"AR | MP | meta,top5"`) rather than getting
-  its own field — `/manage`'s add/edit-loadout modals already use all 5 of Discord's per-modal field
-  slots, so there was no room for a dedicated badges input. `adminParser.js`'s
-  `parseLoadoutBadges()` parses comma-separated, case-insensitive tokens (`meta`, `best`, `topN` in
-  any spacing like `top 5`) and returns any tokens it didn't recognize (e.g. a typo like `bset`) so
-  the admin gets told exactly what didn't apply, instead of a badge silently failing to save with no
-  feedback. The edit modal reconstructs the current badges token list from the DB so re-opening it
-  to change something unrelated doesn't silently clear existing badges.
+  pipe-delimited segment (`"AR | MP | meta,best"`, `"AR | MP | meta,top5"`, or
+  `"AR | MP | meta,best,toxic"`) rather than getting its own field — `/manage`'s add/edit-loadout
+  modals already use all 5 of Discord's per-modal field slots, so there was no room for a dedicated
+  badges input. `adminParser.js`'s `parseLoadoutBadges()` parses comma-separated, case-insensitive
+  tokens (`meta`, `best`, `toxic`, `topN` in any spacing like `top 5`) and returns any tokens it
+  didn't recognize (e.g. a typo like `bset`) so the admin gets told exactly what didn't apply,
+  instead of a badge silently failing to save with no feedback. The edit modal reconstructs the
+  current badges token list from the DB so re-opening it to change something unrelated doesn't
+  silently clear existing badges.
 - **Badges are a weapon-level property, not a per-build one.** Editing one build's badges via
-  `edit_loadout_` now propagates the same `isMeta`/`categoryRank` to every OTHER build sharing that
-  weaponKey+mode (`Loadout.updateMany(...)`) — setting "Meta" while editing Build 1 used to leave
-  Build 2/3 of the same weapon showing no badge at all. This propagation only happens on **edit**,
-  not on **add** — the add-loadout modal has nothing pre-filled, so a blank badges field there (the
-  common case when just adding another build variant) would silently wipe existing siblings'
-  badges. Re-editing an existing build is the supported way to (re)sync badges across a weapon's
-  builds; adding a new build doesn't currently inherit them automatically.
+  `edit_loadout_` now propagates the same `isMeta`/`categoryRank`/`isToxic` to every OTHER build
+  sharing that weaponKey+mode (`Loadout.updateMany(...)`) — setting "Meta" while editing Build 1 used
+  to leave Build 2/3 of the same weapon showing no badge at all. This propagation only happens on
+  **edit**, not on **add** — the add-loadout modal has nothing pre-filled, so a blank badges field
+  there (the common case when just adding another build variant) would silently wipe existing
+  siblings' badges. Re-editing an existing build is the supported way to (re)sync badges across a
+  weapon's builds; adding a new build doesn't currently inherit them automatically.
+- **`scripts/applyBadgesBulk.js`** is a one-off/re-runnable bulk badge importer — Harkirat pastes a
+  full weapon→badge list (grouped by category) instead of editing every loadout individually via
+  `/manage`. Matches each entry as a fuzzy substring of the stored `weaponKey` (scoped to the
+  category it's listed under, via `utils/search.js`'s `normalizeForSearch`), and propagates to every
+  build of that weapon the same way the `edit_loadout_` handler does. Weapons with no loadout saved
+  yet (e.g. Bal-27, FSS Hurricane, Pharo, and everything under SECONDARIES as of 2026-07-08) are
+  reported as unmatched rather than silently skipped — re-run once those loadouts actually exist.
 - **"Copy Attachments"** is a new button next to Copy Code, replying with the plain attachment list
   (one per line, no bullets/backticks/formatting — meant to be pasted straight into Gunsmith)
   ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared

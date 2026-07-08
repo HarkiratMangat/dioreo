@@ -191,17 +191,19 @@ function parseLoadoutBadges(badgesStr) {
     const tokens = (badgesStr || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
     let isMeta = false;
     let categoryRank = null;
+    let isToxic = false;
     const unrecognized = [];
 
     for (const token of tokens) {
         if (token === 'meta') { isMeta = true; continue; }
         if (token === 'best') { categoryRank = 'best'; continue; }
+        if (token === 'toxic') { isToxic = true; continue; }
         const topMatch = token.match(/^top\s*(\d+)$/);
         if (topMatch) { categoryRank = `top${topMatch[1]}`; continue; }
         unrecognized.push(token);
     }
 
-    return { isMeta, categoryRank, unrecognized };
+    return { isMeta, categoryRank, isToxic, unrecognized };
 }
 
 module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };

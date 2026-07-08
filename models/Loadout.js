@@ -34,6 +34,10 @@ const LoadoutSchema = new mongoose.Schema({
     // badges describe the weapon, not one specific build variant.
     isMeta: { type: Boolean, default: false },
     categoryRank: { type: String, default: null },
+    // Independent third badge, added alongside Meta/Best/TopN -- a build can be flagged "Toxic"
+    // (an unbalanced/cheese pick, per Harkirat's own terminology) regardless of its Meta status or
+    // category ranking, so this is its own boolean rather than folded into categoryRank.
+    isToxic: { type: Boolean, default: false },
     lastUpdated: { type: Date, default: Date.now }
 });
 

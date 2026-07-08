@@ -54,6 +54,9 @@ function buildBadgesLine(build) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
         if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${build.category}`);
     }
+    // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the
+    // objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
+    if (build.isToxic) badges.push(`${emojis.toxic} Toxic`);
     if (badges.length === 0) return null;
     return `**${badges.join(`${emojis.blank} `)}**`;
 }

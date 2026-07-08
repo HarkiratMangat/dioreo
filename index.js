@@ -921,7 +921,7 @@ client.on('interactionCreate', async interaction => {
             // added alongside Category|Mode rather than as its own field since modals cap at 5.
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-            const { isMeta, categoryRank, unrecognized } = parseLoadoutBadges(metaParts[2]);
+            const { isMeta, categoryRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[2]);
 
             const weaponName = interaction.fields.getTextInputValue('weapon');
             const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
@@ -937,19 +937,20 @@ client.on('interactionCreate', async interaction => {
                 category: metaParts[0]?.toUpperCase() || 'AR',
                 mode,
                 isMeta,
-                categoryRank
+                categoryRank,
+                isToxic
             });
 
             // NOTE (fixed during review): badges describe the WEAPON, not one specific build
             // variant -- setting "Meta" while editing Build 1 used to leave Build 2/3/etc. of the
             // same weapon showing no badge at all, which read as broken/inconsistent. Propagate the
-            // same isMeta/categoryRank to every other build sharing this weaponKey+mode. Only done
-            // on edit (not on creating a brand-new build) -- the add-loadout modal has no badges
-            // pre-filled, so propagating from there would silently wipe existing siblings' badges
-            // any time a new build is added without retyping them.
+            // same isMeta/categoryRank/isToxic to every other build sharing this weaponKey+mode. Only
+            // done on edit (not on creating a brand-new build) -- the add-loadout modal has no
+            // badges pre-filled, so propagating from there would silently wipe existing siblings'
+            // badges any time a new build is added without retyping them.
             const propagateResult = await Loadout.updateMany(
                 { weaponKey, mode, _id: { $ne: targetId } },
-                { isMeta, categoryRank }
+                { isMeta, categoryRank, isToxic }
             );
 
             let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
@@ -957,7 +958,7 @@ client.on('interactionCreate', async interaction => {
                 confirmation += `\n-# Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.`;
             }
             if (unrecognized.length > 0) {
-                confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, or \`topN\` (e.g. \`top3\`, \`top5\`).`;
+                confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, or \`topN\` (e.g. \`top3\`, \`top5\`).`;
             }
 
             return interaction.followUp({ content: confirmation });
@@ -1005,7 +1006,7 @@ client.on('interactionCreate', async interaction => {
             // (the common case when just adding another build variant) would silently wipe any
             // badges already set on the weapon's existing builds. Re-editing an existing build is
             // the supported way to (re)sync badges across all of a weapon's builds.
-            const { isMeta, categoryRank, unrecognized } = parseLoadoutBadges(metaParts[2]);
+            const { isMeta, categoryRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[2]);
 
             const newLoadout = new Loadout({
                 weaponName: interaction.fields.getTextInputValue('weapon'),
@@ -1016,13 +1017,14 @@ client.on('interactionCreate', async interaction => {
                 category: metaParts[0]?.toUpperCase() || 'AR',
                 mode: metaParts[1]?.toUpperCase() || 'MP',
                 isMeta,
-                categoryRank
+                categoryRank,
+                isToxic
             });
 
             await newLoadout.save();
             let confirmation = `✅ **Successfully saved Loadout: ${newLoadout.weaponName} (${newLoadout.buildName}, ${newLoadout.mode})!**`;
             if (unrecognized.length > 0) {
-                confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, or \`topN\` (e.g. \`top3\`, \`top5\`).`;
+                confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, or \`topN\` (e.g. \`top3\`, \`top5\`).`;
             }
             return interaction.followUp({ content: confirmation });
         }
