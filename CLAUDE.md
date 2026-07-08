@@ -468,13 +468,42 @@ every other V2 command already uses — discord.js's high-level methods don't re
 V2 JSON (there's no builder class for a type-17 Container). If you touch this card again, remember
 `accent_color` needs a **decimal**, not a hex string like `EmbedBuilder.setColor()` took.
 
-Buttons (pagination + Copy Code) live INSIDE the container now, not as a sibling row — with a
-divider between them and the image/caption above, per Harkirat's request. Prev/Next also switched
-to the shared Left/Right-emoji pagination style (`utils/paginationRow.js`) instead of plain
-"Back"/"Next" text buttons, matching `/calendar` and `/draws`. Pagination + Copy Code were also
-combined into one row instead of two — flagged as a judgment call in the code comment in case
-that's not wanted. "Share Publicly" is still its own row OUTSIDE the container (unlike the other
-buttons), consistent with every other command.
+Buttons (pagination + Copy Attachments + Copy Code) live INSIDE the container now, not as a sibling
+row — with a divider between them and the image/caption above, per Harkirat's request. Prev/Next
+also switched to the shared Left/Right-emoji pagination style (`utils/paginationRow.js`) instead of
+plain "Back"/"Next" text buttons, matching `/calendar` and `/draws`. Pagination + Copy Attachments +
+Copy Code all share one row instead of separate ones — exactly 5 buttons in the worst case
+(Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap, so don't add a 6th
+button here without splitting the row. "Share Publicly" is still its own row OUTSIDE the container
+(unlike the other buttons), consistent with every other command.
+
+**Card layout, second pass (per `loadouts_ui.json`):** weapon name is now the top `# ` heading, with
+optional Meta/Best-in-category/Top-3-in-category "badges" directly below it as one bold line (see
+`buildBadgesLine()`) — the category label that used to sit as a small overline above the weapon name
+moved down into the footer instead (`{category} • Build N of M • Last updated <t:X:D>`).
+"Attachments"/"Gunsmith Code" are real `### ` H3 headings now (not bold text), each attachment line
+is backtick-wrapped, and the divider that used to sit between Gunsmith Code and the image was
+removed entirely — the image now sits directly under whichever text block precedes it. Divider
+`spacing` on this specific card is `1`, not the `2` used elsewhere in the bot (calendar/draws/etc.) —
+intentional per this reference file, not an oversight.
+- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` enum `'best'|'top3'|null`) only
+  render when actually granted — `buildBadgesLine()` returns `null` (nothing shown) if neither is
+  set. `categoryRank` is ONE field, not two independent booleans, because "Best in category" and
+  "Top 3 in category" are mutually exclusive tiers of the same ranking, not two separate flags a
+  build could have simultaneously. Badges are joined with `emojiMap.js`'s `blank` spacer emoji when
+  both are present, matching the reference file's exact spacing (no space before `blank`, one space
+  after it).
+- **Admin input for badges rides along on the existing "Category | Mode" modal field** as a 3rd
+  pipe-delimited segment (`"AR | MP | meta,best"`) rather than getting its own field — `/manage`'s
+  add/edit-loadout modals already use all 5 of Discord's per-modal field slots, so there was no room
+  for a dedicated badges input. See `adminParser.js`'s `parseLoadoutBadges()` for the parser (comma-
+  separated, case-insensitive tokens: `meta`, `best`, `top3`). The edit modal reconstructs the
+  current badges token list from the DB so re-opening it to change something unrelated doesn't
+  silently clear existing badges.
+- **"Copy Attachments"** is a new button next to Copy Code, replying with the plain attachment list
+  (one per line, no bullets/backticks/formatting — meant to be pasted straight into Gunsmith)
+  ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared
+  `dmz`/`mp`-prefixed button router, alongside the existing `copy`/`next`/`prev` actions.
 
 ## This bot is user-installed only — it is NEVER a guild member with roles/permissions
 `Dior's Builds` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every
