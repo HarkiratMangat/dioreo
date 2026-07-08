@@ -4,12 +4,15 @@
 // ARCHITECTURE: Subcommand structure (/draw prices). 
 // Houses static pricing arrays and an internal dropdown to swap region views.
 
-const { SlashCommandBuilder, Routes } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
 const { withShareButton } = require('../utils/shareButton');
+const { buildGlobalNavRow } = require('../utils/globalNav');
+const { resolveEphemeral } = require('../utils/ephemeral');
+const { sendV2Payload } = require('../utils/sendV2Payload');
 
 // NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
 // intended nav-button-order palette assignment. Draw Prices is the 3rd nav button, so China Rose.
@@ -117,16 +120,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         ]
     };
 
-    const globalNavigationRow = {
-        type: 1,
-        components: [
-            { type: 2, style: 2, label: "Calendar", custom_id: "nav_calendar" },
-            { type: 2, style: 2, label: "Draws", custom_id: "nav_draws" },
-            { type: 2, style: 4, label: "Draw Prices", custom_id: "nav_prices", disabled: true }, // Locked to Active State
-            { type: 2, style: 2, label: "Patch Notes", custom_id: "nav_patchnotes" },
-            { type: 2, style: 2, label: "Season End", custom_id: "nav_seasonend" }
-        ]
-    };
+    const globalNavigationRow = buildGlobalNavRow('nav_prices');
 
     return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
 }
@@ -171,15 +165,12 @@ module.exports = {
         // NOTE: switched from the old per-command `pricesVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A).
-        const isEphemeral = argPrivate !== null ? argPrivate : (prefs ? prefs.seasonalVisibility === 'ephemeral' : false);
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'seasonalVisibility' });
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
         const components = buildContainer(targetRegion, accentColor, isEphemeral);
 
-        return await interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            { body: { content: "", components, flags: 32768 } }
-        );
+        return await sendV2Payload(interaction, components);
     }
 };

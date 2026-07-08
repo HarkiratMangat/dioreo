@@ -113,14 +113,17 @@ an unawaited `return <promise>` inside a `try` block, the `try` had already exit
 that promise rejected — the outer top-level `catch` above was no longer "in scope" to catch it,
 and it surfaced as a raw unhandled promise rejection, which crashes the whole Node process by
 default (since Node 15). Fixed by `await`-ing the fallback reply/editReply/followUp calls and
-wrapping *those* in their own try/catch too (see the slash-command router and the nav-button
-router in `index.js`) — a doubly-failed error-notification can now only fail silently (logged),
-never crash. Also added a `process.on('unhandledRejection', ...)` logger near the top of
-`index.js` as a last-resort net for any other unawaited `return interaction.X(...)` call site that
-gets missed — **this is not a substitute for awaiting properly**, just a backstop. The general
-rule: any `return interaction.reply/editReply/followUp(...)` inside a `catch` block MUST be
-awaited (or wrapped in its own try/catch) — a bare `return <promise>` does not keep the enclosing
-try/catch "listening" for that promise's eventual rejection.
+wrapping *those* in their own try/catch too. Also added a `process.on('unhandledRejection', ...)`
+logger near the top of `index.js` as a last-resort net for any other unawaited
+`return interaction.X(...)` call site that gets missed — **this is not a substitute for awaiting
+properly**, just a backstop. The general rule: any `return interaction.reply/editReply/followUp(...)`
+inside a `catch` block (or any early-return error branch) MUST be awaited (or wrapped in its own
+try/catch) — a bare `return <promise>` does not keep the enclosing try/catch "listening" for that
+promise's eventual rejection. Fixed at every site this pattern was found during a later review pass
+(not just the original slash-command/nav-button routers): the MP loadout "no builds found" reply,
+both settings security-gateway rejection replies, the nav-router "target offline" reply, and the
+loadout `copy`/`copyatt` button replies — if you add a new early-return error reply anywhere in this
+handler, follow the same await-and-wrap shape rather than a bare `return interaction.X(...)`.
 
 ## User-install / DM support — must be set per-command, not inherited
 Discord requires each slash command to individually opt in to being usable outside a guild via
@@ -200,7 +203,10 @@ the same change**, or it will not actually save.
   `description` (optional flavor text) and `shareCode` (the actual copyable in-game Gunsmith
   code) were added during the builds.xlsx migration — see MP loadout system below for why
   `shareCode` is separate from `buildName` despite `/manage`'s modal labeling the latter
-  "Build Name / Share Code".
+  "Build Name / Share Code". Has a compound index on `{ category: 1, mode: 1 }` — every
+  autocomplete keystroke and every `/<category>` command filters on this pair together;
+  harmless at the current collection size (~100-200 docs) but cheap to add ahead of it
+  actually mattering.
 
 ## Design decision log (so you don't re-litigate these)
 - **"Seasonal Content" visibility is one shared toggle (Option A)**, not five
@@ -231,6 +237,10 @@ the same change**, or it will not actually save.
   `parseBulkDrawList` now re-merges a trailing bare-4-digit-year field back onto the
   previous field before parsing it as a date. Keep that in mind if you touch this
   parser: any fix here needs to stay comma-in-date-safe, not just comma-delimiter-safe.
+  Per-item parsing (`[tier] Item Name` -> `{tier, name}`) is factored into
+  `adminParser.js`'s exported `parseItemLine()`, shared by `parseBulkDrawList` and
+  `index.js`'s single add-draw/edit-draw modal handlers — previously copy-pasted
+  identically in all three places.
 - **`/update`'s bulk draws import is split into two independent flows — New and
   Returning each have their own modal** (`modal_draws_bulk_new` /
   `modal_draws_bulk_returning` in index.js, `parseBulkDrawList` in `adminParser.js`
@@ -350,9 +360,10 @@ user's "actual" profile color directly; instead we extract one ourselves:
   hash the cached hex was computed from; a fresh CDN download + re-extraction only
   happens if that specific image actually changed.
 
-## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`)
-Two small helpers introduced when calendar/draws/patchnotes/drawprices were redesigned
-to a consistent look, specifically to avoid four copies of the same layout drifting out
+## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`, `utils/globalNav.js`,
+`utils/ephemeral.js`, `utils/sendV2Payload.js`)
+Small helpers introduced when calendar/draws/patchnotes/drawprices(/seasonend/dmz) were redesigned
+to a consistent look, specifically to avoid multiple copies of the same layout/logic drifting out
 of sync the way the `/timestamp` duplication already has (see above):
 - `buildTitleBlock(topLine, emoji, label)` — the two-line header pattern used by all
   four: the command's own animated-emoji header as the bigger `#` line FIRST, with a
@@ -380,6 +391,33 @@ of sync the way the `/timestamp` duplication already has (see above):
   `totalChunks <= 1` — **callers must check for that and skip pushing the row**, don't
   assume it's always safe to push directly. Reuse this for any future paginated command
   rather than hand-rolling another slightly-different prev/next row.
+- `buildGlobalNavRow(activeCustomId)` — the 5-button Calendar/Draws/Draw Prices/Patch
+  Notes/Season End row, used by all five of those commands. Used to be hand-copied
+  nearly identically into each file, differing only in which button was styled as the
+  active/disabled one — exactly the duplication shape that caused the accent-color
+  palette to rotate out of sync with nav button order once already (see the color
+  palette note above). Collapsing to one function means the button order/labels/
+  custom_ids can only ever drift out of sync with themselves, not silently across 5
+  separate files. If the nav button order or set of commands ever changes, this is the
+  only place to update.
+- `resolveEphemeral({ argPrivate, prefs, prefsField })` — the "explicit option > saved
+  preference > default (public)" priority resolution, previously hand-rolled identically
+  7 times across calendar/draws/patchnotes/drawprices/seasonend/dmz/index.js's MP
+  loadout fallback, differing only in which `UserPreference` field to check
+  (`seasonalVisibility` vs `loadoutVisibility`). One place to change the priority rule
+  itself, instead of 7.
+- `sendV2Payload(interaction, components, { content, flags, embeds, allowedMentions })` —
+  the raw `rest.patch(Routes.webhookMessage(interaction.applicationId, interaction.token,
+  '@original'))` bypass every Components V2 command needs (discord.js's high-level
+  reply/followUp/update don't reliably serialize raw V2 JSON — no builder class exists
+  for a type-17 Container), previously repeated verbatim at ~10 send sites. `flags`
+  defaults to `32768` (Components V2) since that's the common case; pass an explicit
+  override for the rare site that needs something else (e.g. `/timestamp`'s dropdown
+  re-render, which has to manually re-OR in the ephemeral bit since that path doesn't go
+  through a normal `deferReply()`, or `share_public`'s dynamically-computed flags after
+  stripping the ephemeral bit from an existing message). `/timestamp`'s plain-text
+  parse-error fallback (no components at all) is left as a raw call rather than forced
+  through this helper — genuinely a different shape, not more duplication to collapse.
 
 ## Loadout commands (`/dmz`, `/all`, `/<category>`) have `build`/`private` options
 All three accept an optional `build` (integer, 1-based, matching the "Build N of M" footer text —

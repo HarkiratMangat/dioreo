@@ -4,6 +4,7 @@ const { generateTimestamps } = require('../utils/timestampHelper');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { withShareButton } = require('../utils/shareButton');
+const { sendV2Payload } = require('../utils/sendV2Payload');
 
 // Shared option list for the style-switch dropdown, used by both view modes below. index.js's
 // 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather
@@ -20,6 +21,22 @@ const STYLE_SELECT_OPTIONS = [
     { label: "Short Date, Medium Time (S)", value: "shortDateTimeMedium", description: "e.g., 20/04/2021, 16:20:30" },
     { label: "Relative Time (R)", value: "relative", description: "e.g., 4 years ago" }
 ];
+
+// Shorthand-day/relative-word expansions for the chrono parser, compiled once here at module load
+// instead of being rebuilt (10 `new RegExp(...)` calls) on every single /timestamp invocation --
+// this data never depends on anything per-call, so there's no reason to recreate it each time.
+const SHORTHAND_EXPANSIONS = Object.entries({
+    '\\btom\\b|\\btomorr\\b|\\btomorrow\\b': 'tomorrow',
+    '\\btod\\b|\\btoday\\b': 'today',
+    '\\byest\\b|\\byesterday\\b': 'yesterday',
+    '\\bsun\\b|\\bsunday\\b': 'Sunday',
+    '\\bmon\\b|\\bmonday\\b': 'Monday',
+    '\\btue\\b|\\btues\\b|\\btuesday\\b': 'Tuesday',
+    '\\bwed\\b|\\bweds\\b|\\bwednesday\\b': 'Wednesday',
+    '\\bthu\\b|\\bthur\\b|\\bthurs\\b|\\bthursday\\b': 'Thursday',
+    '\\bfri\\b|\\bfriday\\b': 'Friday',
+    '\\bsat\\b|\\bsaturday\\b': 'Saturday'
+}).map(([pattern, replacement]) => ({ regex: new RegExp(pattern, 'g'), replacement }));
 
 // Global lookup table mapping standard IANA timezones to descriptive user-facing labels
 const tzLabels = {
@@ -179,21 +196,8 @@ module.exports = {
 
             // Clean text input and expand shorthand variations into complete words for the chrono parser engine
             let processedQuery = queryInput.toLowerCase().trim();
-            const expansions = {
-                '\\btom\\b|\\btomorr\\b|\\btomorrow\\b': 'tomorrow',
-                '\\btod\\b|\\btoday\\b': 'today',
-                '\\byest\\b|\\byesterday\\b': 'yesterday',
-                '\\bsun\\b|\\bsunday\\b': 'Sunday',
-                '\\bmon\\b|\\bmonday\\b': 'Monday',
-                '\\btue\\b|\\btues\\b|\\btuesday\\b': 'Tuesday',
-                '\\bwed\\b|\\bweds\\b|\\bwednesday\\b': 'Wednesday',
-                '\\bthu\\b|\\bthur\\b|\\bthurs\\b|\\bthursday\\b': 'Thursday',
-                '\\bfri\\b|\\bfriday\\b': 'Friday',
-                '\\bsat\\b|\\bsaturday\\b': 'Saturday'
-            };
-
-            for (const [regex, replacement] of Object.entries(expansions)) {
-                processedQuery = processedQuery.replace(new RegExp(regex, 'g'), replacement);
+            for (const { regex, replacement } of SHORTHAND_EXPANSIONS) {
+                processedQuery = processedQuery.replace(regex, replacement);
             }
 
             const timestampsBase = generateTimestamps(processedQuery, tz);
@@ -302,15 +306,12 @@ module.exports = {
 
         // --- LIBRARY SERIALIZATION BYPASS ---
         // 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route.
-        return await interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            {
-                body: {
-                    content: "",
-                    components: withShareButton(componentPayload, ephemeral),
-                    flags: ephemeral ? (32768 | 64) : 32768
-                }
-            }
-        );
+        // `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying on
+        // sendV2Payload's plain 32768 default -- this render path (via overrideState, see the
+        // dropdown-driven re-render at the top of this function) doesn't go through a normal
+        // deferReply() that would set ephemeral state on its own, so it has to be preserved here.
+        return await sendV2Payload(interaction, withShareButton(componentPayload, ephemeral), {
+            flags: ephemeral ? (32768 | 64) : 32768
+        });
     }
 };

@@ -37,4 +37,11 @@ const LoadoutSchema = new mongoose.Schema({
     lastUpdated: { type: Date, default: Date.now }
 });
 
+// Compound index on category+mode -- every autocomplete keystroke (weapon dictionary, /manage
+// loadouts search) and every /<category> command filters on this pair together
+// (Loadout.find({category, mode})/Loadout.distinct('category', {mode})). Harmless at the current
+// collection size (~100-200 docs), but cheap to add now rather than needing a migration later once
+// it actually matters.
+LoadoutSchema.index({ category: 1, mode: 1 });
+
 module.exports = mongoose.model('Loadout', LoadoutSchema);

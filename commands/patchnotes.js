@@ -4,13 +4,16 @@
 // ARCHITECTURE: Subcommands (/patch notes). Leverages Discord's native V2 Media Carousel 
 // Component (Type 12) to create swipable image galleries.
 
-const { SlashCommandBuilder, Routes } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
 const { withShareButton } = require('../utils/shareButton');
+const { buildGlobalNavRow } = require('../utils/globalNav');
+const { resolveEphemeral } = require('../utils/ephemeral');
+const { sendV2Payload } = require('../utils/sendV2Payload');
 
 // NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
 // intended nav-button-order palette assignment. Patch Notes is the 4th nav button, so Light Coral.
@@ -86,16 +89,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         }]
     });
 
-    const globalNavigationRow = {
-        type: 1,
-        components: [
-            { type: 2, style: 2, label: "Calendar", custom_id: "nav_calendar" },
-            { type: 2, style: 2, label: "Draws", custom_id: "nav_draws" },
-            { type: 2, style: 2, label: "Draw Prices", custom_id: "nav_prices" },
-            { type: 2, style: 4, label: "Patch Notes", custom_id: "nav_patchnotes", disabled: true },
-            { type: 2, style: 2, label: "Season End", custom_id: "nav_seasonend" }
-        ]
-    };
+    const globalNavigationRow = buildGlobalNavRow('nav_patchnotes');
 
     return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
 }
@@ -118,7 +112,14 @@ module.exports = {
 
     async execute(interaction, internalPatchId = null) {
         const userId = interaction.user.id;
-        const prefs = await UserPreference.findOne({ discordId: userId });
+        // NOTE (added during review): kicked off alongside `prefs` instead of after it -- doesn't
+        // depend on prefs at all, so it resolves concurrently with the deferReply() ack below
+        // rather than only starting once that's done. Only `prefs` is actually awaited before
+        // deferReply (keeps the 3-second ack window fast). .lean() since this doc is only ever
+        // read here, never saved.
+        const prefsPromise = UserPreference.findOne({ discordId: userId });
+        const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
+        const prefs = await prefsPromise;
 
         let argPrivate = null;
         let targetPatchId = internalPatchId;
@@ -133,10 +134,10 @@ module.exports = {
         // NOTE: switched from the old per-command `patchnotesVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A).
-        const isEphemeral = argPrivate !== null ? argPrivate : (prefs ? prefs.seasonalVisibility === 'ephemeral' : false);
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'seasonalVisibility' });
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+        const seasonalDoc = await seasonalDocPromise;
 
         if (!seasonalDoc || !seasonalDoc.patchNotes || seasonalDoc.patchNotes.length === 0) {
             return interaction.followUp({ content: '❌ No patch notes have been logged in the database yet.' });
@@ -145,9 +146,6 @@ module.exports = {
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
         const components = buildContainer(seasonalDoc, targetPatchId, accentColor, isEphemeral);
 
-        return await interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            { body: { content: "", components, flags: 32768 } }
-        );
+        return await sendV2Payload(interaction, components);
     }
 };

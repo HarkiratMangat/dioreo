@@ -37,6 +37,17 @@ function resolveTier(shorthand) {
     return toTitleCase(shorthand);
 }
 
+// Shared by parseBulkDrawList below AND index.js's single add-draw/edit-draw modal handlers --
+// used to be copy-pasted verbatim in all three places. Matches the first word as the tier
+// shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
+function parseItemLine(itemStr) {
+    const match = itemStr.match(/^(\S+)\s+(.+)$/);
+    if (match) {
+        return { tier: resolveTier(match[1]), name: toTitleCase(match[2]) };
+    }
+    return { tier: 'epic', name: toTitleCase(itemStr) }; // Fallback
+}
+
 function parseAdminDate(dateStr) {
     const cleanStr = dateStr.trim();
     // NOTE (fixed during review — likely cause of the DMZ season-end time showing 1 hour off from
@@ -92,14 +103,7 @@ function parseBulkDrawList(bulkText) {
         const parsedDate = parseAdminDate(dateStr);
 
         // Extract Items (everything left in the middle)
-        const items = parts.slice(1).map(itemStr => {
-            // Match the first word as the tier shorthand, the rest as the name
-            const match = itemStr.match(/^(\S+)\s+(.+)$/);
-            if (match) {
-                return { tier: resolveTier(match[1]), name: toTitleCase(match[2]) };
-            }
-            return { tier: 'epic', name: toTitleCase(itemStr) }; // Fallback
-        });
+        const items = parts.slice(1).map(parseItemLine);
 
         parsedDraws.push({
             title: title,
@@ -200,4 +204,4 @@ function parseLoadoutBadges(badgesStr) {
     return { isMeta, categoryRank, unrecognized };
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };

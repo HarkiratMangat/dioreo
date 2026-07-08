@@ -179,9 +179,11 @@ async function handleBotReady() {
 
 client.once(Events.ClientReady, handleBotReady);
 
-// ==========================================
-// PHASE 5: INTERACTIVE ELEMENT GENERATORS
-// ==========================================
+// NOTE (removed during review): a "PHASE 5: INTERACTIVE ELEMENT GENERATORS" banner used to sit
+// here with no code under it -- the generators it originally described (loadBuildsFromExcel()'s
+// in-memory builders) moved to utils/loadoutRender.js during the MP-migration work and were never
+// cleaned up from this file's phase numbering. Removed rather than left as a gap between Phase 4
+// and Phase 6 that reads like something's missing.
 
 // ==========================================
 // PHASE 6: INTERACTION SYSTEM OVERSEER (ROUTING)
@@ -212,7 +214,9 @@ client.on('interactionCreate', async interaction => {
 
                 if (group === 'draws') {
                     const SeasonalData = require('./models/SeasonalData');
-                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    // .lean() -- read-only here (never saved in this branch), skips Mongoose
+                    // document hydration on every autocomplete keystroke.
+                    const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
                     if (!doc) return await interaction.respond([]);
 
                     // Combine both arrays (New & Returning) and map them for the dropdown
@@ -232,8 +236,9 @@ client.on('interactionCreate', async interaction => {
                     // Fetch everything and filter in JS (same pattern as the weapon dictionary
                     // block below) rather than a raw Mongo $regex -- fuzzyMatch's punctuation
                     // stripping can't be expressed as a single regex against the stored field, and
-                    // this collection is small enough that fetching it all is cheap.
-                    const allLoadouts = await Loadout.find({});
+                    // this collection is small enough that fetching it all is cheap. .lean() since
+                    // these docs are only ever read here, never saved.
+                    const allLoadouts = await Loadout.find({}).lean();
                     const matching = allLoadouts
                         .filter(l => fuzzyMatch(focusedValue, l.weaponName) || fuzzyMatch(focusedValue, l.buildName))
                         .slice(0, 25);
@@ -250,7 +255,7 @@ client.on('interactionCreate', async interaction => {
             if (commandName === 'patch') {
                 const SeasonalData = require('./models/SeasonalData');
                 const { cleanPatchTitle } = require('./commands/patchnotes');
-                const doc = await SeasonalData.findOne({ docType: 'global' });
+                const doc = await SeasonalData.findOne({ docType: 'global' }).lean(); // read-only here
                 if (!doc || !doc.patchNotes) return await interaction.respond([]);
 
                 // Strip the legacy "Balance Changes for..." prefix here too, same as the main
@@ -272,7 +277,7 @@ client.on('interactionCreate', async interaction => {
                 queryFilter.mode = 'MP';
             } else queryFilter.mode = 'MP';
 
-            const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category');
+            const matchingWeapons = await Loadout.find(queryFilter).select('weaponName weaponKey category').lean();
             const uniqueMap = new Map();
             matchingWeapons.forEach(w => uniqueMap.set(w.weaponKey, w));
             const distinctChoices = Array.from(uniqueMap.values());
@@ -334,22 +339,41 @@ client.on('interactionCreate', async interaction => {
         const Loadout = require('./models/Loadout');
         const UserPreference = require('./models/UserPreference');
         const { buildLoadoutCard, getMpCategoryAccent } = require('./utils/loadoutRender');
+        const { resolveEphemeral } = require('./utils/ephemeral');
 
         // Same "Weapon Builds" toggle /dmz reads — one shared preference across every loadout
         // lookup command (Option A pattern, matches `seasonalVisibility`). `private` option
         // overrides it explicitly, same explicit-option > saved-preference > default priority
         // every other command uses — lets a user land already-public in one shot instead of
         // relying on "Share Publicly" to flip it after the fact.
-        const prefs = await UserPreference.findOne({ discordId: interaction.user.id });
+        // NOTE (added during review): the weapon query is kicked off alongside prefs instead of
+        // after it -- it doesn't depend on prefs at all, so it resolves concurrently with the
+        // deferReply() ack below rather than only starting once that's done. Only `prefs` is
+        // actually awaited before deferReply (keeps the 3-second ack window fast). .lean() since
+        // these builds are only ever read here, never saved.
+        const weaponKey = interaction.options.getString('weapon');
+        const prefsPromise = UserPreference.findOne({ discordId: interaction.user.id });
+        const mpBuildsPromise = Loadout.find({ weaponKey, mode: 'MP' }).lean();
+
+        const prefs = await prefsPromise;
         const argPrivate = interaction.options.getBoolean('private');
-        const isEphemeral = argPrivate !== null ? argPrivate : (prefs ? prefs.loadoutVisibility === 'ephemeral' : false);
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
         await interaction.deferReply({ ephemeral: isEphemeral });
 
-        const weaponKey = interaction.options.getString('weapon');
-        const mpBuilds = await Loadout.find({ weaponKey, mode: 'MP' });
+        const mpBuilds = await mpBuildsPromise;
 
         if (!mpBuilds || mpBuilds.length === 0) {
-            return interaction.followUp({ content: '❌ No MP builds were found for that weapon.' });
+            // NOTE (fixed during review): awaited + wrapped in its own try/catch, matching the
+            // pattern used elsewhere in this handler -- an unawaited `return interaction.
+            // followUp(...)` inside a try block can reject AFTER the block has already exited
+            // (the try/catch is no longer "listening" by the time that happens), which used to be
+            // able to crash the whole process. See CLAUDE.md's crash-resilience notes.
+            try {
+                await interaction.followUp({ content: '❌ No MP builds were found for that weapon.' });
+            } catch (notifyError) {
+                console.error('Failed to notify user of missing MP builds (interaction likely expired):', notifyError);
+            }
+            return;
         }
 
         // `build` lets a user jump straight to a specific build number (1-based, matching the
@@ -372,10 +396,8 @@ client.on('interactionCreate', async interaction => {
         // reliably handle raw V2 JSON (no builder class exists for Container/type 17).
         const accentColor = getMpCategoryAccent(mpBuilds[0].category);
         const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: accentColor, idPrefix: 'mp', isEphemeral });
-        return interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            { body: { content: '', components: cardPayload.components, flags: cardPayload.flags } }
-        );
+        const { sendV2Payload } = require('./utils/sendV2Payload');
+        return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
     }
 
     // ==========================================
@@ -448,7 +470,13 @@ client.on('interactionCreate', async interaction => {
 
             // SECURITY GATEWAY LOCK: Prevent external users from clicking inside an active configuration trace.
             if (interaction.user.id !== targetUserId) {
-                return interaction.followUp({ content: "❌ **Action Blocked:** You do not possess clearance to override settings options on another user's interactive panel.", ephemeral: true });
+                // Awaited + wrapped in its own try/catch -- see the matching note above.
+                try {
+                    await interaction.followUp({ content: "❌ **Action Blocked:** You do not possess clearance to override settings options on another user's interactive panel.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
+                }
+                return;
             }
 
             const UserPreference = require('./models/UserPreference');
@@ -514,10 +542,8 @@ client.on('interactionCreate', async interaction => {
             const flags = (msg.flags?.bitfield || 0) & ~64;
 
             await interaction.deferReply(); // public — no ephemeral flag
-            return interaction.client.rest.patch(
-                Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-                { body: { content: msg.content || '', embeds, components, flags } }
-            );
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return sendV2Payload(interaction, components, { content: msg.content || '', embeds, flags });
         }
 
         // A. SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
@@ -527,7 +553,13 @@ client.on('interactionCreate', async interaction => {
 
             // SECURITY GATEWAY WALL: Block rogue server members from attempting to adjust another user's preference canvas
             if (interaction.user.id !== targetUserId) {
-                return interaction.followUp({ content: "❌ **Action Blocked:** You do not possess authorization to alter option nodes on this account dashboard profile.", ephemeral: true });
+                // Awaited + wrapped in its own try/catch -- see the matching note above.
+                try {
+                    await interaction.followUp({ content: "❌ **Action Blocked:** You do not possess authorization to alter option nodes on this account dashboard profile.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
+                }
+                return;
             }
 
             const action = actionStr.replace('toggle_', ''); // Strip prefix to catch clean string maps
@@ -625,7 +657,15 @@ client.on('interactionCreate', async interaction => {
             const targetCommandName = commandMap[interaction.customId];
             const targetCommand = client.commands.get(targetCommandName);
 
-            if (!targetCommand) return interaction.followUp({ content: '❌ Target interface module is currently offline.', ephemeral: true });
+            if (!targetCommand) {
+                // Awaited + wrapped in its own try/catch -- see the matching note above.
+                try {
+                    await interaction.followUp({ content: '❌ Target interface module is currently offline.', ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of offline nav target (interaction likely expired):', notifyError);
+                }
+                return;
+            }
 
             try {
                 // We temporarily override the interaction's deferral methods so the target command 
@@ -674,24 +714,33 @@ client.on('interactionCreate', async interaction => {
             // Strip the prefix so we can parse the standard action format
             const [action, gunKey, currentIndex] = interaction.customId.replace(isDmz ? 'dmz' : 'mp', '').split('_');
 
-            const matchingBuilds = await Loadout.find({ weaponKey: gunKey, mode });
+            // .lean() -- these builds are only ever read (rendered into the card or replied with
+            // directly), never mutated/saved on this path.
+            const matchingBuilds = await Loadout.find({ weaponKey: gunKey, mode }).lean();
             let newIndex = parseInt(currentIndex);
 
             // Calculate wrap-around pagination index
             if (action === 'next') newIndex = (newIndex + 1) % matchingBuilds.length;
             if (action === 'prev') newIndex = (newIndex - 1 + matchingBuilds.length) % matchingBuilds.length;
-            if (action === 'copy') {
+            if (action === 'copy' || action === 'copyatt') {
+                // Awaited + wrapped in its own try/catch -- see the matching note above. No further
+                // fallback reply attempt on failure here (unlike the error-fallback sites): this IS
+                // the terminal action, and if the interaction token already failed once, a second
+                // reply attempt on the same token would fail too.
+                const build = matchingBuilds[newIndex];
                 // Prefer the real in-game Gunsmith code (shareCode) if this loadout has one, falling
                 // back to buildName for loadouts added via /manage (which never collected a real
-                // code) — see models/Loadout.js for why these are two separate fields.
-                const build = matchingBuilds[newIndex];
-                return interaction.reply({ content: build.shareCode || build.buildName, ephemeral: true });
-            }
-            if (action === 'copyatt') {
-                // Plain list, one per line, no bullets/backticks/formatting -- unlike the card's own
-                // "### Attachments" display, this is meant to be pasted straight into Gunsmith.
-                const build = matchingBuilds[newIndex];
-                return interaction.reply({ content: build.attachments.join('\n'), ephemeral: true });
+                // code) — see models/Loadout.js for why these are two separate fields. "Copy
+                // Attachments" is the plain list instead, one per line, no bullets/backticks/
+                // formatting -- unlike the card's own "### Attachments" display, this is meant to be
+                // pasted straight into Gunsmith.
+                const replyContent = action === 'copy' ? (build.shareCode || build.buildName) : build.attachments.join('\n');
+                try {
+                    await interaction.reply({ content: replyContent, ephemeral: true });
+                } catch (replyError) {
+                    console.error(`Failed to reply to loadout ${action} action (interaction likely expired):`, replyError);
+                }
+                return;
             }
 
             // PRO FIX: defer first — same "LIBRARY SERIALIZATION BYPASS" reasoning used everywhere
@@ -715,10 +764,8 @@ client.on('interactionCreate', async interaction => {
                 ? { color: 1842204, idPrefix: 'dmz', isEphemeral } // #1c1c1c
                 : { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: 'mp', isEphemeral });
 
-            return await interaction.client.rest.patch(
-                Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-                { body: { content: '', components: cardPayload.components, flags: cardPayload.flags } }
-            );
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
     }
 
@@ -730,11 +777,20 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isModalSubmit()) {
         const { customId } = interaction;
         const SeasonalData = require('./models/SeasonalData');
-        const { parseAdminDate } = require('./utils/adminParser'); // Requires date utility
+        // Hoisted once here instead of being re-required with a different destructured subset in
+        // nearly every branch below (all inside the same already-required module scope).
+        const { parseAdminDate, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges } = require('./utils/adminParser');
 
-        // Initialize connection to the global document
-        let seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
-        if (!seasonalDoc) seasonalDoc = new SeasonalData({ docType: 'global' });
+        // NOTE (fixed during review): this used to fetch unconditionally before branching on
+        // customId, but the loadout routes below (edit_loadout_/add_loadout) never touch
+        // seasonalDoc at all -- every loadout add/edit modal submit was paying for a wasted
+        // findOne (and a throwaway `new SeasonalData()` construction on a fresh install). Only
+        // fetch it for the branches that actually use it.
+        let seasonalDoc = null;
+        if (!customId.startsWith('edit_loadout_') && customId !== 'add_loadout') {
+            seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            if (!seasonalDoc) seasonalDoc = new SeasonalData({ docType: 'global' });
+        }
 
         // --- ADMIN ROUTE A: WIPE SEASON DATA ---
         if (customId === 'modal_wipe_season') {
@@ -757,7 +813,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply({ ephemeral: true });
             const isNew = customId === 'modal_draws_bulk_new';
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
-            const { parseBulkDrawList } = require('./utils/adminParser');
             const parsedDraws = parseBulkDrawList(bulkText);
 
             // OVERRIDE, not append: each bulk paste is the full current list for this category, not
@@ -778,7 +833,6 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'modal_calendar_bulk') {
             await interaction.deferReply({ ephemeral: true });
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
-            const { parseBulkEvents } = require('./utils/adminParser');
             const parsedEvents = parseBulkEvents(bulkText);
 
             const newEventDocs = parsedEvents.map(e => ({
@@ -836,7 +890,6 @@ client.on('interactionCreate', async interaction => {
         if (customId.startsWith('edit_draw_')) {
             await interaction.deferReply({ ephemeral: true });
             const [_, __, targetId, drawType] = customId.split('_');
-            const { parseAdminDate, toTitleCase, resolveTier } = require('./utils/adminParser');
 
             // Find and update the exact object in the array
             const arrayTarget = drawType === 'new' ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
@@ -849,10 +902,7 @@ client.on('interactionCreate', async interaction => {
 
                 // Re-parse the text area items back into objects
                 const rawItems = interaction.fields.getTextInputValue('items');
-                arrayTarget[drawIndex].items = rawItems.split('\n').filter(l => l.trim().length > 0).map(itemStr => {
-                    const match = itemStr.match(/^(\S+)\s+(.+)$/);
-                    return match ? { tier: resolveTier(match[1]), name: toTitleCase(match[2]) } : { tier: 'epic', name: toTitleCase(itemStr) };
-                });
+                arrayTarget[drawIndex].items = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
 
                 // Auto-sort to maintain order after edit
                 arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -866,7 +916,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply({ ephemeral: true });
             const targetId = customId.replace('edit_loadout_', '');
             const Loadout = require('./models/Loadout');
-            const { parseLoadoutBadges } = require('./utils/adminParser');
 
             // 3rd pipe segment is the badges token list (see manage.js's modal + parseLoadoutBadges) --
             // added alongside Category|Mode rather than as its own field since modals cap at 5.
@@ -918,7 +967,6 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'add_draw_new' || customId === 'add_draw_returning') {
             await interaction.deferReply({ ephemeral: true });
             const drawType = customId.replace('add_draw_', '');
-            const { parseAdminDate, toTitleCase, resolveTier } = require('./utils/adminParser');
 
             const title = interaction.fields.getTextInputValue('title');
             const dateStr = interaction.fields.getTextInputValue('date');
@@ -926,10 +974,7 @@ client.on('interactionCreate', async interaction => {
 
             // Parse items string block
             const rawItems = interaction.fields.getTextInputValue('items');
-            const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(itemStr => {
-                const match = itemStr.match(/^(\S+)\s+(.+)$/);
-                return match ? { tier: resolveTier(match[1]), name: toTitleCase(match[2]) } : { tier: 'epic', name: toTitleCase(itemStr) };
-            });
+            const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
 
             const newDrawObj = {
                 title: toTitleCase(title),
@@ -952,7 +997,6 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'add_loadout') {
             await interaction.deferReply({ ephemeral: true });
             const Loadout = require('./models/Loadout');
-            const { parseLoadoutBadges } = require('./utils/adminParser');
 
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);

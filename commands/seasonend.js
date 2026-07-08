@@ -4,12 +4,15 @@
 // ARCHITECTURE: Uses Subcommands (/season end) to bypass Discord's space restrictions.
 // Features dynamic, editable titles fetched from the MongoDB global document.
 
-const { SlashCommandBuilder, Routes } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { getAccentColorForCommand } = require('../utils/accentColor');
 const { withShareButton } = require('../utils/shareButton');
+const { buildGlobalNavRow } = require('../utils/globalNav');
+const { resolveEphemeral } = require('../utils/ephemeral');
+const { sendV2Payload } = require('../utils/sendV2Payload');
 
 // NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
 // intended nav-button-order palette assignment. Season End is the 5th nav button, so Tumbleweed.
@@ -32,19 +35,26 @@ module.exports = {
         const userId = interaction.user.id;
 
         // 1. VISIBILITY RESOLUTION: Check for local command override first, fallback to DB preference
-        const prefs = await UserPreference.findOne({ discordId: userId });
+        // NOTE (added during review): the countdown doc is kicked off alongside `prefs` instead of
+        // after it -- doesn't depend on prefs at all, so it resolves concurrently with the
+        // deferReply() ack below rather than only starting once that's done. Only `prefs` is
+        // actually awaited before deferReply (keeps the 3-second ack window fast). .lean() since
+        // this doc is only ever read here, never saved.
+        const prefsPromise = UserPreference.findOne({ discordId: userId });
+        const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
+        const prefs = await prefsPromise;
         const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('private') : null;
         // NOTE: switched from the old per-command `seasonendVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A — one switch controls Season End/Draws/Patch Notes/Calendar/Draw
         // Prices together, per user's decision).
-        const isEphemeral = argPrivate !== null ? argPrivate : (prefs ? prefs.seasonalVisibility === 'ephemeral' : false);
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'seasonalVisibility' });
 
         // 2. MODERN DEFERRAL: Use bitwise flag 64 for ephemeral, 0 for public
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         // 3. DATABASE FETCH: Retrieve the global countdown dates
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+        const seasonalDoc = await seasonalDocPromise;
 
         // Helper function to safely convert JS Dates to Discord UNIX seconds
         const getUnix = (dateObj) => dateObj ? Math.floor(new Date(dateObj).getTime() / 1000) : null;
@@ -93,21 +103,9 @@ module.exports = {
         };
 
         // 5. GLOBAL NAVIGATION: Ordered alphabetically by your request. 'Season End' is locked to Danger (Style 4).
-        const globalNavigationRow = {
-            type: 1,
-            components: [
-                { type: 2, style: 2, label: "Calendar", custom_id: "nav_calendar" },
-                { type: 2, style: 2, label: "Draws", custom_id: "nav_draws" },
-                { type: 2, style: 2, label: "Draw Prices", custom_id: "nav_prices" },
-                { type: 2, style: 2, label: "Patch Notes", custom_id: "nav_patchnotes" },
-                { type: 2, style: 4, label: "Season End", custom_id: "nav_seasonend", disabled: true }
-            ]
-        };
+        const globalNavigationRow = buildGlobalNavRow('nav_seasonend');
 
         // 6. REST BYPASS: Pushes the V2 components natively to Discord
-        return await interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            { body: { content: "", components: withShareButton([containerPayload, globalNavigationRow], isEphemeral), flags: 32768 } }
-        );
+        return await sendV2Payload(interaction, withShareButton([containerPayload, globalNavigationRow], isEphemeral));
     }
 };

@@ -4,11 +4,12 @@
 // ARCHITECTURE: Implements native Type 9 Item Rows with Button Accessories to 
 // bypass Action Row limits while maintaining a clean, compact UI design.
 
-const { SlashCommandBuilder, Routes } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { resolveAccentColor } = require('../utils/accentColor');
 const { withShareButton } = require('../utils/shareButton');
+const { sendV2Payload } = require('../utils/sendV2Payload');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -256,9 +257,6 @@ module.exports = {
         // mention in the header above while still rendering it as a normal clickable blue mention —
         // a "silent" mention. Without this, every /settings run would ping the user for mentioning
         // themselves, which is pure noise since they're the one who ran the command.
-        return await interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            { body: { content: "", components: payload, flags: 32768, allowed_mentions: { users: [] } } }
-        );
+        return await sendV2Payload(interaction, payload, { allowedMentions: { users: [] } });
     }
 };

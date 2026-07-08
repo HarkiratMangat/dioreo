@@ -4,7 +4,7 @@
 // ARCHITECTURE: Multi-page array rendering. 
 // Uses an internal pagination block (New vs Returning) combined with Global Tab Navigation.
 
-const { SlashCommandBuilder, Routes } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const SeasonalData = require('../models/SeasonalData');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
@@ -12,6 +12,9 @@ const { getAccentColorForCommand } = require('../utils/accentColor');
 const { buildTitleBlock } = require('../utils/titleBlock');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { withShareButton } = require('../utils/shareButton');
+const { buildGlobalNavRow } = require('../utils/globalNav');
+const { resolveEphemeral } = require('../utils/ephemeral');
+const { sendV2Payload } = require('../utils/sendV2Payload');
 
 const PRESET_ACCENT = 7166330; // Chinese Violet
 
@@ -35,7 +38,9 @@ function buildDrawSections(drawsArray) {
         // Resolve emoji tiers and title casing
         const itemsString = draw.items.map(item => {
             const emoji = emojis[item.tier.toLowerCase()] || '🔹';
-            return `${emoji} **${item.name.split(' - ')[0]}**${item.name.includes(' - ') ? ` - ${item.name.split(' - ')[1]}` : ''}`;
+            // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
+            const nameParts = item.name.split(' - ');
+            return `${emoji} **${nameParts[0]}**${nameParts.length > 1 ? ` - ${nameParts[1]}` : ''}`;
         }).join('\n');
 
         const unixTime = Math.floor(new Date(draw.date).getTime() / 1000);
@@ -123,16 +128,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
         components: drawComponents
     };
 
-    const globalNavigationRow = {
-        type: 1,
-        components: [
-            { type: 2, style: 2, label: "Calendar", custom_id: "nav_calendar" },
-            { type: 2, style: 4, label: "Draws", custom_id: "nav_draws", disabled: true }, // Locked to Danger/Red
-            { type: 2, style: 2, label: "Draw Prices", custom_id: "nav_prices" },
-            { type: 2, style: 2, label: "Patch Notes", custom_id: "nav_patchnotes" },
-            { type: 2, style: 2, label: "Season End", custom_id: "nav_seasonend" }
-        ]
-    };
+    const globalNavigationRow = buildGlobalNavRow('nav_draws');
 
     return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
 }
@@ -149,7 +145,14 @@ module.exports = {
 
     async execute(interaction, pageOverride = null, subPageOverride = 0) {
         const userId = interaction.user.id;
-        const prefs = await UserPreference.findOne({ discordId: userId });
+        // NOTE (added during review): kicked off alongside `prefs` instead of after it -- doesn't
+        // depend on prefs at all, so it resolves concurrently with the deferReply() ack below
+        // rather than only starting once that's done. Only `prefs` is actually awaited before
+        // deferReply (keeps the 3-second ack window fast). .lean() since this doc is only ever
+        // read here, never saved.
+        const prefsPromise = UserPreference.findOne({ discordId: userId });
+        const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
+        const prefs = await prefsPromise;
 
         let argPrivate = null;
         let activePage = pageOverride || 'new'; // pageOverride is used by the button router in index.js
@@ -164,12 +167,12 @@ module.exports = {
         // NOTE: switched from the old per-command `drawsVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A).
-        const isEphemeral = argPrivate !== null ? argPrivate : (prefs ? prefs.seasonalVisibility === 'ephemeral' : false);
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'seasonalVisibility' });
         if (!interaction.deferred) {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         }
 
-        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+        const seasonalDoc = await seasonalDocPromise;
         if (!seasonalDoc) {
             return interaction.followUp({ content: '❌ The global seasonal database document has not been initialized yet.' });
         }
@@ -177,9 +180,6 @@ module.exports = {
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
         const components = buildContainer(seasonalDoc, activePage, subPageOverride, accentColor, isEphemeral);
 
-        return await interaction.client.rest.patch(
-            Routes.webhookMessage(interaction.applicationId, interaction.token, '@original'),
-            { body: { content: "", components, flags: 32768 } }
-        );
+        return await sendV2Payload(interaction, components);
     }
 };
