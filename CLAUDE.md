@@ -476,7 +476,11 @@ weapon name would have hit the still-Excel-backed render with an incompatible ke
   `/dmz` and the new MP handler — `buildImageUrl` handles `imageKey` being EITHER a bare Cloudinary
   key (the original admin-added-loadout design, and what `migrateBuildsToMongo.js` extracts for
   104 of builds.xlsx's 106 rows — same Cloudinary account already used by `draws.js`) OR a full
-  external URL (needed for the other 2 rows, both LOCUS builds, which are hosted on imgur instead).
+  external URL. At the time of that migration, 2 rows (both LOCUS builds) were still imgur-hosted
+  and needed this fallback; both were since re-uploaded to Cloudinary directly (2026-07-09) and
+  their `imageKey`s updated to bare keys (`LOCUS-1`/`LOCUS-2`), so no current loadout actually
+  exercises the full-URL path anymore — but `buildImageUrl()` still supports it, since `builds.xlsx`
+  (and any future re-run of the migration script against it) could reintroduce an external-URL row.
   Don't assume every row is one or the other — check `ImageURL.startsWith(CLOUDINARY_BASE)` per row
   like the migration script does, rather than treating the whole sheet as one format.
 - Discovering along the way that `buildName` was doing double duty as both the display label AND

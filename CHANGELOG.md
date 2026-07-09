@@ -21,6 +21,42 @@ bottom of this file for work that's committed but not yet pushed.
 
 ---
 
+## v2.7 — 2026-07-09
+**Direct Cloudinary/GitHub integration + bulk loadout data entry**
+- Set up direct API access to both GitHub (fine-grained PAT, scoped to this repo — Contents,
+  Pull requests, Dependabot alerts, Actions) and Cloudinary (upload/rename/list resources) so
+  loadout data and images can be added, corrected, and cross-checked directly against the live
+  database and asset storage instead of only through `/manage`.
+- Fixed a real UI bug: DMZ loadout cards were showing the **buildName** under a `### Gunsmith Code`
+  heading with a working "Copy Code" button, even though DMZ builds never have a real in-game
+  share code (confirmed by Harkirat) — copying it would hand someone a fake code. Both the heading
+  and the button are now skipped entirely for `mode: 'DMZ'` in `utils/loadoutRender.js`.
+- Large batch of real loadout data added/corrected via screenshot extraction, replacing several
+  "Coming Soon" placeholders and fixing two weapon-naming mistakes:
+  - **Bal-27** (AR): rebuilt from 6 screenshots down to 5 confirmed real builds (one bogus
+    community-credited build removed, Cloudinary files renamed/renumbered to match).
+  - **DMZ**: first-ever DMZ loadout data added — SO-14, Type 19 (2 builds), AS VAL, AK117, Fennec,
+    J358 (Secondaries), Outlaw (Sniper).
+  - **PKM** (LMG) and **SKS** (Marksman): additional real MP build variants added alongside their
+    existing ones.
+  - **LOCUS**: both MP builds migrated off imgur onto Cloudinary directly, closing out the last
+    non-Cloudinary image hosting in the whole collection.
+  - **Naming corrections**: "GS50" was actually **.50 GS** and "LCAR" was actually **L-CAR 9** —
+    both renamed (weapon name + internal key) to match their real in-game names, carrying their
+    existing badges over.
+  - **New Secondaries weapons**: Machine Pistol, Crossbow, Dobvra, Shorty — real builds added
+    (Machine Pistol and Crossbow replacing earlier placeholders).
+  - **New Shotgun weapon**: R9-0, added with a Top 3 badge.
+
+## v2.6 — 2026-07-08
+**Placeholder loadout seeding + changelog system**
+- Seeded 7 weapons (Bal-27, FSS Hurricane, Pharo, Machine Pistol, LCAR, GS50, Crossbow) that had
+  badge assignments but no loadout data, with "Coming Soon" placeholder builds (`scripts/
+  createPlaceholderLoadouts.js`) — first real data in the `SECONDARIES` category at the time
+  (most have since been replaced with real data — see v2.7).
+- Added this changelog system (`CHANGELOG.md` + `CHANGELOG-SUMMARY.md` + the stylized release-log
+  page).
+
 ## v2.51 — 2026-07-08
 **"Toxic" badge + bulk badge import** (`6872a43`)
 - Added a third independent loadout badge, **Toxic** (Harkirat's term for an unbalanced/cheese
@@ -178,11 +214,3 @@ green copy button"
   no draws, no patch notes yet — MP loadouts only, rendered as classic Discord Embeds (Components
   V2 didn't exist yet as a Discord feature at this point).
 
----
-
-## Unreleased
-Committed locally, not yet pushed to `origin/main` — no live version number yet.
-- Seeded 7 weapons (Bal-27, FSS Hurricane, Pharo, Machine Pistol, LCAR, GS50, Crossbow) that had
-  badge assignments but no loadout data, with "Coming Soon" placeholder builds (`scripts/
-  createPlaceholderLoadouts.js`) — first real data in the `SECONDARIES` category.
-- This changelog system (`CHANGELOG.md` + `CHANGELOG-SUMMARY.md` + the stylized release-log page).

@@ -2,6 +2,19 @@
 
 The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG.md).
 
+## v2.7 — July 9, 2026
+- Fixed DMZ loadouts showing a fake "Gunsmith Code" that couldn't actually be used in-game.
+- Added a big batch of real weapon data: full DMZ builds for the first time ever (SO-14, Type 19,
+  AS VAL, AK117, Fennec, J358, Outlaw), extra builds for PKM and SKS, and several new Secondaries
+  (Machine Pistol, Crossbow, Dobvra, Shorty) plus a new Shotgun (R9-0).
+- Fixed two weapons that had the wrong name saved: "GS50" is actually **.50 GS**, and "LCAR" is
+  actually **L-CAR 9**.
+
+## v2.6 — July 8, 2026
+- 7 weapons that only had a badge (no real build yet) now show up in the bot with a "Coming Soon"
+  placeholder instead of not appearing at all.
+- Added this very changelog system.
+
 ## v2.51 — July 8, 2026
 - Added a new **"Toxic"** badge for unbalanced/cheese weapon builds.
 - Badges added in bulk to 28 weapons across every category.

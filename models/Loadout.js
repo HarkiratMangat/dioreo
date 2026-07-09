@@ -8,9 +8,11 @@ const LoadoutSchema = new mongoose.Schema({
     buildName: { type: String, default: 'Standard Build' }, // Allows multiple builds per gun
     attachments: [{ type: String }], // Array handles varied attachment limits natively
     // `imageKey` supports EITHER a bare Cloudinary key (the original design, prefixed with the
-    // Cloudinary base URL at render time) OR a full external URL (needed for the builds.xlsx
-    // migration, whose images are hosted on imgur, not Cloudinary) -- see the buildImageUrl()
-    // helper wherever this is rendered (dmz.js, index.js's MP/DMZ lookup + pagination).
+    // Cloudinary base URL at render time) OR a full external URL -- added for the builds.xlsx
+    // migration, which briefly had 2 imgur-hosted LOCUS rows before those were re-uploaded to
+    // Cloudinary directly (2026-07-09). No current row uses the external-URL path, but it stays
+    // supported in case a future import ever has one again -- see the buildImageUrl() helper
+    // wherever this is rendered (dmz.js, index.js's MP/DMZ lookup + pagination).
     imageKey: { type: String, required: true }, // e.g. "HOLGER-26-1" or a full "https://..." URL
     // Added during the builds.xlsx -> MongoDB migration: `description` preserves the old
     // spreadsheet's per-build usage blurb (e.g. "No suppressor build... FMJ allows 1 tap through

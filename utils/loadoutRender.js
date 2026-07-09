@@ -32,9 +32,9 @@ function getMpCategoryAccent(category) {
 }
 
 // `Loadout.imageKey` supports EITHER a bare Cloudinary key (prefixed with the Cloudinary base URL
-// below, the original design used by admin-added loadouts) OR a full external URL -- needed
-// because builds.xlsx's images are hosted on imgur, not Cloudinary, and that data now lives in
-// this same collection after the MP migration.
+// below, the original design used by admin-added loadouts) OR a full external URL -- added for
+// builds.xlsx's 2 originally-imgur-hosted LOCUS rows (since re-uploaded to Cloudinary directly,
+// see models/Loadout.js), kept supported in case a future import ever needs it again.
 function buildImageUrl(imageKey) {
     return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
 }
@@ -114,9 +114,11 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
     containerComponents.push({ type: 10, content: `### Attachments\n${attachmentLines}` });
 
     // Prefers the real in-game Gunsmith code (shareCode) when present, falling back to buildName —
-    // see models/Loadout.js for why these are two separate fields. Omitted entirely if neither is
-    // set (shouldn't happen in practice — buildName always defaults to something — but harmless).
-    const codeText = activeBuild.shareCode || activeBuild.buildName;
+    // see models/Loadout.js for why these are two separate fields. DMZ builds never have a real
+    // code (confirmed by Harkirat — the DMZ Gunsmith screen doesn't expose one the way MP's does),
+    // so this whole section (and the Copy Code button below) is skipped entirely for DMZ rather
+    // than showing the buildName as if it were a real copyable code.
+    const codeText = activeBuild.mode !== 'DMZ' && (activeBuild.shareCode || activeBuild.buildName);
     if (codeText) {
         containerComponents.push({ type: 10, content: `### Gunsmith Code\n\`${codeText}\`` });
     }
@@ -137,7 +139,8 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
     // worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap.
     // "Copy Attachments" replies with the plain attachment list (one per line, no bullets/backticks/
     // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see index.js's
-    // dmz/mp-prefixed button handler's `copyatt` action.
+    // dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the
+    // Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there.
     const paginationRow = buildPaginationRow({
         totalChunks: builds.length,
         currentPage: index,
@@ -147,7 +150,9 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
     });
     const buttonComponents = paginationRow ? [...paginationRow.components] : [];
     buttonComponents.push({ type: 2, style: 2, label: 'Copy Attachments', custom_id: `${idPrefix}copyatt_${activeBuild.weaponKey}_${index}` });
-    buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: `${idPrefix}copy_${activeBuild.weaponKey}_${index}` });
+    if (activeBuild.mode !== 'DMZ') {
+        buttonComponents.push({ type: 2, style: 3, label: 'Copy Code', custom_id: `${idPrefix}copy_${activeBuild.weaponKey}_${index}` });
+    }
     containerComponents.push({ type: 1, components: buttonComponents });
 
     const containerPayload = { type: 17, accent_color: color, components: containerComponents };
