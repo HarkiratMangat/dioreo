@@ -543,15 +543,20 @@ descriptions aren't always capitalized correctly.
   "Top N", and "Toxic" each use a DIFFERENT emoji (`emojiMap.js`'s `best`/`top`/`toxic`) — don't reuse
   one for another. Badges are joined with the `blank` spacer emoji between each granted badge,
   matching the reference file's exact spacing (no space before `blank`, one space after it).
-- **`Loadout.dmzRangeRank` is a DMZ-only alternate to `categoryRank`**, added 2026-07-09 once real
-  DMZ badge data existed. `/dmz` has no per-category commands the way MP does (`/ar`, `/smg`,
-  etc.), so a "Best AR"-style badge doesn't read as meaningfully there — instead a DMZ build can be
-  ranked by combat range role: `'best-close'`/`'best-midlong'` or free-form `'top{N}-close'`/
-  `'top{N}-midlong'` (same non-enum, parser-validated pattern as `categoryRank`). `buildBadgesLine()`
-  checks `mode === 'DMZ'` and prefers `dmzRangeRank` over `categoryRank` when both could apply,
-  reusing the same Best/Top emojis with a range label ("Close Range"/"Mid-Long Range") instead of a
-  category name — no new emoji assets needed. Admin input tokens: `bestclose`, `bestmidlong`,
-  `top3close`, `top5midlong` (no space before "close"/"midlong", unlike `topN`'s optional space).
+- **`Loadout.dmzRangeRank` is the ONLY rank badge field DMZ builds ever use — `categoryRank` is
+  never set for `mode: 'DMZ'`**, added 2026-07-09 once real DMZ badge data existed. `/dmz` has no
+  per-category commands the way MP does (`/ar`, `/smg`, etc.), so a "Best AR"-style badge doesn't
+  read as meaningfully there. `dmzRangeRank` stores either a bare `'best'`/`'top{N}'` (renders as
+  "Best DMZ"/"Top N DMZ" when no combat range role applies — e.g. Type 19, SO-14) or a range-role-
+  qualified `'best-close'`/`'best-midlong'`/`'top{N}-close'`/`'top{N}-midlong'` (e.g. Fennec is
+  "Best Close Range", AS VAL is "Best Mid-Long Range") — same non-enum, parser-validated pattern as
+  `categoryRank`. `buildBadgesLine()` branches entirely on `mode === 'DMZ'`: DMZ builds only ever
+  read `dmzRangeRank`, MP builds only ever read `categoryRank`, reusing the same Best/Top emojis
+  either way — no new emoji assets needed. In `index.js`'s add/edit-loadout handlers, a plain
+  `best`/`topN` admin input still parses into `categoryRank` first (the parser doesn't know mode),
+  then gets rerouted into `dmzRangeRank` (and `categoryRank` cleared) if the loadout's mode is DMZ.
+  Admin input tokens: `best`, `top3`, `bestclose`, `bestmidlong`, `top3close`, `top5midlong` (no
+  space before "close"/"midlong", unlike `topN`'s optional space).
 - **Admin input for badges rides along on the existing "Category | Mode" modal field** as a 3rd
   pipe-delimited segment (`"AR | MP | meta,best"`, `"AR | MP | meta,top5"`, or
   `"AR | MP | meta,best,toxic"`) rather than getting its own field — `/manage`'s add/edit-loadout

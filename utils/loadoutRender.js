@@ -48,18 +48,22 @@ function buildImageUrl(imageKey) {
 function buildBadgesLine(build) {
     const badges = [];
     if (build.isMeta) badges.push(`${emojis.meta} Meta`);
-    // DMZ builds rank by combat range role (dmzRangeRank) instead of weapon category (categoryRank)
-    // -- /dmz has no per-category commands the way MP does, so "Best AR"-style badges don't read as
-    // meaningfully there. Reuses the same Best/Top emojis, just with a range label instead of a
-    // category name. See models/Loadout.js for why this is a separate field, not an overload of
-    // categoryRank.
-    if (build.mode === 'DMZ' && build.dmzRangeRank) {
-        const rangeLabel = build.dmzRangeRank.includes('midlong') ? 'Mid-Long Range' : 'Close Range';
-        if (build.dmzRangeRank.startsWith('best')) {
-            badges.push(`${emojis.best} Best ${rangeLabel}`);
-        } else {
-            const topMatch = build.dmzRangeRank.match(/^top(\d+)-/);
-            if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
+    // DMZ builds NEVER use the per-category Best/TopN system (categoryRank) -- /dmz has no
+    // per-category commands the way MP does, so a category-name badge ("Best AR") doesn't read as
+    // meaningfully there. `dmzRangeRank` covers every DMZ rank badge instead: a bare 'best'/'top{N}'
+    // (no range specified) renders as "... DMZ", and a '-close'/'-midlong' suffixed value renders
+    // with a combat-range-role label instead. Reuses the same Best/Top emojis either way.
+    if (build.mode === 'DMZ') {
+        if (build.dmzRangeRank) {
+            const rangeLabel = build.dmzRangeRank.includes('-close') ? 'Close Range'
+                : build.dmzRangeRank.includes('-midlong') ? 'Mid-Long Range'
+                : 'DMZ';
+            if (build.dmzRangeRank.startsWith('best')) {
+                badges.push(`${emojis.best} Best ${rangeLabel}`);
+            } else {
+                const topMatch = build.dmzRangeRank.match(/^top(\d+)/);
+                if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${rangeLabel}`);
+            }
         }
     } else if (build.categoryRank === 'best') {
         badges.push(`${emojis.best} Best ${build.category}`);

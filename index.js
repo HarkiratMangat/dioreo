@@ -921,12 +921,20 @@ client.on('interactionCreate', async interaction => {
             // added alongside Category|Mode rather than as its own field since modals cap at 5.
             const metaParts = interaction.fields.getTextInputValue('meta').split('|').map(s => s.trim());
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
-            const { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[2]);
+            let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[2]);
 
             const weaponName = interaction.fields.getTextInputValue('weapon');
             const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
             const buildName = interaction.fields.getTextInputValue('build');
             const mode = metaParts[1]?.toUpperCase() || 'MP';
+
+            // DMZ never uses the per-category Best/TopN system -- a bare "best"/"topN" token (no
+            // -close/-midlong suffix) still parses into categoryRank since the parser doesn't know
+            // the mode, so move it over to dmzRangeRank here instead (see buildBadgesLine()).
+            if (mode === 'DMZ' && categoryRank && !dmzRangeRank) {
+                dmzRangeRank = categoryRank;
+                categoryRank = null;
+            }
 
             await Loadout.findByIdAndUpdate(targetId, {
                 weaponName,
@@ -1007,7 +1015,14 @@ client.on('interactionCreate', async interaction => {
             // (the common case when just adding another build variant) would silently wipe any
             // badges already set on the weapon's existing builds. Re-editing an existing build is
             // the supported way to (re)sync badges across all of a weapon's builds.
-            const { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[2]);
+            let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[2]);
+            const mode = metaParts[1]?.toUpperCase() || 'MP';
+            // DMZ never uses the per-category Best/TopN system -- see the matching note in
+            // edit_loadout_ above.
+            if (mode === 'DMZ' && categoryRank && !dmzRangeRank) {
+                dmzRangeRank = categoryRank;
+                categoryRank = null;
+            }
 
             const newLoadout = new Loadout({
                 weaponName: interaction.fields.getTextInputValue('weapon'),
@@ -1016,7 +1031,7 @@ client.on('interactionCreate', async interaction => {
                 attachments: attachmentsArray,
                 imageKey: interaction.fields.getTextInputValue('image'),
                 category: metaParts[0]?.toUpperCase() || 'AR',
-                mode: metaParts[1]?.toUpperCase() || 'MP',
+                mode,
                 isMeta,
                 categoryRank,
                 dmzRangeRank,
