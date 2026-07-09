@@ -175,10 +175,10 @@ function formatDrawsAsBulkText(draws) {
 
 /**
  * Parses the loadout "badges" segment of /manage's "Category | Mode | Badges" modal field into
- * `{ isMeta, categoryRank, unrecognized }` (see models/Loadout.js). Comma-separated, case-
- * insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord modals cap at 5
- * fields, and the loadout modal already uses all 5, so this rides along as a 3rd pipe-delimited
- * segment on the existing "Category | Mode" field rather than getting its own input.
+ * `{ isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized }` (see models/Loadout.js). Comma-
+ * separated, case-insensitive, e.g. "meta, best" or "top3" or "top 5" or "" (no badges). Discord
+ * modals cap at 5 fields, and the loadout modal already uses all 5, so this rides along as a 3rd
+ * pipe-delimited segment on the existing "Category | Mode" field rather than getting its own input.
  *
  * NOTE (fixed during review): `categoryRank` used to only recognize the literal token "top3" --
  * typing "top 5" (a real ranking some weapons need, not every category caps out at exactly 3)
@@ -186,11 +186,17 @@ function formatDrawsAsBulkText(draws) {
  * (with or without a space before the number), and anything that still doesn't match ends up in
  * `unrecognized` so the caller (index.js's add/edit-loadout handlers) can tell the admin exactly
  * which token didn't take instead of the change just silently not applying.
+ *
+ * NOTE (added for DMZ range badges): `bestclose`/`bestmidlong`/`top{N}close`/`top{N}midlong`
+ * (no space before "close"/"midlong") map to `dmzRangeRank` instead of `categoryRank` -- /dmz has
+ * no per-category commands, so ranking by combat range role reads more meaningfully there than
+ * "Best in category". See buildBadgesLine() in utils/loadoutRender.js for how this renders.
  */
 function parseLoadoutBadges(badgesStr) {
     const tokens = (badgesStr || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
     let isMeta = false;
     let categoryRank = null;
+    let dmzRangeRank = null;
     let isToxic = false;
     const unrecognized = [];
 
@@ -198,12 +204,18 @@ function parseLoadoutBadges(badgesStr) {
         if (token === 'meta') { isMeta = true; continue; }
         if (token === 'best') { categoryRank = 'best'; continue; }
         if (token === 'toxic') { isToxic = true; continue; }
+        const rangeMatch = token.match(/^(best|top\s*\d+)(close|midlong)$/);
+        if (rangeMatch) {
+            const tier = rangeMatch[1].replace(/\s+/g, '');
+            dmzRangeRank = `${tier}-${rangeMatch[2]}`;
+            continue;
+        }
         const topMatch = token.match(/^top\s*(\d+)$/);
         if (topMatch) { categoryRank = `top${topMatch[1]}`; continue; }
         unrecognized.push(token);
     }
 
-    return { isMeta, categoryRank, isToxic, unrecognized };
+    return { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized };
 }
 
 module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };

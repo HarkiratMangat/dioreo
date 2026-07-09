@@ -157,9 +157,12 @@ module.exports = {
 
                 // Reconstruct the badges token list from what's currently saved, so re-opening
                 // this modal to tweak something else doesn't silently clear existing badges.
+                // `dmzRangeRank` is stored hyphenated ("best-close") but the parser's token format
+                // has no hyphen ("bestclose") -- strip it back out for reconstruction.
                 const existingBadges = [
                     targetLoadout.isMeta ? 'meta' : null,
                     targetLoadout.categoryRank,
+                    targetLoadout.dmzRangeRank ? targetLoadout.dmzRangeRank.replace('-', '') : null,
                     targetLoadout.isToxic ? 'toxic' : null
                 ].filter(Boolean).join(',');
 

@@ -40,6 +40,14 @@ const LoadoutSchema = new mongoose.Schema({
     // (an unbalanced/cheese pick, per Harkirat's own terminology) regardless of its Meta status or
     // category ranking, so this is its own boolean rather than folded into categoryRank.
     isToxic: { type: Boolean, default: false },
+    // DMZ-only alternate to `categoryRank` -- /dmz isn't split into per-category commands the way
+    // MP is, so "Best/Top N in category" doesn't read as meaningfully for a DMZ build. Instead DMZ
+    // badges can rank a weapon by combat range role instead: stores 'best-close'/'best-midlong' or
+    // free-form 'top{N}-close'/'top{N}-midlong' (mirrors categoryRank's non-enum, parser-validated
+    // pattern -- see adminParser.js's parseLoadoutBadges()). Mutually exclusive with categoryRank
+    // in practice (a DMZ build uses one ranking system or the other, never both), but this is a
+    // separate field rather than overloading categoryRank's meaning depending on mode.
+    dmzRangeRank: { type: String, default: null },
     lastUpdated: { type: Date, default: Date.now }
 });
 
