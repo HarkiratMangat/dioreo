@@ -173,6 +173,14 @@ function formatDrawsAsBulkText(draws) {
     }).join('\n');
 }
 
+// Formats a stored Date back into the same human-readable form parseAdminDate() accepts as input
+// -- used to pre-fill modals that combine a title and a date on one line (e.g. /manage season
+// titles-deadlines' "Battle Pass, August 28" fields) so re-submitting without touching a field
+// round-trips cleanly instead of showing an ISO timestamp the admin would have to reformat by hand.
+function formatAdminDate(date) {
+    return date ? dayjs.utc(date).format('MMMM D, YYYY') : '';
+}
+
 /**
  * Parses the loadout "badges" segment of /manage's "Category | Mode | Badges" modal field into
  * `{ isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized }` (see models/Loadout.js). Comma-
@@ -218,4 +226,138 @@ function parseLoadoutBadges(badgesStr) {
     return { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized };
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, parseLoadoutBadges };
+// Cloudinary placeholder used elsewhere for loadouts that don't have a real screenshot yet (see
+// scripts/createPlaceholderLoadouts.js) — reused here as the bulk-add default when a block omits
+// the image key, so a bulk submission is never blocked on having every image ready up front.
+const PLACEHOLDER_IMAGE = 'https://placehold.co/1024x576/1a1a1a/e5e5e5?text=Coming+Soon';
+
+/**
+ * Parses /manage loadouts bulk-add's paragraph field into loadout-ready objects. One loadout per
+ * block, blocks separated by a blank line:
+ *
+ *   Weapon | Category | Mode | Build Name | ImageKey | ShareCode | Badges
+ *   Attachment line 1
+ *   Attachment line 2
+ *   ...
+ *
+ * Only Weapon/Category/Mode are required — Build Name/ImageKey/ShareCode/Badges are optional
+ * trailing pipe segments (mirrors the single-add modal's "Category | Mode | Badges" convention,
+ * just extended since a bulk block has no separate fields to put them in). A block missing a
+ * required piece, with an unrecognized Mode, or with no attachment lines at all doesn't silently
+ * vanish -- it's collected in `errors` (with a snippet of the offending block) so the admin gets
+ * told exactly what didn't parse, same as parseLoadoutBadges()'s `unrecognized` reporting.
+ *
+ * Handles MP and DMZ in the same submission (Mode is per-block) -- there's no need for separate
+ * "bulk add MP loadouts" / "bulk add DMZ loadouts" flows.
+ */
+function parseBulkLoadoutList(bulkText) {
+    const blocks = bulkText.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+    const parsed = [];
+    const errors = [];
+
+    for (const block of blocks) {
+        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+        const headerLine = lines[0];
+        const snippet = headerLine.length > 60 ? `${headerLine.slice(0, 60)}...` : headerLine;
+
+        const headerParts = headerLine.split('|').map(p => p.trim());
+        const [weaponName, categoryRaw, modeRaw, buildNameRaw, imageKeyRaw, shareCodeRaw, badgesRaw] = headerParts;
+
+        if (!weaponName || !categoryRaw || !modeRaw) {
+            errors.push(`"${snippet}" -- missing Weapon/Category/Mode (need at least 3 pipe-delimited fields)`);
+            continue;
+        }
+
+        const mode = modeRaw.toUpperCase();
+        if (mode !== 'MP' && mode !== 'DMZ') {
+            errors.push(`"${snippet}" -- Mode must be MP or DMZ, got "${modeRaw}"`);
+            continue;
+        }
+
+        const attachments = lines.slice(1);
+        if (attachments.length === 0) {
+            errors.push(`"${snippet}" -- no attachment lines found under the header`);
+            continue;
+        }
+
+        const { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(badgesRaw);
+        if (unrecognized.length > 0) {
+            errors.push(`"${snippet}" -- unrecognized badge token(s): ${unrecognized.join(', ')} (loadout still saved, just without these)`);
+        }
+
+        parsed.push({
+            weaponName,
+            weaponKey: weaponName.toLowerCase().replace(/\s+/g, ''),
+            category: categoryRaw.toUpperCase(),
+            mode,
+            buildName: buildNameRaw || 'Standard Build',
+            attachments,
+            imageKey: imageKeyRaw || PLACEHOLDER_IMAGE,
+            shareCode: shareCodeRaw || '',
+            isMeta,
+            categoryRank,
+            dmzRangeRank,
+            isToxic
+        });
+    }
+
+    return { parsed, errors };
+}
+
+/**
+ * Splits a "Title, End Date" line on the LAST comma -- used by /manage season's combined
+ * titles-deadlines modal, where each of the 3 deadline fields carries both a title and a date on
+ * one line (e.g. "Battle Pass, August 28"). Splitting on the last comma (not the first) means a
+ * title that happens to contain a comma still parses correctly, since the date is always the
+ * trailing segment. Returns { title, dateStr } -- either can be empty if the line itself is blank,
+ * letting the caller leave that field's existing value untouched (same partial-update convention
+ * as the old "Edit Season Deadlines" modal).
+ */
+function splitTitleDate(line) {
+    const trimmed = (line || '').trim();
+    if (!trimmed) return { title: '', dateStr: '' };
+
+    const lastComma = trimmed.lastIndexOf(',');
+    if (lastComma === -1) return { title: trimmed, dateStr: '' };
+
+    return {
+        title: trimmed.slice(0, lastComma).trim(),
+        dateStr: trimmed.slice(lastComma + 1).trim()
+    };
+}
+
+/**
+ * Reverse of parseBulkEvents -- reconstructs the bullet-separated "M/D - M/D | Title" bulk-import
+ * text from Calendar subdocuments already in the database, so /export can hand back text that
+ * pastes right back into /manage's calendar Bulk Add modal (same round-trip purpose as
+ * formatDrawsAsBulkText above, just for the calendar's own format).
+ */
+function formatCalendarAsBulkText(calendar) {
+    return calendar.map(event => {
+        const startStr = dayjs.utc(event.date).format('M/D');
+        const endStr = event.isOngoing ? 'All Season' : dayjs.utc(event.endDate).format('M/D');
+        return `• ${startStr} - ${endStr} | ${event.title}`;
+    }).join('\n');
+}
+
+/**
+ * Plain re-postable export of patch note entries -- NOT a true bulk-import format, since patch
+ * notes have no bulk-add flow to paste this back into (only single add/edit exists). Just a
+ * readable one-entry-per-block dump (title/release date/description/URLs) for reference or to
+ * manually re-type into the single-add modal, per Harkirat's call when /export was split out
+ * (2026-07-09) rather than inventing a bulk-patch-notes format that doesn't otherwise exist yet.
+ */
+function formatPatchNotesAsText(patchNotes) {
+    return patchNotes.map(patch => {
+        const lines = [
+            `Title: ${patch.title}`,
+            `Release Date: ${formatAdminDate(patch.releaseDate)}`,
+            `Description: ${patch.description && patch.description.trim() ? patch.description : '(none)'}`,
+            `URLs:`,
+            ...patch.images
+        ];
+        return lines.join('\n');
+    }).join('\n\n---\n\n');
+}
+
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText };

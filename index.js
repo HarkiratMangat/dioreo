@@ -185,6 +185,97 @@ client.once(Events.ClientReady, handleBotReady);
 // cleaned up from this file's phase numbering. Removed rather than left as a gap between Phase 4
 // and Phase 6 that reads like something's missing.
 
+// --- MANAGE PANEL SEARCH RESOLUTION (2026-07-09 button/modal redesign) ---
+// Edit/Delete on the /manage panel can't autocomplete like a slash-command option could (they're
+// plain buttons), so they collect a search query through a one-field modal instead (see manage.js's
+// buildSearchModal) and resolve it here via the same fuzzyMatch() convention every other
+// admin-search route in the bot already uses. Returns up to 25 `{ id, label, doc, type? }` matches
+// -- `type` ('new'/'returning') only applies to draws, since those live in two separate arrays on
+// one document; every other group's docs are independently addressable by _id alone.
+async function resolveManagePanelMatches(group, rawQuery) {
+    const { fuzzyMatch } = require('./utils/search');
+    const query = rawQuery.trim();
+
+    if (group === 'draws') {
+        const SeasonalData = require('./models/SeasonalData');
+        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        if (!seasonalDoc) return [];
+        const tagged = [
+            ...seasonalDoc.newDraws.map(doc => ({ doc, type: 'new' })),
+            ...seasonalDoc.returningDraws.map(doc => ({ doc, type: 'returning' }))
+        ];
+        return tagged.filter(t => fuzzyMatch(query, t.doc.title)).slice(0, 25).map(t => ({
+            id: t.doc._id.toString(), type: t.type, doc: t.doc,
+            label: `${t.doc.title} (${t.type === 'new' ? 'New' : 'Returning'})`
+        }));
+    }
+
+    if (group === 'calendar') {
+        const SeasonalData = require('./models/SeasonalData');
+        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        if (!seasonalDoc) return [];
+        return seasonalDoc.calendar.filter(e => fuzzyMatch(query, e.title)).slice(0, 25)
+            .map(e => ({ id: e._id.toString(), doc: e, label: e.title }));
+    }
+
+    if (group === 'loadouts') {
+        const Loadout = require('./models/Loadout');
+        const allLoadouts = await Loadout.find({}).lean();
+        return allLoadouts.filter(l => fuzzyMatch(query, l.weaponName) || fuzzyMatch(query, l.buildName)).slice(0, 25)
+            .map(l => ({ id: l._id.toString(), doc: l, label: `[${l.mode}] ${l.weaponName} - ${l.buildName}` }));
+    }
+
+    if (group === 'patchnotes') {
+        const SeasonalData = require('./models/SeasonalData');
+        const { cleanPatchTitle } = require('./commands/patchnotes');
+        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        if (!seasonalDoc) return [];
+        return seasonalDoc.patchNotes.filter(p => fuzzyMatch(query, cleanPatchTitle(p.title))).slice(0, 25)
+            .map(p => ({ id: p._id.toString(), doc: p, label: cleanPatchTitle(p.title) }));
+    }
+
+    return [];
+}
+
+// Given one resolved match (single fuzzy hit, or a disambiguation-select pick), either chains
+// straight into the real edit modal -- `showModal` is valid as the FIRST response to a modal-submit
+// or select-menu interaction too, not just a button, same as any other interaction that hasn't
+// been acknowledged yet -- or performs the delete directly and confirms. Shared by both the
+// single-match fast path in the `mng_search_` modal-submit handler and the `mng_pick_`
+// disambiguation-select handler below.
+async function resolveManagePanelAction(interaction, group, action, match) {
+    const manageCommand = client.commands.get('manage');
+
+    if (action === 'edit') {
+        if (group === 'draws') return interaction.showModal(manageCommand.buildEditDrawModal(match.doc, match.id, match.type));
+        if (group === 'calendar') return interaction.showModal(manageCommand.buildEditCalendarModal(match.doc, match.id));
+        if (group === 'loadouts') return interaction.showModal(manageCommand.buildEditLoadoutModal(match.doc, match.id));
+        if (group === 'patchnotes') return interaction.showModal(manageCommand.buildEditPatchNotesModal(match.doc, match.id));
+    }
+
+    if (action === 'delete') {
+        if (group === 'draws') {
+            const SeasonalData = require('./models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            if (match.type === 'new') seasonalDoc.newDraws = seasonalDoc.newDraws.filter(d => d._id.toString() !== match.id);
+            else seasonalDoc.returningDraws = seasonalDoc.returningDraws.filter(d => d._id.toString() !== match.id);
+            await seasonalDoc.save();
+        } else if (group === 'calendar') {
+            const SeasonalData = require('./models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            seasonalDoc.calendar = seasonalDoc.calendar.filter(e => e._id.toString() !== match.id);
+            await seasonalDoc.save();
+        } else if (group === 'loadouts') {
+            const Loadout = require('./models/Loadout');
+            await Loadout.findByIdAndDelete(match.id);
+        }
+        // Both a modal-submit interaction and a select-menu interaction (mng_pick_ never
+        // deferUpdate()s before reaching here) can answer with a plain reply -- neither has been
+        // acknowledged yet at this point.
+        return interaction.reply({ content: `🗑️ Successfully deleted **${match.label}**!`, ephemeral: true });
+    }
+}
+
 // ==========================================
 // PHASE 6: INTERACTION SYSTEM OVERSEER (ROUTING)
 // ==========================================
@@ -208,47 +299,12 @@ client.on('interactionCreate', async interaction => {
         const { fuzzyMatch } = require('./utils/search');
 
         try {
-            // === ROUTE A: ADMIN MANAGEMENT AUTOCOMPLETE ===
-            if (commandName === 'manage') {
-                const group = interaction.options.getSubcommandGroup();
-
-                if (group === 'draws') {
-                    const SeasonalData = require('./models/SeasonalData');
-                    // .lean() -- read-only here (never saved in this branch), skips Mongoose
-                    // document hydration on every autocomplete keystroke.
-                    const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
-                    if (!doc) return await interaction.respond([]);
-
-                    // Combine both arrays (New & Returning) and map them for the dropdown
-                    const allDraws = [...doc.newDraws, ...doc.returningDraws];
-                    const filtered = allDraws
-                        .filter(d => fuzzyMatch(focusedValue, d.title))
-                        .slice(0, 25);
-
-                    return await interaction.respond(filtered.map(d => ({
-                        name: `${d.title} (${new Date(d.date).toLocaleDateString()})`,
-                        value: d._id.toString() // We pass the MongoDB ID secretly as the value
-                    })));
-                }
-
-                if (group === 'loadouts') {
-                    const Loadout = require('./models/Loadout');
-                    // Fetch everything and filter in JS (same pattern as the weapon dictionary
-                    // block below) rather than a raw Mongo $regex -- fuzzyMatch's punctuation
-                    // stripping can't be expressed as a single regex against the stored field, and
-                    // this collection is small enough that fetching it all is cheap. .lean() since
-                    // these docs are only ever read here, never saved.
-                    const allLoadouts = await Loadout.find({}).lean();
-                    const matching = allLoadouts
-                        .filter(l => fuzzyMatch(focusedValue, l.weaponName) || fuzzyMatch(focusedValue, l.buildName))
-                        .slice(0, 25);
-
-                    return await interaction.respond(matching.map(l => ({
-                        name: `[${l.mode}] ${l.weaponName} - ${l.buildName}`,
-                        value: l._id.toString()
-                    })));
-                }
-            }
+            // NOTE (removed 2026-07-09): /manage used to have a "ROUTE A" here for its search
+            // options (draws/loadouts/calendar/patchnotes edit/delete autocomplete). That entire
+            // subcommand-group/option structure was replaced by the button+modal panel (see
+            // manage.js) -- Edit/Delete now collect their search query through a one-field modal
+            // instead of a slash-command autocomplete option, resolved in index.js's `mng_search_`
+            // modal-submit handler. Nothing on /manage triggers autocomplete anymore.
 
             // === ROUTE B: USER FRONT-END AUTOCOMPLETE (/all, /dmz, /patch) ===
             // Required because we changed the base command name to 'patch' for subcommands
@@ -493,6 +549,66 @@ client.on('interactionCreate', async interaction => {
             // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated parameters instantly.
             const settingsCommand = client.commands.get('settings');
             return await settingsCommand.execute(interaction);
+        }
+
+        // E.0 MANAGE PANEL PAGE SELECT -- replaced the old row of nav buttons once Export got
+        // folded in as a 6th page (2026-07-09): a button row caps out at 5, a select menu supports
+        // up to 25, so switching sections won't hit that ceiling again as more pages get added.
+        if (interaction.customId === 'mng_pagesel') {
+            await interaction.deferUpdate();
+            const targetPage = interaction.values[0];
+            const manageCommand = client.commands.get('manage');
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage));
+        }
+
+        // E. MANAGE PANEL DISAMBIGUATION SELECT -- shown by the `mng_search_` modal-submit handler
+        // (below) when a search query matched more than one item. Looks the pick up directly by
+        // _id (encoded in the option value, `|type` appended for draws since those need to know
+        // which of the two arrays they came from) rather than re-running the fuzzy search, then
+        // hands off to the same resolveManagePanelAction() the single-match fast path uses.
+        if (interaction.customId.startsWith('mng_pick_')) {
+            const [group, action] = interaction.customId.replace('mng_pick_', '').split('_');
+            const [id, type] = interaction.values[0].split('|');
+
+            let match = null;
+            if (group === 'draws') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                const doc = type === 'new'
+                    ? seasonalDoc.newDraws.find(d => d._id.toString() === id)
+                    : seasonalDoc.returningDraws.find(d => d._id.toString() === id);
+                if (doc) match = { id, type, doc, label: `${doc.title} (${type === 'new' ? 'New' : 'Returning'})` };
+            } else if (group === 'calendar') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                const doc = seasonalDoc.calendar.find(e => e._id.toString() === id);
+                if (doc) match = { id, doc, label: doc.title };
+            } else if (group === 'loadouts') {
+                const Loadout = require('./models/Loadout');
+                const doc = await Loadout.findById(id).lean();
+                if (doc) match = { id, doc, label: `${doc.weaponName} - ${doc.buildName}` };
+            } else if (group === 'patchnotes') {
+                const SeasonalData = require('./models/SeasonalData');
+                const { cleanPatchTitle } = require('./commands/patchnotes');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                const doc = seasonalDoc.patchNotes.find(p => p._id.toString() === id);
+                if (doc) match = { id, doc, label: cleanPatchTitle(doc.title) };
+            }
+
+            if (!match) {
+                // Awaited + wrapped in its own try/catch -- see the matching note elsewhere in this
+                // handler. Shouldn't normally happen (the pick came from a list built moments ago),
+                // but the underlying doc could've been deleted/edited away in between.
+                try {
+                    await interaction.update({ content: '❌ That item no longer exists -- it may have been changed or removed since you searched.', components: [] });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of stale manage-panel pick (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            return await resolveManagePanelAction(interaction, group, action, match);
         }
     }
 
@@ -767,6 +883,171 @@ client.on('interactionCreate', async interaction => {
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
+
+        // F. MANAGE PANEL -- action buttons (2026-07-09 redesign, see manage.js's
+        // buildManagePage/build*Modal helpers). Replaced the old 5-subcommand-group tree: /manage
+        // now opens one ephemeral panel message, and every data-entry action is reached by
+        // clicking a button on it instead of picking a subcommand. Page switching itself moved to
+        // a select menu (`mng_pagesel`, handled in the isStringSelectMenu() block above) instead of
+        // a row of nav buttons, once Export got folded in as a 6th page -- a button row caps out at
+        // 5, a select menu doesn't.
+        if (interaction.customId.startsWith('mng_act_')) {
+            const [group, action] = interaction.customId.replace('mng_act_', '').split('_');
+            const manageCommand = client.commands.get('manage');
+
+            // Edit/Delete need a specific item picked first -- a button can't autocomplete the way
+            // a slash-command option could, so these open a one-field "search by name" modal
+            // instead of the real edit/delete modal directly. Resolved in this file's
+            // `mng_search_` modal-submit handler further down.
+            if (action === 'edit' || action === 'delete') {
+                return await interaction.showModal(manageCommand.buildSearchModal(group, action));
+            }
+
+            // "Purge" (draws/calendar/loadouts/patchnotes only) needs a second confirmation before
+            // it actually deletes anything -- a single misclick on a destructive button shouldn't be
+            // enough to wipe a whole collection. This first click just shows a Confirm/Cancel
+            // prompt; the actual deletion only happens from `mng_purgeconfirm_` below.
+            if (action === 'purge') {
+                return interaction.reply({
+                    content: `⚠️ **Are you sure?** This will permanently delete ${manageCommand.PURGE_LABELS[group]}. This cannot be undone.`,
+                    components: [{
+                        type: 1, components: [
+                            { type: 2, style: 4, label: 'Yes, Purge', custom_id: `mng_purgeconfirm_${group}` },
+                            { type: 2, style: 2, label: 'Cancel', custom_id: `mng_purgecancel_${group}` }
+                        ]
+                    }],
+                    ephemeral: true
+                });
+            }
+
+            // Export actions reply directly with the exported file -- no modal, nothing to submit.
+            // Folded into the panel as its own page (2026-07-09) instead of a separate /export
+            // command, specifically to keep the total slash-command count down -- reuses the exact
+            // same formatters (utils/adminParser.js) the standalone command used before this.
+            if (group === 'export') {
+                const SeasonalData = require('./models/SeasonalData');
+                const { formatDrawsAsBulkText, formatCalendarAsBulkText, formatPatchNotesAsText } = require('./utils/adminParser');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                if (!seasonalDoc) {
+                    return interaction.reply({ content: '❌ The global seasonal database document has not been initialized yet.', ephemeral: true });
+                }
+
+                if (action === 'newdraws' || action === 'returningdraws') {
+                    const isNew = action === 'newdraws';
+                    const text = formatDrawsAsBulkText(isNew ? seasonalDoc.newDraws : seasonalDoc.returningDraws) || `(no ${isNew ? 'New' : 'Returning'} Draws currently saved)`;
+                    return interaction.reply({
+                        content: `📤 **Exported ${isNew ? 'New' : 'Returning'} Draws** in Bulk Add format. Paste this back into the matching Bulk action.`,
+                        files: [{ attachment: Buffer.from(text, 'utf-8'), name: `${action}_bulk.txt` }],
+                        ephemeral: true
+                    });
+                }
+                if (action === 'calendar') {
+                    const text = formatCalendarAsBulkText(seasonalDoc.calendar) || '(no calendar events currently saved)';
+                    return interaction.reply({
+                        content: `📤 **Exported Calendar** in Bulk Add format. Paste this back into the Calendar Bulk Add action.`,
+                        files: [{ attachment: Buffer.from(text, 'utf-8'), name: 'calendar_bulk.txt' }],
+                        ephemeral: true
+                    });
+                }
+                if (action === 'patchnotes') {
+                    const text = formatPatchNotesAsText(seasonalDoc.patchNotes) || '(no patch notes currently saved)';
+                    return interaction.reply({
+                        content: `📤 **Exported Patch Notes.** No bulk-import format exists for patch notes (only single add/edit) -- this is a plain readable reference, not a re-pasteable bulk format.`,
+                        files: [{ attachment: Buffer.from(text, 'utf-8'), name: 'patchnotes_export.txt' }],
+                        ephemeral: true
+                    });
+                }
+            }
+
+            // Every other action already has everything it needs up front -- open its modal
+            // directly, identical shape to the old subcommand flow, just triggered by a button.
+            if (group === 'draws') {
+                if (action === 'bulknew') return await interaction.showModal(manageCommand.buildBulkDrawsModal(true));
+                if (action === 'bulkreturning') return await interaction.showModal(manageCommand.buildBulkDrawsModal(false));
+                if (action === 'bulkboth') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal());
+                if (action === 'bulkremove') return await interaction.showModal(manageCommand.buildBulkRemoveDrawsModal());
+                if (action === 'addnew') return await interaction.showModal(manageCommand.buildAddDrawModal('new'));
+                if (action === 'addreturning') return await interaction.showModal(manageCommand.buildAddDrawModal('returning'));
+            }
+
+            if (group === 'calendar') {
+                if (action === 'bulkadd') return await interaction.showModal(manageCommand.buildCalendarBulkAddModal());
+                if (action === 'bulkremove') return await interaction.showModal(manageCommand.buildCalendarBulkRemoveModal());
+                if (action === 'add') return await interaction.showModal(manageCommand.buildCalendarAddModal());
+            }
+
+            if (group === 'loadouts') {
+                if (action === 'bulkadd') return await interaction.showModal(manageCommand.buildLoadoutsBulkAddModal());
+                if (action === 'bulkremove') return await interaction.showModal(manageCommand.buildLoadoutsBulkRemoveModal());
+                if (action === 'add') return await interaction.showModal(manageCommand.buildAddLoadoutModal());
+            }
+
+            if (group === 'patchnotes') {
+                if (action === 'add') return await interaction.showModal(manageCommand.buildAddPatchNotesModal());
+            }
+
+            if (group === 'season') {
+                if (action === 'wipe') return await interaction.showModal(manageCommand.buildWipeSeasonModal());
+                if (action === 'titlesdeadlines') {
+                    const SeasonalData = require('./models/SeasonalData');
+                    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                    return await interaction.showModal(manageCommand.buildSeasonTitlesDeadlinesModal(seasonalDoc));
+                }
+            }
+        }
+
+        // G. MANAGE PANEL: PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation
+        // above. Each group purges only its OWN data, independent of Season's "Wipe Season" (which
+        // resets draws+calendar together as part of starting a new season but deliberately keeps
+        // patch notes forever) -- Patch Notes' purge in particular is the one place that history can
+        // actually be cleared, and only ever fires from this exact confirmed click.
+        if (interaction.customId.startsWith('mng_purgeconfirm_')) {
+            const group = interaction.customId.replace('mng_purgeconfirm_', '');
+            let confirmMsg = '';
+
+            if (group === 'draws') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                seasonalDoc.newDraws = [];
+                seasonalDoc.returningDraws = [];
+                await seasonalDoc.save();
+                confirmMsg = '✅ Purged all New and Returning draws.';
+            } else if (group === 'calendar') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                seasonalDoc.calendar = [];
+                await seasonalDoc.save();
+                confirmMsg = '✅ Purged the calendar.';
+            } else if (group === 'loadouts') {
+                const Loadout = require('./models/Loadout');
+                await Loadout.deleteMany({});
+                confirmMsg = '✅ Purged every MP and DMZ loadout.';
+            } else if (group === 'patchnotes') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                seasonalDoc.patchNotes = [];
+                await seasonalDoc.save();
+                confirmMsg = '✅ Purged the patch notes history.';
+            }
+
+            // Awaited + wrapped in its own try/catch -- see the matching note elsewhere in this
+            // handler for why a bare `return interaction.update(...)` isn't safe here.
+            try {
+                await interaction.update({ content: confirmMsg, components: [] });
+            } catch (notifyError) {
+                console.error(`Failed to confirm manage-panel purge for ${group} (interaction likely expired):`, notifyError);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('mng_purgecancel_')) {
+            try {
+                await interaction.update({ content: '❎ Purge cancelled -- nothing was deleted.', components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel purge cancellation (interaction likely expired):', notifyError);
+            }
+            return;
+        }
     }
 
     // ==========================================
@@ -777,17 +1058,54 @@ client.on('interactionCreate', async interaction => {
     if (interaction.isModalSubmit()) {
         const { customId } = interaction;
         const SeasonalData = require('./models/SeasonalData');
+        const Loadout = require('./models/Loadout');
         // Hoisted once here instead of being re-required with a different destructured subset in
         // nearly every branch below (all inside the same already-required module scope).
-        const { parseAdminDate, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges } = require('./utils/adminParser');
+        const { parseAdminDate, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
+        const { fuzzyMatch } = require('./utils/search');
+
+        // --- MANAGE PANEL: SEARCH RESOLVER (Edit/Delete) ---
+        // Handles its own per-group fetching via resolveManagePanelMatches (defined above, near
+        // buildSyntheticInteraction) rather than the shared seasonalDoc gate below, and always
+        // returns before reaching it -- see manage.js's buildSearchModal for where this modal comes
+        // from (opened when Edit/Delete is clicked on the panel, since a button can't autocomplete
+        // like a slash option could).
+        if (customId.startsWith('mng_search_')) {
+            const [group, action] = customId.replace('mng_search_', '').split('_');
+            const query = interaction.fields.getTextInputValue('query');
+            const matches = await resolveManagePanelMatches(group, query);
+
+            if (matches.length === 0) {
+                return interaction.reply({ content: `❌ No matches found for "${query}".`, ephemeral: true });
+            }
+
+            if (matches.length === 1) {
+                return await resolveManagePanelAction(interaction, group, action, matches[0]);
+            }
+
+            // Multiple matches -- disambiguate via a select menu rather than guessing which one was
+            // meant. NOTE (Components V2 lesson, see CLAUDE.md): a select menu (type 3) still needs
+            // an Action Row (type 1) wrapper, even though this particular reply isn't a V2 container.
+            const options = matches.map(m => ({
+                label: m.label.slice(0, 100),
+                value: group === 'draws' ? `${m.id}|${m.type}` : m.id
+            }));
+            return interaction.reply({
+                content: `🔎 Found **${matches.length}** matches for "${query}" -- pick one:`,
+                components: [{ type: 1, components: [{ type: 3, custom_id: `mng_pick_${group}_${action}`, placeholder: 'Select one...', options }] }],
+                ephemeral: true
+            });
+        }
 
         // NOTE (fixed during review): this used to fetch unconditionally before branching on
-        // customId, but the loadout routes below (edit_loadout_/add_loadout) never touch
-        // seasonalDoc at all -- every loadout add/edit modal submit was paying for a wasted
-        // findOne (and a throwaway `new SeasonalData()` construction on a fresh install). Only
-        // fetch it for the branches that actually use it.
+        // customId, but the loadout-only routes below never touch seasonalDoc at all -- every
+        // loadout modal submit was paying for a wasted findOne (and a throwaway `new
+        // SeasonalData()` construction on a fresh install). Only fetch it for the branches that
+        // actually use it. Extended to the new bulk-loadout routes for the same reason -- those
+        // operate purely on the Loadout collection.
+        const LOADOUT_ONLY_ROUTES = ['add_loadout', 'modal_loadouts_bulk_add', 'modal_loadouts_bulk_remove'];
         let seasonalDoc = null;
-        if (!customId.startsWith('edit_loadout_') && customId !== 'add_loadout') {
+        if (!customId.startsWith('edit_loadout_') && !LOADOUT_ONLY_ROUTES.includes(customId)) {
             seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
             if (!seasonalDoc) seasonalDoc = new SeasonalData({ docType: 'global' });
         }
@@ -807,8 +1125,7 @@ client.on('interactionCreate', async interaction => {
         // --- ADMIN ROUTE B: BULK IMPORT DRAWS (WITH AUTO-SORT, New/Returning split) ---
         // NOTE (split during review): each modal now only replaces ITS OWN array -- re-running the
         // New Draws import to fix a typo no longer touches seasonalDoc.returningDraws at all (used
-        // to overwrite both together). See utils/adminParser.js's parseBulkDrawList and
-        // commands/update.js's Route B for the rest of this change.
+        // to overwrite both together). See utils/adminParser.js's parseBulkDrawList.
         if (customId === 'modal_draws_bulk_new' || customId === 'modal_draws_bulk_returning') {
             await interaction.deferReply({ ephemeral: true });
             const isNew = customId === 'modal_draws_bulk_new';
@@ -824,6 +1141,85 @@ client.on('interactionCreate', async interaction => {
 
             await seasonalDoc.save();
             return interaction.followUp({ content: `✅ **Bulk Import Complete!**\nReplaced the ${isNew ? 'New' : 'Returning'} Draws list with **${parsedDraws.length}** entries. Sorted chronologically.` });
+        }
+
+        // --- ADMIN ROUTE B.1: BULK IMPORT BOTH DRAW CATEGORIES AT ONCE ---
+        // One modal, two independently-optional fields -- only whichever field was actually filled
+        // in gets replaced, exactly like the two separate flows above. Lets Harkirat update both
+        // lists in one round-trip without reintroducing the old type-prefixed combined-modal bug
+        // (see parseBulkDrawList's history note) since each array is still touched independently.
+        if (customId === 'modal_draws_bulk_both') {
+            await interaction.deferReply({ ephemeral: true });
+            const newText = interaction.fields.getTextInputValue('new_text')?.trim();
+            const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
+
+            const updated = [];
+            if (newText) {
+                const parsedNew = parseBulkDrawList(newText).sort((a, b) => new Date(a.date) - new Date(b.date));
+                seasonalDoc.newDraws = parsedNew;
+                updated.push(`New Draws (${parsedNew.length})`);
+            }
+            if (returningText) {
+                const parsedReturning = parseBulkDrawList(returningText).sort((a, b) => new Date(a.date) - new Date(b.date));
+                seasonalDoc.returningDraws = parsedReturning;
+                updated.push(`Returning Draws (${parsedReturning.length})`);
+            }
+
+            if (updated.length === 0) {
+                return interaction.followUp({ content: '❌ Both fields were left blank -- nothing was changed.' });
+            }
+
+            await seasonalDoc.save();
+            return interaction.followUp({ content: `✅ **Bulk Import Complete!**\nReplaced: ${updated.join(', ')}.` });
+        }
+
+        // --- ADMIN ROUTE B.2: BULK REMOVE DRAWS ---
+        // Fuzzy-matches each pasted title (utils/search.js's fuzzyMatch, same punctuation-insensitive
+        // matching used everywhere else in the bot) against the target array and removes hits --
+        // reports both what was removed and what didn't match anything, so a typo'd title doesn't
+        // just silently do nothing.
+        if (customId === 'modal_draws_bulk_remove') {
+            await interaction.deferReply({ ephemeral: true });
+            const newTitlesRaw = interaction.fields.getTextInputValue('new_titles')?.trim();
+            const returningTitlesRaw = interaction.fields.getTextInputValue('returning_titles')?.trim();
+
+            const removeFrom = (array, titlesRaw) => {
+                const requested = titlesRaw.split('\n').map(t => t.trim()).filter(Boolean);
+                const removed = [];
+                const notFound = [];
+                let remaining = array;
+                for (const title of requested) {
+                    const match = remaining.find(d => fuzzyMatch(title, d.title));
+                    if (match) {
+                        removed.push(match.title);
+                        remaining = remaining.filter(d => d !== match);
+                    } else {
+                        notFound.push(title);
+                    }
+                }
+                return { remaining, removed, notFound };
+            };
+
+            const summary = [];
+            if (newTitlesRaw) {
+                const { remaining, removed, notFound } = removeFrom(seasonalDoc.newDraws, newTitlesRaw);
+                seasonalDoc.newDraws = remaining;
+                if (removed.length) summary.push(`Removed from New: ${removed.join(', ')}`);
+                if (notFound.length) summary.push(`⚠️ Not found in New: ${notFound.join(', ')}`);
+            }
+            if (returningTitlesRaw) {
+                const { remaining, removed, notFound } = removeFrom(seasonalDoc.returningDraws, returningTitlesRaw);
+                seasonalDoc.returningDraws = remaining;
+                if (removed.length) summary.push(`Removed from Returning: ${removed.join(', ')}`);
+                if (notFound.length) summary.push(`⚠️ Not found in Returning: ${notFound.join(', ')}`);
+            }
+
+            if (summary.length === 0) {
+                return interaction.followUp({ content: '❌ Both fields were left blank -- nothing was removed.' });
+            }
+
+            await seasonalDoc.save();
+            return interaction.followUp({ content: `🗑️ **Bulk Remove Complete!**\n${summary.join('\n')}` });
         }
 
         // --- ADMIN ROUTE C: BULK IMPORT CALENDAR EVENTS ---
@@ -853,6 +1249,70 @@ client.on('interactionCreate', async interaction => {
             return interaction.followUp({ content: `✅ **Bulk Calendar Import Complete!**\nReplaced the calendar with **${newEventDocs.length}** events. Sorted chronologically.` });
         }
 
+        // --- ADMIN ROUTE C.1: BULK REMOVE CALENDAR EVENTS ---
+        // Same fuzzy-match-and-report convention as the draws bulk-remove route above.
+        if (customId === 'modal_calendar_bulk_remove') {
+            await interaction.deferReply({ ephemeral: true });
+            const requested = interaction.fields.getTextInputValue('titles').split('\n').map(t => t.trim()).filter(Boolean);
+
+            const removed = [];
+            const notFound = [];
+            let remaining = seasonalDoc.calendar;
+            for (const title of requested) {
+                const match = remaining.find(e => fuzzyMatch(title, e.title));
+                if (match) {
+                    removed.push(match.title);
+                    remaining = remaining.filter(e => e !== match);
+                } else {
+                    notFound.push(title);
+                }
+            }
+            seasonalDoc.calendar = remaining;
+            await seasonalDoc.save();
+
+            let confirmation = `🗑️ **Bulk Remove Complete!**`;
+            if (removed.length) confirmation += `\nRemoved: ${removed.join(', ')}`;
+            if (notFound.length) confirmation += `\n⚠️ Not found: ${notFound.join(', ')}`;
+            return interaction.followUp({ content: confirmation });
+        }
+
+        // --- ADMIN ROUTE C.2: ADD SINGLE CALENDAR EVENT ---
+        // A blank End Date means the event runs until the Battle Pass ends (isOngoing), same
+        // semantics as the bulk parser's "All Season" handling -- see parseBulkEvents.
+        if (customId === 'modal_calendar_add') {
+            await interaction.deferReply({ ephemeral: true });
+            const title = interaction.fields.getTextInputValue('title').trim();
+            const startDate = parseAdminDate(interaction.fields.getTextInputValue('start_date'));
+            const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
+            const isOngoing = !endDateStr;
+            const endDate = isOngoing ? null : parseAdminDate(endDateStr);
+
+            seasonalDoc.calendar.push({ title, date: startDate, endDate, isOngoing });
+            seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
+            await seasonalDoc.save();
+
+            return interaction.followUp({ content: `✅ **Event Added!** ${title} added to the calendar.` });
+        }
+
+        // --- ADMIN ROUTE C.3: SAVE EDITED CALENDAR EVENT ---
+        if (customId.startsWith('edit_calendar_')) {
+            await interaction.deferReply({ ephemeral: true });
+            const targetId = customId.replace('edit_calendar_', '');
+            const targetEvent = seasonalDoc.calendar.find(e => e._id.toString() === targetId);
+
+            if (targetEvent) {
+                targetEvent.title = interaction.fields.getTextInputValue('title').trim();
+                targetEvent.date = parseAdminDate(interaction.fields.getTextInputValue('start_date'));
+                const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
+                targetEvent.isOngoing = !endDateStr;
+                targetEvent.endDate = targetEvent.isOngoing ? null : parseAdminDate(endDateStr);
+
+                seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
+                await seasonalDoc.save();
+                return interaction.followUp({ content: `✅ **Event Updated Successfully!** ${targetEvent.title}` });
+            }
+        }
+
         // --- ADMIN ROUTE D: PATCH NOTES ---
         if (customId === 'modal_add_patchnotes') {
             await interaction.deferReply({ ephemeral: true });
@@ -870,20 +1330,57 @@ client.on('interactionCreate', async interaction => {
             return interaction.followUp({ content: `✅ **Patch Notes Published!**\n**${title}** uploaded with ${imageUrls.length} image slides.` });
         }
 
-        // --- ADMIN ROUTE E: SEASON DEADLINES ---
-        if (customId === 'modal_edit_deadlines') {
+        // --- ADMIN ROUTE D.1: SAVE EDITED PATCH NOTES ---
+        // First time releaseDate is editable at all -- it used to be hardcoded to `new Date()` at
+        // creation time with no way to correct it afterward.
+        if (customId.startsWith('edit_patchnotes_')) {
             await interaction.deferReply({ ephemeral: true });
-            const bpStr = interaction.fields.getTextInputValue('bp_end');
-            const rankStr = interaction.fields.getTextInputValue('rank_end');
-            const dmzStr = interaction.fields.getTextInputValue('dmz_end');
+            const targetId = customId.replace('edit_patchnotes_', '');
+            const targetPatch = seasonalDoc.patchNotes.find(p => p._id.toString() === targetId);
 
-            // Only update the dates that were actively filled out in the modal
-            if (bpStr) seasonalDoc.bpEnd = parseAdminDate(bpStr);
-            if (rankStr) seasonalDoc.rankEnd = parseAdminDate(rankStr);
-            if (dmzStr) seasonalDoc.dmzEnd = parseAdminDate(dmzStr);
+            if (targetPatch) {
+                targetPatch.title = interaction.fields.getTextInputValue('patch_title').trim();
+                targetPatch.description = interaction.fields.getTextInputValue('patch_description')?.trim() || '';
+                targetPatch.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('patch_release_date'));
+                const rawUrls = interaction.fields.getTextInputValue('patch_urls');
+                targetPatch.images = rawUrls.split(/[\n,]+/).map(url => url.trim()).filter(url => url.startsWith('http'));
+
+                await seasonalDoc.save();
+                return interaction.followUp({ content: `✅ **Patch Notes Updated Successfully!** ${targetPatch.title}` });
+            }
+        }
+
+        // --- ADMIN ROUTE E: SEASON TITLES + DEADLINES (merged) ---
+        // Replaces the old separate "/manage season titles" (4-title modal) and "Edit Season
+        // Deadlines" (3-date modal) with one action -- each of the 3 deadline fields carries both a
+        // title and an end date on one line ("Battle Pass, August 28"), split apart via
+        // adminParser.js's splitTitleDate(). A blank line leaves that title+date pair untouched
+        // (same partial-update convention the old deadlines modal already used).
+        if (customId === 'modal_season_titles_deadlines') {
+            await interaction.deferReply({ ephemeral: true });
+
+            seasonalDoc.currentSeasonTitle = interaction.fields.getTextInputValue('main_title').trim();
+
+            const applyLine = (line, titleField, dateField) => {
+                const { title, dateStr } = splitTitleDate(line);
+                if (title) seasonalDoc[titleField] = title;
+                if (dateStr) seasonalDoc[dateField] = parseAdminDate(dateStr);
+            };
+            applyLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd');
+            applyLine(interaction.fields.getTextInputValue('rank_line'), 'rankTitle', 'rankEnd');
+            applyLine(interaction.fields.getTextInputValue('dmz_line'), 'dmzTitle', 'dmzEnd');
+
+            // patchNotes[].title is captured independently at "Add Patch Notes" time (so older,
+            // past-season entries keep their own historical title forever) -- but the MOST RECENT
+            // entry always represents the season that's currently live, so keep it in sync here.
+            // Without this, renaming a typo'd season title silently left the current patch notes
+            // entry (and therefore the default /patch notes view) showing the old name.
+            if (seasonalDoc.patchNotes.length > 0) {
+                seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1].title = seasonalDoc.currentSeasonTitle;
+            }
 
             await seasonalDoc.save();
-            return interaction.followUp({ content: `✅ **Deadlines Updated!** The \`/seasonend\` countdowns have been synced.` });
+            return interaction.followUp({ content: `✅ **Season Titles & Deadlines Updated!** The \`/season end\` module has been synced.` });
         }
 
         // --- ADMIN ROUTE F: SAVE EDITED DRAW ---
@@ -1046,27 +1543,86 @@ client.on('interactionCreate', async interaction => {
             return interaction.followUp({ content: confirmation });
         }
 
-        // --- ADMIN ROUTE J: SAVE EDITED SEASON TITLES ---
-        if (customId === 'edit_season_titles') {
-            await interaction.deferReply({ ephemeral: true }); // Admin feedbacks remain private
+        // --- ADMIN ROUTE K: BULK ADD LOADOUTS (MP + DMZ, upsert not replace) ---
+        // Unlike the draws/calendar bulk routes above, this NEVER wholesale-replaces the Loadout
+        // collection -- that would wipe every loadout in the database. Each parsed block upserts by
+        // {weaponKey, mode, buildName}: updates in place if that exact build already exists, inserts
+        // if not. Badge propagation afterward matches the single edit-loadout handler's convention
+        // (badges describe the weapon, not one build variant) so a bulk submission that only sets
+        // badges on one build of a multi-build weapon still syncs them across all of that weapon's
+        // builds. See adminParser.js's parseBulkLoadoutList() for the text format.
+        if (customId === 'modal_loadouts_bulk_add') {
+            await interaction.deferReply({ ephemeral: true });
+            const bulkText = interaction.fields.getTextInputValue('bulk_text');
+            const { parsed, errors } = parseBulkLoadoutList(bulkText);
 
-            // Trim whitespace and assign to the master document
-            seasonalDoc.currentSeasonTitle = interaction.fields.getTextInputValue('main_title').trim();
-            seasonalDoc.bpTitle = interaction.fields.getTextInputValue('bp_title').trim();
-            seasonalDoc.rankTitle = interaction.fields.getTextInputValue('rank_title').trim();
-            seasonalDoc.dmzTitle = interaction.fields.getTextInputValue('dmz_title').trim();
-
-            // patchNotes[].title is captured independently at "Add Patch Notes" time (so older,
-            // past-season entries keep their own historical title forever) — but the MOST RECENT
-            // entry always represents the season that's currently live, so keep it in sync here.
-            // Without this, renaming a typo'd season title via /manage silently left the current
-            // patch notes entry (and therefore the default /patch notes view) showing the old name.
-            if (seasonalDoc.patchNotes.length > 0) {
-                seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1].title = seasonalDoc.currentSeasonTitle;
+            let created = 0;
+            let updated = 0;
+            for (const entry of parsed) {
+                const { weaponKey, mode, buildName } = entry;
+                const existing = await Loadout.findOne({ weaponKey, mode, buildName });
+                if (existing) {
+                    await Loadout.updateOne({ _id: existing._id }, entry);
+                    updated++;
+                } else {
+                    await new Loadout(entry).save();
+                    created++;
+                }
+                // Weapon-level badges sync across every other build sharing this weaponKey+mode --
+                // same reasoning as index.js's edit_loadout_ handler.
+                await Loadout.updateMany(
+                    { weaponKey, mode, buildName: { $ne: buildName } },
+                    { isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic }
+                );
             }
 
-            await seasonalDoc.save();
-            return interaction.followUp({ content: `✅ **Season Titles Updated!** The \`/season end\` module has been synced.` });
+            let confirmation = `✅ **Bulk Loadout Import Complete!**\n${created} new build(s) added, ${updated} existing build(s) updated.`;
+            if (errors.length > 0) {
+                confirmation += `\n⚠️ ${errors.length} block(s) skipped:\n${errors.map(e => `- ${e}`).join('\n')}`;
+            }
+            return interaction.followUp({ content: confirmation });
+        }
+
+        // --- ADMIN ROUTE K.1: BULK REMOVE LOADOUTS ---
+        // Lines are "Weapon | Mode" (removes every build of that weapon+mode) or
+        // "Weapon | Mode | Build Name" (removes just that one build). Fuzzy-matches the weapon name
+        // (utils/search.js's fuzzyMatch) scoped to the given mode, same matching convention as the
+        // draws/calendar bulk-remove routes above.
+        if (customId === 'modal_loadouts_bulk_remove') {
+            await interaction.deferReply({ ephemeral: true });
+            const lines = interaction.fields.getTextInputValue('lines').split('\n').map(l => l.trim()).filter(Boolean);
+
+            const removed = [];
+            const notFound = [];
+            for (const line of lines) {
+                const [weaponPart, modePart, buildPart] = line.split('|').map(p => p?.trim());
+                if (!weaponPart || !modePart) {
+                    notFound.push(`"${line}" (need at least Weapon | Mode)`);
+                    continue;
+                }
+                const mode = modePart.toUpperCase();
+                const candidates = await Loadout.find({ mode }).lean();
+                const match = candidates.find(l => fuzzyMatch(weaponPart, l.weaponName));
+
+                if (!match) {
+                    notFound.push(`${weaponPart} | ${mode}`);
+                    continue;
+                }
+
+                if (buildPart) {
+                    const res = await Loadout.deleteOne({ weaponKey: match.weaponKey, mode, buildName: buildPart });
+                    if (res.deletedCount > 0) removed.push(`${match.weaponName} (${buildPart})`);
+                    else notFound.push(`${weaponPart} | ${mode} | ${buildPart}`);
+                } else {
+                    const res = await Loadout.deleteMany({ weaponKey: match.weaponKey, mode });
+                    removed.push(`${match.weaponName} (all ${res.deletedCount} build(s))`);
+                }
+            }
+
+            let confirmation = `🗑️ **Bulk Remove Complete!**`;
+            if (removed.length) confirmation += `\nRemoved: ${removed.join(', ')}`;
+            if (notFound.length) confirmation += `\n⚠️ Not found: ${notFound.join(', ')}`;
+            return interaction.followUp({ content: confirmation });
         }
     }
   } catch (err) {

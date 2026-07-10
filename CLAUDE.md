@@ -41,8 +41,74 @@ Base commands use subcommands to group related functionality:
   `commands/` — auto-generated in `index.js`'s `handleBotReady()` from whatever categories
   currently exist in MongoDB (`Loadout.distinct('category', {mode:'MP'})`), so they only show up
   after the bot's first successful boot post-data-import. See MP loadout system below.
-- `/update` (admin-only, hidden via `setDefaultMemberPermissions(0)`) — bulk data entry gateway
-- `/manage` (admin-only) — loadout CRUD + season title editing
+- `/manage` (admin-only, hidden via `setDefaultMemberPermissions(0)`) — the single admin data-entry
+  command, covering everything draws/calendar/loadouts/patch notes/season/export need. Used to be
+  split across this command and a separate `/update` dropdown-driven bulk-import gateway;
+  consolidated into one command (2026-07-09, Harkirat's request — "don't want a long list of slash
+  commands"), then redesigned twice more the same day: first collapsed from 5 subcommand
+  groups/22 subcommands into one flat command that opens a Components V2 panel (still felt like "A
+  LOT of commands" even as one slash command), then a follow-up pass folded a briefly-standalone
+  `/export` command back in as another panel page, added a Purge action per page, and swapped the
+  page-nav buttons for a dropdown — all per Harkirat's direct feedback on the panel once it existed.
+  `/update` no longer exists, and there is no subcommand tree at all — everything below is reached
+  through buttons/selects on one ephemeral panel message.
+  - **Shape: one flat command that opens a Components V2 panel.** `/manage` (optionally with a
+    `page` choice option — Draws/Calendar/Loadouts/Patch Notes/Season/Export — to land directly on a
+    section) replies with an ephemeral panel showing the current section's actions as buttons
+    (`mng_act_{page}_{action}`, e.g. `mng_act_draws_bulknew`). `commands/manage.js` only builds the
+    panel layout and every modal's *shape* (field labels, placeholders, pre-filled values) as
+    exported functions (`buildManagePage`, `buildBulkDrawsModal`, `buildEditLoadoutModal`, etc.) —
+    `index.js` owns all the actual routing and DB-mutating submit logic.
+  - **Section switching is a select menu (`mng_pagesel`), not a row of nav buttons.** Started as
+    nav buttons (same active/disabled convention as the public-facing nav rows), but a button row
+    caps out at 5 — once Export became a 6th page, that ceiling would've had to be worked around
+    immediately. A select menu supports up to 25 options, so this doesn't need revisiting again
+    until the panel has 25 sections. `PAGES` in `manage.js` is the single source of truth both the
+    dropdown options and the page-lookup draw from, so adding a page automatically adds it to the
+    dropdown with no separate list to keep in sync.
+  - **Add/Bulk-* actions open their modal directly** on click: `bulknew`/`bulkreturning`/
+    `bulkboth`/`bulkremove`/`addnew`/`addreturning` (draws), `bulkadd`/`bulkremove`/`add` (calendar,
+    loadouts), `add` (patchnotes), `titlesdeadlines`/`wipe` (season).
+  - **Edit/Delete need a specific item picked first, and a button can't autocomplete the way a
+    slash-command option could** — clicking either opens a one-field "search by name" modal
+    (`mng_search_{group}_{action}`) instead. Its submit handler (`index.js`) fuzzy-matches the query
+    (`utils/search.js`'s `fuzzyMatch`, same convention as every other admin search route) against
+    the right collection: 0 matches replies "not found"; exactly 1 match chains straight into the
+    real edit modal or performs the delete directly (Discord allows `showModal()` as the initial
+    response to a modal-submit or select-menu interaction, not just a button); 2+ matches shows an
+    ephemeral disambiguation select menu (`mng_pick_{group}_{action}`, values encoding the doc
+    `_id` — `id|type` for draws, since New/Returning are two separate arrays on one document) that
+    resolves the same way once a specific one is chosen. `index.js`'s `resolveManagePanelMatches()`
+    / `resolveManagePanelAction()` are the shared implementations both the search-modal and the
+    select-menu handler call into, so there's exactly one copy of "how do we look this up" and
+    "what do we do once we have it" each, not two drifting copies.
+  - **Purge** (draws/calendar/loadouts/patchnotes pages only, not season or export) — a per-page
+    "wipe just this entity's data" button, added per Harkirat's explicit request for a manual reset
+    option independent of Season's existing "Wipe Season". Requires a second tap: the first click
+    (`mng_act_{group}_purge`) only shows an ephemeral Confirm/Cancel prompt; the actual delete only
+    happens from `mng_purgeconfirm_{group}`, so a single misclick can't wipe a collection.
+    **Deliberately distinct from "Wipe Season"**, which resets draws+calendar together as part of
+    starting a new season but always preserves patch notes history — Patch Notes' own Purge button
+    is the one place that history can actually be cleared, and only fires from this confirmed path,
+    never as a side effect of anything else. `manage.js`'s `PURGE_LABELS` holds the per-group
+    confirmation wording; `index.js`'s `mng_purgeconfirm_`/`mng_purgecancel_` handlers do the actual
+    per-group delete (`newDraws`/`returningDraws` → `[]`, `calendar` → `[]`, `Loadout.deleteMany({})`,
+    `patchNotes` → `[]`).
+  - **Export lives as a panel page (`mng_act_export_{action}`), not a separate slash command.**
+    Briefly existed as its own top-level `/export` command right after the panel redesign (moving
+    `draws`' old `export` subcommand out of `/manage` entirely); folded back in the same day once
+    Harkirat asked to "add the export command to that admin sub command list to reduce our overall
+    slash commands list" — the whole point of this redesign was fewer top-level commands, so a
+    second standalone admin command worked against that. Export actions reply directly with the
+    file (no modal, nothing to submit): New Draws/Returning Draws/Calendar each export in their real
+    bulk-IMPORT-compatible text format (`formatDrawsAsBulkText`/`formatCalendarAsBulkText` in
+    `utils/adminParser.js`) so the file pastes straight back into the matching Bulk Add action.
+    **Patch Notes has no bulk-import format to round-trip into** — only single add/edit ever
+    existed — so that option produces a plain readable dump (`formatPatchNotesAsText`: title/release
+    date/description/URLs per entry, blocks separated by `---`) instead of inventing a bulk format
+    nobody could actually paste back in. Loadouts are deliberately excluded from Export entirely —
+    Harkirat's call: "Realistically we won't need to export loadouts in an importable format so
+    let's leave that out."
 
 **Important:** `client.commands` is keyed by the exact `SlashCommandBuilder.setName()`
 value. Several nav buttons use shorter custom_id suffixes than their actual command
@@ -133,11 +199,11 @@ auto-generated `/<category>` MP commands had this from an earlier session, but `
 `/calendar`, `/patch notes`, `/draw prices`, `/dmz`, `/season end`, and `/settings` didn't — so
 they silently never showed up when DMing the bot or using it as a user-installed app, even though
 the bot as a whole is set up for user-install. Fixed by adding the same
-`.setIntegrationTypes([1]).setContexts([0, 1, 2])` to all of them. `/update` and `/manage` are
-deliberately left out — they're admin-only bulk data-entry gateways gated by
-`setDefaultMemberPermissions(0)`, which has no real meaning in a DM (no guild permissions to
-check), so keeping them guild-only is intentional, not an oversight. **If you add a new
-public-facing command, add this line too, or it'll have the same DM/user-install gap.**
+`.setIntegrationTypes([1]).setContexts([0, 1, 2])` to all of them. `/manage` is deliberately left
+out — it's the admin-only bulk data-entry gateway gated by `setDefaultMemberPermissions(0)`, which
+has no real meaning in a DM (no guild permissions to check), so keeping it guild-only is
+intentional, not an oversight. **If you add a new public-facing command, add this line too, or
+it'll have the same DM/user-install gap.**
 
 ## `/timestamp`'s style-select dropdown (de-duplicated)
 Used to be a documented exception to the reuse pattern below — `index.js`'s `tsmenu|`
@@ -241,7 +307,7 @@ the same change**, or it will not actually save.
   `adminParser.js`'s exported `parseItemLine()`, shared by `parseBulkDrawList` and
   `index.js`'s single add-draw/edit-draw modal handlers — previously copy-pasted
   identically in all three places.
-- **`/update`'s bulk draws import is split into two independent flows — New and
+- **`/manage draws`'s bulk import is split into two independent flows — New and
   Returning each have their own modal** (`modal_draws_bulk_new` /
   `modal_draws_bulk_returning` in index.js, `parseBulkDrawList` in `adminParser.js`
   returns a flat array for whichever one category was submitted). This used to be ONE
@@ -251,6 +317,10 @@ the same change**, or it will not actually save.
   if unchanged content-wise, it reordered/re-saved it). Splitting means each submit
   only ever touches its own array. If you add a third draws-like category in the
   future, give it its own modal/custom_id rather than reintroducing a type-prefix line.
+  `bulk-both` (added 2026-07-09) is NOT a reintroduction of that old combined flow — it's
+  one modal with two independently-optional fields, and each field still only ever
+  writes to its own array (a blank field leaves that array completely untouched), for
+  the common case of wanting to update both categories without two round-trips.
 - **Bulk imports REPLACE, they don't append.** `modal_draws_bulk_new`/
   `modal_draws_bulk_returning` each overwrite only their own array
   (`newDraws`/`returningDraws`), and `modal_calendar_bulk` (index.js) overwrites
@@ -278,7 +348,8 @@ the same change**, or it will not actually save.
   Older patch note entries keep their own historical title forever (so a past season's
   patch notes don't get renamed retroactively), but the entry representing the
   currently-live season needs to track the live season title — see index.js's
-  `edit_season_titles` handler, which updates both when the admin renames a season.
+  `modal_season_titles_deadlines` handler (formerly `edit_season_titles`, merged with the old
+  deadlines modal on 2026-07-09), which updates both when the admin renames a season.
   Separately, some entries created before the heading redesign still have the full
   legacy sentence ("Balance Changes for Season 6...") baked into their stored title
   instead of just the bare season name — `patchnotes.js`'s exported `cleanPatchTitle()`
@@ -582,6 +653,26 @@ descriptions aren't always capitalized correctly.
   build of that weapon the same way the `edit_loadout_` handler does. Weapons with no loadout saved
   yet (e.g. Bal-27, FSS Hurricane, Pharo, and everything under SECONDARIES as of 2026-07-08) are
   reported as unmatched rather than silently skipped — re-run once those loadouts actually exist.
+- **`/manage loadouts bulk-add`'s text format is one loadout per block, blocks separated by a blank
+  line**, header line `Weapon | Category | Mode | Build Name | ImageKey | ShareCode | Badges`
+  followed by attachment lines (see `adminParser.js`'s `parseBulkLoadoutList()`). Only
+  Weapon/Category/Mode are required — the rest are optional trailing pipe segments, same convention
+  as the single-add modal's `Category | Mode | Badges` field, just extended since a bulk block has
+  no separate inputs to put them in. Mode is per-block, so ONE submission covers MP and DMZ
+  loadouts together — there's no separate "bulk add DMZ loadouts" flow. **This bulk-add upserts by
+  `{weaponKey, mode, buildName}` — it never wholesale-replaces the `Loadout` collection** the way
+  the draws/calendar bulk-adds replace their whole array; doing that here would wipe every loadout
+  in the database. A block matching an existing build updates it in place; otherwise it's inserted,
+  and weapon-level badges still propagate to sibling builds afterward via `Loadout.updateMany`, same
+  as `edit_loadout_`.
+- **Bulk-remove (draws/calendar/loadouts) all fuzzy-match by name rather than requiring an exact
+  match or a database ID**, added 2026-07-09 as the first bulk-removal capability the bot has ever
+  had (previously the only way to shrink an array was to re-run a bulk-add with a shorter list, or
+  wipe the whole season). Reuses `utils/search.js`'s `fuzzyMatch` — same punctuation-insensitive
+  matching as every autocomplete route — and reports both what was removed and what didn't match
+  anything, so a typo'd title doesn't just silently do nothing. Loadout bulk-remove lines are
+  `Weapon | Mode` (removes every build of that weapon+mode) or `Weapon | Mode | Build Name` (removes
+  just that one build).
 - **"Copy Attachments"** is a new button next to Copy Code, replying with the plain attachment list
   (one per line, no bullets/backticks/formatting — meant to be pasted straight into Gunsmith)
   ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared
@@ -589,16 +680,20 @@ descriptions aren't always capitalized correctly.
 
 ## Autocomplete search is punctuation/whitespace-insensitive, not just substring (`utils/search.js`)
 Every autocomplete route in the bot (loadout weapon search across `/dmz`/`/all`/`/<category>`,
-`/manage`'s draws + loadouts search, `/patch notes`' version search) used a plain `.includes()` (or
-an equivalent raw Mongo `$regex`), which requires the typed query to appear as one literal,
-contiguous substring of the stored name — so typing `dlq` never matched `DL Q33`, since the space
-between "DL" and "Q33" breaks that literal character sequence. `fuzzyMatch()` strips
-spaces/hyphens/underscores/periods from both sides before comparing, which fixes that whole class of
-miss (also covers `cx9` matching `CX-9`) without going as far as true fuzzy/subsequence matching
-(skipping letters), which would start returning noisy, hard-to-predict matches for a dataset this
-size. `/manage`'s loadouts autocomplete switched from a raw Mongo `$regex` to fetching everything and
-filtering in JS (same pattern the weapon-dictionary block already used) since punctuation-stripping
-can't be expressed as a single regex against the stored field — fine at this collection's size.
+`/patch notes`' version search) used a plain `.includes()` (or an equivalent raw Mongo `$regex`),
+which requires the typed query to appear as one literal, contiguous substring of the stored name —
+so typing `dlq` never matched `DL Q33`, since the space between "DL" and "Q33" breaks that literal
+character sequence. `fuzzyMatch()` strips spaces/hyphens/underscores/periods from both sides before
+comparing, which fixes that whole class of miss (also covers `cx9` matching `CX-9`) without going as
+far as true fuzzy/subsequence matching (skipping letters), which would start returning noisy,
+hard-to-predict matches for a dataset this size.
+
+**`/manage` has no autocomplete options at all** — its Edit/Delete panel actions collect a search
+query through a one-field modal instead (see the Command architecture section above), since a
+button can't autocomplete like a slash-command option could. That modal-submit handler
+(`index.js`'s `resolveManagePanelMatches()`) reuses the exact same `fuzzyMatch()` convention as
+every autocomplete route above — same matching behavior, just triggered by a modal submit instead
+of a live-typed option.
 
 ## This bot is user-installed only — it is NEVER a guild member with roles/permissions
 `Dior's Builds` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every
@@ -662,8 +757,8 @@ copy). This also means Share Publicly can't work in a context the bot can't resp
   the way draws/calendar chunking was).
 
 ## Next planned work
-Harkirat wants to reorganize the admin commands (`/update` + `/manage`) to be more
-"centralized" — currently split across two commands with some overlapping/missing
-functionality. Nothing has been designed yet; start by asking what "centralized"
-should look like (one command with subcommand groups? a different UX entirely?)
-rather than assuming.
+Nothing queued as of 2026-07-09 — the admin-command consolidation (`/update` + `/manage` → one
+`/manage` command, then redesigned into a button/dropdown panel with Purge actions and Export
+folded in as a page) that used to be listed here is done; see Command architecture above for the
+resulting panel shape. Not yet verified: Harkirat manually exercising every panel action + the
+Export page live in Discord (bot is running locally with Render paused for this testing session).
