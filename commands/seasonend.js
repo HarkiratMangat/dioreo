@@ -14,9 +14,11 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
-// NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
-// intended nav-button-order palette assignment. Season End is the 5th nav button, so Tumbleweed.
-const PRESET_ACCENT = 15379595; // Tumbleweed (#EAAC8B) — 5th nav button (Season End)
+// Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the
+// full nav-row hue-spread reasoning. A warm sunset amber -- fitting for "a season ending" -- that
+// also pairs as an analogous warm neighbor to Patch Notes' gold one slot over, closing out the
+// nav row's cool-to-warm progression.
+const PRESET_ACCENT = 15898954; // Neon Amber (#F2994A) — 5th nav button (Season End)
 
 module.exports = {
     // COMMAND DEFINITION: Base command 'season' with subcommand 'end'

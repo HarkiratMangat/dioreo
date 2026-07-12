@@ -86,23 +86,25 @@ const PAGES = {
                 ]
             },
             {
-                // New/Returning/Either buttons condensed to ONE button (2026-07-12) — Either/Both
-                // already covers the single-category cases by leaving one field blank, so the 3-way
-                // split was pure redundancy. Now routes straight into the combined modal
-                // (buildBulkBothDrawsModal) that used to be the "Either/Both" option only.
-                blocks: [`### ${emojis.mngBulkAdd} Add Multiple Draws\n-# Add multiple new and/or returning draws at once (leave a field blank to skip it). Additive — doesn't affect existing draws.`],
-                buttons: [{ id: 'bulkadd', label: 'Add Multiple', style: 3 }]
-            },
-            {
-                // Semantics changed 2026-07-12: was a wholesale wipe-then-replace of the whole array;
-                // now upserts by fuzzy-matched title (update in place if found, insert if not) —
-                // Purge already covers full wipes, so Replace doesn't need to double as one anymore.
-                blocks: [`### ${emojis.mngBulkReplace} Replace Multiple Draws\n-# Updates existing draws by matching title, or adds them if they don't exist yet. Draws not included in the paste are left untouched — use Purge below for a full wipe.`],
-                buttons: [{ id: 'bulkreplace', label: 'Replace Multiple', style: 1 }]
-            },
-            {
-                blocks: [`### ${emojis.mngBulkDelete} Delete Multiple Draws\n-# Remove multiple draws at once by pasting their titles. Only removes what's matched by search — everything else is left untouched.`],
-                buttons: [{ id: 'bulkdelete', label: 'Delete Multiple', style: 4 }]
+                // Bulk section grouped together like the single-item section above (2026-07-12,
+                // Harkirat's correction) — one shared button row under all 3 bulk blocks, instead of
+                // each bulk action being its own group with its own divider. New/Returning/Either
+                // buttons were ALSO condensed to ONE button each (same pass) — Either/Both already
+                // covers the single-category cases by leaving one field blank, so the 3-way split
+                // was pure redundancy. Replace's semantics changed too: was a wholesale wipe-then-
+                // replace of the whole array; now upserts by fuzzy-matched title (update in place if
+                // found, insert if not) — Purge already covers full wipes, so Replace doesn't need to
+                // double as one anymore.
+                blocks: [
+                    `### ${emojis.mngBulkAdd} Add Multiple Draws\n-# Add multiple new and/or returning draws at once (leave a field blank to skip it). Additive — doesn't affect existing draws.`,
+                    `### ${emojis.mngBulkReplace} Replace Multiple Draws\n-# Updates existing draws by matching title, or adds them if they don't exist yet. Draws not included in the paste are left untouched — use Purge below for a full wipe.`,
+                    `### ${emojis.mngBulkDelete} Delete Multiple Draws\n-# Remove multiple draws at once by pasting their titles. Only removes what's matched by search — everything else is left untouched.`
+                ],
+                buttons: [
+                    { id: 'bulkadd', label: 'Add Multiple', style: 3 },
+                    { id: 'bulkreplace', label: 'Replace Multiple', style: 1 },
+                    { id: 'bulkdelete', label: 'Delete Multiple', style: 4 }
+                ]
             },
             {
                 // Purge moved into its own fully separate section (2026-07-12, was folded into the

@@ -15,9 +15,11 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
-// NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
-// intended nav-button-order palette assignment. Patch Notes is the 4th nav button, so Light Coral.
-const PRESET_ACCENT = 15035247; // Light Coral (#E56B6F) — 4th nav button (Patch Notes)
+// Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the
+// full nav-row hue-spread reasoning. Pulled directly from the "Leakers on Duty" reference graphic
+// Harkirat pointed at (the community's own patch-notes-reveal image format) rather than invented
+// from scratch -- its headline text uses this exact gold.
+const PRESET_ACCENT = 15909424; // Patch Gold (#F2C230) — 4th nav button (Patch Notes)
 
 // Entries created before the "Balance Changes — " prefix was moved into the heading (see below)
 // still have the full old sentence baked into their stored title. Strip it back off at display

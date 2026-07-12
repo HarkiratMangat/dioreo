@@ -16,7 +16,11 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
-const PRESET_ACCENT = 7166330; // Chinese Violet
+// Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the
+// full nav-row hue-spread reasoning. A dustier, lighter plum than the "Field Ops" alternative
+// Harkirat considered, to stay in the same refined register as Calendar's blue and Season End's
+// amber rather than mixing in a grittier tone.
+const PRESET_ACCENT = 7032445; // Plum Fortune (#6B4E7D) — 2nd nav button (Draws)
 
 // DISCORD HARD LIMIT: a message can contain at most 40 total components, counted recursively
 // (containers, sections, text blocks, buttons, thumbnails — everything nested inside everything).

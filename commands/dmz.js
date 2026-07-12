@@ -6,7 +6,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const UserPreference = require('../models/UserPreference');
-const { buildLoadoutCard } = require('../utils/loadoutRender');
+const { buildLoadoutCard, getMpCategoryAccent } = require('../utils/loadoutRender');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
@@ -75,7 +75,15 @@ module.exports = {
         // LIBRARY SERIALIZATION BYPASS: raw rest.patch instead of interaction.followUp(), same
         // reasoning as every other Components V2 command — discord.js's high-level methods don't
         // reliably handle raw V2 JSON (no builder class exists for Container/type 17).
-        const cardPayload = buildLoadoutCard(builds, buildIndex, { color: 1842204, idPrefix: 'dmz', isEphemeral }); // #1c1c1c
+        //
+        // Repalette (2026-07-12, Section 5 of the batch): switched from a fixed identity color
+        // (#1c1c1c) to the SAME per-weapon-category palette MP loadouts already use
+        // (MP_CATEGORY_ACCENT in utils/loadoutRender.js) -- a DMZ result's embed color now depends
+        // on the weapon's category the same way /all's does, instead of every DMZ build looking
+        // identical regardless of weapon type. Deliberately still NOT part of the avatar/banner
+        // accent-color system (same as MP loadouts) -- category identity, not personalization.
+        const accentColor = getMpCategoryAccent(builds[0].category);
+        const cardPayload = buildLoadoutCard(builds, buildIndex, { color: accentColor, idPrefix: 'dmz', isEphemeral });
         return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
     }
 };

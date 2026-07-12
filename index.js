@@ -626,6 +626,19 @@ client.on('interactionCreate', async interaction => {
 
             const timestampCommand = client.commands.get('timestamp');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+
+            // Resolve the same accent color the initial render would have used (2026-07-12) --
+            // fixed teal unless the user's SAVED default style (prefs.timestampStyle) isn't
+            // 'all_formats', same rule timestamp.js's own execute() applies. Computed here since
+            // overrideState skips the normal option-resolution logic entirely.
+            const UserPreference = require('./models/UserPreference');
+            const { getAccentColorForCommand } = require('./utils/accentColor');
+            const tsPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            const usesPersonalizedAccent = tsPrefs?.timestampStyle && tsPrefs.timestampStyle !== 'all_formats';
+            const accentColor = usesPersonalizedAccent
+                ? await getAccentColorForCommand(interaction, tsPrefs, timestampCommand.PRESET_ACCENT)
+                : timestampCommand.PRESET_ACCENT;
+
             return await timestampCommand.execute(syntheticInteraction, {
                 unix, tz, queryInput: originalQueryText,
                 style: selectedStyle === 'all_formats' ? null : selectedStyle,
@@ -634,7 +647,8 @@ client.on('interactionCreate', async interaction => {
                 // this to know whether to keep showing the "Share Publicly" button after a style
                 // switch (it otherwise has no other way to know, since overrideState skips the
                 // normal ephemeral-resolution logic entirely).
-                ephemeral: Boolean(interaction.message.flags?.bitfield & 64)
+                ephemeral: Boolean(interaction.message.flags?.bitfield & 64),
+                accentColor
             });
         }
 
@@ -1082,14 +1096,13 @@ client.on('interactionCreate', async interaction => {
             // the "Share Publicly" button after paging to a different build.
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
-            // Reassemble the updated visual frame card for the new page. MP's accent color is
-            // resolved per-category (see utils/loadoutRender.js's MP_CATEGORY_ACCENT) same as the
-            // initial /all + /<category> render, so paging Prev/Next doesn't flip the card back to
-            // the old flat color -- DMZ keeps its own separate fixed identity color, unaffected by
-            // this MP-specific category mapping.
-            const cardPayload = buildLoadoutCard(matchingBuilds, newIndex, isDmz
-                ? { color: 1842204, idPrefix: 'dmz', isEphemeral } // #1c1c1c
-                : { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: 'mp', isEphemeral });
+            // Reassemble the updated visual frame card for the new page. Both MP and DMZ resolve
+            // their accent color per-category now (see utils/loadoutRender.js's
+            // MP_CATEGORY_ACCENT) -- DMZ switched from its own fixed identity color (#1c1c1c) to
+            // this same mapping 2026-07-12 (Section 5 of the batch) -- so paging Prev/Next doesn't
+            // flip the card back to the old flat color for either mode.
+            const cardPayload = buildLoadoutCard(matchingBuilds, newIndex,
+                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral });
 
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });

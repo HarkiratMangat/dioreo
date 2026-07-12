@@ -190,7 +190,7 @@ module.exports = {
             containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public|${userId}`, `toggle_timestamp_ephemeral|${userId}`));
             containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public|${userId}`, `toggle_settings_ephemeral|${userId}`));
 
-            containerComponents.push({ type: 10, content: `-# More settings on page 2 →` });
+            containerComponents.push({ type: 10, content: `-# Choose your personal Preferences settings on page 2 →` });
         } else {
             containerComponents.push({ type: 10, content: `### Default Preferences:\n-# Change the default preferences the bot uses when responding to you.` });
 
@@ -281,16 +281,17 @@ module.exports = {
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
         }
 
-        // Prev/Next between the 2 pages -- same shared helper /calendar and /draws use.
+        // Prev/Next between the 2 pages -- same shared helper /calendar and /draws use. Ordered
+        // hint text > nav row > divider > footer (2026-07-12 correction) -- the divider used to sit
+        // directly above the nav row, which read as separating the hint text from the buttons it
+        // was describing; moved below the nav row instead, right before the footer.
         const paginationRow = buildPaginationRow({
             totalChunks: 2, currentPage: page,
             prevCustomId: `set_page_${page - 1}`, nextCustomId: `set_page_${page + 1}`,
             indicatorCustomId: 'set_page_indicator'
         });
-        if (paginationRow) {
-            containerComponents.push({ type: 14, spacing: 1, divider: true });
-            containerComponents.push(paginationRow);
-        }
+        if (paginationRow) containerComponents.push(paginationRow);
+        containerComponents.push({ type: 14, spacing: 1, divider: true });
 
         // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens
         // /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to

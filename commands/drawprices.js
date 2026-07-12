@@ -15,11 +15,11 @@ const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 
-// NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
-// intended nav-button-order palette assignment. Draw Prices is the 3rd nav button, so China Rose.
-// Also corrects a latent conversion bug: the old value (11888018) doesn't actually match #B56576's
-// real decimal (11887990) — a ~28 off-by-value error nobody would have visually noticed.
-const PRESET_ACCENT = 11887990; // China Rose (#B56576) — 3rd nav button (Draw Prices)
+// Repalette (2026-07-12, Section 5 of the batch) -- see calendar.js's matching comment for the
+// full nav-row hue-spread reasoning. A deep forest emerald ("CP" = currency) -- chosen over a
+// lighter jade alternative Harkirat considered so it reads as confidently "money green" at a
+// glance rather than blending into Patch Notes' gold two slots over.
+const PRESET_ACCENT = 2067038; // CP Emerald (#1F8A5E) — 3rd nav button (Draw Prices)
 
 // RAW PULL-COST DATA (per pull, in CP), keyed by CP-region tier then draw type. Deliberately
 // stores ONLY the raw per-pull numbers, never a hand-typed total or running-total string — this

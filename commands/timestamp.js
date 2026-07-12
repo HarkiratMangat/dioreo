@@ -5,6 +5,20 @@ const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { getAccentColorForCommand } = require('../utils/accentColor');
+
+// Repalette (2026-07-12, Section 5 of the batch) -- /timestamp was NOT part of the avatar/banner
+// accent-color system at all before this (accent_color was hardcoded to Persimmon on every render,
+// regardless of the user's /settings Accent Color Style preference). Harkirat's rule: the "All
+// Formats" overview -- this command's own default, branded view -- keeps this fixed teal
+// regardless of accent preference, same as Loadouts' fixed per-category colors are never
+// personalized either. Only once a user has set a SPECIFIC default style in /settings (i.e.
+// `prefs.timestampStyle` is anything other than the schema default 'all_formats') does this
+// command start respecting avatar/banner personalization like Calendar/Draws/Draw Prices/Patch
+// Notes/Season End already do. A one-off `/timestamp style:...` invocation does NOT trigger this
+// -- only the user's SAVED default does (Harkirat's explicit confirmation) -- so this always checks
+// `prefs.timestampStyle`, never the `style` actually being rendered on this particular call.
+const PRESET_ACCENT = 1548962; // Cyber Teal (#17A2A2)
 
 // Shared option list for the style-switch dropdown, used by both view modes below. index.js's
 // 'tsmenu|' select handler calls back into this file's execute() (see overrideState below) rather
@@ -91,6 +105,8 @@ function getTimezoneLabel(tz, baseName) {
 }
 
 module.exports = {
+    PRESET_ACCENT, // Exposed so index.js's tsmenu re-render handler can resolve the same accent
+                   // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
         .setName('timestamp')
         .setDescription('Convert natural language into copyable Discord timestamps!')
@@ -153,7 +169,7 @@ module.exports = {
     // instead of re-deriving them from slash command options, while both code paths still share
     // this single render implementation below.
     async execute(interaction, overrideState = null) {
-        let queryInput, tz, style, unix, ephemeral;
+        let queryInput, tz, style, unix, ephemeral, accentColor;
 
         if (overrideState) {
             // Invoked from index.js's tsmenu dropdown handler — reuse the exact original parse
@@ -165,6 +181,11 @@ module.exports = {
             // someone switches timestamp styles. index.js passes this in from the message being
             // edited since overrideState skips the normal ephemeral-resolution logic entirely.
             ephemeral = Boolean(overrideState.ephemeral);
+            // accentColor is precomputed by index.js's tsmenu handler (it already needs to fetch
+            // prefs there to decide this) and passed through the same way ephemeral is — this
+            // render path skips the normal option-resolution logic entirely, so there's no `prefs`
+            // available here to resolve it from directly.
+            accentColor = overrideState.accentColor ?? PRESET_ACCENT;
         } else {
             queryInput = interaction.options.getString('datetime');
             tz = interaction.options.getString('timezone') || 'America/Toronto';
@@ -189,6 +210,13 @@ module.exports = {
             // by the other commands: explicit option > saved preference > public default.
             const argEphemeral = interaction.options.getBoolean('private');
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
+
+            // Accent color: fixed teal UNLESS the user has saved a specific default style in
+            // /settings (i.e. `prefs.timestampStyle` isn't the schema default 'all_formats') --
+            // checks the SAVED preference, not `style` above, so a one-off `style:` option on this
+            // particular call never triggers personalization by itself (Harkirat's explicit call).
+            const usesPersonalizedAccent = savedStyle && savedStyle !== 'all_formats';
+            accentColor = usesPersonalizedAccent ? await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT) : PRESET_ACCENT;
 
             // FIXED V14 EPHEMERAL DEFERRAL FORMAT:
             // discord.js v14 strictly expects a boolean payload configuration object { ephemeral: true }
@@ -246,7 +274,7 @@ module.exports = {
             componentPayload = [
                 {
                     type: 17, // Components v2: Section Container
-                    accent_color: 16741953, // Precious Persimmon (#ff7641)
+                    accent_color: accentColor,
                     components: [
                         { type: 10, content: `### \`<t:${unix}:${char}>\` — <t:${unix}:${char}>` }, // Type 10: Text Block
                         { type: 14, spacing: 2, divider: true }, // Type 14: Interactive Separator/Divider
@@ -284,7 +312,7 @@ module.exports = {
             componentPayload = [
                 {
                     type: 17, // Components v2: Section Container
-                    accent_color: 16741953, // Precious Persimmon (#ff7641)
+                    accent_color: accentColor,
                     components: [
                         { type: 10, content: `## ${emojis.timestamp} Time Converted to Each User’s Local Timezone` },
                         { type: 14, spacing: 2, divider: true },

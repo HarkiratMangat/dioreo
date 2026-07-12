@@ -18,13 +18,14 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 
-// NOTE (corrected during review): the palette-to-command assignment had gotten rotated out of
-// sync with the nav button order (Calendar/Draws/Draw Prices/Patch Notes/Season End) after the nav
-// buttons themselves were reordered in an earlier session — Calendar was showing Light Coral
-// (meant for Patch Notes) instead of Police Blue. Fixed here and in the other 4 commands to match
-// the intended 1st-5th assignment: Police Blue/Chinese Violet/China Rose/Light Coral/Tumbleweed,
-// in nav button order. See CLAUDE.md's color palette note.
-const PRESET_ACCENT = 3494000; // Police Blue (#355070) — 1st nav button (Calendar)
+// Repalette (2026-07-12, Section 5 of the batch) -- replaces the old flat 5-color nav-order
+// gradient (Police Blue/Chinese Violet/China Rose/Light Coral/Tumbleweed) with a color chosen per
+// command instead of just its position in a fade. Calendar gets a deep structural blue (schedule/
+// dependable) -- deliberately NOT a teal-leaning alternative Harkirat considered, so it doesn't sit
+// hue-adjacent to Draw Prices' green two slots over in the nav row. See CLAUDE.md's design-decision-
+// log entry for the full nav-row hue-spread reasoning (cool blue -> plum -> green -> gold -> warm
+// amber, left to right).
+const PRESET_ACCENT = 3821672; // Slate Harbor (#3A5068) — 1st nav button (Calendar)
 
 // All events in a chunk are joined into ONE Text Display component (see buildContainer) rather
 // than one component per event — Discord renders visible vertical margin BETWEEN components, not

@@ -1105,6 +1105,74 @@ findings + a proposed fix list to Harkirat, got his explicit go-ahead, then impl
   prices` — exclamation-toned, matching the majority of other commands) — this split is intentional/
   consistent within itself, not an inconsistency to fix.
 
+## Color repalette (2026-07-12, evening — Section 5, final item of the batch)
+Replaced the old flat 5-color nav-order gradient (Police Blue `#355070` / Chinese Violet `#6D597A`
+/ China Rose `#B56576` / Light Coral `#E56B6F` / Tumbleweed `#EAAC8B`) with colors chosen per
+command instead of just position-in-a-fade. Presented 3 full candidate directions (Dusk Signal —
+refined evolution of the existing muted gradient; Field Ops — pulled from CODM's own operator
+palette, gunmetal/brass/rust/olive; Neon Ops — bold/saturated, closer to Loadouts' Custom Class
+energy) as an HTML artifact using the established palette-spec-sheet format
+([[project_palette_spec_sheet_format]]), then an addendum with refined Draw Prices/Patch Notes
+options once Harkirat asked for money-green/teal and a real "Leakers on Duty" reference-image gold.
+Harkirat picked a specific mix across options; final result, optimized for the nav row's left-to-
+right hue spread (cool blue → plum → green → gold → warm amber) rather than any one command's color
+in isolation:
+- **Calendar** — `PRESET_ACCENT = 3821672` / Slate Harbor `#3A5068` (1st nav button). Deliberately
+  the deep-blue option over a teal-leaning alternative Harkirat considered, so it doesn't sit
+  hue-adjacent to Draw Prices' green two slots over.
+- **Draws** — `PRESET_ACCENT = 7032445` / Plum Fortune `#6B4E7D` (2nd). The dustier/lighter plum
+  over a deeper "Field Ops" plum, to stay in the same refined register as its neighbors.
+- **Draw Prices** — `PRESET_ACCENT = 2067038` / CP Emerald `#1F8A5E` (3rd). Deep forest emerald
+  over a lighter jade alternative — reads as confidently "money green" without blending into Patch
+  Notes' gold next to it.
+- **Patch Notes** — `PRESET_ACCENT = 15909424` / Patch Gold `#F2C230` (4th). Pulled directly from
+  the "Leakers on Duty" reference graphic Harkirat pointed at (the community's own patch-notes-
+  reveal image format) rather than invented from scratch.
+- **Season End** — `PRESET_ACCENT = 15898954` / Neon Amber `#F2994A` (5th). Warm sunset amber,
+  pairs as an analogous warm neighbor to Patch Notes' gold, closing out the row's cool-to-warm
+  progression.
+- **Timestamp** — `PRESET_ACCENT = 1548962` / Cyber Teal `#17A2A2`. This command was NOT part of
+  the avatar/banner accent-color system at all before this pass (`accent_color` was hardcoded to
+  the old Persimmon `#FF7641` on every render). **New rule, Harkirat's explicit design call:**
+  the "All Formats" overview — this command's own branded default view — keeps this fixed teal
+  regardless of the user's Accent Color Style preference, same as Loadouts' fixed per-category
+  colors are never personalized. Only once a user has SAVED a specific default style in
+  `/settings` (`UserPreference.timestampStyle` is anything other than the schema default
+  `'all_formats'`) does the command start respecting avatar/banner personalization like the other
+  5 commands. **Checks the SAVED preference specifically, not the style actually being rendered on
+  a given call** — confirmed explicitly with Harkirat: a one-off `/timestamp style:shortDate`
+  invocation does NOT trigger personalization by itself if the user's saved default is still
+  `all_formats`. Implementation: `timestamp.js` now exports `PRESET_ACCENT` and calls
+  `getAccentColorForCommand()` conditionally; the `overrideState`-driven re-render path (index.js's
+  `tsmenu|` select handler, which skips normal option-resolution entirely) has its own copy of the
+  same check since it has no `prefs` object to read from directly — computed there and passed
+  through `overrideState.accentColor`, the same way `ephemeral` already gets threaded through that
+  path.
+- **`/dmz` switched from a fixed identity color (`#1c1c1c`) to the SAME per-weapon-category
+  palette MP loadouts already use** (`utils/loadoutRender.js`'s `MP_CATEGORY_ACCENT`/
+  `getMpCategoryAccent()`) — a real behavior change, not just a new preset value. A DMZ result's
+  embed color now depends on the weapon's category the same way `/all`'s does (e.g. a DMZ AR build
+  renders in AR's color, a DMZ SMG build in SMG's). Applied at both render sites: the initial
+  `/dmz` slash-command response (`commands/dmz.js`) AND the Prev/Next pagination re-render
+  (index.js's shared `dmz`/`mp`-prefixed button handler) — the latter used to hardcode the DMZ
+  branch to the old fixed color separately, so both had to change together or paging would have
+  silently reverted to the old flat color. Loadouts' per-category palette itself is unchanged.
+- **Loadouts' existing per-category palette is otherwise untouched** — this repalette only ever
+  touched the 5 nav-button commands, Timestamp, and `/dmz`'s color SOURCE (not the palette values
+  themselves).
+- **Two structural corrections made to `/manage` and `/settings` during this same review pass**
+  (not color-related, caught while Harkirat was looking at screenshots of the live panel):
+  - `/manage`'s Draws page: the 3 bulk actions (Add Multiple/Replace Multiple/Delete Multiple) were
+    each their own group with their own divider between them — regrouped into ONE section (all 3
+    text blocks + one shared 3-button row), matching how the single-item Add/Edit/Delete section
+    above it is already laid out. `PAGES.draws.groups` in `manage.js` now has exactly 4 groups
+    (single-item, bulk, purge, export) instead of 6.
+  - `/settings`: reordered from `hint text → divider → nav row → footer` to `hint text → nav row →
+    divider → footer` — the divider used to sit directly above the Prev/Next buttons, which read as
+    separating the hint text from the very buttons it was describing. Page 1's hint line also
+    reworded to "Choose your personal Preferences settings on page 2 →" (was "More settings on
+    page 2 →").
+
 ## Known open issues (not yet fixed — flagged, not silently patched)
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
@@ -1117,10 +1185,8 @@ findings + a proposed fix list to Harkirat, got his explicit go-ahead, then impl
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else
   in that pass. See the `/manage` design-decision-log entry above for exactly what's a placeholder
   right now vs. what the real version needs to do.
-- **New color palettes for Calendar/Draws/Draw Prices/Patch Notes/Season End/Timestamp**, plus
-  switching `/dmz`'s accent color from its fixed identity color to the same per-weapon-category
-  palette MP loadouts already use — explicitly the LAST item in the current batch (the
-  slash-command overpass above is now done). This is the only item left in the 2026-07-12 batch.
+- The 2026-07-12 batch (draw prices, `/manage`, `/settings`, slash-command overpass, color
+  repalette) is now fully complete — see its own CLAUDE.md sections above for detail.
 - Not yet verified: Harkirat manually exercising every `/manage` panel action (including the new
   combined-line Add Draw field, upsert-by-title Replace, granular Purge scopes, every Confirm/Cancel
   step, and every Undo button), the new `/settings` 2-page layout, and the new Cloudinary-cache
