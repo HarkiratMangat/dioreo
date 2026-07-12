@@ -360,4 +360,25 @@ function formatPatchNotesAsText(patchNotes) {
     }).join('\n\n---\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText };
+/**
+ * Bulk-import-compatible export of loadouts -- round-trips straight back into
+ * parseBulkLoadoutList()'s expected "Weapon | Category | Mode | Build | Image | Code | Badges" +
+ * attachment-lines format (blocks separated by a blank line), added for /manage's Loadouts Export
+ * (2026-07-12 panel redesign). Badge reconstruction mirrors manage.js's buildEditLoadoutModal
+ * (dmzRangeRank is stored hyphenated -- "best-close" -- but the parser's token format has no
+ * hyphen, so it's stripped back out here too).
+ */
+function formatLoadoutsAsBulkText(loadouts) {
+    return loadouts.map(l => {
+        const badges = [
+            l.isMeta ? 'meta' : null,
+            l.categoryRank,
+            l.dmzRangeRank ? l.dmzRangeRank.replace('-', '') : null,
+            l.isToxic ? 'toxic' : null
+        ].filter(Boolean).join(',');
+        const header = [l.weaponName, l.category, l.mode, l.buildName, l.imageKey, l.shareCode || '', badges].join(' | ');
+        return [header, ...l.attachments].join('\n');
+    }).join('\n\n');
+}
+
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText };

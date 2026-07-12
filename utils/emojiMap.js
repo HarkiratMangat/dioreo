@@ -19,7 +19,27 @@ module.exports = {
     rank: '<:Rank_7Legendary_CODM:1523190127025717360>',
     dmz: '<:DMZ_CODM:1523190115319549963>',
     cp: '<:CP_CODM:1523190109753839637>',
+    // Distinct from `cp` above -- the draw-prices redesign (drawPrices_ui.json) uses this second CP
+    // icon specifically for the quote-block total line; `cp` is left alone since nothing else was
+    // asked to switch over to the new icon.
+    cp2: '<:CP_CODM2:1523190111460786318>',
+    // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the
+    // button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md).
+    regions: '<a:Regions:1525705441072382052>',
     // Added for the command heading redesign (calendar/draws/patchnotes/settings)
+    // /manage panel redesign (2026-07-12, per the 4 mockup JSONs in Downloads) -- these are the
+    // panel's own header/action icons, distinct from the public-command-header set above.
+    database: '<a:Database:1524967327437815899>',
+    mngAdd: '<a:Add:1525262938288558200>',
+    mngEdit: '<a:Edit:1525262950313623772>',
+    mngDelete: '<a:Delete:1525262947532931163>',
+    mngBulkAdd: '<a:BulkAdd:1525328428201414761>',
+    mngBulkReplace: '<a:BulkReplace:1525262944815022170>',
+    mngBulkDelete: '<a:BulkDelete:1525262942906482880>',
+    mngExport: '<a:Export:1525262952540934264>',
+    mngPurge: '<a:Purge:1525327754013442129>',
+    mngInfo: '<a:Info:1525337539085340722>',
+    mngUrls: '<a:URLs:1525337321568997449>',
     calendar: '<a:Calendar:1523762208050385107>',
     newDraws: '<a:NewDraws:1523837409211453613>',
     returningDraws: '<a:ReturningDraws:1523838126596817016>',
