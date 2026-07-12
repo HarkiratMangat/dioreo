@@ -13,6 +13,7 @@ const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { buildPaginationRow } = require('../utils/paginationRow');
 
 // NOTE (corrected during review — see calendar.js for the full explanation): fixed to match the
 // intended nav-button-order palette assignment. Draw Prices is the 3rd nav button, so China Rose.
@@ -77,8 +78,8 @@ const DRAW_DATA = {
 const DRAW_META = {
     mythicWeapon: { name: 'Mythic Weapon Draw', tier: 'mythic' },
     mythicCharacter: { name: 'Mythic Character + Legendary Weapon Draw', tier: 'mythic' },
-    legendaryGunReactive: { name: 'Legendary Weapon (Reactive) Draw', tier: 'legendary' },
-    legendaryGunNonReactive: { name: 'Legendary Weapon (Non-Reactive) Draw', tier: 'legendary' },
+    legendaryGunReactive: { name: 'Legendary Weapon Draw (Reactive)', tier: 'legendary' },
+    legendaryGunNonReactive: { name: 'Legendary Weapon Draw (Non-Reactive)', tier: 'legendary' },
     doubleLegendaryWeapons: { name: 'Double Legendary Weapons Draw', tier: 'legendary' },
     legendaryCharacterWeapon: { name: 'Legendary Character + Legendary Weapon Draw', tier: 'legendary' },
     sevenSpinLegendaryWeapon: { name: '7 Spins Legendary Weapon Draw', tier: 'legendary' },
@@ -86,9 +87,14 @@ const DRAW_META = {
     doubleEpicCharacters: { name: 'Double Epic Characters Draw', tier: 'epic' }
 };
 
-// Rendered as one flat divider-separated sequence (drawPrices_ui.json has no group headers at all,
-// unlike the previous Mythic/Legendary-Epic two-group layout) — order matches the reference file.
-const ENTRY_ORDER = ['mythicWeapon', 'mythicCharacter', 'legendaryGunReactive', 'legendaryGunNonReactive', 'doubleLegendaryWeapons', 'legendaryCharacterWeapon', 'sevenSpinLegendaryWeapon', 'pickYourRewardCard', 'doubleEpicCharacters'];
+// Rendered as one flat divider-separated sequence within each page (drawPrices_ui.json has no group
+// headers at all, unlike the previous Mythic/Legendary-Epic two-group layout) — order matches the
+// reference file. Split across 2 pages (2026-07-12, Harkirat's explicit split) purely to stay under
+// Discord's 40-component cap now that each entry renders as up to 3 separate Text Displays (see
+// buildDrawEntries) rather than one merged block -- not a content-grouping choice.
+const PAGE_1_KEYS = ['mythicWeapon', 'mythicCharacter', 'legendaryGunReactive', 'legendaryGunNonReactive', 'legendaryCharacterWeapon'];
+const PAGE_2_KEYS = ['doubleLegendaryWeapons', 'sevenSpinLegendaryWeapon', 'pickYourRewardCard', 'doubleEpicCharacters'];
+const SUBPAGES = [PAGE_1_KEYS, PAGE_2_KEYS];
 
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun
 // ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
@@ -96,77 +102,121 @@ const UPGRADE_LABEL = { mythicWeapon: 'Weapon', mythicCharacter: 'Character' };
 
 function formatCP(n) { return n.toLocaleString('en-US'); }
 
-// Builds the arrow-joined per-pull sequence and the cumulative "CP spent" sequence straight from a
-// draws array — see the DRAW_DATA comment above for why these are always computed here instead of
-// ever being hand-typed.
-function arrowSequence(entry) { return entry.draws.map(formatCP).join(' → '); }
+// Per example_reformat.json (2026-07-12): each pull number is now individually bold, joined by
+// " / " (was a plain arrow-joined sequence) -- and the cumulative "spent so far" sequence is joined
+// by "›" (U+203A) instead of an arrow. Both characters copied verbatim from the reference file
+// rather than retyped, since a visually-similar-but-wrong unicode glyph would be an easy typo to
+// introduce here and hard to notice in a code review.
+function boldDrawSequence(entry) { return entry.draws.map(n => `**${formatCP(n)}**`).join(' / '); }
 function cumulativeSequence(entry) {
     let running = 0;
-    return entry.draws.map(n => { running += n; return formatCP(running); }).join(' → ');
+    return entry.draws.map(n => { running += n; return formatCP(running); }).join(' › ');
 }
 
 // Single tier icon per drawPrices_ui.json (the old mythic/legendary headers combined their tier
 // emoji with the Epic emoji as a two-icon prefix; the new reference file uses just the one).
 const TIER_ICON = { mythic: emojis.mythic, legendary: emojis.legendary, epic: emojis.epic };
 
-// Returns one formatted string PER draw type (not one joined block) — buildContainer interleaves
-// these with real divider components so every draw section is visually separated, per Harkirat's
-// request, rather than relying on a blank line inside one Text Display (Discord's visible spacing
-// comes from the gap BETWEEN components, not from line breaks inside one — see calendar.js's
-// chunking note for the same lesson).
-function buildDrawEntries(regionKey) {
+// Returns one ARRAY of block strings per draw type (2 blocks normally, 3 if it has an Upgrade step)
+// -- NOT one joined string. Per example_reformat.json (2026-07-12), each entry splits into separate
+// Text Displays: [heading + total], [pull sequence + cumulative], optionally [upgrade heading +
+// formula] -- kept as 3 real separate Text Displays (not merged) since the gap BETWEEN components is
+// what gives the natural spacing Harkirat wants here; no divider between a given entry's own blocks,
+// only between entries (see withInnerDividers below). This pushes total component count too high
+// for all 9 entries on one page at once (over Discord's 40-cap) -- solved via pagination in
+// buildContainer instead of merging blocks back together, see PAGE_1_KEYS/PAGE_2_KEYS below.
+function buildDrawEntries(regionKey, keys) {
     const region = DRAW_DATA[regionKey];
-    return ENTRY_ORDER.map(key => {
+    return keys.map(key => {
         const meta = DRAW_META[key];
         const entry = region[key];
         const icon = TIER_ICON[meta.tier];
-        if (!entry) return `## ${icon} ${meta.name}\n*Data not yet available for this region.*`;
+        if (!entry) return [`**${icon} ${meta.name}**\n*Data not yet available for this region.*`];
 
         const total = entry.draws.reduce((a, b) => a + b, 0);
-        const lines = [`## ${icon} ${meta.name}`];
+        const blocks = [];
+
+        // Block 1: heading + total (quote-blocked, per Harkirat's request to bring the `> ` back).
+        // Upgrade entries bold-wrap each `CP` quantity independently (draw / upgrade / grand total),
+        // with the "+"/"=" outside the bold -- non-upgrade entries are just one bold total.
+        let totalLine;
         if (entry.upgrade) {
             const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            lines.push(`> ${emojis.cp2} **\`${formatCP(total)} CP Draw\` + \`${formatCP(upgradeTotal)} CP Upgrade\` = \`${formatCP(total + upgradeTotal)} CP\`**`);
+            totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP Draw\`** + **\`${formatCP(upgradeTotal)} CP Upgrade\`** = **\`${formatCP(total + upgradeTotal)} CP\`**`;
         } else {
-            lines.push(`> ${emojis.cp2} **\`${formatCP(total)} CP\`**`);
+            totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`**`;
         }
-        lines.push(`${arrowSequence(entry)} = \`${formatCP(total)} CP\``);
-        lines.push(`-# CP spent: ${cumulativeSequence(entry)}`);
+        blocks.push(`**${icon} ${meta.name}**\n${totalLine}`);
+
+        // Block 2: bold pull sequence + cumulative spend, own Text Display.
+        blocks.push(`${boldDrawSequence(entry)} ⌇ **\`${formatCP(total)} CP\`**\n-# **CP Spent:** ${cumulativeSequence(entry)}`);
+
+        // Block 3 (upgrade entries only): its own separate Text Display, matching the reference file.
         if (entry.upgrade) {
             const upgradeTotal = entry.upgrade.perDraw * entry.upgrade.count;
-            lines.push(`### ${UPGRADE_LABEL[key]} Upgrade`);
-            lines.push(`${formatCP(entry.upgrade.perDraw)} CP × ${entry.upgrade.count} Spins = \`${formatCP(upgradeTotal)} CP\``);
+            blocks.push(`**${UPGRADE_LABEL[key]} Upgrade**\n${formatCP(entry.upgrade.perDraw)} CP x ${entry.upgrade.count} Spins ⌇ **\`${formatCP(upgradeTotal)} CP\`**`);
         }
-        return lines.join('\n');
+
+        return blocks;
     });
 }
 
-// Turns an array of Text Display strings into [text, divider, text, divider, ..., text] — i.e. a
-// divider BETWEEN every pair of entries, but no leading/trailing divider (the caller is responsible
-// for whatever comes immediately before/after this run). Spacing is 1 here (not the 2 used by
-// calendar/draws/etc.) to match drawPrices_ui.json's own dividers exactly.
-function withInnerDividers(entries) {
+// Turns an array of entry-groups (each itself an array of block strings, see buildDrawEntries) into
+// a flat component list with a divider BETWEEN groups but never within one group's own blocks, and
+// no leading/trailing divider (the caller is responsible for whatever comes immediately
+// before/after this run). `spacing` defaults to 1 to match drawPrices_ui.json's own dividers;
+// buildContainer currently overrides this to 2 (large) for region_10 only, as a one-off spacing test
+// Harkirat asked for (2026-07-12) -- see its own note.
+function withInnerDividers(entryGroups, spacing = 1) {
     const components = [];
-    entries.forEach((content, i) => {
-        if (i > 0) components.push({ type: 14, spacing: 1, divider: true });
-        components.push({ type: 10, content });
+    entryGroups.forEach((blocks, i) => {
+        if (i > 0) components.push({ type: 14, spacing, divider: true });
+        blocks.forEach(content => components.push({ type: 10, content }));
     });
     return components;
 }
 
 /**
  * UI BUILDER: Constructs the V2 JSON Payload
- * Separated into its own function so the index.js dropdown router can call it directly
- * when users swap regions without needing to re-run the entire slash command.
+ * Separated into its own function so the index.js dropdown/button router can call it directly
+ * when users swap regions or pages without needing to re-run the entire slash command.
  */
-function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false) {
+function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0) {
     const region = DRAW_DATA[regionKey] || DRAW_DATA.region_10;
     const otherRegionKey = regionKey === 'region_10' ? 'region_30' : 'region_10';
     const otherRegionLabel = DRAW_DATA[otherRegionKey].label;
+    // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention
+    // used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice
+    // since the pagination row's own disabled state already prevents going out of bounds.
+    const currentPage = Math.min(Math.max(subpage, 0), SUBPAGES.length - 1);
 
     // Flat, divider-separated sequence per drawPrices_ui.json — no group headers at all (the old
-    // Mythic/Legendary-Epic two-group split is gone).
-    const entrySections = withInnerDividers(buildDrawEntries(regionKey));
+    // Mythic/Legendary-Epic two-group split is gone). Split across 2 pages (see PAGE_1_KEYS/
+    // PAGE_2_KEYS above) to stay under Discord's 40-component cap now that each entry can render as
+    // up to 3 separate Text Displays.
+    // TEMP SPACING TEST (2026-07-12, region_10 only): Harkirat wants to see how the large-spacing
+    // divider variant (spacing: 2, same as calendar/draws/etc.) reads BETWEEN draw entries, without
+    // committing to it everywhere yet -- scoped to region_10 only so region_30 stays exactly as-is
+    // for comparison. The divider right after the title and the one right before the footer/region-
+    // toggle button are deliberately excluded from this test and stay spacing: 1 regardless of
+    // region (see the two hardcoded dividers below) -- only the INNER dividers between draw entries
+    // change here. Revisit once Harkirat decides whether to keep it, drop it, or apply it globally.
+    const innerDividerSpacing = regionKey === 'region_10' ? 2 : 1;
+    const entrySections = withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
+
+    // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see
+    // utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed
+    // directly under the entries themselves (own divider on both sides) rather than next to the
+    // region-switch footer/button below -- sitting right next to that footer's "Switch between
+    // viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of
+    // switching region, which they aren't (Harkirat's explicit fix, 2026-07-12).
+    const paginationRow = buildPaginationRow({
+        totalChunks: SUBPAGES.length,
+        currentPage,
+        prevCustomId: `price_subpage_${regionKey}_${currentPage - 1}`,
+        nextCustomId: `price_subpage_${regionKey}_${currentPage + 1}`,
+        indicatorCustomId: 'price_subpage_indicator'
+    });
 
     const containerPayload = {
         type: 17, // Section Container
@@ -174,12 +224,17 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         components: [
             // Two-line title (region label on top, command header below) — shared pattern. See
             // utils/titleBlock.js.
-            buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices'),
+            // headingLevel 2 (`## `) and boldCaption (extra **bold** wrap on the region caption) --
+            // both scoped to this command only per Harkirat's request (2026-07-12); see
+            // utils/titleBlock.js's buildTitleBlock.
+            buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true),
             { type: 14, spacing: 1, divider: true },
             ...entrySections,
+            ...(paginationRow ? [{ type: 14, spacing: 1, divider: true }, paginationRow] : []),
             { type: 14, spacing: 1, divider: true },
 
-            { type: 10, content: `-# Switch between viewing 10 CP or 30 CP region prices.\n-# Use \`/settings\` command to change your default view.` },
+            // One-line footer (was two `-#` lines) per example_reformat.json.
+            { type: 10, content: `-# Switch between viewing 10 CP or 30 CP region prices. (Tip: check out \`/settings\`)` },
             {
                 type: 1,
                 components: [
@@ -191,8 +246,10 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                         // NOT prefixed `toggle_` -- that prefix is claimed by /settings' generic
                         // binary-toggle button handler in index.js, which expects a `|{userId}`
                         // suffix this button doesn't have (a real bug caught during review, before
-                        // ever being pushed -- see index.js's matching comment).
-                        type: 2, style: 3, custom_id: `price_region_${otherRegionKey === 'region_10' ? '10' : '30'}`,
+                        // ever being pushed -- see index.js's matching comment). Preserves the
+                        // CURRENT subpage across a region switch (encoded in its own custom_id) so
+                        // flipping region doesn't reset which page of entries you were looking at.
+                        type: 2, style: 3, custom_id: `price_region_${otherRegionKey === 'region_10' ? '10' : '30'}_${currentPage}`,
                         label: `View ${otherRegionLabel} Prices`,
                         emoji: emojis.parseEmoji(emojis.regions)
                     }
@@ -221,15 +278,18 @@ module.exports = {
 
     buildContainer, // Expose to the root router
 
-    async execute(interaction, regionOverride = null) {
+    async execute(interaction, regionOverride = null, subpageOverride = 0) {
         const userId = interaction.user.id;
         const prefs = await UserPreference.findOne({ discordId: userId });
 
         // NOTE (fixed during review): this previously only accepted `interaction` — but index.js's
-        // price_region_* button handler calls execute(interaction, targetRegion)
-        // after already persisting that same region to prefs.defaultRegion (same
+        // price_region_*/price_subpage_* button handlers call execute(interaction, targetRegion,
+        // targetSubpage) after already persisting the region pick to prefs.defaultRegion (same
         // persisted-toggle pattern as calendar's active/all filter button) — regionOverride is what
         // that handler passes in so the re-render doesn't have to re-fetch prefs a second time.
+        // subpageOverride (added 2026-07-12 for the 2-page entry split) is NOT persisted anywhere --
+        // unlike region, which page of entries you were on isn't a saved preference, just carried
+        // along through the button click itself.
         //
         // Priority: explicit slash command option > button click override > saved default > region_10.
         let targetRegion = prefs?.defaultRegion || 'region_10';
@@ -250,7 +310,7 @@ module.exports = {
         if (!interaction.deferred) await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
 
         const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
-        const components = buildContainer(targetRegion, accentColor, isEphemeral);
+        const components = buildContainer(targetRegion, accentColor, isEphemeral, subpageOverride);
 
         return await sendV2Payload(interaction, components);
     }

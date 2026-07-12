@@ -304,8 +304,12 @@ function buildBulkDrawsModal(isNew, mode) {
         .setCustomId(`modal_draws_bulk_${mode}_${isNew ? 'new' : 'returning'}`)
         .setTitle(`${mode === 'add' ? 'Bulk Add' : 'Bulk Replace'} ${isNew ? 'New' : 'Returning'} Draws`);
     modal.addComponents(
+        // Trailing URL/image-key field is optional (2026-07-12, Cloudinary-cache feature) -- a line
+        // that ends right after the date reuses whatever's already cached in Cloudinary for that
+        // exact draw title (see utils/cloudinaryCache.js). Placeholder shows one line WITH a URL and
+        // one WITHOUT, so the option is visible without needing separate instructions.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Comma-Separated Data').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("Title, m Item 1, e Item 2, july 10, url.jpg\nTitle 2, l Item, aug 5, url.jpg").setRequired(true))
+            .setPlaceholder("Title, m Item 1, e Item 2, july 10, url.jpg\nTitle 2, l Item, aug 5  (blank URL = reuse cached image)").setRequired(true))
     );
     return modal;
 }
@@ -338,7 +342,11 @@ function buildAddDrawModal(drawType) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name").setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15").setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail Image URL').setStyle(TextInputStyle.Short).setRequired(true))
+        // Optional (2026-07-12, Cloudinary-cache feature) -- leaving this blank reuses whatever's
+        // already cached for this exact draw title (utils/cloudinaryCache.js). Only fails if nothing
+        // has ever been cached for this title yet -- index.js's handler surfaces that as a clear
+        // error rather than silently saving a draw with no thumbnail at all.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setRequired(false))
     );
     return modal;
 }
@@ -350,7 +358,10 @@ function buildEditDrawModal(targetDraw, targetId, drawType) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setValue(itemsText)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(new Date(targetDraw.date).toISOString().split('T')[0])),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL').setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl))
+        // Pre-filled with the CURRENT thumbnail (already a Cloudinary URL if this draw was ever
+        // cached) -- optional so clearing it and resubmitting re-resolves via the cache lookup
+        // instead of requiring a re-typed URL just to leave the image unchanged.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('url').setLabel('Thumbnail URL (blank = reuse cached image)').setStyle(TextInputStyle.Short).setValue(targetDraw.thumbnailUrl).setRequired(false))
     );
     return modal;
 }

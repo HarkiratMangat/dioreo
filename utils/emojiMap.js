@@ -46,7 +46,7 @@ module.exports = {
     patchNotes: '<a:PatchNotes:1523762216954888286>',
     settings: '<a:Settings:1523762203537309696>',
     timestamp: '<a:Timestamps:1523762211103969420>',
-    drawPrices: '<a:DrawPrices:1523837407189930066>',
+    drawPrices: '<a:DrawPrices:1525864071776305163>',
     b1: '<:b1:1523852972835082371>',
     // Shared pagination arrows (utils/paginationRow.js) — used by every command with a Prev/Next
     // page row, not just one specific command's list.

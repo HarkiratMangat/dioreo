@@ -49,7 +49,9 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     // "Balance Changes — Balance Changes for...".
     const cleanTitle = cleanPatchTitle(activePatch.title);
     const components = [
-        buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes'),
+        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
+        // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
+        buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2),
         { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` }
     ];
 

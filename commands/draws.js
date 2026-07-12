@@ -78,7 +78,9 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // calendar_update_ui.json redesign. See utils/titleBlock.js.
     const titleEmoji = isNewPage ? emojis.newDraws : emojis.returningDraws;
     const drawComponents = [
-        buildTitleBlock(seasonTitle, titleEmoji, isNewPage ? 'New Draws' : 'Returning Draws'),
+        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
+        // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
+        buildTitleBlock(seasonTitle, titleEmoji, isNewPage ? 'New Draws' : 'Returning Draws', 2),
         { type: 14, spacing: 2, divider: true } // Divider separating the title from the draws content
     ];
 

@@ -78,18 +78,37 @@ function parseAdminDate(dateStr) {
  * silently overwriting/reordering a Returning Draws list you weren't even touching. The per-line
  * format is otherwise unchanged, just without the type-prefix token.
  */
+// Detects whether the trailing comma field is actually a URL/Cloudinary key, or is actually the
+// tail of the date (meaning no URL was given at all). Every date this bot's admin flows accept
+// ("July 15", "August 5, 2026") contains a space; a URL or bare Cloudinary key never does. A bare
+// 4-digit year ("2026", the comma-split tail of "July 16, 2026") also has no space, so it's
+// excluded explicitly -- without that exclusion this would misread the year as a URL and leave the
+// date one field short. See the Cloudinary-cache design-decision-log entry in CLAUDE.md for why the
+// URL became optional here at all (2026-07-12).
+function looksLikeUrlOrKey(field) {
+    return !field.includes(' ') && !/^\d{4}$/.test(field);
+}
+
 function parseBulkDrawList(bulkText) {
     const lines = bulkText.split('\n').filter(line => line.trim().length > 0);
     const parsedDraws = [];
 
     for (const line of lines) {
         const parts = line.split(',').map(p => p.trim());
-        if (parts.length < 4) continue; // Skip malformed lines
+        if (parts.length < 3) continue; // Skip malformed lines -- Title + at least 1 item + Date
 
         const title = toTitleCase(parts[0]);
 
-        // Extract URL and Date (Last two parts)
-        const url = parts.pop();
+        // URL is now OPTIONAL (2026-07-12, Cloudinary-cache feature) -- a blank/omitted URL means
+        // "reuse whatever's already cached for this draw name" (see utils/cloudinaryCache.js's
+        // resolveThumbnail), resolved later at save time in index.js, not here. Only pop a trailing
+        // URL field if the last field actually looks like one.
+        let url = null;
+        if (parts.length > 1 && looksLikeUrlOrKey(parts[parts.length - 1])) {
+            url = parts.pop();
+        }
+
+        // Extract Date (now the last remaining part)
         let dateStr = parts.pop();
         // Bulk entries are comma-delimited overall, so a date written as "July 16, 2026" itself
         // gets sliced into two fields by the same split(',') above ("July 16" and "2026") -- without
@@ -108,7 +127,10 @@ function parseBulkDrawList(bulkText) {
         parsedDraws.push({
             title: title,
             date: parsedDate,
-            thumbnailUrl: url.startsWith('http') ? url : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${url}`,
+            // Null means "no URL given, resolve via Cloudinary cache lookup at save time" -- a bare
+            // Cloudinary key still gets expanded to a full URL here same as before; a real HTTP URL
+            // passes through untouched either way (resolveThumbnail re-uploads it into temp_draws/).
+            thumbnailUrl: url ? (url.startsWith('http') ? url : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${url}`) : null,
             items: items
         });
     }

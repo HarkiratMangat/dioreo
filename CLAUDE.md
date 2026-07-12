@@ -11,11 +11,17 @@ maintained by Harkirat (Discord ID `1139845545754632283`), the sole admin.
 - `chrono-node` for natural-language date parsing (admin input)
 - `dayjs` (+ utc/timezone plugins) for user-facing timestamp conversion
 - `jimp` for accent-color extraction (pure JS, no native binary — see Accent color system below)
+- `cloudinary` (added 2026-07-12) — draw thumbnail caching (`utils/cloudinaryCache.js`); auto-reads
+  the existing `CLOUDINARY_URL` env var on require, no explicit config call needed.
 - `xlsx` — NOT used at bot runtime anymore (see MP loadout system below); only referenced by
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
-- Pushed to GitHub (`origin/main`); deployed on both Render and Railway via git-connected
-  auto-deploy — no separate CI/CD pipeline, a push to `main` is the deploy trigger on both.
+- Pushed to GitHub (`origin/main`). **Render is git-connected auto-deploy** (a push to `main`
+  triggers it, no separate CI/CD pipeline) — **Railway is NOT** (confirmed live 2026-07-12: pushing
+  to `main` left Railway's running deployment on a 2-day-old commit with no redeploy triggered at
+  all). Railway needs an explicit `railway up --detach` from this repo's root after every push meant
+  to reach it — don't assume a `git push` alone puts new code on Railway; verify via `railway logs
+  --deployment` (checks the boot-banner timestamp) or `railway status` before trusting it's live.
 
 ## Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain
@@ -848,6 +854,71 @@ copy). This also means Share Publicly can't work in a context the bot can't resp
   components array, (2) make sure every re-render path (not just the initial slash command) also
   gets `isEphemeral` passed through correctly.
 
+## Draw thumbnail Cloudinary cache (`utils/cloudinaryCache.js`)
+Draw thumbnail URLs are often hosted externally (Facebook, etc.), and those platforms sometimes
+remove/expire the image later, leaving a broken "image failed to load" placeholder in `/draws`.
+Built 2026-07-12 to re-host every provided thumbnail into this bot's own Cloudinary account
+(folder `temp_draws/`, same account `/dmz`/MP loadouts already use — cloud name `dr6dn61eh`) so the
+command keeps working even after the original source goes dark. This is the first place in the bot
+that actually calls Cloudinary's upload/delete API itself — `utils/loadoutRender.js`'s existing
+Cloudinary usage only ever builds URL strings for images an admin already uploaded by hand.
+- **Cloudinary has NO native per-asset TTL/auto-expiry** — confirmed against the current
+  `cloudinary_npm` docs before building this (don't assume otherwise if you revisit it). "Auto-delete
+  after 45 days" is therefore something THIS bot does on a schedule
+  (`pruneExpiredThumbnails`, called from `index.js`'s `runCloudinaryCleanup()` on boot + every 24h
+  via `setInterval`), not a Cloudinary feature being configured.
+- **Upload is remote-URL-to-remote-URL** — `cloudinary.uploader.upload(sourceUrl, {...})` hands
+  Cloudinary the external URL directly; Cloudinary fetches the bytes server-side, the bot never
+  downloads the image itself. `overwrite: true` + `invalidate: true` means re-adding/replacing a
+  draw with a NEW url replaces the cached file in place (same `public_id`, derived from
+  `slugify(title)`) with no separate delete step needed first.
+- **Thumbnail URL is now OPTIONAL everywhere it's entered** (single add/edit modals in `manage.js`,
+  and the bulk paste format in `adminParser.js`'s `parseBulkDrawList`) — a blank/omitted URL means
+  "reuse whatever's already cached in Cloudinary for this exact draw title" (Harkirat's spec: "if
+  the url field is not provided again... automatically use that"). `utils/cloudinaryCache.js`'s
+  `resolveThumbnail(title, providedUrl)` is the one entry point every draw-save site in `index.js`
+  calls (6 sites: single add/edit, bulk add/replace new+returning, bulk add/replace both) — it never
+  throws, always resolves, and returns `{ url, cached, error, reused }` so callers can tell a
+  successful cache from a fallback from a hard failure.
+  - Provided a URL + caching succeeds → cached Cloudinary URL.
+  - Provided a URL + caching fails (source already dead, network hiccup, etc.) → falls back to the
+    raw URL as typed, so the draw still saves — a Cloudinary hiccup must never block an admin action,
+    that's the opposite of what this feature is for.
+  - No URL + a cache hit exists → reuses the cached URL.
+  - No URL + no cache hit at all → `url: null`, and this IS treated as a real validation error by
+    every caller (the draw needs *some* thumbnail to render at all) — single add/edit rejects the
+    submission with a clear message; bulk routes skip just that one entry and report it by name in
+    the confirmation, rather than silently saving a draw with a broken/missing image field.
+- **Bulk-paste URL detection is a space heuristic, not a stricter format change.** Every date this
+  bot's admin flows accept ("July 15", "August 5, 2026") contains a space; a URL or bare Cloudinary
+  key never does. `adminParser.js`'s `looksLikeUrlOrKey()` pops the trailing comma-field as a URL
+  only if it has no space AND isn't a bare 4-digit year (which also has no space, and is the
+  comma-split tail of a "Month Day, Year" date — see the existing year-merge-back logic right below
+  it). Verified against all 4 combinations (URL/no-URL × plain-date/comma-year-date) before shipping.
+- **Cleanup rule is 45+ days old AND orphaned, not a strict age cutoff** (Harkirat's confirmed
+  choice) — `pruneExpiredThumbnails(currentUrls)` only deletes a cached asset if it's both past the
+  45-day window AND no current draw's `thumbnailUrl` still points at it. `currentUrls` is built by
+  the caller (`index.js`, from `SeasonalData.newDraws`/`returningDraws`) — `cloudinaryCache.js` stays
+  model-agnostic, matching every other file in `utils/`. A long-lived draw's image is never at risk
+  just because it's been up for a while.
+- **SECURITY: never log a raw Cloudinary error object.** Caught live during review before this ever
+  shipped — the Admin API's rejected-promise shape is
+  `{ request_options: { auth: 'api_key:api_secret', ... }, error: { message, http_code } }`, so
+  `console.error('...', err)` (or any fallback like `err.message || err`, which still logs the whole
+  object when `.message` is absent) prints the account's live API key AND secret in plaintext to the
+  console/log aggregator. `cloudinaryCache.js`'s `safeErrorMessage(err)`/`errorHttpCode(err)` are the
+  ONLY sanctioned way to read a Cloudinary error anywhere in this module (the upload API's errors
+  carry `.message`/`.http_code` directly; the Admin API's, used by `getCachedUrl`, nest them one
+  level under `.error` instead — checking only the top-level shape silently mis-detected every
+  "not yet cached" 404 as a real error too, logging the credential-bearing object on every single
+  cache-miss lookup until this was fixed). Every Cloudinary call in this file has its error caught
+  and sanitized IN this file — none of it is left to escape to a caller that doesn't know to
+  sanitize it (verified by wrapping `pruneExpiredThumbnails`'s entire body, not just the delete
+  call — `listCachedAssets()` had no try/catch of its own and could have leaked the same way).
+- Package: `cloudinary` (npm, added 2026-07-12) — auto-configures itself from the existing
+  `CLOUDINARY_URL` env var the moment it's required, no explicit `cloudinary.config()` call needed.
+  Already present in both local `.env` and Railway's production variables.
+
 ## Known open issues (not yet fixed — flagged, not silently patched)
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
@@ -860,10 +931,5 @@ copy). This also means Share Publicly can't work in a context the bot can't resp
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else
   in that pass. See the `/manage` design-decision-log entry above for exactly what's a placeholder
   right now vs. what the real version needs to do.
-- **Cloudinary temp-image caching for draw thumbnails** — Harkirat's proposed design: extracted
-  images from draw thumbnail URLs get re-uploaded to a "temp draws" Cloudinary folder, replacing the
-  stored URL, auto-expiring after 45 days, reused/overwritten by filename on re-add. Not yet
-  researched or started — needs confirming whether Cloudinary supports native per-asset expiry on
-  Harkirat's plan before assuming a scheduled-cleanup-script fallback is needed.
-- Not yet verified: Harkirat manually exercising every `/manage` panel action live in Discord post-
-  redesign (bot was running locally with Render paused for this testing session).
+- Not yet verified: Harkirat manually exercising every `/manage` panel action, and the new
+  Cloudinary-cache add/edit/bulk flows, live in Discord post-redesign.

@@ -36,6 +36,7 @@ const path = require('path');
 require('dotenv').config(); // Secure injection of environment variables from local or cloud environment
 
 const mongoose = require('mongoose'); // Add to dependency imports
+const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
 
 // CONNECT TO MONGO DB ATLAS STORAGE CLUSTER
 mongoose.connect(process.env.MONGODB_URI)
@@ -175,6 +176,43 @@ async function handleBotReady() {
             console.error(error);
         }
     }
+
+    // Kick off the Cloudinary temp-draws cleanup on boot, then every 24h -- not awaited, since a
+    // slow/failing Cloudinary call has no business delaying command registration above.
+    runCloudinaryCleanup();
+    setInterval(runCloudinaryCleanup, 24 * 60 * 60 * 1000);
+}
+
+// --- DRAW THUMBNAIL CLOUDINARY CACHE: SCHEDULED CLEANUP (2026-07-12) ---
+// Cloudinary has no native per-asset TTL (confirmed against the current cloudinary_npm docs before
+// building this feature) -- so "auto-delete after 45 days" only happens because THIS runs on a
+// schedule, not because Cloudinary does it on its own. Deletes only assets that are BOTH 45+ days
+// old AND no longer referenced by any current draw (Harkirat's confirmed rule), so a long-lived
+// draw's cached image is never at risk just because it's been up a while. Wrapped in its own
+// try/catch since this runs unawaited from handleBotReady -- a failure here must never be able to
+// crash the bot (matches the crash-resilience convention documented in CLAUDE.md).
+async function runCloudinaryCleanup() {
+    try {
+        const SeasonalData = require('./models/SeasonalData');
+        const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+        const currentUrls = new Set([
+            ...(seasonalDoc?.newDraws || []).map(d => d.thumbnailUrl),
+            ...(seasonalDoc?.returningDraws || []).map(d => d.thumbnailUrl)
+        ]);
+
+        const result = await pruneExpiredThumbnails(currentUrls);
+        if (result.deletedCount > 0) {
+            console.log(`🧹 Cloudinary cleanup: pruned ${result.deletedCount} expired, unused draw thumbnail(s).`);
+        }
+    } catch (error) {
+        // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's
+        // shape can carry the account's API key/secret in a nested `request_options.auth` field (see
+        // utils/cloudinaryCache.js's safeErrorMessage note). This should be unreachable in practice
+        // now (pruneExpiredThumbnails sanitizes everything it catches internally), but this is the
+        // last line of defense for a SeasonalData/Mongoose error from the same block, so it stays
+        // just as strict rather than assuming the callee always behaves.
+        console.error(`Cloudinary cleanup pass failed (bot stays alive): ${error?.message || 'Unknown error'}`);
+    }
 }
 
 client.once(Events.ClientReady, handleBotReady);
@@ -193,6 +231,30 @@ client.once(Events.ClientReady, handleBotReady);
 function parseMngId(raw) {
     const idx = raw.lastIndexOf('_');
     return [raw.slice(0, idx), raw.slice(idx + 1)];
+}
+
+// --- DRAW THUMBNAIL CLOUDINARY CACHE (2026-07-12) --- shared by every bulk draw-save route (single
+// add/edit uses resolveThumbnail directly, since there's only ever one draw to resolve). Runs every
+// parsed draw's thumbnailUrl through resolveThumbnail() concurrently -- draws.js's media gallery
+// needs a real URL on every entry, so a draw with no provided URL AND no existing cache hit has
+// nothing to show and is dropped from the batch entirely (reported back as "skipped", not silently
+// discarded) rather than saved with a broken/undefined image field.
+async function resolveThumbnailsForDraws(draws) {
+    const results = await Promise.all(draws.map(d => resolveThumbnail(d.title, d.thumbnailUrl)));
+    const validDraws = [];
+    const skipped = [];
+    const warnings = [];
+    draws.forEach((draw, i) => {
+        const result = results[i];
+        if (!result.url) {
+            skipped.push(draw.title);
+            return;
+        }
+        draw.thumbnailUrl = result.url;
+        validDraws.push(draw);
+        if (result.error) warnings.push(`${draw.title} (${result.error})`);
+    });
+    return { validDraws, skipped, warnings };
 }
 
 // --- MANAGE PANEL SEARCH RESOLUTION (2026-07-09 button/modal redesign) ---
@@ -624,17 +686,19 @@ client.on('interactionCreate', async interaction => {
         // DRAW PRICES REGION TOGGLE BUTTON -- replaced the old select-menu ('select_price_region')
         // with a single toggle button per Harkirat's drawPrices_ui.json redesign. custom_id encodes
         // the region to SWITCH TO directly (drawprices.js always labels/IDs the button with the
-        // other region), so no values[] to read. Deliberately NOT prefixed `toggle_` -- that prefix
-        // is claimed by the generic /settings binary-toggle handler further down
-        // (`customId.startsWith('toggle_')`), which expects a `|{userId}` suffix; a bare
-        // `toggle_price_region_10` would have matched that check first, found no userId to compare
-        // against, and always hit its "Action Blocked" branch (caught during a bug-check pass before
-        // ever being pushed, not found live). Persists to prefs.defaultRegion same as calendar's
-        // active/all filter toggle -- the picked region becomes the new default every subsequent
-        // /draw prices lands on until changed again.
-        if (interaction.customId === 'price_region_10' || interaction.customId === 'price_region_30') {
+        // other region) plus the CURRENT subpage (added 2026-07-12 once entries got split across 2
+        // pages -- e.g. `price_region_30_1` -- so flipping region doesn't reset which page of
+        // entries you were on). Deliberately NOT prefixed `toggle_` -- that prefix is claimed by the
+        // generic /settings binary-toggle handler further down (`customId.startsWith('toggle_')`),
+        // which expects a `|{userId}` suffix; a bare `toggle_price_region_10` would have matched
+        // that check first, found no userId to compare against, and always hit its "Action Blocked"
+        // branch (caught during a bug-check pass before ever being pushed, not found live). Persists
+        // to prefs.defaultRegion same as calendar's active/all filter toggle -- the picked region
+        // becomes the new default every subsequent /draw prices lands on until changed again.
+        if (interaction.customId.startsWith('price_region_10_') || interaction.customId.startsWith('price_region_30_')) {
             await interaction.deferUpdate();
-            const selectedRegion = interaction.customId === 'price_region_10' ? 'region_10' : 'region_30';
+            const selectedRegion = interaction.customId.startsWith('price_region_10_') ? 'region_10' : 'region_30';
+            const currentSubpage = parseInt(interaction.customId.split('_').pop(), 10) || 0;
 
             const UserPreference = require('./models/UserPreference');
             let prefs = await UserPreference.findOne({ discordId: interaction.user.id });
@@ -645,7 +709,24 @@ client.on('interactionCreate', async interaction => {
             const pricesCommand = client.commands.get('draw');
             // Re-use the existing render path (rest.patch on @original), just with the newly picked region
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
-            return await pricesCommand.execute(syntheticInteraction, selectedRegion);
+            return await pricesCommand.execute(syntheticInteraction, selectedRegion, currentSubpage);
+        }
+
+        // DRAW PRICES SUBPAGE (ENTRY) NAVIGATION -- Prev/Next between the 2 pages of draw entries
+        // (added 2026-07-12 once splitting entries into up to 3 separate Text Displays each pushed
+        // all 9 onto one page over Discord's 40-component cap). custom_id is
+        // `price_subpage_{region}_{targetPage}` -- region doesn't change here, only which entries
+        // are shown. Not persisted anywhere (unlike region), just carried through the click itself.
+        if (interaction.customId.startsWith('price_subpage_') && interaction.customId !== 'price_subpage_indicator') {
+            await interaction.deferUpdate();
+            const rest = interaction.customId.replace('price_subpage_', '');
+            const lastUnderscore = rest.lastIndexOf('_');
+            const region = rest.slice(0, lastUnderscore);
+            const targetPage = parseInt(rest.slice(lastUnderscore + 1), 10) || 0;
+
+            const pricesCommand = client.commands.get('draw');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await pricesCommand.execute(syntheticInteraction, region, targetPage);
         }
 
         // 0. "SHARE PUBLICLY" — attached below any ephemeral response's own components (see
@@ -1197,15 +1278,25 @@ client.on('interactionCreate', async interaction => {
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
             const parsedDraws = parseBulkDrawList(bulkText);
 
+            // Cloudinary-cache pass (2026-07-12) -- resolves each draw's thumbnailUrl to a cached
+            // Cloudinary URL (uploading a provided one, or reusing an existing cache entry if the
+            // line omitted a URL entirely). A draw with neither a provided URL NOR a cache hit has no
+            // possible thumbnail at all and is skipped rather than saved with a broken/missing image
+            // -- see resolveThumbnailsForDraws below.
+            const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parsedDraws);
+
             const existingArray = isNew ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
-            const finalArray = mode === 'add' ? [...existingArray, ...parsedDraws] : parsedDraws;
+            const finalArray = mode === 'add' ? [...existingArray, ...validDraws] : validDraws;
             finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
             if (isNew) seasonalDoc.newDraws = finalArray;
             else seasonalDoc.returningDraws = finalArray;
 
             await seasonalDoc.save();
             const verb = mode === 'add' ? 'Added' : 'Replaced';
-            return interaction.followUp({ content: `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${verb} ${parsedDraws.length} entries in the ${isNew ? 'New' : 'Returning'} Draws list (now **${finalArray.length}** total). Sorted chronologically.` });
+            let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${verb} ${validDraws.length} entries in the ${isNew ? 'New' : 'Returning'} Draws list (now **${finalArray.length}** total). Sorted chronologically.`;
+            if (skipped.length) confirmation += `\n⚠️ Skipped (no URL given and nothing cached yet): ${skipped.join(', ')}`;
+            if (warnings.length) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${warnings.join('; ')}`;
+            return interaction.followUp({ content: confirmation });
         }
 
         // --- ADMIN ROUTE B.1: BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE ---
@@ -1221,19 +1312,25 @@ client.on('interactionCreate', async interaction => {
             const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
 
             const updated = [];
+            const allSkipped = [];
+            const allWarnings = [];
             if (newText) {
-                const parsedNew = parseBulkDrawList(newText);
-                const finalNew = mode === 'add' ? [...seasonalDoc.newDraws, ...parsedNew] : parsedNew;
+                const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parseBulkDrawList(newText));
+                const finalNew = mode === 'add' ? [...seasonalDoc.newDraws, ...validDraws] : validDraws;
                 finalNew.sort((a, b) => new Date(a.date) - new Date(b.date));
                 seasonalDoc.newDraws = finalNew;
                 updated.push(`New Draws (${finalNew.length} total)`);
+                allSkipped.push(...skipped);
+                allWarnings.push(...warnings);
             }
             if (returningText) {
-                const parsedReturning = parseBulkDrawList(returningText);
-                const finalReturning = mode === 'add' ? [...seasonalDoc.returningDraws, ...parsedReturning] : parsedReturning;
+                const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parseBulkDrawList(returningText));
+                const finalReturning = mode === 'add' ? [...seasonalDoc.returningDraws, ...validDraws] : validDraws;
                 finalReturning.sort((a, b) => new Date(a.date) - new Date(b.date));
                 seasonalDoc.returningDraws = finalReturning;
                 updated.push(`Returning Draws (${finalReturning.length} total)`);
+                allSkipped.push(...skipped);
+                allWarnings.push(...warnings);
             }
 
             if (updated.length === 0) {
@@ -1241,7 +1338,10 @@ client.on('interactionCreate', async interaction => {
             }
 
             await seasonalDoc.save();
-            return interaction.followUp({ content: `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${mode === 'add' ? 'Added onto' : 'Replaced'}: ${updated.join(', ')}.` });
+            let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${mode === 'add' ? 'Added onto' : 'Replaced'}: ${updated.join(', ')}.`;
+            if (allSkipped.length) confirmation += `\n⚠️ Skipped (no URL given and nothing cached yet): ${allSkipped.join(', ')}`;
+            if (allWarnings.length) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${allWarnings.join('; ')}`;
+            return interaction.followUp({ content: confirmation });
         }
 
         // --- ADMIN ROUTE B.2: BULK DELETE DRAWS ---
@@ -1470,9 +1570,21 @@ client.on('interactionCreate', async interaction => {
             const drawIndex = arrayTarget.findIndex(d => d._id.toString() === targetId);
 
             if (drawIndex > -1) {
-                arrayTarget[drawIndex].title = toTitleCase(interaction.fields.getTextInputValue('title'));
+                const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
+                arrayTarget[drawIndex].title = newTitle;
                 arrayTarget[drawIndex].date = parseAdminDate(interaction.fields.getTextInputValue('date'));
-                arrayTarget[drawIndex].thumbnailUrl = interaction.fields.getTextInputValue('url');
+
+                // URL field is now optional (2026-07-12) -- blank reuses whatever's cached in
+                // Cloudinary for this draw's (possibly just-renamed) title; see
+                // utils/cloudinaryCache.js. A blank field with no cache hit at all is a real
+                // validation error -- the draw needs SOME thumbnail, so this rejects the edit
+                // rather than saving with a broken image field.
+                const rawUrl = interaction.fields.getTextInputValue('url');
+                const thumbResult = await resolveThumbnail(newTitle, rawUrl);
+                if (!thumbResult.url) {
+                    return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${newTitle}" -- provide a thumbnail URL.` });
+                }
+                arrayTarget[drawIndex].thumbnailUrl = thumbResult.url;
 
                 // Re-parse the text area items back into objects
                 const rawItems = interaction.fields.getTextInputValue('items');
@@ -1481,7 +1593,9 @@ client.on('interactionCreate', async interaction => {
                 // Auto-sort to maintain order after edit
                 arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();
-                return interaction.followUp({ content: `✅ **Draw Updated Successfully!**` });
+                let confirmation = `✅ **Draw Updated Successfully!**`;
+                if (thumbResult.error) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
+                return interaction.followUp({ content: confirmation });
             }
         }
 
@@ -1555,19 +1669,27 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply({ ephemeral: true });
             const drawType = customId.replace('add_draw_', '');
 
-            const title = interaction.fields.getTextInputValue('title');
+            const title = toTitleCase(interaction.fields.getTextInputValue('title'));
             const dateStr = interaction.fields.getTextInputValue('date');
-            const url = interaction.fields.getTextInputValue('url');
+            const rawUrl = interaction.fields.getTextInputValue('url');
+
+            // URL is optional (2026-07-12) -- blank reuses a Cloudinary cache hit for this exact
+            // title if one exists (see utils/cloudinaryCache.js); no URL AND no cache hit is a real
+            // validation error since the draw needs some thumbnail to render.
+            const thumbResult = await resolveThumbnail(title, rawUrl);
+            if (!thumbResult.url) {
+                return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${title}" -- provide a thumbnail URL.` });
+            }
 
             // Parse items string block
             const rawItems = interaction.fields.getTextInputValue('items');
             const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
 
             const newDrawObj = {
-                title: toTitleCase(title),
+                title: title,
                 items: parsedItems,
                 date: parseAdminDate(dateStr),
-                thumbnailUrl: url
+                thumbnailUrl: thumbResult.url
             };
 
             const arrayTarget = drawType === 'new' ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
@@ -1577,7 +1699,9 @@ client.on('interactionCreate', async interaction => {
             arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
             await seasonalDoc.save();
 
-            return interaction.followUp({ content: `✅ **Successfully injected new draw: ${newDrawObj.title}!**` });
+            let confirmation = `✅ **Successfully injected new draw: ${newDrawObj.title}!**`;
+            if (thumbResult.error) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
+            return interaction.followUp({ content: confirmation });
         }
 
         // --- ADMIN ROUTE I: SAVE NEW SINGLE LOADOUT --- custom_id: add_loadout_{MP|DMZ}

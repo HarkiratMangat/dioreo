@@ -47,8 +47,16 @@ function toBoldItalicUnicode(str) {
 // vertical margin that doesn't collapse just because the source only has one \n between them, which
 // showed up as a disproportionately large gap. toBoldItalicUnicode()'s styling keeps the visual
 // weight without needing literal heading markup.
-function buildTitleBlock(topLine, emoji, label) {
-    return { type: 10, content: `# ${emoji} ${label}\n${toBoldItalicUnicode(topLine)}` };
+// `headingLevel` defaults to 1 (`# `) to keep every existing caller's output byte-for-byte
+// unchanged -- added 2026-07-12 so /draw prices could drop to `## ` on its own (per Harkirat's
+// request, scoped to that one command) without touching calendar/draws/patchnotes/seasonend, which
+// all still want the bigger `# ` size. `boldCaption` (default off, same reasoning) additionally
+// wraps the caption line in markdown `**bold**` on top of its existing bold-italic-unicode styling
+// -- per example_reformat.json, /draw prices' caption is doubly-bold now; every other caller stays
+// unaffected.
+function buildTitleBlock(topLine, emoji, label, headingLevel = 1, boldCaption = false) {
+    const caption = toBoldItalicUnicode(topLine);
+    return { type: 10, content: `${'#'.repeat(headingLevel)} ${emoji} ${label}\n${boldCaption ? `**${caption}**` : caption}` };
 }
 
 module.exports = { buildTitleBlock, toBoldItalicUnicode };

@@ -66,7 +66,9 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
     // Two-line title (season title on top, command header below) — shared pattern, see
     // utils/titleBlock.js.
     const calendarComponents = [
-        buildTitleBlock(seasonTitle, emojis.calendar, 'Events Calendar'),
+        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
+        // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
+        buildTitleBlock(seasonTitle, emojis.calendar, 'Events Calendar', 2),
         { type: 14, spacing: 2, divider: true }
     ];
 
