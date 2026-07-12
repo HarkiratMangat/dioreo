@@ -108,7 +108,9 @@ commands.push(
     new SlashCommandBuilder()
         .setName('all')
         .setDescription('Search through all available gunsmiths')
-        .addStringOption(opt => opt.setName('weapon').setDescription('Type weapon name').setAutocomplete(true).setRequired(true))
+        // Reworded (2026-07-12, slash-command wording overpass) to match /dmz's phrasing pattern --
+        // was just "Type weapon name", inconsistent with every other weapon-search option in the bot.
+        .addStringOption(opt => opt.setName('weapon').setDescription('The name of the weapon you want a build for').setAutocomplete(true).setRequired(true))
         .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
         .addBooleanOption(opt => opt.setName('private').setDescription('Hide this response so only you can see it'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
@@ -156,7 +158,10 @@ async function handleBotReady() {
             new SlashCommandBuilder()
                 .setName(cmdName)
                 .setDescription(`Search through ${cat} gunsmiths only`)
-                .addStringOption(opt => opt.setName('weapon').setDescription(`Select a ${cat}`).setAutocomplete(true).setRequired(true))
+                // Reworded (2026-07-12) to match the same "The name of the weapon you want a build
+                // for" pattern as /dmz and /all -- was "Select a {cat}", a third distinct phrasing
+                // for the same concept.
+                .addStringOption(opt => opt.setName('weapon').setDescription(`The name of the ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
                 .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
                 .addBooleanOption(opt => opt.setName('private').setDescription('Hide this response so only you can see it'))
                 .setIntegrationTypes([1]).setContexts([0, 1, 2])
@@ -233,6 +238,42 @@ function parseMngId(raw) {
     return [raw.slice(0, idx), raw.slice(idx + 1)];
 }
 
+// --- MANAGE PANEL UNDO STORE (2026-07-12) --- in-memory, short-lived snapshot cache for the
+// "Undo" button attached to destructive /manage confirmations (Purge, single Delete, Bulk Delete,
+// Bulk Replace). Deliberately NOT persisted to Mongo -- these are meant to reverse a mistake made
+// seconds ago in the same session, not act as a real audit log/version history. A token expires
+// (and its snapshot is dropped) after 10 minutes so this can't grow unbounded across a long-running
+// process; only ALLOWED_ADMIN_ID can ever trigger one of these anyway (see manage.js's own guard),
+// so there's no need for anything fancier than a plain Map keyed by a short random token.
+const { randomUUID } = require('crypto');
+const manageUndoStore = new Map(); // token -> { description, restore: async () => {} }
+function registerUndo(description, restore) {
+    const token = randomUUID().slice(0, 8);
+    manageUndoStore.set(token, { description, restore });
+    setTimeout(() => manageUndoStore.delete(token), 10 * 60 * 1000).unref();
+    return token;
+}
+function undoButtonRow(token) {
+    return { type: 1, components: [{ type: 2, style: 2, label: 'Undo', custom_id: `mng_undo_${token}` }] };
+}
+
+// Pending "Start New Season" confirmations (2026-07-12) -- same short-lived-token pattern as
+// manageUndoStore above, just holding the entered title between the modal submit and the
+// Confirm/Cancel click instead of a post-action snapshot. See the modal_wipe_season handler and
+// the mng_wipeconfirm_/mng_wipecancel_ button handlers.
+const pendingSeasonWipes = new Map(); // token -> { newTitle }
+
+// Pending single-item Delete confirmations (2026-07-12) -- same short-lived-token pattern, holding
+// the already-resolved { group, match } between resolveManagePanelAction's confirm prompt and the
+// mng_delconfirm_/mng_delcancel_ button click.
+const pendingManageDeletes = new Map(); // token -> { group, match }
+
+// Pending Bulk Delete confirmations (draws/calendar/loadouts, 2026-07-12) -- holds the DRY-RUN
+// result (what WOULD be removed, computed but not yet saved) plus an `apply()` that performs the
+// actual save and registers its own Undo snapshot, between the modal-submit's confirm prompt and
+// the mng_bulkdelconfirm_/mng_bulkdelcancel_ button click.
+const pendingBulkDeletes = new Map(); // token -> { description, summary, apply: async () => undoToken }
+
 // --- DRAW THUMBNAIL CLOUDINARY CACHE (2026-07-12) --- shared by every bulk draw-save route (single
 // add/edit uses resolveThumbnail directly, since there's only ever one draw to resolve). Runs every
 // parsed draw's thumbnailUrl through resolveThumbnail() concurrently -- draws.js's media gallery
@@ -255,6 +296,36 @@ async function resolveThumbnailsForDraws(draws) {
         if (result.error) warnings.push(`${draw.title} (${result.error})`);
     });
     return { validDraws, skipped, warnings };
+}
+
+// --- BULK REPLACE DRAWS: UPSERT BY TITLE (2026-07-12) --- "Replace Multiple" used to wholesale-
+// overwrite the whole array with exactly what was pasted (anything not mentioned got deleted) --
+// Harkirat wants it to instead fuzzy-match each pasted draw's title against the array being
+// replaced: update the existing draw in place (same _id) on a match, insert as new otherwise, and
+// never touch anything not mentioned in the paste (Purge already covers a full wipe). Mirrors the
+// same upsert convention loadouts' bulk-add already uses (matched there by weaponKey+mode+
+// buildName; here by fuzzy title match). Returns the same array reference mutated in place (plus
+// counts for the confirmation message) rather than a fresh one, so this stays consistent with how
+// every other draws-array mutation in this file works directly against the Mongoose subdocument array.
+function upsertDrawsByTitle(existingArray, parsedDraws) {
+    const { fuzzyMatch } = require('./utils/search');
+    let updatedCount = 0;
+    let insertedCount = 0;
+    const finalArray = [...existingArray];
+
+    for (const parsed of parsedDraws) {
+        const matchIndex = finalArray.findIndex(d => fuzzyMatch(parsed.title, d.title));
+        if (matchIndex > -1) {
+            // Update in place -- keep the existing _id, overwrite the rest of its fields.
+            finalArray[matchIndex] = Object.assign(finalArray[matchIndex], parsed);
+            updatedCount++;
+        } else {
+            finalArray.push(parsed);
+            insertedCount++;
+        }
+    }
+
+    return { finalArray, updatedCount, insertedCount };
 }
 
 // --- MANAGE PANEL SEARCH RESOLUTION (2026-07-09 button/modal redesign) ---
@@ -323,25 +394,27 @@ async function resolveManagePanelAction(interaction, group, action, match) {
     }
 
     if (action === 'delete') {
-        if (group === 'draws') {
-            const SeasonalData = require('./models/SeasonalData');
-            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
-            if (match.type === 'new') seasonalDoc.newDraws = seasonalDoc.newDraws.filter(d => d._id.toString() !== match.id);
-            else seasonalDoc.returningDraws = seasonalDoc.returningDraws.filter(d => d._id.toString() !== match.id);
-            await seasonalDoc.save();
-        } else if (group === 'calendar') {
-            const SeasonalData = require('./models/SeasonalData');
-            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
-            seasonalDoc.calendar = seasonalDoc.calendar.filter(e => e._id.toString() !== match.id);
-            await seasonalDoc.save();
-        } else if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
-            const Loadout = require('./models/Loadout');
-            await Loadout.findByIdAndDelete(match.id);
-        }
-        // Both a modal-submit interaction and a select-menu interaction (mng_pick_ never
-        // deferUpdate()s before reaching here) can answer with a plain reply -- neither has been
-        // acknowledged yet at this point.
-        return interaction.reply({ content: `🗑️ Successfully deleted **${match.label}**!`, ephemeral: true });
+        // 2-step confirm added 2026-07-12 -- this used to delete the instant a single match was
+        // resolved, no confirmation at all. Stashes the resolved match in `pendingManageDeletes`
+        // (declared near the other manage-panel module-scope stores) and shows the same
+        // Confirm/Cancel pattern Purge already uses -- the actual delete only happens from
+        // `mng_delconfirm_` below. Both a modal-submit interaction and a select-menu interaction
+        // (mng_pick_ never deferUpdate()s before reaching here) can answer with a plain reply --
+        // neither has been acknowledged yet at this point.
+        const token = randomUUID().slice(0, 8);
+        pendingManageDeletes.set(token, { group, match });
+        setTimeout(() => pendingManageDeletes.delete(token), 10 * 60 * 1000).unref();
+
+        return interaction.reply({
+            content: `⚠️ **Are you sure you want to delete ${match.label}?** This cannot be undone directly, but you'll get an Undo button right after.`,
+            components: [{
+                type: 1, components: [
+                    { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}` },
+                    { type: 2, style: 2, label: 'Cancel', custom_id: `mng_delcancel_${token}` }
+                ]
+            }],
+            ephemeral: true
+        });
     }
 }
 
@@ -579,7 +652,12 @@ client.on('interactionCreate', async interaction => {
         // D. SETTINGS MENU DROPDOWNS (Timezone & Timestamp Formats only)
         if (interaction.customId.startsWith('set_')) {
             await interaction.deferUpdate(); // Extends execution context limits to handle network delays safely
-            const [action, targetUserId] = interaction.customId.split('|');
+            // 3rd pipe segment (2026-07-12) -- which /settings page this dropdown lives on, so
+            // re-rendering after a selection lands back on the same page instead of resetting to
+            // page 0. Only the dropdowns that live on the Preferences page (region mode/timezone/
+            // style/accent) carry this; defaults to page 0 if absent.
+            const [action, targetUserId, pageStr] = interaction.customId.split('|');
+            const currentPage = pageStr ? parseInt(pageStr, 10) : 0;
             const selectedValue = interaction.values[0];
 
             // SECURITY GATEWAY LOCK: Prevent external users from clicking inside an active configuration trace.
@@ -601,12 +679,17 @@ client.on('interactionCreate', async interaction => {
             if (action === 'set_timezone') prefs.timezone = selectedValue;
             if (action === 'set_style') prefs.timestampStyle = selectedValue;
             if (action === 'set_accent_style') prefs.accentColorStyle = selectedValue;
+            // Added 2026-07-12 -- the new 3-option "Draw Prices Region" dropdown (replaces the old
+            // binary toggle_region_10/toggle_region_30 buttons, see settings.js).
+            if (action === 'set_region_mode') prefs.defaultRegionMode = selectedValue;
 
             await prefs.save();
 
-            // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated parameters instantly.
+            // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated
+            // parameters instantly -- passes the current page through so picking an option on the
+            // Preferences page doesn't bounce back to page 0.
             const settingsCommand = client.commands.get('settings');
-            return await settingsCommand.execute(interaction);
+            return await settingsCommand.execute(interaction, currentPage);
         }
 
         // E.0 MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel
@@ -805,8 +888,11 @@ client.on('interactionCreate', async interaction => {
             if (action === 'timestamp_ephemeral') prefs.timestampVisibility = 'ephemeral';
             if (action === 'settings_public') prefs.settingsVisibility = 'public';
             if (action === 'settings_ephemeral') prefs.settingsVisibility = 'ephemeral';
-            if (action === 'region_10') prefs.defaultRegion = 'region_10';
-            if (action === 'region_30') prefs.defaultRegion = 'region_30';
+            // NOTE (removed 2026-07-12): region_10/region_30 toggle actions used to live here as a
+            // binary button. Replaced by a 3-option dropdown ("Show Last Viewed Region" / "10 CP" /
+            // "30 CP") writing to the new `defaultRegionMode` field instead -- see the `set_region_mode`
+            // branch in the generic `set_` dropdown handler above. All 4 of these visibility toggles
+            // stay on /settings' page 0 (Visibility), so no page param is needed here.
 
             await prefs.save(); // Write preferences live to the Atlas cluster
 
@@ -870,6 +956,19 @@ client.on('interactionCreate', async interaction => {
             return await calendarCommand.execute(syntheticInteraction, 0, targetFilter);
         }
 
+        // B.5 SETTINGS PAGE NAVIGATION -- /settings paginated into 2 pages (2026-07-12, once the new
+        // region dropdown + hex codes + footer line pushed it close to Discord's 40-component cap):
+        // page 0 = Visibility toggles, page 1 = Preferences. custom_id is `set_page_{targetPage}`,
+        // same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section
+        // stays identical on both pages (re-rendered each time, not truly "shared" state).
+        if (interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
+            await interaction.deferUpdate();
+            const targetPage = parseInt(interaction.customId.replace('set_page_', ''), 10) || 0;
+            const settingsCommand = client.commands.get('settings');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await settingsCommand.execute(syntheticInteraction, targetPage);
+        }
+
         // C. GLOBAL UI NAVIGATION BAR
         if (interaction.customId.startsWith('nav_')) {
             await interaction.deferUpdate();
@@ -904,7 +1003,7 @@ client.on('interactionCreate', async interaction => {
                     followUp: async (payload) => interaction.followUp(payload),
                     // Button interactions have no `.options` resolver at all (that only exists on
                     // slash command interactions). Commands re-used via nav buttons call things like
-                    // interaction.options.getBoolean('ephemeral'), which would otherwise throw
+                    // interaction.options.getBoolean('private'), which would otherwise throw
                     // "Cannot read properties of undefined". Stub it out safely.
                     options: {
                         getBoolean: () => null, getString: () => null, getInteger: () => null,
@@ -1022,13 +1121,20 @@ client.on('interactionCreate', async interaction => {
             // anything -- a single misclick on a destructive button shouldn't be enough to wipe a
             // whole collection. This first click just shows a Confirm/Cancel prompt; the actual
             // deletion only happens from `mng_purgeconfirm_` below.
-            if (action === 'purge') {
+            // Draws gained 3 granular scopes (2026-07-12: purgenew/purgereturning/purgeall) instead
+            // of one generic 'purge' action -- every other group still only has 'purge' (scope
+            // 'all'). custom_id always encodes BOTH group and scope now (`mng_purgeconfirm_{group}_
+            // {scope}`) so the confirm/cancel handlers below have one consistent shape to parse
+            // regardless of which group triggered it.
+            if (action === 'purge' || action === 'purgenew' || action === 'purgereturning' || action === 'purgeall') {
+                const scope = action === 'purgenew' ? 'new' : action === 'purgereturning' ? 'returning' : 'all';
+                const label = manageCommand.PURGE_LABELS[group][scope];
                 return interaction.reply({
-                    content: `⚠️ **Are you sure?** This will permanently delete ${manageCommand.PURGE_LABELS[group]}. This cannot be undone.`,
+                    content: `⚠️ **Are you sure?** This will permanently delete ${label}. This cannot be undone.`,
                     components: [{
                         type: 1, components: [
-                            { type: 2, style: 4, label: 'Yes, Purge', custom_id: `mng_purgeconfirm_${group}` },
-                            { type: 2, style: 2, label: 'Cancel', custom_id: `mng_purgecancel_${group}` }
+                            { type: 2, style: 4, label: 'Yes, Purge', custom_id: `mng_purgeconfirm_${group}_${scope}` },
+                            { type: 2, style: 2, label: 'Cancel', custom_id: `mng_purgecancel_${group}_${scope}` }
                         ]
                     }],
                     ephemeral: true
@@ -1038,19 +1144,13 @@ client.on('interactionCreate', async interaction => {
             if (group === 'draws') {
                 if (action === 'addnew') return await interaction.showModal(manageCommand.buildAddDrawModal('new'));
                 if (action === 'addreturning') return await interaction.showModal(manageCommand.buildAddDrawModal('returning'));
-                // Add Multiple (additive) vs Bulk Replace (destructive) share the same modal shape
-                // and parser -- only what index.js's submit handler does with the parsed result
-                // differs (push vs wholesale-replace). `mode` ('add'/'replace') rides in the
-                // modal's own custom_id, set by manage.js's buildBulkDrawsModal/buildBulkBothDrawsModal.
-                if (action === 'bulkaddnew') return await interaction.showModal(manageCommand.buildBulkDrawsModal(true, 'add'));
-                if (action === 'bulkaddreturning') return await interaction.showModal(manageCommand.buildBulkDrawsModal(false, 'add'));
-                if (action === 'bulkaddeither') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal('add'));
-                if (action === 'bulkreplacenew') return await interaction.showModal(manageCommand.buildBulkDrawsModal(true, 'replace'));
-                if (action === 'bulkreplacereturning') return await interaction.showModal(manageCommand.buildBulkDrawsModal(false, 'replace'));
-                if (action === 'bulkreplaceeither') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal('replace'));
-                if (action === 'bulkdeletenew') return await interaction.showModal(manageCommand.buildBulkRemoveDrawsModal('new'));
-                if (action === 'bulkdeletereturning') return await interaction.showModal(manageCommand.buildBulkRemoveDrawsModal('returning'));
-                if (action === 'bulkdeleteeither') return await interaction.showModal(manageCommand.buildBulkRemoveDrawsModal('either'));
+                // New/Returning/Either triplets condensed to ONE button each (2026-07-12) --
+                // Either/Both's modal already covers the single-category case by leaving one field
+                // blank, so the 3-way split was pure redundancy. `bulkadd`/`bulkreplace`/`bulkdelete`
+                // are now the only 3 draws bulk action ids that exist.
+                if (action === 'bulkadd') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal('add'));
+                if (action === 'bulkreplace') return await interaction.showModal(manageCommand.buildBulkBothDrawsModal('replace'));
+                if (action === 'bulkdelete') return await interaction.showModal(manageCommand.buildBulkRemoveDrawsModal('either'));
 
                 // Export -- replies directly with the exported file, no modal, nothing to submit.
                 // Now lives INSIDE the Draws page itself (2026-07-12) rather than a separate Export
@@ -1134,38 +1234,59 @@ client.on('interactionCreate', async interaction => {
         // patch notes forever) -- Patch Notes' purge in particular is the one place that history can
         // actually be cleared, and only ever fires from this exact confirmed click.
         if (interaction.customId.startsWith('mng_purgeconfirm_')) {
-            const group = interaction.customId.replace('mng_purgeconfirm_', '');
+            const [group, scope] = parseMngId(interaction.customId.replace('mng_purgeconfirm_', ''));
             let confirmMsg = '';
+            let undoToken = null;
 
             if (group === 'draws') {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
-                seasonalDoc.newDraws = [];
-                seasonalDoc.returningDraws = [];
+                // Snapshot whatever's about to be wiped so "Undo" can restore it exactly.
+                const prevNew = seasonalDoc.newDraws;
+                const prevReturning = seasonalDoc.returningDraws;
+                if (scope === 'new' || scope === 'all') seasonalDoc.newDraws = [];
+                if (scope === 'returning' || scope === 'all') seasonalDoc.returningDraws = [];
                 await seasonalDoc.save();
-                confirmMsg = '✅ Purged all New and Returning draws.';
+                const removedCounts = [];
+                if (scope === 'new' || scope === 'all') removedCounts.push(`${prevNew.length} New`);
+                if (scope === 'returning' || scope === 'all') removedCounts.push(`${prevReturning.length} Returning`);
+                confirmMsg = `✅ Purged ${scope === 'all' ? 'all New and Returning draws' : `all ${scope} draws`} (${removedCounts.join(', ')} removed).`;
+                undoToken = registerUndo(`Purge (${scope} draws)`, async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    if (scope === 'new' || scope === 'all') doc.newDraws = prevNew;
+                    if (scope === 'returning' || scope === 'all') doc.returningDraws = prevReturning;
+                    await doc.save();
+                });
             } else if (group === 'calendar') {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                const prevCalendar = seasonalDoc.calendar;
                 seasonalDoc.calendar = [];
                 await seasonalDoc.save();
-                confirmMsg = '✅ Purged the calendar.';
-            } else if (group === 'loadouts') {
-                const Loadout = require('./models/Loadout');
-                await Loadout.deleteMany({});
-                confirmMsg = '✅ Purged every MP and DMZ loadout.';
+                confirmMsg = `✅ Purged the calendar (${prevCalendar.length} event(s) removed).`;
+                undoToken = registerUndo('Purge (calendar)', async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    doc.calendar = prevCalendar;
+                    await doc.save();
+                });
             } else if (group === 'patchnotes') {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                const prevPatchNotes = seasonalDoc.patchNotes;
                 seasonalDoc.patchNotes = [];
                 await seasonalDoc.save();
-                confirmMsg = '✅ Purged the patch notes history.';
+                confirmMsg = `✅ Purged the patch notes history (${prevPatchNotes.length} entrie(s) removed).`;
+                undoToken = registerUndo('Purge (patch notes history)', async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    doc.patchNotes = prevPatchNotes;
+                    await doc.save();
+                });
             }
 
             // Awaited + wrapped in its own try/catch -- see the matching note elsewhere in this
             // handler for why a bare `return interaction.update(...)` isn't safe here.
             try {
-                await interaction.update({ content: confirmMsg, components: [] });
+                await interaction.update({ content: confirmMsg, components: undoToken ? [undoButtonRow(undoToken)] : [] });
             } catch (notifyError) {
                 console.error(`Failed to confirm manage-panel purge for ${group} (interaction likely expired):`, notifyError);
             }
@@ -1177,6 +1298,218 @@ client.on('interactionCreate', async interaction => {
                 await interaction.update({ content: '❎ Purge cancelled -- nothing was deleted.', components: [] });
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel purge cancellation (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        // H. MANAGE PANEL: "START NEW SEASON" CONFIRM / CANCEL -- second step added 2026-07-12 (see
+        // the modal_wipe_season handler for why). Snapshots the pre-wipe state so this can be
+        // undone, same as Purge -- a season reset is at least as destructive as any single Purge and
+        // deserves the same safety net.
+        if (interaction.customId.startsWith('mng_wipeconfirm_')) {
+            const token = interaction.customId.replace('mng_wipeconfirm_', '');
+            const pending = pendingSeasonWipes.get(token);
+            pendingSeasonWipes.delete(token);
+            if (!pending) {
+                try {
+                    await interaction.update({ content: '❌ This confirmation has expired -- please start over from the Season dropdown.', components: [] });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of expired season-wipe confirmation:', notifyError);
+                }
+                return;
+            }
+
+            const SeasonalData = require('./models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            const prevTitle = seasonalDoc.currentSeasonTitle;
+            const prevNew = seasonalDoc.newDraws;
+            const prevReturning = seasonalDoc.returningDraws;
+            const prevCalendar = seasonalDoc.calendar;
+
+            seasonalDoc.currentSeasonTitle = pending.newTitle;
+            seasonalDoc.newDraws = [];
+            seasonalDoc.returningDraws = [];
+            seasonalDoc.calendar = [];
+            // Note: patch notes history is deliberately preserved for the dropdown archive.
+            await seasonalDoc.save();
+
+            const undoToken = registerUndo(`Start New Season ("${pending.newTitle}")`, async () => {
+                const doc = await SeasonalData.findOne({ docType: 'global' });
+                doc.currentSeasonTitle = prevTitle;
+                doc.newDraws = prevNew;
+                doc.returningDraws = prevReturning;
+                doc.calendar = prevCalendar;
+                await doc.save();
+            });
+
+            try {
+                await interaction.update({
+                    content: `✅ **Success:** Renamed the season to **${pending.newTitle}** and wiped Draws (${prevNew.length + prevReturning.length} entries) + Calendar (${prevCalendar.length} events). Patch Notes history was kept.`,
+                    components: [undoButtonRow(undoToken)]
+                });
+            } catch (notifyError) {
+                console.error('Failed to confirm season wipe (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('mng_wipecancel_')) {
+            const token = interaction.customId.replace('mng_wipecancel_', '');
+            pendingSeasonWipes.delete(token);
+            try {
+                await interaction.update({ content: '❎ Cancelled -- nothing was changed.', components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm season-wipe cancellation (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        // I. MANAGE PANEL: UNDO -- reverses a snapshot registered via registerUndo() (Purge, Start
+        // New Season, and the delete/replace confirmations added below). Tokens expire after 10
+        // minutes (see registerUndo) -- this is a same-session mistake-reversal tool, not a real
+        // audit log.
+        if (interaction.customId.startsWith('mng_undo_')) {
+            const token = interaction.customId.replace('mng_undo_', '');
+            const entry = manageUndoStore.get(token);
+            if (!entry) {
+                try {
+                    await interaction.reply({ content: '❌ This undo has expired or was already used.', ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of expired undo (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            manageUndoStore.delete(token);
+            try {
+                await interaction.deferReply({ ephemeral: true });
+                await entry.restore();
+                await interaction.followUp({ content: `↩️ **Undone:** ${entry.description}` });
+            } catch (undoError) {
+                console.error('Failed to apply manage-panel undo:', undoError);
+                try {
+                    await interaction.followUp({ content: '❌ Something went wrong while undoing that -- check the data manually.' });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of undo failure:', notifyError);
+                }
+            }
+            return;
+        }
+
+        // J. MANAGE PANEL: SINGLE-ITEM DELETE CONFIRM / CANCEL -- second step of the confirmation
+        // added to resolveManagePanelAction's delete branch above (2026-07-12). Performs the actual
+        // deletion only from here, snapshotting the removed doc first so it can be undone.
+        if (interaction.customId.startsWith('mng_delconfirm_')) {
+            const token = interaction.customId.replace('mng_delconfirm_', '');
+            const pending = pendingManageDeletes.get(token);
+            pendingManageDeletes.delete(token);
+            if (!pending) {
+                try {
+                    await interaction.update({ content: '❌ This confirmation has expired -- please search again.', components: [] });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of expired delete confirmation:', notifyError);
+                }
+                return;
+            }
+
+            const { group, match } = pending;
+            let undoToken = null;
+
+            if (group === 'draws') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                const removedDoc = match.doc;
+                if (match.type === 'new') seasonalDoc.newDraws = seasonalDoc.newDraws.filter(d => d._id.toString() !== match.id);
+                else seasonalDoc.returningDraws = seasonalDoc.returningDraws.filter(d => d._id.toString() !== match.id);
+                await seasonalDoc.save();
+                undoToken = registerUndo(`Delete draw "${match.label}"`, async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    if (match.type === 'new') doc.newDraws.push(removedDoc); else doc.returningDraws.push(removedDoc);
+                    await doc.save();
+                });
+            } else if (group === 'calendar') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+                const removedDoc = match.doc;
+                seasonalDoc.calendar = seasonalDoc.calendar.filter(e => e._id.toString() !== match.id);
+                await seasonalDoc.save();
+                undoToken = registerUndo(`Delete calendar event "${match.label}"`, async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    doc.calendar.push(removedDoc);
+                    await doc.save();
+                });
+            } else if (group === 'loadouts_mp' || group === 'loadouts_dmz') {
+                const Loadout = require('./models/Loadout');
+                const removedDoc = match.doc;
+                await Loadout.findByIdAndDelete(match.id);
+                undoToken = registerUndo(`Delete loadout "${match.label}"`, async () => {
+                    const restoreDoc = { ...removedDoc };
+                    delete restoreDoc._id; // let Mongo assign a fresh _id on re-insert
+                    await Loadout.create(restoreDoc);
+                });
+            }
+
+            try {
+                await interaction.update({
+                    content: `🗑️ **Deleted:** ${match.label}`,
+                    components: undoToken ? [undoButtonRow(undoToken)] : []
+                });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel delete (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('mng_delcancel_')) {
+            const token = interaction.customId.replace('mng_delcancel_', '');
+            pendingManageDeletes.delete(token);
+            try {
+                await interaction.update({ content: '❎ Cancelled -- nothing was deleted.', components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm manage-panel delete cancellation (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        // K. MANAGE PANEL: BULK DELETE CONFIRM / CANCEL -- second step for draws/calendar/loadouts
+        // Bulk Delete (2026-07-12). The modal-submit handlers above only computed WHAT would be
+        // removed (dry run); the actual save/delete calls happen here via the pending entry's own
+        // apply(), which also registers its own Undo snapshot.
+        if (interaction.customId.startsWith('mng_bulkdelconfirm_')) {
+            const token = interaction.customId.replace('mng_bulkdelconfirm_', '');
+            const pending = pendingBulkDeletes.get(token);
+            pendingBulkDeletes.delete(token);
+            if (!pending) {
+                try {
+                    await interaction.update({ content: '❌ This confirmation has expired -- please submit the bulk delete again.', components: [] });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of expired bulk-delete confirmation:', notifyError);
+                }
+                return;
+            }
+            try {
+                const undoToken = await pending.apply();
+                await interaction.update({
+                    content: `🗑️ **${pending.description} Complete!**\n${pending.summary.join('\n')}`,
+                    components: undoToken ? [undoButtonRow(undoToken)] : []
+                });
+            } catch (applyError) {
+                console.error(`Failed to apply bulk delete (${pending.description}):`, applyError);
+                try {
+                    await interaction.update({ content: '❌ Something went wrong while deleting -- check the data manually.', components: [] });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of bulk-delete apply failure:', notifyError);
+                }
+            }
+            return;
+        }
+
+        if (interaction.customId.startsWith('mng_bulkdelcancel_')) {
+            const token = interaction.customId.replace('mng_bulkdelcancel_', '');
+            pendingBulkDeletes.delete(token);
+            try {
+                await interaction.update({ content: '❎ Cancelled -- nothing was deleted.', components: [] });
+            } catch (notifyError) {
+                console.error('Failed to confirm bulk-delete cancellation (interaction likely expired):', notifyError);
             }
             return;
         }
@@ -1245,66 +1578,43 @@ client.on('interactionCreate', async interaction => {
             if (!seasonalDoc) seasonalDoc = new SeasonalData({ docType: 'global' });
         }
 
-        // --- ADMIN ROUTE A: WIPE SEASON DATA ---
+        // --- ADMIN ROUTE A: START NEW SEASON (renamed from "Wipe Season", 2026-07-12) ---
+        // Used to wipe draws+calendar the INSTANT this modal was submitted -- no confirmation at
+        // all, unlike every other destructive action in this panel. Now just stashes the entered
+        // title in `pendingSeasonWipes` (declared near the other manage-panel module-scope stores,
+        // see parseMngId's block) and shows the same Confirm/Cancel step Purge uses -- the actual
+        // wipe only happens from `mng_wipeconfirm_` below.
         if (customId === 'modal_wipe_season') {
-            await interaction.deferReply({ ephemeral: true });
-            seasonalDoc.currentSeasonTitle = interaction.fields.getTextInputValue('season_title').trim();
-            seasonalDoc.newDraws = [];
-            seasonalDoc.returningDraws = [];
-            seasonalDoc.calendar = [];
-            // Note: We preserve patch notes history for the dropdown archive
-            await seasonalDoc.save();
-            return interaction.followUp({ content: `✅ **Success:** Purged old data and initialized **${seasonalDoc.currentSeasonTitle}**!` });
+            const newTitle = interaction.fields.getTextInputValue('season_title').trim();
+            const token = randomUUID().slice(0, 8);
+            pendingSeasonWipes.set(token, { newTitle });
+            setTimeout(() => pendingSeasonWipes.delete(token), 10 * 60 * 1000).unref();
+
+            return interaction.reply({
+                content: `⚠️ **Are you sure?** This will rename the current season to **${newTitle}** and permanently wipe all Draws and Calendar data (Patch Notes history is kept). This cannot be undone.`,
+                components: [{
+                    type: 1, components: [
+                        { type: 2, style: 4, label: 'Yes, Start New Season', custom_id: `mng_wipeconfirm_${token}` },
+                        { type: 2, style: 2, label: 'Cancel', custom_id: `mng_wipecancel_${token}` }
+                    ]
+                }],
+                ephemeral: true
+            });
         }
 
-        // --- ADMIN ROUTE B: BULK ADD/REPLACE DRAWS (WITH AUTO-SORT, New/Returning split) ---
-        // custom_id is `modal_draws_bulk_{add|replace}_{new|returning}` -- `mode` distinguishes the
-        // NEW additive behavior (appends onto the existing array) from the pre-existing REPLACE
-        // behavior (wholesale-overwrites it), added 2026-07-12 so "Add Multiple" and "Bulk Replace"
-        // can be two distinct buttons instead of only ever replacing. Each modal still only ever
-        // touches ITS OWN array -- re-running the New Draws import to fix a typo doesn't touch
-        // seasonalDoc.returningDraws at all. See utils/adminParser.js's parseBulkDrawList.
-        // NOTE (fixed during bug-check review): excludes `_both` -- `modal_draws_bulk_add_both`
-        // starts with `modal_draws_bulk_add_` too, so without this guard the Either/Both submission
-        // was getting caught here first (before ever reaching ROUTE B.1's dedicated `_both` handler
-        // below) and calling `getTextInputValue('bulk_text')` on a modal that only has
-        // `new_text`/`returning_text` fields -- a guaranteed runtime error on every "Bulk Add
-        // Either/Both" or "Bulk Replace Either/Both" submission, caught here before ever being
-        // pushed live.
-        if ((customId.startsWith('modal_draws_bulk_add_') || customId.startsWith('modal_draws_bulk_replace_')) && !customId.endsWith('_both')) {
-            await interaction.deferReply({ ephemeral: true });
-            const mode = customId.startsWith('modal_draws_bulk_add_') ? 'add' : 'replace';
-            const isNew = customId.endsWith('_new');
-            const bulkText = interaction.fields.getTextInputValue('bulk_text');
-            const parsedDraws = parseBulkDrawList(bulkText);
-
-            // Cloudinary-cache pass (2026-07-12) -- resolves each draw's thumbnailUrl to a cached
-            // Cloudinary URL (uploading a provided one, or reusing an existing cache entry if the
-            // line omitted a URL entirely). A draw with neither a provided URL NOR a cache hit has no
-            // possible thumbnail at all and is skipped rather than saved with a broken/missing image
-            // -- see resolveThumbnailsForDraws below.
-            const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parsedDraws);
-
-            const existingArray = isNew ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
-            const finalArray = mode === 'add' ? [...existingArray, ...validDraws] : validDraws;
-            finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
-            if (isNew) seasonalDoc.newDraws = finalArray;
-            else seasonalDoc.returningDraws = finalArray;
-
-            await seasonalDoc.save();
-            const verb = mode === 'add' ? 'Added' : 'Replaced';
-            let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${verb} ${validDraws.length} entries in the ${isNew ? 'New' : 'Returning'} Draws list (now **${finalArray.length}** total). Sorted chronologically.`;
-            if (skipped.length) confirmation += `\n⚠️ Skipped (no URL given and nothing cached yet): ${skipped.join(', ')}`;
-            if (warnings.length) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${warnings.join('; ')}`;
-            return interaction.followUp({ content: confirmation });
-        }
-
-        // --- ADMIN ROUTE B.1: BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE ---
+        // --- ADMIN ROUTE B: BULK ADD/REPLACE BOTH DRAW CATEGORIES AT ONCE ---
         // custom_id is `modal_draws_bulk_{add|replace}_both`. One modal, two independently-optional
-        // fields -- only whichever field was actually filled in gets touched, exactly like the two
-        // separate flows above. Lets Harkirat update both lists in one round-trip without
-        // reintroducing the old type-prefixed combined-modal bug (see parseBulkDrawList's history
-        // note) since each array is still touched independently.
+        // fields -- only whichever field was actually filled in gets touched. This is now the ONLY
+        // draws bulk add/replace route (2026-07-12) -- the old per-category New-only/Returning-only
+        // modals were removed once the button triplet condensed to one button per section; leaving
+        // a field blank here already covers the single-category case.
+        //
+        // Replace's semantics changed 2026-07-12: used to wholesale-overwrite the whole array with
+        // exactly what's pasted (anything not mentioned got deleted). Now upserts by fuzzy-matched
+        // title -- a match updates that existing draw IN PLACE (keeps its _id), no match inserts it
+        // as new, and anything NOT mentioned in the paste is left untouched (Purge already covers a
+        // full wipe, so Replace doesn't need to double as one). `upsertDrawsByTitle` implements this;
+        // Add still just appends everything parsed, same as before.
         if (customId === 'modal_draws_bulk_add_both' || customId === 'modal_draws_bulk_replace_both') {
             await interaction.deferReply({ ephemeral: true });
             const mode = customId === 'modal_draws_bulk_add_both' ? 'add' : 'replace';
@@ -1314,21 +1624,33 @@ client.on('interactionCreate', async interaction => {
             const updated = [];
             const allSkipped = [];
             const allWarnings = [];
+            // Snapshot BEFORE mutating either array, so Undo can restore exactly what was there.
+            const prevNew = seasonalDoc.newDraws;
+            const prevReturning = seasonalDoc.returningDraws;
+
             if (newText) {
                 const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parseBulkDrawList(newText));
-                const finalNew = mode === 'add' ? [...seasonalDoc.newDraws, ...validDraws] : validDraws;
-                finalNew.sort((a, b) => new Date(a.date) - new Date(b.date));
-                seasonalDoc.newDraws = finalNew;
-                updated.push(`New Draws (${finalNew.length} total)`);
+                const { finalArray, updatedCount, insertedCount } = mode === 'add'
+                    ? { finalArray: [...seasonalDoc.newDraws, ...validDraws], updatedCount: 0, insertedCount: validDraws.length }
+                    : upsertDrawsByTitle(seasonalDoc.newDraws, validDraws);
+                finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+                seasonalDoc.newDraws = finalArray;
+                updated.push(mode === 'add'
+                    ? `New Draws: added ${insertedCount} (now ${finalArray.length} total)`
+                    : `New Draws: updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`);
                 allSkipped.push(...skipped);
                 allWarnings.push(...warnings);
             }
             if (returningText) {
                 const { validDraws, skipped, warnings } = await resolveThumbnailsForDraws(parseBulkDrawList(returningText));
-                const finalReturning = mode === 'add' ? [...seasonalDoc.returningDraws, ...validDraws] : validDraws;
-                finalReturning.sort((a, b) => new Date(a.date) - new Date(b.date));
-                seasonalDoc.returningDraws = finalReturning;
-                updated.push(`Returning Draws (${finalReturning.length} total)`);
+                const { finalArray, updatedCount, insertedCount } = mode === 'add'
+                    ? { finalArray: [...seasonalDoc.returningDraws, ...validDraws], updatedCount: 0, insertedCount: validDraws.length }
+                    : upsertDrawsByTitle(seasonalDoc.returningDraws, validDraws);
+                finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+                seasonalDoc.returningDraws = finalArray;
+                updated.push(mode === 'add'
+                    ? `Returning Draws: added ${insertedCount} (now ${finalArray.length} total)`
+                    : `Returning Draws: updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`);
                 allSkipped.push(...skipped);
                 allWarnings.push(...warnings);
             }
@@ -1338,10 +1660,17 @@ client.on('interactionCreate', async interaction => {
             }
 
             await seasonalDoc.save();
-            let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${mode === 'add' ? 'Added onto' : 'Replaced'}: ${updated.join(', ')}.`;
+            const undoToken = registerUndo(`Bulk ${mode === 'add' ? 'Add' : 'Replace'} Draws`, async () => {
+                const doc = await SeasonalData.findOne({ docType: 'global' });
+                if (newText) doc.newDraws = prevNew;
+                if (returningText) doc.returningDraws = prevReturning;
+                await doc.save();
+            });
+
+            let confirmation = `✅ **Bulk ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${updated.join('\n')}`;
             if (allSkipped.length) confirmation += `\n⚠️ Skipped (no URL given and nothing cached yet): ${allSkipped.join(', ')}`;
             if (allWarnings.length) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${allWarnings.join('; ')}`;
-            return interaction.followUp({ content: confirmation });
+            return interaction.followUp({ content: confirmation, components: [undoButtonRow(undoToken)] });
         }
 
         // --- ADMIN ROUTE B.2: BULK DELETE DRAWS ---
@@ -1352,8 +1681,11 @@ client.on('interactionCreate', async interaction => {
         // fuzzyMatch, same punctuation-insensitive matching used everywhere else in the bot) against
         // the target array and removes hits -- reports both what was removed and what didn't match
         // anything, so a typo'd title doesn't just silently do nothing.
+        // 2-step confirm added 2026-07-12 -- this used to delete the instant the modal was
+        // submitted, no confirmation at all. Runs the fuzzy-match removal as a DRY RUN first (no
+        // save), shows what it found via the same Confirm/Cancel pattern as Purge/single-Delete, and
+        // only actually saves from `mng_bulkdelconfirm_` below.
         if (customId.startsWith('modal_draws_bulk_remove_')) {
-            await interaction.deferReply({ ephemeral: true });
             const drawType = customId.replace('modal_draws_bulk_remove_', ''); // 'new' | 'returning' | 'either'
             const newTitlesRaw = drawType !== 'returning' ? interaction.fields.getTextInputValue('new_titles')?.trim() : '';
             const returningTitlesRaw = drawType !== 'new' ? interaction.fields.getTextInputValue('returning_titles')?.trim() : '';
@@ -1376,25 +1708,55 @@ client.on('interactionCreate', async interaction => {
             };
 
             const summary = [];
+            let newRemaining = null, returningRemaining = null;
+            let anyRemoved = false;
             if (newTitlesRaw) {
                 const { remaining, removed, notFound } = removeFrom(seasonalDoc.newDraws, newTitlesRaw);
-                seasonalDoc.newDraws = remaining;
-                if (removed.length) summary.push(`Removed from New: ${removed.join(', ')}`);
+                newRemaining = remaining;
+                if (removed.length) { summary.push(`Removed from New: ${removed.join(', ')}`); anyRemoved = true; }
                 if (notFound.length) summary.push(`⚠️ Not found in New: ${notFound.join(', ')}`);
             }
             if (returningTitlesRaw) {
                 const { remaining, removed, notFound } = removeFrom(seasonalDoc.returningDraws, returningTitlesRaw);
-                seasonalDoc.returningDraws = remaining;
-                if (removed.length) summary.push(`Removed from Returning: ${removed.join(', ')}`);
+                returningRemaining = remaining;
+                if (removed.length) { summary.push(`Removed from Returning: ${removed.join(', ')}`); anyRemoved = true; }
                 if (notFound.length) summary.push(`⚠️ Not found in Returning: ${notFound.join(', ')}`);
             }
 
-            if (summary.length === 0) {
-                return interaction.followUp({ content: '❌ Nothing was entered -- nothing was removed.' });
+            if (!anyRemoved) {
+                return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.\n${summary.join('\n')}`, ephemeral: true });
             }
 
-            await seasonalDoc.save();
-            return interaction.followUp({ content: `🗑️ **Bulk Delete Complete!**\n${summary.join('\n')}` });
+            const token = randomUUID().slice(0, 8);
+            pendingBulkDeletes.set(token, {
+                description: 'Bulk Delete Draws',
+                summary,
+                apply: async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    const prevNew = doc.newDraws, prevReturning = doc.returningDraws;
+                    if (newRemaining !== null) doc.newDraws = newRemaining;
+                    if (returningRemaining !== null) doc.returningDraws = returningRemaining;
+                    await doc.save();
+                    return registerUndo('Bulk Delete Draws', async () => {
+                        const d = await SeasonalData.findOne({ docType: 'global' });
+                        if (newRemaining !== null) d.newDraws = prevNew;
+                        if (returningRemaining !== null) d.returningDraws = prevReturning;
+                        await d.save();
+                    });
+                }
+            });
+            setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
+
+            return interaction.reply({
+                content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
+                components: [{
+                    type: 1, components: [
+                        { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
+                        { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
+                    ]
+                }],
+                ephemeral: true
+            });
         }
 
         // --- ADMIN ROUTE C: BULK ADD/REPLACE CALENDAR EVENTS ---
@@ -1427,9 +1789,9 @@ client.on('interactionCreate', async interaction => {
         }
 
         // --- ADMIN ROUTE C.1: BULK REMOVE CALENDAR EVENTS ---
-        // Same fuzzy-match-and-report convention as the draws bulk-remove route above.
+        // Same fuzzy-match-and-report convention as the draws bulk-remove route above, and the same
+        // 2-step confirm (2026-07-12) -- dry-run first, actual save only on mng_bulkdelconfirm_.
         if (customId === 'modal_calendar_bulk_remove') {
-            await interaction.deferReply({ ephemeral: true });
             const requested = interaction.fields.getTextInputValue('titles').split('\n').map(t => t.trim()).filter(Boolean);
 
             const removed = [];
@@ -1444,13 +1806,42 @@ client.on('interactionCreate', async interaction => {
                     notFound.push(title);
                 }
             }
-            seasonalDoc.calendar = remaining;
-            await seasonalDoc.save();
 
-            let confirmation = `🗑️ **Bulk Remove Complete!**`;
-            if (removed.length) confirmation += `\nRemoved: ${removed.join(', ')}`;
-            if (notFound.length) confirmation += `\n⚠️ Not found: ${notFound.join(', ')}`;
-            return interaction.followUp({ content: confirmation });
+            if (removed.length === 0) {
+                return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.${notFound.length ? `\n⚠️ Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
+            }
+
+            const summary = [`Removed: ${removed.join(', ')}`];
+            if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
+
+            const token = randomUUID().slice(0, 8);
+            pendingBulkDeletes.set(token, {
+                description: 'Bulk Delete Calendar Events',
+                summary,
+                apply: async () => {
+                    const doc = await SeasonalData.findOne({ docType: 'global' });
+                    const prevCalendar = doc.calendar;
+                    doc.calendar = remaining;
+                    await doc.save();
+                    return registerUndo('Bulk Delete Calendar Events', async () => {
+                        const d = await SeasonalData.findOne({ docType: 'global' });
+                        d.calendar = prevCalendar;
+                        await d.save();
+                    });
+                }
+            });
+            setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
+
+            return interaction.reply({
+                content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
+                components: [{
+                    type: 1, components: [
+                        { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
+                        { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
+                    ]
+                }],
+                ephemeral: true
+            });
         }
 
         // --- ADMIN ROUTE C.2: ADD SINGLE CALENDAR EVENT ---
@@ -1468,7 +1859,7 @@ client.on('interactionCreate', async interaction => {
             seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
             await seasonalDoc.save();
 
-            return interaction.followUp({ content: `✅ **Event Added!** ${title} added to the calendar.` });
+            return interaction.followUp({ content: `✅ **Event Added:** "${title}" (${new Date(startDate).toDateString()} -- ${isOngoing ? 'All Season' : new Date(endDate).toDateString()}).` });
         }
 
         // --- ADMIN ROUTE C.3: SAVE EDITED CALENDAR EVENT ---
@@ -1486,7 +1877,7 @@ client.on('interactionCreate', async interaction => {
 
                 seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();
-                return interaction.followUp({ content: `✅ **Event Updated Successfully!** ${targetEvent.title}` });
+                return interaction.followUp({ content: `✅ **Event Updated:** "${targetEvent.title}" (${new Date(targetEvent.date).toDateString()} -- ${targetEvent.isOngoing ? 'All Season' : new Date(targetEvent.endDate).toDateString()}).` });
             }
         }
 
@@ -1593,7 +1984,7 @@ client.on('interactionCreate', async interaction => {
                 // Auto-sort to maintain order after edit
                 arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();
-                let confirmation = `✅ **Draw Updated Successfully!**`;
+                let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${arrayTarget[drawIndex].items.length} item(s), releases ${new Date(arrayTarget[drawIndex].date).toDateString()}).`;
                 if (thumbResult.error) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
                 return interaction.followUp({ content: confirmation });
             }
@@ -1669,28 +2060,48 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply({ ephemeral: true });
             const drawType = customId.replace('add_draw_', '');
 
-            const title = toTitleCase(interaction.fields.getTextInputValue('title'));
-            const dateStr = interaction.fields.getTextInputValue('date');
-            const rawUrl = interaction.fields.getTextInputValue('url');
+            // 5th field (2026-07-12): an alternative to filling in the 4 separate fields below --
+            // paste the whole draw as one bulk-style line and it's run through the SAME parser bulk
+            // import uses. All 5 fields are `setRequired(false)` now (see manage.js's
+            // buildAddDrawModal), so Discord itself won't block a submit with only this one filled.
+            const combinedLine = interaction.fields.getTextInputValue('combined')?.trim();
 
-            // URL is optional (2026-07-12) -- blank reuses a Cloudinary cache hit for this exact
-            // title if one exists (see utils/cloudinaryCache.js); no URL AND no cache hit is a real
-            // validation error since the draw needs some thumbnail to render.
-            const thumbResult = await resolveThumbnail(title, rawUrl);
-            if (!thumbResult.url) {
-                return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${title}" -- provide a thumbnail URL.` });
+            let newDrawObj;
+            let cloudinaryWarning = null;
+
+            if (combinedLine) {
+                const [parsed] = parseBulkDrawList(combinedLine);
+                if (!parsed) {
+                    return interaction.followUp({ content: '❌ Could not parse that line -- expected format: `Title, m Item 1, l Item 2, Date, URL` (URL optional).' });
+                }
+                const thumbResult = await resolveThumbnail(parsed.title, parsed.thumbnailUrl);
+                if (!thumbResult.url) {
+                    return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${parsed.title}" -- provide a thumbnail URL.` });
+                }
+                cloudinaryWarning = thumbResult.error;
+                newDrawObj = { title: parsed.title, items: parsed.items, date: parsed.date, thumbnailUrl: thumbResult.url };
+            } else {
+                const title = toTitleCase(interaction.fields.getTextInputValue('title'));
+                const dateStr = interaction.fields.getTextInputValue('date');
+                const rawUrl = interaction.fields.getTextInputValue('url');
+                const rawItems = interaction.fields.getTextInputValue('items');
+
+                if (!title || !dateStr || !rawItems) {
+                    return interaction.followUp({ content: '❌ Fill in Title, Items, and Release Date, or use the "Or Paste As One Line" field instead.' });
+                }
+
+                // URL is optional (2026-07-12) -- blank reuses a Cloudinary cache hit for this exact
+                // title if one exists (see utils/cloudinaryCache.js); no URL AND no cache hit is a
+                // real validation error since the draw needs some thumbnail to render.
+                const thumbResult = await resolveThumbnail(title, rawUrl);
+                if (!thumbResult.url) {
+                    return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${title}" -- provide a thumbnail URL.` });
+                }
+                cloudinaryWarning = thumbResult.error;
+
+                const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
+                newDrawObj = { title, items: parsedItems, date: parseAdminDate(dateStr), thumbnailUrl: thumbResult.url };
             }
-
-            // Parse items string block
-            const rawItems = interaction.fields.getTextInputValue('items');
-            const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-
-            const newDrawObj = {
-                title: title,
-                items: parsedItems,
-                date: parseAdminDate(dateStr),
-                thumbnailUrl: thumbResult.url
-            };
 
             const arrayTarget = drawType === 'new' ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
             arrayTarget.push(newDrawObj);
@@ -1699,8 +2110,8 @@ client.on('interactionCreate', async interaction => {
             arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
             await seasonalDoc.save();
 
-            let confirmation = `✅ **Successfully injected new draw: ${newDrawObj.title}!**`;
-            if (thumbResult.error) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
+            let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases ${new Date(newDrawObj.date).toDateString()}).`;
+            if (cloudinaryWarning) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${cloudinaryWarning}`;
             return interaction.followUp({ content: confirmation });
         }
 
@@ -1801,12 +2212,15 @@ client.on('interactionCreate', async interaction => {
         // page this modal was opened from. Fuzzy-matches the weapon name (utils/search.js's
         // fuzzyMatch) scoped to that mode, same matching convention as the draws/calendar bulk-remove
         // routes above.
+        // 2-step confirm added 2026-07-12 -- this used to delete straight out of the loop as it
+        // matched each line, no confirmation at all. Now only IDENTIFIES which docs would be
+        // deleted (a dry run against a .lean() snapshot -- nothing is mutated here), and the actual
+        // deleteOne/deleteMany calls only happen from mng_bulkdelconfirm_ below.
         if (customId.startsWith('modal_loadouts_bulk_remove_')) {
-            await interaction.deferReply({ ephemeral: true });
             const mode = customId.replace('modal_loadouts_bulk_remove_', '');
             const lines = interaction.fields.getTextInputValue('lines').split('\n').map(l => l.trim()).filter(Boolean);
 
-            const removed = [];
+            const toDelete = []; // { weaponKey, buildName?, label, docs (for undo) }
             const notFound = [];
             const candidates = await Loadout.find({ mode }).lean();
             for (const line of lines) {
@@ -1816,26 +2230,55 @@ client.on('interactionCreate', async interaction => {
                     continue;
                 }
                 const match = candidates.find(l => fuzzyMatch(weaponPart, l.weaponName));
-
                 if (!match) {
                     notFound.push(`${weaponPart} (${mode})`);
                     continue;
                 }
 
                 if (buildPart) {
-                    const res = await Loadout.deleteOne({ weaponKey: match.weaponKey, mode, buildName: buildPart });
-                    if (res.deletedCount > 0) removed.push(`${match.weaponName} (${buildPart})`);
+                    const buildDoc = candidates.find(l => l.weaponKey === match.weaponKey && l.mode === mode && l.buildName === buildPart);
+                    if (buildDoc) toDelete.push({ weaponKey: match.weaponKey, buildName: buildPart, label: `${match.weaponName} (${buildPart})`, docs: [buildDoc] });
                     else notFound.push(`${weaponPart} | ${mode} | ${buildPart}`);
                 } else {
-                    const res = await Loadout.deleteMany({ weaponKey: match.weaponKey, mode });
-                    removed.push(`${match.weaponName} (all ${res.deletedCount} build(s))`);
+                    const docs = candidates.filter(l => l.weaponKey === match.weaponKey && l.mode === mode);
+                    toDelete.push({ weaponKey: match.weaponKey, buildName: null, label: `${match.weaponName} (all ${docs.length} build(s))`, docs });
                 }
             }
 
-            let confirmation = `🗑️ **Bulk Remove Complete!**`;
-            if (removed.length) confirmation += `\nRemoved: ${removed.join(', ')}`;
-            if (notFound.length) confirmation += `\n⚠️ Not found: ${notFound.join(', ')}`;
-            return interaction.followUp({ content: confirmation });
+            if (toDelete.length === 0) {
+                return interaction.reply({ content: `❌ Nothing matched -- nothing to delete.${notFound.length ? `\n⚠️ Not found: ${notFound.join(', ')}` : ''}`, ephemeral: true });
+            }
+
+            const summary = [`Removed: ${toDelete.map(t => t.label).join(', ')}`];
+            if (notFound.length) summary.push(`⚠️ Not found: ${notFound.join(', ')}`);
+
+            const token = randomUUID().slice(0, 8);
+            pendingBulkDeletes.set(token, {
+                description: `Bulk Delete ${mode} Loadouts`,
+                summary,
+                apply: async () => {
+                    for (const entry of toDelete) {
+                        if (entry.buildName) await Loadout.deleteOne({ weaponKey: entry.weaponKey, mode, buildName: entry.buildName });
+                        else await Loadout.deleteMany({ weaponKey: entry.weaponKey, mode });
+                    }
+                    return registerUndo(`Bulk Delete ${mode} Loadouts`, async () => {
+                        const restoreDocs = toDelete.flatMap(t => t.docs).map(d => { const c = { ...d }; delete c._id; return c; });
+                        if (restoreDocs.length) await Loadout.insertMany(restoreDocs);
+                    });
+                }
+            });
+            setTimeout(() => pendingBulkDeletes.delete(token), 10 * 60 * 1000).unref();
+
+            return interaction.reply({
+                content: `⚠️ **Confirm Bulk Delete?**\n${summary.join('\n')}`,
+                components: [{
+                    type: 1, components: [
+                        { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_bulkdelconfirm_${token}` },
+                        { type: 2, style: 2, label: 'Cancel', custom_id: `mng_bulkdelcancel_${token}` }
+                    ]
+                }],
+                ephemeral: true
+            });
         }
 
         // --- ADMIN ROUTE K.2: EXPORT UP TO 5 LOADOUTS --- custom_id: modal_loadouts_export5_{MP|DMZ}

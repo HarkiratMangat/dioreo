@@ -17,11 +17,22 @@ maintained by Harkirat (Discord ID `1139845545754632283`), the sole admin.
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
 - Pushed to GitHub (`origin/main`). **Render is git-connected auto-deploy** (a push to `main`
-  triggers it, no separate CI/CD pipeline) — **Railway is NOT** (confirmed live 2026-07-12: pushing
-  to `main` left Railway's running deployment on a 2-day-old commit with no redeploy triggered at
-  all). Railway needs an explicit `railway up --detach` from this repo's root after every push meant
-  to reach it — don't assume a `git push` alone puts new code on Railway; verify via `railway logs
-  --deployment` (checks the boot-banner timestamp) or `railway status` before trusting it's live.
+  triggers it, no separate CI/CD pipeline) — **Railway is NOT connected to a git source at all**
+  (confirmed 2026-07-12 via `railway status --json`: the `diors-builds` service's `source` is
+  `{ image: null, repo: null }` — it's deployed purely from local CLI snapshot uploads, there's no
+  auto-deploy toggle to flip because there's nothing to auto-deploy from). Harkirat was explicitly
+  asked whether to connect it to the GitHub repo (`connect_service_source` MCP tool can do this) and
+  said no, leave it CLI-only — don't connect it without asking again first, this was a deliberate
+  choice, not an oversight. Railway needs an explicit `railway up --detach` from this repo's root
+  after every push meant to reach it — don't assume a `git push` alone puts new code on Railway;
+  verify via `railway logs --deployment` (checks the boot-banner timestamp) or `railway status`
+  before trusting it's live.
+- **Railway's free tier blocks CLI deploys (`railway up`) during peak hours, 8 AM–8 PM
+  America/New_York** (confirmed live 2026-07-12: `railway up --detach` returned "Free-tier deploys
+  to us-east4-eqdc4a are not available during peak hours... upgrade your plan" instead of deploying)
+  — if a deploy is needed during that window, it has to wait until after 8 PM ET or the plan needs
+  upgrading; there's no workaround on the current tier. Keep the local instance running as the
+  fallback until an off-peak deploy actually goes through and is verified live.
 
 ## Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain
@@ -452,34 +463,67 @@ the same change**, or it will not actually save.
   - `doubleEpicCharacters.region_30` has no data yet (Harkirat's source explicitly says "pending
     data") — `buildDrawEntries` renders a "not yet available" placeholder for a missing region entry
     rather than fabricating a number.
-  - **Second pass (2026-07-12, per `drawPrices_ui.json` — Harkirat's own hand-adjusted mockup of the
-    whole command while working around a usage-limit outage):** dropped the two group headers
-    (Mythic-Tier / Legendary & Epic-Tier) entirely in favor of one flat divider-separated sequence —
-    `ENTRY_ORDER` replaces the old `MYTHIC_KEYS`/`OTHER_KEYS` split. Each entry's header dropped from
-    a two-emoji tier+Epic combo icon to a single tier emoji (`TIER_ICON`). The quote-block total line
-    switched to a second CP emoji (`emojis.cp2`, `CP_CODM2` — deliberately a different ID from
-    `emojis.cp`, which stays as-is since nothing else was asked to move over) and gained a `\`X CP
-    Draw\` + \`Y CP Upgrade\` = \`Z CP\`` format for the two mythic entries. The arrow-sequence line
-    now ends with `= \`X CP\`` (draws-only total, never the grand total including upgrade). The
-    cumulative line is now labeled `-# CP spent:` (was `-# Total spent per attempt:`). Upgrade entries
-    gained an explicit `### Weapon Upgrade` / `### Character Upgrade` sub-heading with a spelled-out
-    `570 CP × 10 Spins = \`5,700 CP\`` formula line (was a compact `-# Upgrade: ...` line).
-    "Pick Your Reward Card Draw" renamed to "Pick Your Reward Card Legendary Weapon Draw" to match
-    its real in-game banner name.
-  - **"Legendary BR Vehicle Draw" was removed entirely in that same pass** — it's the one entry from
-    the original 10 that doesn't appear anywhere in `drawPrices_ui.json`. Since Harkirat hand-built
-    that mockup himself (not something we generated for him to review), its absence there is read as
-    a deliberate cut rather than an oversight worth double-checking first. Its `altLast` mechanism (a
-    Reactive/Non-Reactive split affecting only the final pull) was removed along with it — nothing
-    else in `DRAW_DATA` ever used that field.
-  - **The region select-menu became a single toggle button** (`toggle_price_region_10`/
-    `toggle_price_region_30` in `index.js`), always labeled/IDed with the region you'd switch TO, with
-    an animated `<a:Regions:1525705441072382052>` icon in the button's `emoji` field (never its
-    `label` — see Components V2 point 4). Clicking it now persists the chosen region to
-    `UserPreference.defaultRegion` before re-rendering — same persisted-toggle pattern as calendar's
-    active/all events filter button — so a user's last-picked region becomes the default `/draw
-    prices` lands on next time, same as `/settings`' own region toggle already did, just now
-    reachable from the command's own UI too instead of only from `/settings`.
+  - **Second pass (2026-07-12, per `drawPrices_ui.json` — Harkirat's own hand-adjusted mockup):**
+    dropped the two group headers (Mythic-Tier / Legendary & Epic-Tier) for one flat
+    divider-separated sequence, each entry down to a single tier emoji (`TIER_ICON`, not the old
+    tier+Epic combo). "Legendary BR Vehicle Draw" removed entirely (absent from Harkirat's own
+    hand-built mockup, read as deliberate) — its `altLast` mechanism went with it, nothing else ever
+    used that field. Region switcher became a toggle button instead of a select-menu, persisting to
+    `UserPreference.defaultRegion` on click.
+  - **Third pass (2026-07-12, per `example_reformat.json` + several direct follow-up requests the
+    same session) — this is the CURRENT final state:**
+    - Command title (`buildTitleBlock`) down to `## ` (was `# `) with an extra `**bold**` wrap around
+      the caption on top of its existing bold-italic-unicode styling — both via new optional params
+      (`headingLevel`, `boldCaption`) on the shared helper, defaulting to the old behavior so
+      calendar/patchnotes/draws (which separately also moved to `## `, see below) and seasonend
+      (already `## `) didn't silently change unless explicitly opted in.
+    - Each entry now renders as up to 3 SEPARATE Text Displays — `[**icon name** \n > total line]`,
+      `[bold pull sequence + cumulative]`, and (mythic entries only) `[**Upgrade** \n formula line]`
+      — deliberately NOT merged back into fewer components; Harkirat wants the real gap BETWEEN
+      Discord components for the spacing, not blank lines inside one. Entry headers are `**bold**`
+      with no heading markup at all (was `### `). The `> ` quote block on the CP total line came
+      back (was briefly removed, then restored). Upgrade sub-heading is `**bold**`, not `### ` (was
+      briefly a real heading, then flattened to match the reference file). Pull-sequence numbers are
+      individually bold, joined by ` / ` (was a plain arrow-joined sequence); the cumulative line
+      uses `›` (U+203A) as its separator and is prefixed `-# **CP Spent:**`; the pull-sequence line
+      ends with `⌇` (U+2307) `**\`X CP\`**` instead of `= \`X CP\``. Copy these two unicode
+      characters verbatim from a known-good source if you ever touch this again — a
+      visually-similar-but-wrong glyph is an easy, hard-to-notice typo here.
+    - **Entries are now paginated across 2 pages** (`PAGE_1_KEYS`/`PAGE_2_KEYS`/`SUBPAGES` in
+      `drawprices.js`) purely because rendering every entry as up to 3 real Text Displays pushed the
+      full 9-entry, single-page container to 41 recursive components — over Discord's 40 cap, which
+      would have failed to send outright. Page 1: Mythic Weapon, Mythic Character, Legendary Weapon
+      (Reactive/Non-Reactive), Legendary Character + Legendary Weapon. Page 2: Double Legendary
+      Weapons, 7 Spins Legendary Weapon, Pick Your Reward Card, Double Epic Characters — exact split
+      Harkirat specified, not a size-balancing choice. `buildContainer(regionKey, accentColor,
+      isEphemeral, subpage)` takes a 4th param; `execute(interaction, regionOverride, subpageOverride)`
+      threads it through. **Subpage is NEVER persisted anywhere** (unlike region) — a fresh `/draw
+      prices` invocation always starts at page 1 regardless of what page anyone last viewed; it only
+      travels through a button click's own `custom_id` for that one re-render.
+    - Region toggle button: `price_region_{10|30}_{currentSubpage}` (not `toggle_price_region_*` —
+      that prefix collides with `/settings`' generic binary-toggle handler, which expects a
+      `|{userId}` suffix this button doesn't have; a real bug caught during review before ever
+      shipping). Encodes the current subpage too so switching region doesn't reset which page of
+      entries you were on. Region choice persists to `UserPreference.defaultRegion`; subpage does not.
+    - Page nav (`price_subpage_{region}_{targetPage}`, via the shared `buildPaginationRow` helper) is
+      positioned directly under the entries themselves (own divider on both sides), NOT next to the
+      region-switch footer/button below — it originally sat right beside the "Switch between viewing
+      10 CP or 30 CP region prices" text, which read as if the page arrows were also part of
+      switching region. Moved per Harkirat's explicit fix request.
+    - Footer collapsed to one `-#` line: `Switch between viewing 10 CP or 30 CP region prices. (Tip:
+      check out \`/settings\`)` (was two separate lines).
+    - `emojis.drawPrices` updated to a new emoji ID (`<a:DrawPrices:1525864071776305163>`) — only
+      used by this command, no other call sites to update.
+    - **`## ` title sizing applied to calendar/draws/patchnotes too** (their `buildTitleBlock` calls
+      now pass `2` as the 4th arg), "to keep consistency of design" across all seasonal commands —
+      `seasonend.js` didn't need touching, its own hand-rolled heading was already `## `.
+    - The large-divider-spacing test between entries (spacing 2, region_10 only, region_30 stays
+      spacing 1 for comparison) from the prior round is UNCHANGED and still region_10-only — not yet
+      decided whether to keep, drop, or apply everywhere.
+    - Component counts per page, verified directly via `buildContainer()`: region_10 page 1 = 34,
+      page 2 = ~28ish; region_30 similar minus a few for the shorter entries. All safely under 40.
+      Re-verify the same way (dump JSON, count recursively) if entries are ever added back or
+      un-merged.
 - **Color palette assignment follows nav button order** (Calendar, Draws, Draw Prices,
   Patch Notes, Season End — see the `globalNavigationRow` in any command), exact hex →
   decimal for `accent_color`: Police Blue `#355070` (3494000, **Calendar**, 1st) ·
@@ -919,6 +963,148 @@ Cloudinary usage only ever builds URL strings for images an admin already upload
   `CLOUDINARY_URL` env var the moment it's required, no explicit `cloudinary.config()` call needed.
   Already present in both local `.env` and Railway's production variables.
 
+## Batch refinement pass (2026-07-12, evening — after the earlier same-day redesign/deploy work)
+A large follow-up batch covering `/draw prices`, `/manage`, and `/settings`, requested right after
+the `/manage` panel redesign shipped. Sections 4 (a slash-command wording/consistency overpass) and
+5 (new color palettes) are explicitly deferred — 4 needs a presented plan + Harkirat's confirmation
+before any code changes, 5 is meant to happen last, after everything else. Both are still pending
+as of this entry.
+
+- **`/draw prices`:** "Pick Your Reward Card Legendary Weapon Draw" now uses the legendary tier
+  emoji (was mistakenly tagged `epic`). Large divider spacing (2) is now used for BOTH regions —
+  the region_10-only spacing test from earlier that day is over, applied everywhere. region_30's
+  still-missing `doubleEpicCharacters` placeholder text changed to "*Dior is lazy and hasn't done
+  the research **yet** for this draw...*". The divider that used to sit directly above the
+  footer/region-button row was removed (relied on Discord's own natural component gap instead of an
+  explicit spacer). The region-switch button restyled from style 3 (green) to style 2 (gray/
+  Secondary) to match the same "switch view" button convention now used bot-wide (see draws.js's
+  category-toggle buttons, also restyled+re-cased this same pass: "VIEW NEW/RETURNING DRAWS" →
+  "View New/Returning Draws", sentence case).
+- **`/manage` — biggest chunk of this pass:**
+  - Inter-group divider spacing bumped to 2 everywhere (`buildManagePage`), matching draw prices.
+  - Full grammar/capitalization cleanup across every page's action names/descriptions — explicitly
+    overrides the EARLIER "preserve Harkirat's verbatim mockup casing" choice from the same day's
+    prior redesign; Title Case + clean sentences now, consistently.
+  - Calendar's "Misc." group renamed to "Export & Purge Data".
+  - The `page` slash option renamed to `section` (name/description/every read site) — "page" didn't
+    describe what it actually is (a data section, not a page of anything).
+  - "Season: Titles & Deadlines" is now ALSO reachable directly from `/manage`'s own `section`
+    option (previously only via the in-panel `mng_pagesel` dropdown) — picking it skips rendering
+    the panel and shows the modal immediately, same as the dropdown's flat entry. "Start New
+    Season" deliberately has NO direct option entry — destructive enough that requiring the extra
+    step through the panel (with its own warning) is intentional.
+  - **"Season: Wipe Season" renamed to "Start New Season"** and given a select-option `description`
+    ("⚠️ Wipes all draws & calendar data. Cannot be undone.") so it isn't mistakenly triggered — the
+    option's description is Discord's own smaller gray subtitle line under a select option label.
+    **Gained the same 2-step Confirm/Cancel flow every other destructive `/manage` action uses** —
+    it used to wipe draws/calendar the INSTANT the title modal was submitted, no confirmation at
+    all. The entered title is now stashed in a short-lived `pendingSeasonWipes` Map (index.js) keyed
+    by a random token between the modal submit and the Confirm click.
+  - **BUG FIX: Edit Draws was throwing "Something went wrong. Try again."** — root cause was
+    `buildEditDrawModal`'s `.setValue(targetDraw.thumbnailUrl)` in manage.js: discord.js's
+    `TextInputBuilder.setValue()` throws a synchronous validation error if given `undefined`
+    (any draw doc missing `thumbnailUrl`, e.g. a legacy pre-Cloudinary-cache entry), which threw
+    INSIDE `resolveManagePanelAction`'s `showModal()` call before the interaction was ever
+    acknowledged — exactly what surfaced as Discord's generic client-side failure toast. Fixed with
+    a `|| ''` fallback, same defensive pattern now also applied to `buildEditLoadoutModal`'s
+    `imageKey` field (same risk, not yet triggered but same shape of bug).
+  - **Add Single Draw gained a 5th "Or Paste As One Line" field** (Paragraph, optional) — an
+    alternative to filling in Title/Items/Date/URL separately; if filled, the line is parsed through
+    the same `parseBulkDrawList()` parser bulk import uses. All 5 fields are `setRequired(false)`
+    now so Discord's own validation doesn't reject a submission that only has the combined field
+    filled in.
+  - **Bulk Replace Draws changed from wholesale-wipe-then-replace to upsert-by-title.** New
+    `upsertDrawsByTitle(existingArray, parsedDraws)` helper in index.js fuzzy-matches each pasted
+    draw's title against the array being replaced — a match updates that existing draw IN PLACE
+    (keeps its `_id`), no match inserts it as new, and anything NOT mentioned in the paste is left
+    completely untouched. Purge already covers full wipes, so Replace no longer needs to double as
+    one. Add Multiple is unchanged (pure append).
+  - **New/Returning/Either button triplets condensed to ONE button per bulk section** (Add Multiple,
+    Replace Multiple, Delete Multiple) — the old per-category modals (`buildBulkDrawsModal`) were
+    pure redundancy once the combined "Either/Both" modal already covers the single-category case by
+    leaving one field blank; that per-category modal builder + its index.js route were deleted
+    entirely rather than kept as dead code.
+  - **Purge moved into its own fully separate Draws section** (own text block + button row, its own
+    dividers) and expanded from one "purge everything" button to 3 granular scopes: Purge New Draws
+    Only / Purge Returning Draws Only / Purge All Draws Data. `manage.js`'s `PURGE_LABELS` is now
+    `{ [group]: { all, new?, returning? } }` (was a flat string per group) so every group's confirm
+    handler can be keyed identically (`PURGE_LABELS[group][scope]`); `mng_purgeconfirm_`/
+    `mng_purgecancel_` custom_ids now always encode `{group}_{scope}` (scope is always `'all'` for
+    calendar/patchnotes, which have no sub-scopes).
+  - **Every deletion path across `/manage` now has a 2-step Confirm/Cancel** — single Delete
+    (draws/calendar/loadouts, via `resolveManagePanelAction`) and Bulk Delete (draws/calendar/
+    loadouts) used to delete the instant a match resolved / a modal was submitted. Bulk Delete's
+    modal-submit handlers now do a DRY RUN first (compute what WOULD be removed, no save) and show
+    the same Confirm/Cancel prompt Purge already used, via new `mng_delconfirm_`/`mng_delcancel_`
+    (single-item) and `mng_bulkdelconfirm_`/`mng_bulkdelcancel_` (bulk) button handlers, backed by
+    `pendingManageDeletes`/`pendingBulkDeletes` Maps.
+  - **Undo button + richer confirmation messages.** Every destructive confirm (Purge, Start New
+    Season, single Delete, Bulk Delete, Bulk Replace) now attaches an "Undo" button
+    (`mng_undo_{token}`) alongside its success message — `registerUndo(description, restoreFn)`
+    (index.js) snapshots the pre-mutation state into a short-lived `manageUndoStore` Map (10-minute
+    expiry, same pattern as the other pending-action Maps) and restores it on click. This is a
+    same-session mistake-reversal tool, NOT a real audit log/version history — nothing here is
+    persisted to Mongo. Confirmation messages across Add/Edit/Delete/Purge/Replace now state
+    specifically what changed (title, category, item count, release date, before/after counts)
+    instead of a generic "Successfully updated!".
+- **`/settings`:**
+  - Draw Prices region preference converted from a binary toggle button to a 3-option select menu:
+    "Show Last Viewed Region" (new default), "10 CP Region Pricing", "30 CP Region Pricing". New
+    schema field `UserPreference.defaultRegionMode` (`'last_viewed' | 'region_10' | 'region_30'`,
+    default `'last_viewed'`) — `defaultRegion` is UNCHANGED and keeps auto-tracking whatever was
+    last actually viewed/toggled in `/draw prices` itself; `defaultRegionMode` is the NEW override
+    layer on top: `'last_viewed'` behaves exactly as before, `'region_10'`/`'region_30'` PIN the
+    opening view regardless of what gets toggled elsewhere. `drawprices.js`'s `execute()` checks
+    `defaultRegionMode` before falling back to `defaultRegion`. The old binary
+    `toggle_region_10`/`toggle_region_30` buttons are gone; a new `set_region_mode` branch on the
+    existing generic `set_` dropdown handler in index.js covers it.
+  - PUBLIC/HIDDEN toggle **button labels are unchanged** (still all-caps `PUBLIC`/`HIDDEN`) but the
+    descriptive text next to each now reads "Everyone can see" / "Visible only to me" instead of the
+    raw state name, for clarity.
+  - Avatar/Banner accent color style now shows the actual cached hex code inline, e.g. `**Avatar
+    Color `(#1A2B3C)`**` — pulled straight from the already-cached `avatarColorHex`/`bannerColorHex`
+    fields, no new lookup.
+  - New footer line: `-# Made with love by <@1139845545754632283> <:dioreo:1525895775387779242>` —
+    a SILENT mention (`allowed_mentions: { users: [] }`, already applied to the header's own
+    self-mention) so it doesn't ping Harkirat when anyone else opens `/settings`. `dioreo` added to
+    `emojiMap.js`.
+  - **Paginated into 2 pages** (Visibility / Preferences) — the new region dropdown + hex codes +
+    footer pushed a single-page render close enough to Discord's 40-component cap (~38-39 estimated)
+    that splitting was the safer call, per the batch's own "check and paginate if needed" framing.
+    `execute(interaction, pageOverride = 0)` takes the target page; the banner/profile header section
+    re-renders identically on both pages (not truly shared state, just duplicated). Uses the same
+    `buildPaginationRow` helper /calendar and /draws already use (`set_page_{N}` custom_ids, new
+    `B.5` button handler in index.js). Every Preferences-page select menu's custom_id now carries a
+    3rd pipe segment (`|1`) so re-selecting an option lands back on page 2 instead of resetting to
+    page 1 — the generic `set_` dropdown handler parses this optional segment and passes it through
+    to `execute()`.
+
+## Slash-command wording overpass (2026-07-12, evening — Section 4 of the batch above)
+Surveyed every slash command's name/description/option wording for inconsistency, presented the
+findings + a proposed fix list to Harkirat, got his explicit go-ahead, then implemented:
+- **`/timestamp`'s `ephemeral` option renamed to `private`**, description reworded to the standard
+  "Hide this response so only you can see it" — every other command already used `private` with
+  this exact wording; `/timestamp` was the one holdout using a differently-named, differently-worded
+  option for the same concept. This is a real user-visible change (`ephemeral:` → `private:` as the
+  option users type after `/timestamp`), not just an internal rename.
+- **Weapon-search option description standardized** across `/dmz`, `/all`, and every auto-generated
+  `/<category>` command — these were three different phrasings for the same concept ("The name of
+  the weapon you want a DMZ build for" vs. "Type weapon name" vs. "Select a {category}"). Now all
+  follow "The name of the {weapon you want a build for" pattern (category-scoped for `/<category>`).
+- **`/manage`'s Edit Loadout modal field label fixed** to match Add Loadout's "Build Name / Share
+  Code" (Edit had it shortened to "Build Name / Code").
+- **`manage.js`'s user-facing copy and comments converted from `--` (double hyphen) to a real em
+  dash (`—`)** — the rest of the bot's prose (comments and CLAUDE.md itself) consistently uses `—`;
+  `manage.js` alone used `--` throughout with zero em dashes. The `--- SECTION HEADER ---`-style
+  3-hyphen comment dividers were deliberately left alone (not prose dashes, a distinct visual
+  convention).
+- Explicitly left alone after review (already consistent, not worth touching): option naming
+  patterns elsewhere, "Jump directly to a specific X" phrasing (draws/drawprices/manage all already
+  match), punctuation style differences between base commands (`/season`, `/patch`, `/draw` — terse
+  noun-phrase descriptions, no `!`) and their subcommands (`season end`, `patch notes`, `draw
+  prices` — exclamation-toned, matching the majority of other commands) — this split is intentional/
+  consistent within itself, not an inconsistency to fix.
+
 ## Known open issues (not yet fixed — flagged, not silently patched)
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
@@ -931,5 +1117,11 @@ Cloudinary usage only ever builds URL strings for images an admin already upload
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else
   in that pass. See the `/manage` design-decision-log entry above for exactly what's a placeholder
   right now vs. what the real version needs to do.
-- Not yet verified: Harkirat manually exercising every `/manage` panel action, and the new
-  Cloudinary-cache add/edit/bulk flows, live in Discord post-redesign.
+- **New color palettes for Calendar/Draws/Draw Prices/Patch Notes/Season End/Timestamp**, plus
+  switching `/dmz`'s accent color from its fixed identity color to the same per-weapon-category
+  palette MP loadouts already use — explicitly the LAST item in the current batch (the
+  slash-command overpass above is now done). This is the only item left in the 2026-07-12 batch.
+- Not yet verified: Harkirat manually exercising every `/manage` panel action (including the new
+  combined-line Add Draw field, upsert-by-title Replace, granular Purge scopes, every Confirm/Cancel
+  step, and every Undo button), the new `/settings` 2-page layout, and the new Cloudinary-cache
+  add/edit/bulk flows, live in Discord.

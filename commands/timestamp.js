@@ -133,9 +133,13 @@ module.exports = {
                     { name: 'Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30', value: 'shortDateTimeMedium' },
                     { name: 'Relative Time (R) — e.g., 4 years ago', value: 'relative' }
                 ))
+        // Renamed from 'ephemeral' to 'private' (2026-07-12, slash-command wording overpass) --
+        // every other command in the bot uses `private` with this exact description; /timestamp
+        // was the one holdout using a differently-named, differently-worded option for the same
+        // concept.
         .addBooleanOption(option =>
-            option.setName('ephemeral')
-                .setDescription('Set to true to make the response visible only to you (Default: false)'))
+            option.setName('private')
+                .setDescription('Hide this response so only you can see it'))
         // Context configuration ensuring the command works in Guilds, DMs, and User-installed apps seamlessly
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
@@ -179,11 +183,11 @@ module.exports = {
             style = argStyle !== null ? argStyle : (savedStyle && savedStyle !== 'all_formats' ? savedStyle : null);
 
             // NOTE (Option A wiring): /timestamp previously never checked any saved preference —
-            // the `ephemeral` option always defaulted to false if you didn't type it. Now it falls
-            // back to the "Timestamps" toggle from /settings (prefs.timestampVisibility) when the
-            // option is left blank, same priority pattern used by the other commands: explicit
-            // option > saved preference > public default.
-            const argEphemeral = interaction.options.getBoolean('ephemeral');
+            // the `private` option (renamed from `ephemeral` 2026-07-12) always defaulted to false
+            // if you didn't type it. Now it falls back to the "Timestamps" toggle from /settings
+            // (prefs.timestampVisibility) when the option is left blank, same priority pattern used
+            // by the other commands: explicit option > saved preference > public default.
+            const argEphemeral = interaction.options.getBoolean('private');
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
 
             // FIXED V14 EPHEMERAL DEFERRAL FORMAT:

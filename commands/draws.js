@@ -117,11 +117,13 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     // wrapped onto two lines on mobile even after shortening the labels, and a disabled button
     // showing the page you're already on doesn't add anything — replaced with a single button that
     // only offers the OTHER category, worded as a full call-to-action instead.
+    // Sentence case (was all-caps) -- 2026-07-12, matching the same gray/Secondary + sentence-case
+    // convention now used bot-wide for "switch view" buttons (see drawprices.js's region toggle).
     drawComponents.push({
         type: 1,
         components: isNewPage
-            ? [{ type: 2, style: 2, label: "VIEW RETURNING DRAWS", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }]
-            : [{ type: 2, style: 2, label: "VIEW NEW DRAWS", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" }]
+            ? [{ type: 2, style: 2, label: "View Returning Draws", emoji: emojis.parseEmoji(emojis.returningDraws), custom_id: "page_returning_draws" }]
+            : [{ type: 2, style: 2, label: "View New Draws", emoji: emojis.parseEmoji(emojis.newDraws), custom_id: "page_new_draws" }]
     });
 
     const containerPayload = {

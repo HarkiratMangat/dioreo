@@ -83,7 +83,7 @@ const DRAW_META = {
     doubleLegendaryWeapons: { name: 'Double Legendary Weapons Draw', tier: 'legendary' },
     legendaryCharacterWeapon: { name: 'Legendary Character + Legendary Weapon Draw', tier: 'legendary' },
     sevenSpinLegendaryWeapon: { name: '7 Spins Legendary Weapon Draw', tier: 'legendary' },
-    pickYourRewardCard: { name: 'Pick Your Reward Card Legendary Weapon Draw', tier: 'epic' },
+    pickYourRewardCard: { name: 'Pick Your Reward Card Legendary Weapon Draw', tier: 'legendary' },
     doubleEpicCharacters: { name: 'Double Epic Characters Draw', tier: 'epic' }
 };
 
@@ -131,7 +131,7 @@ function buildDrawEntries(regionKey, keys) {
         const meta = DRAW_META[key];
         const entry = region[key];
         const icon = TIER_ICON[meta.tier];
-        if (!entry) return [`**${icon} ${meta.name}**\n*Data not yet available for this region.*`];
+        if (!entry) return [`**${icon} ${meta.name}**\n*Dior is lazy and hasn't done the research **yet** for this draw. More draws and updated info coming soon.*`];
 
         const total = entry.draws.reduce((a, b) => a + b, 0);
         const blocks = [];
@@ -194,14 +194,12 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // Mythic/Legendary-Epic two-group split is gone). Split across 2 pages (see PAGE_1_KEYS/
     // PAGE_2_KEYS above) to stay under Discord's 40-component cap now that each entry can render as
     // up to 3 separate Text Displays.
-    // TEMP SPACING TEST (2026-07-12, region_10 only): Harkirat wants to see how the large-spacing
-    // divider variant (spacing: 2, same as calendar/draws/etc.) reads BETWEEN draw entries, without
-    // committing to it everywhere yet -- scoped to region_10 only so region_30 stays exactly as-is
-    // for comparison. The divider right after the title and the one right before the footer/region-
-    // toggle button are deliberately excluded from this test and stay spacing: 1 regardless of
-    // region (see the two hardcoded dividers below) -- only the INNER dividers between draw entries
-    // change here. Revisit once Harkirat decides whether to keep it, drop it, or apply it globally.
-    const innerDividerSpacing = regionKey === 'region_10' ? 2 : 1;
+    // Large divider spacing (2) between draw entries, applied to BOTH regions as of 2026-07-12 --
+    // this used to be a region_10-only test to compare against region_30's spacing 1, but Harkirat
+    // confirmed he wants the larger spacing everywhere now that the comparison's done. The divider
+    // right after the title stays spacing: 1 (see the hardcoded divider below) -- only the INNER
+    // dividers between draw entries use the larger value.
+    const innerDividerSpacing = 2;
     const entrySections = withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
     // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see
@@ -231,8 +229,12 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             { type: 14, spacing: 1, divider: true },
             ...entrySections,
             ...(paginationRow ? [{ type: 14, spacing: 1, divider: true }, paginationRow] : []),
-            { type: 14, spacing: 1, divider: true },
 
+            // Divider that used to sit directly above the footer/region-button row was removed
+            // (2026-07-12, Harkirat's request) -- it read as visually grouping the region switch
+            // with the pagination arrows above it, when they're unrelated controls. The natural
+            // component-to-component gap Discord already renders was enough on its own; no extra
+            // spacer needed in its place.
             // One-line footer (was two `-#` lines) per example_reformat.json.
             { type: 10, content: `-# Switch between viewing 10 CP or 30 CP region prices. (Tip: check out \`/settings\`)` },
             {
@@ -249,7 +251,10 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                         // ever being pushed -- see index.js's matching comment). Preserves the
                         // CURRENT subpage across a region switch (encoded in its own custom_id) so
                         // flipping region doesn't reset which page of entries you were looking at.
-                        type: 2, style: 3, custom_id: `price_region_${otherRegionKey === 'region_10' ? '10' : '30'}_${currentPage}`,
+                        // Style 2 (gray/Secondary), not 3 (green) -- 2026-07-12, matches the
+                        // Secondary+sentence-case convention now used bot-wide for this class of
+                        // "switch view" button (see draws.js's category-toggle buttons).
+                        type: 2, style: 2, custom_id: `price_region_${otherRegionKey === 'region_10' ? '10' : '30'}_${currentPage}`,
                         label: `View ${otherRegionLabel} Prices`,
                         emoji: emojis.parseEmoji(emojis.regions)
                     }
@@ -291,8 +296,15 @@ module.exports = {
         // unlike region, which page of entries you were on isn't a saved preference, just carried
         // along through the button click itself.
         //
-        // Priority: explicit slash command option > button click override > saved default > region_10.
-        let targetRegion = prefs?.defaultRegion || 'region_10';
+        // Priority: explicit slash command option > button click override > pinned defaultRegionMode
+        // (2026-07-12, /settings' new 3-option region dropdown -- 'region_10'/'region_30' PIN the
+        // opening view regardless of what's last been toggled) > last-viewed defaultRegion > region_10.
+        let targetRegion = 'region_10';
+        if (prefs?.defaultRegionMode === 'region_10' || prefs?.defaultRegionMode === 'region_30') {
+            targetRegion = prefs.defaultRegionMode;
+        } else if (prefs?.defaultRegion) {
+            targetRegion = prefs.defaultRegion;
+        }
         if (regionOverride) targetRegion = regionOverride;
         let argPrivate = null;
 

@@ -10,6 +10,11 @@ const emojis = require('../utils/emojiMap');
 const { resolveAccentColor } = require('../utils/accentColor');
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { buildPaginationRow } = require('../utils/paginationRow');
+
+// Harkirat's Discord ID, for the "Made with love by @dior" footer's silent mention -- see the
+// bottom of buildContainer() below.
+const DIOR_ID = '1139845545754632283';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -17,8 +22,13 @@ module.exports = {
         .setDescription('Configure your custom loadout, timestamp, and timezone preferences!')
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
-    async execute(interaction) {
+    // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region
+    // dropdown + hex-code lines + footer pushed the single-page layout close to Discord's
+    // 40-component cap -- see the B.5 button handler in index.js for how page navigation re-invokes
+    // this with a target page.
+    async execute(interaction, pageOverride = 0) {
         const userId = interaction.user.id;
+        const page = Math.min(Math.max(pageOverride, 0), 1);
 
         // 1. DATA SYNCHRONIZATION
         let prefs = await UserPreference.findOne({ discordId: userId });
@@ -61,7 +71,6 @@ module.exports = {
         const seasonVis = (prefs.seasonalVisibility || 'public').toUpperCase();
         const timeVis = (prefs.timestampVisibility || 'public').toUpperCase();
         const settingsVis = (prefs.settingsVisibility || 'public').toUpperCase();
-        const defRegion = prefs.defaultRegion || 'region_10';
         const tz = prefs.timezone || 'America/Toronto';
         const style = prefs.timestampStyle || 'all_formats';
 
@@ -152,97 +161,143 @@ module.exports = {
         containerComponents.push({ type: 1, components: profileLinkButtons });
 
         containerComponents.push({ type: 14, spacing: 2, divider: true });
-        containerComponents.push({ type: 10, content: `### Default Visibility:\n-# Change if the bot responds to you publicly or as a hidden, only visible to you, message.` });
 
-        // HELPER: Generates the clean Type 9 Accessory layout you designed
-        // Internal stored state is still 'PUBLIC'/'EPHEMERAL' (unchanged, matches the DB field
-        // values everywhere else) — only the user-facing label was reworded from "EPHEMERAL" to
-        // "HIDDEN" per Harkirat's request, since most users don't know what "ephemeral" means.
-        const buildToggleRow = (label, currentState, publicId, ephemeralId) => {
-            const isPub = currentState === 'PUBLIC';
-            const displayState = isPub ? 'PUBLIC' : 'HIDDEN';
-            return {
-                type: 9,
-                components: [{ type: 10, content: `\`• ${label}\` = **${displayState}**` }],
-                accessory: {
-                    type: 2, style: 2,
-                    label: isPub ? "HIDDEN" : "PUBLIC",
-                    custom_id: isPub ? ephemeralId : publicId
-                }
+        if (page === 0) {
+            containerComponents.push({ type: 10, content: `### Default Visibility:\n-# Change if the bot responds to you publicly or as a hidden, only visible to you, message.` });
+
+            // HELPER: Generates the clean Type 9 Accessory layout you designed
+            // Internal stored state is still 'PUBLIC'/'EPHEMERAL' (unchanged, matches the DB field
+            // values everywhere else) and the button labels stay "PUBLIC"/"HIDDEN" (all-caps,
+            // unchanged) -- only the DESCRIPTIVE text next to them was reworded (2026-07-12,
+            // Harkirat's request) from the raw state name to a plain-language sentence, since
+            // "PUBLIC"/"HIDDEN" alone doesn't explain what actually happens.
+            const buildToggleRow = (label, currentState, publicId, ephemeralId) => {
+                const isPub = currentState === 'PUBLIC';
+                const displayText = isPub ? 'Everyone can see' : 'Visible only to me';
+                return {
+                    type: 9,
+                    components: [{ type: 10, content: `\`• ${label}\` = **${displayText}**` }],
+                    accessory: {
+                        type: 2, style: 2,
+                        label: isPub ? "HIDDEN" : "PUBLIC",
+                        custom_id: isPub ? ephemeralId : publicId
+                    }
+                };
             };
-        };
 
-        containerComponents.push(buildToggleRow('Weapon Builds', loadoutVis, `toggle_loadout_public|${userId}`, `toggle_loadout_ephemeral|${userId}`));
-        containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public|${userId}`, `toggle_seasonal_ephemeral|${userId}`));
-        containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public|${userId}`, `toggle_timestamp_ephemeral|${userId}`));
-        containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public|${userId}`, `toggle_settings_ephemeral|${userId}`));
+            containerComponents.push(buildToggleRow('Weapon Builds', loadoutVis, `toggle_loadout_public|${userId}`, `toggle_loadout_ephemeral|${userId}`));
+            containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public|${userId}`, `toggle_seasonal_ephemeral|${userId}`));
+            containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public|${userId}`, `toggle_timestamp_ephemeral|${userId}`));
+            containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public|${userId}`, `toggle_settings_ephemeral|${userId}`));
 
-        containerComponents.push({ type: 14, spacing: 2, divider: true });
-        containerComponents.push({ type: 10, content: `### Default Preferences:\n-# Change the default preferences the bot uses when responding to you.` });
+            containerComponents.push({ type: 10, content: `-# More settings on page 2 →` });
+        } else {
+            containerComponents.push({ type: 10, content: `### Default Preferences:\n-# Change the default preferences the bot uses when responding to you.` });
 
-        // Custom Toggle Row for CP Region
-        const isRegion10 = defRegion === 'region_10';
-        containerComponents.push({
-            type: 9,
-            components: [{ type: 10, content: `\`• Draw Prices Region\` = **${isRegion10 ? '10 CP' : '30 CP'}**` }],
-            accessory: {
-                type: 2, style: 2,
-                label: isRegion10 ? "30 CP" : "10 CP",
-                custom_id: isRegion10 ? `toggle_region_30|${userId}` : `toggle_region_10|${userId}`
-            }
+            // Draw Prices region: converted from a binary toggle button to a 3-option dropdown
+            // (2026-07-12) -- "Show Last Viewed Region" (new default, `defaultRegionMode:
+            // 'last_viewed'`) behaves exactly like the old toggle always did (whatever was last
+            // clicked in /draw prices itself); "10 CP"/"30 CP" now PIN the opening view to that
+            // region regardless of what gets toggled elsewhere. See models/UserPreference.js and
+            // drawprices.js's execute() for the resolution priority.
+            const regionMode = prefs.defaultRegionMode || 'last_viewed';
+            const regionModeLabelMap = {
+                last_viewed: 'Show Last Viewed Region',
+                region_10: '10 CP Region Pricing',
+                region_30: '30 CP Region Pricing'
+            };
+            containerComponents.push({ type: 10, content: `\`• Draw Prices Region\` = **${regionModeLabelMap[regionMode] || regionModeLabelMap.last_viewed}**` });
+            containerComponents.push({
+                type: 1,
+                components: [{
+                    type: 3, custom_id: `set_region_mode|${userId}|1`, placeholder: "Choose which draw prices region to open on...",
+                    options: [
+                        { label: "Show Last Viewed Region", value: "last_viewed", description: "Opens on whichever region you last viewed/toggled", default: regionMode === 'last_viewed' },
+                        { label: "10 CP Region Pricing", value: "region_10", description: "Always opens on the 10 CP region", default: regionMode === 'region_10' },
+                        { label: "30 CP Region Pricing", value: "region_30", description: "Always opens on the 30 CP region", default: regionMode === 'region_30' }
+                    ]
+                }]
+            });
+
+            containerComponents.push({ type: 10, content: `\`• Timezone\` = **${currentTzLabel}**` });
+            // NOTE (redesigned during review): moved inside the container, directly under its summary
+            // line, instead of living as a separate action row below/outside the embed.
+            containerComponents.push({
+                type: 1,
+                components: [{
+                    type: 3, custom_id: `set_timezone|${userId}|1`, placeholder: "Set Your Local Clock Timezone Filters...",
+                    options: Object.entries(tzDisplayMap).map(([val, lab]) => ({ label: lab, value: val, default: tz === val }))
+                }]
+            });
+
+            containerComponents.push({ type: 10, content: `\`• Timestamp Style\` = **${currentStyleLabel}**` });
+            containerComponents.push({
+                type: 1,
+                components: [{
+                    type: 3, custom_id: `set_style|${userId}|1`, placeholder: "Set Your Default Chat Timestamp Format Style...",
+                    options: Object.entries(styleDisplayMap).map(([val, lab]) => ({
+                        label: lab,
+                        value: val,
+                        description: styleExampleMap[val],
+                        default: style === val
+                    }))
+                }]
+            });
+
+            // ACCENT COLOR STYLE: controls what color every embed's container accent uses — see
+            // utils/accentColor.js. Renamed 'default' -> 'preset' / "Pre-Designed Palette" since
+            // avatar-matching is now the ACTUAL default (see UserPreference.js's schema default and
+            // accentColor.js's resolveAccentColor, which still treats the legacy 'default' value the
+            // same way for any pre-existing saved docs). "Pre-Designed Palette" keeps each command's
+            // own themed color (Settings still falls back to avatar since it has no theme color of
+            // its own); "Avatar"/"Banner" override every command's accent to match that image instead.
+            const accentStyle = prefs.accentColorStyle || 'avatar';
+            const accentStyleDisplayMap = {
+                default: 'Pre-Designed Palette',
+                preset: 'Pre-Designed Palette',
+                avatar: 'Avatar Color',
+                banner: 'Banner Color'
+            };
+            // Hex code shown next to Avatar/Banner style (2026-07-12) -- pulled straight from the
+            // already-cached avatarColorHex/bannerColorHex fields, no new lookup needed. Formatted
+            // as a 6-digit uppercase hex string; `#` + the value's hex representation, zero-padded.
+            const hexSuffix = (hexNum) => hexNum != null ? ` \`(#${hexNum.toString(16).padStart(6, '0').toUpperCase()})\`` : '';
+            let accentDisplay = accentStyleDisplayMap[accentStyle] || 'Avatar Color';
+            if (accentStyle === 'avatar') accentDisplay += hexSuffix(prefs.avatarColorHex);
+            if (accentStyle === 'banner') accentDisplay += hexSuffix(prefs.bannerColorHex);
+            containerComponents.push({ type: 10, content: `\`• Accent Color Style\` = **${accentDisplay}**` });
+            containerComponents.push({
+                type: 1,
+                components: [{
+                    type: 3, custom_id: `set_accent_style|${userId}|1`, placeholder: "Choose how embed accent colors are picked...",
+                    options: [
+                        { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
+                        { label: "Avatar Color", value: "avatar", description: "Every embed matches your avatar's dominant color", default: accentStyle === 'avatar' },
+                        { label: "Banner Color", value: "banner", description: "Every embed matches your banner's dominant color", default: accentStyle === 'banner' }
+                    ]
+                }]
+            });
+
+            containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
+        }
+
+        // Prev/Next between the 2 pages -- same shared helper /calendar and /draws use.
+        const paginationRow = buildPaginationRow({
+            totalChunks: 2, currentPage: page,
+            prevCustomId: `set_page_${page - 1}`, nextCustomId: `set_page_${page + 1}`,
+            indicatorCustomId: 'set_page_indicator'
         });
+        if (paginationRow) {
+            containerComponents.push({ type: 14, spacing: 1, divider: true });
+            containerComponents.push(paginationRow);
+        }
 
-        containerComponents.push({ type: 10, content: `\`• Timezone\` = **${currentTzLabel}**` });
-        // NOTE (redesigned during review): moved inside the container, directly under its summary
-        // line, instead of living as a separate action row below/outside the embed.
-        containerComponents.push({
-            type: 1,
-            components: [{
-                type: 3, custom_id: `set_timezone|${userId}`, placeholder: "Set Your Local Clock Timezone Filters...",
-                options: Object.entries(tzDisplayMap).map(([val, lab]) => ({ label: lab, value: val, default: tz === val }))
-            }]
-        });
-
-        containerComponents.push({ type: 10, content: `\`• Timestamp Style\` = **${currentStyleLabel}**` });
-        containerComponents.push({
-            type: 1,
-            components: [{
-                type: 3, custom_id: `set_style|${userId}`, placeholder: "Set Your Default Chat Timestamp Format Style...",
-                options: Object.entries(styleDisplayMap).map(([val, lab]) => ({
-                    label: lab,
-                    value: val,
-                    description: styleExampleMap[val],
-                    default: style === val
-                }))
-            }]
-        });
-
-        // ACCENT COLOR STYLE: controls what color every embed's container accent uses — see
-        // utils/accentColor.js. Renamed 'default' -> 'preset' / "Pre-Designed Palette" since
-        // avatar-matching is now the ACTUAL default (see UserPreference.js's schema default and
-        // accentColor.js's resolveAccentColor, which still treats the legacy 'default' value the
-        // same way for any pre-existing saved docs). "Pre-Designed Palette" keeps each command's own
-        // themed color (Settings still falls back to avatar since it has no theme color of its own);
-        // "Avatar"/"Banner" override every command's accent to match that image instead.
-        const accentStyle = prefs.accentColorStyle || 'avatar';
-        const accentStyleDisplayMap = {
-            default: 'Pre-Designed Palette',
-            preset: 'Pre-Designed Palette',
-            avatar: 'Avatar Color',
-            banner: 'Banner Color'
-        };
-        containerComponents.push({ type: 10, content: `\`• Accent Color Style\` = **${accentStyleDisplayMap[accentStyle] || 'Avatar Color'}**` });
-        containerComponents.push({
-            type: 1,
-            components: [{
-                type: 3, custom_id: `set_accent_style|${userId}`, placeholder: "Choose how embed accent colors are picked...",
-                options: [
-                    { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
-                    { label: "Avatar Color", value: "avatar", description: "Every embed matches your avatar's dominant color", default: accentStyle === 'avatar' },
-                    { label: "Banner Color", value: "banner", description: "Every embed matches your banner's dominant color", default: accentStyle === 'banner' }
-                ]
-            }]
-        });
+        // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens
+        // /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to
+        // the header's own self-mention below; renders as a normal clickable mention either way. A
+        // Text Display can paste a raw emoji mention string directly (unlike a button's `label`,
+        // which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).
+        containerComponents.push({ type: 10, content: `-# Made with love by <@${DIOR_ID}> ${emojis.dioreo}` });
 
         // 6. MASTER PAYLOAD MATRIX
         const payload = withShareButton([
