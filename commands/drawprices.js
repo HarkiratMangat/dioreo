@@ -196,9 +196,10 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // up to 3 separate Text Displays.
     // Large divider spacing (2) between draw entries, applied to BOTH regions as of 2026-07-12 --
     // this used to be a region_10-only test to compare against region_30's spacing 1, but Harkirat
-    // confirmed he wants the larger spacing everywhere now that the comparison's done. The divider
-    // right after the title stays spacing: 1 (see the hardcoded divider below) -- only the INNER
-    // dividers between draw entries use the larger value.
+    // confirmed he wants the larger spacing everywhere now that the comparison's done. Every OTHER
+    // divider in this container (title, pagination, nav row) also uses spacing 2 now -- the earlier
+    // "title divider stays spacing 1" exception was dropped the same day per Harkirat's "large
+    // spacing across the board" follow-up.
     const innerDividerSpacing = 2;
     const entrySections = withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
@@ -216,6 +217,13 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         indicatorCustomId: 'price_subpage_indicator'
     });
 
+    // Moved INSIDE the container, directly under the entries/pagination (2026-07-12, Harkirat's
+    // request) -- was a separate sibling element after the whole container. New order: entries >
+    // subpage pagination > global nav row > divider > "Switch between..." line > region button.
+    const globalNavigationRow = buildGlobalNavRow('nav_prices');
+
+    // All dividers now spacing 2 (2026-07-12, "large spacing across the board" -- overrides the
+    // earlier "title divider stays spacing 1" exception from the same day's prior pass).
     const containerPayload = {
         type: 17, // Section Container
         accent_color: accentColor,
@@ -226,15 +234,11 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             // both scoped to this command only per Harkirat's request (2026-07-12); see
             // utils/titleBlock.js's buildTitleBlock.
             buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true),
-            { type: 14, spacing: 1, divider: true },
+            { type: 14, spacing: 2, divider: true },
             ...entrySections,
-            ...(paginationRow ? [{ type: 14, spacing: 1, divider: true }, paginationRow] : []),
-
-            // Divider that used to sit directly above the footer/region-button row was removed
-            // (2026-07-12, Harkirat's request) -- it read as visually grouping the region switch
-            // with the pagination arrows above it, when they're unrelated controls. The natural
-            // component-to-component gap Discord already renders was enough on its own; no extra
-            // spacer needed in its place.
+            ...(paginationRow ? [{ type: 14, spacing: 2, divider: true }, paginationRow] : []),
+            globalNavigationRow,
+            { type: 14, spacing: 2, divider: true },
             // One-line footer (was two `-#` lines) per example_reformat.json.
             { type: 10, content: `-# Switch between viewing 10 CP or 30 CP region prices. (Tip: check out \`/settings\`)` },
             {
@@ -263,9 +267,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         ]
     };
 
-    const globalNavigationRow = buildGlobalNavRow('nav_prices');
-
-    return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
+    return withShareButton([containerPayload], isEphemeral);
 }
 
 module.exports = {
@@ -275,10 +277,10 @@ module.exports = {
         .setDescription('Lucky Draw Commands')
         .addSubcommand(sub => sub
             .setName('prices')
-            .setDescription('View the CP cost breakdown for Lucky Draws!')
+            .setDescription('View the CP cost breakdown for Lucky Draws')
             // Optional direct-jump flag
             .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '30 CP Region', value: 'region_30' }))
-            .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it')))
+            .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer, // Expose to the root router
@@ -310,7 +312,7 @@ module.exports = {
 
         // PARAMETER INGESTION: Read optional arguments if initiated via Slash Command
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('private');
+            argPrivate = interaction.options.getBoolean('hidden');
             const userChoice = interaction.options.getString('region');
             if (userChoice) targetRegion = userChoice;
         }

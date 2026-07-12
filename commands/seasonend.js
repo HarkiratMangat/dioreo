@@ -27,10 +27,10 @@ module.exports = {
         .setDescription('Seasonal countdowns and details')
         .addSubcommand(sub => sub
             .setName('end')
-            .setDescription('Check the exact dates and countdowns for when the current seasons end!')
+            .setDescription('Check the exact dates and countdowns for when the current seasons end')
             .addBooleanOption(option =>
-                option.setName('private')
-                    .setDescription('Hide this response so only you can see it')))
+                option.setName('hidden')
+                    .setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
@@ -45,7 +45,7 @@ module.exports = {
         const prefsPromise = UserPreference.findOne({ discordId: userId });
         const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
         const prefs = await prefsPromise;
-        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('private') : null;
+        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('hidden') : null;
         // NOTE: switched from the old per-command `seasonendVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A — one switch controls Season End/Draws/Patch Notes/Calendar/Draw

@@ -143,7 +143,7 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
     // NOTE (removed during review, per Harkirat's request): there used to be a divider here between
     // Gunsmith Code and the image -- dropped so the image sits directly under the text above it.
     containerComponents.push({ type: 12, items: [{ media: { url: buildImageUrl(activeBuild.imageKey) } }] });
-    containerComponents.push({ type: 10, content: `-# ${activeBuild.category} • Build ${index + 1} of ${builds.length} • Last updated <t:${lastUpdatedUnix}:D>` });
+    containerComponents.push({ type: 10, content: `-# ${activeBuild.category} • Build ${index + 1} of ${builds.length} • Updated <t:${lastUpdatedUnix}:D>` });
 
     // NOTE (moved during review): buttons live INSIDE the container now (were a separate row
     // outside it), with a divider between them and the image/caption above — per Harkirat's

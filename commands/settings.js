@@ -19,7 +19,7 @@ const DIOR_ID = '1139845545754632283';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('settings')
-        .setDescription('Configure your custom loadout, timestamp, and timezone preferences!')
+        .setDescription('Customize your bot settings, such as accent color, or download your avatar & banner')
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region
@@ -167,19 +167,19 @@ module.exports = {
 
             // HELPER: Generates the clean Type 9 Accessory layout you designed
             // Internal stored state is still 'PUBLIC'/'EPHEMERAL' (unchanged, matches the DB field
-            // values everywhere else) and the button labels stay "PUBLIC"/"HIDDEN" (all-caps,
-            // unchanged) -- only the DESCRIPTIVE text next to them was reworded (2026-07-12,
-            // Harkirat's request) from the raw state name to a plain-language sentence, since
-            // "PUBLIC"/"HIDDEN" alone doesn't explain what actually happens.
+            // values everywhere else). Button labels reworded 2026-07-12 (same day, follow-up
+            // correction) from all-caps "PUBLIC"/"HIDDEN" to plain "Show"/"Hide". Descriptive text
+            // partially italicized per the same follow-up -- "Visible to *everyone in chat*" /
+            // "Visible *only to me*" -- the whole line is still wrapped in ** below (unchanged).
             const buildToggleRow = (label, currentState, publicId, ephemeralId) => {
                 const isPub = currentState === 'PUBLIC';
-                const displayText = isPub ? 'Everyone can see' : 'Visible only to me';
+                const displayText = isPub ? 'Visible to *everyone in chat*' : 'Visible *only to me*';
                 return {
                     type: 9,
                     components: [{ type: 10, content: `\`• ${label}\` = **${displayText}**` }],
                     accessory: {
                         type: 2, style: 2,
-                        label: isPub ? "HIDDEN" : "PUBLIC",
+                        label: isPub ? "Hide" : "Show",
                         custom_id: isPub ? ephemeralId : publicId
                     }
                 };
@@ -190,7 +190,7 @@ module.exports = {
             containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public|${userId}`, `toggle_timestamp_ephemeral|${userId}`));
             containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public|${userId}`, `toggle_settings_ephemeral|${userId}`));
 
-            containerComponents.push({ type: 10, content: `-# Choose your personal Preferences settings on page 2 →` });
+            containerComponents.push({ type: 10, content: `-# Choose your Preferences settings on page 2 →` });
         } else {
             containerComponents.push({ type: 10, content: `### Default Preferences:\n-# Change the default preferences the bot uses when responding to you.` });
 
@@ -272,8 +272,8 @@ module.exports = {
                     type: 3, custom_id: `set_accent_style|${userId}|1`, placeholder: "Choose how embed accent colors are picked...",
                     options: [
                         { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
-                        { label: "Avatar Color", value: "avatar", description: "Every embed matches your avatar's dominant color", default: accentStyle === 'avatar' },
-                        { label: "Banner Color", value: "banner", description: "Every embed matches your banner's dominant color", default: accentStyle === 'banner' }
+                        { label: "Avatar Color", value: "avatar", description: "Every command matches your avatar's dominant color", default: accentStyle === 'avatar' },
+                        { label: "Banner Color", value: "banner", description: "Every command matches your banner's dominant color", default: accentStyle === 'banner' }
                     ]
                 }]
             });
@@ -291,14 +291,14 @@ module.exports = {
             indicatorCustomId: 'set_page_indicator'
         });
         if (paginationRow) containerComponents.push(paginationRow);
-        containerComponents.push({ type: 14, spacing: 1, divider: true });
+        containerComponents.push({ type: 14, spacing: 2, divider: true });
 
         // FOOTER (2026-07-12) -- silent mention (doesn't ping Harkirat when someone else opens
         // /settings) using the same `allowed_mentions: { users: [] }` suppression already applied to
         // the header's own self-mention below; renders as a normal clickable mention either way. A
         // Text Display can paste a raw emoji mention string directly (unlike a button's `label`,
         // which needs the parsed { id, name, animated } shape -- see parseEmoji()'s own comment).
-        containerComponents.push({ type: 10, content: `-# Made with love by <@${DIOR_ID}> ${emojis.dioreo}` });
+        containerComponents.push({ type: 10, content: `-# ${emojis.diorHeart} Made with love by <@${DIOR_ID}>` });
 
         // 6. MASTER PAYLOAD MATRIX
         const payload = withShareButton([

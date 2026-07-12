@@ -144,9 +144,9 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('draws')
-        .setDescription('View the upcoming New and Returning Lucky Draws!')
+        .setDescription('View new and returning draws coming this season')
         .addStringOption(option => option.setName('category').setDescription('Jump directly to a specific draws page').addChoices({ name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }))
-        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))
+        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -167,7 +167,7 @@ module.exports = {
 
         // Ingest manual slash command parameters
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('private');
+            argPrivate = interaction.options.getBoolean('hidden');
             const userChoice = interaction.options.getString('category');
             if (userChoice) activePage = userChoice;
         }

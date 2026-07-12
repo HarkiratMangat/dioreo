@@ -11,8 +11,9 @@ function parseEmoji(mention) {
 }
 
 module.exports = {
-    // /settings' "Made with love by @dior" footer (2026-07-12) -- static (non-animated) emoji.
-    dioreo: '<:dioreo:1525895775387779242>',
+    // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12,
+    // same day, Harkirat's follow-up correction). Animated this time (a: prefix).
+    diorHeart: '<a:diorHeart:1525941004929339594>',
     mythic: '<:7Mythic_CODM:1523190107614744757>',
     legendary: '<:5Legendary_CODM:1523190105152688158>',
     legacy: '<:6Legacy_CODM:1523190105739886663>',

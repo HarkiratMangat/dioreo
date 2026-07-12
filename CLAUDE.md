@@ -1173,6 +1173,94 @@ in isolation:
     reworded to "Choose your personal Preferences settings on page 2 →" (was "More settings on
     page 2 →").
 
+## Post-deploy fixes and follow-up polish (2026-07-12, night — after the batch shipped)
+Harkirat tested the just-deployed batch live and sent back a Render error log (edit buttons
+throwing) plus a long follow-up list. All addressed same session:
+
+- **REAL BUG, found live in production: every single-match Edit search threw "Something went
+  wrong. Try again."** Root cause, confirmed directly against the installed package:
+  `ModalSubmitInteraction.prototype.showModal` is `undefined` in discord.js v14.26.4 —
+  `ButtonInteraction`/`StringSelectMenuInteraction` both implement `showModal()`, but Discord's API
+  does not allow responding to a `MODAL_SUBMIT` interaction with another modal at all, and
+  discord.js's class reflects that. This is why Edit only ever worked when a search happened to
+  match MULTIPLE items (routed through the `mng_pick_` select menu, which CAN `showModal()`) and
+  broke on an exact single match (which used to call `resolveManagePanelAction` directly from the
+  search modal's own submit interaction). Delete was never affected — it replies with plain text,
+  which modal-submit interactions can do fine. **Fix:** a single Edit match now shows one
+  intermediate button ("Edit: {label}") instead of opening the modal directly — the click on THAT
+  button (a real `ButtonInteraction`) is what calls `showModal()`. Stashed in a new
+  `pendingManageEdits` Map (`index.js`), same short-lived-token pattern as the other pending-action
+  Maps in this file (`mng_editbtn_{token}`).
+  - A **"Search Again"** button was added alongside both the single-match button prompt and the
+    multi-match disambiguation select, so a second search doesn't require scrolling back up to the
+    original panel message.
+  - Reworded the single-Delete confirm text — "This cannot be undone directly, but you'll get an
+    Undo button right after" read as self-contradictory. Now: "You'll get an Undo button right
+    after, in case you change your mind."
+- **`/draw prices`**: global nav row moved INSIDE the container now (was a separate sibling
+  element after it) — new order: entries > subpage pagination > nav row > divider > "Switch
+  between..." line > region button.
+- **Divider spacing "large across the board"** — extended past the earlier per-file passes to
+  catch two stragglers: `/settings`' divider right before the footer, and `/manage`'s title divider
+  (both were still `spacing: 1`).
+- **Calendar's Bulk Replace now upserts by title**, matching Draws' semantics exactly (new
+  `upsertEventsByTitle()` helper in `index.js`) — was still a wholesale wipe-then-replace.
+- **`/manage` Calendar page**: group headings ("Single Event Data" etc.) removed entirely — matches
+  how Draws' page never had them. Export and Purge split into their own separate groups (so the
+  existing per-group divider spaces them apart) and each renders as a **Section + button accessory**
+  (`style: 'inline'` on the group, a new render branch in `buildManagePage`) instead of the usual
+  block-list-then-shared-row layout — same visual pattern `/settings`' visibility toggles already use.
+- **Patch Notes URL modals**: each of the 5 URL slots is now its OWN Short text field (`url0`..`url4`)
+  instead of one Paragraph field with newline-joined URLs — a modal has exactly 5 field slots, which
+  is exactly why URLs were split into "URLs 1"/"URLs 2" in the first place; this uses that same
+  budget more granularly. (Cloudinary-backed caching for these images, with season-based retention
+  instead of the 45-day draws window, was explicitly deferred as a separate follow-up project —
+  not built this pass.)
+- **`/settings` footer**: swapped `dioreo` for an animated `diorHeart` emoji
+  (`<a:diorHeart:1525941004929339594>`) and moved it to the FRONT of the sentence ("{emoji} Made
+  with love by @dior"). Button labels reworded "HIDDEN"/"PUBLIC" → "Hide"/"Show"; descriptive text
+  now partially italicized — "Visible to *everyone in chat*" / "Visible *only to me*". Dropped
+  "personal" from the Preferences-page hint. Accent-style dropdown descriptions changed "every
+  embed" → "every command" (an embed isn't actually the right noun here since this is all
+  Components V2, not legacy embeds).
+- **Every slash command description had its trailing "!" removed** and two had leftover emoji
+  stripped (`/dmz`'s magnifying glass, `/manage`'s crown) — should have been caught during the
+  earlier same-day wording overpass, wasn't. New exact strings: `/calendar` "View the timeline for
+  this season's in-game events", `/dmz` "Search through all DMZ specific gunsmiths", `/settings`
+  "Customize your bot settings, such as accent color, or download your avatar & banner", `/manage`
+  "Database manager for gunsmiths and seasonal data — Add/Edit/Delete", `/draws` "View new and
+  returning draws coming this season", `/all` "Search through all available MP gunsmiths".
+- **The `private` boolean option, renamed to `hidden` on EVERY command** (reversing part of the
+  earlier same-day `ephemeral`→`private` standardization — Harkirat's explicit follow-up call) —
+  new description everywhere: "True = only you can see this response. False = everyone in the chat
+  can see it." (`/manage`'s own variant keeps its "(default: True)" note, same as before.)
+- **Loadout card footer**: "Last updated" → "Updated".
+- **`/all`'s autocomplete/result list had no sort at all** — Mongo returns docs in natural/insertion
+  order, so LOCUS (the very first weapon ever migrated from `builds.xlsx`) always showed first
+  regardless of category or name. Fixed with a `CATEGORY_SORT_ORDER` array (`index.js`) — currently
+  just `['AR', 'SMG', 'LMG']`, Harkirat is confirming the rest of the sequence separately; extend
+  this array rather than guessing when he does. Anything not yet listed sorts after all known
+  categories (alphabetically among itself), so a not-yet-decided category never disappears from the
+  list. Within a category, sorted alphabetically by weapon name.
+- **Accent-color extraction switched from a flat pixel average to a SATURATION-WEIGHTED average**
+  (`utils/colorExtract.js`) — a flat average washes out toward gray/white for the common case of a
+  mostly-pale avatar/banner with one small vibrant feature (Harkirat's own example: an avatar that's
+  mostly white but reads as "teal" to a person, because that's the one thing the eye registers).
+  Each sampled pixel's RGB now gets weighted by its saturation squared before averaging, so
+  low-saturation background pixels barely move the result while the image's most "prominent" color
+  dominates it; falls back to a plain average for genuinely near-grayscale images (where every
+  pixel's weight is ~0). **Note:** this only affects NEWLY-extracted colors — a user's existing
+  cached `avatarColorHex`/`bannerColorHex` won't recompute until their underlying image actually
+  changes (the cache-hit check is keyed on the Discord image hash, not on the algorithm version).
+- **`/manage` Draws search now also matches against each draw's item names** (weapons/characters/
+  emotes), not just the draw's title — searching "fss hurricane" or "charioteer" now finds the draw
+  those items are actually IN.
+- **`/calendar`'s active/all-events hint line condensed**, with a "(Tip: check out `/settings`)"
+  appended, matching the same tip convention `/draw prices`' footer already uses.
+- **Explicitly deferred to separate follow-up projects** (Harkirat's own call, not scope-cut
+  silently): patch notes Cloudinary caching with season-based retention; `/secondaries` → `/secondary`
+  rename + a `/pistols` alias; a "browse other builds in this category" dropdown on loadout cards.
+
 ## Known open issues (not yet fixed — flagged, not silently patched)
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
@@ -1187,6 +1275,17 @@ in isolation:
   right now vs. what the real version needs to do.
 - The 2026-07-12 batch (draw prices, `/manage`, `/settings`, slash-command overpass, color
   repalette) is now fully complete — see its own CLAUDE.md sections above for detail.
+- **Three items explicitly deferred as separate follow-up projects (2026-07-12 night), not silently
+  scope-cut:**
+  - Patch notes Cloudinary caching with season-based retention (folder per season title, kept as
+    long as that season is within the "previous 5 seasons" dropdown, deleted after) instead of the
+    current plain-URL storage / the draws' 45-day window.
+  - `/secondaries` → `/secondary` rename + a `/pistols` alias registered as a genuinely separate
+    command querying the same category.
+  - A "browse other builds in this category" dropdown added to loadout cards, letting a user jump
+    straight to a different weapon's card without re-running the slash command.
+  - Also: `CATEGORY_SORT_ORDER` in `index.js` only has `['AR', 'SMG', 'LMG']` confirmed so far —
+    extend it once Harkirat confirms the rest of the category sequence.
 - Not yet verified: Harkirat manually exercising every `/manage` panel action (including the new
   combined-line Add Draw field, upsert-by-title Replace, granular Purge scopes, every Confirm/Cancel
   step, and every Undo button), the new `/settings` 2-page layout, and the new Cloudinary-cache

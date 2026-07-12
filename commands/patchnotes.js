@@ -107,9 +107,9 @@ module.exports = {
         .setDescription('Balance adjustments and updates')
         .addSubcommand(sub => sub
             .setName('notes')
-            .setDescription('View the latest weapon balance changes!')
+            .setDescription('View the latest weapon balance changes')
             .addStringOption(option => option.setName('version').setDescription('Search for specific previous patch notes').setAutocomplete(true))
-            .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it')))
+            .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -130,7 +130,7 @@ module.exports = {
 
         // Extract autocomplete values
         if (interaction.isChatInputCommand()) {
-            argPrivate = interaction.options.getBoolean('private');
+            argPrivate = interaction.options.getBoolean('hidden');
             const searchId = interaction.options.getString('version');
             if (searchId) targetPatchId = searchId;
         }

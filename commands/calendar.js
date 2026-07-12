@@ -133,7 +133,7 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
         };
         const controlsRow = { type: 1, components: paginationRow ? [...paginationRow.components, toggleButton] : [toggleButton] };
         calendarComponents.push({ type: 14, spacing: 2, divider: true });
-        calendarComponents.push({ type: 10, content: `-# Use the button below to toggle between every event or only active/upcoming ones — your choice is remembered for next time.` });
+        calendarComponents.push({ type: 10, content: `-# Toggle every event vs. active/upcoming only (remembered for next time). (Tip: check out \`/settings\`)` });
         calendarComponents.push(controlsRow);
     } else if (paginationRow) {
         calendarComponents.push({ type: 14, spacing: 2, divider: true });
@@ -154,8 +154,8 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('calendar')
-        .setDescription('View the live timeline and start dates for upcoming in-game events!')
-        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))
+        .setDescription("View the timeline for this season's in-game events")
+        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     buildContainer,
@@ -172,7 +172,7 @@ module.exports = {
         const seasonalDocPromise = SeasonalData.findOne({ docType: 'global' }).lean();
 
         const prefs = await prefsPromise;
-        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('private') : null;
+        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('hidden') : null;
         // NOTE: switched from the old per-command `calendarVisibility` field to the shared
         // `seasonalVisibility` field so this respects the single "Seasonal Content" toggle in
         // /settings (Option A).

@@ -13,7 +13,7 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('dmz')
-        .setDescription('🔍 Look up a high-tier DMZ build with up to 9 attachment slots!')
+        .setDescription('Search through all DMZ specific gunsmiths')
         .addStringOption(option =>
             option.setName('weapon')
                 .setDescription('The name of the weapon you want a DMZ build for')
@@ -23,7 +23,7 @@ module.exports = {
             option.setName('build')
                 .setDescription('Jump directly to a specific build number, if this weapon has more than one')
                 .setMinValue(1))
-        .addBooleanOption(option => option.setName('private').setDescription('Hide this response so only you can see it'))
+        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
@@ -51,7 +51,7 @@ module.exports = {
         // same explicit-option > saved-preference > default priority every other command uses --
         // added specifically so a user can invoke the command already-public in one shot instead of
         // relying on the "Share Publicly" button to flip it after the fact.
-        const argPrivate = interaction.options.getBoolean('private');
+        const argPrivate = interaction.options.getBoolean('hidden');
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
 
         await interaction.deferReply({ ephemeral: isEphemeral });

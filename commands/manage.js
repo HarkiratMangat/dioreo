@@ -15,7 +15,7 @@
 // export folded INTO each entity's own page instead of a separate Export page, Loadouts losing its
 // Export page in favor of a 3-way in-page export, and Patch Notes rebuilt around a single
 // "current entry" model (Date/Info + URLs 1 + URLs 2) instead of add-a-new-entry-by-hand.
-// `/manage` (optionally with a `section` option to jump straight to a section, and a `private` option
+// `/manage` (optionally with a `section` option to jump straight to a section, and a `hidden` option
 // to make the panel public) replies with a Container showing the current section's actions —
 // clicking a button either opens its modal directly, replies with a file (Export actions), shows a
 // Confirm/Cancel prompt (Purge), or, for Edit/Delete-by-search (which need a specific item picked
@@ -133,7 +133,8 @@ const PAGES = {
         headerLabel: 'Calendar',
         groups: [
             {
-                heading: 'Single Event Data',
+                // Group headings dropped (2026-07-12, Harkirat's request) -- the section content
+                // already speaks for itself the same way Draws' page never had group headings.
                 blocks: [
                     `### ${emojis.mngAdd} Add Single Event\n-# Add one event to the calendar. Additive — doesn't affect existing events.`,
                     `### ${emojis.mngEdit} Edit Single Event\n-# Update an existing event's info. Search by event title.`,
@@ -146,10 +147,9 @@ const PAGES = {
                 ]
             },
             {
-                heading: 'Multiple Events Data',
                 blocks: [
                     `### ${emojis.mngBulkAdd} Add Multiple Events\n-# Add multiple events at once. Additive — doesn't affect existing events.`,
-                    `### ${emojis.mngBulkReplace} Replace Multiple Events\n-# Overwrites the entire calendar with what's pasted here.`,
+                    `### ${emojis.mngBulkReplace} Replace Multiple Events\n-# Updates existing events by matching title, or adds them if they don't exist yet. Events not included in the paste are left untouched — use Purge below for a full wipe.`,
                     `### ${emojis.mngBulkDelete} Delete Multiple Events\n-# Remove multiple events at once by pasting their titles. Only removes what's matched by search.`
                 ],
                 buttons: [
@@ -158,17 +158,22 @@ const PAGES = {
                     { id: 'deletemultiple', label: 'Delete', style: 4 }
                 ]
             },
+            // Export and Purge split into their own separate groups (2026-07-12, Harkirat's
+            // request) -- buildManagePage already puts a divider BETWEEN every group, so this alone
+            // gives them the requested separator. Each renders as a `style: 'inline'` group --
+            // a Section with the button as a side accessory (same pattern /settings' visibility
+            // toggles use) instead of the block-list-then-shared-button-row layout every other
+            // group on this page uses.
             {
-                // Renamed from "Misc." (2026-07-12, Harkirat's request) — describes what's actually
-                // in this group instead of a vague catch-all label.
-                heading: 'Export & Purge Data',
-                blocks: [
-                    `### ${emojis.mngExport} Export All Events\n-# Extract the events info, formatted for an easy re-import.`,
-                    `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`
-                ],
-                buttons: [
-                    { id: 'export', label: 'Export', style: 2 },
-                    { id: 'purge', label: 'Purge', style: 4 }
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngExport} Export All Events\n-# Extract the events info, formatted for an easy re-import.`, button: { id: 'export', label: 'Export', style: 2 } }
+                ]
+            },
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
                 ]
             }
         ]
@@ -267,18 +272,30 @@ function buildManagePage(page) {
 
     const components = [
         { type: 10, content: `# ${emojis.database} Database Management\n## ${pageData.icon} ${pageData.headerLabel}` },
-        { type: 14, spacing: 1, divider: true }
+        { type: 14, spacing: 2, divider: true }
     ];
 
     // Large divider spacing (2026-07-12, matches drawprices.js's spacing:2 change) — applied to
-    // every INTER-GROUP divider on this panel for visual consistency with the rest of the bot's new
-    // spacing language. The one right after the title stays spacing: 1 (see above), same convention
-    // draw prices uses.
+    // EVERY divider on this panel now, including the one right after the title (that exception was
+    // dropped the same day it was introduced, per Harkirat's explicit "large spacing across the
+    // board" follow-up).
     pageData.groups.forEach(group => {
         if (group.heading) components.push({ type: 10, content: `## ${group.heading}` });
-        group.blocks.forEach(content => components.push({ type: 10, content }));
-        const buttons = group.buttons.map(a => ({ type: 2, style: a.style, label: a.label, custom_id: `mng_act_${pageKey}_${a.id}` }));
-        for (let i = 0; i < buttons.length; i += 5) components.push({ type: 1, components: buttons.slice(i, i + 5) });
+        if (group.style === 'inline') {
+            // Section + button-accessory (2026-07-12, Calendar's Export/Purge groups) -- same
+            // pattern /settings' visibility toggles use, instead of a block-list-then-shared-row.
+            group.items.forEach(item => {
+                components.push({
+                    type: 9,
+                    components: [{ type: 10, content: item.text }],
+                    accessory: { type: 2, style: item.button.style, label: item.button.label, custom_id: `mng_act_${pageKey}_${item.button.id}` }
+                });
+            });
+        } else {
+            group.blocks.forEach(content => components.push({ type: 10, content }));
+            const buttons = group.buttons.map(a => ({ type: 2, style: a.style, label: a.label, custom_id: `mng_act_${pageKey}_${a.id}` }));
+            for (let i = 0; i < buttons.length; i += 5) components.push({ type: 1, components: buttons.slice(i, i + 5) });
+        }
         components.push({ type: 14, spacing: 2, divider: true });
     });
 
@@ -538,12 +555,19 @@ function buildPatchDateInfoModal(currentEntry) {
 }
 
 function buildPatchUrlsModal(slot, currentEntry) {
-    // slot: 1 -> images[0..4], 2 -> images[5..9]
+    // slot: 1 -> images[0..4], 2 -> images[5..9]. Each of the 5 URLs now gets its OWN Short field
+    // (2026-07-12, Harkirat's request) -- a modal has exactly 5 field slots and this used to put
+    // all 5 URLs into ONE Paragraph field (newline-joined), which is exactly why the URLs were
+    // split into two "URLs 1"/"URLs 2" modals in the first place; now that split pays off further,
+    // with each field independently addressable/clearable.
     const images = currentEntry?.images || [];
     const slice = slot === 1 ? images.slice(0, 5) : images.slice(5, 10);
+    const baseIndex = slot === 1 ? 1 : 6;
     const modal = new ModalBuilder().setCustomId(`modal_patch_urls_${slot}`).setTitle(`Patch Notes: URLs ${slot}`);
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls').setLabel(`Image URLs ${slot === 1 ? '1-5' : '6-10'} (one per line)`).setStyle(TextInputStyle.Paragraph).setValue(slice.join('\n')).setRequired(false))
+        ...[0, 1, 2, 3, 4].map(i => new ActionRowBuilder().addComponents(
+            new TextInputBuilder().setCustomId(`url${i}`).setLabel(`Image URL ${baseIndex + i}`).setStyle(TextInputStyle.Short).setValue(slice[i] || '').setRequired(false)
+        ))
     );
     return modal;
 }
@@ -578,7 +602,7 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('manage')
-        .setDescription('👑 Advanced Database Manager')
+        .setDescription('Database manager for gunsmiths and seasonal data — Add/Edit/Delete')
         .setDefaultMemberPermissions(0)
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app + DM support
         // Renamed from `page` to `section` (2026-07-12) — each option is a distinct data section
@@ -597,7 +621,7 @@ module.exports = {
             { name: 'Patch Notes', value: 'patchnotes' },
             { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' }
         ))
-        .addBooleanOption(option => option.setName('private').setDescription('Hide this panel so only you can see it (default: yes)')),
+        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
 
     PAGES,
     PURGE_LABELS,
@@ -630,7 +654,7 @@ module.exports = {
         // Default ephemeral (true) unless explicitly set to public — matches the "default private"
         // convention Harkirat asked for on this specific command (every OTHER command defaults
         // public; this one is the admin panel, so it flips the default).
-        const argPrivate = interaction.options.getBoolean('private');
+        const argPrivate = interaction.options.getBoolean('hidden');
         const isEphemeral = argPrivate === null ? true : argPrivate;
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         return sendV2Payload(interaction, buildManagePage(section));

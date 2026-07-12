@@ -109,7 +109,7 @@ module.exports = {
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
         .setName('timestamp')
-        .setDescription('Convert natural language into copyable Discord timestamps!')
+        .setDescription('Convert natural language into copyable Discord timestamps')
         .addStringOption(option =>
             option.setName('datetime')
                 // FIXED 100-CHARACTER LIMIT CRASH PROTECTION: Combined short string under 100 characters perfectly
@@ -149,13 +149,13 @@ module.exports = {
                     { name: 'Short Date, Medium Time (S) — e.g., 20/04/2021, 16:20:30', value: 'shortDateTimeMedium' },
                     { name: 'Relative Time (R) — e.g., 4 years ago', value: 'relative' }
                 ))
-        // Renamed from 'ephemeral' to 'private' (2026-07-12, slash-command wording overpass) --
-        // every other command in the bot uses `private` with this exact description; /timestamp
-        // was the one holdout using a differently-named, differently-worded option for the same
-        // concept.
+        // Renamed 'ephemeral' -> 'private' -> 'hidden' across the same day (2026-07-12): first
+        // standardized to match every other command's naming, then every command (including this
+        // one) got renamed again to `hidden` with a fuller description explaining who actually sees
+        // the response.
         .addBooleanOption(option =>
-            option.setName('private')
-                .setDescription('Hide this response so only you can see it'))
+            option.setName('hidden')
+                .setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         // Context configuration ensuring the command works in Guilds, DMs, and User-installed apps seamlessly
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
@@ -208,7 +208,7 @@ module.exports = {
             // if you didn't type it. Now it falls back to the "Timestamps" toggle from /settings
             // (prefs.timestampVisibility) when the option is left blank, same priority pattern used
             // by the other commands: explicit option > saved preference > public default.
-            const argEphemeral = interaction.options.getBoolean('private');
+            const argEphemeral = interaction.options.getBoolean('hidden');
             ephemeral = argEphemeral !== null ? argEphemeral : (prefs ? prefs.timestampVisibility === 'ephemeral' : false);
 
             // Accent color: fixed teal UNLESS the user has saved a specific default style in

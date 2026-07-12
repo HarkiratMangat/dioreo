@@ -99,6 +99,12 @@ client.on('error', (error) => {
 client.commands = new Collection();
 const commands = [];
 
+// Interim category display order for /all's autocomplete + result list (2026-07-12) -- Harkirat
+// confirmed AR/SMG/LMG so far and is confirming the rest of the sequence separately; extend this
+// array once he does rather than guessing the remaining order. Any category not listed here sorts
+// after all of these (alphabetically among itself), so a not-yet-decided category never disappears.
+const CATEGORY_SORT_ORDER = ['AR', 'SMG', 'LMG'];
+
 // ==========================================
 // PHASE 4: APPLICATION COMMAND REGISTRATION
 // ==========================================
@@ -107,12 +113,12 @@ const commands = [];
 commands.push(
     new SlashCommandBuilder()
         .setName('all')
-        .setDescription('Search through all available gunsmiths')
+        .setDescription('Search through all available MP gunsmiths')
         // Reworded (2026-07-12, slash-command wording overpass) to match /dmz's phrasing pattern --
         // was just "Type weapon name", inconsistent with every other weapon-search option in the bot.
         .addStringOption(opt => opt.setName('weapon').setDescription('The name of the weapon you want a build for').setAutocomplete(true).setRequired(true))
         .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
-        .addBooleanOption(opt => opt.setName('private').setDescription('Hide this response so only you can see it'))
+        .addBooleanOption(opt => opt.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
 );
 
@@ -163,7 +169,7 @@ async function handleBotReady() {
                 // for the same concept.
                 .addStringOption(opt => opt.setName('weapon').setDescription(`The name of the ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
                 .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
-                .addBooleanOption(opt => opt.setName('private').setDescription('Hide this response so only you can see it'))
+                .addBooleanOption(opt => opt.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
                 .setIntegrationTypes([1]).setContexts([0, 1, 2])
         );
     });
@@ -268,6 +274,12 @@ const pendingSeasonWipes = new Map(); // token -> { newTitle }
 // mng_delconfirm_/mng_delcancel_ button click.
 const pendingManageDeletes = new Map(); // token -> { group, match }
 
+// Pending single-match Edit confirmations (2026-07-12) -- see the mng_search_ handler's bug-fix
+// comment for why this exists: Discord's API can't respond to a MODAL_SUBMIT interaction with
+// another modal, so a single Edit match needs one intermediate button click (which CAN open a
+// modal) before resolveManagePanelAction's showModal() call is reached.
+const pendingManageEdits = new Map(); // token -> { group, match }
+
 // Pending Bulk Delete confirmations (draws/calendar/loadouts, 2026-07-12) -- holds the DRY-RUN
 // result (what WOULD be removed, computed but not yet saved) plus an `apply()` that performs the
 // actual save and registers its own Undo snapshot, between the modal-submit's confirm prompt and
@@ -328,6 +340,32 @@ function upsertDrawsByTitle(existingArray, parsedDraws) {
     return { finalArray, updatedCount, insertedCount };
 }
 
+// --- BULK REPLACE CALENDAR: UPSERT BY TITLE (2026-07-12) --- same upsert convention as
+// upsertDrawsByTitle above -- Harkirat wants Calendar's Replace Multiple to behave identically:
+// fuzzy-match each pasted event's title against the existing calendar, update in place on a match,
+// insert otherwise, never touch anything not mentioned in the paste (Purge already covers a full
+// wipe). Takes/returns plain `{title, date, endDate, isOngoing}` event objects, same shape
+// `modal_calendar_bulk_add`/`_replace` already builds.
+function upsertEventsByTitle(existingArray, parsedEvents) {
+    const { fuzzyMatch } = require('./utils/search');
+    let updatedCount = 0;
+    let insertedCount = 0;
+    const finalArray = [...existingArray];
+
+    for (const parsed of parsedEvents) {
+        const matchIndex = finalArray.findIndex(e => fuzzyMatch(parsed.title, e.title));
+        if (matchIndex > -1) {
+            finalArray[matchIndex] = Object.assign(finalArray[matchIndex], parsed);
+            updatedCount++;
+        } else {
+            finalArray.push(parsed);
+            insertedCount++;
+        }
+    }
+
+    return { finalArray, updatedCount, insertedCount };
+}
+
 // --- MANAGE PANEL SEARCH RESOLUTION (2026-07-09 button/modal redesign) ---
 // Edit/Delete on the /manage panel can't autocomplete like a slash-command option could (they're
 // plain buttons), so they collect a search query through a one-field modal instead (see manage.js's
@@ -347,10 +385,14 @@ async function resolveManagePanelMatches(group, rawQuery) {
             ...seasonalDoc.newDraws.map(doc => ({ doc, type: 'new' })),
             ...seasonalDoc.returningDraws.map(doc => ({ doc, type: 'returning' }))
         ];
-        return tagged.filter(t => fuzzyMatch(query, t.doc.title)).slice(0, 25).map(t => ({
-            id: t.doc._id.toString(), type: t.type, doc: t.doc,
-            label: `${t.doc.title} (${t.type === 'new' ? 'New' : 'Returning'})`
-        }));
+        // Matches against the draw's TITLE or any of its item names (weapons/characters/emotes) --
+        // 2026-07-12, Harkirat's request: searching "fss hurricane" or "charioteer" should find the
+        // draw those items are actually IN, not just a draw literally titled that.
+        return tagged.filter(t => fuzzyMatch(query, t.doc.title) || t.doc.items.some(item => fuzzyMatch(query, item.name)))
+            .slice(0, 25).map(t => ({
+                id: t.doc._id.toString(), type: t.type, doc: t.doc,
+                label: `${t.doc.title} (${t.type === 'new' ? 'New' : 'Returning'})`
+            }));
     }
 
     if (group === 'calendar') {
@@ -406,7 +448,7 @@ async function resolveManagePanelAction(interaction, group, action, match) {
         setTimeout(() => pendingManageDeletes.delete(token), 10 * 60 * 1000).unref();
 
         return interaction.reply({
-            content: `⚠️ **Are you sure you want to delete ${match.label}?** This cannot be undone directly, but you'll get an Undo button right after.`,
+            content: `⚠️ **Are you sure you want to delete ${match.label}?** You'll get an Undo button right after, in case you change your mind.`,
             components: [{
                 type: 1, components: [
                     { type: 2, style: 4, label: 'Yes, Delete', custom_id: `mng_delconfirm_${token}` },
@@ -479,6 +521,24 @@ client.on('interactionCreate', async interaction => {
             const uniqueMap = new Map();
             matchingWeapons.forEach(w => uniqueMap.set(w.weaponKey, w));
             const distinctChoices = Array.from(uniqueMap.values());
+
+            // BUG FIX (2026-07-12, found live): this list had no sort at all -- Mongo returns docs
+            // in natural/insertion order, so whichever weapon happened to be migrated/added FIRST
+            // (LOCUS, from the original builds.xlsx migration) always showed up first regardless of
+            // category or alphabetical order. Now sorts by category (per CATEGORY_SORT_ORDER --
+            // interim order, Harkirat's confirming the final AR/SMG/LMG/... sequence separately;
+            // anything not yet listed falls back after the known categories, alphabetically among
+            // themselves) then alphabetically by weapon name within each category. Only affects
+            // display order -- doesn't change which weapons match the typed query.
+            distinctChoices.sort((a, b) => {
+                const catA = CATEGORY_SORT_ORDER.indexOf(a.category);
+                const catB = CATEGORY_SORT_ORDER.indexOf(b.category);
+                const rankA = catA === -1 ? CATEGORY_SORT_ORDER.length : catA;
+                const rankB = catB === -1 ? CATEGORY_SORT_ORDER.length : catB;
+                if (rankA !== rankB) return rankA - rankB;
+                if (rankA === CATEGORY_SORT_ORDER.length && a.category !== b.category) return a.category.localeCompare(b.category);
+                return a.weaponName.localeCompare(b.weaponName);
+            });
 
             const filteredChoices = distinctChoices
                 .filter(w => fuzzyMatch(focusedValue, w.weaponName))
@@ -554,7 +614,7 @@ client.on('interactionCreate', async interaction => {
         const mpBuildsPromise = Loadout.find({ weaponKey, mode: 'MP' }).lean();
 
         const prefs = await prefsPromise;
-        const argPrivate = interaction.options.getBoolean('private');
+        const argPrivate = interaction.options.getBoolean('hidden');
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
         await interaction.deferReply({ ephemeral: isEphemeral });
 
@@ -1017,7 +1077,7 @@ client.on('interactionCreate', async interaction => {
                     followUp: async (payload) => interaction.followUp(payload),
                     // Button interactions have no `.options` resolver at all (that only exists on
                     // slash command interactions). Commands re-used via nav buttons call things like
-                    // interaction.options.getBoolean('private'), which would otherwise throw
+                    // interaction.options.getBoolean('hidden'), which would otherwise throw
                     // "Cannot read properties of undefined". Stub it out safely.
                     options: {
                         getBoolean: () => null, getString: () => null, getInteger: () => null,
@@ -1553,26 +1613,72 @@ client.on('interactionCreate', async interaction => {
             const query = interaction.fields.getTextInputValue('query');
             const matches = await resolveManagePanelMatches(group, query);
 
+            // "Search Again" button (2026-07-12) -- re-opens the same search modal from THIS reply,
+            // so a second search doesn't require scrolling back up to the original panel message.
+            const searchAgainRow = { type: 1, components: [{ type: 2, style: 2, label: 'Search Again', custom_id: `mng_act_${group}_${action}` }] };
+
             if (matches.length === 0) {
-                return interaction.reply({ content: `❌ No matches found for "${query}".`, ephemeral: true });
+                return interaction.reply({ content: `❌ No matches found for "${query}".`, components: [searchAgainRow], ephemeral: true });
             }
 
+            // BUG FIX (2026-07-12, found live -- "ffar"/"dlq"/"shadow" all failed with "Something
+            // went wrong. Try again."): Discord's API does not allow responding to a MODAL_SUBMIT
+            // interaction with another modal at all -- confirmed directly against the installed
+            // discord.js v14.26.4: `ModalSubmitInteraction.prototype.showModal` is `undefined`,
+            // unlike Button/StringSelectMenu interactions, which both implement it. So a single
+            // match resolved straight from THIS search modal can never chain into
+            // resolveManagePanelAction's showModal() call for Edit -- it always threw before the
+            // interaction was ever acknowledged, which is exactly what surfaced as Discord's
+            // generic client-side failure toast. (Delete was never affected -- it replies with a
+            // plain Confirm/Cancel message, which modal-submit interactions CAN do.) Only a
+            // BUTTON or SELECT MENU click can open a modal, so a single Edit match now needs one
+            // extra click through a button first, stashed in `pendingManageEdits` the same way the
+            // other pending-action Maps in this file work.
             if (matches.length === 1) {
-                return await resolveManagePanelAction(interaction, group, action, matches[0]);
+                if (action !== 'edit') {
+                    return await resolveManagePanelAction(interaction, group, action, matches[0]);
+                }
+                const token = randomUUID().slice(0, 8);
+                pendingManageEdits.set(token, { group, match: matches[0] });
+                setTimeout(() => pendingManageEdits.delete(token), 10 * 60 * 1000).unref();
+                return interaction.reply({
+                    content: `🔎 Found **${matches[0].label}** -- click below to edit:`,
+                    components: [
+                        { type: 1, components: [{ type: 2, style: 1, label: 'Edit', custom_id: `mng_editbtn_${token}` }] },
+                        searchAgainRow
+                    ],
+                    ephemeral: true
+                });
             }
 
             // Multiple matches -- disambiguate via a select menu rather than guessing which one was
             // meant. NOTE (Components V2 lesson, see CLAUDE.md): a select menu (type 3) still needs
             // an Action Row (type 1) wrapper, even though this particular reply isn't a V2 container.
+            // A select-menu interaction DOES support showModal() directly (unlike modal-submit, see
+            // above), so Edit's `mng_pick_` handler further down doesn't need the same button
+            // detour -- only the single-match-straight-from-a-modal-submit case does.
             const options = matches.map(m => ({
                 label: m.label.slice(0, 100),
                 value: group === 'draws' ? `${m.id}|${m.type}` : m.id
             }));
             return interaction.reply({
                 content: `🔎 Found **${matches.length}** matches for "${query}" -- pick one:`,
-                components: [{ type: 1, components: [{ type: 3, custom_id: `mng_pick_${group}_${action}`, placeholder: 'Select one...', options }] }],
+                components: [
+                    { type: 1, components: [{ type: 3, custom_id: `mng_pick_${group}_${action}`, placeholder: 'Select one...', options }] },
+                    searchAgainRow
+                ],
                 ephemeral: true
             });
+        }
+
+        if (customId.startsWith('mng_editbtn_')) {
+            const token = customId.replace('mng_editbtn_', '');
+            const pending = pendingManageEdits.get(token);
+            pendingManageEdits.delete(token);
+            if (!pending) {
+                return interaction.reply({ content: '❌ This has expired -- please search again.', ephemeral: true });
+            }
+            return await resolveManagePanelAction(interaction, pending.group, 'edit', pending.match);
         }
 
         // NOTE (fixed during review): this used to fetch unconditionally before branching on
@@ -1774,12 +1880,13 @@ client.on('interactionCreate', async interaction => {
 
         // --- ADMIN ROUTE C: BULK ADD/REPLACE CALENDAR EVENTS ---
         // custom_id is `modal_calendar_bulk_{add|replace}` -- `add` (new 2026-07-12, "Add Multiple")
-        // appends onto the existing calendar; `replace` is the pre-existing wholesale-overwrite
-        // behavior ("Replace Multiple"). Parses a bulk bullet-separated paste — "M/D - M/D | Title"
-        // or "M/D - All Season | Title" — into { title, startDate, endDate, isOngoing } objects via
-        // parseBulkEvents either way.
+        // appends onto the existing calendar; `replace`'s semantics changed the same day Draws'
+        // did -- was a wholesale wipe-then-replace of the whole array, now upserts by fuzzy-matched
+        // title via upsertEventsByTitle (update in place if found, insert if not) -- Purge already
+        // covers a full wipe, so Replace doesn't need to double as one anymore. Parses a bulk
+        // bullet-separated paste — "M/D - M/D | Title" or "M/D - All Season | Title" — into
+        // { title, startDate, endDate, isOngoing } objects via parseBulkEvents either way.
         if (customId === 'modal_calendar_bulk_add' || customId === 'modal_calendar_bulk_replace') {
-            await interaction.deferReply({ ephemeral: true });
             const mode = customId === 'modal_calendar_bulk_add' ? 'add' : 'replace';
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
             const parsedEvents = parseBulkEvents(bulkText);
@@ -1791,14 +1898,33 @@ client.on('interactionCreate', async interaction => {
                 isOngoing: e.isOngoing
             }));
 
-            seasonalDoc.calendar = mode === 'add' ? [...seasonalDoc.calendar, ...newEventDocs] : newEventDocs;
+            const prevCalendar = seasonalDoc.calendar;
+            let finalArray, updatedCount = 0, insertedCount = newEventDocs.length;
+            if (mode === 'add') {
+                finalArray = [...seasonalDoc.calendar, ...newEventDocs];
+            } else {
+                ({ finalArray, updatedCount, insertedCount } = upsertEventsByTitle(seasonalDoc.calendar, newEventDocs));
+            }
 
             // AUTO-SORT: Keep the timeline in chronological order
-            seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
-
+            finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+            seasonalDoc.calendar = finalArray;
             await seasonalDoc.save();
-            const verb = mode === 'add' ? 'Added' : 'Replaced the calendar with';
-            return interaction.followUp({ content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${verb} ${newEventDocs.length} events (now **${seasonalDoc.calendar.length}** total). Sorted chronologically.` });
+
+            const undoToken = registerUndo(`Bulk ${mode === 'add' ? 'Add' : 'Replace'} Calendar`, async () => {
+                const doc = await SeasonalData.findOne({ docType: 'global' });
+                doc.calendar = prevCalendar;
+                await doc.save();
+            });
+
+            const summary = mode === 'add'
+                ? `Added ${insertedCount} event(s) (now **${finalArray.length}** total).`
+                : `Updated ${updatedCount}, added ${insertedCount} (now **${finalArray.length}** total).`;
+            return interaction.reply({
+                content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.`,
+                components: [undoButtonRow(undoToken)],
+                ephemeral: true
+            });
         }
 
         // --- ADMIN ROUTE C.1: BULK REMOVE CALENDAR EVENTS ---
@@ -1919,8 +2045,11 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply({ ephemeral: true });
             const slot = customId === 'modal_patch_urls_1' ? 1 : 2;
             const current = getOrCreateCurrentPatch();
-            const rawUrls = interaction.fields.getTextInputValue('urls') || '';
-            const newSlice = rawUrls.split(/[\n,]+/).map(url => url.trim()).filter(url => url.startsWith('http'));
+            // Each of the 5 URLs is now its own field (2026-07-12) -- a blank field means "no image
+            // in this slot", so the slice can have gaps skipped rather than needing every field filled.
+            const newSlice = [0, 1, 2, 3, 4]
+                .map(i => interaction.fields.getTextInputValue(`url${i}`)?.trim())
+                .filter(url => url && url.startsWith('http'));
 
             // URLs 1 owns images[0..4], URLs 2 owns images[5..9] -- each submit only replaces its own
             // half, preserving whatever the other slot has saved.
