@@ -37,6 +37,7 @@ require('dotenv').config(); // Secure injection of environment variables from lo
 
 const mongoose = require('mongoose'); // Add to dependency imports
 const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
+const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
 
 // CONNECT TO MONGO DB ATLAS STORAGE CLUSTER
 mongoose.connect(process.env.MONGODB_URI)
@@ -208,6 +209,17 @@ async function runCloudinaryCleanup() {
         const result = await pruneExpiredThumbnails(currentUrls);
         if (result.deletedCount > 0) {
             console.log(`🧹 Cloudinary cleanup: pruned ${result.deletedCount} expired, unused draw thumbnail(s).`);
+        }
+
+        // PATCH NOTES: season-based retention, not age-based -- keep exactly the same set of
+        // patch note `_id`s that /patch notes' own history dropdown shows (the last 5 entries,
+        // matching patchnotes.js's `recentPatches = seasonalDoc.patchNotes.slice(-5)`). A season
+        // that rolls off the back of that list gets its whole Cloudinary folder pruned on the very
+        // next sweep, regardless of how many days it's been cached -- see utils/patchNotesCache.js.
+        const keepPatchIds = new Set((seasonalDoc?.patchNotes || []).slice(-5).map(p => p._id.toString()));
+        const patchResult = await pruneOrphanedPatchFolders(keepPatchIds);
+        if (patchResult.deletedCount > 0) {
+            console.log(`🧹 Cloudinary cleanup: pruned ${patchResult.deletedCount} patch-notes image(s) from seasons no longer in the history dropdown.`);
         }
     } catch (error) {
         // SECURITY: never fall back to logging the raw `error` object here -- a Cloudinary error's
@@ -2094,9 +2106,26 @@ client.on('interactionCreate', async interaction => {
             const current = getOrCreateCurrentPatch();
             // Each of the 5 URLs is now its own field (2026-07-12) -- a blank field means "no image
             // in this slot", so the slice can have gaps skipped rather than needing every field filled.
-            const newSlice = [0, 1, 2, 3, 4]
+            const rawUrls = [0, 1, 2, 3, 4]
                 .map(i => interaction.fields.getTextInputValue(`url${i}`)?.trim())
                 .filter(url => url && url.startsWith('http'));
+
+            // Re-host each submitted URL into this season's own Cloudinary folder (2026-07-13, see
+            // utils/patchNotesCache.js) keyed by this patch note's own `_id` -- NOT the season
+            // title, since a title can be renamed later via `modal_season_titles_deadlines` without
+            // touching this doc's `_id`. `slotOffset` maps each field to its ABSOLUTE position in
+            // images[] (URLs 1 = 0-4, URLs 2 = 5-9) so re-submitting a slot overwrites the same
+            // cached asset in place rather than accumulating duplicates. A Cloudinary hiccup must
+            // never block the save -- cachePatchImage() falls back to the raw URL on failure, same
+            // philosophy as resolveThumbnail() for draw thumbnails.
+            const { cachePatchImage } = require('./utils/patchNotesCache');
+            const patchId = current._id.toString();
+            const slotOffset = slot === 1 ? 0 : 5;
+            const newSlice = [];
+            for (let i = 0; i < rawUrls.length; i++) {
+                const result = await cachePatchImage(patchId, slotOffset + i, rawUrls[i]);
+                newSlice.push(result.url);
+            }
 
             // URLs 1 owns images[0..4], URLs 2 owns images[5..9] -- each submit only replaces its own
             // half, preserving whatever the other slot has saved.

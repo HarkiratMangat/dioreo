@@ -23,7 +23,12 @@ const SeasonalDataSchema = new mongoose.Schema({
         // not the full "Balance Changes for..." string — see patchnotes.js
         description: { type: String, default: '' }, // Optional extra info; left blank shows nothing
         releaseDate: { type: Date },
-        images: [{ type: String }] // Cloudinary URLs
+        // Cloudinary URLs (2026-07-13) -- re-hosted from whatever external URL the admin typed, via
+        // utils/patchNotesCache.js, keyed by this subdocument's own `_id` (see that file for why:
+        // season-based retention, not the draws' 45-day age window -- an image stays cached as long
+        // as this entry is still one of the 5 most recent in patchNotes[], pruned once it rolls off
+        // /patch notes' own history dropdown regardless of age).
+        images: [{ type: String }]
     }],
 
     // /draws
