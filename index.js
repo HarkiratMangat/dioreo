@@ -99,12 +99,6 @@ client.on('error', (error) => {
 client.commands = new Collection();
 const commands = [];
 
-// Interim category display order for /all's autocomplete + result list (2026-07-12) -- Harkirat
-// confirmed AR/SMG/LMG so far and is confirming the rest of the sequence separately; extend this
-// array once he does rather than guessing the remaining order. Any category not listed here sorts
-// after all of these (alphabetically among itself), so a not-yet-decided category never disappears.
-const CATEGORY_SORT_ORDER = ['AR', 'SMG', 'LMG'];
-
 // ==========================================
 // PHASE 4: APPLICATION COMMAND REGISTRATION
 // ==========================================
@@ -525,18 +519,13 @@ client.on('interactionCreate', async interaction => {
             // BUG FIX (2026-07-12, found live): this list had no sort at all -- Mongo returns docs
             // in natural/insertion order, so whichever weapon happened to be migrated/added FIRST
             // (LOCUS, from the original builds.xlsx migration) always showed up first regardless of
-            // category or alphabetical order. Now sorts by category (per CATEGORY_SORT_ORDER --
-            // interim order, Harkirat's confirming the final AR/SMG/LMG/... sequence separately;
-            // anything not yet listed falls back after the known categories, alphabetically among
-            // themselves) then alphabetically by weapon name within each category. Only affects
-            // display order -- doesn't change which weapons match the typed query.
+            // category or alphabetical order. Originally sorted by a hand-confirmed CATEGORY_SORT_ORDER
+            // list (AR/SMG/LMG only, pending Harkirat confirming the rest); per his 2026-07-12
+            // follow-up request, dropped that in favor of just sorting category alphabetically too,
+            // then weapon name alphabetically within each category. Only affects display order --
+            // doesn't change which weapons match the typed query.
             distinctChoices.sort((a, b) => {
-                const catA = CATEGORY_SORT_ORDER.indexOf(a.category);
-                const catB = CATEGORY_SORT_ORDER.indexOf(b.category);
-                const rankA = catA === -1 ? CATEGORY_SORT_ORDER.length : catA;
-                const rankB = catB === -1 ? CATEGORY_SORT_ORDER.length : catB;
-                if (rankA !== rankB) return rankA - rankB;
-                if (rankA === CATEGORY_SORT_ORDER.length && a.category !== b.category) return a.category.localeCompare(b.category);
+                if (a.category !== b.category) return a.category.localeCompare(b.category);
                 return a.weaponName.localeCompare(b.weaponName);
             });
 
@@ -652,8 +641,11 @@ client.on('interactionCreate', async interaction => {
         // LIBRARY SERIALIZATION BYPASS: raw rest.patch instead of interaction.followUp(), same
         // reasoning as every other Components V2 command — discord.js's high-level methods don't
         // reliably handle raw V2 JSON (no builder class exists for Container/type 17).
+        // Category-wide build list for the "Browse other builds" dropdown -- every weapon sharing
+        // this weapon's category, mirroring /all's own per-category accent color resolution above.
+        const categoryBuilds = await Loadout.find({ category: mpBuilds[0].category, mode: 'MP' }).lean();
         const accentColor = getMpCategoryAccent(mpBuilds[0].category);
-        const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: accentColor, idPrefix: 'mp', isEphemeral });
+        const cardPayload = buildLoadoutCard(mpBuilds, buildIndex, { color: accentColor, idPrefix: 'mp', isEphemeral, categoryBuilds });
         const { sendV2Payload } = require('./utils/sendV2Payload');
         return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
     }
@@ -832,6 +824,58 @@ client.on('interactionCreate', async interaction => {
             }
 
             return await resolveManagePanelAction(interaction, group, action, match);
+        }
+
+        // F. LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump
+        // straight to a different weapon's card without re-running the slash command. Selected
+        // value is just a bare `weaponKey` (see utils/loadoutRender.js's buildCategoryBrowseRow --
+        // this used to also encode a build index for a specific build variant, simplified to
+        // weapon-only per Harkirat's follow-up request; always opens at build index 0). Mode is
+        // inferred from which dropdown fired ('mpbrowse' vs 'dmzbrowse'), matching the
+        // dmz/mp-prefixed pagination convention used everywhere else for these two card types.
+        //
+        // BUG FIX (found live, 2026-07-13): this used to be misplaced inside `if (interaction.
+        // isButton())` further down -- a plain copy-paste-adjacent mistake when it was first added.
+        // A StringSelectMenuInteraction never satisfies `isButton()`, so the entire block was dead
+        // code: no error, no log, nothing -- Discord just timed out the interaction after ~3s with
+        // a bare "This interaction failed" and the bot never even attempted to handle it. Moved
+        // into the correct `isStringSelectMenu()` block (this one) where it's actually reachable.
+        if (interaction.customId === 'mpbrowse' || interaction.customId === 'dmzbrowse') {
+            const Loadout = require('./models/Loadout');
+            const { buildLoadoutCard, getMpCategoryAccent } = require('./utils/loadoutRender');
+            const isDmz = interaction.customId === 'dmzbrowse';
+            const mode = isDmz ? 'DMZ' : 'MP';
+            const gunKey = interaction.values[0];
+
+            // Defer FIRST, before any DB round-trip -- matches the dmz/mp pagination handler
+            // further down ("PRO FIX: defer first"), for the same reason: an awaited query ahead
+            // of the ack risks missing Discord's ~3s interaction window, which surfaces to the
+            // user as a bare "This interaction failed" with no detail.
+            await interaction.deferUpdate();
+            const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
+
+            // .lean() -- read-only, same as the pagination handler below.
+            const matchingBuilds = await Loadout.find({ weaponKey: gunKey, mode }).lean();
+            if (!matchingBuilds || matchingBuilds.length === 0) {
+                // Shouldn't happen (the option came from a live DB query moments ago), but guard
+                // against a build being deleted via /manage in the gap between render and click
+                // rather than throwing on `matchingBuilds[0].category` below.
+                try {
+                    await interaction.followUp({ content: '❌ That weapon no longer has any builds saved.', ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of missing browse-target builds (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            const categoryBuilds = isDmz
+                ? await Loadout.find({ mode: 'DMZ' }).lean()
+                : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
+            const cardPayload = buildLoadoutCard(matchingBuilds, 0,
+                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
+
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
     }
 
@@ -1161,8 +1205,11 @@ client.on('interactionCreate', async interaction => {
             // MP_CATEGORY_ACCENT) -- DMZ switched from its own fixed identity color (#1c1c1c) to
             // this same mapping 2026-07-12 (Section 5 of the batch) -- so paging Prev/Next doesn't
             // flip the card back to the old flat color for either mode.
+            const categoryBuilds = isDmz
+                ? await Loadout.find({ mode: 'DMZ' }).lean()
+                : await Loadout.find({ category: matchingBuilds[0].category, mode: 'MP' }).lean();
             const cardPayload = buildLoadoutCard(matchingBuilds, newIndex,
-                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral });
+                { color: getMpCategoryAccent(matchingBuilds[0].category), idPrefix: isDmz ? 'dmz' : 'mp', isEphemeral, categoryBuilds });
 
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });

@@ -92,6 +92,54 @@ function toBlockquote(str) {
     return str.split('\n').map(line => `> ${line}`).join('\n');
 }
 
+// "Browse other builds in this category" dropdown (added 2026-07-12, per Harkirat's request) --
+// lets a user jump straight to a different weapon's card without re-running the slash command,
+// instead of just paging within the current weapon's own builds. `categoryBuilds` is every
+// Loadout doc sharing the current card's scope (same `category`+mode for MP, or every `mode:
+// 'DMZ'` doc for DMZ, since /dmz has no per-category commands the way MP does).
+//
+// NOTE (simplified during review, per Harkirat's follow-up request): originally listed every
+// INDIVIDUAL build with a "[Build N of M]" suffix on multi-build weapons -- dropped in favor of
+// one entry per WEAPON, since browsing to a specific build variant is already what Prev/Next is
+// for. Selecting a weapon here always opens it at build index 0. `weaponKey` is deduped via a Map
+// (first doc encountered per key wins, which is fine -- every doc for a given weaponKey shares
+// the same weaponName/category), then sorted alphabetically by weapon name.
+function buildCategoryBrowseRow(categoryBuilds, activeWeaponKey, idPrefix, scopeLabel) {
+    if (!categoryBuilds || categoryBuilds.length === 0) return null;
+
+    const weaponMap = new Map();
+    for (const doc of categoryBuilds) {
+        if (!weaponMap.has(doc.weaponKey)) weaponMap.set(doc.weaponKey, doc.weaponName);
+    }
+
+    // No dropdown at all if this category/mode only has the one weapon already being viewed --
+    // nothing to browse TO.
+    if (weaponMap.size < 2) return null;
+
+    const options = Array.from(weaponMap.entries())
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .map(([weaponKey, weaponName]) => ({
+            label: weaponName,
+            value: weaponKey,
+            default: weaponKey === activeWeaponKey
+        }));
+
+    // Discord select menus cap at 25 options -- silently truncated rather than erroring, since a
+    // category/mode this large isn't expected at the collection's current size (~100-200 docs
+    // total across ALL categories combined, see models/Loadout.js).
+    const truncated = options.slice(0, 25);
+
+    return {
+        type: 1,
+        components: [{
+            type: 3,
+            custom_id: `${idPrefix}browse`,
+            placeholder: `Browse other ${scopeLabel} weapons`,
+            options: truncated
+        }]
+    };
+}
+
 // Shared Components V2 card builder for /dmz and the MP category commands (/all, /<category>) --
 // same layout for both, differing only in accent color and the button custom_id prefix ('dmz' vs
 // 'mp') so index.js's interaction router can tell a click apart and query the right mode.
@@ -104,7 +152,7 @@ function toBlockquote(str) {
 // bold text, and each attachment line is backtick-wrapped to match the Gunsmith Code code-block
 // styling. V2 still has no equivalent to an embed's *inline fields*, so those two sections stack
 // vertically rather than sitting side-by-side.
-function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false }) {
+function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false, categoryBuilds = null }) {
     const activeBuild = builds[index];
     const attachmentLines = activeBuild.attachments.map(att => `• \`${att}\``).join('\n');
     const lastUpdatedUnix = Math.floor(new Date(activeBuild.lastUpdated).getTime() / 1000);
@@ -174,9 +222,22 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false 
 
     const containerPayload = { type: 17, accent_color: color, components: containerComponents };
 
-    // "Share Publicly" stays its own row OUTSIDE the container (unlike the buttons above) — same
-    // convention as every other command in the bot, see utils/shareButton.js.
-    const components = withShareButton([containerPayload], isEphemeral);
+    // "Browse other builds" dropdown -- a SIBLING row below the container, not nested inside it,
+    // per Harkirat's explicit request. NOTE: this is NOT because a select menu can't nest inside a
+    // Container in general -- /settings and /manage both do exactly that successfully (see
+    // settings.js's region/timezone/style/accent-color dropdowns, all pushed into the same
+    // containerComponents array as their surrounding Text Displays). The first live attempt at
+    // this dropdown (nested inside the container, same as those) failed with "This interaction
+    // failed" on click -- root cause not yet confirmed, don't assume it was the nesting itself.
+    const scopeLabel = activeBuild.mode === 'DMZ' ? 'DMZ' : activeBuild.category;
+    const browseRow = buildCategoryBrowseRow(categoryBuilds, activeBuild.weaponKey, idPrefix, scopeLabel);
+
+    const outerComponents = [containerPayload];
+    if (browseRow) outerComponents.push(browseRow);
+
+    // "Share Publicly" stays its own row OUTSIDE the container too — same convention as every
+    // other command in the bot, see utils/shareButton.js.
+    const components = withShareButton(outerComponents, isEphemeral);
 
     return { components, flags: 32768 };
 }

@@ -1197,9 +1197,11 @@ throwing) plus a long follow-up list. All addressed same session:
   - Reworded the single-Delete confirm text — "This cannot be undone directly, but you'll get an
     Undo button right after" read as self-contradictory. Now: "You'll get an Undo button right
     after, in case you change your mind."
-- **`/draw prices`**: global nav row moved INSIDE the container now (was a separate sibling
-  element after it) — new order: entries > subpage pagination > nav row > divider > "Switch
-  between..." line > region button.
+- **`/draw prices`**: global nav row moved INSIDE the container (was a separate sibling element
+  after it) — order at the time: entries > subpage pagination > nav row > divider > "Switch
+  between..." line > region button. **SUPERSEDED 2026-07-13** — see the follow-up entry below for
+  the actual final layout; this nav-row-inside placement turned out to be a real inconsistency
+  with `/calendar`/`/draws` and was corrected.
 - **Divider spacing "large across the board"** — extended past the earlier per-file passes to
   catch two stragglers: `/settings`' divider right before the footer, and `/manage`'s title divider
   (both were still `spacing: 1`).
@@ -1237,11 +1239,10 @@ throwing) plus a long follow-up list. All addressed same session:
 - **Loadout card footer**: "Last updated" → "Updated".
 - **`/all`'s autocomplete/result list had no sort at all** — Mongo returns docs in natural/insertion
   order, so LOCUS (the very first weapon ever migrated from `builds.xlsx`) always showed first
-  regardless of category or name. Fixed with a `CATEGORY_SORT_ORDER` array (`index.js`) — currently
-  just `['AR', 'SMG', 'LMG']`, Harkirat is confirming the rest of the sequence separately; extend
-  this array rather than guessing when he does. Anything not yet listed sorts after all known
-  categories (alphabetically among itself), so a not-yet-decided category never disappears from the
-  list. Within a category, sorted alphabetically by weapon name.
+  regardless of category or name. First fixed with a hand-confirmed `CATEGORY_SORT_ORDER` array
+  (`AR`/`SMG`/`LMG` only, pending Harkirat confirming the rest); per his 2026-07-12 follow-up
+  request, that array was dropped entirely — category now just sorts alphabetically too, same as
+  weapon name already did within a category. `CATEGORY_SORT_ORDER` no longer exists in `index.js`.
 - **Accent-color extraction switched from a flat pixel average to a SATURATION-WEIGHTED average**
   (`utils/colorExtract.js`) — a flat average washes out toward gray/white for the common case of a
   mostly-pale avatar/banner with one small vibrant feature (Harkirat's own example: an avatar that's
@@ -1259,7 +1260,69 @@ throwing) plus a long follow-up list. All addressed same session:
   appended, matching the same tip convention `/draw prices`' footer already uses.
 - **Explicitly deferred to separate follow-up projects** (Harkirat's own call, not scope-cut
   silently): patch notes Cloudinary caching with season-based retention; `/secondaries` → `/secondary`
-  rename + a `/pistols` alias; a "browse other builds in this category" dropdown on loadout cards.
+  rename + a `/pistols` alias.
+
+## "Browse other builds" dropdown + alphabetical category sort (2026-07-12/13, follow-up)
+- **`/all`'s category sort dropped `CATEGORY_SORT_ORDER` entirely** (see the batch entry above) —
+  Harkirat's explicit follow-up call to just go alphabetical instead of hand-confirming a category
+  order. `index.js`'s autocomplete sort is now `category.localeCompare` then `weaponName.localeCompare`,
+  nothing else.
+- **Loadout cards (`/dmz`, `/all`, `/<category>`) gained a "Browse other builds" select-menu
+  dropdown**, one of the two items previously flagged as deferred future work (see the "Next
+  planned work" list below — now implemented, not still pending). Lets a user jump straight to a
+  different weapon's card without re-running the slash command. `utils/loadoutRender.js`'s
+  `buildCategoryBrowseRow()` builds it; `buildLoadoutCard()` takes a new `categoryBuilds` option
+  (every `Loadout` doc sharing the card's scope — same `category`+`mode:'MP'` for MP cards, or
+  every `mode:'DMZ'` doc for DMZ cards, since `/dmz` has no per-category commands the way MP does)
+  and renders the row only when there's more than one WEAPON to browse to.
+  - **One entry per weapon, not per build** — an earlier version listed every individual build with
+    a "[Build N of M]" suffix (e.g. `SO-14 [Build 1 of 2]`), but that was simplified per Harkirat's
+    follow-up request: selecting a weapon from the dropdown always opens it at build index 0 (Prev/
+    Next already covers browsing between that weapon's own build variants). Deduped by `weaponKey`
+    via a Map, sorted alphabetically by weapon name. Selected option's `value` is just the bare
+    `weaponKey`.
+  - **The dropdown row lives OUTSIDE the container**, as a top-level sibling passed into
+    `withShareButton([containerPayload, browseRow], isEphemeral)` — NOT because Discord disallows a
+    select menu nested inside a Container (a wrong theory floated mid-session; `/settings` and
+    `/manage` both nest selects inside their containers successfully), just per Harkirat's explicit
+    layout preference.
+  - **REAL BUG (found live, 2026-07-13): the select-menu handler was originally placed inside
+    `if (interaction.isButton())` in index.js instead of `if (interaction.isStringSelectMenu())`** —
+    a plain misplacement from when the handler was first added, sitting right after the `set_page_`
+    button handler which reads as adjacent but is actually one whole top-level block away. A
+    `StringSelectMenuInteraction` never satisfies `isButton()`, so the entire handler was dead code:
+    no error, no log, nothing — Discord just timed out the interaction after ~3s with a bare "This
+    interaction failed", and several rounds of plausible-sounding fixes (container-nesting theory,
+    defer-before-query reordering, empty-result guard) never touched the actual problem because none
+    of them were checked against a real firing interaction. Only adding a `console.log` at the very
+    top of `isStringSelectMenu()` and comparing it against a log inside the (unreachable) handler
+    revealed the mismatch. Moved into the correct block, now working. See
+    `[[feedback_verify_fix_actually_works]]` in memory for the general lesson.
+  - **Discord's 25-option select cap is a silent truncation**, not an error — not expected to bite
+    at the collection's current size (~100-200 docs total across ALL categories combined), but if a
+    single category (or all of DMZ) ever exceeds 25 distinct weapons, revisit this rather than
+    assuming every weapon is always reachable through the dropdown.
+  - Added at all 3 render sites that needed it: `commands/dmz.js`'s `execute()`, `index.js`'s MP
+    fallback route (`/all`+`/<category>`), and both the dmz/mp pagination handler AND the browse
+    handler itself (paging or browsing again from an already-browsed card needs the same fresh
+    `categoryBuilds` fetch, not just the initial slash-command response).
+
+## `/draw prices` layout, final correction (2026-07-13)
+Took several wrong attempts to land (see `[[feedback_check_sibling_code_before_guessing]]` in
+memory) — the ACTUAL final, Harkirat-confirmed structure:
+- **Container**: title > divider > entries (no divider before pagination) > pagination row >
+  divider > "Switch between..." hint line > region-switch button row. The region-switch button is
+  the container's LAST item.
+- **Outside the container, as a separate top-level sibling**: the global nav row
+  (`buildGlobalNavRow('nav_prices')`) — matching `/calendar`'s and `/draws`' own convention of
+  passing the nav row into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)`
+  rather than nesting it. This command is the only one of the three with extra content (hint line +
+  region button) that has to sit BETWEEN the container's own entries and the nav row, but the nav
+  row still ends up last overall, just with no divider needed between it and the container (two
+  separate top-level components already get Discord's own inter-component spacing).
+- **No divider between the last entry and the pagination row** — this was explicitly requested
+  multiple times and got dropped by mistake mid-session when a blanket "large divider spacing
+  across the board" pass over-applied; don't reintroduce it.
 
 ## Known open issues (not yet fixed — flagged, not silently patched)
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
@@ -1275,17 +1338,15 @@ throwing) plus a long follow-up list. All addressed same session:
   right now vs. what the real version needs to do.
 - The 2026-07-12 batch (draw prices, `/manage`, `/settings`, slash-command overpass, color
   repalette) is now fully complete — see its own CLAUDE.md sections above for detail.
-- **Three items explicitly deferred as separate follow-up projects (2026-07-12 night), not silently
-  scope-cut:**
+- **Two items still explicitly deferred as separate follow-up projects (2026-07-12 night), not
+  silently scope-cut:**
   - Patch notes Cloudinary caching with season-based retention (folder per season title, kept as
     long as that season is within the "previous 5 seasons" dropdown, deleted after) instead of the
     current plain-URL storage / the draws' 45-day window.
   - `/secondaries` → `/secondary` rename + a `/pistols` alias registered as a genuinely separate
     command querying the same category.
-  - A "browse other builds in this category" dropdown added to loadout cards, letting a user jump
-    straight to a different weapon's card without re-running the slash command.
-  - Also: `CATEGORY_SORT_ORDER` in `index.js` only has `['AR', 'SMG', 'LMG']` confirmed so far —
-    extend it once Harkirat confirms the rest of the category sequence.
+  - (The "browse other builds in this category" dropdown and `/all`'s category sort, both also
+    flagged here previously, are now DONE — see the follow-up section above.)
 - Not yet verified: Harkirat manually exercising every `/manage` panel action (including the new
   combined-line Add Draw field, upsert-by-title Replace, granular Purge scopes, every Confirm/Cancel
   step, and every Undo button), the new `/settings` 2-page layout, and the new Cloudinary-cache

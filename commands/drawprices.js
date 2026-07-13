@@ -217,9 +217,14 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         indicatorCustomId: 'price_subpage_indicator'
     });
 
-    // Moved INSIDE the container, directly under the entries/pagination (2026-07-12, Harkirat's
-    // request) -- was a separate sibling element after the whole container. New order: entries >
-    // subpage pagination > global nav row > divider > "Switch between..." line > region button.
+    // BUG FIX (found live, 2026-07-13): the global nav row used to be nested INSIDE the container,
+    // sitting BEFORE the divider/hint line/region button rather than after them -- crammed directly
+    // under the pagination arrows with no separation, and structurally inconsistent with every
+    // other seasonal command (/calendar, /draws), which both pass their nav row as a separate
+    // top-level sibling into `withShareButton([containerPayload, globalNavigationRow], isEphemeral)`
+    // rather than nesting it. Fixed per Harkirat's exact spec: the divider/hint line/region button
+    // all STAY inside the container (region button is the container's LAST item) -- only the nav
+    // row itself moves OUTSIDE, as its own sibling below the container, matching calendar/draws.
     const globalNavigationRow = buildGlobalNavRow('nav_prices');
 
     // All dividers now spacing 2 (2026-07-12, "large spacing across the board" -- overrides the
@@ -236,8 +241,9 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             buildTitleBlock(region.label, emojis.drawPrices, 'Breakdown of Draw Prices', 2, true),
             { type: 14, spacing: 2, divider: true },
             ...entrySections,
-            ...(paginationRow ? [{ type: 14, spacing: 2, divider: true }, paginationRow] : []),
-            globalNavigationRow,
+            // NO divider between the last entry and the pagination row (Harkirat's explicit,
+            // repeated correction) -- pagination sits directly under the entries with no separator.
+            ...(paginationRow ? [paginationRow] : []),
             { type: 14, spacing: 2, divider: true },
             // One-line footer (was two `-#` lines) per example_reformat.json.
             { type: 10, content: `-# Switch between viewing 10 CP or 30 CP region prices. (Tip: check out \`/settings\`)` },
@@ -267,7 +273,10 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
         ]
     };
 
-    return withShareButton([containerPayload], isEphemeral);
+    // Nav row lives OUTSIDE the container, as a separate top-level sibling -- matches /calendar
+    // and /draws' own convention (see calendar.js/draws.js), not nested inside like every other
+    // element in this command.
+    return withShareButton([containerPayload, globalNavigationRow], isEphemeral);
 }
 
 module.exports = {

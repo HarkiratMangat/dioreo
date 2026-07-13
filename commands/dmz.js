@@ -82,8 +82,12 @@ module.exports = {
         // on the weapon's category the same way /all's does, instead of every DMZ build looking
         // identical regardless of weapon type. Deliberately still NOT part of the avatar/banner
         // accent-color system (same as MP loadouts) -- category identity, not personalization.
+        // Category-wide build list for the "Browse other builds" dropdown -- /dmz has no
+        // per-category commands the way MP does, so its dropdown scope is every DMZ build, not
+        // just this weapon's own category.
+        const categoryBuilds = await Loadout.find({ mode: 'DMZ' }).lean();
         const accentColor = getMpCategoryAccent(builds[0].category);
-        const cardPayload = buildLoadoutCard(builds, buildIndex, { color: accentColor, idPrefix: 'dmz', isEphemeral });
+        const cardPayload = buildLoadoutCard(builds, buildIndex, { color: accentColor, idPrefix: 'dmz', isEphemeral, categoryBuilds });
         return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
     }
 };
