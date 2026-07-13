@@ -218,7 +218,7 @@ function getAvailableSources(data) {
     });
 }
 
-// `data` is whatever utils/colorPalette.js's refreshAllPalettes() returned. Banner/decoration/
+// `data` is whatever utils/colorPalette.js's getPalettePanelData() returned. Banner/decoration/
 // nameplate are only present as KEYS at all when the user actually has that source equipped
 // (colorPalette.js only sets them inside an `if (info.X)` guard) -- so key PRESENCE means "has it",
 // while the palette VALUE can still be `null` if extraction genuinely failed on a source they do

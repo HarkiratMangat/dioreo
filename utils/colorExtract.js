@@ -170,7 +170,19 @@ const KMEANS_COUNT = 8;
 const KMEANS_ITERATIONS = 12;
 const MERGE_THRESHOLD = 30; // Euclidean RGB distance
 
-function kMeansCluster(pixels, k, iterations) {
+// EVENT-LOOP FIX (2026-07-14, found live): this loop used to run fully synchronously start-to-
+// finish -- fine in isolation, but on Render's free-tier shared CPU it was slow enough to block
+// Node's single event loop for long stretches. Since this bot is single-process, that meant ANY
+// other in-flight Discord interaction (a totally unrelated /manage or /settings click, not just
+// another color request) could miss discord.js's 3-second ACK window and die with a 10062 "Unknown
+// interaction" while this was still crunching. Fixed by `await`-ing a `setImmediate` after every
+// iteration, handing control back to the event loop so a pending deferReply()/deferUpdate() from
+// another interaction gets a chance to fire before the next iteration starts. This is now async and
+// every caller must await it -- doesn't reduce total CPU time, just stops it from monopolizing the
+// loop in one unbroken burst.
+const yieldToEventLoop = () => new Promise(resolve => setImmediate(resolve));
+
+async function kMeansCluster(pixels, k, iterations) {
     if (pixels.length === 0) return [];
     if (pixels.length <= k) {
         return pixels.map(p => ({ hex: (p.r << 16) | (p.g << 8) | p.b, percent: Math.round(100 / pixels.length) }));
@@ -184,6 +196,16 @@ function kMeansCluster(pixels, k, iterations) {
 
     let assignments = new Array(pixels.length).fill(0);
     for (let iter = 0; iter < iterations; iter++) {
+        // EARLY-CONVERGENCE (2026-07-14, CPU fix): track whether ANY pixel changed cluster this pass.
+        // k-means on image color data typically stabilizes in ~4-6 passes, well before the fixed 12
+        // cap -- once no assignment changes, the centroid recompute below produces identical centroids
+        // and every remaining iteration is a pure no-op, so we can stop. The returned clusters are
+        // computed from `assignments` after the loop (not from centroids), so breaking here yields a
+        // BYTE-IDENTICAL result to running the full 12 -- determinism (and therefore the Refresh
+        // Colors change-detection that depends on it) is fully preserved; this only removes wasted
+        // repeat passes. Verified directly: capped-12 vs early-break produce identical output on real
+        // avatar/banner pixels.
+        let changed = false;
         for (let i = 0; i < pixels.length; i++) {
             let minDist = Infinity, minIdx = 0;
             for (let c = 0; c < centroids.length; c++) {
@@ -191,8 +213,9 @@ function kMeansCluster(pixels, k, iterations) {
                 const d = (pixels[i].r - cen.r) ** 2 + (pixels[i].g - cen.g) ** 2 + (pixels[i].b - cen.b) ** 2;
                 if (d < minDist) { minDist = d; minIdx = c; }
             }
-            assignments[i] = minIdx;
+            if (assignments[i] !== minIdx) { assignments[i] = minIdx; changed = true; }
         }
+        if (!changed) break;
         const sums = Array.from({ length: k }, () => ({ r: 0, g: 0, b: 0, count: 0 }));
         for (let i = 0; i < pixels.length; i++) {
             const s = sums[assignments[i]];
@@ -201,6 +224,7 @@ function kMeansCluster(pixels, k, iterations) {
         for (let c = 0; c < k; c++) {
             if (sums[c].count > 0) centroids[c] = { r: sums[c].r / sums[c].count, g: sums[c].g / sums[c].count, b: sums[c].b / sums[c].count };
         }
+        await yieldToEventLoop();
     }
 
     const sums = Array.from({ length: k }, () => ({ r: 0, g: 0, b: 0, count: 0 }));
@@ -269,7 +293,7 @@ async function getColorPalette(imageUrl, count = KMEANS_COUNT) {
     }
 
     const overCluster = Math.ceil(count * 1.5);
-    const clustered = mergeCloseClusters(kMeansCluster(pixels, overCluster, KMEANS_ITERATIONS), MERGE_THRESHOLD);
+    const clustered = mergeCloseClusters(await kMeansCluster(pixels, overCluster, KMEANS_ITERATIONS), MERGE_THRESHOLD);
     return clustered.slice(0, count);
 }
 

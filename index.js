@@ -1188,7 +1188,7 @@ client.on('interactionCreate', async interaction => {
             const isEphemeral = (prefs.settingsVisibility || 'public').toUpperCase() !== 'PUBLIC';
 
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
-            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { getPalettePanelData } = require('./utils/colorPalette');
             const { buildColorPalettePanel } = require('./utils/colorPaletteView');
 
             // forceRefresh: true (2026-07-14, Harkirat's explicit request) -- the main "View Colors"
@@ -1196,8 +1196,9 @@ client.on('interactionCreate', async interaction => {
             // extraction/re-fetch" rule, since clicking it is a genuine new look-up action, not a
             // rapid re-render of something already on screen. Page-switch navigation below (B.7)
             // stays cache-only as normal; only this entry point and the explicit "Refresh Colors"
-            // button (B.8) force a real re-extraction.
-            const data = await refreshAllPalettes(interaction, prefs, true);
+            // button (B.8) force a real re-extraction. Extracts ONLY the avatar landing page now (not
+            // all 4 sources) -- other pages lazily extract on navigation (see getPalettePanelData).
+            const data = await getPalettePanelData(interaction, prefs, 'avatar', true);
 
             const { components, files } = await buildColorPalettePanel({
                 source: 'avatar',
@@ -1230,13 +1231,15 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferUpdate();
             const source = actionStr.replace('colors_page_', '');
             const UserPreference = require('./models/UserPreference');
-            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { getPalettePanelData } = require('./utils/colorPalette');
             const { buildColorPalettePanel } = require('./utils/colorPaletteView');
 
             let prefs = await UserPreference.findOne({ discordId: targetUserId });
             if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
 
-            const data = await refreshAllPalettes(interaction, prefs);
+            // Extract just the source being switched TO (cache-only unless it's this source's first
+            // visit -- getCachedPalette still extracts an uncached source even without forceRefresh).
+            const data = await getPalettePanelData(interaction, prefs, source);
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             const { components, files } = await buildColorPalettePanel({
@@ -1269,13 +1272,15 @@ client.on('interactionCreate', async interaction => {
             const [source, subpageStr] = actionStr.replace('colors_subpage_', '').split('_');
             const subpage = parseInt(subpageStr, 10) || 0;
             const UserPreference = require('./models/UserPreference');
-            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { getPalettePanelData } = require('./utils/colorPalette');
             const { buildColorPalettePanel } = require('./utils/colorPaletteView');
 
             let prefs = await UserPreference.findOne({ discordId: targetUserId });
             if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
 
-            const data = await refreshAllPalettes(interaction, prefs);
+            // Same source as the current page (just a different sub-page of its swatches) -- a cache
+            // hit in the normal case, since navigating here means this source was already extracted.
+            const data = await getPalettePanelData(interaction, prefs, source);
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             const { components, files } = await buildColorPalettePanel({
@@ -1326,7 +1331,7 @@ client.on('interactionCreate', async interaction => {
             const [source, subpageStr] = actionStr.replace('colors_refresh_', '').split('_');
             const subpage = parseInt(subpageStr, 10) || 0;
             const UserPreference = require('./models/UserPreference');
-            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { getPalettePanelData } = require('./utils/colorPalette');
             const { buildColorPalettePanel } = require('./utils/colorPaletteView');
 
             let prefs = await UserPreference.findOne({ discordId: targetUserId });
@@ -1334,9 +1339,11 @@ client.on('interactionCreate', async interaction => {
 
             // Snapshot the cache-only "before" state first, THEN force a real refresh -- comparing
             // the two is what lets the follow-up message honestly say whether anything actually
-            // changed, rather than just claiming success unconditionally.
-            const before = await refreshAllPalettes(interaction, prefs, false);
-            const after = await refreshAllPalettes(interaction, prefs, true);
+            // changed, rather than just claiming success unconditionally. Only the ACTIVE source is
+            // re-extracted (the one whose swatches are on screen and that this Refresh button targets)
+            // -- refreshing one page no longer needlessly re-extracts the other three sources.
+            const before = await getPalettePanelData(interaction, prefs, source, false);
+            const after = await getPalettePanelData(interaction, prefs, source, true);
             const beforeVal = source === 'name' ? before.displayNameColors : before[source];
             const afterVal = source === 'name' ? after.displayNameColors : after[source];
             const changed = JSON.stringify(beforeVal) !== JSON.stringify(afterVal);

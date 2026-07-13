@@ -4,11 +4,11 @@
 // A standalone entry point into utils/colorPaletteView.js's panel (2026-07-14, Harkirat's request)
 // -- previously only reachable via the "View Colors" button inside /settings. This is a thin wrapper
 // around the exact same render pipeline that button already uses (utils/colorPalette.js's
-// refreshAllPalettes + utils/colorPaletteView.js's buildColorPalettePanel), not a separate
+// getPalettePanelData + utils/colorPaletteView.js's buildColorPalettePanel), not a separate
 // implementation -- keeps both entry points guaranteed identical instead of two copies drifting.
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
-const { refreshAllPalettes } = require('../utils/colorPalette');
+const { getPalettePanelData } = require('../utils/colorPalette');
 const { buildColorPalettePanel } = require('../utils/colorPaletteView');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
@@ -35,7 +35,9 @@ module.exports = {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         }
 
-        const data = await refreshAllPalettes(interaction, prefs);
+        // Only the landing page (avatar) is extracted here -- other sources lazily extract when the
+        // user navigates to them (see utils/colorPalette.js's getPalettePanelData for why).
+        const data = await getPalettePanelData(interaction, prefs, 'avatar');
         const { components, files } = await buildColorPalettePanel({
             source: 'avatar',
             data,

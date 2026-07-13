@@ -28,8 +28,13 @@ async function getSourceImageInfo(interaction) {
         fetchProfileExtras(interaction.client, interaction.user.id)
     ]);
 
+    // size 256, not 512 (2026-07-14, event-loop fix) -- halves the pixels Jimp has to decode+unfilter
+    // synchronously on Render's free-tier CPU, which was blocking the event loop long enough to make
+    // unrelated interactions (deferReply on a totally different command) miss Discord's 3s ACK window.
+    // 256px is still plenty of resolution for k-means color clustering, which only ever samples ~2500
+    // pixels out of the image anyway -- this isn't a visible-quality loss, just less decode work.
     const banner = userFetch.banner
-        ? { url: userFetch.bannerURL({ extension: 'png', size: 512 }), source: userFetch.banner }
+        ? { url: userFetch.bannerURL({ extension: 'png', size: 256 }), source: userFetch.banner }
         : null;
     // needsStillFrame: decorations are commonly served as animated PNG -- see utils/stillFrame.js.
     // Nameplate's `static.png` (built in fetchProfileExtras) is already guaranteed a real static
@@ -87,35 +92,56 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false) {
     return palette;
 }
 
-// Refreshes every available source's palette in one pass -- called both by /settings' fire-and-
-// forget soft refresh (see settings.js) and by the View Colors panel itself as a lazy fallback for
-// whichever source the user actually navigates to, in case the soft refresh hasn't finished yet.
-// Also surfaces each source's raw DISPLAY url (banner/nameplateUrl/decorationUrl) alongside its
-// extracted palette -- utils/colorPaletteView.js uses these for the Media Gallery preview on those
-// pages. Deliberately the ORIGINAL url, not whatever getCachedPalette internally still-frame-extracts
-// for decoration's color analysis: Discord's own client renders animated PNG/decoration previews
-// fine on its own (the Jimp/getDominantColor limitation is specific to OUR pixel-sampling code, not
-// to Discord's rendering), so the deco page can show the real animated decoration even though color
-// extraction under the hood only ever sees one still frame of it.
-async function refreshAllPalettes(interaction, prefs, forceRefresh = false) {
+// Builds the render data for ONE page of the View Colors panel, extracting the color palette for
+// ONLY the `activeSource` actually being displayed -- NOT all four sources.
+//
+// EFFICIENCY REWRITE (2026-07-14): this used to be `refreshAllPalettes`, eagerly extracting
+// avatar+banner+decoration+nameplate on every single call -- each a synchronous Jimp decode + k-means
+// pass, and decoration additionally spawning an `ffmpeg` subprocess for its still frame. But
+// utils/colorPaletteView.js's buildColorPalettePanel only ever renders ONE source's swatches at a
+// time (`data[effectiveSource]`); the other three extractions were pure waste on every render. On
+// Render's free-tier shared CPU that 4x-oversized burst blocked Node's single event loop long enough
+// that UNRELATED interactions (a different command's deferReply) missed Discord's 3-second ACK window
+// and died with 10062 "Unknown interaction" -- found live in production.
+//
+// Now: every source the user actually HAS still gets its availability key + preview URL surfaced
+// (cheap -- these come from getSourceImageInfo's network calls, no pixel work at all), so
+// getAvailableSources() renders the full set of nav buttons and the current page's Media Gallery
+// preview correctly. But only the active source pays extraction cost. The other sources are extracted
+// LAZILY the moment the user navigates to them -- each page/subpage switch calls this again with that
+// source as `activeSource` (see index.js's colors_page_/colors_subpage_ handlers). Decoration's
+// ffmpeg subprocess in particular now never runs unless the user actually opens the Deco page.
+//
+// The preview URLs are deliberately each source's raw DISPLAY url, NOT whatever getCachedPalette
+// internally still-frame-extracts for decoration's color analysis: Discord's own client renders
+// animated PNG/decoration previews fine (the Jimp limitation is specific to OUR pixel-sampling code),
+// so the Deco page shows the real animated decoration even though extraction only ever sees one frame.
+async function getPalettePanelData(interaction, prefs, activeSource, forceRefresh = false) {
     const info = await getSourceImageInfo(interaction);
     const results = { displayNameColors: info.displayNameColors };
+    const sources = { avatar: info.avatar, banner: info.banner, decoration: info.decoration, nameplate: info.nameplate };
 
-    results.avatar = await getCachedPalette(prefs, 'avatar', info.avatar, forceRefresh);
-    if (info.banner) {
-        results.banner = await getCachedPalette(prefs, 'banner', info.banner, forceRefresh);
-        results.bannerUrl = info.banner.url;
+    // Availability keys + preview URLs for EVERY equipped source, WITHOUT extracting. getAvailableSources()
+    // keys off KEY PRESENCE (not value), and the previews off the URL, so all nav buttons + the current
+    // preview render even for sources not yet extracted. Non-active sources surface whatever's already
+    // cached (possibly null, possibly stale vs the live asset -- harmless, since only the ACTIVE source's
+    // swatches are ever rendered, and getCachedPalette re-validates the source hash if/when that source
+    // later becomes active).
+    for (const [kind, srcInfo] of Object.entries(sources)) {
+        if (!srcInfo) continue; // user doesn't have this source equipped
+        if (kind !== 'avatar') results[`${kind}Url`] = srcInfo.url; // avatar's thumbnail is passed separately, no gallery url
+        results[kind] = prefs[`${kind}Palette`] || null;
     }
-    if (info.decoration) {
-        results.decoration = await getCachedPalette(prefs, 'decoration', info.decoration, forceRefresh);
-        results.decorationUrl = info.decoration.url;
-    }
-    if (info.nameplate) {
-        results.nameplate = await getCachedPalette(prefs, 'nameplate', info.nameplate, forceRefresh);
-        results.nameplateUrl = info.nameplate.url;
+
+    // Extract ONLY the active source. Skipped for 'name' (Display Name Colors are exact user-picked
+    // values already surfaced above via displayNameColors -- nothing to extract/cluster) and for any
+    // source the user doesn't have. getCachedPalette handles the cache-hit / stale-hash / forceRefresh
+    // decision internally and writes the fresh result back to `prefs`.
+    if (activeSource !== 'name' && sources[activeSource]) {
+        results[activeSource] = await getCachedPalette(prefs, activeSource, sources[activeSource], forceRefresh);
     }
 
     return results;
 }
 
-module.exports = { getSourceImageInfo, getCachedPalette, refreshAllPalettes };
+module.exports = { getSourceImageInfo, getCachedPalette, getPalettePanelData };

@@ -8,7 +8,6 @@ const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
 const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor } = require('../utils/accentColor');
-const { refreshAllPalettes } = require('../utils/colorPalette');
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
@@ -48,21 +47,16 @@ module.exports = {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         }
 
-        // "View Colors" soft refresh (2026-07-13) -- warms utils/colorPalette.js's 6-swatch cache for
-        // every source in the background every time /settings opens, so the View Colors panel (see
-        // the button below) is usually already fresh by the time someone actually clicks it. NOT
-        // awaited -- awaiting this would mean every /settings open pays for downloading+extracting up
-        // to 4 separate images, reintroducing exactly the kind of hesitation this whole session has
-        // been eliminating. Deliberately operates on its OWN freshly-fetched UserPreference document
-        // rather than the `prefs` object this render already reads/mutates/saves below -- running two
-        // concurrent save() calls against the SAME in-memory Mongoose document risked a version
-        // conflict/lost update between this render's own accent-color cache write and this
-        // background refresh's palette cache write. The View Colors panel itself still has its own
-        // lazy fallback (utils/colorPalette.js's getCachedPalette) for whichever source this hasn't
-        // finished warming yet by the time someone navigates to it.
-        UserPreference.findOne({ discordId: userId })
-            .then(freshPrefs => freshPrefs ? refreshAllPalettes(interaction, freshPrefs) : null)
-            .catch(err => console.error('Background color palette soft-refresh failed:', err.message));
+        // REMOVED (2026-07-14, CPU pass): a fire-and-forget "soft refresh" used to run here on EVERY
+        // /settings open, warming the View Colors palette cache for all 4 sources in the background so
+        // the panel would be pre-extracted by the time someone clicked View Colors. It was pulled
+        // because it was a major, unconditional CPU drain -- every /settings open (whether or not the
+        // user ever opened View Colors) kicked off up to 4 background Jimp+k-means extractions, one
+        // spawning an ffmpeg subprocess, all competing for Render's free-tier shared core and blocking
+        // the event loop enough to make unrelated interactions miss Discord's 3s ACK window (10062).
+        // The View Colors panel now extracts lazily and only the one source being viewed (see
+        // utils/colorPalette.js's getPalettePanelData), so the pre-warm bought little and cost a lot --
+        // correctness is unchanged, first-open of each page just shows a brief spinner instead.
 
         // 3. LIVE PROFILE LOOKUP
         const userFetch = await interaction.client.users.fetch(userId, { force: true });

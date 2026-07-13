@@ -910,16 +910,18 @@ Its own top-level sibling row OUTSIDE the container (same convention the global 
 Share Publicly button already use — a new top-level row, never packed into the container),
 style 1 (blurple) + the eyedropper emoji, matching "View Colors" itself.
 - Forces a real re-extraction bypassing the cache (`utils/colorPalette.js`'s `forceRefresh`
-  param on `getCachedPalette`/`refreshAllPalettes`) — alongside `colors_view` (the main
+  param on `getCachedPalette`/`getPalettePanelData`) — alongside `colors_view` (the main
   button), the only 2 entry points that do this; ordinary page/subpage navigation
-  (`colors_page_`/`colors_subpage_`) stays cache-only and fast, unaffected.
+  (`colors_page_`/`colors_subpage_`) stays cache-only and fast, unaffected. Since the 2026-07-14
+  lazy-loading rewrite (see the incident note below), a refresh only re-extracts the ONE source
+  currently on screen, not all four.
 - **Dedicated 10s cooldown** (`colorsRefreshCooldowns` in index.js), separate from the
   generic 600ms anti-spam guard (below) — this button does real re-extraction work, the
   generic guard's window wouldn't meaningfully throttle it. On cooldown, replies ephemeral
   with remaining seconds instead of processing.
 - **Honest change-detection**: snapshots a cache-only "before" state via
-  `refreshAllPalettes(interaction, prefs, false)`, THEN forces the real refresh via
-  `refreshAllPalettes(interaction, prefs, true)`, compares the two, and sends an ephemeral
+  `getPalettePanelData(interaction, prefs, source, false)`, THEN forces the real refresh via
+  `getPalettePanelData(interaction, prefs, source, true)`, compares the two, and sends an ephemeral
   follow-up saying either "Found new colors!" or "still generates the same colors — this
   button is for after you actually change it, not to reroll." This is exactly why
   determinism in the k-means rewrite above mattered — without it, this comparison would
@@ -951,6 +953,92 @@ panel, `accentColor.js`'s `getCachedDecorationColor` for the `'dynamicProfile'` 
 cache check runs BEFORE the still-frame extraction step so a cache hit never pays for an
 unnecessary ffmpeg call. Nameplate's `static.png` doesn't need this (already guaranteed
 static); avatar/banner don't either.
+
+### Post-ship production incident: stale palette cache + bot-wide interaction timeouts (2026-07-14)
+Harkirat reported `/colors` still showing 5 old-labeled swatches for avatar right after `219b2e1`
+deployed, even after re-running it, hitting `/settings`' View Colors button, and clicking Refresh
+Colors (which itself claimed "still generates the same colors"). Root-caused via `systematic-
+debugging`, two distinct bugs stacked on top of each other:
+1. **Stale cache, never invalidated.** `219b2e1`'s over-clustering fix (avatar 5/8 → 8/8, see the
+   k-means algorithm section above) was never followed by the same one-time cache-clear the earlier
+   "vivid" accent-color rewrite did (`e5359df`) — confirmed directly: Harkirat's live
+   `avatarPalette` in Mongo had exactly 5 entries, already in the new k-means array shape (so not
+   leftover V1 data — a k-means result computed before the over-clustering fix landed, most likely
+   from same-day local dev iteration hitting the same production `MONGODB_URI`). Running the
+   *current* `getColorPalette()` directly against that same avatar URL correctly returned 8. Fixed
+   with a one-time `UserPreference.updateOne({discordId: '1139845545754632283'}, {$unset: {...}})`
+   clearing all 4 `*Palette`/`*PaletteSource` fields — scoped to Harkirat's own account only, per
+   `[[feedback_cache_invalidation_on_algorithm_change]]` (an earlier session in this same feature
+   got this wrong once already with an unscoped `updateMany({})`, correctly blocked by the safety
+   classifier).
+2. **Bot-wide interaction timeouts, unrelated to colors specifically.** Render logs from Harkirat's
+   actual testing window showed `DiscordAPIError[10062]: Unknown interaction` (Discord's 3-second
+   ACK window blown before `deferReply()`/`deferUpdate()` even ran) — not just on `/colors`, but on
+   `/manage`, `/settings`, and a select-menu click too, spread across ~15 minutes with zero process
+   restarts in between (ruled out Render free-tier sleep/wake cycling as the cause). Root cause:
+   `kMeansCluster()` ran fully synchronously from start to finish with no `await` inside its
+   iteration loop — on Render's free tier (0.1 shared CPU), this blocked Node's single event loop
+   long enough that ANY other in-flight interaction, regardless of which command, could miss its ACK
+   window while a color extraction was still crunching. Confirmed the mechanism directly: a
+   `setInterval(5ms)` timer fired **zero** times during a pre-fix extraction call and 12 times
+   (matching `KMEANS_ITERATIONS`) after the fix. Fixed by `await`-ing a `setImmediate()` after every
+   k-means iteration (`kMeansCluster` and `getColorPalette` both had to become properly awaited
+   end-to-end — the call site in `getColorPalette` wasn't awaiting it at all before this) and
+   dropping banner's fetch size from 512px to 256px (halves Jimp's synchronous decode/unfilter work;
+   k-means only ever samples ~2500 pixels regardless of source resolution, so this isn't a visible
+   quality loss). This doesn't reduce total CPU time spent — it stops that time from monopolizing
+   the event loop in one unbroken burst, so a concurrent command's `deferReply()` gets a chance to
+   fire in between. **Deliberately NOT a Render plan upgrade** — Harkirat's explicit call: try
+   making the code more efficient first, defer parts of the feature next if that's still not enough,
+   only fall back to touching infra/plan as a last resort.
+
+**Second pass (2026-07-14, on Opus 4.8) — the efficiency rewrite that actually addressed the CPU
+root cause, not just the yield symptom.** The first pass above made extraction *yield*; this pass
+made it do far *less* work. Four changes, in order of impact:
+1. **Lazy per-source extraction (the headline fix).** `refreshAllPalettes` was renamed to
+   `getPalettePanelData(interaction, prefs, activeSource, forceRefresh)` and now extracts the palette
+   for ONLY the source being displayed, not all four. `buildColorPalettePanel` only ever renders one
+   source's swatches at a time (`data[effectiveSource]`), so extracting avatar+banner+decoration+
+   nameplate on every render was ~4x wasted work — each a synchronous Jimp decode + k-means pass, and
+   decoration additionally spawning an `ffmpeg` subprocess for its still frame. Every source the user
+   HAS still gets its availability key + preview URL surfaced (cheap — from `getSourceImageInfo`'s
+   network calls, no pixel work), so the nav buttons + current preview all render correctly; the other
+   sources extract lazily the moment the user navigates to them. Decoration's ffmpeg subprocess now
+   never runs unless the Deco page is actually opened. The one behavior tradeoff: first visit to each
+   page shows a brief loading spinner instead of being pre-warmed (accepted — far better than freezing
+   the whole bot). All 6 call sites updated (`commands/colors.js`, and index.js's `colors_view`/
+   `colors_page_`/`colors_subpage_`/`colors_refresh_` handlers — refresh calls it twice, before/after).
+2. **Removed `/settings`' background soft-refresh entirely** (`commands/settings.js`). It fired an
+   un-awaited `refreshAllPalettes` on EVERY `/settings` open, speculatively warming all 4 sources'
+   caches in the background whether or not the user ever clicked View Colors — a major unconditional
+   CPU drain (4 background extractions + an ffmpeg spawn per `/settings` open) and a prime suspect for
+   why `/settings`/`/manage` themselves showed up in the 10062 logs. With lazy extraction the panel
+   warms on demand anyway, so the pre-warm bought little and cost a lot. Its removal also eliminates
+   the concurrent-`save()` version-conflict hazard it was carefully working around (it used a separate
+   freshly-fetched `prefs` doc for exactly that reason).
+3. **k-means early-convergence** (`utils/colorExtract.js`): break the iteration loop once no pixel
+   changes cluster. Output is BYTE-IDENTICAL to running the full 12 (verified — the returned clusters
+   are computed from `assignments`, which is already stable at convergence), so determinism and the
+   Refresh change-detection are fully preserved. **Honest caveat: measured 0% benefit on Harkirat's
+   own avatar** (12 clusters over 2521 pixels don't fully stabilize within the 12-cap there) — it only
+   helps sources that genuinely converge early (the smaller-K nameplate/decoration at K=6). Kept
+   because it's free-when-it-helps / never-changes-output / never-slower, not because it's a reliable
+   win. Do NOT lower `KMEANS_ITERATIONS` from 12 to force a win — that WOULD change output and break
+   the determinism the Refresh button's "same colors?" comparison depends on against already-cached values.
+4. **Memoized solid swatch PNGs by hex** (`utils/colorSwatchImage.js`, bounded 256-entry `Map`). A
+   swatch is deterministic per hex and never changes, but the panel re-encoded up to 4 of them on
+   every page/subpage switch. Now encoded once per process per distinct color. The cached Buffer is
+   only ever read (uploaded as an attachment), never mutated, so sharing one reference across renders
+   is safe and doesn't interact with the `sendV2Payload` attachments-replacement fix.
+Verified locally: determinism holds (byte-identical across runs), event loop stays responsive during
+extraction (a 5ms timer fires ~14× mid-extraction vs 0× when it was fully blocking), the panel still
+renders correctly with an available-but-unextracted source (Banner button shows even when
+`data.banner` is null), and all modules load cleanly. **Not yet verified live on Render** — the true
+test is whether 1-source-at-a-time extraction stays under the 3s ACK window on the actual free-tier
+CPU; watch the logs for fresh 10062s after deploy. If it's STILL not enough, the remaining levers (in
+Harkirat's stated order of preference) are: defer more of the feature, then move extraction off the
+main thread (`worker_threads` — moves the CPU burst off the event loop entirely, though it competes
+for the same fractional core), and only as a last resort a Render plan bump.
 
 ### Icon sourcing (the eyedropper emoji)
 Harkirat provided a raw GIF, background-removed via the `gif-background-remover` skill
