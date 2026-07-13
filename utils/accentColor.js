@@ -1,24 +1,107 @@
 // utils/accentColor.js
+const { Routes } = require('discord.js');
 const { getDominantColor } = require('./colorExtract');
+const { extractStillFrame } = require('./stillFrame');
+
+// Shared throttle for anything that needs a LIVE fetch to see fresh data (2026-07-13) -- unlike
+// avatar (whose hash arrives fresh on every interaction payload for free, see
+// getAccentColorForCommand below), none of banner/Display Name Styles/decoration/nameplate are
+// included in that lightweight payload, so there's no free signal to detect a change short of an
+// actual live fetch. Force-fetching on every single click reintroduces the same per-click Discord
+// round-trip the avatar path was fixed to avoid, so these all instead cache their fetched value
+// per-user for RECHECK_WINDOW_MS and reuse it for any button/select re-render inside that window --
+// a real change still shows up within one recheck window, but rapid clicks (pagination, toggles)
+// skip the network call entirely. A genuine slash-command invocation always bypasses the window and
+// fetches fresh (see the isChatInputCommand check in getThrottledFetch below) -- a user who changes
+// one of these and immediately runs a brand new command shouldn't see a stale value just because
+// some earlier click happened to warm the cache.
+const bannerRecheckCache = new Map(); // userId -> { checkedAt, value: userFetch }
+const profileExtrasRecheckCache = new Map(); // userId -> { checkedAt, value: fetchProfileExtras() result }
+const RECHECK_WINDOW_MS = 15 * 60 * 1000;
+
+async function getThrottledFetch(cache, userId, isChatInputCommand, fetchFn) {
+    const now = Date.now();
+    const cached = cache.get(userId);
+    if (!isChatInputCommand && cached && now - cached.checkedAt < RECHECK_WINDOW_MS) {
+        return cached.value;
+    }
+    const value = await fetchFn();
+    cache.set(userId, { checkedAt: now, value });
+    return value;
+}
+
+// None of display_name_styles/avatar_decoration_data/collectibles.nameplate are parsed by
+// discord.js's own User class -- confirmed against the installed v14.26.4, User._patch() has no
+// handling for display_name_styles at all (unlike collectibles/primary_guild, which it DOES parse,
+// just not the color-relevant nameplate.palette sub-field in a usable form), so even a force-fetched
+// client.users.fetch() silently drops the field we actually need. The only way to read it is one raw
+// REST call that bypasses the User model entirely (same client.rest object every V2 command already
+// uses for rest.patch('@original'), just a GET here instead) -- fetched ONCE and reused for all
+// three sources rather than three separate round-trips.
+//   - displayNameColors: the user's 2-stop name gradient, or null if not set up.
+//   - decorationUrl: CDN URL for the avatar decoration PNG (client.rest.cdn.avatarDecoration, the
+//     same helper discord.js's own User#avatarDecorationURL uses), or null if none equipped.
+//   - nameplateUrl: CDN URL for the nameplate's static PNG preview. No discord.js CDN helper exists
+//     for this newer collectible type, so the URL is built manually -- verified live against
+//     Discord's CDN (asset already ends in a trailing slash, `static.png` is the correct static-
+//     preview filename; `asset.webm` also exists but is an animated video, not usable by
+//     getDominantColor's still-image pixel sampling).
+async function fetchProfileExtras(client, userId) {
+    const raw = await client.rest.get(Routes.user(userId));
+    const colors = raw.display_name_styles?.colors;
+    const decorationAsset = raw.avatar_decoration_data?.asset || null;
+    const nameplateAsset = raw.collectibles?.nameplate?.asset || null;
+    return {
+        displayNameColors: Array.isArray(colors) && colors.length >= 2 ? colors : null,
+        decorationAsset,
+        decorationUrl: decorationAsset ? client.rest.cdn.avatarDecoration(decorationAsset) : null,
+        nameplateAsset,
+        nameplateUrl: nameplateAsset ? `https://cdn.discordapp.com/assets/collectibles/${nameplateAsset}static.png` : null
+    };
+}
+// Kept as a thin convenience wrapper -- settings.js only ever needs the name-color gradient, not the
+// full extras bundle, so it's not worth making every caller destructure the whole object.
+async function fetchDisplayNameColors(client, userId) {
+    return (await fetchProfileExtras(client, userId)).displayNameColors;
+}
+
+// Blends the user's two chosen Display Name Styles gradient stops into one representative hex,
+// since a Components V2 Container's accent_color can only ever be a single flat color, not a
+// gradient. A simple midpoint average is appropriate here -- unlike the flat pixel-average approach
+// rejected for avatar/banner extraction (see colorExtract.js's revision history) -- because these
+// are exactly TWO deliberate, user-picked anchor colors straight from Discord, not thousands of
+// noisy image pixels; averaging them fairly represents both ends without arbitrarily favoring one.
+function blendGradientColors([first, second]) {
+    const r1 = (first >> 16) & 0xff, g1 = (first >> 8) & 0xff, b1 = first & 0xff;
+    const r2 = (second >> 16) & 0xff, g2 = (second >> 8) & 0xff, b2 = second & 0xff;
+    return (Math.round((r1 + r2) / 2) << 16) | (Math.round((g1 + g2) / 2) << 8) | Math.round((b1 + b2) / 2);
+}
 
 // Per-command containers ship their own fixed brand color (Police Blue, Chinese Violet, etc. —
 // see the palette in CLAUDE.md). This resolver lets a user override that on a per-preference
 // basis via /settings' "Accent Color Style" option:
-//   - 'preset'  : each command keeps its own preset color, EXCEPT /settings itself (which has no
-//                 fixed brand color of its own) falls back to the user's avatar color instead.
-//                 Callers signal this via `defaultBehavior: 'avatar'`. ("Pre-Designed Palette" in
-//                 the /settings UI.) 'default' is the old value name for this same option, from
-//                 before avatar-matching became the actual schema default — treated identically,
-//                 so pre-existing saved docs don't silently change behavior.
-//   - 'avatar'  : every container uses a color extracted from the user's avatar. This is now the
-//                 real default (UserPreference.js's schema default), not 'preset' — Harkirat wanted
-//                 avatar-matching to be what new users see everywhere, not just in /settings.
-//   - 'banner'  : every container uses a color extracted from the user's banner. Falls back to
-//                 avatar if the user has no banner set at all.
-// Only the currently-needed source (avatar or banner) is fetched+extracted on any given call —
-// both are cached independently on UserPreference so switching styles back and forth doesn't
-// re-hit the Discord CDN/re-run pixel averaging unless the underlying image actually changed.
-async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior = 'preset' }) {
+//   - 'preset'         : each command keeps its own preset color, EXCEPT /settings itself (which has
+//                         no fixed brand color of its own) falls back to the user's avatar color
+//                         instead. Callers signal this via `defaultBehavior: 'avatar'`. ("Pre-
+//                         Designed Palette" in the /settings UI.) 'default' is the old value name for
+//                         this same option — treated identically for pre-existing saved docs.
+//   - 'avatar'         : every container uses a color extracted from the user's avatar. The real
+//                         default (UserPreference.js's schema default), not 'preset'.
+//   - 'banner'         : every container uses a color extracted from the user's banner. Falls back to
+//                         avatar if the user has no banner set at all.
+//   - 'displayName'    : every container uses a color blended from the user's Nitro Display Name
+//                         Styles gradient. Falls back to avatar if not set up.
+//   - 'dynamicProfile' : NOT a single deterministic style like the others — see
+//                         resolveDynamicProfileColor below, which randomly picks between every
+//                         source the user has available on each new slash-command launch and holds
+//                         that pick steady across re-renders of that message. Routed around this
+//                         resolver entirely by getAccentColorForCommand/settings.js, since it needs
+//                         `interaction` (for message-based pick caching) rather than just a
+//                         pre-resolved `userFetch`.
+// Only the currently-needed source is fetched+extracted on any given call — every source is cached
+// independently on UserPreference so switching styles back and forth doesn't re-hit the Discord
+// CDN/API or re-run pixel averaging/blending unless the underlying source actually changed.
+async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior = 'preset', displayNameColors = null }) {
     const rawStyle = prefs.accentColorStyle || 'avatar';
     const effectiveStyle = (rawStyle === 'default' || rawStyle === 'preset') ? defaultBehavior : rawStyle;
 
@@ -29,35 +112,171 @@ async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior
         return getCachedColor(prefs, 'avatar', userFetch, presetHex);
     }
 
+    // "Display Name Colors" style with no Nitro name style set up has nothing to blend — fall back
+    // to avatar. The one-time "hey, set this up" notice lives in index.js's set_accent_style
+    // handler (fires right when the user picks this option), not here — this resolver just needs to
+    // always return SOME usable color, silently, on every future render.
+    if (effectiveStyle === 'displayName') {
+        if (!displayNameColors) return getCachedColor(prefs, 'avatar', userFetch, presetHex);
+        return getCachedDisplayNameColor(prefs, displayNameColors);
+    }
+
     return getCachedColor(prefs, effectiveStyle, userFetch, presetHex);
+}
+
+// Shared caching primitive: a hex value cached against a source identifier (image hash, asset hash,
+// or a joined color pair — whatever uniquely identifies "has this actually changed"), recomputed via
+// getDominantColor only when that identifier changes. avatar/banner/decoration/nameplate all funnel
+// through this; displayName doesn't (it blends two known colors directly, no image download needed
+// at all — see getCachedDisplayNameColor below).
+async function getCachedColorFromUrl(prefs, hexField, sourceField, url, sourceHash, fallbackHex, label) {
+    if (prefs[hexField] != null && prefs[sourceField] === sourceHash) {
+        return prefs[hexField];
+    }
+    let hex;
+    try {
+        hex = await getDominantColor(url);
+    } catch (err) {
+        // Wording deliberately doesn't assume "falling back to preset" -- fallbackHex is `null` when
+        // called from the Dynamic Profile Colors pool (that source gets excluded, not substituted;
+        // see buildDynamicColorPool's own comment), and only actually IS the preset when called from
+        // a deterministic single-style resolver like getCachedColor.
+        console.error(`Accent color extraction failed for ${label} (falling back to ${fallbackHex != null ? 'preset' : 'exclusion from pool'}):`, err.message);
+        return fallbackHex;
+    }
+    prefs[hexField] = hex;
+    prefs[sourceField] = sourceHash;
+    await prefs.save();
+    return hex;
 }
 
 async function getCachedColor(prefs, kind, userFetch, fallbackHex) {
     const isAvatar = kind === 'avatar';
     const sourceHash = isAvatar ? (userFetch.avatar || 'default') : userFetch.banner;
-    const hexField = isAvatar ? 'avatarColorHex' : 'bannerColorHex';
-    const sourceField = isAvatar ? 'avatarColorSource' : 'bannerColorSource';
-
-    if (prefs[hexField] != null && prefs[sourceField] === sourceHash) {
-        return prefs[hexField];
-    }
-
     const url = isAvatar
         ? userFetch.displayAvatarURL({ extension: 'png', size: 256 })
         : userFetch.bannerURL({ extension: 'png', size: 512 });
+    return getCachedColorFromUrl(prefs, isAvatar ? 'avatarColorHex' : 'bannerColorHex',
+        isAvatar ? 'avatarColorSource' : 'bannerColorSource', url, sourceHash, fallbackHex, kind);
+}
 
-    let hex;
+// Decorations are commonly served as animated PNG -- see utils/stillFrame.js. Cache-hit check runs
+// first (mirroring getCachedColorFromUrl's own check) so a hit never pays for a still-unnecessary
+// ffmpeg download+extract.
+async function getCachedDecorationColor(prefs, url, asset, fallbackHex) {
+    if (prefs.decorationColorHex != null && prefs.decorationColorSource === asset) {
+        return prefs.decorationColorHex;
+    }
+    let stillFrame;
     try {
-        hex = await getDominantColor(url);
+        stillFrame = await extractStillFrame(url);
     } catch (err) {
-        console.error(`Accent color extraction failed for ${kind}, falling back to preset:`, err.message);
+        console.error('Still-frame extraction failed for decoration:', err.message);
         return fallbackHex;
     }
+    return getCachedColorFromUrl(prefs, 'decorationColorHex', 'decorationColorSource', stillFrame, asset, fallbackHex, 'decoration');
+}
 
-    prefs[hexField] = hex;
-    prefs[sourceField] = sourceHash;
+function getCachedNameplateColor(prefs, url, asset, fallbackHex) {
+    return getCachedColorFromUrl(prefs, 'nameplateColorHex', 'nameplateColorSource', url, asset, fallbackHex, 'nameplate');
+}
+
+// displayNameColorSource stores the raw two-color pair joined by a comma -- there's no single
+// "image hash" to key off of here like avatar/banner, so a cache invalidates only when the user's
+// actual chosen colors change, not on every render.
+async function getCachedDisplayNameColor(prefs, colors) {
+    const sourceHash = colors.join(',');
+    if (prefs.displayNameColorHex != null && prefs.displayNameColorSource === sourceHash) {
+        return prefs.displayNameColorHex;
+    }
+    const hex = blendGradientColors(colors);
+    prefs.displayNameColorHex = hex;
+    prefs.displayNameColorSource = sourceHash;
     await prefs.save();
     return hex;
+}
+
+// DYNAMIC PROFILE COLORS (2026-07-13) -- the one style that's genuinely randomized rather than a
+// single deterministic pick. On every genuine NEW slash-command launch, gathers every color source
+// the user actually has available (avatar always; banner/displayName/decoration/nameplate only if
+// set) and picks one at random. Button/select re-renders of that SAME message must NOT re-roll --
+// they reuse whatever was picked when the message was first created.
+//
+// The re-render side is easy: a button/select interaction already carries `interaction.message.id`
+// for free (no extra fetch), so it's used directly as the cache key. The INITIAL command side is the
+// hard part -- at the point this runs, the command has only deferReply()'d, so no message exists yet
+// to key off of. Rather than invent custom_id plumbing across every pagination/toggle button in 5+
+// command files just to carry a seed forward, this pays ONE extra `interaction.fetchReply()` call
+// (fetches the placeholder message deferReply() already created) to learn the real message id right
+// after picking -- but only once per genuine command launch under this specific opt-in style, never
+// on a per-click hot path. dynamicColorCache entries expire after DYNAMIC_COLOR_TTL_MS purely to
+// bound memory on a long-running process (interaction tokens on button clicks stay valid far longer
+// than that) -- a click on a message old enough to have aged out just gracefully re-rolls a fresh
+// pick rather than erroring, since a picked-but-now-forgotten color is a cosmetic inconsistency, not
+// a functional break.
+const dynamicColorCache = new Map(); // messageId -> chosen hex
+const DYNAMIC_COLOR_TTL_MS = 24 * 60 * 60 * 1000;
+
+async function buildDynamicColorPool(interaction, prefs, presetHex) {
+    const isChatInputCommand = interaction.isChatInputCommand();
+    const pool = [];
+
+    // Every source below is pushed with `null` as its fallback (NOT presetHex) -- an extraction
+    // failure here should EXCLUDE that source from the pool, not silently substitute the command's
+    // generic brand color as if it were one of the user's own profile colors. Decoration used to
+    // ALWAYS fail this way (Discord serves avatar decorations as animated PNG, which Jimp can't
+    // decode directly) until getCachedDecorationColor started routing through utils/stillFrame.js's
+    // ffmpeg-based single-frame extraction -- decoration is now a real, usually-succeeding pool
+    // source, not a guaranteed exclusion. This null-fallback pattern stays regardless, as a safety
+    // net for any OTHER genuine failure (network hiccup, ffmpeg unavailable in some environment,
+    // etc.) -- still correct to exclude rather than substitute in those cases too. The final
+    // `.filter(hex => hex != null)` below drops every excluded source; resolveDynamicProfileColor's
+    // own presetHex fallback only ever kicks in if EVERY source fails (pool ends up empty).
+
+    // Avatar -- always available, free (interaction.user already has the current hash).
+    pool.push(await getCachedColor(prefs, 'avatar', interaction.user, null));
+
+    // Banner -- only if the user actually has one set.
+    const userFetch = await getThrottledFetch(bannerRecheckCache, interaction.user.id, isChatInputCommand,
+        () => interaction.client.users.fetch(interaction.user.id, { force: true }));
+    if (userFetch.banner) pool.push(await getCachedColor(prefs, 'banner', userFetch, null));
+
+    // Display Name Colors / Avatar Decoration / Nameplate -- one combined raw REST call covers all
+    // three instead of three separate round-trips.
+    const extras = await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
+        () => fetchProfileExtras(interaction.client, interaction.user.id));
+    if (extras.displayNameColors) pool.push(await getCachedDisplayNameColor(prefs, extras.displayNameColors));
+    if (extras.decorationUrl) pool.push(await getCachedDecorationColor(prefs, extras.decorationUrl, extras.decorationAsset, null));
+    if (extras.nameplateUrl) pool.push(await getCachedNameplateColor(prefs, extras.nameplateUrl, extras.nameplateAsset, null));
+
+    return pool.filter((hex) => hex != null);
+}
+
+async function resolveDynamicProfileColor(interaction, prefs, presetHex) {
+    const isChatInputCommand = interaction.isChatInputCommand();
+
+    if (!isChatInputCommand && interaction.message?.id) {
+        const cached = dynamicColorCache.get(interaction.message.id);
+        if (cached != null) return cached;
+        // Cache miss on a re-render (TTL expired, or the bot restarted since this message's
+        // original command launch, since this cache is in-memory only) -- falls through to a fresh
+        // pick below rather than erroring. This is the one edge case where a button click CAN end up
+        // changing the color, deliberately accepted as better than a broken render.
+    }
+
+    const pool = await buildDynamicColorPool(interaction, prefs, presetHex);
+    const chosen = pool.length ? pool[Math.floor(Math.random() * pool.length)] : presetHex;
+
+    if (isChatInputCommand) {
+        try {
+            const reply = await interaction.fetchReply();
+            dynamicColorCache.set(reply.id, chosen);
+            setTimeout(() => dynamicColorCache.delete(reply.id), DYNAMIC_COLOR_TTL_MS).unref();
+        } catch (err) {
+            console.error('Failed to cache Dynamic Profile Colors pick (interaction likely expired):', err.message);
+        }
+    }
+    return chosen;
 }
 
 // Convenience wrapper for the preset-brand-color commands (calendar/draws/patchnotes/drawprices/
@@ -80,8 +299,37 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
     if (prefs.accentColorStyle === 'default' || prefs.accentColorStyle === 'preset') {
         return presetHex;
     }
-    const userFetch = await interaction.client.users.fetch(interaction.user.id, { force: true });
-    return resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior: 'preset' });
+
+    if (prefs.accentColorStyle === 'dynamicProfile') {
+        return resolveDynamicProfileColor(interaction, prefs, presetHex);
+    }
+
+    // Only 'banner'/'displayName' actually need a fresh API call -- neither is included in the
+    // partial user object Discord sends with an interaction, so those are the cases that have to
+    // bypass discord.js's own cache to see them. 'avatar' (the default) doesn't: interaction.user
+    // already carries the current avatar hash, and getCachedColor only needs that hash plus
+    // displayAvatarURL(), both of which interaction.user already has. This used to force-fetch
+    // unconditionally on every call for banner -- a real Discord REST round-trip on every single
+    // pagination/button click regardless of whether the color cache was about to hit -- which showed
+    // up as a noticeable hesitation between a button's defer-ack and its actual content update.
+    const rawStyle = prefs.accentColorStyle || 'avatar';
+    let userFetch = interaction.user;
+    let displayNameColors = null;
+    const isChatInputCommand = interaction.isChatInputCommand();
+    if (rawStyle === 'banner') {
+        userFetch = await getThrottledFetch(bannerRecheckCache, interaction.user.id, isChatInputCommand,
+            () => interaction.client.users.fetch(interaction.user.id, { force: true }));
+    } else if (rawStyle === 'displayName') {
+        displayNameColors = await getThrottledFetch(profileExtrasRecheckCache, interaction.user.id, isChatInputCommand,
+            () => fetchProfileExtras(interaction.client, interaction.user.id)).then(extras => extras.displayNameColors);
+    }
+    return resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior: 'preset', displayNameColors });
 }
 
-module.exports = { resolveAccentColor, getAccentColorForCommand };
+module.exports = {
+    resolveAccentColor,
+    getAccentColorForCommand,
+    fetchDisplayNameColors,
+    fetchProfileExtras,
+    resolveDynamicProfileColor
+};

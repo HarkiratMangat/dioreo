@@ -17,8 +17,20 @@ collaboration layer on top of it.
 - `chrono-node` for natural-language date parsing (admin input)
 - `dayjs` (+ utc/timezone plugins) for user-facing timestamp conversion
 - `jimp` for accent-color extraction (pure JS, no native binary — see Accent color system below)
+- `ffmpeg` (system binary, not an npm package — must be on `PATH`) — `utils/stillFrame.js` uses it
+  to pull one still frame from APNG/animated sources Jimp can't decode (avatar decorations), for the
+  View Colors panel and `'dynamicProfile'` accent style. Confirmed present on this Mac already; not
+  guaranteed on every host — if it's ever missing, still-frame extraction (and only that — every
+  other image path in the bot is unaffected) fails loudly rather than silently producing garbage.
+- `color-namer` (added 2026-07-14) — pure JS, only depends on `chroma-js`; used by the View Colors
+  panel to turn an extracted hex into a real name ("Royal Blue") via its `'ntc'` palette. Checked via
+  `npm audit` before adding — zero NEW vulnerabilities (only the pre-existing discord.js/undici/xlsx
+  ones already tracked in memory as deferred).
 - `cloudinary` (added 2026-07-12) — draw thumbnail caching (`utils/cloudinaryCache.js`); auto-reads
-  the existing `CLOUDINARY_URL` env var on require, no explicit config call needed.
+  the existing `CLOUDINARY_URL` env var on require, no explicit config call needed. Also backs patch
+  notes' own season-based image cache (`utils/patchNotesCache.js`, shipped 2026-07-13) on the same
+  account, separate folder/retention rules — see the Patch Notes Cloudinary caching note further
+  down rather than duplicating the design here.
 - `xlsx` — NOT used at bot runtime anymore (see MP loadout system below); only referenced by
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
@@ -39,6 +51,21 @@ collaboration layer on top of it.
   — if a deploy is needed during that window, it has to wait until after 8 PM ET or the plan needs
   upgrading; there's no workaround on the current tier. Keep the local instance running as the
   fallback until an off-peak deploy actually goes through and is verified live.
+- **Render suspend/resume: the `render` CLI (v2.21.0) has no `suspend` subcommand at all** —
+  confirmed via `--help` on every relevant command (`render services`, `render services update`,
+  etc.) and the `render-cli` skill's own docs; don't waste time guessing at CLI flag names for this,
+  it isn't there. The only way to suspend/resume is Render's REST API directly:
+  `POST https://api.render.com/v1/services/{serviceId}/suspend` (and `.../resume`), auth'd with
+  `Authorization: Bearer $RENDER_API_KEY`. **`RENDER_API_KEY` already lives in this project's own
+  `.env`** (same file `BOT_TOKEN`/`CLOUDINARY_URL` live in) — `grep "^RENDER_API_KEY=" .env` is all
+  that's needed to get it for a `curl` call; don't go looking anywhere else for it. Specifically:
+  reading `~/.render/cli.yaml` (the CLI's own personal cross-project OAuth session file, which lives
+  *outside* this project directory entirely) to extract a token for this same purpose was correctly
+  blocked by the safety classifier as credential exploration — a project's own `.env` is a normal,
+  already-in-scope file for working in this repo; a personal `~/.` config file outside the project is
+  a meaningfully different, more sensitive thing to go digging through, even for the same end goal.
+  `diors-builds`' service ID is `srv-d850b2og4nts73fhpfog` (Ohio region, `dashboard.render.com/web/
+  srv-d850b2og4nts73fhpfog`) — confirmed via `render services --output json`.
 
 ## Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain
@@ -550,9 +577,10 @@ the same change**, or it will not actually save.
 ## Accent color system (`utils/accentColor.js`, `utils/colorExtract.js`)
 Discord's legacy `accent_color`/`hexAccentColor` user field is only populated for
 accounts with **no banner set** (the client shows one or the other) — it comes back
-`null` for almost every active user, and Discord doesn't expose their newer Nitro
-profile-theme colors over the bot API at all. So there's no reliable way to read a
-user's "actual" profile color directly; instead we extract one ourselves:
+`null` for almost every active user. Discord's newer Nitro name-color feature
+(`display_name_styles.colors`) IS exposed over the bot API as of the current version (v10)
+— see the `'displayName'` style below — but avatar/banner/decoration/nameplate have no
+Discord-provided color value at all, so those four are extracted ourselves:
 - `colorExtract.js`'s `getDominantColor(url)` downloads an image (avatar or banner) via
   `jimp`, samples ~2500 pixels, and picks a representative hex value — see "Accent color
   extraction algorithm" below for exactly how (it's gone through 3 real revisions, not a
@@ -624,6 +652,338 @@ Discord avatar rather than a hypothetical:
   recurring migration, don't re-run it reflexively on future algorithm tweaks without
   thinking through whether that specific change actually invalidates existing cached
   values.
+
+### Post-click latency fix (2026-07-13) — `getAccentColorForCommand()` no longer force-fetches
+for avatar style
+Real, user-reported hesitation between a button's Discord-side "loading" spinner ending
+and its content actually updating, traced to `getAccentColorForCommand()` unconditionally
+calling `interaction.client.users.fetch(id, { force: true })` on every single call — a
+forced Discord REST round-trip on every pagination/toggle click regardless of whether the
+color cache was about to hit. Fixed: only `'banner'` style still force-fetches (banner data
+genuinely isn't in the lightweight interaction payload); the default `'avatar'` style now
+reuses `interaction.user` directly. **Confirmed safe via discord.js source itself**
+(`BaseInteraction.js`/`CachedManager.js`/`User.js`): Discord sends the clicking user's live
+avatar hash with every interaction, and `_patch()` always overwrites `.avatar` from that
+payload, so a different user clicking a shared message, or the same user changing their
+avatar between clicks, both still resolve correctly with zero extra fetch. Banner has no
+equivalent free signal (a structural API difference, not an oversight), so it keeps a
+throttled force-fetch instead: `bannerRecheckCache`, `RECHECK_WINDOW_MS = 15 * 60 * 1000` —
+a real slash-command invocation (`interaction.isChatInputCommand()`) always bypasses the
+window and fetches fresh (confirmed via `buildSyntheticInteraction` in index.js that a
+button-driven re-render correctly still reads `isChatInputCommand() === false`, since the
+synthetic interaction preserves the original component interaction's `.type`); only
+button/select re-renders of an already-open message consult the 15-minute cache. This adds
+zero latency to `'preset'`-style users (returns `presetHex` before any of this runs) or
+`'avatar'`-style users (never fetches at all) — only `'banner'`-style users' fresh
+slash-command runs pay the force-fetch cost, same as before this fix, just scoped correctly
+instead of hitting every render.
+
+### 'displayName' style — Discord's real Nitro name-color gradient (2026-07-13)
+Discord exposes a genuine 2-stop name-color gradient a user explicitly picked via their own
+UI: `display_name_styles.colors` (an array of 2 decimal RGB ints, e.g. `[7183099,
+6082490]` → `#6D9AFB`/`#5CCFBA`). **Not parsed by discord.js's own `User` class at all** —
+confirmed against the installed v14.26.4, `User._patch()` has no handling for it whatsoever
+(unlike `collectibles`/`primary_guild`, which it DOES parse — this field is simply newer
+than what this discord.js version implements), so even a force-fetched
+`client.users.fetch()` silently drops it. The only way to read it is a raw REST call that
+bypasses the User model entirely: `client.rest.get(Routes.user(userId))` — same
+`client.rest` object every V2 command already uses for `rest.patch('@original')`, just a
+GET. `accentColor.js`'s `fetchProfileExtras(client, userId)` is this one raw call, shared
+by the `'displayName'`/`'dynamicProfile'` styles AND the "View Colors" panel's Name page
+below — always a live network call (no free signal from the interaction payload, no
+discord.js-level cache to lean on), so callers throttle it the same way banner is throttled
+(`RECHECK_WINDOW_MS`, always-fresh on a genuine slash command).
+- `blendGradientColors([c1, c2])` averages the 2 colors into one hex for use as a
+  Container's flat `accent_color` (Components V2 has no gradient support). Deliberately a
+  simple average — unlike the flat-average approach REJECTED for avatar/banner pixel
+  sampling (see the extraction algorithm's own revision history above), these are exactly 2
+  deliberate user-picked anchor colors, not thousands of noisy image pixels, so a plain
+  average is the right call here, not the same footgun.
+- Falls back to Avatar Color if the user hasn't set one up (same "fall back to the next
+  most personalized style" pattern banner-with-no-banner already uses) — a Nitro name style
+  is a real, common "not set up" case, not a rare edge case.
+- **One-time notice, not repeated on every render**: `index.js`'s `set_accent_style`
+  handler fires a short ephemeral Components V2 follow-up (`#FF73FA`, Discord Nitro's own
+  brand pink) only when the user actively PICKS `'displayName'` and doesn't have one set up
+  — explains it's a Nitro feature, that Avatar Color is being used meanwhile, and that they
+  can switch anytime. Sent via a raw `POST Routes.webhook(applicationId, token)` call (the
+  follow-up equivalent of `sendV2Payload`'s `PATCH .../@original`) since discord.js's
+  high-level `interaction.followUp({components})` doesn't reliably serialize raw V2 JSON
+  either.
+- `/settings`' hex display shows BOTH real gradient stops (`#6D9AFB → #5CCFBA`), not just
+  the blended value — more informative since these are literally the user's own chosen
+  colors, not an approximation.
+
+### 'dynamicProfile' style — randomly picks between every real color source (2026-07-13)
+The one style that's genuinely randomized rather than deterministic: on each real NEW
+slash-command launch, randomly picks between every color source the user actually has
+(avatar always; banner/displayName/decoration/nameplate only if set), then holds that pick
+steady across any button/select re-render of that specific message.
+- **The hard design problem**: keeping the same random pick stable across button
+  re-renders of one message, without threading a seed through every pagination/toggle
+  button's custom_id across 5+ command files. Solved via `interaction.message.id` — free on
+  every button/select interaction (no fetch needed), used directly as the cache key
+  (`dynamicColorCache`, TTL 24h, mirrors `manageUndoStore`'s short-lived-token pattern). The
+  INITIAL command launch is the only tricky case (no message exists yet at the point accent
+  color must be resolved, before the first payload is sent) — solved by paying ONE extra
+  `interaction.fetchReply()` call (fetches the placeholder message `deferReply()` already
+  created) to learn the real message id right after picking, but only once per genuine
+  command launch under this specific opt-in style, never on the per-click hot path the
+  latency fix above protects. A cache miss on a re-render (TTL expired, or the bot restarted
+  since launch — this cache is in-memory only) gracefully re-rolls a fresh pick rather than
+  erroring.
+- Decoration/nameplate colors go through the exact same extraction + still-frame pipeline
+  the "View Colors" panel uses (see below) — an extraction failure EXCLUDES that source
+  from the random pool entirely rather than substituting the command's generic preset color
+  (which would be a silent, misleading "profile color" that isn't real).
+- Routed around `resolveAccentColor()` entirely (`resolveDynamicProfileColor(interaction,
+  prefs, presetHex)`) since it fundamentally needs `interaction` itself, not just a
+  pre-resolved `userFetch` — flows automatically to every command already using the shared
+  `getAccentColorForCommand()` hook, no per-command changes needed.
+
+### Clarifications worth remembering
+- **Loadout/DMZ commands (`/dmz`, `/all`, `/<category>`) are and remain COMPLETELY
+  unaffected by any accent-color-style customization** — always use their own hardcoded
+  per-weapon-category palette (`getMpCategoryAccent()` in `utils/loadoutRender.js`), never
+  touch `accentColorStyle` at all.
+- **`/timestamp` DOES already support every accent style** (avatar/banner/displayName/
+  dynamicProfile) via the shared `getAccentColorForCommand()` — but ONLY once the user has
+  personally saved a `/timestamp` default style other than "All Formats"
+  (`UserPreference.timestampStyle`). The default "All Formats" overview always stays
+  timestamp's own fixed teal preset regardless of accent style preference — Harkirat's own
+  earlier explicit design call, not something left unwired.
+
+## "View Colors" panel (`/colors`, `/settings`' View Colors button, `utils/colorPalette.js`,
+`utils/colorPaletteView.js`, `utils/colorExtract.js`, `utils/stillFrame.js`,
+`utils/colorSwatchImage.js`, `utils/colorGradientImage.js`)
+Lets a user browse real extracted colors from their Avatar/Banner/Display Name/Nameplate/Deco,
+with tap-to-copy hex codes. Two entry points, both funneling through the exact same render
+pipeline so they can't drift apart: the standalone `/colors` command (`commands/colors.js`) and
+a "View Colors" button in `/settings` next to the Avatar/Banner download buttons (style 1/
+blurple, an eyedropper emoji — `utils/emojiMap.js`'s `eyedropper`, an animated icon Harkirat
+sourced, background-removed, and recolored to Discord blurple himself, then uploaded as an
+Application Emoji via `POST /applications/{id}/emojis`, `client.rest` auth'd with the bot
+token — this bot never needed to do the upload itself, see the GIF processing note below).
+Both `settingsVisibility`-scoped (no dedicated visibility preference of its own).
+
+### The color extraction algorithm — went through a full redesign, not a tuning pass
+**V1 (2026-07-13, REJECTED same week)**: an Android Palette-style 6-swatch model (Vibrant/
+Light Vibrant/Dark Vibrant/Muted/Light Muted/Dark Muted, later +Dominant/+Average). Rejected
+after Harkirat compared it directly against real palette-generator tools (Jukebox, Coolors)
+run on his own avatar — their results were genuinely diverse real colors sampled from
+visually distinct regions of the image, while the synthetic category system read as "mostly
+useless." **Before rebuilding, the naive alternative was tested and found WORSE**: ranking
+real sampled pixels by raw population and taking the top N produced 4 near-identical
+off-whites on Harkirat's own avatar (`#F5F4F3(34.5%) #EBEBE9(26.1%) #EEEEF1(2.7%)
+#F3F1ED(2.1%)`) — the exact "background dominates" failure mode `getDominantColor()`'s own
+"vivid" algorithm was built to avoid in the first place.
+
+**V2 (2026-07-14, current)**: real K-MEANS clustering in RGB space, the actual technique those
+reference tools visibly use (confirmed: Coolors' own UI shows pin markers landing on
+chromatically distinct regions — background, hair, eye, skin, shirt — exactly k-means'
+expected behavior, since a large uniform region becomes ONE cluster regardless of pixel
+count while smaller distinct features still get their own). `getColorPalette(imageUrl, count)`
+returns a plain array of `{hex, percent}` sorted by prevalence, NOT a named-fields object —
+there's no more fixed category set to key off of.
+- **Determinism is required, not optional**, specifically because of the "Refresh Colors"
+  button's honest change-detection (below) — it needs the SAME image to always produce the
+  SAME result, or even an unchanged avatar would look "different" on every refresh. Textbook
+  k-means uses randomized init (k-means++); fixed by seeding centroids DETERMINISTICALLY
+  instead (sort sampled pixels by hue, pick K evenly-spaced ones as starting centroids —
+  same spread-out spirit as k-means++, zero randomness). Verified live: ran extraction
+  twice against the same real avatar/banner URLs, byte-identical both times.
+- **A post-clustering merge step** folds any 2 final clusters within 30 RGB-distance back
+  into one (population-weighted average) — confirmed empirically that plain k-means could
+  still occasionally split a subtly-varied region (a background with soft lighting
+  gradient) into 2 near-duplicate clusters depending on where the deterministic seeds
+  landed.
+- **REAL BUG found and fixed, not just a caching gotcha**: requesting 8 colors for avatar
+  only returned 5 even with the merge step in place — clustering at exactly K=8 then
+  merging could eat INTO the requested count with no way to recover lost slots, even though
+  the image likely had other genuinely distinct regions available to fill them from. Fixed
+  by over-clustering first (K = 1.5× requested) before merging, then slicing to the top
+  `count` post-merge — gives the merge step room to fold away real near-duplicates while
+  still hitting the requested count from other distinct regions. Verified: avatar went from
+  5/8 to a full 8/8, determinism re-confirmed unaffected.
+- **REAL alpha-transparency bug found and fixed**: neither `getDominantColor()` nor
+  `getColorPalette()`'s pixel-sampling loops ever checked the alpha byte at all — confirmed
+  32.9% of a real Discord nameplate asset is fully-transparent padding, whose leftover RGB
+  (commonly `0,0,0`) was being counted as real opaque black content. Never surfaced on
+  avatar/banner (typically fully-opaque squares) — only became visible once transparent
+  sources (nameplate/decoration) started running through this same code. Fixed by skipping
+  any pixel with `alpha === 0` in both functions' sampling loops. Verified: nameplate's
+  "Dominant" (a V1-era swatch) went from a nonsensical `#000000` to a real matching blue;
+  avatar's single-color extraction re-tested byte-identical to its pre-fix value (no
+  regression on the already-opaque case).
+- **Per-source color counts**: avatar/banner 8, nameplate/decoration 4 (`PALETTE_COUNTS` in
+  `colorPalette.js`) — nameplate/decoration are smaller/simpler assets that regularly
+  produce fewer genuinely distinct clusters even at higher K, confirmed empirically, so they
+  ask for fewer up front instead of padding out to a count they don't really support.
+  Avatar/banner's 8 paginate 4-per-page (`ENTRIES_PER_PAGE` in `colorPaletteView.js`,
+  `colors_subpage_{source}_{subpage}` custom_id/handler) via the same shared
+  `buildPaginationRow` helper `/calendar`/`/draws` use — since it already returns `null`
+  (renders nothing) when there's only 1 page, nameplate/decoration/Name's smaller counts
+  never show a pager at all, no per-source special-casing needed for that part.
+
+### Dynamic RELATIVE color labels — not a fixed category, not a raw statistic
+Each entry's caption went through 2 iterations before landing on the current design, driven
+by direct, specific pushback each time:
+1. First showed the raw `Covers ~X% of the image` percentage — Harkirat disliked this too.
+2. Rebuilt as `assignDynamicLabels()`: computed relative to how each color relates to the
+   OTHERS actually extracted from THAT source (not a fixed swatch type) — "Majority Color",
+   "Vibrant Accent", etc. First version only had 5 real categories, and anything beyond that
+   fell back to a numbered "Accent Color 2"/"Accent Color 3" — Harkirat's direct pushback:
+   "the whole point of my request was to keep them unique yet relevant," a numbered
+   fallback is neither. **Rebuilt again same day with 13 real non-majority categories**
+   (up from 4) specifically so a genuinely large enough rule set covers all 8 entries on
+   avatar/banner's largest pages without ever touching the fallback: Majority Color (rank
+   0) → Vibrant Accent / Dark Undertone / Light Highlight / Neutral Tone (the original 4,
+   only claim an entry that genuinely earns the threshold) → Secondary Color (meaningfully-
+   sized 2nd population share) → Warm Contrast / Cool Contrast (genuine temperature
+   contrast against the majority specifically, only fires if majority isn't already that
+   temperature) → Complementary Tone (most hue-distant entry overall) → Deep Shade / Soft
+   Tint (notably darker/lighter than the MAJORITY specifically, distinct from the separate
+   darkest/lightest-overall rules) → Rich Tone / Muted Accent (notably more/less saturated
+   than the majority specifically) → Balanced Tone (closest overall match to the majority,
+   for a genuinely unremarkable color — still a real relationship, not a manufactured one).
+   Greedy priority claim: each rule only claims an UNCLAIMED entry that actually earns it,
+   never forced, so labels never duplicate on one page. A tiny 4-word non-numbered fallback
+   pool still exists as a safety net for a pathological edge case, but verified live it's
+   never actually reached — avatar's and banner's full 8-entry sets both got 8/8 distinct
+   real labels, zero fallback hits.
+- Row format: **{plain-English color name}** (via `color-namer`'s `'ntc'` "Name that Color"
+  palette — picked over its other bundled palettes specifically because ntc's names come
+  pre-formatted with real spacing/casing like "Royal Blue" rather than lowercase-
+  concatenated "royalblue") as the bold heading, `Hex: `#XXXXXX`` plainly below it, the
+  dynamic relative label as a small quoted caption. New dependency, checked via `npm audit`
+  before adding — zero NEW vulnerabilities introduced (only the pre-existing discord.js/
+  undici/xlsx ones already tracked in memory as deferred).
+- Each entry also shows an actual generated solid-color swatch image (`colorSwatchImage.js`'s
+  `renderSwatchImage(hex)`, tiny Jimp-generated PNG, no external hosting needed) as a Section
+  thumbnail accessory, sent as a message attachment referenced via `attachment://swatch_N.png`.
+
+### Per-page layout, source by source
+- **Avatar**: Section+avatar-thumbnail header (the page's own subject).
+- **Banner/Nameplate**: full-width Media Gallery preview at the top (same `{ type: 12, items:
+  [{ media: { url } }] }` shape `/settings`' own banner display already uses in production),
+  plain-text heading below (no thumbnail — the media above already shows the real image).
+- **Deco**: Section+thumbnail (like Avatar), NOT a Media Gallery — tried the full-width
+  version first, Harkirat: "gets too large and looks odd." The thumbnail points at the REAL
+  animated decoration URL (not the still-frame used internally for extraction), but Discord
+  renders it as a static poster in this context anyway (confirmed a genuine Discord-client
+  limitation, needs a manual tap to animate — same class of issue as the nameplate .webm
+  attempt below). The real fix (converting APNG to a real GIF via ffmpeg on every render,
+  since GIFs DO autoplay inline) was explicitly NOT built — real per-render latency/
+  complexity for a cosmetic nicety Harkirat said he's fine leaving static.
+- **Name**: a GENERATED gradient banner (`colorGradientImage.js`'s `renderGradientBanner`),
+  explicitly NOT a render of the user's actual styled display name text — Discord's per-style
+  fonts (`font_id`/`effect_id` in `display_name_styles`) aren't publicly distributed or
+  accessible via any API at all, confirmed no legal/technical path exists. Built the fallback
+  Harkirat suggested himself instead: a flat left-to-right gradient at the real nameplate
+  banner's own aspect ratio (confirmed via a live fetch: 672×126, ≈5.33:1) since he liked
+  those dimensions. 3 entries (down from an earlier 5 that also included lighten/darken
+  variants) — the 2 real gradient stops plus their midpoint blend (the SAME value used as
+  the single `'displayName'` accent-color hex, via `accentColor.js`'s `blendGradientColors`).
+- **Nameplate animation**: tried using the real `asset.webm` sibling for display (2026-07-14)
+  — reverted same day, Harkirat didn't like that Discord needs a manual tap to play it
+  inline rather than auto-animating (same underlying limitation as Deco above). Reverted to
+  the static `.png` used for extraction; the dead `nameplateAnimatedUrl` plumbing was removed
+  entirely from `accentColor.js`/`colorPalette.js` rather than left unused.
+- **No `accent_color` at all** on the panel's container (Harkirat's explicit request) — field
+  omitted entirely, not set to a neutral value, giving Discord's default no-accent look.
+- **Divider spacing 2 ("large")** and a short hint line above the source-switch row: "Switch
+  below to see colors from your other profile elements. (Tip: Updated your profile? `Refresh
+  Colors`)" — on its own `-#` line below the first sentence after Harkirat flagged the
+  original one-line version made the panel feel too tall on mobile.
+- **Vertical centering**: tried a leading blank-emoji line (`emojis.blank`) above the
+  Avatar/Deco headings to nudge the 2-line heading text down toward vertically centered
+  against the taller thumbnail — Discord's Components V2 has no native vertical-align
+  control for a Section's text relative to its accessory either. Reverted same day after
+  Harkirat checked it on mobile and it didn't look right there. Stays a known, unsolved
+  cosmetic gap. (Horizontal centering is separately confirmed flatly impossible — Discord
+  has zero text-align support at all, and manual space-padding doesn't work either since
+  the heading includes a proportional-width `<@user>` mention pill whose rendered width
+  varies by username length.)
+
+### "Refresh Colors" — the one other deliberate exception to "buttons never re-fetch"
+Its own top-level sibling row OUTSIDE the container (same convention the global nav row/
+Share Publicly button already use — a new top-level row, never packed into the container),
+style 1 (blurple) + the eyedropper emoji, matching "View Colors" itself.
+- Forces a real re-extraction bypassing the cache (`utils/colorPalette.js`'s `forceRefresh`
+  param on `getCachedPalette`/`refreshAllPalettes`) — alongside `colors_view` (the main
+  button), the only 2 entry points that do this; ordinary page/subpage navigation
+  (`colors_page_`/`colors_subpage_`) stays cache-only and fast, unaffected.
+- **Dedicated 10s cooldown** (`colorsRefreshCooldowns` in index.js), separate from the
+  generic 600ms anti-spam guard (below) — this button does real re-extraction work, the
+  generic guard's window wouldn't meaningfully throttle it. On cooldown, replies ephemeral
+  with remaining seconds instead of processing.
+- **Honest change-detection**: snapshots a cache-only "before" state via
+  `refreshAllPalettes(interaction, prefs, false)`, THEN forces the real refresh via
+  `refreshAllPalettes(interaction, prefs, true)`, compares the two, and sends an ephemeral
+  follow-up saying either "Found new colors!" or "still generates the same colors — this
+  button is for after you actually change it, not to reroll." This is exactly why
+  determinism in the k-means rewrite above mattered — without it, this comparison would
+  report "changed" on literally every click regardless of whether anything really did.
+- **REAL BUG found and fixed**: the panel correctly said "found new colors" but kept showing
+  the OLD swatch images until switching pages and back. Root cause: `sendV2Payload.js`'s raw
+  multipart `PATCH` never included Discord's `attachments` field in the JSON body when
+  uploading new `files` — Discord's edit-message API needs this field to know whether new
+  attachments should REPLACE or ADD TO a message's existing ones; omitted, Discord could
+  retain the OLD attachments instead of cleanly swapping in the new swatch images, even
+  though text/components updated correctly (that part doesn't depend on `attachments` at
+  all, which is why the confirm message worked while the images silently stayed stale).
+  Fixed: whenever `files` is passed to `sendV2Payload`, also set `body.attachments = []` —
+  confirmed via grep this is safe bot-wide, only the 5 View Colors call sites ever pass
+  `files` at all, and every one of them always fully regenerates its complete attachment
+  set on every render (never expects to "keep" one from a prior render).
+
+### Still-frame extraction for animated sources (`utils/stillFrame.js`)
+Avatar decorations are commonly served as **animated PNG (APNG)** — confirmed live against a
+real equipped decoration, Jimp (this whole color system's underlying image library) cannot
+decode APNG at all (`Mime type image/apng does not support decoding`). `extractStillFrame
+(sourceUrl)` downloads the source and pulls exactly ONE still frame via `ffmpeg` (`-vframes 1
+-update 1` — the `-update 1` flag avoids a spurious "missing %d sequence pattern" warning
+ffmpeg otherwise prints; confirmed present on this host but NOT a guaranteed system dependency
+elsewhere) into a PNG Buffer Jimp reads identically to a URL. Deliberately general-purpose,
+reusable for any other animated source, not decoration-specific. Wired into BOTH places
+decoration extraction happens (`colorPalette.js`'s `getCachedPalette` for the View Colors
+panel, `accentColor.js`'s `getCachedDecorationColor` for the `'dynamicProfile'` pool) — the
+cache check runs BEFORE the still-frame extraction step so a cache hit never pays for an
+unnecessary ffmpeg call. Nameplate's `static.png` doesn't need this (already guaranteed
+static); avatar/banner don't either.
+
+### Icon sourcing (the eyedropper emoji)
+Harkirat provided a raw GIF, background-removed via the `gif-background-remover` skill
+(`--analyze` first, confirmed white background + one verified enclosed region via
+`--protect-outline-color`, NOT `--protect-region` since the interior shape isn't circular),
+then recolored toward Discord blurple (`#5865F2`) via a custom HSL-shift script — the bulb to
+exact blurple, the liquid to a lighter tint preserving its original lightness offset. **Real
+GIF-format limitation found while trying to fake a "bleed-through" highlight effect**: GIF
+has NO partial-transparency support at all — every pixel is binary opaque-or-transparent,
+confirmed directly (a 114/255 alpha value silently got rounded back to 255 by Pillow's own
+GIF encoder). Worked around correctly since the button's background color is fixed and known:
+baked a literal blend of white+blurple as a flat opaque color in place of the pure white,
+achieving the same visual effect without needing real alpha. Cropped + compressed for
+Discord's 256KB emoji limit — Harkirat's own manual pipeline (crop → resize to 128px width →
+`gifski` re-encode at quality 68) kept all 180 original frames at 248KB, meaningfully better
+than this session's own attempts via the skill's gifsicle-based tier system (which had to
+drop frames to hit budget) — see the gif-background-remover skill's own SKILL.md for the
+fuller writeup of that comparison. Uploaded by Harkirat himself as an Application Emoji.
+
+## Light anti-spam cooldown (2026-07-13)
+`index.js`'s single `interactionCreate` handler checks a per-user 600ms cooldown
+(`interactionCooldowns` Map, `INTERACTION_COOLDOWN_MS`) at the very top, before any of the
+`isAutocomplete`/`isChatInputCommand`/`isStringSelectMenu`/`isButton`/`isModalSubmit` branches —
+scoped to ONLY `isButton()`/`isStringSelectMenu()` (the rapid-clickable component types; a slash
+command or modal submit is a deliberate typed action, not spam-clickable the same way). An
+interaction inside the window is silently swallowed (`deferUpdate().catch(() => {})` then
+`return`) rather than replied to with an error — no visible change, no "This interaction failed"
+toast, just a no-op. One entry per distinct user (not per click), so the Map never meaningfully
+grows. Meant as a very light guard against rapid double/triple-clicking causing races (a `/manage`
+confirm flow re-firing, pagination edits stacking), not a real rate-limiter. The View Colors
+"Refresh Colors" button has its OWN separate, longer 10s cooldown (`colorsRefreshCooldowns`) on top
+of this — see the View Colors section above for why (it does real re-extraction work this generic
+600ms window wouldn't meaningfully throttle).
 
 ## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`, `utils/globalNav.js`,
 `utils/ephemeral.js`, `utils/sendV2Payload.js`)
@@ -1017,6 +1377,39 @@ Cloudinary usage only ever builds URL strings for images an admin already upload
   `CLOUDINARY_URL` env var the moment it's required, no explicit `cloudinary.config()` call needed.
   Already present in both local `.env` and Railway's production variables.
 
+## Patch notes Cloudinary caching (`utils/patchNotesCache.js`, shipped 2026-07-13)
+Same underlying problem as draws' thumbnail cache (admin-typed external screenshot URLs can go
+dark later, leaving a broken image in `/patch notes`' media carousel) but a genuinely DIFFERENT
+retention model, so this is its own module rather than a reuse of `cloudinaryCache.js`:
+- **Retention is SEASON-based, not time-based.** An image stays cached for as long as its season is
+  still reachable through `/patch notes`' own "previous 5 seasons" history dropdown
+  (`patchnotes.js`'s `recentPatches = seasonalDoc.patchNotes.slice(-5)`), and gets pruned once that
+  season rolls off the back of that list — regardless of how many days have passed. A season live
+  for months stays cached the whole time as long as it's still one of the 5 most recent; a season
+  that rolled off the dropdown yesterday gets pruned on the very next sweep no matter how young it
+  is. `pruneOrphanedPatchFolders(keepPatchIds)` takes the exact same `_id` set the history dropdown
+  is built from, so retention here can never drift out of sync with what's actually still reachable
+  in Discord.
+- **Keyed by the patch note subdocument's own `_id`, not its title** — titles CAN be renamed later
+  (the most-recent entry's title stays synced to `currentSeasonTitle`, see the design-decision-log
+  entry above), and keying by a mutable title would either orphan already-cached images on a rename
+  or require a folder-rename step neither Cloudinary nor this module supports. `_id` never changes.
+- `public_id` shape: `patch_notes/{patchId}/{imageIndex}` — `imageIndex` is the ABSOLUTE position in
+  the patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting
+  the same slot (`urls1` owns indices 0-4, `urls2` owns 5-9) always overwrites the same asset in
+  place (`overwrite: true`) instead of accumulating duplicates under different indices.
+- Same `overwrite: true` + `invalidate: true` remote-URL-to-remote-URL upload pattern as the draws
+  cache (Cloudinary fetches the bytes server-side, the bot never downloads the image itself), and
+  the same never-throw-just-fall-back-to-the-raw-URL philosophy — a Cloudinary hiccup must never
+  block an admin's save.
+- **Same SECURITY rule as the draws cache, re-applied here rather than assumed inherited**: never
+  log a raw Cloudinary error object (the Admin API's rejected-promise carries the account's live API
+  key+secret in `request_options.auth`) — every Cloudinary call in this file catches and sanitizes
+  its own error via `safeErrorMessage()`, none of it escapes to a caller that doesn't know to
+  sanitize it.
+- Runs on the same boot + 24h `setInterval` schedule as the draws cleanup (`index.js`'s
+  `runCloudinaryCleanup()`), same Cloudinary account, separate `patch_notes/` folder.
+
 ## Batch refinement pass (2026-07-12, evening — after the earlier same-day redesign/deploy work)
 A large follow-up batch covering `/draw prices`, `/manage`, and `/settings`, requested right after
 the `/manage` panel redesign shipped. Sections 4 (a slash-command wording/consistency overpass) and
@@ -1269,9 +1662,9 @@ throwing) plus a long follow-up list. All addressed same session:
 - **Patch Notes URL modals**: each of the 5 URL slots is now its OWN Short text field (`url0`..`url4`)
   instead of one Paragraph field with newline-joined URLs — a modal has exactly 5 field slots, which
   is exactly why URLs were split into "URLs 1"/"URLs 2" in the first place; this uses that same
-  budget more granularly. (Cloudinary-backed caching for these images, with season-based retention
-  instead of the 45-day draws window, was explicitly deferred as a separate follow-up project —
-  not built this pass.)
+  budget more granularly. (Cloudinary-backed caching for these images was deferred out of this same
+  pass as a separate follow-up project — **shipped 2026-07-13, see "Patch notes Cloudinary caching"
+  below**, not still pending.)
 - **`/settings` footer**: swapped `dioreo` for an animated `diorHeart` emoji
   (`<a:diorHeart:1525941004929339594>`) and moved it to the FRONT of the sentence ("{emoji} Made
   with love by @dior"). Button labels reworded "HIDDEN"/"PUBLIC" → "Hide"/"Show"; descriptive text
@@ -1313,8 +1706,9 @@ throwing) plus a long follow-up list. All addressed same session:
 - **`/calendar`'s active/all-events hint line condensed**, with a "(Tip: check out `/settings`)"
   appended, matching the same tip convention `/draw prices`' footer already uses.
 - **Explicitly deferred to separate follow-up projects** (Harkirat's own call, not scope-cut
-  silently): patch notes Cloudinary caching with season-based retention; `/secondaries` → `/secondary`
-  rename + a `/pistols` alias.
+  silently): patch notes Cloudinary caching with season-based retention (**shipped 2026-07-13, see
+  "Patch notes Cloudinary caching" above — no longer pending**); `/secondaries` → `/secondary`
+  rename + a `/pistols` alias (still pending).
 
 ## "Browse other builds" dropdown + alphabetical category sort (2026-07-12/13, follow-up)
 - **`/all`'s category sort dropped `CATEGORY_SORT_ORDER` entirely** (see the batch entry above) —
@@ -1383,25 +1777,45 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
   patch note screenshots per entry are usually few, but not empirically verified
   the way draws/calendar chunking was).
+- **View Colors panel's vertical centering is unsolved.** Discord's Components V2 has no native
+  vertical-align control for a Section's text relative to its accessory; a blank-emoji-line
+  workaround was tried and reverted after it looked wrong on mobile. Purely cosmetic, no functional
+  impact — see the View Colors section above for the full history.
+- **Deco page renders as a static poster, not animated**, even though its thumbnail points at the
+  real animated decoration URL — confirmed a genuine Discord-client limitation (needs a manual tap
+  to animate in this context), not a bug in this bot's own code. The real fix (re-encoding APNG to
+  GIF via ffmpeg on every render, since GIFs DO autoplay inline) was deliberately not built — real
+  per-render latency for a cosmetic nicety Harkirat said he's fine leaving static. Nameplate's own
+  animated `.webm` was tried in its place for the same reason and reverted for the same tap-to-play
+  limitation; that plumbing (`nameplateAnimatedUrl`) was removed rather than left dead.
+- **`ffmpeg` is a real, unverified-elsewhere system dependency** now that `utils/stillFrame.js`
+  exists (View Colors' decoration extraction, `'dynamicProfile'`'s decoration source) — confirmed
+  present on this Mac, not guaranteed on Render/Railway's production containers. If decoration color
+  extraction ever silently stops working in production specifically (works locally, not live), check
+  for `ffmpeg` on the deployed image before assuming it's a code bug.
 
 ## Next planned work
 - **The real "search + multi-select" flow for Delete Multiple (all entities) and Loadouts' Replace
   Multiple** — deliberately deferred out of the 2026-07-12 `/manage` panel redesign at Harkirat's
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else
   in that pass. See the `/manage` design-decision-log entry above for exactly what's a placeholder
-  right now vs. what the real version needs to do.
+  right now vs. what the real version needs to do. Still pending.
+- **`/secondaries` → `/secondary` rename + a `/pistols` alias** registered as a genuinely separate
+  command querying the same category — still explicitly deferred, not scope-cut silently.
 - The 2026-07-12 batch (draw prices, `/manage`, `/settings`, slash-command overpass, color
-  repalette) is now fully complete — see its own CLAUDE.md sections above for detail.
-- **Two items still explicitly deferred as separate follow-up projects (2026-07-12 night), not
-  silently scope-cut:**
-  - Patch notes Cloudinary caching with season-based retention (folder per season title, kept as
-    long as that season is within the "previous 5 seasons" dropdown, deleted after) instead of the
-    current plain-URL storage / the draws' 45-day window.
-  - `/secondaries` → `/secondary` rename + a `/pistols` alias registered as a genuinely separate
-    command querying the same category.
-  - (The "browse other builds in this category" dropdown and `/all`'s category sort, both also
-    flagged here previously, are now DONE — see the follow-up section above.)
-- Not yet verified: Harkirat manually exercising every `/manage` panel action (including the new
+  repalette) and patch notes Cloudinary caching are now both fully complete and shipped — see their
+  own CLAUDE.md sections above for detail, not listed here as pending anymore.
+- **The View Colors panel / accent-color-personalization feature (this session, 2026-07-13/14) is
+  functionally complete** — k-means extraction, dynamic relative labeling, `/colors` command, the
+  `/settings` button, `'displayName'`/`'dynamicProfile'` accent styles, Refresh Colors with
+  cooldown+change-detection, all live-tested and confirmed working by Harkirat across many rounds.
+  See the "View Colors panel" section above for the full history and the 2 known open cosmetic gaps
+  listed just above (vertical centering, deco/nameplate animation).
+- **Not yet re-confirmed live**: the `sendV2Payload` attachments-replacement fix (Refresh Colors
+  should now visually update the panel immediately instead of requiring a page-switch to see new
+  swatches) was boot-tested but not re-exercised against a real Discord click since the fix landed —
+  worth a quick re-test the next time this area is touched, rather than assuming it's confirmed.
+- Not yet verified: Harkirat manually exercising every `/manage` panel action (including the
   combined-line Add Draw field, upsert-by-title Replace, granular Purge scopes, every Confirm/Cancel
-  step, and every Undo button), the new `/settings` 2-page layout, and the new Cloudinary-cache
-  add/edit/bulk flows, live in Discord.
+  step, and every Undo button), the `/settings` 2-page layout, and the Cloudinary-cache add/edit/bulk
+  flows (both draws' and patch notes'), live in Discord.

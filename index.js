@@ -292,6 +292,21 @@ const pendingManageEdits = new Map(); // token -> { group, match }
 // the mng_bulkdelconfirm_/mng_bulkdelcancel_ button click.
 const pendingBulkDeletes = new Map(); // token -> { description, summary, apply: async () => undoToken }
 
+// Light anti-spam guard (2026-07-13) -- buttons/selects go through a deferUpdate()+edit cycle that
+// can take a moment (DB round-trips, Cloudinary lookups, etc.), so rapid double/triple-clicking one
+// while the previous click is still processing can stack up racing edits. One entry per distinct
+// user (last-accepted timestamp, not per-click), so this never meaningfully grows -- no TTL needed.
+const interactionCooldowns = new Map(); // userId -> last accepted component-interaction timestamp
+const INTERACTION_COOLDOWN_MS = 600;
+
+// "Refresh Colors" cooldown (2026-07-14, Harkirat's request) -- a SEPARATE, longer cooldown from the
+// generic 600ms anti-spam guard above, specific to the colors_refresh_ button, since that button
+// does real work (re-downloads + re-extracts a source's palette) that the generic guard's window
+// wouldn't meaningfully throttle. userId-keyed, same "one entry per distinct user, no TTL needed"
+// shape as interactionCooldowns above.
+const colorsRefreshCooldowns = new Map(); // userId -> last accepted refresh timestamp
+const COLORS_REFRESH_COOLDOWN_MS = 10 * 1000;
+
 // --- DRAW THUMBNAIL CLOUDINARY CACHE (2026-07-12) --- shared by every bulk draw-save route (single
 // add/edit uses resolveThumbnail directly, since there's only ever one draw to resolve). Runs every
 // parsed draw's thumbnailUrl through resolveThumbnail() concurrently -- draws.js's media gallery
@@ -471,6 +486,20 @@ async function resolveManagePanelAction(interaction, group, action, match) {
 // ==========================================
 client.on('interactionCreate', async interaction => {
   try {
+
+    // --- LIGHT ANTI-SPAM GUARD --- buttons/selects only (modal submits are a deliberate typed
+    // action, not spam-clickable; slash commands aren't rapid-fire the same way). A click inside
+    // the cooldown window is silently swallowed via a bare deferUpdate() -- acknowledges it so
+    // Discord doesn't show a "This interaction failed" toast, but doesn't route it anywhere.
+    if (interaction.isButton() || interaction.isStringSelectMenu()) {
+        const now = Date.now();
+        const lastAccepted = interactionCooldowns.get(interaction.user.id) || 0;
+        if (now - lastAccepted < INTERACTION_COOLDOWN_MS) {
+            await interaction.deferUpdate().catch(() => {});
+            return;
+        }
+        interactionCooldowns.set(interaction.user.id, now);
+    }
 
     // ==========================================
     // --- STEP 6.1: DATABASE AUTOCOMPLETE ROUTE ---
@@ -762,6 +791,44 @@ client.on('interactionCreate', async interaction => {
             if (action === 'set_region_mode') prefs.defaultRegionMode = selectedValue;
 
             await prefs.save();
+
+            // One-time "hey, this needs Nitro setup" notice (2026-07-13) -- Display Name Colors is
+            // the one accent style that isn't guaranteed to exist at all (unlike avatar, which every
+            // user has, or banner, which silently falls back to avatar if unset with no notice).
+            // Fires only right when the user PICKS this option, not on every future render --
+            // resolveAccentColor's own silent avatar-fallback (utils/accentColor.js) already covers
+            // every render after this one without repeating the notice. A brand-new follow-up message
+            // (not editing @original, unlike sendV2Payload) needs the raw POST webhook route for the
+            // same reason every other V2 send bypasses discord.js's high-level methods -- no builder
+            // class exists for a type-17 Container, so interaction.followUp({components}) doesn't
+            // reliably serialize it.
+            if (action === 'set_accent_style' && selectedValue === 'displayName') {
+                const { fetchDisplayNameColors } = require('./utils/accentColor');
+                const colors = await fetchDisplayNameColors(interaction.client, targetUserId);
+                if (!colors) {
+                    try {
+                        const { Routes } = require('discord.js');
+                        await interaction.client.rest.post(
+                            Routes.webhook(interaction.applicationId, interaction.token),
+                            {
+                                body: {
+                                    flags: 32768 | 64, // Components V2 + ephemeral
+                                    components: [{
+                                        type: 17,
+                                        accent_color: 16724218, // Discord Nitro's own pink (#FF73FA) -- thematically fitting for a Nitro-gated notice
+                                        components: [{
+                                            type: 10,
+                                            content: `## 🎨 Display Name Colors Not Set Up\nThis matches Discord's **Nitro** name-style gradient — your profile doesn't have one yet.\n-# Using **Avatar Color** for now. Set one up in Discord's own Profile settings, or pick a different palette anytime in \`/settings\`.`
+                                        }]
+                                    }]
+                                }
+                            }
+                        );
+                    } catch (notifyError) {
+                        console.error('Failed to notify user about missing Display Name Colors setup (interaction likely expired):', notifyError);
+                    }
+                }
+            }
 
             // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated
             // parameters instantly -- passes the current page through so picking an option on the
@@ -1097,6 +1164,205 @@ client.on('interactionCreate', async interaction => {
             const settingsCommand = client.commands.get('settings');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
             return await settingsCommand.execute(syntheticInteraction, targetPage);
+        }
+
+        // B.6 "VIEW COLORS" PANEL (2026-07-13) -- opens as its OWN new message (deferReply, not
+        // deferUpdate) so /settings itself stays open underneath, unlike every other settings button
+        // here which edits @original in place. custom_id: `colors_view|{userId}`. Ephemeral state
+        // matches the user's own `/settings` visibility preference (Harkirat's request) -- same
+        // resolution settings.js itself uses, not a hardcoded always-ephemeral default.
+        if (interaction.customId.startsWith('colors_view|')) {
+            const [, targetUserId] = interaction.customId.split('|');
+            if (interaction.user.id !== targetUserId) {
+                try {
+                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            const UserPreference = require('./models/UserPreference');
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+            const isEphemeral = (prefs.settingsVisibility || 'public').toUpperCase() !== 'PUBLIC';
+
+            await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
+            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { buildColorPalettePanel } = require('./utils/colorPaletteView');
+
+            // forceRefresh: true (2026-07-14, Harkirat's explicit request) -- the main "View Colors"
+            // button is a deliberate exception to this bot's general "buttons never re-run
+            // extraction/re-fetch" rule, since clicking it is a genuine new look-up action, not a
+            // rapid re-render of something already on screen. Page-switch navigation below (B.7)
+            // stays cache-only as normal; only this entry point and the explicit "Refresh Colors"
+            // button (B.8) force a real re-extraction.
+            const data = await refreshAllPalettes(interaction, prefs, true);
+
+            const { components, files } = await buildColorPalettePanel({
+                source: 'avatar',
+                data,
+                targetUserId,
+                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+            });
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+        }
+
+        // B.7 "VIEW COLORS" PAGE SWITCH -- Avatar/Banner/Name/Nameplate/Deco buttons on the panel
+        // above. Edits that panel message in place (deferUpdate, unlike colors_view's deferReply
+        // above, since this interaction's own @original IS the already-open palette message) --
+        // ephemeral state can't change via an edit anyway, so this just preserves whatever the
+        // message already has (same pattern the loadout pagination handler uses). Deliberately
+        // cache-only (no forceRefresh) -- ordinary page navigation should stay fast and NOT re-run
+        // extraction on every click, unlike colors_view/colors_refresh_ above/below.
+        if (interaction.customId.startsWith('colors_page_')) {
+            const [actionStr, targetUserId] = interaction.customId.split('|');
+            if (interaction.user.id !== targetUserId) {
+                try {
+                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            await interaction.deferUpdate();
+            const source = actionStr.replace('colors_page_', '');
+            const UserPreference = require('./models/UserPreference');
+            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { buildColorPalettePanel } = require('./utils/colorPaletteView');
+
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+
+            const data = await refreshAllPalettes(interaction, prefs);
+            const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
+
+            const { components, files } = await buildColorPalettePanel({
+                source,
+                data,
+                targetUserId,
+                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+            });
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+        }
+
+        // B.7.5 "VIEW COLORS" SUB-PAGE SWITCH -- Prev/Next WITHIN the current source (avatar/banner's
+        // 8 colors need this at 4-per-page; display name/nameplate/decoration's smaller counts never
+        // show this row at all, see buildPaginationRow's own totalChunks<=1 check). custom_id:
+        // `colors_subpage_{source}_{subpage}|{userId}`. Same shape as B.7 above (cache-only, no
+        // forceRefresh), just staying on the same source instead of switching to a different one.
+        if (interaction.customId.startsWith('colors_subpage_') && interaction.customId !== 'colors_subpage_indicator') {
+            const [actionStr, targetUserId] = interaction.customId.split('|');
+            if (interaction.user.id !== targetUserId) {
+                try {
+                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            await interaction.deferUpdate();
+            const [source, subpageStr] = actionStr.replace('colors_subpage_', '').split('_');
+            const subpage = parseInt(subpageStr, 10) || 0;
+            const UserPreference = require('./models/UserPreference');
+            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { buildColorPalettePanel } = require('./utils/colorPaletteView');
+
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+
+            const data = await refreshAllPalettes(interaction, prefs);
+            const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
+
+            const { components, files } = await buildColorPalettePanel({
+                source,
+                subpage,
+                data,
+                targetUserId,
+                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+            });
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+        }
+
+        // B.8 "VIEW COLORS" MANUAL REFRESH (2026-07-14, Harkirat's request) -- the "Refresh Colors"
+        // button on the panel. custom_id: `colors_refresh_{source}_{subpage}|{userId}` (stays on the
+        // same page/subpage that was showing when clicked). forceRefresh: true bypasses the cache and
+        // actually re-runs
+        // extraction -- the one other deliberate exception to "buttons never re-fetch", alongside
+        // colors_view (B.6) above. Also gated by a dedicated 10s cooldown (colorsRefreshCooldowns,
+        // separate from the generic 600ms anti-spam guard -- this button does real work, unlike a
+        // plain re-render) and reports back whether anything actually changed, via an ephemeral
+        // follow-up alongside the panel update.
+        if (interaction.customId.startsWith('colors_refresh_')) {
+            const [actionStr, targetUserId] = interaction.customId.split('|');
+            if (interaction.user.id !== targetUserId) {
+                try {
+                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+
+            const now = Date.now();
+            const lastRefresh = colorsRefreshCooldowns.get(interaction.user.id) || 0;
+            if (now - lastRefresh < COLORS_REFRESH_COOLDOWN_MS) {
+                const remainingSec = Math.ceil((COLORS_REFRESH_COOLDOWN_MS - (now - lastRefresh)) / 1000);
+                try {
+                    await interaction.reply({ content: `⏳ **Slow down!** Please wait ${remainingSec}s before refreshing colors again.`, ephemeral: true });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of colors-refresh cooldown (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            colorsRefreshCooldowns.set(interaction.user.id, now);
+
+            await interaction.deferUpdate();
+            const [source, subpageStr] = actionStr.replace('colors_refresh_', '').split('_');
+            const subpage = parseInt(subpageStr, 10) || 0;
+            const UserPreference = require('./models/UserPreference');
+            const { refreshAllPalettes } = require('./utils/colorPalette');
+            const { buildColorPalettePanel } = require('./utils/colorPaletteView');
+
+            let prefs = await UserPreference.findOne({ discordId: targetUserId });
+            if (!prefs) prefs = new UserPreference({ discordId: targetUserId });
+
+            // Snapshot the cache-only "before" state first, THEN force a real refresh -- comparing
+            // the two is what lets the follow-up message honestly say whether anything actually
+            // changed, rather than just claiming success unconditionally.
+            const before = await refreshAllPalettes(interaction, prefs, false);
+            const after = await refreshAllPalettes(interaction, prefs, true);
+            const beforeVal = source === 'name' ? before.displayNameColors : before[source];
+            const afterVal = source === 'name' ? after.displayNameColors : after[source];
+            const changed = JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
+
+            const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
+            const { components, files } = await buildColorPalettePanel({
+                source,
+                subpage,
+                data: after,
+                targetUserId,
+                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+            });
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
+
+            const { SOURCE_META } = require('./utils/colorPaletteView');
+            const sourceLabel = SOURCE_META[source]?.label || source;
+            const resultMessage = changed
+                ? `✅ Found new colors for your **${sourceLabel}**!`
+                : `ℹ️ Your **${sourceLabel}** still generates the same colors — this button is for after you actually change it, not to reroll the same source.`;
+            try {
+                return await interaction.followUp({ content: resultMessage, ephemeral: true });
+            } catch (notifyError) {
+                console.error('Failed to send colors-refresh result notice (interaction likely expired):', notifyError);
+            }
+            return;
         }
 
         // C. GLOBAL UI NAVIGATION BAR

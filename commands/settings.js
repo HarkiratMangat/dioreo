@@ -7,7 +7,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const UserPreference = require('../models/UserPreference');
 const emojis = require('../utils/emojiMap');
-const { resolveAccentColor } = require('../utils/accentColor');
+const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor } = require('../utils/accentColor');
+const { refreshAllPalettes } = require('../utils/colorPalette');
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
@@ -47,6 +48,22 @@ module.exports = {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         }
 
+        // "View Colors" soft refresh (2026-07-13) -- warms utils/colorPalette.js's 6-swatch cache for
+        // every source in the background every time /settings opens, so the View Colors panel (see
+        // the button below) is usually already fresh by the time someone actually clicks it. NOT
+        // awaited -- awaiting this would mean every /settings open pays for downloading+extracting up
+        // to 4 separate images, reintroducing exactly the kind of hesitation this whole session has
+        // been eliminating. Deliberately operates on its OWN freshly-fetched UserPreference document
+        // rather than the `prefs` object this render already reads/mutates/saves below -- running two
+        // concurrent save() calls against the SAME in-memory Mongoose document risked a version
+        // conflict/lost update between this render's own accent-color cache write and this
+        // background refresh's palette cache write. The View Colors panel itself still has its own
+        // lazy fallback (utils/colorPalette.js's getCachedPalette) for whichever source this hasn't
+        // finished warming yet by the time someone navigates to it.
+        UserPreference.findOne({ discordId: userId })
+            .then(freshPrefs => freshPrefs ? refreshAllPalettes(interaction, freshPrefs) : null)
+            .catch(err => console.error('Background color palette soft-refresh failed:', err.message));
+
         // 3. LIVE PROFILE LOOKUP
         const userFetch = await interaction.client.users.fetch(userId, { force: true });
 
@@ -59,10 +76,25 @@ module.exports = {
 
         // ACCENT COLOR: /settings has no fixed brand color of its own (unlike calendar/draws/etc),
         // so its "default" behavior is to use the avatar color — see utils/accentColor.js for the
-        // full style resolution (default/avatar/banner), which is shared across every command.
-        const panelColorHex = await resolveAccentColor({
-            prefs, userFetch, presetHex: 16741953, defaultBehavior: 'avatar'
-        });
+        // full style resolution (default/avatar/banner/displayName/dynamicProfile), which is shared
+        // across every command. /settings already force-fetches userFetch unconditionally on every
+        // render (line above, for the avatar/banner download buttons regardless of accent style), so
+        // unlike getAccentColorForCommand's throttled path, there's no extra hesitation being
+        // introduced here by also always fetching Display Name Colors fresh when that style is
+        // selected — it's the same "always fresh on this page" behavior /settings already has for
+        // avatar/banner. 'dynamicProfile' is routed around resolveAccentColor entirely (needs
+        // `interaction` itself for its message-based pick caching, not just a resolved userFetch —
+        // see resolveDynamicProfileColor's own comment) — this also means visiting /settings while on
+        // this style shows whatever was picked for the message /settings itself is rendered on, same
+        // "one pick per message, held steady across re-renders" rule every other command follows.
+        const displayNameColors = prefs.accentColorStyle === 'displayName'
+            ? await fetchDisplayNameColors(interaction.client, userId)
+            : null;
+        const panelColorHex = prefs.accentColorStyle === 'dynamicProfile'
+            ? await resolveDynamicProfileColor(interaction, prefs, 16741953)
+            : await resolveAccentColor({
+                prefs, userFetch, presetHex: 16741953, defaultBehavior: 'avatar', displayNameColors
+            });
 
         const userCreatedAt = Math.floor(interaction.user.createdAt.getTime() / 1000);
 
@@ -158,6 +190,15 @@ module.exports = {
         // in their own Action Row instead of being crammed into the header Section.
         const profileLinkButtons = [{ type: 2, style: 5, label: "Avatar", url: userAvatarFullUrl }];
         if (userBannerFullUrl) profileLinkButtons.push({ type: 2, style: 5, label: "Banner", url: userBannerFullUrl });
+        // "View Colors" (2026-07-13) -- opens utils/colorPaletteView.js's panel as its OWN new
+        // message (index.js's colors_view handler, ephemeral state matches the user's own
+        // settingsVisibility preference) rather than editing this settings panel in place, so the
+        // settings dashboard stays open underneath. Style 1 (blurple/Primary) -- the eyedropper icon
+        // was recolored to match this exact button color, so Secondary/gray would've clashed.
+        profileLinkButtons.push({
+            type: 2, style: 1, label: "View Colors", custom_id: `colors_view|${userId}`,
+            emoji: emojis.parseEmoji(emojis.eyedropper)
+        });
         containerComponents.push({ type: 1, components: profileLinkButtons });
 
         containerComponents.push({ type: 14, spacing: 2, divider: true });
@@ -256,7 +297,9 @@ module.exports = {
                 default: 'Pre-Designed Palette',
                 preset: 'Pre-Designed Palette',
                 avatar: 'Avatar Color',
-                banner: 'Banner Color'
+                banner: 'Banner Color',
+                displayName: 'Display Name Colors',
+                dynamicProfile: 'Dynamic Profile Colors'
             };
             // Hex code shown next to Avatar/Banner style (2026-07-12) -- pulled straight from the
             // already-cached avatarColorHex/bannerColorHex fields, no new lookup needed. Formatted
@@ -265,6 +308,29 @@ module.exports = {
             let accentDisplay = accentStyleDisplayMap[accentStyle] || 'Avatar Color';
             if (accentStyle === 'avatar') accentDisplay += hexSuffix(prefs.avatarColorHex);
             if (accentStyle === 'banner') accentDisplay += hexSuffix(prefs.bannerColorHex);
+            // 'displayName' shows BOTH real gradient stops (not just the blended hex actually applied
+            // to containers) since these are the user's own literal chosen colors -- more informative
+            // than the blend alone. displayNameColors was already resolved above (panelColorHex), so
+            // prefs.displayNameColorHex/Source are already fresh on this same in-memory prefs object
+            // -- no second fetch needed here. A null displayNameColors means the Nitro feature isn't
+            // set up at all, so this falls back to Avatar Color (matching resolveAccentColor's own
+            // fallback) with a short inline note instead of a broken/blank hex.
+            if (accentStyle === 'displayName') {
+                if (displayNameColors) {
+                    const [c1, c2] = displayNameColors;
+                    accentDisplay += ` \`(#${c1.toString(16).padStart(6, '0').toUpperCase()} → #${c2.toString(16).padStart(6, '0').toUpperCase()})\``;
+                } else {
+                    accentDisplay = `${accentStyleDisplayMap.avatar}${hexSuffix(prefs.avatarColorHex)} *(Display Name Colors not set up)*`;
+                }
+            }
+            // 'dynamicProfile' shows the hex ACTUALLY picked for this render (panelColorHex,
+            // resolved above via resolveDynamicProfileColor) plus a short explainer, since there's no
+            // single fixed hex to show like every other style -- the whole point is it changes on
+            // every new command launch. Always has at least Avatar to draw from, so unlike
+            // displayName there's no "not set up" fallback state to handle here.
+            if (accentStyle === 'dynamicProfile') {
+                accentDisplay += ` \`(#${panelColorHex.toString(16).padStart(6, '0').toUpperCase()})\`\n-# Randomly picks from your Avatar, Banner, Display Name, Decoration & Nameplate colors — new pick on every command, held steady while paging/toggling`;
+            }
             containerComponents.push({ type: 10, content: `\`• Accent Color Style\` = **${accentDisplay}**` });
             containerComponents.push({
                 type: 1,
@@ -273,7 +339,9 @@ module.exports = {
                     options: [
                         { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
                         { label: "Avatar Color", value: "avatar", description: "Every command matches your avatar's dominant color", default: accentStyle === 'avatar' },
-                        { label: "Banner Color", value: "banner", description: "Every command matches your banner's dominant color", default: accentStyle === 'banner' }
+                        { label: "Banner Color", value: "banner", description: "Every command matches your banner's dominant color", default: accentStyle === 'banner' },
+                        { label: "Display Name Colors", value: "displayName", description: "Matches your Nitro name-style gradient (requires setup)", default: accentStyle === 'displayName' },
+                        { label: "Dynamic Profile Colors", value: "dynamicProfile", description: "Randomly picks from all your profile colors on each command", default: accentStyle === 'dynamicProfile' }
                     ]
                 }]
             });
