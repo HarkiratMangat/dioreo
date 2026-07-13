@@ -5,6 +5,12 @@ A Discord bot for Call of Duty Mobile (CODM) content: lucky draw info, patch not
 seasonal calendars, CP pricing, weapon loadouts, and countdown timers. Built and
 maintained by Harkirat (Discord ID `1139845545754632283`), the sole admin.
 
+**Before doing anything else this session, read `~/.claude/projects/-Applications-Diors-Builds/
+memory/user_working_agreement.md`** (start of `MEMORY.md`'s index) — it's the living summary of
+how Harkirat works and what this project expects, with links to every other memory file. This
+CLAUDE.md is the deepest source of truth for architecture/design decisions; that file is the
+collaboration layer on top of it.
+
 ## Stack
 - discord.js v14 (`^14.26.4`), Node.js v26, run locally on a Mac (`node index.js`)
 - MongoDB Atlas via Mongoose
@@ -548,7 +554,9 @@ accounts with **no banner set** (the client shows one or the other) — it comes
 profile-theme colors over the bot API at all. So there's no reliable way to read a
 user's "actual" profile color directly; instead we extract one ourselves:
 - `colorExtract.js`'s `getDominantColor(url)` downloads an image (avatar or banner) via
-  `jimp` and averages a ~2500-pixel sample of it into one hex value.
+  `jimp`, samples ~2500 pixels, and picks a representative hex value — see "Accent color
+  extraction algorithm" below for exactly how (it's gone through 3 real revisions, not a
+  simple average).
 - **Avatar-matching is the actual default** (`accentColorStyle` schema default is
   `'avatar'`, not a "keep everything as-is" option) — Harkirat wanted every embed to
   match a user's avatar out of the box, not just `/settings`. `'preset'` (labeled
@@ -569,7 +577,53 @@ user's "actual" profile color directly; instead we extract one ourselves:
   might switch back and forth between styles, so both get remembered rather than
   invalidating one when the other changes. Each `*Source` field is the Discord image
   hash the cached hex was computed from; a fresh CDN download + re-extraction only
-  happens if that specific image actually changed.
+  happens if that specific image actually changed. **Caching is keyed on the image hash,
+  NOT on the extraction algorithm version** — changing the algorithm (see below) does
+  nothing for a user's already-cached color until their underlying avatar/banner image
+  changes, or the cache is manually cleared.
+- **`/settings`' one exception is `'preset'` specifically, not "always avatar."** If a
+  user's `accentColorStyle` is explicitly `'banner'`, `/settings` correctly shows their
+  BANNER color (falling back to avatar only if they have no banner uploaded at all) —
+  `resolveAccentColor()`'s `defaultBehavior: 'avatar'` param (which `/settings` passes)
+  only overrides the `'preset'`/`'default'` case, since that's the one style with no
+  brand color to show at all. Don't read "`/settings` falls back to avatar" as "`/settings`
+  always shows avatar regardless of style" — it doesn't.
+
+### Accent color extraction algorithm (`colorExtract.js`'s `getDominantColor()`)
+Gone through 3 real revisions, each found wrong by testing against Harkirat's actual
+Discord avatar rather than a hypothetical:
+1. **Flat average of every sampled pixel** (original) — washed out toward gray/white for
+   the common case of a mostly-pale avatar with one small vibrant feature.
+2. **Saturation-weighted average** (2026-07-12) — down-weighted low-saturation background
+   pixels correctly, but still averaged RGB across genuinely DIFFERENT hues (e.g. teal
+   hair + skin tone) into a muddy blend that could look like none of the actual colors
+   present.
+3. **Dominant hue-cluster + vivid bias, "vivid"** (2026-07-13, current) — buckets sampled
+   pixels into 24 hue bins (15° each), excluding near-neutral pixels (low saturation, or
+   blown-out near-white/near-black) entirely from consideration; the bin with the highest
+   saturation²-weighted total wins; the final color averages only the TOP 20% most vivid
+   pixels within that winning bin (ranked by saturation and mid-range lightness), not
+   every pixel in it — biased toward the punchiest instance of the dominant hue rather
+   than its overall muted average. Confirmed live by generating a side-by-side artifact
+   (real Discord-embed mockups: 4px accent strip + `#131416` body) comparing all 3
+   algorithms against Harkirat's own avatar plus 4 other real test images (a gradient orb,
+   a holographic photo, an animated GIF, a cartoon screenshot) before picking this one.
+   **On an image with multiple comparably-saturated but unrelated hues, this favors the
+   MORE saturated hue even if a less-saturated one covers more area** — confirmed
+   intentional (checked the raw per-bin weight data directly on the gradient-orb test
+   case: a small vivid-blue region legitimately outweighed a larger but less-saturated
+   coral region), not a bug to fix.
+- Applies identically to BOTH avatar and banner extraction — they share this one function
+  (`accentColor.js`'s `getCachedColor()` calls it for both `kind: 'avatar'` and
+  `kind: 'banner'`), so no separate banner-specific logic exists or is needed.
+- **Every user's cached `avatarColorHex`/`avatarColorSource`/`bannerColorHex`/
+  `bannerColorSource` was cleared (2026-07-13)** after shipping the vivid algorithm, so
+  every user's color recomputes fresh on their next accent-color-resolving command
+  instead of silently keeping a stale pre-vivid value indefinitely (per the image-hash
+  caching note above). One-time `UserPreference.updateMany({}, {$unset: {...}})` — not a
+  recurring migration, don't re-run it reflexively on future algorithm tweaks without
+  thinking through whether that specific change actually invalidates existing cached
+  values.
 
 ## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`, `utils/globalNav.js`,
 `utils/ephemeral.js`, `utils/sendV2Payload.js`)
