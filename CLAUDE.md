@@ -22,7 +22,7 @@ collaboration layer on top of it.
   View Colors panel and `'dynamicProfile'` accent style. Confirmed present on this Mac already; not
   guaranteed on every host — if it's ever missing, still-frame extraction (and only that — every
   other image path in the bot is unaffected) fails loudly rather than silently producing garbage.
-- `color-namer` (added 2026-07-14) — pure JS, only depends on `chroma-js`; used by the View Colors
+- `color-namer` (added 2026-07-13) — pure JS, only depends on `chroma-js`; used by the View Colors
   panel to turn an extracted hex into a real name ("Royal Blue") via its `'ntc'` palette. Checked via
   `npm audit` before adding — zero NEW vulnerabilities (only the pre-existing discord.js/undici/xlsx
   ones already tracked in memory as deferred).
@@ -778,7 +778,7 @@ off-whites on Harkirat's own avatar (`#F5F4F3(34.5%) #EBEBE9(26.1%) #EEEEF1(2.7%
 #F3F1ED(2.1%)`) — the exact "background dominates" failure mode `getDominantColor()`'s own
 "vivid" algorithm was built to avoid in the first place.
 
-**V2 (2026-07-14, current)**: real K-MEANS clustering in RGB space, the actual technique those
+**V2 (2026-07-13, current)**: real K-MEANS clustering in RGB space, the actual technique those
 reference tools visibly use (confirmed: Coolors' own UI shows pin markers landing on
 chromatically distinct regions — background, hair, eye, skin, shirt — exactly k-means'
 expected behavior, since a large uniform region becomes ONE cluster regardless of pixel
@@ -884,7 +884,7 @@ by direct, specific pushback each time:
   those dimensions. 3 entries (down from an earlier 5 that also included lighten/darken
   variants) — the 2 real gradient stops plus their midpoint blend (the SAME value used as
   the single `'displayName'` accent-color hex, via `accentColor.js`'s `blendGradientColors`).
-- **Nameplate animation**: tried using the real `asset.webm` sibling for display (2026-07-14)
+- **Nameplate animation**: tried using the real `asset.webm` sibling for display (2026-07-13)
   — reverted same day, Harkirat didn't like that Discord needs a manual tap to play it
   inline rather than auto-animating (same underlying limitation as Deco above). Reverted to
   the static `.png` used for extraction; the dead `nameplateAnimatedUrl` plumbing was removed
@@ -912,7 +912,7 @@ style 1 (blurple) + the eyedropper emoji, matching "View Colors" itself.
 - Forces a real re-extraction bypassing the cache (`utils/colorPalette.js`'s `forceRefresh`
   param on `getCachedPalette`/`getPalettePanelData`) — alongside `colors_view` (the main
   button), the only 2 entry points that do this; ordinary page/subpage navigation
-  (`colors_page_`/`colors_subpage_`) stays cache-only and fast, unaffected. Since the 2026-07-14
+  (`colors_page_`/`colors_subpage_`) stays cache-only and fast, unaffected. Since the 2026-07-13
   lazy-loading rewrite (see the incident note below), a refresh only re-extracts the ONE source
   currently on screen, not all four.
 - **Dedicated 10s cooldown** (`colorsRefreshCooldowns` in index.js), separate from the
@@ -954,7 +954,7 @@ cache check runs BEFORE the still-frame extraction step so a cache hit never pay
 unnecessary ffmpeg call. Nameplate's `static.png` doesn't need this (already guaranteed
 static); avatar/banner don't either.
 
-### Post-ship production incident: stale palette cache + bot-wide interaction timeouts (2026-07-14)
+### Post-ship production incident: stale palette cache + bot-wide interaction timeouts (2026-07-13)
 Harkirat reported `/colors` still showing 5 old-labeled swatches for avatar right after `219b2e1`
 deployed, even after re-running it, hitting `/settings`' View Colors button, and clicking Refresh
 Colors (which itself claimed "still generates the same colors"). Root-caused via `systematic-
@@ -992,7 +992,7 @@ debugging`, two distinct bugs stacked on top of each other:
    making the code more efficient first, defer parts of the feature next if that's still not enough,
    only fall back to touching infra/plan as a last resort.
 
-**Second pass (2026-07-14, on Opus 4.8) — the efficiency rewrite that actually addressed the CPU
+**Second pass (2026-07-13, on Opus 4.8) — the efficiency rewrite that actually addressed the CPU
 root cause, not just the yield symptom.** The first pass above made extraction *yield*; this pass
 made it do far *less* work. Four changes, in order of impact:
 1. **Lazy per-source extraction (the headline fix).** `refreshAllPalettes` was renamed to
@@ -1040,7 +1040,7 @@ Harkirat's stated order of preference) are: defer more of the feature, then move
 main thread (`worker_threads` — moves the CPU burst off the event loop entirely, though it competes
 for the same fractional core), and only as a last resort a Render plan bump.
 
-**Branch-testing discovery (2026-07-14): the erratic behavior was ALSO multiple bot instances, not
+**Branch-testing discovery (2026-07-13): the erratic behavior was ALSO multiple bot instances, not
 only CPU.** The CPU work above was deployed to a `fix/colors-cpu-efficiency` branch (Render's tracked
 branch temporarily pointed at it — same service, so only one Render instance, no collision from
 Render itself) for real-free-tier testing. During that test Harkirat saw the panel render *different
@@ -1057,7 +1057,7 @@ flow (kill stray local instances so only Render runs). A permanent single-instan
 Next-planned-work list below. **Note also:** a `git push`/Render deploy does NOT stop local
 processes — they're different machines; only explicitly killing them does.
 
-### View Colors preview sizing (2026-07-14, follow-up to the CPU pass)
+### View Colors preview sizing (2026-07-13, follow-up to the CPU pass)
 Three preview-size fixes after the CPU work, all confirmed on the branch deploy before merge:
 - **Banner preview regressed to 256px** — the CPU pass dropped banner extraction to 256px for faster
   decode, but the Media Gallery *display* reused that same shrunk url. Fixed by decoupling in
@@ -1919,13 +1919,13 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   for `ffmpeg` on the deployed image before assuming it's a code bug.
 
 ## Next planned work
-- **Single-instance guard for the bot itself** (added 2026-07-14 to the to-do list, Harkirat's
+- **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
   request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
   badly (see the "Branch-testing discovery" note above and `[[feedback_multiple_bot_instances]]`).
   Add a startup lock / refuse-to-start-if-already-connected mechanism so a stray leftover local
   `node index.js` can't silently race the deployed Render instance again. Until this exists, killing
   stray local instances is a manual step in the push flow.
-- **Changelog is significantly behind** (flagged 2026-07-14): `CHANGELOG.md`/`CHANGELOG-SUMMARY.md`'s
+- **Changelog is significantly behind** (flagged 2026-07-13): `CHANGELOG.md`/`CHANGELOG-SUMMARY.md`'s
   last entry is v2.71 (2026-07-09), but everything since — the Jul 11–12 batch redesign, the whole
   View Colors / accent-color system, both Cloudinary caches, and the Jul-14 CPU + sizing work — is
   unlogged. Catching it up is its own task (several versions' worth of entries); not blocking, but
@@ -1945,7 +1945,7 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   `/settings` button, `'displayName'`/`'dynamicProfile'` accent styles, Refresh Colors with
   cooldown+change-detection, all live-tested and confirmed working by Harkirat across many rounds.
   See the "View Colors panel" section above for the full history and the 2 known open cosmetic gaps
-  listed just above (vertical centering, deco/nameplate animation). **2026-07-14 CPU + sizing pass**
+  listed just above (vertical centering, deco/nameplate animation). **2026-07-13 CPU + sizing pass**
   (lazy per-source extraction, dropped `/settings` soft-refresh, k-means convergence + yields, swatch
   memo, banner/gradient/nameplate 512px sizing) branch-tested on Render free tier and merged — see
   the "Post-ship production incident" and "View Colors preview sizing" sections above.
