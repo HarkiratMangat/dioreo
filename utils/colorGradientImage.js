@@ -4,12 +4,15 @@
 // per-style fonts (font_id/effect_id in display_name_styles) aren't publicly distributed or
 // accessible via any API, so there's no legal/technical way to reproduce the real text rendering.
 // This is the explicitly-requested fallback instead: a flat gradient swatch at the same aspect ratio
-// as a nameplate banner (~672x126, confirmed against a real nameplate asset), left-to-right from the
-// gradient's start color to its end color -- matching the left-to-right direction Discord's own
-// client renders a styled display name in.
+// as a nameplate banner (5.33:1, matching a real nameplate asset confirmed at 672x126), left-to-right
+// from the gradient's start color to its end color -- matching the left-to-right direction Discord's
+// own client renders a styled display name in.
+// Default dimensions 512x96 (2026-07-14, Harkirat's request) -- capped at 512px wide (down from the
+// original 672x126) to match the nameplate preview's own 512px cap, keeping the exact same 5.33:1
+// aspect ratio (512/5.333 = 96).
 const { Jimp } = require('jimp');
 
-async function renderGradientBanner(startHex, endHex, width = 672, height = 126) {
+async function renderGradientBanner(startHex, endHex, width = 512, height = 96) {
     const img = new Jimp({ width, height, color: 0x000000ff });
     const r1 = (startHex >> 16) & 0xff, g1 = (startHex >> 8) & 0xff, b1 = startHex & 0xff;
     const r2 = (endHex >> 16) & 0xff, g2 = (endHex >> 8) & 0xff, b2 = endHex & 0xff;

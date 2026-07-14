@@ -6,6 +6,7 @@
 const namer = require('color-namer');
 const { renderSwatchImage } = require('./colorSwatchImage');
 const { renderGradientBanner } = require('./colorGradientImage');
+const { renderResizedImage } = require('./resizedImage');
 const { buildPaginationRow } = require('./paginationRow');
 const emojis = require('./emojiMap');
 
@@ -244,14 +245,25 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // in a Section thumbnail context -- confirmed a genuine Discord-client limitation, not something
     // fixable here short of converting the source to a real GIF on every render (rejected as not
     // worth the added latency/complexity; Harkirat's fine with static as the fallback).
-    const galleryUrl = effectiveSource === 'banner' ? data.bannerUrl
-        : effectiveSource === 'nameplate' ? data.nameplateUrl
-        : null;
-    if (galleryUrl) {
-        // No explicit width-lock exists in Discord's Media Gallery API (Harkirat asked about capping
-        // banner width) -- this reuses the exact `{ type: 12, items: [{ media: { url } }] }` shape
-        // /settings' own banner display already uses in production, the closest available lever.
-        containerComponents.push({ type: 12, items: [{ media: { url: galleryUrl } }] });
+    // Banner preview: the display url is already the 512px size (see getSourceImageInfo), so a plain
+    // Media Gallery URL reference is enough -- Discord's avatar/banner CDN honors the size we request.
+    if (effectiveSource === 'banner' && data.bannerUrl) {
+        containerComponents.push({ type: 12, items: [{ media: { url: data.bannerUrl } }] });
+    }
+    // Nameplate preview: capped at 512px wide (2026-07-14, Harkirat's request). Discord's COLLECTIBLES
+    // CDN ignores `?size=` entirely (confirmed live -- a 672x126 nameplate stays 672x126 with
+    // `?size=512`), unlike the avatar/banner CDN, so the only way to cap its width is to fetch+resize
+    // it ourselves (utils/resizedImage.js) and attach the result. Falls back to the raw (native-width)
+    // url if the resize fails for any reason, so the nameplate still shows rather than vanishing.
+    else if (effectiveSource === 'nameplate' && data.nameplateUrl) {
+        try {
+            const npBuffer = await renderResizedImage(data.nameplateUrl, 512);
+            files.push({ name: 'nameplate_resized.png', data: npBuffer });
+            containerComponents.push({ type: 12, items: [{ media: { url: 'attachment://nameplate_resized.png' } }] });
+        } catch (err) {
+            console.error('Nameplate resize failed, falling back to native-size url:', err.message);
+            containerComponents.push({ type: 12, items: [{ media: { url: data.nameplateUrl } }] });
+        }
     }
     if (effectiveSource === 'name' && data.displayNameColors) {
         const [start, end] = data.displayNameColors;

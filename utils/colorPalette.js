@@ -28,13 +28,18 @@ async function getSourceImageInfo(interaction) {
         fetchProfileExtras(interaction.client, interaction.user.id)
     ]);
 
-    // size 256, not 512 (2026-07-14, event-loop fix) -- halves the pixels Jimp has to decode+unfilter
-    // synchronously on Render's free-tier CPU, which was blocking the event loop long enough to make
-    // unrelated interactions (deferReply on a totally different command) miss Discord's 3s ACK window.
-    // 256px is still plenty of resolution for k-means color clustering, which only ever samples ~2500
-    // pixels out of the image anyway -- this isn't a visible-quality loss, just less decode work.
+    // DECOUPLED display vs extraction resolution (2026-07-14): `url` is the FULL-size 512px banner
+    // shown in the panel's Media Gallery preview (restoring the size it displayed at before the CPU
+    // pass -- dropping it to 256 shrank the visible preview, a real regression). `extractUrl` is a
+    // small 256px copy used ONLY for color extraction, which halves the pixels Jimp has to decode
+    // synchronously on Render's free-tier CPU (k-means only samples ~2500 pixels regardless of source
+    // resolution, so 256 is quality-equivalent for clustering -- it just isn't big enough to DISPLAY).
     const banner = userFetch.banner
-        ? { url: userFetch.bannerURL({ extension: 'png', size: 256 }), source: userFetch.banner }
+        ? {
+            url: userFetch.bannerURL({ extension: 'png', size: 512 }),
+            extractUrl: userFetch.bannerURL({ extension: 'png', size: 256 }),
+            source: userFetch.banner
+          }
         : null;
     // needsStillFrame: decorations are commonly served as animated PNG -- see utils/stillFrame.js.
     // Nameplate's `static.png` (built in fetchProfileExtras) is already guaranteed a real static
@@ -68,7 +73,9 @@ async function getCachedPalette(prefs, kind, imageInfo, forceRefresh = false) {
         return prefs[paletteField];
     }
 
-    let imageSource = imageInfo.url;
+    // Prefer a small extraction-only copy when the source provides one (banner does -- see
+    // getSourceImageInfo) so we decode fewer pixels; fall back to the display url otherwise.
+    let imageSource = imageInfo.extractUrl || imageInfo.url;
     if (imageInfo.needsStillFrame) {
         try {
             imageSource = await extractStillFrame(imageInfo.url);
