@@ -1040,6 +1040,42 @@ Harkirat's stated order of preference) are: defer more of the feature, then move
 main thread (`worker_threads` — moves the CPU burst off the event loop entirely, though it competes
 for the same fractional core), and only as a last resort a Render plan bump.
 
+**Branch-testing discovery (2026-07-14): the erratic behavior was ALSO multiple bot instances, not
+only CPU.** The CPU work above was deployed to a `fix/colors-cpu-efficiency` branch (Render's tracked
+branch temporarily pointed at it — same service, so only one Render instance, no collision from
+Render itself) for real-free-tier testing. During that test Harkirat saw the panel render *different
+code versions on different clicks* (an abandoned blank-emoji heading trick + old "Accent Color N"
+labels on some clicks, current 8-color layout on others) — impossible within one instance.
+`ps aux` found **three leftover local `node index.js` processes** (started earlier that day in prior
+debugging, each frozen at a different stale code snapshot) racing the Render branch bot. This is a
+single-token bot: multiple live instances make Discord hand each interaction to a random one, and
+they race each other's `deferReply`/`deferUpdate` (10062/40060). **This very likely contributed to
+the ORIGINAL 10062 wave too**, not just the CPU angle. Fixed by killing the 3 local processes
+(Railway was already fully removed — its "Offline" CLI status was real, the logs seen were
+historical). Lesson now in memory (`[[feedback_multiple_bot_instances]]`) and folded into the push
+flow (kill stray local instances so only Render runs). A permanent single-instance guard is on the
+Next-planned-work list below. **Note also:** a `git push`/Render deploy does NOT stop local
+processes — they're different machines; only explicitly killing them does.
+
+### View Colors preview sizing (2026-07-14, follow-up to the CPU pass)
+Three preview-size fixes after the CPU work, all confirmed on the branch deploy before merge:
+- **Banner preview regressed to 256px** — the CPU pass dropped banner extraction to 256px for faster
+  decode, but the Media Gallery *display* reused that same shrunk url. Fixed by decoupling in
+  `getSourceImageInfo`: banner now carries `url` (512px, for display) AND `extractUrl` (256px, used
+  only by `getCachedPalette` for clustering). k-means samples ~2500 pixels regardless of resolution,
+  so 256 is quality-equivalent for extraction — it just wasn't big enough to *show*.
+- **Gradient Display Name banner** capped 672×126 → **512×96** (same 5.33:1 ratio), the new default
+  in `colorGradientImage.js`.
+- **Nameplate preview** capped at **512px wide**. Discord's COLLECTIBLES CDN **ignores `?size=`
+  entirely** (confirmed live: a 672×126 nameplate stays 672×126 with `?size=512`, unlike the avatar/
+  banner CDN which honors it), so the only way to cap it is to fetch+resize ourselves — new
+  `utils/resizedImage.js` (`renderResizedImage(url, width)`, downscale-only, aspect-preserving),
+  attached as `nameplate_resized.png`, with a fallback to the native-size url if the resize fails.
+  It **memoizes the resized Buffer in-memory** (bounded `Map`, keyed by url+width — NOT a DB write,
+  zero storage impact) so the download+resize is one-time-per-process instead of per-render, per
+  Harkirat's cost concern about the redundant download (that page already downloads the nameplate
+  once for extraction). Same memo pattern as `colorSwatchImage.js`'s swatch cache.
+
 ### Icon sourcing (the eyedropper emoji)
 Harkirat provided a raw GIF, background-removed via the `gif-background-remover` skill
 (`--analyze` first, confirmed white background + one verified enclosed region via
@@ -1883,6 +1919,17 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   for `ffmpeg` on the deployed image before assuming it's a code bug.
 
 ## Next planned work
+- **Single-instance guard for the bot itself** (added 2026-07-14 to the to-do list, Harkirat's
+  request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
+  badly (see the "Branch-testing discovery" note above and `[[feedback_multiple_bot_instances]]`).
+  Add a startup lock / refuse-to-start-if-already-connected mechanism so a stray leftover local
+  `node index.js` can't silently race the deployed Render instance again. Until this exists, killing
+  stray local instances is a manual step in the push flow.
+- **Changelog is significantly behind** (flagged 2026-07-14): `CHANGELOG.md`/`CHANGELOG-SUMMARY.md`'s
+  last entry is v2.71 (2026-07-09), but everything since — the Jul 11–12 batch redesign, the whole
+  View Colors / accent-color system, both Cloudinary caches, and the Jul-14 CPU + sizing work — is
+  unlogged. Catching it up is its own task (several versions' worth of entries); not blocking, but
+  the docs-at-push-time habit lapsed for the recent big features and should be reconciled.
 - **The real "search + multi-select" flow for Delete Multiple (all entities) and Loadouts' Replace
   Multiple** — deliberately deferred out of the 2026-07-12 `/manage` panel redesign at Harkirat's
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else
@@ -1898,7 +1945,10 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   `/settings` button, `'displayName'`/`'dynamicProfile'` accent styles, Refresh Colors with
   cooldown+change-detection, all live-tested and confirmed working by Harkirat across many rounds.
   See the "View Colors panel" section above for the full history and the 2 known open cosmetic gaps
-  listed just above (vertical centering, deco/nameplate animation).
+  listed just above (vertical centering, deco/nameplate animation). **2026-07-14 CPU + sizing pass**
+  (lazy per-source extraction, dropped `/settings` soft-refresh, k-means convergence + yields, swatch
+  memo, banner/gradient/nameplate 512px sizing) branch-tested on Render free tier and merged — see
+  the "Post-ship production incident" and "View Colors preview sizing" sections above.
 - **Not yet re-confirmed live**: the `sendV2Payload` attachments-replacement fix (Refresh Colors
   should now visually update the panel immediately instead of requiring a page-switch to see new
   swatches) was boot-tested but not re-exercised against a real Discord click since the fix landed —
