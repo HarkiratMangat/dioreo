@@ -11,6 +11,13 @@ how Harkirat works and what this project expects, with links to every other memo
 CLAUDE.md is the deepest source of truth for architecture/design decisions; that file is the
 collaboration layer on top of it.
 
+## Local-only files & the `local/` folder
+`local/` (repo root, **gitignored** — added 2026-07-14) is Harkirat's personal scratch folder for
+random local-only files: the `project plan notes.txt` future-planning dump lives there, and anything
+else he drops in for our working use. It's never pushed to GitHub and never deployed. Other existing
+local-only (gitignored) files: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`,
+`.env`. When Harkirat references "the plan notes" / a file he "threw in there," check `local/` first.
+
 ## Stack
 - discord.js v14 (`^14.26.4`), Node.js v26, run locally on a Mac (`node index.js`)
 - MongoDB Atlas via Mongoose
@@ -1999,9 +2006,65 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   network hop per click, but touches every paginated command (draws/calendar/drawprices/settings/
   colors/loadouts), a broader refactor than anything else done this session. **Deliberately deferred
   to a future session** (Harkirat's explicit call — ship the smaller asks first) rather than attempted
-  alongside the panel-lock/share-button/timestamp-format work above.
+  alongside the panel-lock/share-button/timestamp-format work above. **When we do tackle it, the agreed
+  shape is a HYBRID, not a blanket conversion** (Harkirat's call, 2026-07-14): split by what each
+  handler does before it can respond. Pure string-building paginated commands (draws, calendar,
+  drawprices, settings) → single `UPDATE_MESSAGE` (one hop; they finish well inside Discord's 3s ACK
+  window, so the margin `deferUpdate()` buys isn't needed). Anything that does heavy work before
+  replying — View Colors (k-means extraction, swatch/gradient PNG generation, the ffmpeg still-frame)
+  and any attachment-generating path → KEEP defer-then-patch, since blowing the 3s ACK is a real risk
+  there. Heuristic: "does this path do CPU or image/network work before it replies?" → heavy stays
+  defer, light goes single-hop.
 
 ## Next planned work
+
+### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
+- **Reword `/timestamp`'s `format` option to `view`** — "format" collides conceptually with the
+  timestamp *styles* (shortDate/longDate/etc.); "view" is what it actually controls (Embed vs Text).
+  User-visible option rename, same shape as the earlier `ephemeral`→`private`→`hidden` renames. See
+  the `/timestamp` `format` section above for where it's wired (slash option + `overrideState.isTextMode`).
+- **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
+  cross-cutting (touches every paginated command), do when Harkirat greenlights it.
+
+### v3 (next MAJOR version) — roadmap (filed 2026-07-14 from Harkirat's plan-notes file)
+Harkirat's own planned feature set for the next whole-number version. **Not started; nothing here is a
+committed design yet** — these are captured intents to brainstorm/spec properly when each is picked up.
+Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot strategy lives in
+[[project_dior_builds_changelog_system]], not repeated here.
+- **`/meta` command** — view all weapons marked Meta. Options `mode:MP/DMZ`, `category:AR/SMG/...`,
+  same hidden/ephemeral option as others; visibility tied to the `loadoutVisibility` toggle. Paginated
+  through each meta build (a weapon's multiple builds shown in order, then the next weapon); in-panel
+  dropdown to jump to a specific meta weapon; category-switch buttons below the embed; per-category
+  accent color (reuses `getMpCategoryAccent()`); badges (incl. the Meta badge itself) hidden from this
+  view. **NOTE: overlaps with the `/loadout` meta subcommand idea below — likely the same feature
+  reached two ways; reconcile at design time rather than building both.**
+- **Draw cost calculator** — given the user's CP region, draw type, attempts already done/remaining,
+  and current CP balance: compute cost to finish the draw, and suggest the top-up package needed if the
+  balance is short. Builds on `/draw prices`' existing per-pull `DRAW_DATA`.
+- **Rename `/manage` → `/admin`, with slash-command-driven actions ALONGSIDE the existing panel.** Keep
+  the interactive dashboard embed, but also support: `/admin` (opens dashboard), `/admin command:{x}`
+  (opens dashboard on that command's page), `/admin command:{x} action:{y}` (opens that action's modal
+  directly — add / bulk add / export new-or-returning draws / purge / etc.). The `action` choices must
+  be scoped to only the actions valid for the chosen `command`, not a flat list of every action across
+  all commands. Examples: `/admin command:loadouts action:add`, `/admin command:loadouts action:export
+  SMGs hidden:false`, `/admin command:draws action:bulk delete`, `/admin command:season
+  titles-&-deadlines` (no action — always just opens the modal). Also bundle in an internal DB-change
+  logging/tracking system (log edits made via the admin command — e.g. a draw's info being edited).
+- **`/settings` jump-to options** — `/settings customize:visibility|preferences|colors hidden:…` to
+  land directly on page 1 (visibility), page 2 (preferences), or open the colors menu directly.
+- **Detach `/colors`'s visibility from `/settings`** — give `/colors` its own visibility preference
+  (while keeping the "View Colors" button ON the settings panel tied to settings visibility), and add
+  `/colors` visibility toggles into the settings page.
+- **Consolidate MP loadout commands into one `/loadout weapon:{fuzzy autocomplete}`** (leave `/dmz`
+  as-is, already consolidated). Ideally one command that can search ALL weapons OR be scoped to a single
+  category. Plus a **meta subcommand**: an embed listing just Meta-marked weapons, a dropdown to pick one
+  (option description = category / main use-case, TBD at build), and pagination for multi-build weapons.
+  (Overlaps with the standalone `/meta` above — pick one shape.)
+- **Update/add new builds + audit current loadout data** so it's current with the live season.
+- **Different view options for the slash commands** (unspecified in the notes — expand when picked up).
+- **Ship the redesigned changelog artifact** (personal-use release-log visual — see
+  [[project_changelog_redesign]], currently paused).
+
 - **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
   request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
   badly (see the "Branch-testing discovery" note above and `[[feedback_multiple_bot_instances]]`).
