@@ -7,12 +7,19 @@
 // index.js's `share_public` handler for the other half: Discord includes the FULL original message
 // (content/embeds/components) directly in a button click's interaction payload, even when that
 // message was ephemeral, so no state needs to be stored or reconstructed here.
+const emojis = require('./emojiMap');
+
 const SHARE_BUTTON_CUSTOM_ID = 'share_public';
 
+// Reworded 2026-07-14 (Harkirat's request, "Share Publicly" read as ambiguous about what actually
+// happens) -- "Show Everyone" states the outcome directly. Emoji switched from the plain 🌐 globe
+// to Harkirat's own custom icon the same day -- goes through the button's dedicated `emoji` field
+// via parseEmoji(), NOT baked into `label` (a button's label is plain text only; see the Components
+// V2 lessons in CLAUDE.md -- pasting a raw mention string into label just shows it as literal text).
 const SHARE_BUTTON_ROW = {
     type: 1,
     components: [
-        { type: 2, style: 2, label: '🌐 Share Publicly', custom_id: SHARE_BUTTON_CUSTOM_ID }
+        { type: 2, style: 2, label: 'Show Everyone', custom_id: SHARE_BUTTON_CUSTOM_ID, emoji: emojis.parseEmoji(emojis.share) }
     ]
 };
 

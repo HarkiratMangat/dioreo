@@ -156,6 +156,16 @@ module.exports = {
         .addBooleanOption(option =>
             option.setName('hidden')
                 .setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
+        // Slash-command-exclusive (2026-07-14, Harkirat's request) -- deliberately NOT saved to
+        // /settings or UserPreference; every invocation defaults to Embed unless explicitly typed.
+        // Works identically for the All Formats overview and every individual style view.
+        .addStringOption(option =>
+            option.setName('format')
+                .setDescription('Display as a styled embed panel, or plain copyable text (default: Embed)')
+                .addChoices(
+                    { name: 'Embed (Styled Panel)', value: 'embed' },
+                    { name: 'Text (Plain, Copyable)', value: 'text' }
+                ))
         // Context configuration ensuring the command works in Guilds, DMs, and User-installed apps seamlessly
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
@@ -169,7 +179,7 @@ module.exports = {
     // instead of re-deriving them from slash command options, while both code paths still share
     // this single render implementation below.
     async execute(interaction, overrideState = null) {
-        let queryInput, tz, style, unix, ephemeral, accentColor;
+        let queryInput, tz, style, unix, ephemeral, accentColor, isTextMode;
 
         if (overrideState) {
             // Invoked from index.js's tsmenu dropdown handler — reuse the exact original parse
@@ -186,9 +196,17 @@ module.exports = {
             // render path skips the normal option-resolution logic entirely, so there's no `prefs`
             // available here to resolve it from directly.
             accentColor = overrideState.accentColor ?? PRESET_ACCENT;
+            // textMode (2026-07-14) -- same "preserve whatever the message already had" logic as
+            // ephemeral above, so switching styles via the dropdown doesn't silently bounce a text
+            // response back to the embed layout. index.js derives this from the message's OWN
+            // Components V2 flag (32768) before calling in, the same way it derives ephemeral from
+            // the 64 bit — there's no `format` option to read here since overrideState skips normal
+            // option resolution entirely.
+            isTextMode = Boolean(overrideState.isTextMode);
         } else {
             queryInput = interaction.options.getString('datetime');
             tz = interaction.options.getString('timezone') || 'America/Toronto';
+            isTextMode = interaction.options.getString('format') === 'text';
 
             // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving
             // it blank meant "all formats" no matter what a user had saved as their default Timestamp
@@ -258,7 +276,21 @@ module.exports = {
         const statelessCustomId = `tsmenu|${unix}|${tz}|${cleanQueryText}`;
         const parsedLine = `-# Parsed \`${queryInput}\` using timezone \`${currentFullTzLabel}\``;
 
+        // Shared dropdown component (2026-07-14) -- built once here instead of inline per-branch
+        // below, since text mode and embed mode both need the exact same select menu, just wrapped
+        // differently (nested inside the container vs. a top-level sibling row).
+        const dropdownComponent = {
+            type: 3,
+            custom_id: statelessCustomId,
+            placeholder: "Switch to a singular layout style...",
+            options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === (style || 'all_formats') }))
+        };
+
         let componentPayload = [];
+        // Plain message content for text mode (2026-07-14) -- undefined in embed mode, where the
+        // container's own Text Display components carry everything instead. See sendV2Payload's
+        // `content` param.
+        let textContent;
 
         if (style) {
             // VIEW MODE: SINGULAR TARGET LAYOUT
@@ -269,29 +301,32 @@ module.exports = {
             // via `/timestamp style:...` showed no dropdown at all. Now always included, nested at
             // the bottom of the container per the redesign, with the selected style pre-marked.
             const char = styleCharMap[style];
-            // Layout per redesign: timestamp > divider > parsed line > "use dropdown" line > dropdown
-            // (parsed line moved back above the divider, under the timestamp itself).
-            componentPayload = [
-                {
-                    type: 17, // Components v2: Section Container
-                    accent_color: accentColor,
-                    components: [
-                        { type: 10, content: `### \`<t:${unix}:${char}>\` — <t:${unix}:${char}>` }, // Type 10: Text Block
-                        { type: 14, spacing: 2, divider: true }, // Type 14: Interactive Separator/Divider
-                        { type: 10, content: parsedLine },
-                        { type: 10, content: `-# Use the dropdown below to change timestamp style` },
-                        {
-                            type: 1,
-                            components: [{
-                                type: 3,
-                                custom_id: statelessCustomId,
-                                placeholder: "Switch to a singular layout style...",
-                                options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === style }))
-                            }]
-                        }
-                    ]
-                }
-            ];
+            const headingLine = `### \`<t:${unix}:${char}>\` — <t:${unix}:${char}>`;
+            const hintLine = `-# Use the dropdown below to change timestamp style`;
+
+            if (isTextMode) {
+                // Text mode (2026-07-14): same content, no container/accent-color/divider chrome --
+                // a blank line stands in for the divider since plain message content has no real
+                // divider component. Dropdown becomes a top-level sibling row instead of nested.
+                textContent = [headingLine, parsedLine, hintLine].join('\n\n');
+                componentPayload = [{ type: 1, components: [dropdownComponent] }];
+            } else {
+                // Layout per redesign: timestamp > divider > parsed line > "use dropdown" line >
+                // dropdown (parsed line moved back above the divider, under the timestamp itself).
+                componentPayload = [
+                    {
+                        type: 17, // Components v2: Section Container
+                        accent_color: accentColor,
+                        components: [
+                            { type: 10, content: headingLine }, // Type 10: Text Block
+                            { type: 14, spacing: 2, divider: true }, // Type 14: Interactive Separator/Divider
+                            { type: 10, content: parsedLine },
+                            { type: 10, content: hintLine },
+                            { type: 1, components: [dropdownComponent] }
+                        ]
+                    }
+                ];
+            }
         } else {
             // VIEW MODE: ALL FORMATS OVERVIEW (DEFAULT)
             const lines = [
@@ -305,45 +340,48 @@ module.exports = {
                 `\`<t:${unix}:S>\` — <t:${unix}:S>`,
                 `\`<t:${unix}:R>\` — <t:${unix}:R>`
             ].join('\n');
+            const headingLine = `## ${emojis.timestamp} Time Converted to Each User’s Local Timezone`;
+            const linesBlock = lines + `\n\n-# ✦ Tap on any \`<t:###:F>\` text above to instantly copy it`;
+            const hintLine = `-# Select a specific layout below to change views`;
 
-            // Layout per redesign: title > divider > timestamps+tap-on-any > divider > parsed line >
-            // "select a specific layout" line > dropdown (parsed line moved back down below the
-            // timestamps list, not directly under the title).
-            componentPayload = [
-                {
-                    type: 17, // Components v2: Section Container
-                    accent_color: accentColor,
-                    components: [
-                        { type: 10, content: `## ${emojis.timestamp} Time Converted to Each User’s Local Timezone` },
-                        { type: 14, spacing: 2, divider: true },
-                        { type: 10, content: lines + `\n\n-# ✦ Tap on any \`<t:###:F>\` text above to instantly copy it` },
-                        { type: 14, spacing: 2, divider: true },
-                        { type: 10, content: parsedLine },
-                        { type: 10, content: `-# Select a specific layout below to change views` },
-                        {
-                            type: 1, // Action Row Container — nested inside the container, not a sibling
-                            components: [
-                                {
-                                    type: 3, // String Select Menu Component
-                                    custom_id: statelessCustomId, // Uses the newly formatted pipe-delimited ID
-                                    placeholder: "Switch to a singular layout style...",
-                                    options: STYLE_SELECT_OPTIONS.map(opt => ({ ...opt, default: opt.value === 'all_formats' }))
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ];
+            if (isTextMode) {
+                textContent = [headingLine, linesBlock, parsedLine, hintLine].join('\n\n');
+                componentPayload = [{ type: 1, components: [dropdownComponent] }];
+            } else {
+                // Layout per redesign: title > divider > timestamps+tap-on-any > divider > parsed
+                // line > "select a specific layout" line > dropdown (parsed line moved back down
+                // below the timestamps list, not directly under the title).
+                componentPayload = [
+                    {
+                        type: 17, // Components v2: Section Container
+                        accent_color: accentColor,
+                        components: [
+                            { type: 10, content: headingLine },
+                            { type: 14, spacing: 2, divider: true },
+                            { type: 10, content: linesBlock },
+                            { type: 14, spacing: 2, divider: true },
+                            { type: 10, content: parsedLine },
+                            { type: 10, content: hintLine },
+                            { type: 1, components: [dropdownComponent] } // Action Row — nested inside the container, not a sibling
+                        ]
+                    }
+                ];
+            }
         }
 
         // --- LIBRARY SERIALIZATION BYPASS ---
-        // 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route.
-        // `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying on
-        // sendV2Payload's plain 32768 default -- this render path (via overrideState, see the
+        // 32768 (1 << 15) forces Discord's gateway API to open the Components V2 engine route --
+        // OMITTED entirely in text mode (2026-07-14) so the message renders as a classic plain-text
+        // response instead (content field + non-V2 action rows, which Discord supports identically
+        // in both systems). `flags` explicitly re-ORs in the ephemeral bit (64) rather than relying
+        // on sendV2Payload's plain 32768 default -- this render path (via overrideState, see the
         // dropdown-driven re-render at the top of this function) doesn't go through a normal
         // deferReply() that would set ephemeral state on its own, so it has to be preserved here.
+        // `flags: 0` (public + text mode) is intentional, not a bug -- sendV2Payload's default param
+        // only triggers on `undefined`, not on falsy values, so 0 is never silently overridden.
         return await sendV2Payload(interaction, withShareButton(componentPayload, ephemeral), {
-            flags: ephemeral ? (32768 | 64) : 32768
+            content: textContent || '',
+            flags: isTextMode ? (ephemeral ? 64 : 0) : (ephemeral ? (32768 | 64) : 32768)
         });
     }
 };

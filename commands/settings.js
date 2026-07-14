@@ -16,6 +16,16 @@ const { buildPaginationRow } = require('../utils/paginationRow');
 // bottom of buildContainer() below.
 const DIOR_ID = '1139845545754632283';
 
+// AUTHOR-LOCK + 15-MIN EXPIRY (2026-07-14) -- /settings previously had no author-lock at all on
+// some of its own components (set_page_ carried no userId whatsoever) and no expiry mechanism
+// existed anywhere in the bot. Rather than track expiry in a Map (extra in-memory state that resets
+// on redeploy, plus a fetchReply() network call to learn the message id on first render), the
+// deadline is encoded directly in every custom_id this file builds -- same "stateless" convention
+// tsmenu/price_subpage/etc. already use. Computed ONCE per genuine /settings invocation and passed
+// through unchanged on every re-render (expiresAtOverride below) so clicking around the panel never
+// extends the clock -- the 15 minutes is anchored to the original command, not a sliding window.
+const SETTINGS_PANEL_TTL_MS = 15 * 60 * 1000;
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('settings')
@@ -26,9 +36,10 @@ module.exports = {
     // dropdown + hex-code lines + footer pushed the single-page layout close to Discord's
     // 40-component cap -- see the B.5 button handler in index.js for how page navigation re-invokes
     // this with a target page.
-    async execute(interaction, pageOverride = 0) {
+    async execute(interaction, pageOverride = 0, expiresAtOverride = null) {
         const userId = interaction.user.id;
         const page = Math.min(Math.max(pageOverride, 0), 1);
+        const expiresAt = expiresAtOverride ?? (Date.now() + SETTINGS_PANEL_TTL_MS);
 
         // 1. DATA SYNCHRONIZATION
         let prefs = await UserPreference.findOne({ discordId: userId });
@@ -190,7 +201,7 @@ module.exports = {
         // settings dashboard stays open underneath. Style 1 (blurple/Primary) -- the eyedropper icon
         // was recolored to match this exact button color, so Secondary/gray would've clashed.
         profileLinkButtons.push({
-            type: 2, style: 1, label: "View Colors", custom_id: `colors_view|${userId}`,
+            type: 2, style: 1, label: "View Colors", custom_id: `colors_view|${userId}|${expiresAt}`,
             emoji: emojis.parseEmoji(emojis.eyedropper)
         });
         containerComponents.push({ type: 1, components: profileLinkButtons });
@@ -215,15 +226,15 @@ module.exports = {
                     accessory: {
                         type: 2, style: 2,
                         label: isPub ? "Hide" : "Show",
-                        custom_id: isPub ? ephemeralId : publicId
+                        custom_id: `${isPub ? ephemeralId : publicId}|${userId}|${expiresAt}`
                     }
                 };
             };
 
-            containerComponents.push(buildToggleRow('Weapon Builds', loadoutVis, `toggle_loadout_public|${userId}`, `toggle_loadout_ephemeral|${userId}`));
-            containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public|${userId}`, `toggle_seasonal_ephemeral|${userId}`));
-            containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public|${userId}`, `toggle_timestamp_ephemeral|${userId}`));
-            containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public|${userId}`, `toggle_settings_ephemeral|${userId}`));
+            containerComponents.push(buildToggleRow('Weapon Builds', loadoutVis, `toggle_loadout_public`, `toggle_loadout_ephemeral`));
+            containerComponents.push(buildToggleRow('Seasonal Content', seasonVis, `toggle_seasonal_public`, `toggle_seasonal_ephemeral`));
+            containerComponents.push(buildToggleRow('Timestamps', timeVis, `toggle_timestamp_public`, `toggle_timestamp_ephemeral`));
+            containerComponents.push(buildToggleRow('Settings Dashboard', settingsVis, `toggle_settings_public`, `toggle_settings_ephemeral`));
 
             containerComponents.push({ type: 10, content: `-# Choose your Preferences settings on page 2 →` });
         } else {
@@ -245,7 +256,7 @@ module.exports = {
             containerComponents.push({
                 type: 1,
                 components: [{
-                    type: 3, custom_id: `set_region_mode|${userId}|1`, placeholder: "Choose which draw prices region to open on...",
+                    type: 3, custom_id: `set_region_mode|${userId}|1|${expiresAt}`, placeholder: "Choose which draw prices region to open on...",
                     options: [
                         { label: "Show Last Viewed Region", value: "last_viewed", description: "Opens on whichever region you last viewed/toggled", default: regionMode === 'last_viewed' },
                         { label: "10 CP Region Pricing", value: "region_10", description: "Always opens on the 10 CP region", default: regionMode === 'region_10' },
@@ -260,7 +271,7 @@ module.exports = {
             containerComponents.push({
                 type: 1,
                 components: [{
-                    type: 3, custom_id: `set_timezone|${userId}|1`, placeholder: "Set Your Local Clock Timezone Filters...",
+                    type: 3, custom_id: `set_timezone|${userId}|1|${expiresAt}`, placeholder: "Set Your Local Clock Timezone Filters...",
                     options: Object.entries(tzDisplayMap).map(([val, lab]) => ({ label: lab, value: val, default: tz === val }))
                 }]
             });
@@ -269,7 +280,7 @@ module.exports = {
             containerComponents.push({
                 type: 1,
                 components: [{
-                    type: 3, custom_id: `set_style|${userId}|1`, placeholder: "Set Your Default Chat Timestamp Format Style...",
+                    type: 3, custom_id: `set_style|${userId}|1|${expiresAt}`, placeholder: "Set Your Default Chat Timestamp Format Style...",
                     options: Object.entries(styleDisplayMap).map(([val, lab]) => ({
                         label: lab,
                         value: val,
@@ -329,7 +340,7 @@ module.exports = {
             containerComponents.push({
                 type: 1,
                 components: [{
-                    type: 3, custom_id: `set_accent_style|${userId}|1`, placeholder: "Choose how embed accent colors are picked...",
+                    type: 3, custom_id: `set_accent_style|${userId}|1|${expiresAt}`, placeholder: "Choose how embed accent colors are picked...",
                     options: [
                         { label: "Pre-Designed Palette", value: "preset", description: "Each command uses its own themed color; Settings uses your avatar", default: accentStyle === 'preset' || accentStyle === 'default' },
                         { label: "Avatar Color", value: "avatar", description: "Every command matches your avatar's dominant color", default: accentStyle === 'avatar' },
@@ -349,7 +360,7 @@ module.exports = {
         // was describing; moved below the nav row instead, right before the footer.
         const paginationRow = buildPaginationRow({
             totalChunks: 2, currentPage: page,
-            prevCustomId: `set_page_${page - 1}`, nextCustomId: `set_page_${page + 1}`,
+            prevCustomId: `set_page_${page - 1}|${userId}|${expiresAt}`, nextCustomId: `set_page_${page + 1}|${userId}|${expiresAt}`,
             indicatorCustomId: 'set_page_indicator'
         });
         if (paginationRow) containerComponents.push(paginationRow);

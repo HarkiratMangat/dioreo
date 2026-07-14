@@ -208,6 +208,49 @@ name (e.g. button `nav_prices` → command `draw`). `index.js` has a
 `NAV_COMMAND_ALIASES` map bridging these — check it before assuming
 `client.commands.get(strippedCustomId)` will just work.
 
+## Panel interaction locks — `/manage` (admin-only) and `/settings` (author + 15-min expiry) (2026-07-14)
+Two separate gaps, fixed the same session: `/manage`'s own slash-command `execute()` only ever
+checked `ALLOWED_ADMIN_ID` once, at initial invocation — none of the ~25 button/select/modal-submit
+handlers the panel spawns re-checked who was clicking, so anyone who could see the message (run
+non-ephemeral via `hidden:false`, or just present in the channel) could press its buttons and mutate
+bot data. `/settings` had NO author-lock at all on some of its own components (`set_page_` carried no
+`userId` whatsoever) and no expiry mechanism existed anywhere in the bot.
+
+- **`/manage` fix: one centralized guard**, not per-handler patches. Right after the anti-spam block
+  at the top of `interactionCreate` (`index.js`), before any routing happens: if the interaction is a
+  button/select/modal-submit AND its `customId` starts with one of `/manage`'s own prefixes (`mng_`,
+  `modal_`, `add_loadout_`, `edit_loadout_`, `edit_calendar_`, `edit_draw_`, `add_draw_` — every
+  prefix `/manage` has ever generated, enumerated directly from the code, not guessed) AND
+  `interaction.user.id !== ALLOWED_ADMIN_ID`, it replies ephemeral access-denied and returns before
+  reaching any handler. `ALLOWED_ADMIN_ID` is now exported from `commands/manage.js` (was previously
+  only a local const) so there's exactly one source of truth, not a second hardcoded literal. This
+  choke point is self-maintaining — any FUTURE manage action automatically gets covered as long as it
+  keeps using one of these same prefixes, which every manage action always has. Deliberately scoped to
+  ONLY these prefixes so `/settings`, `/colors`, draws/calendar pagination, etc. are completely
+  unaffected — this is not a bot-wide button lock.
+- **`/settings` fix: stateless expiry encoded directly in the custom_id**, not a Map. Considered a
+  `messageId -> {userId, expiresAt}` Map (mirroring `manageUndoStore`'s pattern) but rejected it —
+  populating it on the VERY FIRST render would need an extra `interaction.fetchReply()` call just to
+  learn the message id (the same "hard design problem" `dynamicProfile`'s message-id caching hit, see
+  the accent color section below), and a Map resets on every redeploy. Instead every custom_id
+  `settings.js` builds (`toggle_*`, `set_*`, `set_page_`, `colors_view`) carries the deadline as its
+  own pipe segment — same "stateless" convention `tsmenu`/`price_subpage_` already use. Computed ONCE
+  per genuine `/settings` invocation (`SETTINGS_PANEL_TTL_MS = 15 * 60 * 1000`, `settings.js`'s
+  `execute(interaction, pageOverride, expiresAtOverride)` — new 3rd param) and threaded through
+  unchanged on every re-render, so clicking around the panel never extends the clock; the 15 minutes
+  is anchored to the original command, not a sliding window. Every settings-owned handler in
+  `index.js` (`toggle_`, generic `set_`, `set_page_`) checks identity first, then
+  `Date.now() > parseInt(expiresAtStr, 10)`, replying "run `/settings` again" if expired — and passes
+  the SAME `expiresAtStr` back into its own re-render call rather than letting a fresh one get minted.
+  **`colors_view` (the "View Colors" button that lives ON the settings panel) gets the expiry check
+  too**, since it's still a settings component — but the brand-NEW colors panel message it opens keeps
+  its existing separate `|userId` lock with NO timeout of its own (Harkirat's explicit "/settings
+  only" call, since `colors_page_`/`colors_subpage_`/`colors_refresh_` back BOTH `/settings`' button
+  AND the standalone `/colors` command sharing identical code — locking those would've silently
+  changed `/colors` too). `set_page_` also needed a real `flags: 0`-style fix of its own: its
+  custom_id used to be a bare `set_page_{N}` with no pipe segments at all, so adding `|userId|expiresAt`
+  required switching its parsing from a blind `.replace('set_page_', '')` to a proper `.split('|')`.
+
 ## Components V2 — hard-won lessons
 This bot uses Discord's Components V2 (`flags: 32768`) throughout: Containers
 (type 17), Sections (type 9) with thumbnail accessories, Text Displays (type 10),
@@ -313,6 +356,27 @@ sync across two separate redesigns before this got fixed. Now `timestamp.js`'s
 via a synthetic interaction instead of re-deriving them from slash command options, and
 both code paths share one render implementation. If you add more ways to reach this
 render logic in the future, extend `overrideState` rather than branching a third copy.
+
+### `/timestamp`'s `format` option — Embed or plain Text (2026-07-14)
+New slash-command-exclusive `format` string option (`embed`/`text`, default `embed`) — deliberately
+NOT saved to `/settings`/`UserPreference`, since Harkirat wanted this purely a per-invocation choice.
+Works identically for the All Formats overview and every individual style view. Text mode reuses the
+exact same content strings the embed view builds (`headingLine`/`linesBlock`/`parsedLine`/`hintLine`,
+computed once and consumed by both branches so there's no drift between the two) but sends them as
+plain message `content` instead of wrapping them in a type-17 Container — no `accent_color`, and a
+blank line stands in for the type-14 divider component (plain content has no divider equivalent). The
+style-select dropdown and Share/"Show Everyone" button both still work in text mode as top-level
+action rows (Discord supports classic action rows identically whether or not the V2 flag is set) —
+only the container itself is dropped. `flags` is `0` for a public text response, not the usual `32768`
+default — confirmed safe: `sendV2Payload`'s default param only triggers on `undefined`, not on falsy
+values, so an explicit `0` is never silently overridden back to Components V2.
+
+Switching styles via the dropdown while in text mode needed to STAY in text mode — there's no `format`
+option to re-read on that path (`overrideState` skips normal option resolution entirely, same
+constraint `ephemeral`/`accentColor` already work around). Solved the same way `ephemeral` already is:
+`index.js`'s `tsmenu|` handler derives `isTextMode` from the ABSENCE of the Components V2 bit (32768)
+on the message being edited (`!(interaction.message.flags?.bitfield & 32768)`), since text mode never
+sets that flag, and passes it through `overrideState.isTextMode`.
 
 ## The "synthetic interaction" pattern (button/select → reused slash command logic)
 Several buttons and select menus re-invoke a slash command's own `execute()` function
@@ -1397,9 +1461,14 @@ channel outside of directly responding to the interaction that triggered it, it 
 this same interaction-response mechanism (a `deferReply`/`followUp` on that interaction), not a
 generic bot-token channel call.
 
-## "Share Publicly" (`utils/shareButton.js`)
+## "Show Everyone" (`utils/shareButton.js`, formerly "Share Publicly")
 Every ephemeral response across the bot gets one extra button appended below its existing
 components: clicking it answers that button click with the exact same content as a public message.
+**Renamed 2026-07-14** (Harkirat's request — "Share Publicly" read as ambiguous about what actually
+happens) to "Show Everyone", which states the outcome directly. Same day, the plain 🌐 globe was
+swapped for a Harkirat-provided custom animated emoji (`emojiMap.js`'s `share`) — goes through the
+button's dedicated `emoji` field via `parseEmoji()`, not baked into `label` (see Components V2 point
+4 above). The underlying `share_public` custom_id and every mechanism described below is unchanged.
 The mechanism is simpler than it sounds — **Discord includes the full original message
 (content/embeds/components) directly in a button click's own interaction payload, even when that
 message is ephemeral.** There's no need to store or reconstruct any state: `index.js`'s
@@ -1917,6 +1986,20 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   present on this Mac, not guaranteed on Render/Railway's production containers. If decoration color
   extraction ever silently stops working in production specifically (works locally, not live), check
   for `ffmpeg` on the deployed image before assuming it's a code bug.
+- **Pagination/toggle clicks (draws' New/Returning switch, calendar/draw-prices sub-page nav, etc.)
+  have a structural double network round-trip, not a CPU/DB bug** (investigated 2026-07-14, Harkirat
+  flagged it "feels slow"). Traced every `await` on the hot path for both `/draws`' view-switch and
+  `/calendar`'s sub-page nav: 1 `deferUpdate()` round-trip, 2 concurrent Mongo reads (`prefs` +
+  `SeasonalData`), then a SEPARATE `rest.patch(Routes.webhookMessage(...))` round-trip to actually
+  update the message — `buildContainer()` itself is pure sync string-building, no image/attachment
+  work happens on this path at all. Ruled out the earlier View-Colors-incident-style cause too:
+  Harkirat's own saved `accentColorStyle` is `'preset'`, which returns `presetHex` immediately with
+  no live Discord fetch, so that's not contributing here. The real fix — answering with a single
+  direct `UPDATE_MESSAGE` interaction response instead of defer-then-patch — would cut one full
+  network hop per click, but touches every paginated command (draws/calendar/drawprices/settings/
+  colors/loadouts), a broader refactor than anything else done this session. **Deliberately deferred
+  to a future session** (Harkirat's explicit call — ship the smaller asks first) rather than attempted
+  alongside the panel-lock/share-button/timestamp-format work above.
 
 ## Next planned work
 - **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
@@ -1925,11 +2008,15 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   Add a startup lock / refuse-to-start-if-already-connected mechanism so a stray leftover local
   `node index.js` can't silently race the deployed Render instance again. Until this exists, killing
   stray local instances is a manual step in the push flow.
-- **Changelog is significantly behind** (flagged 2026-07-13): `CHANGELOG.md`/`CHANGELOG-SUMMARY.md`'s
-  last entry is v2.71 (2026-07-09), but everything since — the Jul 11–12 batch redesign, the whole
-  View Colors / accent-color system, both Cloudinary caches, and the Jul-14 CPU + sizing work — is
-  unlogged. Catching it up is its own task (several versions' worth of entries); not blocking, but
-  the docs-at-push-time habit lapsed for the recent big features and should be reconciled.
+- **Full DEVLOG backfill from prior chat transcripts** (added 2026-07-13). `DEVLOG.md` (new, local-only
+  narrative "journey & lessons" record — see the changelog-system memory) shipped a v1 covering the
+  2026-07-13 session richly plus brief `[backfill — expand later]` stubs for earlier milestones. The
+  deferred task (waiting on token budget, Harkirat's call) is to retrieve the actual prior chat
+  transcripts — which hold reasoning/interactions/discoveries that never reached CLAUDE.md or memory —
+  and merge/expand them into DEVLOG's Part A journey + Part B lessons ledger.
+- **Changelog is now caught up** (done 2026-07-13): `CHANGELOG.md`/`CHANGELOG-SUMMARY.md` are current
+  through v2.17.3 under the 3-part scheme, with a roadmap section added to each. Was ~9 versions behind
+  before this; no longer pending.
 - **The real "search + multi-select" flow for Delete Multiple (all entities) and Loadouts' Replace
   Multiple** — deliberately deferred out of the 2026-07-12 `/manage` panel redesign at Harkirat's
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else

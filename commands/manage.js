@@ -600,6 +600,10 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
 }
 
 module.exports = {
+    ALLOWED_ADMIN_ID, // Exposed so index.js's centralized panel-interaction guard (button/select/
+                      // modal-submit) can check against the same single source of truth instead of
+                      // a second hardcoded literal drifting out of sync — see the guard right after
+                      // the anti-spam block in interactionCreate.
     data: new SlashCommandBuilder()
         .setName('manage')
         .setDescription('Database manager for gunsmiths and seasonal data — Add/Edit/Delete')
