@@ -12,12 +12,22 @@ CLAUDE.md is the deepest source of truth for architecture/design decisions; that
 collaboration layer on top of it.
 
 **⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (26 files).**
-The repo now lives at `/Applications/Claude Code/Diors-Builds`, so the harness may tell a session its
-memory directory is `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — **that path
-does not exist, and creating it would split memory into two half-empty stores** (verified 2026-07-15).
-Always read AND write memory at the `-Applications-Diors-Builds` path above, regardless of what the
-session prompt suggests. If the canonical store is ever genuinely migrated, move all 26 files at once
-and update this note — don't let both exist.
+Always read AND write memory there, regardless of what the session prompt suggests. Harkirat relocated
+the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
+project folder from the repo path — so it now points sessions at
+`~/.claude/projects/-Applications-Claude-Code-Diors-Builds/`.
+- **Be precise about what does and doesn't exist there** (verified 2026-07-15): that project folder DOES
+  exist — the harness created it and writes this repo's session transcripts/tool-results into it. But it
+  contains **no `memory/` subdirectory**, and must never get one. The real 26-file store lives only at
+  the `-Applications-Diors-Builds` slug above. Don't read "the folder exists" as evidence this note is
+  stale and go migrating.
+- **This is a deliberate decision, not an unfixed bug — do NOT "correct" it by moving memory to match
+  the repo path** (decided with Harkirat 2026-07-15). The harness slug is derived from the repo's
+  location, so memory that follows the slug breaks on EVERY future folder move and needs re-migrating
+  each time. A fixed, explicitly-named store makes repo moves irrelevant. The only cost is this note,
+  which is cheap and now auto-loads via `SESSION-START.md`.
+- If it's ever genuinely migrated anyway, move all 26 files at once and update this note, the working
+  agreement, and `SESSION-START.md` together — never let two stores exist.
 
 ## Local-only files & the `local/` folder
 `local/` (repo root, **gitignored** — added 2026-07-14) is Harkirat's personal scratch folder for
@@ -2144,6 +2154,20 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   that weapon — but visually distinguished so a custom build is never mistaken for one of the bot's
   own official builds.
 
+- **General bot/code housekeeping session** (added 2026-07-15, Harkirat's request — "at some point
+  soon", not urgent). A dedicated pass for accumulated cruft rather than doing it piecemeal mid-feature.
+  Known items so far:
+  - Delete leftover config backups: `.claude/settings.local.json.bak-*` (shows as untracked in
+    `git status`) and `~/.claude/settings.json.bak-*`. Both changes they back up are verified working.
+  - Audit for other stale absolute paths after the 2026-07-14 repo relocation to `/Applications/Claude
+    Code/Diors-Builds`. The known ones are FIXED (the `SessionStart` hook now resolves via
+    `$CLAUDE_PROJECT_DIR`; two `node -c` permission entries are now relative) — this is a sweep for
+    anything missed, ideally preferring relative/dynamic paths so a future move can't rot them again.
+    **Note: the memory store staying at the `-Applications-Diors-Builds` slug is NOT part of this — it's
+    deliberate and move-proof, see the canonical-memory-path note at the top of this file.**
+  - General dead-code / stale-comment / unused-dependency review across the repo.
+  - Revisit whether `patchnotes.js`'s media carousel needs the component-count chunking `draws`/
+    `calendar` have (see "Known open issues").
 - **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
   request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
   badly (see the "Branch-testing discovery" note above and `[[feedback_multiple_bot_instances]]`).
