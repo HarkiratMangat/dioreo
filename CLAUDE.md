@@ -11,6 +11,14 @@ how Harkirat works and what this project expects, with links to every other memo
 CLAUDE.md is the deepest source of truth for architecture/design decisions; that file is the
 collaboration layer on top of it.
 
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (26 files).**
+The repo now lives at `/Applications/Claude Code/Diors-Builds`, so the harness may tell a session its
+memory directory is `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — **that path
+does not exist, and creating it would split memory into two half-empty stores** (verified 2026-07-15).
+Always read AND write memory at the `-Applications-Diors-Builds` path above, regardless of what the
+session prompt suggests. If the canonical store is ever genuinely migrated, move all 26 files at once
+and update this note — don't let both exist.
+
 ## Local-only files & the `local/` folder
 `local/` (repo root, **gitignored** — added 2026-07-14) is Harkirat's personal scratch folder for
 random local-only files: the `project plan notes.txt` future-planning dump lives there, and anything
@@ -2026,6 +2034,42 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
 - **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
 
+**Second batch of v2 items (filed 2026-07-15 from the plan-notes file).** These ship to `main`/live
+NORMALLY even while v3 pre-release work runs in parallel — see the parallel-track note in
+[[project_dior_builds_changelog_system]]; each one also gets cloned into the v3 branch once it exists.
+- **Add the `hidden` option to `/settings`** — every other command has it; `/settings` was simply
+  missed. Same option name/description as everywhere else.
+- **Trim slash-command descriptions to fit mobile** — several currently truncate to `...` on mobile.
+  Audit all of them against MOBILE width, not desktop.
+- **Loadout search on a short/partial phrase** (e.g. `loc`, noticed live on mobile) currently fails
+  unhelpfully. Two candidate fixes, decide at build: auto-resolve to the closest fuzzy match, OR
+  improve the error to say "pick from the list" — specifically when there's no match OR the phrase is
+  under 3 letters. Relates to `utils/search.js`'s `fuzzyMatch`.
+- **Reword the action-blocked message** — easier to understand, some humor, and actually useful (say
+  what to do instead). This is the panel-lock denial copy (see "Panel interaction locks" above).
+- **Admin override on action blocks** — Harkirat (`ALLOWED_ADMIN_ID`) should never be action-blocked
+  on someone else's panel; only non-admins get blocked where a block exists. **Critical detail: the
+  override must NOT swap in his colors/data** — the panel keeps rendering the ORIGINAL user's data, he
+  just isn't denied the interaction. Touches the centralized guard in `interactionCreate` and
+  `/settings`' author-lock.
+- **View Colors: extract a wider variety of colors** — juul's avatar (`local/juuls profile picture.png`)
+  returned only 6 instead of the requested 8 AND missed a genuinely useful yellow; assume one root
+  cause for both. **Keep existing behavior for genuinely minimal images**: juul's banner
+  (`local/juuls banner.png`) correctly returned 4 on a single page — 2-4 colors on one page must stay
+  the outcome for low-variety sources, NOT be padded out to a quota. See the k-means section above
+  (over-clustering at K=1.5× and the 30-RGB merge step are the likely levers; the determinism
+  requirement is non-negotiable — Refresh's change-detection depends on it). **Own session, Opus 4.8
+  high** — real algorithmic work, not a filing item.
+- **View Colors: always show the Display Name / Nameplate / Deco pages even when unset/no Nitro** —
+  instead of hiding them, render a humor/"bully" page (no colors shown). Ties into the personality
+  direction in the v3 list below.
+- **View Colors: add full-resolution Download Avatar / Download Banner buttons** on their respective
+  color-menu pages — bottom, OUTSIDE the container, beside the Refresh button; grey (style 2); same
+  style as they already appear in `/settings`.
+- **Pagination loop-back when >3 pages** (e.g. the Bal-27 loadout) — wrap last→first instead of a
+  disabled button on the final page. **Keep the current disabled-state behavior at exactly 2 pages.**
+  Affects the shared `buildPaginationRow` helper, so check every caller before changing it.
+
 ### v3 (next MAJOR version) — roadmap (filed 2026-07-14 from Harkirat's plan-notes file)
 Harkirat's own planned feature set for the next whole-number version. **Not started; nothing here is a
 committed design yet** — these are captured intents to brainstorm/spec properly when each is picked up.
@@ -2064,6 +2108,41 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
 - **Different view options for the slash commands** (unspecified in the notes — expand when picked up).
 - **Ship the redesigned changelog artifact** (personal-use release-log visual — see
   [[project_changelog_redesign]], currently paused).
+- **A `/help` command** (filed 2026-07-15) — detail the bot's commands/features, and reference the
+  command in the bot's own Discord description so people can find it.
+- **Personality pass: "bully people who are broke"** (filed 2026-07-15, Harkirat's words) — a silly
+  running gag to give the bot some character. No fixed home yet; sprinkle it in as we go. Already has
+  two concrete landing spots picked: the unset Display Name/Nameplate/Deco humor pages (v2 list above)
+  and the reworded action-blocked message (v2 list above). Keep it light/jokey, never actually mean.
+
+### v4 — roadmap (filed 2026-07-15, further out than v3; nothing designed yet)
+- **Ship as a GUILD-INSTALL bot with text/prefix commands** — e.g. `d b ak117` ("dior build ak117"),
+  plus a manually-settable per-server prefix. Commands like the prefix-setter should be
+  server-EXCLUSIVE (the slash version only appears in a guild, never in a DM).
+  **⚠️ This breaks the single biggest architectural assumption in this file** — see "This bot is
+  user-installed only — it is NEVER a guild member with roles/permissions" above. That whole section
+  becomes false under v4, and things it explains (the `50001 Missing Access` wall, why "Show Everyone"
+  had to route through the interaction-response mechanism instead of a channel POST) would change.
+  Re-read and rewrite that section as part of v4, don't leave it contradicting reality.
+  **Discord Dev Portal changes required** (confirmed 2026-07-15): enable Guild Install in the portal's
+  Installation settings, add `setIntegrationTypes([0, 1])` to commands, and — the big one — enable the
+  **privileged MESSAGE CONTENT intent**, which needs Discord's approval once the bot passes 100 guilds.
+  Real guild membership with View Channel / Send Messages also becomes a genuine requirement.
+- **User-submitted loadouts, gated behind Harkirat's manual review** — a submission never goes live
+  until he approves it. Needs a review surface where he can Deny / Accept / Accept-with-edit each
+  submission (likely an extension of the `/admin` panel from v3).
+
+### v5 — roadmap (filed 2026-07-15, most speculative; explore properly when picked up)
+- **Generate the gunsmith image + share code ourselves, removing the manual-screenshot requirement.**
+  Given a weapon + its attachments, the bot builds the image and the Gunsmith code, then stores it in
+  Cloudinary. Groundwork this needs: teach the gunsmith CODE structure, teach the gunsmith LAYOUT
+  design, and supply the base no-attachment gunsmith page for each weapon (they differ per weapon).
+  Harkirat's own note: explore the idea further at v5 time — this is a research spike, not a spec.
+- **User-built custom gunsmiths in-bot** (depends on the above working). Pick weapon → pick that
+  weapon's available attachments → generate image → share/download. Plus a "my builds" command to save
+  and view custom loadouts, merged INTO `/loadout` results for that specific user when they search
+  that weapon — but visually distinguished so a custom build is never mistaken for one of the bot's
+  own official builds.
 
 - **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
   request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
