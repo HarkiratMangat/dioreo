@@ -92,6 +92,29 @@ local-only (gitignored) files: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.m
   `diors-builds`' service ID is `srv-d850b2og4nts73fhpfog` (Ohio region, `dashboard.render.com/web/
   srv-d850b2og4nts73fhpfog`) — confirmed via `render services --output json`.
 
+## Version tagging (added 2026-07-16)
+The `vMAJOR.MODERATE.MINOR` convention itself is defined in `SESSION-START.md` (gitignored,
+canonical source — don't duplicate the full rules here), including the existing "ONE version per
+PUSH, not per commit" rule and `CHANGELOG.md`'s "Unreleased" section with a proposed number. What's
+new: **each real push's version now also gets an actual git tag** (e.g. `v2.18.1`), complementing
+(not replacing) that existing system — the CHANGELOG's proposed number is the human-readable plan,
+the tag is the permanent, unambiguous marker once it's real. This makes `git describe --tags` give
+free, zero-maintenance visibility into exactly what's committed-but-unpushed since the last real
+push.
+
+**Backfilled tags: `v2.17.3` (`426a444`), `v2.18.0` (`5c403a7`), and `v2.18.1` (`1600b8e`)** — found
+by cross-checking `CHANGELOG.md` directly against `git log`, not by guessing from commit messages
+alone (an earlier pass here missed `v2.18.1` entirely — it bundles 3 commits, `f7b4575`/`c4b1c19`/
+`1600b8e`, pushed together as one version per the existing "one push, one number" rule, and none of
+the 3 commit messages themselves say "v2.18.1"). Confirmed via `git describe --tags` after tagging:
+`v2.18.1-1-gcf6cad7` — exactly matches `git status`'s "ahead of origin by 1 commit," i.e. only the
+current HEAD is genuinely unreleased. **Deliberately did NOT backfill further back than v2.17.3.**
+Most of this repo's ~40+ earlier version bumps span date-grouped ranges in `CHANGELOG.md` without
+an unambiguous 1:1 commit mapping (e.g. five separate bumps all dated one day) — tagging those
+would mean guessing, and a wrong permanent tag is worse than no tag. If a clean historical mapping
+is ever worked out, backfill then; until that's actually done, treat pre-`v2.17.3` history as
+untagged by design, not an oversight.
+
 ## Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain
 way, not just what it does — especially around bugs that were fixed, Discord platform
