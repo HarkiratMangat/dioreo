@@ -96,6 +96,21 @@ client.on('error', (error) => {
     console.error('Discord client error (bot stays alive):', error);
 });
 
+// DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take
+// 10+ minutes with ZERO error on either client.login()'s promise or the 'error' handler above --
+// MongoDB connects and the Express keep-alive server binds fine, but handleBotReady() (which logs
+// "fully authenticated"/"routing links integrated") never fires until the WS layer's internal
+// retry/backoff eventually succeeds. That internal retry activity was completely invisible, so a
+// real multi-minute production gap looked identical to "nothing is happening" from the logs alone.
+// These shard-lifecycle events are the actual diagnostic trail for next time -- deliberately NOT
+// listening to the raw 'debug' event, which fires on nearly every heartbeat and would flood
+// production logs; these five only fire on real state transitions.
+client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
+client.on('shardResume', (id, replayed) => console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`));
+client.on('shardReconnecting', (id) => console.log(`🔌 Shard ${id} reconnecting...`));
+client.on('shardDisconnect', (event, id) => console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`));
+client.on('shardError', (error, id) => console.error(`🔌 Shard ${id} error (bot stays alive):`, error));
+
 // Initialize command collections and staging cache array
 client.commands = new Collection();
 const commands = [];

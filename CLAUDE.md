@@ -374,6 +374,20 @@ both settings security-gateway rejection replies, the nav-router "target offline
 loadout `copy`/`copyatt` button replies — if you add a new early-return error reply anywhere in this
 handler, follow the same await-and-wrap shape rather than a bare `return interaction.X(...)`.
 
+**A "live" Render deploy is not the same as a connected bot — the Gateway handshake can silently
+take 10+ minutes with zero error (found live, 2026-07-16).** MongoDB connecting and Render marking
+the service `live` only confirm the process booted and the HTTP port bound — neither confirms
+`Events.ClientReady` ever fired. On a real deploy, the two-line confirmation
+(`handleBotReady()`'s "fully authenticated"/"routing links integrated" logs) was missing for ~14
+minutes with no error on `client.login()`'s promise or the `client.on('error', ...)` handler above,
+then it resolved on its own. See `DEVLOG.md`'s 2026-07-16 entry for the full investigation (ruled
+out a code regression, a local stray instance, and a Railway conflict with real evidence before
+concluding this). **Don't treat "Mongo connected + Render says live" as proof the bot is actually
+online** — check for the two `handleBotReady()` log lines specifically, or better, check the shard
+-lifecycle logs (`shardReady`/`shardResume`/`shardReconnecting`/`shardDisconnect`/`shardError`,
+added the same day right after the `client.on('error', ...)` listener) for the actual Gateway
+state, since a hang like this produces no other signal.
+
 ## User-install / DM support — must be set per-command, not inherited
 Discord requires each slash command to individually opt in to being usable outside a guild via
 `.setIntegrationTypes([1]).setContexts([0, 1, 2])` on its `SlashCommandBuilder` — there's no
