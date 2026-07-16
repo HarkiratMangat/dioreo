@@ -59,8 +59,16 @@ local-only (gitignored) files: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.m
 - `xlsx` — NOT used at bot runtime anymore (see MP loadout system below); only referenced by
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
-- Pushed to GitHub (`origin/main`). **Render is git-connected auto-deploy** (a push to `main`
-  triggers it, no separate CI/CD pipeline) — **Railway is NOT connected to a git source at all**
+- Pushed to GitHub (`origin/main`). **Render's auto-deploy is OFF as of 2026-07-16** (was
+  git-connected auto-deploy, a push to `main` triggering it automatically) — deliberately disabled
+  as a TEMPORARY safeguard after a silent ~14-min Gateway hang on a routine deploy (see DEVLOG's
+  2026-07-16 entry), so a push doesn't force a bot restart until the underlying cause is actually
+  understood. **A push no longer redeploys the bot — a manual `render deploys create
+  srv-d850b2og4nts73fhpfog --confirm` (or the dashboard) is now a required, separate step.** See
+  `feedback_push_means_full_cycle.md` in memory for the updated "push" definition. Re-enable via
+  `render services update srv-d850b2og4nts73fhpfog --auto-deploy=true --confirm` once the Gateway
+  issue is resolved — this is explicitly NOT meant to be permanent, don't treat it as the new
+  normal without checking whether it's still needed. — **Railway is NOT connected to a git source at all**
   (confirmed 2026-07-12 via `railway status --json`: the `diors-builds` service's `source` is
   `{ image: null, repo: null }` — it's deployed purely from local CLI snapshot uploads, there's no
   auto-deploy toggle to flip because there's nothing to auto-deploy from). Harkirat was explicitly
