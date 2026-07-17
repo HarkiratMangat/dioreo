@@ -53,7 +53,9 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
     const body = {
         // Ping puts the mention in `content` AND allow-lists it; non-ping suppresses ALL mentions so an
         // info alert can never accidentally notify (even if a detail string contains a stray <@...>).
-        content: shouldPing ? `<@${PING_USER_ID}>` : undefined,
+        // Include the icon + title in the content itself so the phone/desktop NOTIFICATION PREVIEW says
+        // what the ping is about (the embed doesn't show in the notification), not a vague bare @mention.
+        content: shouldPing ? `<@${PING_USER_ID}> ${LEVEL_ICON[level] || LEVEL_ICON.error} **${title}**` : undefined,
         allowed_mentions: shouldPing ? { users: [PING_USER_ID] } : { parse: [] },
         embeds: [{
             title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${title}`.slice(0, 256),

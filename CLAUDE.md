@@ -16,18 +16,20 @@ Always read AND write memory there, regardless of what the session prompt sugges
 the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
 project folder from the repo path — so it now points sessions at
 `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/`.
-- **Be precise about what does and doesn't exist there** (verified 2026-07-15): that project folder DOES
-  exist — the harness created it and writes this repo's session transcripts/tool-results into it. But it
-  contains **no `memory/` subdirectory**, and must never get one. The real 26-file store lives only at
-  the `-Applications-Diors-Builds` slug above. Don't read "the folder exists" as evidence this note is
-  stale and go migrating.
-- **This is a deliberate decision, not an unfixed bug — do NOT "correct" it by moving memory to match
-  the repo path** (decided with Harkirat 2026-07-15). The harness slug is derived from the repo's
-  location, so memory that follows the slug breaks on EVERY future folder move and needs re-migrating
-  each time. A fixed, explicitly-named store makes repo moves irrelevant. The only cost is this note,
-  which is cheap and now auto-loads via `SESSION-START.md`.
-- If it's ever genuinely migrated anyway, move all 26 files at once and update this note, the working
-  agreement, and `SESSION-START.md` together — never let two stores exist.
+- The `-Applications-Claude-Code-Diors-Builds` project folder DOES exist (the harness writes this repo's
+  transcripts there), but the Diors memory store is NOT there — always read/write memory at the
+  `-Applications-Diors-Builds` path above. Don't migrate Diors memory to match the repo slug: it would
+  break on every future folder move, whereas a fixed store is move-proof (decided with Harkirat 2026-07-15).
+- **⚠️ Do NOT create, delete, or symlink `-Applications-Claude-Code-Diors-Builds/memory` from a Diors
+  session.** That path is claimed by the PAUSED cross-project **memory-architecture redesign** (a separate
+  project working out of `/Applications/Claude Code/`), whose plan is to make it a **symlink → the
+  canonical store** so writes resolve there structurally. An earlier version of this note said "that subdir
+  must never exist, delete it if it appears" — that is SUPERSEDED and caused real interference: a Diors
+  session deleted the empty slug dir on 2026-07-17 acting on it (harmless — guarded `rmdir`, no memory
+  lost, canonical intact — but exactly the cross-project interference to avoid). Leave that path alone and
+  defer to the memory-redesign project. Its status/design: `/Applications/Claude Code/local/memory-
+  architecture-STATUS.md` (+ core-memory `project_memory_architecture_continuation`). See
+  [[feedback_defer_to_owning_project]].
 
 ## Local-only files & the `local/` folder
 `local/` (repo root, **gitignored** — added 2026-07-14) is Harkirat's personal scratch folder for
