@@ -59,16 +59,20 @@ local-only (gitignored) files: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.m
 - `xlsx` — NOT used at bot runtime anymore (see MP loadout system below); only referenced by
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
-- Pushed to GitHub (`origin/main`). **Render's auto-deploy is OFF as of 2026-07-16** (was
-  git-connected auto-deploy, a push to `main` triggering it automatically) — deliberately disabled
-  as a TEMPORARY safeguard after a silent ~14-min Gateway hang on a routine deploy (see DEVLOG's
-  2026-07-16 entry), so a push doesn't force a bot restart until the underlying cause is actually
-  understood. **A push no longer redeploys the bot — a manual `render deploys create
-  srv-d850b2og4nts73fhpfog --confirm` (or the dashboard) is now a required, separate step.** See
-  `feedback_push_means_full_cycle.md` in memory for the updated "push" definition. Re-enable via
-  `render services update srv-d850b2og4nts73fhpfog --auto-deploy=true --confirm` once the Gateway
-  issue is resolved — this is explicitly NOT meant to be permanent, don't treat it as the new
-  normal without checking whether it's still needed. — **Railway is NOT connected to a git source at all**
+- **🟢 DEPLOYMENT: the bot runs on a GCP Compute Engine VM (cutover 2026-07-17). Render is RETIRED.**
+  Full setup, deploy flow, and monitoring/alerting live in the **"## Deployment & Ops (GCP)"** section
+  below — that's the authoritative reference. In short: VM `diors-builds-bot` (e2-micro, `us-east1-b`,
+  project `gen-lang-client-0549308254`) runs the bot under **systemd** (unit `diors-bot`, auto-restart on
+  crash + reboot). **"Push"/deploy is git-based:** `git push origin main` → on the VM `cd ~/diors-builds
+  && git pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. Render's free tier was
+  proven unable to hold the Discord gateway (10-14 min connects → zombie sockets; identical code connects
+  in seconds on the VM) — see memory [[project_deployment_migration_render_to_gcp]] + DEVLOG's 2026-07-17
+  entry. **Render service `srv-d850b2og4nts73fhpfog` is SUSPENDED — do NOT deploy to it or treat it as
+  live; delete ~2026-07-24 once GCP proves reliable.**
+- *(HISTORICAL — Render, retired 2026-07-17, kept for reference until the service is deleted.)* Was
+  git-connected auto-deploy off `main` (turned off 2026-07-16 after the Gateway hang, then the host
+  abandoned 2026-07-17). Suspend/resume via REST (`POST /v1/services/{id}/suspend|resume`, `RENDER_API_KEY`
+  in `.env`). — **Railway is NOT connected to a git source at all**
   (confirmed 2026-07-12 via `railway status --json`: the `diors-builds` service's `source` is
   `{ image: null, repo: null }` — it's deployed purely from local CLI snapshot uploads, there's no
   auto-deploy toggle to flip because there's nothing to auto-deploy from). Harkirat was explicitly
@@ -99,6 +103,39 @@ local-only (gitignored) files: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.m
   a meaningfully different, more sensitive thing to go digging through, even for the same end goal.
   `diors-builds`' service ID is `srv-d850b2og4nts73fhpfog` (Ohio region, `dashboard.render.com/web/
   srv-d850b2og4nts73fhpfog`) — confirmed via `render services --output json`.
+
+## Deployment & Ops (GCP) — added 2026-07-17 (authoritative deployment reference)
+The bot runs on a **GCP Compute Engine VM**, migrated off Render's free tier on 2026-07-17 after Render
+was proven unable to hold the Discord gateway (10-14 min connects → silent zombie sockets; identical code
+connects in seconds on the VM). Full story: [[project_deployment_migration_render_to_gcp]] + DEVLOG's
+2026-07-17 entry. Quick command card: [[reference_vm_bot_commands]].
+
+- **The VM:** `diors-builds-bot` · **e2-micro** (2 shared/burst vCPU, 1 GB RAM — ample; bot uses ~112 MB
+  / ~1% CPU) · zone `us-east1-b` · Debian 12 · 30 GB pd-standard · project `gen-lang-client-0549308254`
+  · billing account `01FB53-3A80FB-BC32B1` (holds the $300 + $10/mo credits) · **$0 always-free tier**.
+  External IP `34.24.175.5` — can change on stop/start, don't hardcode it.
+- **How the bot runs:** under **systemd**, unit **`diors-bot`** (`/etc/systemd/system/diors-bot.service`),
+  user `harkirat`, WorkingDirectory `~/diors-builds`, `ExecStart=/usr/bin/node index.js`, `Restart=always`
+  → auto-restarts on crash AND on VM reboot. Logs → journald (`sudo journalctl -u diors-bot`). Installed
+  on the VM: Node 24, npm, git, **ffmpeg** (system binary for `utils/stillFrame.js`). Secrets live in
+  `~/diors-builds/.env` (scp'd from the Mac; includes `LOG_WEBHOOK_URL`).
+- **Deploy = git-based (the new "push"):** `git push origin main` → on the VM `cd ~/diors-builds && git
+  pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. **A `git push` alone does NOT
+  update the VM.** No auto-deploy (the VM is stable; not needed). See [[feedback_push_means_full_cycle]].
+- **Monitoring ("never blind again"):**
+  - `scripts/vmstatus.sh` — one-shot health: VM state, systemd status, restart count, gateway state, 1h
+    error count, RAM/load/disk. `scripts/vmstatus.sh logs [N]` tails N log lines.
+  - `scripts/vmpeaks.sh` — historical **CPU peaks** (12h/24h/72h/7d/30d) via Cloud Monitoring (no agent
+    needed; hypervisor-level). On e2-micro, >100% = bursting above the 0.25-vCPU baseline (normal).
+  - **Discord alerting** (`utils/alertWebhook.js`) — posts crashes / gateway disconnect+reconnect+error /
+    DB failure / uncaught rejection, plus a "Bot online" ping on each (re)start, to a private Discord
+    channel via `LOG_WEBHOOK_URL` (SECRET — `.env` only, never the repo). Throttled 1/min, never throws,
+    never blocks. Wired into index.js's process/client/shard handlers at 8 sites.
+- **Render (retired):** service `srv-d850b2og4nts73fhpfog` **SUSPENDED** (not deleted). Keep as fallback
+  until ~2026-07-24, then delete once GCP proves reliable. Do NOT deploy to it.
+- **Ops Agent — deferred (soft-priority):** the guest-metrics agent would add RAM/disk-usage metrics +
+  log forwarding to Cloud Monitoring, and unlock **RAM peaks** in `vmpeaks.sh`. Its install script
+  returned HTML/404 during the migration; revisit via the apt-repo install method.
 
 ## Version tagging (added 2026-07-16)
 The `vMAJOR.MODERATE.MINOR` convention itself is defined in `SESSION-START.md` (gitignored,

@@ -7,6 +7,7 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
+const { sendAlert } = require('./utils/alertWebhook'); // Discord webhook alerting; reads LOG_WEBHOOK_URL lazily, no-op if unset
 
 app.get('/', (req, res) => {
     res.send("Dior's Build Bot is running successfully!");
@@ -26,6 +27,17 @@ app.listen(port, "0.0.0.0", () => {
 // unawaited call sites -- see the fixed handlers in PHASE 6 for the real fix.
 process.on('unhandledRejection', (reason) => {
     console.error('Unhandled promise rejection (bot stays alive):', reason);
+    sendAlert('Unhandled promise rejection', reason, 'error');
+});
+
+// Companion net for a SYNCHRONOUS throw with no handler (which would otherwise crash the process).
+// Log + alert (with an active ping — a crash is exactly the "something you should notice" case) and
+// STAY ALIVE, matching this bot's established "degrade to 'that one path failed', never take the whole
+// bot down" philosophy (see CLAUDE.md crash-resilience). systemd would auto-restart anyway, but staying
+// up avoids dropping every other in-flight interaction over one bad code path.
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception (bot stays alive):', err);
+    sendAlert('Uncaught exception', err, 'error');
 });
 
 // ==========================================
@@ -42,7 +54,7 @@ const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
 // CONNECT TO MONGO DB ATLAS STORAGE CLUSTER
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('🍃 Successfully authenticated and established secure link to MongoDB Atlas Cluster!'))
-    .catch(err => console.error('❌ Database connection failure detailed error:', err));
+    .catch(err => { console.error('❌ Database connection failure detailed error:', err); sendAlert('MongoDB connection failure', err, 'error'); });
 
 // Destructuring modern discord.js elements with structural lifecycle elements (Events binding)
 const {
@@ -94,6 +106,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // to always have a listener here so EventEmitter's default "throw when no listener" never triggers.
 client.on('error', (error) => {
     console.error('Discord client error (bot stays alive):', error);
+    sendAlert('Discord client error', error, 'error');
 });
 
 // DIAGNOSTIC LOGGING (added 2026-07-16): found live that the Gateway handshake can silently take
@@ -105,11 +118,14 @@ client.on('error', (error) => {
 // These shard-lifecycle events are the actual diagnostic trail for next time -- deliberately NOT
 // listening to the raw 'debug' event, which fires on nearly every heartbeat and would flood
 // production logs; these five only fire on real state transitions.
+// Each shard-lifecycle event also fires a Discord alert (utils/alertWebhook.js) so gateway trouble is
+// visible in real time, not just in journald. shardReady stays console-only (the initial connect is
+// announced by the "Bot online" alert below); the rest map to warn/error/info by severity.
 client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
-client.on('shardResume', (id, replayed) => console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`));
-client.on('shardReconnecting', (id) => console.log(`🔌 Shard ${id} reconnecting...`));
-client.on('shardDisconnect', (event, id) => console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`));
-client.on('shardError', (error, id) => console.error(`🔌 Shard ${id} error (bot stays alive):`, error));
+client.on('shardResume', (id, replayed) => { console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`); sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info'); });
+client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Gateway reconnecting', `Shard ${id} lost its connection and is reconnecting.`, 'warn'); });
+client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
+client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); sendAlert('Gateway shard error', error, 'error'); });
 
 // Initialize command collections and staging cache array
 client.commands = new Collection();
@@ -248,6 +264,10 @@ async function runCloudinaryCleanup() {
 }
 
 client.once(Events.ClientReady, handleBotReady);
+// Alerting: a one-time "online" ping on each (re)start, so deploys/crashes/restarts are visible in
+// Discord. systemd auto-restarts the bot on crash, so an "online" alert you DIDN'T trigger is itself a
+// useful signal that the process restarted unexpectedly.
+client.once(Events.ClientReady, (c) => sendAlert('Bot online', `Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${Math.round(c.ws.ping)}ms`, 'info'));
 
 // NOTE (removed during review): a "PHASE 5: INTERACTIVE ELEMENT GENERATORS" banner used to sit
 // here with no code under it -- the generators it originally described (loadBuildsFromExcel()'s
