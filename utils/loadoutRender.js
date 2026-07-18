@@ -31,6 +31,17 @@ function getMpCategoryAccent(category) {
     return MP_CATEGORY_ACCENT[category.toUpperCase()] ?? DEFAULT_MP_ACCENT;
 }
 
+// Cosmetic display-only relabeling (2026-07-18, v2 quick-wins follow-up) -- `SECONDARIES` is the
+// real stored `Loadout.category` enum value, the `/secondaries` command name, and that command's
+// own description ALL stay exactly as-is (Harkirat's explicit call -- nothing about the data model,
+// command registration, or category filtering changes). This ONLY relabels how the category reads
+// in specific SHORT, singular-implying UI spots where the plural form sounds wrong grammatically
+// ("Best SECONDARIES" reads oddly for a single weapon) -- currently just the badge line below.
+// Every other category (AR/SMG/LMG/MARKSMAN/SNIPER/SHOTGUN) passes through unchanged.
+function displayCategoryLabel(category) {
+    return category === 'SECONDARIES' ? 'SECONDARY' : category;
+}
+
 // `Loadout.imageKey` supports EITHER a bare Cloudinary key (prefixed with the Cloudinary base URL
 // below, the original design used by admin-added loadouts) OR a full external URL -- added for
 // builds.xlsx's 2 originally-imgur-hosted LOCUS rows (since re-uploaded to Cloudinary directly,
@@ -66,10 +77,10 @@ function buildBadgesLine(build) {
             }
         }
     } else if (build.categoryRank === 'best') {
-        badges.push(`${emojis.best} Best ${build.category}`);
+        badges.push(`${emojis.best} Best ${displayCategoryLabel(build.category)}`);
     } else if (build.categoryRank) {
         const topMatch = build.categoryRank.match(/^top(\d+)$/);
-        if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${build.category}`);
+        if (topMatch) badges.push(`${emojis.top} Top ${topMatch[1]} ${displayCategoryLabel(build.category)}`);
     }
     // "Toxic" is independent of Meta/Best/TopN (a build can be unbalanced/cheese without being the
     // objectively best in its category, or vice versa) -- see models/Loadout.js's isToxic field.
@@ -242,4 +253,4 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     return { components, flags: 32768 };
 }
 
-module.exports = { buildImageUrl, buildLoadoutCard, getMpCategoryAccent };
+module.exports = { buildImageUrl, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel };

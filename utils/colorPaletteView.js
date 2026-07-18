@@ -369,14 +369,25 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // other button/select re-render in this bot deliberately does NOT re-run extraction (that's the
     // whole point of the cache), so this is a specific, deliberate exception for exactly this one
     // explicit user action.
-    const refreshRow = {
-        type: 1,
-        components: [{
-            type: 2, style: 1, label: 'Refresh Colors',
-            custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
-            emoji: emojis.parseEmoji(emojis.eyedropper)
-        }]
-    };
+    const refreshRowComponents = [{
+        type: 2, style: 1, label: 'Refresh Colors',
+        custom_id: `colors_refresh_${effectiveSource}_${effectiveSubpage}|${targetUserId}`,
+        emoji: emojis.parseEmoji(emojis.eyedropper)
+    }];
+    // Download Avatar/Banner (2026-07-18, v2 quick-wins batch) -- full-res, bottom, outside the
+    // container, beside Refresh, matching /settings' existing avatar/banner download buttons
+    // (same style-5 Link button pointed straight at the 4096px CDN url -- Discord renders a Link
+    // button in grey same as a plain Secondary button, it just needs `url` instead of `custom_id`
+    // since it's not an interaction at all, only a direct CDN link). Only shown on that source's
+    // OWN page (Harkirat's spec: "on their respective color-menu pages"), not on every page --
+    // Name/Nameplate/Deco have no equivalent full-res original worth downloading here.
+    if (effectiveSource === 'avatar' && data.avatarFullUrl) {
+        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Avatar', url: data.avatarFullUrl });
+    }
+    if (effectiveSource === 'banner' && data.bannerFullUrl) {
+        refreshRowComponents.push({ type: 2, style: 5, label: 'Download Banner', url: data.bannerFullUrl });
+    }
+    const refreshRow = { type: 1, components: refreshRowComponents };
 
     return { components: [containerPayload, refreshRow], files };
 }

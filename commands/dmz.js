@@ -14,21 +14,26 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('dmz')
         .setDescription('Search through all DMZ specific gunsmiths')
+        // Both option descriptions trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) --
+        // were truncating on mobile. Kept the same standardized "weapon you want a build for"
+        // formula /all and /<category> use (index.js), just tightened -- see those two sites for
+        // the matching trim.
         .addStringOption(option =>
             option.setName('weapon')
-                .setDescription('The name of the weapon you want a DMZ build for')
+                .setDescription('The DMZ weapon you want a build for')
                 .setRequired(true)
                 .setAutocomplete(true)) // Autocomplete hooked dynamically in index.js
         .addIntegerOption(option =>
             option.setName('build')
-                .setDescription('Jump directly to a specific build number, if this weapon has more than one')
+                .setDescription('Jump to a specific build number')
                 .setMinValue(1))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     async execute(interaction) {
         const userId = interaction.user.id;
-        const weaponInput = interaction.options.getString('weapon').toLowerCase().replace(/\s+/g, '');
+        const rawQuery = interaction.options.getString('weapon');
+        const weaponInput = rawQuery.toLowerCase().replace(/\s+/g, '');
 
         // 1. Resolve user visibility preference configurations
         // NOTE (fixed during review): this checked `prefs.dmzVisibility`, a field that was never
@@ -57,10 +62,37 @@ module.exports = {
         await interaction.deferReply({ ephemeral: isEphemeral });
 
         // 2. Query MongoDB for the exact weapon matching the key and restricted to DMZ mode
-        const builds = await buildsPromise;
+        let builds = await buildsPromise;
+
+        // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- the exact weaponKey
+        // lookup above only succeeds when this option's value came from actually picking an
+        // autocomplete suggestion (which submits the real weaponKey). Discord still lets a query
+        // through as raw typed text if the user hits enter without picking one (a real live
+        // complaint on mobile, where the dropdown is easy to dismiss by accident) -- a short/
+        // partial query like "loc" almost never equals a normalized weaponKey exactly, so this
+        // used to just fail with no explanation. Fuzzy-match the raw query against every DMZ
+        // weapon's real name before giving up: an unambiguous single match auto-resolves (safe --
+        // there's only one thing it could mean), 2+ matches asks the user to pick one instead of
+        // silently guessing which they meant.
+        if (!builds || builds.length === 0) {
+            const { findWeaponMatches } = require('../utils/search');
+            const allDmzWeapons = await Loadout.find({ mode: 'DMZ' }).select('weaponKey weaponName').lean();
+            const uniqueDmzWeapons = Array.from(new Map(allDmzWeapons.map(w => [w.weaponKey, w])).values());
+            const fuzzyMatches = findWeaponMatches(rawQuery, uniqueDmzWeapons);
+
+            if (fuzzyMatches.length === 1) {
+                builds = await Loadout.find({ weaponKey: fuzzyMatches[0].weaponKey, mode: 'DMZ' }).lean();
+            } else if (fuzzyMatches.length > 1) {
+                const names = fuzzyMatches.slice(0, 10).map(w => w.weaponName).join(', ');
+                return interaction.followUp({ content: `❌ That's not specific enough — did you mean one of these? **${names}**\nPick a suggestion from the dropdown as you type instead of typing the full name.` });
+            }
+        }
 
         if (!builds || builds.length === 0) {
-            return interaction.followUp({ content: '❌ No specialized DMZ builds were found for that weapon key.' });
+            const hint = rawQuery.length < 3
+                ? ' Try typing a bit more of the weapon\'s name, or pick a suggestion from the dropdown as you type.'
+                : ' Double-check the spelling, or pick a suggestion from the dropdown as you type.';
+            return interaction.followUp({ content: `❌ No specialized DMZ builds were found for that weapon.${hint}` });
         }
 
         // NOTE (added during review): `build` lets a user jump straight to a specific build number

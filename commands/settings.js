@@ -11,6 +11,7 @@ const { resolveAccentColor, fetchDisplayNameColors, resolveDynamicProfileColor }
 const { withShareButton } = require('../utils/shareButton');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
+const { resolveEphemeral } = require('../utils/ephemeral');
 
 // Harkirat's Discord ID, for the "Made with love by @dior" footer's silent mention -- see the
 // bottom of buildContainer() below.
@@ -29,7 +30,16 @@ const SETTINGS_PANEL_TTL_MS = 15 * 60 * 1000;
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('settings')
-        .setDescription('Customize your bot settings, such as accent color, or download your avatar & banner')
+        // Trimmed 2026-07-18 (v2 quick-wins batch, mobile-width audit) -- the old 83-char version
+        // truncated to "..." on Discord mobile's command picker row; every top-level/subcommand
+        // description in this pass was checked against that same narrow row, not desktop.
+        .setDescription('Customize your bot settings and preferences')
+        // Added 2026-07-18 (v2 quick-wins batch) -- every other command already has this option;
+        // /settings was simply missed. Same name/description/priority pattern as everywhere else
+        // (explicit option > saved settingsVisibility preference > public default, see
+        // resolveEphemeral below) -- the in-panel Show/Hide toggle button still works exactly as
+        // before for changing the SAVED preference; this just lets one specific invocation override it.
+        .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
     // pageOverride (2026-07-12): 0 = Visibility, 1 = Preferences. Added once the new region
@@ -53,7 +63,15 @@ module.exports = {
         // We now respect the user's custom settings visibility preference natively! Default
         // flipped from 'ephemeral' to 'public' per Harkirat's request — matches the schema
         // default in UserPreference.js, kept in sync here for existing docs missing the field.
-        const isEphemeral = (prefs.settingsVisibility || 'public').toUpperCase() !== 'PUBLIC';
+        // `hidden` option added 2026-07-18 -- same explicit-option > saved-preference > public
+        // priority every other command already uses (utils/ephemeral.js's resolveEphemeral).
+        // `interaction.isChatInputCommand()` guards reading `.options` at all -- every re-render
+        // path here (toggle/set/set_page/colors button+select handlers in index.js) calls this
+        // execute() with a button/select interaction that has no real options resolver, so
+        // argPrivate naturally falls through to null on those, leaving the saved preference (not
+        // this option) in control exactly as before this change.
+        const argPrivate = interaction.isChatInputCommand() ? interaction.options.getBoolean('hidden') : null;
+        const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'settingsVisibility' });
         if (!interaction.deferred && !interaction.replied) {
             await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
         }

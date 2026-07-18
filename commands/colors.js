@@ -16,7 +16,8 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('colors')
-        .setDescription('View colors extracted from your avatar, banner, and other profile elements')
+        // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
+        .setDescription('View colors extracted from your profile')
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 

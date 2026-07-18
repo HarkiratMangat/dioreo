@@ -27,7 +27,8 @@ module.exports = {
         .setDescription('Seasonal countdowns and details')
         .addSubcommand(sub => sub
             .setName('end')
-            .setDescription('Check the exact dates and countdowns for when the current seasons end')
+            // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
+            .setDescription('Check countdowns for when this season ends')
             .addBooleanOption(option =>
                 option.setName('hidden')
                     .setDescription('True = only you can see this response. False = everyone in the chat can see it.')))

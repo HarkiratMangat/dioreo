@@ -154,7 +154,8 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('calendar')
-        .setDescription("View the timeline for this season's in-game events")
+        // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
+        .setDescription("View this season's in-game event timeline")
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 

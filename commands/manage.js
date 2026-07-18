@@ -606,18 +606,24 @@ module.exports = {
                       // the anti-spam block in interactionCreate.
     data: new SlashCommandBuilder()
         .setName('manage')
-        .setDescription('Database manager for gunsmiths and seasonal data — Add/Edit/Delete')
+        // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- the old 68-char version
+        // truncated on Discord mobile's command picker row.
+        .setDescription('Manage gunsmiths and seasonal bot data')
         .setDefaultMemberPermissions(0)
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app + DM support
-        // Renamed from `page` to `section` (2026-07-12) — each option is a distinct data section
-        // (Draws/Calendar/Loadouts/Patch Notes/Season), not literally a "page" of anything.
+        // Renamed from `page` to `section` (2026-07-12), then `section` to `data for` (2026-07-18,
+        // v2 quick-wins batch) — "section" still didn't describe what's actually being picked (a
+        // data ENTITY: Draws/Calendar/Loadouts/Patch Notes/Season), not a page or a section of one.
         // "Season: Titles & Deadlines" also gained a direct entry here (previously only reachable
         // via the in-panel mng_pagesel dropdown) — picking it skips the panel entirely and opens
         // that modal as the initial response, same as the dropdown's own flat entry does. "Start New
         // Season" deliberately has NO direct slash-option entry — it's destructive enough that
         // requiring the extra step through the panel dropdown (with its own warning description) is
         // intentional, not an oversight.
-        .addStringOption(option => option.setName('section').setDescription('Jump directly to a section').addChoices(
+        // NOTE: Discord option names can't contain spaces (lowercase alphanumeric/underscore/hyphen
+        // only) -- `data_for` is the closest valid spelling of "data for"; Discord still displays
+        // underscores as literal underscores when typing the command, same as every option below.
+        .addStringOption(option => option.setName('data_for').setDescription('Jump directly to a data section').addChoices(
             { name: 'Draws', value: 'draws' },
             { name: 'Calendar', value: 'calendar' },
             { name: 'MP Loadouts', value: 'loadouts_mp' },
@@ -640,10 +646,12 @@ module.exports = {
 
     async execute(interaction) {
         if (interaction.user.id !== ALLOWED_ADMIN_ID) {
-            return interaction.reply({ content: '❌ Access Denied. You lack administrative database privileges.', ephemeral: true });
+            // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of index.js's
+            // centralized button/select/modal guard for this same panel (see interactionCreate).
+            return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dior's Builds' database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
 
-        const section = interaction.options.getString('section') || 'draws';
+        const section = interaction.options.getString('data_for') || 'draws';
 
         // Season: Titles & Deadlines is reachable directly from this option now (2026-07-12) —
         // skips rendering the panel entirely, same as picking it from the in-panel mng_pagesel

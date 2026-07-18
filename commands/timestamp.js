@@ -109,15 +109,19 @@ module.exports = {
                    // color the initial render would have used (see overrideState.accentColor above).
     data: new SlashCommandBuilder()
         .setName('timestamp')
-        .setDescription('Convert natural language into copyable Discord timestamps')
+        // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
+        .setDescription('Convert text into copyable Discord timestamps')
         .addStringOption(option =>
             option.setName('datetime')
-                // FIXED 100-CHARACTER LIMIT CRASH PROTECTION: Combined short string under 100 characters perfectly
-                .setDescription('Convert text (e.g. "tomorrow", "sun 4:30pm", "july17 8pm", "19:30") — type how you want')
+                // Trimmed 2026-07-18 (mobile-width audit) -- kept the examples (the actually useful
+                // part) and dropped the trailing "type how you want" hint to fit mobile's width.
+                .setDescription('e.g. "tomorrow", "sun 4:30pm", "19:30"')
                 .setRequired(true))
         .addStringOption(option =>
             option.setName('timezone')
-                .setDescription('Select local timezone, or leave blank to defaults to your current timezone')
+                // Trimmed 2026-07-18 (mobile-width audit) -- also fixed "leave blank to defaults to"
+                // grammar while touching this line.
+                .setDescription('Your timezone (leave blank for local default)')
                 .addChoices(
                     { name: getTimezoneLabel('America/Toronto', tzLabels['America/Toronto']), value: 'America/Toronto' },
                     { name: getTimezoneLabel('America/Winnipeg', tzLabels['America/Winnipeg']), value: 'America/Winnipeg' },
@@ -159,9 +163,13 @@ module.exports = {
         // Slash-command-exclusive (2026-07-14, Harkirat's request) -- deliberately NOT saved to
         // /settings or UserPreference; every invocation defaults to Embed unless explicitly typed.
         // Works identically for the All Formats overview and every individual style view.
+        // Renamed 'format' -> 'view' (2026-07-18, v2 quick-wins batch) -- "format" read as if it
+        // picked a TIMESTAMP format (fullDateTime/shortDate/etc, already the job of the `style`
+        // option above); "view" is what this option actually controls (Embed panel vs plain text).
         .addStringOption(option =>
-            option.setName('format')
-                .setDescription('Display as a styled embed panel, or plain copyable text (default: Embed)')
+            option.setName('view')
+                // Trimmed 2026-07-18 (mobile-width audit) -- was truncating on mobile.
+                .setDescription('Embed panel or plain text (default: Embed)')
                 .addChoices(
                     { name: 'Embed (Styled Panel)', value: 'embed' },
                     { name: 'Text (Plain, Copyable)', value: 'text' }
@@ -206,7 +214,7 @@ module.exports = {
         } else {
             queryInput = interaction.options.getString('datetime');
             tz = interaction.options.getString('timezone') || 'America/Toronto';
-            isTextMode = interaction.options.getString('format') === 'text';
+            isTextMode = interaction.options.getString('view') === 'text';
 
             // NOTE (fixed during review): this option was previously ALWAYS taken as-is, so leaving
             // it blank meant "all formats" no matter what a user had saved as their default Timestamp

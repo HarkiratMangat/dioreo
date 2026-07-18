@@ -20,6 +20,9 @@ const PALETTE_COUNTS = { avatar: 8, banner: 8, nameplate: 4, decoration: 4 };
 async function getSourceImageInfo(interaction) {
     const avatar = {
         url: interaction.user.displayAvatarURL({ extension: 'png', size: 256 }),
+        // Full-res (2026-07-18, v2 quick-wins batch) -- backs the panel's own Download Avatar
+        // button, same 4096px size /settings' existing download link already uses.
+        fullUrl: interaction.user.displayAvatarURL({ size: 4096 }),
         source: interaction.user.avatar || 'default'
     };
 
@@ -38,6 +41,9 @@ async function getSourceImageInfo(interaction) {
         ? {
             url: userFetch.bannerURL({ extension: 'png', size: 512 }),
             extractUrl: userFetch.bannerURL({ extension: 'png', size: 256 }),
+            // Full-res (2026-07-18, v2 quick-wins batch) -- backs the panel's own Download Banner
+            // button, same 4096px size /settings' existing download link already uses.
+            fullUrl: userFetch.bannerURL({ size: 4096 }),
             source: userFetch.banner
           }
         : null;
@@ -139,6 +145,12 @@ async function getPalettePanelData(interaction, prefs, activeSource, forceRefres
         if (kind !== 'avatar') results[`${kind}Url`] = srcInfo.url; // avatar's thumbnail is passed separately, no gallery url
         results[kind] = prefs[`${kind}Palette`] || null;
     }
+    // Full-res download URLs (2026-07-18, v2 quick-wins batch) -- surfaced unconditionally for
+    // avatar (every user has one) and only when present for banner, same availability rule the
+    // rest of this function already follows. Cheap: these are just CDN URL strings already
+    // computed above by getSourceImageInfo, no extra network call.
+    results.avatarFullUrl = info.avatar.fullUrl;
+    if (info.banner) results.bannerFullUrl = info.banner.fullUrl;
 
     // Extract ONLY the active source. Skipped for 'name' (Display Name Colors are exact user-picked
     // values already surfaced above via displayNameColors -- nothing to extract/cluster) and for any

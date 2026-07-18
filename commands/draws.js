@@ -144,7 +144,8 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('draws')
-        .setDescription('View new and returning draws coming this season')
+        // Trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) -- was truncating on mobile.
+        .setDescription('View new and returning draws this season')
         .addStringOption(option => option.setName('category').setDescription('Jump directly to a specific draws page').addChoices({ name: 'New Draws', value: 'new' }, { name: 'Returning Draws', value: 'returning' }))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support

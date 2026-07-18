@@ -88,6 +88,29 @@ function buildSyntheticInteraction(interaction, overrides = {}) {
     return synthetic;
 }
 
+// Admin override for per-user panel author-locks (2026-07-18, v2 quick-wins batch) -- Harkirat
+// (ALLOWED_ADMIN_ID) should never be action-blocked just because he's clicking on a DIFFERENT
+// user's /settings or View Colors panel (e.g. one made public via Show Everyone, or while
+// investigating a live bug report) -- only a genuine third party should ever hit these locks.
+// CRITICAL, per Harkirat's explicit spec: the override must NOT swap the ORIGINAL user's data for
+// Harkirat's own. Every one of these panels is keyed by whichever discordId is embedded in the
+// custom_id (targetUserId) for DB reads/writes already, but several call sites downstream also
+// re-derive that same person's LIVE profile data straight off `interaction.user` (avatar/banner
+// URL, username, createdAt -- see settings.js, utils/colorPalette.js's getSourceImageInfo) --
+// simply skipping the block without also fixing what `.user` resolves to would silently render
+// Harkirat's own profile on someone else's panel. Returns the discord.js User object callers
+// should treat as "whose data is this", or `null` if the click should be denied outright (a real
+// non-admin clicking someone else's panel). Callers only need to build a synthetic interaction
+// (see buildSyntheticInteraction above) when the returned user differs from interaction.user.
+async function resolvePanelActor(interaction, targetUserId) {
+    if (interaction.user.id === targetUserId) return interaction.user;
+    const { ALLOWED_ADMIN_ID } = require('./commands/manage');
+    if (interaction.user.id !== ALLOWED_ADMIN_ID) return null;
+    // Fetched fresh (not guessed/cached) so the panel shows the target's genuinely current avatar/
+    // banner, same as every other render path in this bot already force-fetches for accuracy.
+    return interaction.client.users.fetch(targetUserId);
+}
+
 // Instantiate internal client data models
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -144,8 +167,10 @@ commands.push(
         .setDescription('Search through all available MP gunsmiths')
         // Reworded (2026-07-12, slash-command wording overpass) to match /dmz's phrasing pattern --
         // was just "Type weapon name", inconsistent with every other weapon-search option in the bot.
-        .addStringOption(opt => opt.setName('weapon').setDescription('The name of the weapon you want a build for').setAutocomplete(true).setRequired(true))
-        .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
+        // Both option descriptions trimmed 2026-07-18 (mobile-width audit, v2 quick-wins batch) --
+        // were truncating on mobile; see the matching trim on /dmz's and /<category>'s copies.
+        .addStringOption(opt => opt.setName('weapon').setDescription('The weapon you want a build for').setAutocomplete(true).setRequired(true))
+        .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
         .addBooleanOption(opt => opt.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]) // User-install app permissions enabled
 );
@@ -195,8 +220,8 @@ async function handleBotReady() {
                 // Reworded (2026-07-12) to match the same "The name of the weapon you want a build
                 // for" pattern as /dmz and /all -- was "Select a {cat}", a third distinct phrasing
                 // for the same concept.
-                .addStringOption(opt => opt.setName('weapon').setDescription(`The name of the ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
-                .addIntegerOption(opt => opt.setName('build').setDescription('Jump directly to a specific build number, if this weapon has more than one').setMinValue(1))
+                .addStringOption(opt => opt.setName('weapon').setDescription(`The ${cat} weapon you want a build for`).setAutocomplete(true).setRequired(true))
+                .addIntegerOption(opt => opt.setName('build').setDescription('Jump to a specific build number').setMinValue(1))
                 .addBooleanOption(opt => opt.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.'))
                 .setIntegrationTypes([1]).setContexts([0, 1, 2])
         );
@@ -598,8 +623,14 @@ client.on('interactionCreate', async interaction => {
         if (MANAGE_CUSTOM_ID_PREFIXES.some(prefix => interaction.customId.startsWith(prefix))) {
             const { ALLOWED_ADMIN_ID } = require('./commands/manage');
             if (interaction.user.id !== ALLOWED_ADMIN_ID) {
+                // Reworded 2026-07-18 (v2 quick-wins batch) -- clearer about what's actually going
+                // on (this is Dior's own admin panel, not a permissions bug) and points at what to
+                // do instead, per Harkirat's "easier to understand, some humor, actually useful"
+                // request. This is /manage's own admin-only lock -- unlike the per-user panel locks
+                // below, there's no "someone else's panel" concept here to admin-override; only
+                // ALLOWED_ADMIN_ID was ever meant to pass this one.
                 try {
-                    await interaction.reply({ content: '❌ Access Denied. You lack administrative database privileges.', ephemeral: true });
+                    await interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dior's Builds' database directly — try any of the bot's public commands instead!", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked manage-panel action (interaction likely expired):', notifyError);
                 }
@@ -622,7 +653,7 @@ client.on('interactionCreate', async interaction => {
         // the space between "DL" and "Q33" breaks that literal sequence. fuzzyMatch() strips
         // spaces/punctuation from both sides first, so this now matches. Applied consistently
         // across every autocomplete route in the bot, not just one.
-        const { fuzzyMatch } = require('./utils/search');
+        const { fuzzyMatch, findWeaponMatches } = require('./utils/search');
 
         try {
             // NOTE (removed 2026-07-09): /manage used to have a "ROUTE A" here for its search
@@ -677,12 +708,16 @@ client.on('interactionCreate', async interaction => {
                 return a.weaponName.localeCompare(b.weaponName);
             });
 
-            const filteredChoices = distinctChoices
-                .filter(w => fuzzyMatch(focusedValue, w.weaponName))
+            // findWeaponMatches (2026-07-18) also expands recognized category synonyms (e.g.
+            // "pistol"/"smg"/"assault rifle") so typing a weapon-class term surfaces every weapon
+            // in that category, not just weapons whose own name happens to contain that word --
+            // see utils/search.js's own comment for the full reasoning + the synonym list.
+            const filteredChoices = findWeaponMatches(focusedValue, distinctChoices)
                 .slice(0, 25); // Hard Discord API limit of 25 choices maximum
 
+            const { displayCategoryLabel } = require('./utils/loadoutRender');
             return await interaction.respond(filteredChoices.map(w => ({
-                name: commandName === 'all' ? `[${w.category}] ${w.weaponName}` : w.weaponName,
+                name: commandName === 'all' ? `[${displayCategoryLabel(w.category)}] ${w.weaponName}` : w.weaponName,
                 value: w.weaponKey
             })));
 
@@ -746,7 +781,11 @@ client.on('interactionCreate', async interaction => {
         // deferReply() ack below rather than only starting once that's done. Only `prefs` is
         // actually awaited before deferReply (keeps the 3-second ack window fast). .lean() since
         // these builds are only ever read here, never saved.
-        const weaponKey = interaction.options.getString('weapon');
+        const rawQuery = interaction.options.getString('weapon');
+        // Normalized the same way dmz.js's own exact-key lookup already does -- harmless for a
+        // value that came from picking an autocomplete suggestion (already normalized weaponKey),
+        // but lets a free-typed exact name with different casing/spacing still hit exactly.
+        const weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '');
         const prefsPromise = UserPreference.findOne({ discordId: interaction.user.id });
         const mpBuildsPromise = Loadout.find({ weaponKey, mode: 'MP' }).lean();
 
@@ -755,7 +794,34 @@ client.on('interactionCreate', async interaction => {
         const isEphemeral = resolveEphemeral({ argPrivate, prefs, prefsField: 'loadoutVisibility' });
         await interaction.deferReply({ ephemeral: isEphemeral });
 
-        const mpBuilds = await mpBuildsPromise;
+        let mpBuilds = await mpBuildsPromise;
+
+        // Short/partial-query fallback (2026-07-18, v2 quick-wins batch) -- see dmz.js's matching
+        // comment for the full explanation: the exact weaponKey lookup above only reliably matches
+        // when the option came from an actual autocomplete pick, so a short/partial free-typed
+        // query (e.g. "loc") used to just fail with no explanation. Fuzzy-match the raw query
+        // against every candidate weapon's real name (same mode/category scope autocomplete
+        // itself uses) before giving up -- an unambiguous single match auto-resolves, 2+ matches
+        // asks the user to pick one instead of silently guessing which they meant.
+        if (!mpBuilds || mpBuilds.length === 0) {
+            const { findWeaponMatches } = require('./utils/search');
+            const fallbackFilter = commandName === 'all' ? { mode: 'MP' } : { mode: 'MP', category: commandName.toUpperCase() };
+            const allCandidates = await Loadout.find(fallbackFilter).select('weaponKey weaponName').lean();
+            const uniqueCandidates = Array.from(new Map(allCandidates.map(w => [w.weaponKey, w])).values());
+            const fuzzyMatches = findWeaponMatches(rawQuery, uniqueCandidates);
+
+            if (fuzzyMatches.length === 1) {
+                mpBuilds = await Loadout.find({ weaponKey: fuzzyMatches[0].weaponKey, mode: 'MP' }).lean();
+            } else if (fuzzyMatches.length > 1) {
+                const names = fuzzyMatches.slice(0, 10).map(w => w.weaponName).join(', ');
+                try {
+                    await interaction.followUp({ content: `❌ That's not specific enough — did you mean one of these? **${names}**\nPick a suggestion from the dropdown as you type instead of typing the full name.` });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of ambiguous MP weapon match (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+        }
 
         if (!mpBuilds || mpBuilds.length === 0) {
             // NOTE (fixed during review): awaited + wrapped in its own try/catch, matching the
@@ -763,8 +829,11 @@ client.on('interactionCreate', async interaction => {
             // followUp(...)` inside a try block can reject AFTER the block has already exited
             // (the try/catch is no longer "listening" by the time that happens), which used to be
             // able to crash the whole process. See CLAUDE.md's crash-resilience notes.
+            const hint = rawQuery.length < 3
+                ? ' Try typing a bit more of the weapon\'s name, or pick a suggestion from the dropdown as you type.'
+                : ' Double-check the spelling, or pick a suggestion from the dropdown as you type.';
             try {
-                await interaction.followUp({ content: '❌ No MP builds were found for that weapon.' });
+                await interaction.followUp({ content: `❌ No MP builds were found for that weapon.${hint}` });
             } catch (notifyError) {
                 console.error('Failed to notify user of missing MP builds (interaction likely expired):', notifyError);
             }
@@ -881,10 +950,16 @@ client.on('interactionCreate', async interaction => {
             const selectedValue = interaction.values[0];
 
             // SECURITY GATEWAY LOCK: Prevent external users from clicking inside an active configuration trace.
-            if (interaction.user.id !== targetUserId) {
-                // Awaited + wrapped in its own try/catch -- see the matching note above.
+            // Admin-override (2026-07-18) -- resolvePanelActor lets ALLOWED_ADMIN_ID through without
+            // being blocked, but still tells us to keep rendering targetUserId's OWN data below
+            // (never Harkirat's), via the actingUser it returns. See its own comment for why this
+            // can't just be a relaxed identity check.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                // Awaited + wrapped in its own try/catch -- see the matching note above. Reworded
+                // 2026-07-18 -- clearer + says what to do instead, per Harkirat's request.
                 try {
-                    await interaction.followUp({ content: "❌ **Action Blocked:** You do not possess clearance to override settings options on another user's interactive panel.", ephemeral: true });
+                    await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -955,9 +1030,13 @@ client.on('interactionCreate', async interaction => {
             // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated
             // parameters instantly -- passes the current page through so picking an option on the
             // Preferences page doesn't bounce back to page 0, and the original expiresAt through so
-            // selecting an option doesn't extend the panel's 15-minute clock.
+            // selecting an option doesn't extend the panel's 15-minute clock. Renders via actingUser
+            // (only swapped to a synthetic interaction when Harkirat is overriding someone else's
+            // panel -- the normal same-user case reuses the real interaction unchanged) so the
+            // redraw always reflects targetUserId's own data, never the admin's.
             const settingsCommand = client.commands.get('settings');
-            return await settingsCommand.execute(interaction, currentPage, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
+            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+            return await settingsCommand.execute(renderInteraction, currentPage, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
         }
 
         // E.0 MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel
@@ -1183,10 +1262,13 @@ client.on('interactionCreate', async interaction => {
             const [actionStr, targetUserId, expiresAtStr] = interaction.customId.split('|');
 
             // SECURITY GATEWAY WALL: Block rogue server members from attempting to adjust another user's preference canvas
-            if (interaction.user.id !== targetUserId) {
-                // Awaited + wrapped in its own try/catch -- see the matching note above.
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
+                // Awaited + wrapped in its own try/catch -- see the matching note above. Reworded
+                // 2026-07-18 -- clearer + says what to do instead, per Harkirat's request.
                 try {
-                    await interaction.followUp({ content: "❌ **Action Blocked:** You do not possess authorization to alter option nodes on this account dashboard profile.", ephemeral: true });
+                    await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -1230,9 +1312,12 @@ client.on('interactionCreate', async interaction => {
 
             // LIVE RE-DRAW ROUTE: Call the settings engine module to rewrite the canvas on screen.
             // Passes the ORIGINAL expiresAt through (not a fresh one) so toggling doesn't extend the
-            // panel's 15-minute clock -- see settings.js's SETTINGS_PANEL_TTL_MS comment.
+            // panel's 15-minute clock -- see settings.js's SETTINGS_PANEL_TTL_MS comment. Renders via
+            // actingUser (see the D. handler's matching comment above) so an admin override never
+            // swaps in Harkirat's own data.
             const settingsCommand = client.commands.get('settings');
-            return await settingsCommand.execute(interaction, 0, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
+            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+            return await settingsCommand.execute(renderInteraction, 0, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
         }
 
         // B. DRAWS PAGINATION (New vs Returning)
@@ -1305,9 +1390,11 @@ client.on('interactionCreate', async interaction => {
             const [pagePart, targetUserId, expiresAtStr] = interaction.customId.split('|');
             const targetPage = parseInt(pagePart.replace('set_page_', ''), 10) || 0;
 
-            if (interaction.user.id !== targetUserId) {
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
                 try {
-                    await interaction.followUp({ content: "❌ **Action Blocked:** You do not possess clearance to override settings options on another user's interactive panel.", ephemeral: true });
+                    await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
                 }
@@ -1322,8 +1409,10 @@ client.on('interactionCreate', async interaction => {
                 return;
             }
 
+            // Renders via actingUser (see the D. handler's matching comment above) -- deferReply is
+            // still no-op'd since deferUpdate() already ran on the real interaction above.
             const settingsCommand = client.commands.get('settings');
-            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
             return await settingsCommand.execute(syntheticInteraction, targetPage, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
         }
 
@@ -1339,9 +1428,14 @@ client.on('interactionCreate', async interaction => {
             // |userId lock and no timeout of its own (Harkirat's explicit "/settings only" call), so
             // that deadline does NOT propagate into buildColorPalettePanel below.
             const [, targetUserId, expiresAtStr] = interaction.customId.split('|');
-            if (interaction.user.id !== targetUserId) {
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment. colorsInteraction
+            // is only a synthetic (user-swapped) interaction when Harkirat is overriding someone
+            // else's panel -- getSourceImageInfo/getPalettePanelData read `.user` directly, so this
+            // is what keeps the extracted colors targetUserId's own, never the admin's.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
                 try {
-                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                    await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
                 }
@@ -1355,6 +1449,7 @@ client.on('interactionCreate', async interaction => {
                 }
                 return;
             }
+            const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             const UserPreference = require('./models/UserPreference');
             let prefs = await UserPreference.findOne({ discordId: targetUserId });
@@ -1372,13 +1467,13 @@ client.on('interactionCreate', async interaction => {
             // stays cache-only as normal; only this entry point and the explicit "Refresh Colors"
             // button (B.8) force a real re-extraction. Extracts ONLY the avatar landing page now (not
             // all 4 sources) -- other pages lazily extract on navigation (see getPalettePanelData).
-            const data = await getPalettePanelData(interaction, prefs, 'avatar', true);
+            const data = await getPalettePanelData(colorsInteraction, prefs, 'avatar', true);
 
             const { components, files } = await buildColorPalettePanel({
                 source: 'avatar',
                 data,
                 targetUserId,
-                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
@@ -1393,14 +1488,17 @@ client.on('interactionCreate', async interaction => {
         // extraction on every click, unlike colors_view/colors_refresh_ above/below.
         if (interaction.customId.startsWith('colors_page_')) {
             const [actionStr, targetUserId] = interaction.customId.split('|');
-            if (interaction.user.id !== targetUserId) {
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
                 try {
-                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                    await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
                 }
                 return;
             }
+            const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             await interaction.deferUpdate();
             const source = actionStr.replace('colors_page_', '');
@@ -1413,14 +1511,14 @@ client.on('interactionCreate', async interaction => {
 
             // Extract just the source being switched TO (cache-only unless it's this source's first
             // visit -- getCachedPalette still extracts an uncached source even without forceRefresh).
-            const data = await getPalettePanelData(interaction, prefs, source);
+            const data = await getPalettePanelData(colorsInteraction, prefs, source);
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             const { components, files } = await buildColorPalettePanel({
                 source,
                 data,
                 targetUserId,
-                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
@@ -1433,14 +1531,17 @@ client.on('interactionCreate', async interaction => {
         // forceRefresh), just staying on the same source instead of switching to a different one.
         if (interaction.customId.startsWith('colors_subpage_') && interaction.customId !== 'colors_subpage_indicator') {
             const [actionStr, targetUserId] = interaction.customId.split('|');
-            if (interaction.user.id !== targetUserId) {
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
                 try {
-                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                    await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
                 }
                 return;
             }
+            const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             await interaction.deferUpdate();
             const [source, subpageStr] = actionStr.replace('colors_subpage_', '').split('_');
@@ -1454,7 +1555,7 @@ client.on('interactionCreate', async interaction => {
 
             // Same source as the current page (just a different sub-page of its swatches) -- a cache
             // hit in the normal case, since navigating here means this source was already extracted.
-            const data = await getPalettePanelData(interaction, prefs, source);
+            const data = await getPalettePanelData(colorsInteraction, prefs, source);
             const isEphemeral = Boolean(interaction.message.flags?.bitfield & 64);
 
             const { components, files } = await buildColorPalettePanel({
@@ -1462,7 +1563,7 @@ client.on('interactionCreate', async interaction => {
                 subpage,
                 data,
                 targetUserId,
-                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });
@@ -1479,14 +1580,17 @@ client.on('interactionCreate', async interaction => {
         // follow-up alongside the panel update.
         if (interaction.customId.startsWith('colors_refresh_')) {
             const [actionStr, targetUserId] = interaction.customId.split('|');
-            if (interaction.user.id !== targetUserId) {
+            // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
+            const actingUser = await resolvePanelActor(interaction, targetUserId);
+            if (!actingUser) {
                 try {
-                    await interaction.reply({ content: "❌ **Action Blocked:** You do not possess authorization to view another user's profile colors.", ephemeral: true });
+                    await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
                 }
                 return;
             }
+            const colorsInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
 
             const now = Date.now();
             const lastRefresh = colorsRefreshCooldowns.get(interaction.user.id) || 0;
@@ -1516,8 +1620,8 @@ client.on('interactionCreate', async interaction => {
             // changed, rather than just claiming success unconditionally. Only the ACTIVE source is
             // re-extracted (the one whose swatches are on screen and that this Refresh button targets)
             // -- refreshing one page no longer needlessly re-extracts the other three sources.
-            const before = await getPalettePanelData(interaction, prefs, source, false);
-            const after = await getPalettePanelData(interaction, prefs, source, true);
+            const before = await getPalettePanelData(colorsInteraction, prefs, source, false);
+            const after = await getPalettePanelData(colorsInteraction, prefs, source, true);
             const beforeVal = source === 'name' ? before.displayNameColors : before[source];
             const afterVal = source === 'name' ? after.displayNameColors : after[source];
             const changed = JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
@@ -1528,7 +1632,7 @@ client.on('interactionCreate', async interaction => {
                 subpage,
                 data: after,
                 targetUserId,
-                avatarThumbnailUrl: interaction.user.displayAvatarURL({ extension: 'png', size: 256 })
+                avatarThumbnailUrl: colorsInteraction.user.displayAvatarURL({ extension: 'png', size: 256 })
             });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             await sendV2Payload(interaction, components, { flags: 32768 | (isEphemeral ? 64 : 0), allowedMentions: { users: [] }, files });

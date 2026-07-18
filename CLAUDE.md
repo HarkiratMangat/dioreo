@@ -39,7 +39,7 @@ navigability system is deferred to the memory-architecture project ([[reference_
 
 - **Orientation & ops** — What this is · Local-only files & `local/` · Stack · Deployment & Ops (GCP) · Version tagging · Maintaining context comments
 - **Core architecture** — Command architecture · Panel interaction locks · Components V2 lessons · Crash resilience · User-install / DM support · The "synthetic interaction" pattern · Database schema gotcha · Data models (`models/`)
-- **Commands & rendering** — `/timestamp` style dropdown (+ `format` option) · Shared UI builders · Loadout commands `build`/`private` · MP loadout accent colors · MP loadout system · Autocomplete search · This bot is user-installed only · "Show Everyone" share button
+- **Commands & rendering** — `/timestamp` style dropdown (+ `view` option) · Shared UI builders · Loadout commands `build`/`private` · MP loadout accent colors · MP loadout system · Autocomplete search · This bot is user-installed only · "Show Everyone" share button
 - **Accent color & View Colors** — Accent color system (extraction algorithm · latency fix · `displayName` · `dynamicProfile` · clarifications) · "View Colors" panel (k-means algorithm · relative labels · per-page layout · Refresh Colors · still-frame extraction · CPU incident · preview sizing · icon sourcing)
 - **Image caching** — Draw thumbnail Cloudinary cache · Patch notes Cloudinary caching
 - **Other systems** — Light anti-spam cooldown
@@ -48,12 +48,31 @@ navigability system is deferred to the memory-architecture project ([[reference_
 
 ---
 
-## Local-only files & the `local/` folder
+## Local-only files & the `local/` folder vs. `docs/` (tracked)
 `local/` (repo root, **gitignored** — added 2026-07-14) is Harkirat's personal scratch folder for
-random local-only files: the `project plan notes.txt` future-planning dump lives there, and anything
-else he drops in for our working use. It's never pushed to GitHub and never deployed. Other existing
-local-only (gitignored) files: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`,
-`.env`. When Harkirat references "the plan notes" / a file he "threw in there," check `local/` first.
+random local-only files: the `project plan notes.txt` future-planning dump lives there, reference
+screenshots/PDFs, and anything else he drops in for our working use. It's never pushed to GitHub and
+never deployed.
+
+**`docs/` (repo root, TRACKED in git — added 2026-07-18) holds the project's own working documents**:
+`CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, and the central notes
+scratchpad `diors-builds notes.md` (+ its `notes-archive/` dated snapshots). These used to be
+gitignored/local-only; un-gitignored at Harkirat's explicit request so a real `git diff`/`git log`
+covers their history instead of manual pre-tidy snapshot copies (the repo was public at the time of
+this move — he was aware and consciously OK with it, planning to flip it back to private). The
+`SessionStart` hook (`.claude/settings.local.json`) reads `docs/SESSION-START.md` directly — if that
+file's location ever needs to move again, update the hook's path in the SAME change, not after
+(a stale hook path here already caused a real incident once, see `docs/SESSION-START.md`'s own "Hook
+health" note).
+
+**`.env` stays gitignored, deliberately, and should NEVER be un-ignored regardless of repo
+visibility** — it holds live secrets (`BOT_TOKEN`/`MONGODB_URI`/`CLOUDINARY_URL`/`RENDER_API_KEY`/
+`LOG_WEBHOOK_URL`). Secrets don't belong in git history under any circumstance — a private repo still
+gets cloned, and "private now" doesn't undo exposure from any point it was public. If ever asked to
+un-gitignore this file, refuse and explain why rather than doing it.
+
+When Harkirat references "the plan notes" / a file he "threw in there," check `local/` first; for the
+changelog/session-start/notes-scratchpad files, check `docs/`.
 
 ## Stack
 - discord.js v14 (`^14.26.4`), Node.js v26, run locally on a Mac (`node index.js`)
@@ -186,9 +205,9 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   query. **Still deferred:** guest disk-usage peaks in `vmpeaks.sh` (the agent now provides the metric).
 
 ## Version tagging (added 2026-07-16)
-The `vMAJOR.MODERATE.MINOR` convention itself is defined in `SESSION-START.md` (gitignored,
+The `vMAJOR.MODERATE.MINOR` convention itself is defined in `docs/SESSION-START.md` (tracked in git,
 canonical source — don't duplicate the full rules here), including the existing "ONE version per
-PUSH, not per commit" rule and `CHANGELOG.md`'s "Unreleased" section with a proposed number. What's
+PUSH, not per commit" rule and `docs/CHANGELOG.md`'s "Unreleased" section with a proposed number. What's
 new: **each real push's version now also gets an actual git tag** (e.g. `v2.18.1`), complementing
 (not replacing) that existing system — the CHANGELOG's proposed number is the human-readable plan,
 the tag is the permanent, unambiguous marker once it's real. This makes `git describe --tags` give
@@ -246,10 +265,14 @@ Base commands use subcommands to group related functionality:
   "current entry" model. `/update` no longer exists, and there is no subcommand tree at all —
   everything is reached through buttons/selects on one ephemeral (by default) panel message.
   - **Shape: one flat command that opens a Components V2 panel.** `/manage` takes an optional
-    `page` choice option (Draws/Calendar/MP Loadouts/DMZ Loadouts/Patch Notes — Season isn't in this
-    list, see below) to land directly on a section, and an optional `private` boolean (default
-    `true` — this is the one command that defaults ephemeral instead of public, since it's the admin
-    panel). `commands/manage.js`'s `PAGES` object is the single source of truth for every page's
+    `data_for` choice option (renamed from `page`→`section`→`data_for` across three separate passes —
+    "page"/"section" never described what's actually being picked, a data ENTITY; Discord option
+    names can't contain spaces, so `data_for` is the closest valid spelling of "data for") — Draws/
+    Calendar/MP Loadouts/DMZ Loadouts/Patch Notes (Season isn't in this list, see below) — to land
+    directly on a section, and an optional `hidden` boolean (default `true` — this is the one command
+    that defaults ephemeral instead of public, since it's the admin panel; `hidden` itself is the same
+    name/wording every other command's visibility option uses, see the slash-command wording overpass
+    section further down). `commands/manage.js`'s `PAGES` object is the single source of truth for every page's
     title icon, grouped sections, action button copy/styles, and dropdown options — it only builds
     layout and every modal's *shape* (field labels, placeholders, pre-filled values) as exported
     functions; `index.js` owns all the actual routing and DB-mutating submit logic.
@@ -392,6 +415,40 @@ bot data. `/settings` had NO author-lock at all on some of its own components (`
   custom_id used to be a bare `set_page_{N}` with no pipe segments at all, so adding `|userId|expiresAt`
   required switching its parsing from a blind `.replace('set_page_', '')` to a proper `.split('|')`.
 
+### Admin override on the per-user panel locks (2026-07-18, v2 quick-wins batch)
+Harkirat (`ALLOWED_ADMIN_ID`) was getting the same "not your panel" denial as any random third party
+the moment he clicked a component on someone else's `/settings` or View Colors message (e.g. one made
+public via Show Everyone, or while investigating a live bug report) — every one of the 7 per-user
+author-lock sites (`toggle_`, generic `set_`, `set_page_`, `colors_view`, `colors_page_`,
+`colors_subpage_`, `colors_refresh_`) checked `interaction.user.id !== targetUserId` with no exception.
+**`/manage`'s own admin-only guard needed no change at all** — it already only ever lets
+`ALLOWED_ADMIN_ID` through, there's no "someone else's panel" concept for a single shared admin panel.
+- **The critical constraint (Harkirat's explicit spec): the override must NOT swap in Harkirat's own
+  data.** Every one of these panels is already keyed by whichever discordId is embedded in the
+  custom_id (`targetUserId`) for DB reads/writes, but several call sites downstream also re-derive that
+  same person's LIVE profile data straight off `interaction.user` (avatar/banner URL, username,
+  createdAt — `settings.js`, `utils/colorPalette.js`'s `getSourceImageInfo`) — simply relaxing the
+  identity check to `!== targetUserId && !== ALLOWED_ADMIN_ID` without also fixing what `.user` resolves
+  to would have silently rendered Harkirat's own avatar/banner/prefs on someone else's panel the moment
+  he clicked through.
+- **Fix: `index.js`'s new `resolvePanelActor(interaction, targetUserId)`** returns the discord.js User
+  object callers should treat as "whose data is this" — `interaction.user` unchanged for the normal
+  same-user case, a fresh `interaction.client.users.fetch(targetUserId)` (never cached/guessed) when
+  Harkirat is overriding someone else's panel, or `null` to deny a genuine non-admin. Callers only build
+  a synthetic interaction (via the existing `buildSyntheticInteraction`, overriding just `.user`) when
+  the returned user differs from `interaction.user` — the ordinary same-user path is completely
+  unchanged, zero extra overhead. `deferReply()`/`deferUpdate()`/`sendV2Payload()` all stay on the REAL
+  interaction throughout (they only need token/applicationId, identical either way) — only the calls
+  that actually read `.user` to decide whose data to show (`settingsCommand.execute(...)`,
+  `getPalettePanelData(...)`, `avatarThumbnailUrl`) get the swapped-user synthetic.
+- **Every "action blocked" denial message was reworded the same session** (bundled in since it's the
+  same code) — clearer, a little lighter, and says what to do instead, e.g. `/manage`'s admin-only guard
+  now reads "🔒 **This one's admin-only.** ... try any of the bot's public commands instead!" and the
+  `/settings`/View Colors locks read "🔒 **Not your dashboard!** ... run `/settings` yourself" /
+  "🔒 **Those aren't your colors!** Run `/colors` ...". Deliberately light, not the "bully broke people"
+  gag (that's still reserved for its own future personality pass, see "Next planned work" below) — this
+  was just a plain clarity/tone pass.
+
 ## Components V2 — hard-won lessons
 This bot uses Discord's Components V2 (`flags: 32768`) throughout: Containers
 (type 17), Sections (type 9) with thumbnail accessories, Text Displays (type 10),
@@ -512,8 +569,8 @@ via a synthetic interaction instead of re-deriving them from slash command optio
 both code paths share one render implementation. If you add more ways to reach this
 render logic in the future, extend `overrideState` rather than branching a third copy.
 
-### `/timestamp`'s `format` option — Embed or plain Text (2026-07-14)
-New slash-command-exclusive `format` string option (`embed`/`text`, default `embed`) — deliberately
+### `/timestamp`'s `view` option — Embed or plain Text (2026-07-14, renamed `format`→`view` 2026-07-18)
+New slash-command-exclusive `view` string option (`embed`/`text`, default `embed`) — deliberately
 NOT saved to `/settings`/`UserPreference`, since Harkirat wanted this purely a per-invocation choice.
 Works identically for the All Formats overview and every individual style view. Text mode reuses the
 exact same content strings the embed view builds (`headingLine`/`linesBlock`/`parsedLine`/`hintLine`,
@@ -526,7 +583,12 @@ only the container itself is dropped. `flags` is `0` for a public text response,
 default — confirmed safe: `sendV2Payload`'s default param only triggers on `undefined`, not on falsy
 values, so an explicit `0` is never silently overridden back to Components V2.
 
-Switching styles via the dropdown while in text mode needed to STAY in text mode — there's no `format`
+**Renamed `format` → `view` (2026-07-18, v2 quick-wins batch)** — "format" read as if it picked a
+TIMESTAMP format (fullDateTime/shortDate/etc, already `style`'s job above), when it actually controls
+Embed panel vs plain text. Same shape as the earlier `ephemeral`→`private`→`hidden` renames: a
+user-visible option rename, nothing else about the mechanism below changed.
+
+Switching styles via the dropdown while in text mode needed to STAY in text mode — there's no `view`
 option to re-read on that path (`overrideState` skips normal option resolution entirely, same
 constraint `ephemeral`/`accentColor` already work around). Solved the same way `ephemeral` already is:
 `index.js`'s `tsmenu|` handler derives `isTextMode` from the ABSENCE of the Components V2 bit (32768)
@@ -1295,6 +1357,26 @@ Three preview-size fixes after the CPU work, all confirmed on the branch deploy 
   Harkirat's cost concern about the redundant download (that page already downloads the nameplate
   once for extraction). Same memo pattern as `colorSwatchImage.js`'s swatch cache.
 
+### Download Avatar / Download Banner buttons (2026-07-18, v2 quick-wins batch)
+Full-resolution download links, added to their own respective color pages only (Download Avatar on
+the Avatar page, Download Banner on the Banner page — Name/Nameplate/Deco have no equivalent full-res
+original worth downloading here), bottom, outside the container, sharing the same top-level row as
+"Refresh Colors" rather than a new row of their own.
+- **Style-5 Link buttons, not style-2** — matches `/settings`' own existing Avatar/Banner download
+  buttons exactly (`commands/settings.js`'s `profileLinkButtons`). A Link button (`style: 5`, `url:`
+  instead of `custom_id`) renders visually grey, same as a plain Secondary button — Harkirat's own
+  "grey (style 2)" phrasing in the request was about the *look*, not the literal style code; a style-2
+  button can't carry a `url` at all, and downloading straight from the CDN needs a real link, not an
+  interaction round-trip.
+- **The full-res URLs are computed once in `utils/colorPalette.js`'s `getSourceImageInfo`** (avatar's
+  `fullUrl` at `size: 4096`, banner's `fullUrl` the same, alongside its existing `url`/`extractUrl`
+  pair) and surfaced through `getPalettePanelData`'s `results.avatarFullUrl`/`results.bannerFullUrl` —
+  free, since these are just additional CDN URL strings computed from data already being fetched for
+  the extraction/preview paths, no new network call. `colorPaletteView.js`'s `buildColorPalettePanel`
+  reads them straight off the `data` object every call site already threads through end-to-end, so
+  none of the 5 call sites (colors.js + index.js's `colors_view`/`colors_page_`/`colors_subpage_`/
+  `colors_refresh_`) needed touching.
+
 ### Icon sourcing (the eyedropper emoji)
 Harkirat provided a raw GIF, background-removed via the `gif-background-remover` skill
 (`--analyze` first, confirmed white background + one verified enclosed region via
@@ -1421,6 +1503,14 @@ loadouts (rather than it silently appearing only after the first one is saved), 
 result is now merged with a hardcoded `'SECONDARIES'` before the registration loop runs. If you add
 another category ahead of its data existing, extend that same merge rather than waiting on real
 loadouts to exist first.
+
+**`SECONDARIES` (the stored enum/command name) vs `SECONDARY` (a display-only relabel, 2026-07-18)**
+— `utils/loadoutRender.js`'s `displayCategoryLabel()` relabels `SECONDARIES` to the singular
+"SECONDARY" ONLY in the rank-badge line ("Best SECONDARY") and `/all`'s autocomplete category tag
+(`[SECONDARY] weaponName`), where the plural reads oddly for a single weapon. The footer line, the
+`/secondaries` command name, and its own description all still show the real `SECONDARIES` value
+unchanged — this is cosmetic, not a rename of the category/command (see the `/secondaries` decision
+in "Next planned work" below for the full reasoning).
 
 ## MP loadout system (`utils/loadoutRender.js`, `scripts/migrateBuildsToMongo.js`)
 `builds.xlsx` used to be the sole source of truth for MP loadouts: a `loadBuildsFromExcel()` in
@@ -1599,6 +1689,51 @@ button can't autocomplete like a slash-command option could. That modal-submit h
 (`index.js`'s `resolveManagePanelMatches()`) reuses the exact same `fuzzyMatch()` convention as
 every autocomplete route above — same matching behavior, just triggered by a modal submit instead
 of a live-typed option.
+
+### Loadout lookup's short/partial-query fallback (2026-07-18, v2 quick-wins batch)
+Autocomplete above only helps if the user actually picks a suggestion — Discord still submits
+whatever raw text was typed as the option's final value if they hit enter without picking one (a real
+live complaint on mobile, where the dropdown is easy to dismiss by accident). `/dmz`'s and the shared
+`/all`+`/<category>` MP fallback's actual lookup query (`Loadout.find({weaponKey, mode})`) is an EXACT
+match against the normalized weaponKey — a short/partial raw query like `loc` almost never equals a
+full weaponKey exactly, so this used to just fail with a generic "not found" and no explanation.
+- **New `findWeaponMatches(query, candidates)`** (`utils/search.js`) — reuses `fuzzyMatch()` against
+  each candidate's `weaponName`, scoped to the same mode/category the autocomplete route itself uses.
+  Only runs as a FALLBACK, after the exact-key lookup misses — the common case (a real autocomplete
+  pick) pays zero extra cost.
+- **Auto-resolve vs. ask, decided by ambiguity, not by query length.** Exactly one fuzzy match
+  auto-resolves (safe — there's only one real candidate it could mean); 2+ matches replies with the
+  actual candidate weapon names and asks the user to pick a suggestion from the dropdown instead of
+  silently guessing which one they meant (verified: `loc` against a sample AR/Sniper set returns BOTH
+  `LOCUS` and `Lockwood 300` — auto-resolving either would've been a real wrong-answer risk). Zero
+  matches falls through to the existing "not found" message, with an added hint (shorter for a query
+  under 3 characters) to type more of the name or use the dropdown.
+
+### Category-level search synonyms (2026-07-18, same day follow-up — replaces the shelved `/pistols`
+### command idea)
+A plain name/category match can't help a query like `pistol` at all — most Secondaries weapons
+(Combat Knife, J358, Crossbow, ...) don't literally contain that word, and the category field itself
+was never being matched against in the first place (typing the bot's own category keyword like `smg`
+into `/all` silently returned nothing unless a weapon's name happened to contain those letters by
+coincidence). Working assumption behind adding this (Harkirat's own framing, paraphrased: players
+type what they actually think, not this bot's internal category label — meet them there).
+- **`utils/search.js`'s `resolveCategorySynonym(query)`** maps a normalized query to a real
+  `Loadout.category` value via `CATEGORY_SEARCH_SYNONYMS` — every category's own name/plural/full-word
+  form (`ar`/"assault rifle", `smg`/"submachine gun", `lmg`/"light machine gun",
+  `marksman`/"marksman rifle"/`dmr`, `sniper`/"sniper rifle", `shotgun`), plus `secondary`/
+  `secondaries`/`pistol`/`pistols`/`handgun`/`handguns` → `SECONDARIES`. **Deliberately limited to
+  real, unambiguous weapon-class terminology** — the game's own category names and standard firearm-
+  class words, NOT guessed CODM community slang/nicknames, since a confidently wrong slang mapping
+  would be worse than no mapping at all.
+- **Folded directly into `findWeaponMatches()`** (not a separate function) — a candidate now matches
+  if its `weaponName` fuzzy-matches OR its `category` equals a resolved synonym, deduped by
+  `weaponKey`. This is what BOTH the autocomplete route (`/dmz`/`/all`/`/<category>`) and the
+  short/partial-query exact-lookup fallback above get, automatically, with no separate wiring.
+- **This is the direct replacement for the `/secondaries`→`/secondary`+`/pistols` roadmap idea** (see
+  "Next planned work" below) — Discord has no real command-alias mechanism, so a literal `/pistols`
+  shortcut would have needed its own full command registration (a second entry in the command list)
+  either way. Typing "pistol" now surfaces every Secondaries weapon directly within `/secondaries` or
+  `/all`, without adding a command.
 
 ## This bot is user-installed only — it is NEVER a guild member with roles/permissions
 `Dior's Builds` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every
@@ -1886,6 +2021,10 @@ findings + a proposed fix list to Harkirat, got his explicit go-ahead, then impl
   `/<category>` command — these were three different phrasings for the same concept ("The name of
   the weapon you want a DMZ build for" vs. "Type weapon name" vs. "Select a {category}"). Now all
   follow "The name of the {weapon you want a build for" pattern (category-scoped for `/<category>`).
+  **Tightened further 2026-07-18 (mobile-width audit, v2 quick-wins batch)** — dropped "name of" from
+  all three (now "The {[DMZ/`{cat}`/]}weapon you want a build for") since the longer category names
+  (`MARKSMAN`, `SECONDARIES`) pushed the full phrase past a comfortable mobile width; the shared
+  formula itself is unchanged, just shorter.
 - **`/manage`'s Edit Loadout modal field label fixed** to match Add Loadout's "Build Name / Share
   Code" (Edit had it shortened to "Build Name / Code").
 - **`manage.js`'s user-facing copy and comments converted from `--` (double hyphen) to a real em
@@ -2198,32 +2337,17 @@ so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (a
 `deferred-items.md` (the cross-project focus view), not duplicated here.*
 
 ### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
-- `[P1 · XS]` **Reword `/timestamp`'s `format` option to `view`** — "format" collides conceptually with the
-  timestamp *styles* (shortDate/longDate/etc.); "view" is what it actually controls (Embed vs Text).
-  User-visible option rename, same shape as the earlier `ephemeral`→`private`→`hidden` renames. See
-  the `/timestamp` `format` section above for where it's wired (slash option + `overrideState.isTextMode`).
 - `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
 
 **Second batch of v2 items (filed 2026-07-15 from the plan-notes file).** These ship to `main`/live
 NORMALLY even while v3 pre-release work runs in parallel — see the parallel-track note in
 [[project_dior_builds_changelog_system]]; each one also gets cloned into the v3 branch once it exists.
-- `[P1 · XS]` **Add the `hidden` option to `/settings`** — every other command has it; `/settings` was simply
-  missed. Same option name/description as everywhere else.
-- `[P1 · S]` **Trim slash-command descriptions to fit mobile** — several currently truncate to `...` on mobile.
-  Audit all of them against MOBILE width, not desktop.
-- `[P1 · S]` **Loadout search on a short/partial phrase** (e.g. `loc`, noticed live on mobile) currently fails
-  unhelpfully. Two candidate fixes, decide at build: auto-resolve to the closest fuzzy match, OR
-  improve the error to say "pick from the list" — specifically when there's no match OR the phrase is
-  under 3 letters. Relates to `utils/search.js`'s `fuzzyMatch`.
-- `[P2 · XS · 🔗bundle-with personality pass]` **Reword the action-blocked message** — easier to understand,
-  some humor, and actually useful (say what to do instead). This is the panel-lock denial copy (see "Panel
-  interaction locks" above).
-- `[P1 · S]` **Admin override on action blocks** — Harkirat (`ALLOWED_ADMIN_ID`) should never be action-blocked
-  on someone else's panel; only non-admins get blocked where a block exists. **Critical detail: the
-  override must NOT swap in his colors/data** — the panel keeps rendering the ORIGINAL user's data, he
-  just isn't denied the interaction. Touches the centralized guard in `interactionCreate` and
-  `/settings`' author-lock.
+**7 of the original items in this batch shipped in v2.21.0** (2026-07-18): `/timestamp` `format`→`view`,
+`/settings`' `hidden` option, the mobile description trim, short/partial loadout search, the reworded
+action-blocked message, admin override on panel action-blocks, and the View Colors download buttons —
+see CHANGELOG.md's v2.21.0 entry and the relevant CLAUDE.md sections (Panel interaction locks, View
+Colors panel, `/timestamp`'s view option) for what actually shipped. Still open from this batch:
 - `[P2 · L · Opus4.8-H · 🧩needs-design]` **View Colors: extract a wider variety of colors** — juul's avatar
   (`local/juuls profile picture.png`) returned only 6 instead of the requested 8 AND missed a genuinely
   useful yellow; assume one root cause for both. **Keep existing behavior for genuinely minimal images**:
@@ -2235,15 +2359,14 @@ NORMALLY even while v3 pre-release work runs in parallel — see the parallel-tr
 - `[P2 · S · 🔗bundle-with personality pass]` **View Colors: always show the Display Name / Nameplate / Deco
   pages even when unset/no Nitro** — instead of hiding them, render a humor/"bully" page (no colors shown).
   Ties into the personality direction in the v3 list below.
-- `[P1 · S]` **View Colors: add full-resolution Download Avatar / Download Banner buttons** on their respective
-  color-menu pages — bottom, OUTSIDE the container, beside the Refresh button; grey (style 2); same
-  style as they already appear in `/settings`.
 - `[P2 · S]` **Pagination loop-back when >3 pages** (e.g. the Bal-27 loadout) — wrap last→first instead of a
   disabled button on the final page. **Keep the current disabled-state behavior at exactly 2 pages.**
   Affects the shared `buildPaginationRow` helper, so check every caller before changing it.
 
 **Third batch of v2 items (filed 2026-07-18 from the notes file — Harkirat's 2026-07-17 intake).** Same
 parallel-track rule as the second batch (ship to `main`/live normally, clone into the v3 branch once it exists).
+**The `/manage` `section`→`data_for` rename also shipped in v2.21.0** (2026-07-18) — see the Command
+architecture section's `/manage` note. Still open from this batch:
 - `[P1 · M]` **`/manage` loadout data-entry UX overhaul** — the whole flow for adding/editing a loadout via
   `/manage` is unintuitive/forgettable: clarify the steps, each button's purpose, and the field descriptions,
   and **add placeholder text to the edit-loadout modal fields** (they currently have none — see L73). Critically,
@@ -2253,9 +2376,6 @@ parallel-track rule as the second batch (ship to `main`/live normally, clone int
   secondary-weapon files DON'T follow the old Excel-era strict naming — so the actually-expected process is
   unclear even to him. Make the flow self-explanatory. (Merges notes items L55 + L73 + the image-naming half
   of L59.)
-- `[P2 · XS · 🔗bundle-with /admin work]` **Reword `/manage`'s `section` option → `data for`** — "section"
-  doesn't describe what it picks (a data entity). NOTE: may be superseded/removed by the v3 `/manage → /admin`
-  restructure; if `/admin` lands first, fold this into that redesign instead of doing it twice.
 - `[P2 · M · 🧩needs-design]` **Much richer in-bot logging/tracking** — right now when something breaks it's
   hard to tell WHICH component failed and why. Add granular internal logging so failures are attributable.
   Related-but-distinct from the webhook-alerting heavy half (per-alert IDs / downloadable text-log — see
@@ -2405,8 +2525,13 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   explicit request, to avoid risking a usage-limit interruption mid-build on top of everything else
   in that pass. See the `/manage` design-decision-log entry above for exactly what's a placeholder
   right now vs. what the real version needs to do. Still pending.
-- **`/secondaries` → `/secondary` rename + a `/pistols` alias** registered as a genuinely separate
-  command querying the same category — still explicitly deferred, not scope-cut silently.
+- **`/secondaries` → `/secondary` rename + a `/pistols` alias — RECONSIDERED and DROPPED (2026-07-18,
+  v2.21.0).** `/secondaries` stays exactly as-is (command name, DB category enum, and its own
+  description); no rename, no second command. Replaced by the category-level search-synonym feature
+  (see the Autocomplete search section below) — typing "pistol" now surfaces every Secondaries weapon
+  directly within `/secondaries`/`/all`, without a dedicated `/pistols` command Discord would have
+  shown as a separate top-level entry in the command list either way (Discord has no true command-
+  alias mechanism — every distinct typed command needs its own registration, full stop).
 - The 2026-07-12 batch (draw prices, `/manage`, `/settings`, slash-command overpass, color
   repalette) and patch notes Cloudinary caching are now both fully complete and shipped — see their
   own CLAUDE.md sections above for detail, not listed here as pending anymore.
