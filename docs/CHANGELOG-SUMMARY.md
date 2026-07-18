@@ -29,6 +29,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.22.0 — July 18, 2026
+- **`/settings` now goes quietly inactive after 10 minutes of no use** — leave the panel open and
+  forget about it, and its buttons/dropdowns just stop responding on their own (no error message,
+  nothing to click). Actively using it — clicking around, changing a setting — keeps it alive
+  indefinitely; it's only a full 10 minutes of silence that puts it to sleep. Just run `/settings`
+  again for a fresh one.
+
 ## v2.21.0 — July 18, 2026
 - **`/settings` finally has a hide option** — just like every other command, so you can keep your
   settings panel private if you want.

@@ -813,3 +813,65 @@ doc. At that rate, Atlas M0's 512MB free-tier storage cap is nowhere close for a
 user count — storage isn't the constraint that will force an upgrade; Atlas's own operational guidance
 (dedicated resources/backups once uptime actually matters) is the more likely real trigger, not a hard
 data ceiling.
+
+## 2026-07-18 (new session) — Building the passive auto-disable, and confirming it actually matches the spec
+
+Picked up in a fresh session from the handoff prompt. Two tasks: push the docs-only batch from the
+prior session (v2.21.1), and BUILD the passive auto-disable feature that got fully designed — after
+two rounds of correction — at the end of that same prior session (see the three "(later)" entries
+above). The design, restated once more for the record since it's now actually shipped: on first render
+of `/settings`, schedule a 10-minute `setTimeout` holding that render's own fresh interaction token; on
+any later interaction with the same message, cancel the pending timer and reschedule a fresh 10-minute
+one using the NEW interaction's own token; if 10 straight minutes pass with no interaction at all, the
+timer fires entirely on its own and disables every button/select on the message. A sliding idle window,
+not a fixed deadline — and genuinely passive, since the disable doesn't need a click to trigger it, just
+an already-held token used directly via a raw `PATCH`.
+
+**Built as `utils/passiveExpiry.js`** — `schedulePanelExpiry(interaction, messageId, components)`, an
+in-memory `Map<messageId, timeoutHandle>`, and a recursive `disableAllComponents()` that walks a
+Components V2 tree (containers/sections/action-row nesting, Section accessories) setting
+`disabled: true` on every button (type 2) and select (type 3) without mutating the source array.
+`commands/settings.js` dropped its old `SETTINGS_PANEL_TTL_MS`/`expiresAtOverride`/`|{expiresAt}`
+custom_id scheme entirely and calls `schedulePanelExpiry` right after its one send call, using
+`sendV2Payload`'s own return value for the message id (confirmed via `@discordjs/rest`'s own source
+that a `PATCH` response is parsed JSON with the message's `id` — no `fetchReply()` round-trip needed,
+sidestepping the exact "hard design problem" `dynamicProfile`'s message-id caching hit earlier this
+project). `index.js` lost the 4 now-dead reactive expiry checks (`set_`, `toggle_`, `set_page_`,
+`colors_view`) — Discord itself refuses a click on an actually-disabled component, so there was nothing
+left for those checks to catch.
+
+**Verification, and why it stopped short of a live test.** Syntax-checked all three files, then wrote a
+throwaway `node -e` script exercising `disableAllComponents()` against a payload shaped exactly like
+what `/settings` really sends (a Container with a Section+button accessory, an action-row select, an
+action-row link button, and a top-level share-button row) — confirmed all 4 real interactive components
+got `disabled: true`, the divider and text displays were untouched, and the source array wasn't
+mutated. Cross-checked every custom_id builder site in `settings.js` against its matching `.split('|')`
+parse in `index.js` to confirm the shortened shape (dropped trailing segment) matched on both sides.
+Deliberately did NOT boot the bot locally to click-test it live — this is a single-token bot and the
+GCP VM is the one live instance; a local boot would race it for every interaction, exactly the hazard
+`feedback_multiple_bot_instances` exists to prevent. This means the mechanism is offline-verified but
+not yet click-tested against a real Discord message.
+
+**The good catch: asked to confirm the build actually matched the spec before shipping, instead of
+trusting my own summary.** After presenting the finished feature, Harkirat pushed back — not because
+anything was wrong, but because my own recap language ("disable via the passive timer") wasn't
+unambiguous about WHEN the disable actually happens, and this exact mechanism had already been
+mis-described twice earlier in the prior session before landing on the right answer. He pointed at a
+screenshot of that prior session's own final, correct spec rather than re-explaining it from memory.
+Walked the built code back through that screenshot's own 3 bullets + caveat point by point (first-
+render scheduling, cancel-and-reschedule-on-any-interaction, passive no-click fire-after-10-minutes,
+in-memory-only caveat) and confirmed each one matches what's actually in the diff, not just what the
+summary claimed. This is the same underlying discipline as `feedback_verify_fix_actually_works` — but
+applied one level up: not just "does the code work," but "does my own description of what I built match
+what was actually agreed," checked against the source of truth (the earlier session's own words) rather
+than assumed from memory of "I think I got this right." Worth keeping as its own lesson: when a design
+went through multiple corrections before landing, a request to "confirm before shipping" isn't
+skepticism to brush off — it's exactly the right level of care for a spec with a known history of being
+gotten wrong.
+
+**Shipped as v2.22.0** — committed and pushed to `main`; Harkirat explicitly asked to HOLD the VM
+deploy so a real Discord click-through hasn't happened yet, wanting to keep working on other items
+before a single session-end deploy cycle rather than deploying piecemeal. Documented in CLAUDE.md's new
+"Passive idle-timeout auto-disable" section (replacing the old reactive-expiry writeup in "Panel
+interaction locks"), with the "Known open issues" and roadmap entries updated to point at the shipped
+mechanism instead of describing it as a still-open gap.

@@ -390,7 +390,7 @@ name (e.g. button `nav_prices` → command `draw`). `index.js` has a
 `NAV_COMMAND_ALIASES` map bridging these — check it before assuming
 `client.commands.get(strippedCustomId)` will just work.
 
-## Panel interaction locks — `/manage` (admin-only) and `/settings` (author + 15-min expiry) (2026-07-14)
+## Panel interaction locks — `/manage` (admin-only) and `/settings` (author-lock + passive idle auto-disable) (2026-07-14)
 Two separate gaps, fixed the same session: `/manage`'s own slash-command `execute()` only ever
 checked `ALLOWED_ADMIN_ID` once, at initial invocation — none of the ~25 button/select/modal-submit
 handlers the panel spawns re-checked who was clicking, so anyone who could see the message (run
@@ -410,28 +410,53 @@ bot data. `/settings` had NO author-lock at all on some of its own components (`
   keeps using one of these same prefixes, which every manage action always has. Deliberately scoped to
   ONLY these prefixes so `/settings`, `/colors`, draws/calendar pagination, etc. are completely
   unaffected — this is not a bot-wide button lock.
-- **`/settings` fix: stateless expiry encoded directly in the custom_id**, not a Map. Considered a
-  `messageId -> {userId, expiresAt}` Map (mirroring `manageUndoStore`'s pattern) but rejected it —
-  populating it on the VERY FIRST render would need an extra `interaction.fetchReply()` call just to
-  learn the message id (the same "hard design problem" `dynamicProfile`'s message-id caching hit, see
-  the accent color section below), and a Map resets on every redeploy. Instead every custom_id
-  `settings.js` builds (`toggle_*`, `set_*`, `set_page_`, `colors_view`) carries the deadline as its
-  own pipe segment — same "stateless" convention `tsmenu`/`price_subpage_` already use. Computed ONCE
-  per genuine `/settings` invocation (`SETTINGS_PANEL_TTL_MS = 15 * 60 * 1000`, `settings.js`'s
-  `execute(interaction, pageOverride, expiresAtOverride)` — new 3rd param) and threaded through
-  unchanged on every re-render, so clicking around the panel never extends the clock; the 15 minutes
-  is anchored to the original command, not a sliding window. Every settings-owned handler in
-  `index.js` (`toggle_`, generic `set_`, `set_page_`) checks identity first, then
-  `Date.now() > parseInt(expiresAtStr, 10)`, replying "run `/settings` again" if expired — and passes
-  the SAME `expiresAtStr` back into its own re-render call rather than letting a fresh one get minted.
-  **`colors_view` (the "View Colors" button that lives ON the settings panel) gets the expiry check
-  too**, since it's still a settings component — but the brand-NEW colors panel message it opens keeps
-  its existing separate `|userId` lock with NO timeout of its own (Harkirat's explicit "/settings
-  only" call, since `colors_page_`/`colors_subpage_`/`colors_refresh_` back BOTH `/settings`' button
-  AND the standalone `/colors` command sharing identical code — locking those would've silently
-  changed `/colors` too). `set_page_` also needed a real `flags: 0`-style fix of its own: its
-  custom_id used to be a bare `set_page_{N}` with no pipe segments at all, so adding `|userId|expiresAt`
-  required switching its parsing from a blind `.replace('set_page_', '')` to a proper `.split('|')`.
+- **`/settings` fix (original, 2026-07-14): author-lock via `|userId` on every custom_id**, plus a
+  REACTIVE expiry (a deadline value encoded as a further pipe segment, checked on click, replying
+  "run `/settings` again" if stale). **⚠️ The expiry HALF of this is SUPERSEDED (2026-07-18) — see
+  the "Passive idle-timeout auto-disable" subsection right below.** The author-lock (`|userId`,
+  checked in every `toggle_`/`set_`/`set_page_`/`colors_view` handler) is UNCHANGED and still exactly
+  as described here; only the expiry mechanism was replaced. `set_page_` also needed a real fix of its
+  own at the time: its custom_id used to be a bare `set_page_{N}` with no pipe segments at all, so
+  adding `|userId` required switching its parsing from a blind `.replace('set_page_', '')` to a proper
+  `.split('|')` — that part is also unchanged.
+
+### Passive idle-timeout auto-disable (2026-07-18) — replaces `/settings`' old reactive expiry
+The reactive design above could only ever reply "this panel expired" AFTER a stale click already
+failed — the buttons themselves stayed visually live forever, since Discord genuinely CAN'T disable a
+message with zero interaction at all (see the "Known open issues" entry on button-expiry mechanics,
+which this section makes concrete). Replaced with a real passive mechanism: `utils/passiveExpiry.js`'s
+`schedulePanelExpiry(interaction, messageId, components)`.
+- **Mechanism**: every render of `/settings` — the initial slash-command invocation AND every
+  button/select re-render — ends by calling `schedulePanelExpiry` with THAT interaction's own token
+  (each interaction gets its own fresh ~15-minute token, confirmed via Discord's docs and this
+  session's own corrected investigation — see "Known open issues"). It holds a `setTimeout(10 min)`
+  per messageId in an in-memory `Map`; any later interaction on the same message cancels the pending
+  timer and reschedules fresh from ITS OWN token — a genuine **sliding idle window**, not a fixed
+  deadline anchored to creation (the OLD design's explicit choice, now inverted on purpose). If 10
+  straight minutes pass with no interaction, the timer fires entirely on its own and PATCHes
+  `@original` directly (same raw-REST pattern `sendV2Payload` already uses, bypassing the normal
+  interaction-reply lifecycle) to recursively walk the message's Components V2 tree and set
+  `disabled: true` on every button (type 2) and select (type 3) — no error message, the panel just
+  goes visibly dead. 10 minutes was chosen as a plain self-imposed UX window, comfortably inside the
+  ~15-minute token ceiling; it is NOT derived from any Discord-side limit.
+- **No `fetchReply()` needed even on the very first render** (unlike `dynamicProfile`'s message-id
+  caching, which hit exactly this problem — see the accent color section below) — `sendV2Payload`'s
+  underlying `rest.patch()` call already returns the PATCHed message's own JSON body, so
+  `settings.js` just reads `sentMessage.id` straight off its own send call.
+- **Every `|{expiresAt}` custom_id segment was removed** (`toggle_*`, `set_*`, `set_page_`,
+  `colors_view` all dropped their trailing segment) along with the 4 reactive
+  `Date.now() > parseInt(expiresAtStr, 10)` checks in `index.js` — Discord itself now refuses a click
+  on an actually-disabled button, so there's nothing left for a reactive check to catch. The author-
+  lock `|userId` segment is untouched on all of them.
+- **Scoped to `/settings` only, on purpose** — the roadmap's "extend expiry checks to more commands"
+  item (draws/calendar/drawprices/loadouts have none at all) is still open; this is the first
+  implementation, not a bot-wide change. The standalone View Colors panel (opened via `colors_view`)
+  still has NO timeout of its own (Harkirat's explicit "`/settings` only" call, unchanged) — it's
+  unaffected either way since it's a separate message.
+- **In-memory only, keyed by messageId** — a bot restart mid-countdown just loses that one pending
+  timer (the panel silently stays clickable a bit longer than intended, never shorter, and the next
+  genuine `/settings` render re-arms it normally). Accepted at this scale per Harkirat's explicit call,
+  not worth a persistent store for a 10-minute UX nicety.
 
 ### Admin override on the per-user panel locks (2026-07-18, v2 quick-wins batch)
 Harkirat (`ALLOWED_ADMIN_ID`) was getting the same "not your panel" denial as any random third party
@@ -2372,15 +2397,16 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   token regardless of the message's age. **What this means for `/settings`' existing 15-minute expiry:
   that number is a self-imposed BUSINESS rule (Harkirat wanted settings changes to have a real
   freshness window), NOT derived from any Discord token limit** — the earlier claim that it "had to"
-  be 15 minutes because of Discord's ceiling was incorrect; it could be any duration. **What's genuinely
-  buildable, confirmed:** on any click of an expired button (`/settings` or otherwise), the bot can
-  `deferUpdate()` (using THAT click's fresh token) and edit the message's components to show them
-  `disabled: true`, instead of (or alongside) replying with a friendly "run the command again" message —
-  `/settings` currently only does the friendly-reply half, never actually disables the buttons
-  visually, which is the concrete gap to close. The only genuinely unavailable thing is a fully
-  PROACTIVE update with zero click at all (the message spontaneously going gray the instant the timer
-  elapses, no user interaction) — that needs either a scheduled job with channel-edit permission (this
-  bot has none, see "user-installed only" above) or waiting for the next click to react to.
+  be 15 minutes because of Discord's ceiling was incorrect; it could be any duration.
+  **FURTHER CORRECTED same day, after this paragraph was first written:** the "only genuinely
+  unavailable thing" claim below (a fully proactive, zero-click update) was ALSO wrong — a scheduled
+  `setTimeout` inside the bot process can hold an already-issued interaction token and fire a `PATCH`
+  with it directly, entirely on its own, as long as it fires before that token's own 15-minute
+  ceiling. No click, no channel-edit permission, no scheduled job outside the bot process needed —
+  this is now BUILT for `/settings` (2026-07-18): see "Passive idle-timeout auto-disable" in the
+  "Panel interaction locks" section above for the shipped mechanism (`utils/passiveExpiry.js`), which
+  does exactly this. Still open: extending the same pattern to draws/calendar/drawprices/loadouts (see
+  the roadmap item below).
 
 ## Next planned work
 
@@ -2394,16 +2420,17 @@ so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (a
 ### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
 - `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
-- `[P2 · M · 🧩needs-design]` **Actually disable expired buttons on click, not just reply with a
-  message — plus extend expiry checks to more commands** (filed 2026-07-18, notes; corrected same day
-  after an initial wrong claim that this was impossible, see "Known open issues" above for the real
-  mechanics). `/settings` already checks its own encoded expiry and replies with a friendly message,
-  but never actually edits the message's buttons to a visibly disabled state — that's the concrete
-  fix, confirmed buildable (the click itself supplies a fresh token to do the edit with).
-  draws/calendar/drawprices/loadouts have NO expiry check at all today, unlike `/settings` — extending
-  the same pattern to them is a separate but related design question. Also decide: is 15 minutes the
-  right duration everywhere, or should some commands use a different window (there's no Discord-imposed
-  ceiling forcing 15 specifically — that was the earlier, now-corrected misunderstanding).
+- ~~**Actually disable expired buttons, not just reply with a message**~~ — **SHIPPED for `/settings`
+  2026-07-18** (committed, VM deploy pending as of this entry — check "Deployment & Ops" / DEVLOG for
+  whether it's actually live yet before assuming so). See "Passive idle-timeout auto-disable" in the
+  "Panel interaction locks" section above for the shipped design (`utils/passiveExpiry.js`) — a
+  passive, sliding 10-minute idle `setTimeout` per message, not a click-triggered check.
+- `[P2 · M · 🧩needs-design]` **Extend the same passive auto-disable pattern to more commands** —
+  draws/calendar/drawprices/loadouts have NO expiry/auto-disable at all today, unlike `/settings` now.
+  Extending `utils/passiveExpiry.js`'s `schedulePanelExpiry` to their own render/re-render sites is the
+  mechanical part; the open design question is whether 10 minutes is the right window everywhere or
+  whether some commands should use a different duration (no Discord-imposed ceiling forces any specific
+  number — see "Known open issues" above).
 
 **Second batch of v2 items (filed 2026-07-15 from the plan-notes file).** These ship to `main`/live
 NORMALLY even while v3 pre-release work runs in parallel — see the parallel-track note in

@@ -103,9 +103,9 @@ changelog until v3 actually launches.
   feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure
   attribution, this is usage telemetry).
 - **`/define` (Urban Dictionary integration)** — pure fun, not CODM-related, low priority.
-- **Extend paginated commands' expiry-check pattern** beyond `/settings` (draws/calendar/drawprices/
-  loadouts currently have none) — see "Known open issues" below for why a literal button-disable isn't
-  possible (Discord's 15-minute interaction-token ceiling); this is the buildable version of that ask.
+- **Extend the passive auto-disable pattern** beyond `/settings` (which shipped it in v2.22.0) to
+  draws/calendar/drawprices/loadouts, which currently have none — mechanical (reuse
+  `utils/passiveExpiry.js`), open question is whether 10 minutes is the right window everywhere.
 
 ### 💭 Considering — ideas, not committed
 - Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused.
@@ -140,12 +140,14 @@ changelog until v3 actually launches.
   separate `PATCH` to update the message) — not a CPU/DB bug this time, just the current architecture.
   Real fix is switching to a single direct `UPDATE_MESSAGE` response; touches every paginated command,
   deferred as its own future pass rather than bundled into v2.18.0.
-- **CORRECTED same day: disabling expired buttons IS achievable — earlier claim in this entry was
-  wrong.** Every button click carries its own fresh interaction token regardless of the message's age
-  (this is exactly why draws/calendar/loadout pagination buttons already keep working forever with no
-  expiry check at all). `/settings`' 15-minute expiry is a self-imposed business rule, not a Discord
-  platform ceiling. Real gap: `/settings` replies with a friendly "expired" message but never actually
-  edits the buttons to a disabled state — that's the buildable fix, filed in the roadmap above.
+- ~~Disabling expired buttons — a reactive "friendly message but buttons stay live" gap~~ — **SHIPPED
+  for `/settings` in v2.22.0** as a genuinely PASSIVE, no-click auto-disable (a held interaction token
+  + `setTimeout` PATCHes the message on its own after 10 idle minutes) — see that entry below for the
+  mechanism, and CLAUDE.md's "Passive idle-timeout auto-disable" section for the full design. This
+  entry itself went through two rounds of correction before landing there: first wrongly claimed
+  disabling was impossible at all, then wrongly claimed a proactive zero-click update specifically was
+  impossible — both wrong, see CLAUDE.md's "Known open issues" for the full trail. Still open: the same
+  pattern for draws/calendar/drawprices/loadouts (see the v3 roadmap list above).
 - **Global profile only, never per-server "Server Profile" overrides** (confirmed 2026-07-18) — every
   avatar/banner/deco/nameplate read uses the user's global Discord profile; a user with a different
   avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install
@@ -215,6 +217,44 @@ changelog until v3 actually launches.
   to the new `docs/SESSION-START.md` path and verified resolving correctly. Every structural/live
   reference to these files across CLAUDE.md and memory was updated to match; historical narrative
   entries describing their PAST gitignored status were left as accurate history, not rewritten.
+
+## v2.22.0 — 2026-07-18
+**`/settings` passive idle-timeout auto-disable** (this push) — moderate — ⚠️ **committed + pushed to
+`main`, VM deploy HELD** (Harkirat's explicit call, to keep working before a full session-end deploy —
+check `scripts/vmstatus.sh` / DEVLOG before assuming this is actually live)
+
+Built the passive auto-disable feature designed earlier this same session (after two rounds of
+correction on the underlying Discord token mechanics — see v2.21.1 below and CLAUDE.md's "Known open
+issues"). `/settings`' old REACTIVE 15-minute expiry — a deadline encoded in every custom_id, checked
+on click, replying "run `/settings` again" while the buttons themselves stayed visually live forever —
+is replaced with a genuinely PASSIVE mechanism:
+
+- **New `utils/passiveExpiry.js`.** Every render of `/settings` (the initial command AND every
+  button/select re-render) schedules a `setTimeout` holding THAT render's own fresh interaction token.
+  Any later interaction on the same message cancels the pending timer and reschedules from ITS OWN
+  token — a sliding 10-minute idle window, not a fixed deadline from creation. If 10 straight minutes
+  pass with zero interaction, the timer fires entirely on its own (no click involved) and `PATCH`es the
+  message directly using the held token to recursively disable every button/select in it. 10 minutes is
+  a self-imposed UX choice, comfortably under each token's own ~15-minute lifetime.
+- **`commands/settings.js`** dropped the old `SETTINGS_PANEL_TTL_MS`/`expiresAtOverride` scheme and the
+  `|{expiresAt}` segment on every custom_id it builds; the final send now captures the returned message
+  (Discord's own `PATCH` response already carries the message's `id` — no extra `fetchReply()` round-
+  trip needed, even on the very first render) and calls `schedulePanelExpiry`.
+- **`index.js`** removed the 4 now-dead reactive expiry checks (`set_`, `toggle_`, `set_page_`,
+  `colors_view` handlers) — Discord itself refuses a click on an actually-disabled component, so
+  there's nothing left for a reactive check to catch. Author-lock (`|userId`) on all 4 is unchanged.
+- **Verified offline, not live**: syntax-checked, unit-tested the disable-recursion logic against a
+  realistic settings.js-shaped payload (Section accessories, action-row selects/buttons, a top-level
+  share-button row — all correctly disabled, dividers/text left untouched, no mutation of the source
+  array), cross-checked every custom_id builder/parser pair for the new (shorter) shape, and confirmed
+  via `@discordjs/rest`'s own source that a `PATCH` response is parsed JSON carrying the message `id`.
+  **Did not boot the bot locally** — the VM is the one live instance for this single-token bot; a local
+  boot would have raced it. A real Discord click-through is still pending the VM deploy.
+- **Scoped to `/settings` only** — extending the same pattern to draws/calendar/drawprices/loadouts is
+  its own separate roadmap item (see the v3 pre-release list above). The standalone View Colors panel
+  (opened via `colors_view`) still has no timeout of its own, unaffected.
+- Full design trail (including the two corrections that preceded this build) in CLAUDE.md's "Passive
+  idle-timeout auto-disable" section and "Known open issues".
 
 ## v2.21.1 — 2026-07-18
 **Deploy-key fix + button-expiry mechanics correction + roadmap intake — docs/ops only, no bot code

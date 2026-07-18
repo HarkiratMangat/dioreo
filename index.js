@@ -943,9 +943,11 @@ client.on('interactionCreate', async interaction => {
             // 3rd pipe segment (2026-07-12) -- which /settings page this dropdown lives on, so
             // re-rendering after a selection lands back on the same page instead of resetting to
             // page 0. Only the dropdowns that live on the Preferences page (region mode/timezone/
-            // style/accent) carry this; defaults to page 0 if absent. 4th segment (2026-07-14) is
-            // the panel's 15-min expiry deadline -- see settings.js's SETTINGS_PANEL_TTL_MS comment.
-            const [action, targetUserId, pageStr, expiresAtStr] = interaction.customId.split('|');
+            // style/accent) carry this; defaults to page 0 if absent. (A 4th `|{expiresAt}` segment
+            // used to live here for the old reactive 15-min expiry check -- removed 2026-07-18, see
+            // utils/passiveExpiry.js; expiry is now enforced passively by disabling the components
+            // themselves, not by rejecting a stale click.)
+            const [action, targetUserId, pageStr] = interaction.customId.split('|');
             const currentPage = pageStr ? parseInt(pageStr, 10) : 0;
             const selectedValue = interaction.values[0];
 
@@ -962,15 +964,6 @@ client.on('interactionCreate', async interaction => {
                     await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
-                }
-                return;
-            }
-
-            if (expiresAtStr && Date.now() > parseInt(expiresAtStr, 10)) {
-                try {
-                    await interaction.followUp({ content: '⏱️ **This settings panel has expired.** Run `/settings` again to continue.', ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of expired settings panel (interaction likely expired):', notifyError);
                 }
                 return;
             }
@@ -1029,14 +1022,15 @@ client.on('interactionCreate', async interaction => {
 
             // IN-PLACE RE-DRAW REDIRECT: Call the modular command stack directly to redraw updated
             // parameters instantly -- passes the current page through so picking an option on the
-            // Preferences page doesn't bounce back to page 0, and the original expiresAt through so
-            // selecting an option doesn't extend the panel's 15-minute clock. Renders via actingUser
-            // (only swapped to a synthetic interaction when Harkirat is overriding someone else's
-            // panel -- the normal same-user case reuses the real interaction unchanged) so the
-            // redraw always reflects targetUserId's own data, never the admin's.
+            // Preferences page doesn't bounce back to page 0. Renders via actingUser (only swapped
+            // to a synthetic interaction when Harkirat is overriding someone else's panel -- the
+            // normal same-user case reuses the real interaction unchanged) so the redraw always
+            // reflects targetUserId's own data, never the admin's. settings.js's own execute() ends
+            // by rescheduling the passive idle-timeout using THIS interaction's fresh token -- no
+            // separate call needed here.
             const settingsCommand = client.commands.get('settings');
             const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
-            return await settingsCommand.execute(renderInteraction, currentPage, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
+            return await settingsCommand.execute(renderInteraction, currentPage);
         }
 
         // E.0 MANAGE PANEL PAGE SELECT -- a select menu (not a row of nav buttons) since the panel
@@ -1259,7 +1253,9 @@ client.on('interactionCreate', async interaction => {
         // A. SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
         if (interaction.customId.startsWith('toggle_')) {
             await interaction.deferUpdate(); // Defer to permanently safeguard against API 10062 timeouts
-            const [actionStr, targetUserId, expiresAtStr] = interaction.customId.split('|');
+            // (A 3rd `|{expiresAt}` segment used to live here for the old reactive 15-min expiry
+            // check -- removed 2026-07-18, see utils/passiveExpiry.js.)
+            const [actionStr, targetUserId] = interaction.customId.split('|');
 
             // SECURITY GATEWAY WALL: Block rogue server members from attempting to adjust another user's preference canvas
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
@@ -1271,18 +1267,6 @@ client.on('interactionCreate', async interaction => {
                     await interaction.followUp({ content: "🔒 **Not your dashboard!** This panel belongs to someone else — run `/settings` yourself to get your own to play with.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked settings action (interaction likely expired):', notifyError);
-                }
-                return;
-            }
-
-            // 15-MIN PANEL EXPIRY (2026-07-14) -- see settings.js's SETTINGS_PANEL_TTL_MS comment for
-            // why this is encoded in the custom_id itself rather than a Map. Checked after the
-            // author-lock above (identity first, then staleness).
-            if (expiresAtStr && Date.now() > parseInt(expiresAtStr, 10)) {
-                try {
-                    await interaction.followUp({ content: '⏱️ **This settings panel has expired.** Run `/settings` again to continue.', ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of expired settings panel (interaction likely expired):', notifyError);
                 }
                 return;
             }
@@ -1311,13 +1295,12 @@ client.on('interactionCreate', async interaction => {
             await prefs.save(); // Write preferences live to the Atlas cluster
 
             // LIVE RE-DRAW ROUTE: Call the settings engine module to rewrite the canvas on screen.
-            // Passes the ORIGINAL expiresAt through (not a fresh one) so toggling doesn't extend the
-            // panel's 15-minute clock -- see settings.js's SETTINGS_PANEL_TTL_MS comment. Renders via
-            // actingUser (see the D. handler's matching comment above) so an admin override never
-            // swaps in Harkirat's own data.
+            // Renders via actingUser (see the D. handler's matching comment above) so an admin
+            // override never swaps in Harkirat's own data. settings.js's own execute() reschedules
+            // the passive idle-timeout using THIS interaction's fresh token at the end of its render.
             const settingsCommand = client.commands.get('settings');
             const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
-            return await settingsCommand.execute(renderInteraction, 0, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
+            return await settingsCommand.execute(renderInteraction, 0);
         }
 
         // B. DRAWS PAGINATION (New vs Returning)
@@ -1382,12 +1365,13 @@ client.on('interactionCreate', async interaction => {
         // stays identical on both pages (re-rendered each time, not truly "shared" state).
         if (interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
             await interaction.deferUpdate();
-            // custom_id shape (2026-07-14): `set_page_{targetPage}|{userId}|{expiresAt}` -- this
-            // button previously carried NO author-lock at all (a real gap; every other settings
-            // component already embedded |userId). Page number lives before the first pipe since the
-            // action verb itself encodes it, unlike toggle_/set_ which encode the target in a
-            // separate value.
-            const [pagePart, targetUserId, expiresAtStr] = interaction.customId.split('|');
+            // custom_id shape: `set_page_{targetPage}|{userId}` -- this button previously carried NO
+            // author-lock at all (a real gap; every other settings component already embedded
+            // |userId). Page number lives before the first pipe since the action verb itself encodes
+            // it, unlike toggle_/set_ which encode the target in a separate value. (A 3rd
+            // `|{expiresAt}` segment used to live here for the old reactive 15-min expiry check --
+            // removed 2026-07-18, see utils/passiveExpiry.js.)
+            const [pagePart, targetUserId] = interaction.customId.split('|');
             const targetPage = parseInt(pagePart.replace('set_page_', ''), 10) || 0;
 
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment.
@@ -1400,20 +1384,12 @@ client.on('interactionCreate', async interaction => {
                 }
                 return;
             }
-            if (expiresAtStr && Date.now() > parseInt(expiresAtStr, 10)) {
-                try {
-                    await interaction.followUp({ content: '⏱️ **This settings panel has expired.** Run `/settings` again to continue.', ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of expired settings panel (interaction likely expired):', notifyError);
-                }
-                return;
-            }
 
             // Renders via actingUser (see the D. handler's matching comment above) -- deferReply is
             // still no-op'd since deferUpdate() already ran on the real interaction above.
             const settingsCommand = client.commands.get('settings');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
-            return await settingsCommand.execute(syntheticInteraction, targetPage, expiresAtStr ? parseInt(expiresAtStr, 10) : null);
+            return await settingsCommand.execute(syntheticInteraction, targetPage);
         }
 
         // B.6 "VIEW COLORS" PANEL (2026-07-13) -- opens as its OWN new message (deferReply, not
@@ -1422,12 +1398,14 @@ client.on('interactionCreate', async interaction => {
         // matches the user's own `/settings` visibility preference (Harkirat's request) -- same
         // resolution settings.js itself uses, not a hardcoded always-ephemeral default.
         if (interaction.customId.startsWith('colors_view|')) {
-            // custom_id: `colors_view|{userId}|{expiresAt}` -- the 3rd segment (2026-07-14) is only
-            // this button's OWN settings-panel expiry (it's still a component ON the /settings
-            // message); the NEW colors panel this opens is a separate message with its own existing
-            // |userId lock and no timeout of its own (Harkirat's explicit "/settings only" call), so
-            // that deadline does NOT propagate into buildColorPalettePanel below.
-            const [, targetUserId, expiresAtStr] = interaction.customId.split('|');
+            // custom_id: `colors_view|{userId}` -- this button is itself a component ON the
+            // /settings message, so it's subject to THAT message's own passive idle-timeout (see
+            // utils/passiveExpiry.js) same as every other settings component; no separate expiry
+            // check needed here anymore (removed 2026-07-18, a 3rd `|{expiresAt}` segment used to
+            // live here for the old reactive check). The NEW colors panel this opens is a SEPARATE
+            // message with its own existing |userId lock and no timeout of its own (Harkirat's
+            // explicit "/settings only" call) -- unaffected either way.
+            const [, targetUserId] = interaction.customId.split('|');
             // Admin-override (2026-07-18) -- see resolvePanelActor's own comment. colorsInteraction
             // is only a synthetic (user-swapped) interaction when Harkirat is overriding someone
             // else's panel -- getSourceImageInfo/getPalettePanelData read `.user` directly, so this
@@ -1438,14 +1416,6 @@ client.on('interactionCreate', async interaction => {
                     await interaction.reply({ content: "🔒 **Those aren't your colors!** Run `/colors` (or `/settings` → View Colors) to see your own palette.", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked View Colors action (interaction likely expired):', notifyError);
-                }
-                return;
-            }
-            if (expiresAtStr && Date.now() > parseInt(expiresAtStr, 10)) {
-                try {
-                    await interaction.reply({ content: '⏱️ **This settings panel has expired.** Run `/settings` again to continue.', ephemeral: true });
-                } catch (notifyError) {
-                    console.error('Failed to notify user of expired settings panel (interaction likely expired):', notifyError);
                 }
                 return;
             }
