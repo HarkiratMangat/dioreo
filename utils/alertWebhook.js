@@ -15,8 +15,16 @@
 // include a real <@mention> so he gets a phone/desktop notification; routine info alerts do NOT ping.
 const PING_USER_ID = '1139845545754632283';
 
-const LEVEL_COLOR = { info: 0x2ecc71, warn: 0xe67e22, error: 0xe74c3c };
-const LEVEL_ICON = { info: '🟢', warn: '🟠', error: '🔴' };
+// Four severity levels (2026-07-17, Harkirat's call) — green/yellow/orange/red, so a self-recovering
+// blip (yellow) is visually distinct from a real problem (orange/red). Pings fire on orange + red only
+// (see shouldPing below): red = something broke, orange = the bot LOST the gateway; yellow = it's
+// reconnecting on its own (no action needed), green = healthy/informational.
+//   info    🟢 green  — Bot online, Gateway resumed, daily heartbeat
+//   caution 🟡 yellow — Gateway reconnecting (transient, self-recovering)
+//   warn    🟠 orange — Gateway disconnected (lost, notice-worthy)
+//   error   🔴 red    — crash / uncaught / DB failure / shard error
+const LEVEL_COLOR = { info: 0x2ecc71, caution: 0xf1c40f, warn: 0xe67e22, error: 0xe74c3c };
+const LEVEL_ICON = { info: '🟢', caution: '🟡', warn: '🟠', error: '🔴' };
 const THROTTLE_MS = 60 * 1000;
 const lastSent = new Map(); // key: `${level}:${title}` -> last-sent epoch ms
 
@@ -33,8 +41,8 @@ function describe(v) {
 }
 
 // Fire-and-forget — callers do NOT await (and shouldn't, on a hot path).
-//   level: 'info' | 'warn' | 'error'  (error pings by default)
-//   opts.ping: force-override whether to actively @mention (e.g. warn-level gateway disconnect → true)
+//   level: 'info' | 'caution' | 'warn' | 'error'  (warn + error ping by default)
+//   opts.ping: force-override whether to actively @mention (rarely needed now that warn pings by default)
 function sendAlert(title, detail = '', level = 'error', opts = {}) {
     const url = process.env.LOG_WEBHOOK_URL;
     if (!url) return; // alerting disabled
@@ -44,11 +52,20 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
     if (now - (lastSent.get(key) || 0) < THROTTLE_MS) return; // throttled
     lastSent.set(key, now);
 
-    const shouldPing = opts.ping ?? (level === 'error'); // errors are notice-worthy by default
+    // Ping on orange (warn — gateway lost) AND red (error) by default; yellow/green never ping on their
+    // own. opts.ping can still force it either way.
+    const shouldPing = opts.ping ?? (level === 'error' || level === 'warn');
     const host = process.env.NODE_ENV === 'production' ? 'GCP VM' : 'local';
     const rss = Math.round(process.memoryUsage().rss / 1024 / 1024); // MB — surfaces leaks/OOM trends
     const upMin = Math.round(process.uptime() / 60);
-    const description = describe(detail).slice(0, 1800);
+    // Proper Discord timestamp (2026-07-17) — `<t:unix:F>` renders as a full, timezone-correct,
+    // hover-expandable time in EVERY viewer's own locale, instead of relying only on the small native
+    // embed-footer time. Goes in the DESCRIPTION because Discord does NOT parse `<t:>` markdown in an
+    // embed footer (footer text is literal), so a `<t:>` there would show as raw text.
+    const unixNow = Math.floor(now / 1000);
+    const timeLine = `🕐 <t:${unixNow}:F> · <t:${unixNow}:R>`;
+    const rawDesc = describe(detail).slice(0, 1800);
+    const description = rawDesc ? `${rawDesc}\n\n${timeLine}` : timeLine;
 
     const body = {
         // Ping puts the mention in `content` AND allow-lists it; non-ping suppresses ALL mentions so an

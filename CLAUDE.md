@@ -127,17 +127,46 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
 - **Monitoring ("never blind again"):**
   - `scripts/vmstatus.sh` — one-shot health: VM state, systemd status, restart count, gateway state, 1h
     error count, RAM/load/disk. `scripts/vmstatus.sh logs [N]` tails N log lines.
-  - `scripts/vmpeaks.sh` — historical **CPU peaks** (12h/24h/72h/7d/30d) via Cloud Monitoring (no agent
-    needed; hypervisor-level). On e2-micro, >100% = bursting above the 0.25-vCPU baseline (normal).
+  - `scripts/vmpeaks.sh` — historical **CPU peaks** (12h/24h/72h/7d/30d) via Cloud Monitoring (CPU is
+    hypervisor-level, no agent needed). On e2-micro, >100% = bursting above the 0.25-vCPU baseline
+    (normal). **RAM peaks** were added 2026-07-17 (`rampeak()`, `agent.googleapis.com/memory/percent_used`
+    state=`used`) — those DO need the Ops Agent (guest memory is invisible to GCP without it), so the RAM
+    rows read "(no data … yet)" until enough post-install history accrues (that's expected, not a bug).
   - **Discord alerting** (`utils/alertWebhook.js`) — posts crashes / gateway disconnect+reconnect+error /
     DB failure / uncaught rejection, plus a "Bot online" ping on each (re)start, to a private Discord
     channel via `LOG_WEBHOOK_URL` (SECRET — `.env` only, never the repo). Throttled 1/min, never throws,
-    never blocks. Wired into index.js's process/client/shard handlers at 8 sites.
+    never blocks. Wired into index.js's process/client/shard handlers at 8 sites. **Plus a daily
+    "still healthy" heartbeat** (added 2026-07-17) — an info-level, NON-pinging alert every 24h with
+    uptime/servers/gateway-latency/memory, so a long quiet uptime is proven-alive instead of ambiguous
+    (with only trouble+startup alerts, "healthy" and "the VM/alerter is dead" look identical). Fired from
+    a `setInterval(24h).unref()` on `ClientReady`, skipped if the gateway isn't currently ready; NOT fired
+    on boot ("Bot online" already covers startup, and a restart resets the timer but emits its own boot
+    ping, so no health gap is left uncovered).
+    - **Severity is 4 levels** (reshaped 2026-07-17): `info`🟢 (Bot online / Gateway resumed / heartbeat),
+      `caution`🟡 (Gateway reconnecting — transient/self-recovering), `warn`🟠 (Gateway disconnected —
+      lost), `error`🔴 (crash / uncaught / DB failure / shard error). **Pings fire on `warn` + `error`
+      only** (`shouldPing = opts.ping ?? (level==='error' || level==='warn')`); yellow/green never ping.
+      Every alert body carries a proper Discord `<t:unix:F> · <t:unix:R>` timestamp (in the DESCRIPTION —
+      Discord doesn't parse `<t:>` in an embed footer). The "Bot online" gateway ping shows "measuring…"
+      when `client.ws.ping` is still -1 (it's -1 until the first gateway heartbeat, which lands after
+      ClientReady) instead of the old nonsensical "-1ms" — see `formatPing()`.
+    - **Deferred to its own session (Opus 4.8 high):** per-alert unique IDs + a downloadable detailed
+      text-log export, and a plain-language "what does each alert mean" explainer. Needs a persistent
+      alert store + an export surface — real design, intentionally not in this light pass.
 - **Render (retired):** service `srv-d850b2og4nts73fhpfog` **SUSPENDED** (not deleted). Keep as fallback
   until ~2026-07-24, then delete once GCP proves reliable. Do NOT deploy to it.
-- **Ops Agent — deferred (soft-priority):** the guest-metrics agent would add RAM/disk-usage metrics +
-  log forwarding to Cloud Monitoring, and unlock **RAM peaks** in `vmpeaks.sh`. Its install script
-  returned HTML/404 during the migration; revisit via the apt-repo install method.
+- **Ops Agent — INSTALLED 2026-07-17** (was deferred; the earlier install-script 404 was transient — the
+  official `add-google-cloud-ops-agent-repo.sh --also-install` worked fine on retry). google-cloud-ops-agent
+  v2.70.0, all 3 units active (wrapper + fluent-bit for logs + otel-collector for metrics); adds guest
+  RAM/disk metrics + log forwarding, and unlocks `vmpeaks.sh`'s RAM peaks. **⚠️ GOTCHA (cost me the RAM
+  data at first):** the agent silently drops every metric/log with `PermissionDenied SERVICE_DISABLED`
+  until the project's **Cloud Monitoring API AND Cloud Logging API are enabled** — both were OFF on this
+  project (only the hypervisor CPU read path worked without them, which is why CPU peaks were fine but RAM
+  stayed empty). Fixed with `gcloud services enable monitoring.googleapis.com logging.googleapis.com`
+  (both free-tier at one-e2-micro scale) + an agent restart; export errors went to zero. If RAM peaks ever
+  go blank again, check those two APIs are still enabled and the otel-collector isn't erroring
+  (`journalctl -u google-cloud-ops-agent-opentelemetry-collector | grep -i denied`) before suspecting the
+  query. **Still deferred:** guest disk-usage peaks in `vmpeaks.sh` (the agent now provides the metric).
 
 ## Version tagging (added 2026-07-16)
 The `vMAJOR.MODERATE.MINOR` convention itself is defined in `SESSION-START.md` (gitignored,
@@ -1943,6 +1972,30 @@ throwing) plus a long follow-up list. All addressed same session:
   - A **"Search Again"** button was added alongside both the single-match button prompt and the
     multi-match disambiguation select, so a second search doesn't require scrolling back up to the
     original panel message.
+  - **⚠️ SEQUEL BUG (found live 2026-07-17, fixed same day): the `mng_editbtn_` fix above was itself
+    broken from the day it shipped — the intermediate Edit button never worked at all.** Repro:
+    `/manage` → Edit → search "FSS" → the ephemeral Edit/Search-Again prompt appears → click **Edit**
+    → "Dior's Builds didn't respond in time." Root cause: the `mng_editbtn_` HANDLER was written into
+    the `if (interaction.isModalSubmit())` block (right next to its `mng_search_` sibling, since they're
+    conceptually adjacent) — but `mng_editbtn_` is a **BUTTON** custom_id. A button click has
+    `isButton() === true` / `isModalSubmit() === false`, so it never entered that block; the handler was
+    dead code and the click fell through unacknowledged → Discord's 3-second no-ACK timeout ("didn't
+    respond in time", distinct from the earlier "Something went wrong" which is a *failed* response).
+    This is the EXACT same wrong-`isX()`-branch class of bug as the loadout Browse-other-builds dropdown
+    (see [[feedback_verify_fix_actually_works]]) — a handler that looks right but sits in the block its
+    interaction type never reaches. It went unnoticed because Edit via the panel was never actually
+    live-clicked between 2026-07-12 and 2026-07-17 (it WAS on the "not yet verified" list). **Fix:**
+    moved the handler into the `isButton()` block (alongside `mng_act_`/`mng_purgeconfirm_`/etc.),
+    adapting `customId` → `interaction.customId`; left a placement-warning breadcrumb in BOTH spots so
+    it isn't "helpfully" moved back next to `mng_search_`. Because `mng_editbtn_` serves EVERY entity's
+    single-match Edit, this broke Edit for draws, calendar, MP loadouts AND DMZ loadouts alike — the fix
+    repairs all four. Verified: `buildEditLoadoutModal` (which `showModal` now actually reaches) builds
+    without throwing for the real FSS Hurricane doc and all 125 MP loadouts (offline run against live
+    Mongo) — so the routing fix exposes no secondary throw.
+    - Same fix pass (2026-07-17): the single-match Edit prompt's **Edit + Search Again buttons now share
+      ONE action row** (were two stacked rows). Only the single-match case — the multi-match disambiguation
+      reply keeps two rows because its select menu (type 3) must occupy its own row and can't sit beside a
+      button. (`searchAgainRow.components` is spread into the Edit row rather than pushed as a second row.)
   - Reworded the single-Delete confirm text — "This cannot be undone directly, but you'll get an
     Undo button right after" read as self-contradictory. Now: "You'll get an Undo button right
     after, in case you change your mind."
@@ -2293,4 +2346,8 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
 - Not yet verified: Harkirat manually exercising every `/manage` panel action (including the
   combined-line Add Draw field, upsert-by-title Replace, granular Purge scopes, every Confirm/Cancel
   step, and every Undo button), the `/settings` 2-page layout, and the Cloudinary-cache add/edit/bulk
-  flows (both draws' and patch notes'), live in Discord.
+  flows (both draws' and patch notes'), live in Discord. **UPDATE 2026-07-17:** the panel's single-match
+  **Edit** was live-clicked (by Harkirat) for the first time and found completely broken — the
+  `mng_editbtn_` handler was in the wrong interaction-type block; fixed (see the "SEQUEL BUG" note in the
+  2026-07-12-night section). Still needs a live re-click after this push to confirm the fix end-to-end in
+  Discord (verified offline against live Mongo, but not yet clicked on the deployed VM).

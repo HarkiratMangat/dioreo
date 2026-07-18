@@ -123,7 +123,9 @@ client.on('error', (error) => {
 // announced by the "Bot online" alert below); the rest map to warn/error/info by severity.
 client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
 client.on('shardResume', (id, replayed) => { console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`); sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info'); });
-client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Gateway reconnecting', `Shard ${id} lost its connection and is reconnecting.`, 'warn'); });
+// 'caution' (yellow), not 'warn' (orange): reconnecting is transient and self-recovering, so it's a
+// lower severity than a full 'Gateway disconnected' — and it doesn't ping (yellow never does).
+client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Gateway reconnecting', `Shard ${id} lost its connection and is reconnecting.`, 'caution'); });
 client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
 client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); sendAlert('Gateway shard error', error, 'error'); });
 
@@ -267,7 +269,50 @@ client.once(Events.ClientReady, handleBotReady);
 // Alerting: a one-time "online" ping on each (re)start, so deploys/crashes/restarts are visible in
 // Discord. systemd auto-restarts the bot on crash, so an "online" alert you DIDN'T trigger is itself a
 // useful signal that the process restarted unexpectedly.
-client.once(Events.ClientReady, (c) => sendAlert('Bot online', `Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${Math.round(c.ws.ping)}ms`, 'info'));
+// `client.ws.ping` is -1 until the FIRST gateway heartbeat round-trip completes — and ClientReady fires
+// before that, so the "Bot online" alert used to say a nonsensical "gateway -1ms". Show "measuring…"
+// until a real ping exists. Shared by the daily heartbeat below (defensive there too).
+function formatPing(ms) { return ms >= 0 ? `${Math.round(ms)}ms` : 'measuring…'; }
+client.once(Events.ClientReady, (c) => sendAlert('Bot online', `Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info'));
+
+// DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) — an info-level, NON-pinging alert once every 24h so a
+// long, quiet uptime is proven-alive rather than merely assumed. The other alerts only fire on
+// trouble (crashes, gateway loss) or on (re)start ("Bot online"); with none of those, silence is
+// ambiguous — "healthy" and "the alerter/VM is dead" look identical. This heartbeat resolves that: no
+// daily green means something is wrong. Deliberately info+no-ping (routine, must not notify his phone);
+// sendAlert's 1/min throttle never trips at a 24h cadence. NOT fired immediately on boot — "Bot online"
+// already covers startup; the interval's whole value is the stretches with NO restart in between (a
+// restart resets this timer but also emits its own "Bot online", so no health gap is left uncovered).
+const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
+function formatUptime(sec) {
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    return [d ? `${d}d` : '', h ? `${h}h` : '', `${m}m`].filter(Boolean).join(' ');
+}
+function sendHeartbeat() {
+    // If the gateway is NOT currently ready, stay silent — that's a real problem the gateway/shard
+    // handlers alert on themselves; a heartbeat firing anyway would be misleading, and a green "healthy"
+    // during an outage is worse than no heartbeat at all.
+    if (!client.isReady()) return;
+    const mem = process.memoryUsage();
+    const rss = Math.round(mem.rss / 1024 / 1024);
+    const heap = Math.round(mem.heapUsed / 1024 / 1024);
+    sendAlert(
+        'Daily health check',
+        `Still online and healthy.\n`
+        + `• Uptime: ${formatUptime(process.uptime())}\n`
+        + `• Servers: ${client.guilds.cache.size}\n`
+        + `• Gateway latency: ${formatPing(client.ws.ping)}\n`
+        + `• Memory: ${rss}MB RSS · ${heap}MB heap`,
+        'info'
+    );
+}
+client.once(Events.ClientReady, () => {
+    // .unref() so the heartbeat timer alone never keeps the process alive — the gateway connection is
+    // what keeps it running; same convention as this file's other timers (pendingManageEdits, etc.).
+    setInterval(sendHeartbeat, HEARTBEAT_MS).unref();
+});
 
 // NOTE (removed during review): a "PHASE 5: INTERACTIVE ELEMENT GENERATORS" banner used to sit
 // here with no code under it -- the generators it originally described (loadBuildsFromExcel()'s
@@ -2047,6 +2092,30 @@ client.on('interactionCreate', async interaction => {
             }
             return;
         }
+
+        // MANAGE PANEL: EDIT CONFIRM BUTTON (the intermediate "Edit: {label}" click).
+        // CRITICAL PLACEMENT NOTE: this MUST live in the isButton() block, NOT next to its sibling
+        // `mng_search_` modal-submit handler further down -- `mng_editbtn_` is a BUTTON custom_id, and
+        // a button click never enters the isModalSubmit block, so a copy placed there is dead code and
+        // the click silently times out ("Dior's Builds didn't respond in time"). That is exactly the
+        // bug this handler HAD from 2026-07-12 (added but never live-clicked until 2026-07-17) -- same
+        // wrong-isX()-branch class of bug as the loadout browse dropdown before it (see
+        // feedback_verify_fix_actually_works). Why the extra button exists at all: a single Edit
+        // search match can't open the edit modal straight from the search MODAL-SUBMIT interaction,
+        // because Discord/discord.js don't allow showModal() as a response to a modal submit -- so the
+        // search reply hands out this button, and THIS button click (which CAN showModal()) opens it.
+        if (interaction.customId.startsWith('mng_editbtn_')) {
+            const token = interaction.customId.replace('mng_editbtn_', '');
+            const pending = pendingManageEdits.get(token);
+            pendingManageEdits.delete(token);
+            if (!pending) {
+                // Early-return error branch -- awaited (not a bare `return interaction.reply(...)`)
+                // per this file's documented rule about unawaited reply promises escaping the try.
+                await interaction.reply({ content: '❌ This has expired -- please search again.', ephemeral: true });
+                return;
+            }
+            return await resolveManagePanelAction(interaction, pending.group, 'edit', pending.match);
+        }
     }
 
     // ==========================================
@@ -2104,9 +2173,15 @@ client.on('interactionCreate', async interaction => {
                 setTimeout(() => pendingManageEdits.delete(token), 10 * 60 * 1000).unref();
                 return interaction.reply({
                     content: `🔎 Found **${matches[0].label}** -- click below to edit:`,
+                    // Edit + Search Again share ONE action row (2026-07-17, Harkirat's request) instead of
+                    // stacking as two rows. Only valid for this single-match case: the multi-match case
+                    // below can't inline them because a select menu (type 3) must occupy its own row and
+                    // can't sit beside a button.
                     components: [
-                        { type: 1, components: [{ type: 2, style: 1, label: 'Edit', custom_id: `mng_editbtn_${token}` }] },
-                        searchAgainRow
+                        { type: 1, components: [
+                            { type: 2, style: 1, label: 'Edit', custom_id: `mng_editbtn_${token}` },
+                            ...searchAgainRow.components
+                        ] }
                     ],
                     ephemeral: true
                 });
@@ -2132,15 +2207,12 @@ client.on('interactionCreate', async interaction => {
             });
         }
 
-        if (customId.startsWith('mng_editbtn_')) {
-            const token = customId.replace('mng_editbtn_', '');
-            const pending = pendingManageEdits.get(token);
-            pendingManageEdits.delete(token);
-            if (!pending) {
-                return interaction.reply({ content: '❌ This has expired -- please search again.', ephemeral: true });
-            }
-            return await resolveManagePanelAction(interaction, pending.group, 'edit', pending.match);
-        }
+        // NOTE: the `mng_editbtn_` handler used to sit HERE, but that was a real bug -- it's a BUTTON
+        // custom_id and this is the isModalSubmit() block, so a button click never reached it and the
+        // Edit-loadout flow silently timed out. Moved to the isButton() block (search for
+        // `mng_editbtn_` up there). Left this breadcrumb so it doesn't get "helpfully" re-added next
+        // to its `mng_search_` sibling above -- they look adjacent conceptually but are different
+        // interaction TYPES.
 
         // NOTE (fixed during review): this used to fetch unconditionally before branching on
         // customId, but the loadout-only routes below never touch seasonalDoc at all -- every
