@@ -31,6 +31,23 @@ project folder from the repo path — so it now points sessions at
   architecture-STATUS.md` (+ core-memory `project_memory_architecture_continuation`). See
   [[feedback_defer_to_owning_project]].
 
+## 🗺️ Table of contents
+*A heading map for this file (~2,400 lines and growing). **Title-only + greppable** — jump by searching the
+heading text, not a line number (numbers rot on every edit). **Keep this in sync** when you add or remove a
+top-level `##` section. This is the lightweight stopgap (added 2026-07-18); the proper tagged / grep-hook
+navigability system is deferred to the memory-architecture project ([[reference_deferred_items_file]]).*
+
+- **Orientation & ops** — What this is · Local-only files & `local/` · Stack · Deployment & Ops (GCP) · Version tagging · Maintaining context comments
+- **Core architecture** — Command architecture · Panel interaction locks · Components V2 lessons · Crash resilience · User-install / DM support · The "synthetic interaction" pattern · Database schema gotcha · Data models (`models/`)
+- **Commands & rendering** — `/timestamp` style dropdown (+ `format` option) · Shared UI builders · Loadout commands `build`/`private` · MP loadout accent colors · MP loadout system · Autocomplete search · This bot is user-installed only · "Show Everyone" share button
+- **Accent color & View Colors** — Accent color system (extraction algorithm · latency fix · `displayName` · `dynamicProfile` · clarifications) · "View Colors" panel (k-means algorithm · relative labels · per-page layout · Refresh Colors · still-frame extraction · CPU incident · preview sizing · icon sourcing)
+- **Image caching** — Draw thumbnail Cloudinary cache · Patch notes Cloudinary caching
+- **Other systems** — Light anti-spam cooldown
+- **Design-decision log & history** — Design decision log · Batch refinement pass (07-12) · Slash-command wording overpass · Color repalette · Post-deploy fixes & polish · "Browse other builds" dropdown · `/draw prices` layout correction
+- **Status & roadmap** — Known open issues · Next planned work (Remaining/2nd/3rd v2 batches · v3 · v4 · v5)
+
+---
+
 ## Local-only files & the `local/` folder
 `local/` (repo root, **gitignored** — added 2026-07-14) is Harkirat's personal scratch folder for
 random local-only files: the `project plan notes.txt` future-planning dump lives there, and anything
@@ -2173,49 +2190,85 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
 
 ## Next planned work
 
+*Items carry the `[Priority · Effort]` tag system (full spec: `reference_priority_tier_system` memory; quick
+legend atop `deferred-items.md`). **Priority** P0 now → P3 someday; **Effort** XS→L (with model+effort for real
+builds); flags 🔗bundle-with 🧩needs-design ⛓️blocked-by. The near-term **v2** items below are tagged
+individually. **Version horizon already implies priority — v3 ≈ P2, v4/v5 ≈ P3** unless explicitly promoted —
+so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (after v5) is priority-tagged in
+`deferred-items.md` (the cross-project focus view), not duplicated here.*
+
 ### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
-- **Reword `/timestamp`'s `format` option to `view`** — "format" collides conceptually with the
+- `[P1 · XS]` **Reword `/timestamp`'s `format` option to `view`** — "format" collides conceptually with the
   timestamp *styles* (shortDate/longDate/etc.); "view" is what it actually controls (Embed vs Text).
   User-visible option rename, same shape as the earlier `ephemeral`→`private`→`hidden` renames. See
   the `/timestamp` `format` section above for where it's wired (slash option + `overrideState.isTextMode`).
-- **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
+- `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
 
 **Second batch of v2 items (filed 2026-07-15 from the plan-notes file).** These ship to `main`/live
 NORMALLY even while v3 pre-release work runs in parallel — see the parallel-track note in
 [[project_dior_builds_changelog_system]]; each one also gets cloned into the v3 branch once it exists.
-- **Add the `hidden` option to `/settings`** — every other command has it; `/settings` was simply
+- `[P1 · XS]` **Add the `hidden` option to `/settings`** — every other command has it; `/settings` was simply
   missed. Same option name/description as everywhere else.
-- **Trim slash-command descriptions to fit mobile** — several currently truncate to `...` on mobile.
+- `[P1 · S]` **Trim slash-command descriptions to fit mobile** — several currently truncate to `...` on mobile.
   Audit all of them against MOBILE width, not desktop.
-- **Loadout search on a short/partial phrase** (e.g. `loc`, noticed live on mobile) currently fails
+- `[P1 · S]` **Loadout search on a short/partial phrase** (e.g. `loc`, noticed live on mobile) currently fails
   unhelpfully. Two candidate fixes, decide at build: auto-resolve to the closest fuzzy match, OR
   improve the error to say "pick from the list" — specifically when there's no match OR the phrase is
   under 3 letters. Relates to `utils/search.js`'s `fuzzyMatch`.
-- **Reword the action-blocked message** — easier to understand, some humor, and actually useful (say
-  what to do instead). This is the panel-lock denial copy (see "Panel interaction locks" above).
-- **Admin override on action blocks** — Harkirat (`ALLOWED_ADMIN_ID`) should never be action-blocked
+- `[P2 · XS · 🔗bundle-with personality pass]` **Reword the action-blocked message** — easier to understand,
+  some humor, and actually useful (say what to do instead). This is the panel-lock denial copy (see "Panel
+  interaction locks" above).
+- `[P1 · S]` **Admin override on action blocks** — Harkirat (`ALLOWED_ADMIN_ID`) should never be action-blocked
   on someone else's panel; only non-admins get blocked where a block exists. **Critical detail: the
   override must NOT swap in his colors/data** — the panel keeps rendering the ORIGINAL user's data, he
   just isn't denied the interaction. Touches the centralized guard in `interactionCreate` and
   `/settings`' author-lock.
-- **View Colors: extract a wider variety of colors** — juul's avatar (`local/juuls profile picture.png`)
-  returned only 6 instead of the requested 8 AND missed a genuinely useful yellow; assume one root
-  cause for both. **Keep existing behavior for genuinely minimal images**: juul's banner
-  (`local/juuls banner.png`) correctly returned 4 on a single page — 2-4 colors on one page must stay
-  the outcome for low-variety sources, NOT be padded out to a quota. See the k-means section above
+- `[P2 · L · Opus4.8-H · 🧩needs-design]` **View Colors: extract a wider variety of colors** — juul's avatar
+  (`local/juuls profile picture.png`) returned only 6 instead of the requested 8 AND missed a genuinely
+  useful yellow; assume one root cause for both. **Keep existing behavior for genuinely minimal images**:
+  juul's banner (`local/juuls banner.png`) correctly returned 4 on a single page — 2-4 colors on one page
+  must stay the outcome for low-variety sources, NOT be padded out to a quota. See the k-means section above
   (over-clustering at K=1.5× and the 30-RGB merge step are the likely levers; the determinism
   requirement is non-negotiable — Refresh's change-detection depends on it). **Own session, Opus 4.8
   high** — real algorithmic work, not a filing item.
-- **View Colors: always show the Display Name / Nameplate / Deco pages even when unset/no Nitro** —
-  instead of hiding them, render a humor/"bully" page (no colors shown). Ties into the personality
-  direction in the v3 list below.
-- **View Colors: add full-resolution Download Avatar / Download Banner buttons** on their respective
+- `[P2 · S · 🔗bundle-with personality pass]` **View Colors: always show the Display Name / Nameplate / Deco
+  pages even when unset/no Nitro** — instead of hiding them, render a humor/"bully" page (no colors shown).
+  Ties into the personality direction in the v3 list below.
+- `[P1 · S]` **View Colors: add full-resolution Download Avatar / Download Banner buttons** on their respective
   color-menu pages — bottom, OUTSIDE the container, beside the Refresh button; grey (style 2); same
   style as they already appear in `/settings`.
-- **Pagination loop-back when >3 pages** (e.g. the Bal-27 loadout) — wrap last→first instead of a
+- `[P2 · S]` **Pagination loop-back when >3 pages** (e.g. the Bal-27 loadout) — wrap last→first instead of a
   disabled button on the final page. **Keep the current disabled-state behavior at exactly 2 pages.**
   Affects the shared `buildPaginationRow` helper, so check every caller before changing it.
+
+**Third batch of v2 items (filed 2026-07-18 from the notes file — Harkirat's 2026-07-17 intake).** Same
+parallel-track rule as the second batch (ship to `main`/live normally, clone into the v3 branch once it exists).
+- `[P1 · M]` **`/manage` loadout data-entry UX overhaul** — the whole flow for adding/editing a loadout via
+  `/manage` is unintuitive/forgettable: clarify the steps, each button's purpose, and the field descriptions,
+  and **add placeholder text to the edit-loadout modal fields** (they currently have none — see L73). Critically,
+  DOCUMENT + surface the Cloudinary image workflow so it stops being a mystery: does the admin rename the
+  screenshot file before uploading? upload it directly? does the bot auto-fetch / auto-rename on Cloudinary?
+  Harkirat had to rename the FSS Hurricane screenshot locally + re-upload before it rendered, yet noticed the
+  secondary-weapon files DON'T follow the old Excel-era strict naming — so the actually-expected process is
+  unclear even to him. Make the flow self-explanatory. (Merges notes items L55 + L73 + the image-naming half
+  of L59.)
+- `[P2 · XS · 🔗bundle-with /admin work]` **Reword `/manage`'s `section` option → `data for`** — "section"
+  doesn't describe what it picks (a data entity). NOTE: may be superseded/removed by the v3 `/manage → /admin`
+  restructure; if `/admin` lands first, fold this into that redesign instead of doing it twice.
+- `[P2 · M · 🧩needs-design]` **Much richer in-bot logging/tracking** — right now when something breaks it's
+  hard to tell WHICH component failed and why. Add granular internal logging so failures are attributable.
+  Related-but-distinct from the webhook-alerting heavy half (per-alert IDs / downloadable text-log — see
+  "Deployment & Ops (GCP)") and the v3 `/admin` DB-change audit log: this one is about internal diagnostic
+  logging, not user-facing alerts. Scope at build.
+- `[P2 · S]` **Admin `/status` command** — surface VM health/metrics in-bot (a mini ping test: is the bot
+  holding up, gateway state, RAM/CPU, restart count), admin-only, building directly on `scripts/vmstatus.sh` /
+  `scripts/vmpeaks.sh`, which already compute all of this — so checking the bot doesn't require asking Claude
+  to run a script. (Notes item L60.)
+- `[P2 · S · 🔗bundle-with any /manage work]` **`/manage` accent colors** — give the panel per-page accent colors instead of a flat one: draws / calendar
+  / patch-notes pages use their own native command accent colors; Season End needs none (it's a direct modal
+  open, no panel is rendered); MP loadouts a red (from the `:Rank_7Legendary_CODM:` emoji), DMZ a blue (from
+  the `:DMZ_CODM:` emoji). Cosmetic; `PAGES` in `commands/manage.js` is the place. (Notes item L61.)
 
 ### v3 (next MAJOR version) — roadmap (filed 2026-07-14 from Harkirat's plan-notes file)
 Harkirat's own planned feature set for the next whole-number version. **Not started; nothing here is a
@@ -2261,6 +2314,20 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   running gag to give the bot some character. No fixed home yet; sprinkle it in as we go. Already has
   two concrete landing spots picked: the unset Display Name/Nameplate/Deco humor pages (v2 list above)
   and the reworded action-blocked message (v2 list above). Keep it light/jokey, never actually mean.
+- **Announcement feature** (filed 2026-07-18, notes L64) — a `/manage` (`/admin`) dropdown → modal where
+  Harkirat writes an announcement. If a NEW announcement exists, the next time each user runs ANY command the
+  bot replies to their command AND follows up once with an embed of the announcement; it's never shown to
+  that user again until the next announcement is posted. Needs a per-user "last-seen announcement" marker (a
+  `UserPreference` field) plus the announcement text/timestamp on `SeasonalData` or its own doc. Use case:
+  "sorry the bot was down today — we've moved to much better hosting." Follow-up embeds must go through the
+  interaction-response mechanism (this bot has zero standing guild permissions — see the user-installed-only
+  section above), same constraint "Show Everyone" already works within.
+- **Easy bot sharing / `/invite`** (filed 2026-07-18, notes L58) — a first-class way to share / user-install
+  the bot. Sharing the raw install URL is awkward, and in servers where user-apps are blocked every bot reply
+  is ephemeral, so you can't even tell someone to click the bot's name → "Add App". Need a share path that
+  works in those blocked-context cases AND is shareable OUTSIDE Discord entirely (a link/page). A `/invite`
+  command is the obvious start but hits the blocked-user-apps wall — solve for that case too. Relates to the
+  v4 guild-install direction, which would change the sharing story again (reconcile at design time).
 
 ### v4 — roadmap (filed 2026-07-15, further out than v3; nothing designed yet)
 - **Ship as a GUILD-INSTALL bot with text/prefix commands** — e.g. `d b ak117` ("dior build ak117"),
@@ -2290,6 +2357,19 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   and view custom loadouts, merged INTO `/loadout` results for that specific user when they search
   that weapon — but visually distinguished so a custom build is never mistaken for one of the bot's
   own official builds.
+
+- **Write a detailed, user-friendly bot/ops guide** (added 2026-07-18, notes L34 — Harkirat's request, "not
+  anytime soon"). A rich but noob-friendly, clean, well-organized, nicely-worded doc covering how to operate
+  the bot end-to-end: accessing/managing the GCP VM, where + how it's hosted, the deploy flow, checking
+  status/logs/metrics, the whole backend — so Harkirat can maintain it himself instead of relying on Claude
+  for every operation. Distinct from CLAUDE.md (architecture/design truth aimed at Claude) and from
+  [[reference_vm_bot_commands]] (a terse command card) — this is a human operator's friendly how-to guide.
+- **Verify Cloudinary folder organization** (added 2026-07-18, notes L59) — confirm the designed folder
+  separation is actually happening in the live account: draw thumbnails in `temp_draws/`, patch-notes images
+  in `patch_notes/{patchId}/`, loadouts by bare key. Harkirat noticed assets that "look like they're in the
+  main asset folder," and that secondary-weapon files don't follow the old strict Excel-era naming.
+  Investigate whether that's a real discrepancy (→ then file as a bug) or just how the Cloudinary UI groups
+  them. Read-only check via the Cloudinary MCP/dashboard; low priority, no code unless a real problem surfaces.
 
 - **General bot/code housekeeping session** (added 2026-07-15, Harkirat's request — "at some point
   soon", not urgent). A dedicated pass for accumulated cruft rather than doing it piecemeal mid-feature.
