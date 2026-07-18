@@ -15,13 +15,15 @@ A peek at what's planned (not built yet):
   workflow for adding weapon builds.
 
 ### Further out
-- **A `/help` command** explaining everything the bot can do.
+- **A `/help` command** explaining everything the bot can do, with a way to reach Dior directly for
+  bug reports or requests.
 - **`/meta`** — see every weapon currently marked Meta, in one place.
 - **A draw cost calculator** — tells you what it'll cost to finish a draw from where you are, and
   which top-up you'd need.
 - **In-bot announcements** — a heads-up message (e.g. "sorry the bot was down — we've moved to a better
   host") shown once the next time you use any command.
 - **An easier way to add & share the bot**, including where user-installed apps are blocked.
+- **A `/define` command** (Urban Dictionary lookup) — just for fun.
 - Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your
   own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
 

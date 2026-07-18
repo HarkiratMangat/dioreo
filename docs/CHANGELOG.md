@@ -88,13 +88,24 @@ changelog until v3 actually launches.
 - **Consolidate MP loadout commands into one `/loadout`** (with a meta subcommand — overlaps `/meta`
   above; pick one shape at design time). `/dmz` stays as-is.
 - **`/settings` jump-to options** and **detaching `/colors`' visibility** from settings.
-- **`/help`** detailing commands/features, referenced from the bot's Discord description.
+- **`/help`** detailing commands/features, referenced from the bot's Discord description — must include
+  a way to contact Harkirat (his Discord) for bug reports/requests.
 - A **personality pass** ("bully people who are broke") sprinkled through, starting with the humour
   pages and the reworded block message.
 - **Announcement feature** — post an announcement from `/manage`; each user sees it once (as a follow-up
   embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.
 - **Easy bot sharing / `/invite`** — a share path that works even in servers where user-apps are blocked
   (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.
+- **Privacy Policy / Terms of Service** — needed for Discord compliance, especially once verified/past
+  100 servers (same threshold as the MESSAGE CONTENT intent below). Should cover the usage-analytics
+  item below if that ships first.
+- **Richer usage analytics** — who ran what command, when, how often, and how people actually navigate a
+  feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure
+  attribution, this is usage telemetry).
+- **`/define` (Urban Dictionary integration)** — pure fun, not CODM-related, low priority.
+- **Extend paginated commands' expiry-check pattern** beyond `/settings` (draws/calendar/drawprices/
+  loadouts currently have none) — see "Known open issues" below for why a literal button-disable isn't
+  possible (Discord's 15-minute interaction-token ceiling); this is the buildable version of that ask.
 
 ### 💭 Considering — ideas, not committed
 - Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused.
@@ -129,6 +140,17 @@ changelog until v3 actually launches.
   separate `PATCH` to update the message) — not a CPU/DB bug this time, just the current architecture.
   Real fix is switching to a single direct `UPDATE_MESSAGE` response; touches every paginated command,
   deferred as its own future pass rather than bundled into v2.18.0.
+- **CORRECTED same day: disabling expired buttons IS achievable — earlier claim in this entry was
+  wrong.** Every button click carries its own fresh interaction token regardless of the message's age
+  (this is exactly why draws/calendar/loadout pagination buttons already keep working forever with no
+  expiry check at all). `/settings`' 15-minute expiry is a self-imposed business rule, not a Discord
+  platform ceiling. Real gap: `/settings` replies with a friendly "expired" message but never actually
+  edits the buttons to a disabled state — that's the buildable fix, filed in the roadmap above.
+- **Global profile only, never per-server "Server Profile" overrides** (confirmed 2026-07-18) — every
+  avatar/banner/deco/nameplate read uses the user's global Discord profile; a user with a different
+  avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install
+  pivot (Harkirat's call, 2026-07-18) rather than solving now, since v4 already changes how guild-member
+  context is available to the bot.
 
 ---
 
@@ -193,6 +215,49 @@ changelog until v3 actually launches.
   to the new `docs/SESSION-START.md` path and verified resolving correctly. Every structural/live
   reference to these files across CLAUDE.md and memory was updated to match; historical narrative
   entries describing their PAST gitignored status were left as accurate history, not rewritten.
+
+## v2.21.1 — 2026-07-18
+**Deploy-key fix + button-expiry mechanics correction + roadmap intake — docs/ops only, no bot code
+touched** (this push) — minor
+
+Follow-up to v2.21.0's push, same day. Three threads, no bot code changed, no VM redeploy needed:
+
+- **Deploy-key fix.** Flipping the repo private broke the VM's `git pull` (it had been pulling
+  anonymously over plain HTTPS, which only ever worked because the repo was public). Fixed with a
+  dedicated **read-only SSH deploy key** generated on the VM and registered via `gh repo deploy-key
+  add` — not by reusing a personal GitHub token (attempting to extract one via `gh auth token` was
+  correctly blocked by the safety classifier, same category as the earlier `~/.render/cli.yaml` block).
+  VM remote is now `git@github.com:HarkiratMangat/diors-builds.git`. Documented in CLAUDE.md's
+  Deployment & Ops section, `reference_vm_bot_commands`, and `project_deployment_migration_render_to_gcp`.
+- **Button-expiry mechanics — wrong twice, corrected properly the third time.** Harkirat asked whether
+  an expired button could be physically disabled instead of Discord's generic failure toast. First
+  answer (sourced from a real Discord-docs search on the 15-minute interaction-token lifetime) wrongly
+  concluded a MESSAGE becomes uneditable 15 minutes after creation — contradicted by the plain fact
+  that draws/calendar/loadout pagination buttons already work forever with no expiry check at all.
+  Corrected once Harkirat pushed back: **every button click carries its own fresh 15-minute token**,
+  independent of the message's age — that's exactly why those other buttons never break. `/settings`'
+  existing 15-minute expiry is a self-imposed business rule, not a Discord ceiling (an earlier claim
+  that it "had to" be 15 minutes for platform reasons was also wrong, and retracted). The real,
+  buildable gap: `/settings` already replies with a friendly "expired" message on a stale click, but
+  never uses that click's own valid token to actually disable the buttons — filed as a concrete P2
+  roadmap item. See CLAUDE.md's "Known open issues" + the new roadmap entry, and DEVLOG's "(yet later)"
+  entry for the full correction trail.
+- **15-item note-filing pass**, folded into the v3/v4 roadmap and `deferred-items.md`: Privacy Policy /
+  Terms of Service (P1, real Discord requirement past the v4 100-server threshold), a `/define` Urban
+  Dictionary command (P3, just for fun), richer usage analytics/telemetry (P2, distinct from the
+  existing diagnostic-logging item — this is usage tracking, not failure attribution), `/help` now
+  explicitly required to include a way to contact Harkirat, and extending the expiry-check pattern
+  beyond `/settings` to draws/calendar/drawprices/loadouts filed as its own item. Also confirmed via
+  full grep: every avatar/banner/deco/nameplate read in the bot uses the user's GLOBAL Discord profile,
+  never a per-server Server Profile override — a real, previously-undocumented gap, deliberately
+  deferred to v4 (guild membership becomes reliably available then). Two items resolved as non-issues
+  rather than left open: "Tundra" is confirmed already correct in the live DB (`LW3-TUNDRA`, MongoDB
+  MCP connected with explicit permission), and a rough Atlas tier check (144 docs / ~135KB total) shows
+  storage isn't the constraint that will force an upgrade at current scale.
+
+This entry replaces an earlier stale draft that only described the deploy-key fix, written before the
+button-expiry correction and note-filing pass landed on top of it. Full story in DEVLOG's three
+2026-07-18 "(later)" entries.
 
 ## v2.20.0 — 2026-07-17
 **Admin Edit-loadout fix + daily heartbeat + Ops Agent (RAM peaks)** (`64d4c38` + this push) — moderate

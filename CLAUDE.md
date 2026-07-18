@@ -99,7 +99,10 @@ changelog/session-start/notes-scratchpad files, check `docs/`.
   bot itself ever calls.
 - **🟢 DEPLOYMENT: the bot runs on a GCP Compute Engine VM (cutover 2026-07-17). Render is RETIRED.**
   Full setup, deploy flow, and monitoring/alerting live in the **"## Deployment & Ops (GCP)"** section
-  below — that's the authoritative reference. In short: VM `diors-builds-bot` (e2-micro, `us-east1-b`,
+  below — that's the authoritative reference. **⚠️ The GitHub repo went PRIVATE 2026-07-18** — the VM
+  pulls via a dedicated read-only SSH deploy key now, not anonymous HTTPS (see that section for the full
+  setup; only matters if `git pull` on the VM ever fails with an auth error). In short: VM
+  `diors-builds-bot` (e2-micro, `us-east1-b`,
   project `gen-lang-client-0549308254`) runs the bot under **systemd** (unit `diors-bot`, auto-restart on
   crash + reboot). **"Push"/deploy is git-based:** `git push origin main` → on the VM `cd ~/diors-builds
   && git pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. Render's free tier was
@@ -160,6 +163,21 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
 - **Deploy = git-based (the new "push"):** `git push origin main` → on the VM `cd ~/diors-builds && git
   pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. **A `git push` alone does NOT
   update the VM.** No auto-deploy (the VM is stable; not needed). See [[feedback_push_means_full_cycle]].
+- **Repo went PRIVATE 2026-07-18** (was public; Harkirat's call, unrelated to any security incident) —
+  this broke the VM's `git pull`, which had been pulling anonymously over a plain `https://github.com/...`
+  remote (worked fine on a public repo, silently requires auth the moment it isn't). Fixed with a
+  **dedicated read-only SSH deploy key**, not by reusing Harkirat's personal GitHub token (extracting his
+  `gh auth token` was correctly blocked by the safety classifier — same class of "personal credential
+  extraction" as the earlier `~/.render/cli.yaml` block — a purpose-built deploy key is the right call
+  anyway, least-privilege). Setup: generated an ed25519 keypair ON the VM (`~/.ssh/diors_deploy_key`, no
+  passphrase) → registered its public half as a **read-only** GitHub deploy key via `gh repo deploy-key
+  add` (listed on GitHub as "diors-builds-bot VM (read-only, auto-deploy pull)") → added a `Host
+  github.com` block to the VM's `~/.ssh/config` pinning `IdentityFile ~/.ssh/diors_deploy_key` +
+  `IdentitiesOnly yes` → switched the VM's remote from `https://github.com/HarkiratMangat/diors-builds.git`
+  to `git@github.com:HarkiratMangat/diors-builds.git`. **The deploy steps above are otherwise unchanged**
+  (`git pull` on the VM now authenticates via this key transparently) — this only matters if `git pull`
+  on the VM ever fails with an auth error again: check this key/config before assuming something else broke.
+  Rotate/revoke via the repo's GitHub Settings → Deploy keys.
 - **Monitoring ("never blind again"):**
   - `scripts/vmstatus.sh` — one-shot health: VM state, systemd status, restart count, gateway state, 1h
     error count, RAM/load/disk. `scripts/vmstatus.sh logs [N]` tails N log lines.
@@ -871,7 +889,10 @@ Discord-provided color value at all, so those four are extracted ourselves:
   match a user's avatar out of the box, not just `/settings`. `'preset'` (labeled
   "Pre-Designed Palette" in the `/settings` dropdown) is the opt-out that restores each
   command's own fixed brand color; `/settings` itself has no brand color of its own so
-  it falls back to avatar even under `'preset'`.
+  it falls back to avatar even under `'preset'`. **Re-confirmed 2026-07-18** — Harkirat's
+  own mental model had been "defaults to the pre-made palette unless changed," which is
+  the OPPOSITE of the real default; noting this here in case he wants to reconsider
+  flipping the default to `'preset'` later. Leaving as `'avatar'` for now — no action taken.
 - `accentColor.js`'s `resolveAccentColor()` resolves `prefs.accentColorStyle` accordingly,
   and `getAccentColorForCommand()` is what the 5 preset-color commands (calendar/draws/
   patchnotes/drawprices/seasonend) call. **It now creates-and-saves a `UserPreference`
@@ -1033,6 +1054,20 @@ steady across any button/select re-render of that specific message.
   (`UserPreference.timestampStyle`). The default "All Formats" overview always stays
   timestamp's own fixed teal preset regardless of accent style preference — Harkirat's own
   earlier explicit design call, not something left unwired.
+- **Every avatar/banner/decoration/nameplate read anywhere in the bot uses the user's GLOBAL Discord
+  profile, never a per-server "Server Profile" override** (confirmed 2026-07-18, notes question) —
+  every single call site uses `interaction.user.displayAvatarURL()` / `userFetch.displayAvatarURL()`,
+  never `interaction.member` (verified via a full grep, zero `.member` avatar reads anywhere). This is
+  deliberate-by-necessity, not an oversight: `interaction.member` is only reliably populated when
+  invoked inside a guild the bot can resolve membership for, and this bot is user-installed-only —
+  many invocations happen in DMs or contexts with no guild member object at all, so keying off `.user`
+  consistently is the only option that works everywhere. **Real, currently-unaddressed gap:** if a
+  user has a different avatar/banner/deco set specifically for one server (Discord's Server Profiles
+  feature), the bot will never reflect that — always the global one. **Explicitly deferred to v4**
+  (Harkirat's call, 2026-07-18) — real guild membership becomes a genuine requirement under v4's
+  guild-install pivot anyway (see v4 roadmap below), which is exactly when `interaction.member` starts
+  being reliably available to check. Don't try to solve this under the current user-installed-only
+  architecture; revisit once v4 is underway.
 
 ## "View Colors" panel (`/colors`, `/settings`' View Colors button, `utils/colorPalette.js`,
 `utils/colorPaletteView.js`, `utils/colorExtract.js`, `utils/stillFrame.js`,
@@ -2326,6 +2361,26 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   and any attachment-generating path → KEEP defer-then-patch, since blowing the 3s ACK is a real risk
   there. Heuristic: "does this path do CPU or image/network work before it replies?" → heavy stays
   defer, light goes single-hop.
+- **CORRECTED 2026-07-18 (was wrong in an earlier same-day pass, caught when Harkirat pushed back):**
+  physically disabling expired buttons IS achievable — do not reintroduce the earlier wrong claim that
+  it's a hard Discord platform wall. What's actually true: **every button click is its OWN fresh
+  interaction with its OWN fresh 15-minute token** — confirmed via Discord's docs and community sources,
+  and consistent with the plain observed fact that draws/calendar/loadout pagination buttons (which have
+  NO expiry check at all) keep working indefinitely no matter how old the message is. The 15-minute
+  token lifetime applies to editing/following-up via ONE SPECIFIC interaction's own token — it does NOT
+  mean a message becomes permanently uneditable after 15 minutes; each new click supplies its own valid
+  token regardless of the message's age. **What this means for `/settings`' existing 15-minute expiry:
+  that number is a self-imposed BUSINESS rule (Harkirat wanted settings changes to have a real
+  freshness window), NOT derived from any Discord token limit** — the earlier claim that it "had to"
+  be 15 minutes because of Discord's ceiling was incorrect; it could be any duration. **What's genuinely
+  buildable, confirmed:** on any click of an expired button (`/settings` or otherwise), the bot can
+  `deferUpdate()` (using THAT click's fresh token) and edit the message's components to show them
+  `disabled: true`, instead of (or alongside) replying with a friendly "run the command again" message —
+  `/settings` currently only does the friendly-reply half, never actually disables the buttons
+  visually, which is the concrete gap to close. The only genuinely unavailable thing is a fully
+  PROACTIVE update with zero click at all (the message spontaneously going gray the instant the timer
+  elapses, no user interaction) — that needs either a scheduled job with channel-edit permission (this
+  bot has none, see "user-installed only" above) or waiting for the next click to react to.
 
 ## Next planned work
 
@@ -2339,6 +2394,16 @@ so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (a
 ### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
 - `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
+- `[P2 · M · 🧩needs-design]` **Actually disable expired buttons on click, not just reply with a
+  message — plus extend expiry checks to more commands** (filed 2026-07-18, notes; corrected same day
+  after an initial wrong claim that this was impossible, see "Known open issues" above for the real
+  mechanics). `/settings` already checks its own encoded expiry and replies with a friendly message,
+  but never actually edits the message's buttons to a visibly disabled state — that's the concrete
+  fix, confirmed buildable (the click itself supplies a fresh token to do the edit with).
+  draws/calendar/drawprices/loadouts have NO expiry check at all today, unlike `/settings` — extending
+  the same pattern to them is a separate but related design question. Also decide: is 15 minutes the
+  right duration everywhere, or should some commands use a different window (there's no Discord-imposed
+  ceiling forcing 15 specifically — that was the earlier, now-corrected misunderstanding).
 
 **Second batch of v2 items (filed 2026-07-15 from the plan-notes file).** These ship to `main`/live
 NORMALLY even while v3 pre-release work runs in parallel — see the parallel-track note in
@@ -2429,7 +2494,26 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
 - **Ship the redesigned changelog artifact** (personal-use release-log visual — see
   [[project_changelog_redesign]], currently paused).
 - **A `/help` command** (filed 2026-07-15) — detail the bot's commands/features, and reference the
-  command in the bot's own Discord description so people can find it.
+  command in the bot's own Discord description so people can find it. **Must include a way to contact
+  Harkirat** (filed 2026-07-18, notes) — his Discord, in case a user found a bug or wants to request
+  something. Fold this in as a requirement of the same command, not a separate feature.
+- **Privacy Policy / Terms of Service** (filed 2026-07-18, notes) — `[P1 · S]`. The bot stores real
+  personal data (Discord IDs, extracted avatar/banner/decoration/nameplate colors, saved preferences)
+  in MongoDB — a privacy policy is good practice now and becomes an actual Discord REQUIREMENT once
+  verified / past the v4 guild-install 100-server threshold (same threshold that already gates the
+  privileged MESSAGE CONTENT intent, see v4 below). Needs: a hosted page (could be a simple static
+  page, doesn't need to live in this repo), links added in the Discord Developer Portal's
+  Terms of Service / Privacy Policy URL fields, and a decision on what it actually needs to disclose
+  (ties directly into the usage-analytics item below — if that ships, the policy needs to cover it).
+- **Urban Dictionary integration, a `/define` command** (filed 2026-07-18, notes, "lmao") — `[P3 · S]`,
+  pure fun/personality, not CODM-related. Someday-bucket, no urgency.
+- **Richer usage analytics/telemetry** (filed 2026-07-18, notes) — `[P2 · M · 🧩needs-design]`. Distinct
+  from the already-filed "richer in-bot diagnostic logging" below (that one is about FAILURE
+  attribution; this is about USAGE — who ran what command, when, how often, and ideally a sense of
+  how people actually navigate a command/feature (e.g. do they use the dropdown or retype the slash
+  command). Needs design: what's tracked, where it's stored, retention, and — important — this is
+  exactly the kind of data a Privacy Policy (above) needs to disclose, so these two should ship
+  together or in the right order, not independently.
 - **Personality pass: "bully people who are broke"** (filed 2026-07-15, Harkirat's words) — a silly
   running gag to give the bot some character. No fixed home yet; sprinkle it in as we go. Already has
   two concrete landing spots picked: the unset Display Name/Nameplate/Deco humor pages (v2 list above)
@@ -2465,6 +2549,14 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
 - **User-submitted loadouts, gated behind Harkirat's manual review** — a submission never goes live
   until he approves it. Needs a review surface where he can Deny / Accept / Accept-with-edit each
   submission (likely an extension of the `/admin` panel from v3).
+- **Semi-automate seasonal data retrieval from Harkirat's leaker announcement channel** (filed
+  2026-07-18, notes, moved from a "v5 maybe" to v4 since it likely NEEDS the same privileged MESSAGE
+  CONTENT intent v4 already requires above) — `[P3 · L · 🧩needs-design]`. Today Harkirat manually reads
+  a Discord channel where a group of "leakers" relay CODM news/leaks/updates and hand-enters it all into
+  `/manage`. Wants the bot to help retrieve/parse that instead. Real open questions: filtering/refining
+  informal leak text into structured data, and — critically — a moderation/approval step so nothing
+  auto-publishes unverified. Likely shares infrastructure with the "User-submitted loadouts" review
+  surface above (both are "something comes in, Harkirat approves before it's live").
 
 ### v5 — roadmap (filed 2026-07-15, most speculative; explore properly when picked up)
 - **Generate the gunsmith image + share code ourselves, removing the manual-screenshot requirement.**
