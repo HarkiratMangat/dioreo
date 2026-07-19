@@ -219,6 +219,24 @@ function loadoutsPageDef(mode, headerLabel, icon) {
         mode,
         groups: [
             {
+                // P1 roadmap item (2026-07-18): loadout image handling was a genuine mystery, even to
+                // Harkirat -- he had to rename a screenshot locally + re-upload before FSS Hurricane
+                // rendered, and noticed some Secondaries files never got renamed at all. Confirmed the
+                // REAL workflow live against the actual Cloudinary account before writing this (not
+                // guessed): every loadout image sits in one flat "gun-builds" folder (organizational
+                // only in Cloudinary's UI -- it's NOT part of the delivery URL, see buildImageUrl() in
+                // utils/loadoutRender.js, which has no folder segment at all), and Cloudinary assigns
+                // the Public ID from the uploaded file's own name unless it's renamed -- which is
+                // exactly why some assets are clean (`BAL-27-1`, `DMZ-AK117-1`) and others are raw
+                // camera filenames (`IMG_5630`, etc.) that were never renamed. `buttons: []` here is
+                // deliberate -- this is a pure info block, not an action -- buildManagePage's
+                // `group.buttons.map(...)` on an empty array just produces zero button rows.
+                blocks: [
+                    `### ${emojis.mngInfo} How Images Work\n-# This bot never uploads images for you -- Cloudinary is a separate step you do yourself (its dashboard, or ask Claude to). Once uploaded, Cloudinary assigns a **Public ID** -- by default that's just your file's original name (e.g. \`IMG_5630\`) unless you rename it there. Whatever that Public ID is, type it EXACTLY into "Cloudinary Image Key" below -- the bot builds the card's image straight from that key with no check that it's real, so a mismatch just shows a broken image in Discord until it's fixed. Rename to \`WeaponKey-BuildNum\` (e.g. \`BAL-27-1\`, \`FSS-HURRICANE-1\`) to match the rest of the collection instead of leaving the camera-roll name.`
+                ],
+                buttons: []
+            },
+            {
                 heading: 'Manage a Single Loadout',
                 blocks: [
                     `### ${emojis.mngAdd} Add Single Loadout\n-# Add one loadout. Additive — doesn't affect existing loadouts.`,
@@ -503,8 +521,17 @@ function buildAddLoadoutModal(mode) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('build').setLabel('Build Name / Share Code').setStyle(TextInputStyle.Short).setPlaceholder('e.g. Aggressive Flex').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key').setStyle(TextInputStyle.Short).setPlaceholder('e.g. bp50_flex_v1').setRequired(true)),
+        // Placeholder added (2026-07-18, /manage loadout UX overhaul) -- this field had none at all
+        // before; matches the real one-attachment-per-line convention already shown in the Bulk Add
+        // modal's own placeholder below, so both modals model the same expected shape.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock').setRequired(true)),
+        // Label + placeholder rewritten (2026-07-18) -- the old placeholder (`bp50_flex_v1`) wasn't
+        // even the convention actually used anywhere in the live collection (real Cloudinary keys are
+        // `WeaponKey-BuildNum`, all-caps-with-hyphens, e.g. `BAL-27-1`/`FSS-HURRICANE-1` -- confirmed
+        // by querying the live Cloudinary account, not guessed). This is the ONE field in this modal
+        // that depends on a step happening OUTSIDE the bot first -- see the "How Images Work" info
+        // block on the page itself for the full explanation of why.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key (Public ID)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50-1 -- must match Cloudinary exactly').setRequired(true)),
         // NOTE: Discord modals cap at 5 fields, and this one already used all 5 — so Category and
         // the Meta/Best/Top-N/DMZ-range "badges" ride along as pipe-delimited segments here rather
         // than getting their own fields. Mode itself no longer needs a slot (it's baked into which
@@ -534,9 +561,11 @@ function buildEditLoadoutModal(targetLoadout, targetId) {
         // "Build Name / Code" here, inconsistent with the Add modal's "Build Name / Share Code" for
         // the same field.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('build').setLabel('Build Name / Share Code').setStyle(TextInputStyle.Short).setValue(targetLoadout.buildName)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setValue(targetLoadout.attachments.join('\n'))),
-        // Same undefined-to-setValue() guard as buildEditDrawModal's thumbnailUrl fix above.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key').setStyle(TextInputStyle.Short).setValue(targetLoadout.imageKey || '')),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Gauge-9 Mono\nCrown-H3 Barrel\nOWC Skeleton Stock').setValue(targetLoadout.attachments.join('\n'))),
+        // Same undefined-to-setValue() guard as buildEditDrawModal's thumbnailUrl fix above. Label +
+        // placeholder matched to Add Loadout's 2026-07-18 rewording -- see that modal's comment for
+        // why (the real Cloudinary Public ID convention, confirmed against the live account).
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image').setLabel('Cloudinary Image Key (Public ID)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. BP50-1 -- must match Cloudinary exactly').setValue(targetLoadout.imageKey || '')),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('meta').setLabel('Category | Badges').setStyle(TextInputStyle.Short).setValue(`${targetLoadout.category} | ${existingBadges}`))
     );
     return modal;

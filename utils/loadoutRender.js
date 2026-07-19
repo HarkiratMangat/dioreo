@@ -50,6 +50,27 @@ function buildImageUrl(imageKey) {
     return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
 }
 
+// Real existence check against Cloudinary's CDN (2026-07-18, /manage loadout UX overhaul) -- this
+// bot has never validated an admin-typed Cloudinary key before saving a loadout, and buildImageUrl()
+// above CAN'T validate anything itself (it's pure string interpolation, no network call). This is
+// what actually catches the exact failure mode Harkirat hit with FSS Hurricane: a loadout saves fine
+// with a mismatched key, and the only way to discover it was broken used to be noticing the card
+// render itself. A HEAD request is cheap (no body transfer) and this only ever runs on an admin
+// save, never a hot read path.
+// Advisory only, never blocks a save: a network hiccup here must not produce a false "image
+// missing" warning on a key that's actually fine, so anything other than a clean 404 is treated as
+// "can't confirm either way" and reports as present. An external full-URL imageKey (see the comment
+// above) isn't ours to validate -- always reports present.
+async function checkImageExists(imageKey) {
+    if (!imageKey || imageKey.startsWith('http')) return true;
+    try {
+        const res = await fetch(buildImageUrl(imageKey), { method: 'HEAD' });
+        return res.status !== 404;
+    } catch {
+        return true;
+    }
+}
+
 // "Badges" shown under the weapon name (Meta / Best-in-category / Top-N-in-category) -- only
 // rendered when actually granted (see models/Loadout.js), joined by the `blank` spacer emoji
 // rather than a visible separator character when both are present. `categoryRank` is free-form
@@ -253,4 +274,4 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     return { components, flags: 32768 };
 }
 
-module.exports = { buildImageUrl, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel };
+module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel };

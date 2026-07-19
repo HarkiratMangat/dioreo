@@ -849,6 +849,41 @@ per-push, and that "document" covers no-code/no-push planning sessions.
 Staging for work not yet live. Proposed number shifts with the work type (see the top-of-file
 versioning note). On deploy, graduate this into a numbered entry and reset to empty.
 
-*(Empty — the staged v2.19.1 content graduated into the v2.20.0 entry above when this push went live,
-bundled with the Edit-loadout fix + heartbeat + Ops Agent work. Nothing committed-but-unpushed right now.)*
+### Proposed: v2.23.0 — moderate (a real design change, not just a fix)
+
+**`/manage` loadout data-entry UX overhaul** — P1 roadmap item, filed 2026-07-18 from the third v2
+batch, shipped same day. To go live together with v2.22.0 (see that entry below — committed+pushed,
+VM deploy was deliberately held to keep working; both are deploying in the same VM push).
+
+- **"How Images Work" info block** added to both `/manage` Loadouts pages (MP + DMZ) — explains, in
+  the panel itself, that image uploads are a manual step OUTSIDE the bot (Cloudinary's own dashboard,
+  or asking Claude to do it), that Cloudinary assigns the Public ID from the uploaded file's own name
+  unless renamed, and that whatever that Public ID is has to be typed exactly into "Cloudinary Image
+  Key" — no auto-fetch, no validation ahead of time.
+- **Add/Edit Loadout modal field clarity** — the Attachments field (previously no placeholder at all)
+  now shows a real example; the image field is relabeled "Cloudinary Image Key (Public ID)" with a
+  placeholder reflecting the actual naming convention used across the live collection
+  (`WeaponKey-BuildNum`, e.g. `BP50-1`), not the old made-up `bp50_flex_v1` example that was never the
+  real convention anywhere.
+- **Real Cloudinary existence check, the actual functional fix.** `utils/loadoutRender.js`'s new
+  `checkImageExists()` does a HEAD request against the constructed image URL right after a save —
+  Add Loadout, Edit Loadout, and Bulk Add/Replace (`index.js`) all call it and append a clear warning
+  to the confirmation message if the key doesn't resolve to anything on Cloudinary yet. Advisory only
+  (never blocks the save; a network hiccup is treated as "can't confirm," never as "missing," so it
+  can't produce a false warning). This is the direct fix for the exact failure Harkirat hit with FSS
+  Hurricane — a mismatched key used to save silently and only surface later as a broken card image;
+  now it's flagged the moment it's saved.
+- **The Cloudinary mystery is genuinely solved, not just narrated** — confirmed the real workflow live
+  against the actual Cloudinary account (via the Cloudinary MCP tool, not guessed): every loadout image
+  sits in one flat `gun-builds` folder (organizational only in Cloudinary's UI, NOT part of the delivery
+  URL — this account uses dynamic-folder mode), and roughly a dozen assets are still sitting under their
+  raw, never-renamed camera filenames (`IMG_5630`, `IMG_3123`, etc.) — direct confirmation of what
+  Harkirat had already suspected about the secondary-weapon files. Full writeup in CLAUDE.md's new "The
+  Cloudinary image workflow, finally documented" subsection under "MP loadout system".
+- Verified via direct function-level testing (not a full local bot boot, to avoid racing the live VM
+  instance — single-token bot): `buildManagePage()` for both loadout pages builds cleanly at 35
+  components (well under Discord's 40 cap), every modal builder runs without throwing (including the
+  legacy-missing-`imageKey` guard case), and `checkImageExists()` was run live against a known-good key
+  (`FSS-HURRICANE-1` → true), a known-bad key (→ false), and the bulk-import placeholder URL (→ true,
+  correctly never checked).
 

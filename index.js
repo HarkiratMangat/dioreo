@@ -2205,6 +2205,9 @@ client.on('interactionCreate', async interaction => {
         // nearly every branch below (all inside the same already-required module scope).
         const { parseAdminDate, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
         const { fuzzyMatch } = require('./utils/search');
+        // checkImageExists() (2026-07-18, /manage loadout UX overhaul) -- real Cloudinary existence
+        // check used by add_loadout_/edit_loadout_/modal_loadouts_bulk_add_ below.
+        const { checkImageExists } = require('./utils/loadoutRender');
 
         // --- MANAGE PANEL: SEARCH RESOLVER (Edit/Delete) ---
         // Handles its own per-group fetching via resolveManagePanelMatches (defined above, near
@@ -2784,12 +2787,14 @@ client.on('interactionCreate', async interaction => {
                 categoryRank = null;
             }
 
+            const imageKey = interaction.fields.getTextInputValue('image');
+
             await Loadout.findByIdAndUpdate(targetId, {
                 weaponName,
                 weaponKey,
                 buildName,
                 attachments: attachmentsArray,
-                imageKey: interaction.fields.getTextInputValue('image'),
+                imageKey,
                 category: metaParts[0]?.toUpperCase() || 'AR',
                 mode,
                 isMeta,
@@ -2816,6 +2821,13 @@ client.on('interactionCreate', async interaction => {
             }
             if (unrecognized.length > 0) {
                 confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
+            }
+            // Real Cloudinary existence check (2026-07-18, /manage loadout UX overhaul) -- this is
+            // the exact silent-failure mode Harkirat hit with FSS Hurricane: a mismatched key saves
+            // fine and only shows up as a broken card image later. Advisory only (see
+            // checkImageExists()'s own comment) -- never blocks the save, which already happened above.
+            if (!(await checkImageExists(imageKey))) {
+                confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
             }
 
             return interaction.followUp({ content: confirmation });
@@ -2903,12 +2915,14 @@ client.on('interactionCreate', async interaction => {
                 categoryRank = null;
             }
 
+            const imageKey = interaction.fields.getTextInputValue('image');
+
             const newLoadout = new Loadout({
                 weaponName: interaction.fields.getTextInputValue('weapon'),
                 weaponKey: interaction.fields.getTextInputValue('weapon').toLowerCase().replace(/\s+/g, ''),
                 buildName: interaction.fields.getTextInputValue('build'),
                 attachments: attachmentsArray,
-                imageKey: interaction.fields.getTextInputValue('image'),
+                imageKey,
                 category: metaParts[0]?.toUpperCase() || 'AR',
                 mode: pageMode,
                 isMeta,
@@ -2921,6 +2935,11 @@ client.on('interactionCreate', async interaction => {
             let confirmation = `✅ **Successfully saved Loadout: ${newLoadout.weaponName} (${newLoadout.buildName}, ${newLoadout.mode})!**`;
             if (unrecognized.length > 0) {
                 confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
+            }
+            // Real Cloudinary existence check (2026-07-18, /manage loadout UX overhaul) -- see
+            // edit_loadout_'s matching check above for the full reasoning.
+            if (!(await checkImageExists(imageKey))) {
+                confirmation += `\n⚠️ **Heads up:** no image found on Cloudinary at key \`${imageKey}\` -- the card will show broken until an image with that exact Public ID is uploaded there.`;
             }
             return interaction.followUp({ content: confirmation });
         }
@@ -2946,9 +2965,10 @@ client.on('interactionCreate', async interaction => {
 
             let created = 0;
             let updated = 0;
+            const missingImages = []; // { label, imageKey } -- see checkImageExists() below
             for (const rawEntry of parsed) {
                 const entry = { ...rawEntry, mode: pageMode };
-                const { weaponKey, mode, buildName } = entry;
+                const { weaponKey, mode, buildName, imageKey } = entry;
                 const existing = await Loadout.findOne({ weaponKey, mode, buildName });
                 if (existing) {
                     await Loadout.updateOne({ _id: existing._id }, entry);
@@ -2963,11 +2983,19 @@ client.on('interactionCreate', async interaction => {
                     { weaponKey, mode, buildName: { $ne: buildName } },
                     { isMeta: entry.isMeta, categoryRank: entry.categoryRank, dmzRangeRank: entry.dmzRangeRank, isToxic: entry.isToxic }
                 );
+                // Real Cloudinary existence check (2026-07-18, /manage loadout UX overhaul) -- same
+                // reasoning as the single add/edit handlers, just batched across the whole paste
+                // instead of a single field, since a bulk import is exactly where a copy-paste typo
+                // in one block's Image Key is easiest to miss among many.
+                if (!(await checkImageExists(imageKey))) missingImages.push({ label: `${entry.weaponName} (${buildName})`, imageKey });
             }
 
             let confirmation = `✅ **Bulk Loadout Import Complete!**\n${created} new build(s) added, ${updated} existing build(s) updated.`;
             if (errors.length > 0) {
                 confirmation += `\n⚠️ ${errors.length} block(s) skipped:\n${errors.map(e => `- ${e}`).join('\n')}`;
+            }
+            if (missingImages.length > 0) {
+                confirmation += `\n⚠️ No Cloudinary image found for ${missingImages.length} build(s) -- these will show broken until uploaded there with the exact Public ID typed:\n${missingImages.map(m => `- ${m.label}: \`${m.imageKey}\``).join('\n')}`;
             }
             return interaction.followUp({ content: confirmation });
         }

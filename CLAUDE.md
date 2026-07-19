@@ -1733,6 +1733,58 @@ descriptions aren't always capitalized correctly.
   ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared
   `dmz`/`mp`-prefixed button router, alongside the existing `copy`/`next`/`prev` actions.
 
+### The Cloudinary image workflow, finally documented (2026-07-18, `/manage` loadout UX overhaul)
+This was a real, standing mystery — even to Harkirat, who built it: he had to rename the FSS
+Hurricane screenshot locally and re-upload before it rendered, and noticed some Secondaries loadouts
+never got renamed at all, with no clear idea why. Confirmed the ACTUAL current process live against
+the real Cloudinary account (via the Cloudinary MCP tool — `search-assets`/`search-folders`, not
+guessed from code alone) before writing this:
+- **There is no bot-side upload automation for loadout images at all**, unlike draws
+  (`utils/cloudinaryCache.js`) or patch notes (`utils/patchNotesCache.js`), both of which auto-fetch
+  a given URL into Cloudinary themselves. For loadouts, the admin uploads the Gunsmith screenshot to
+  Cloudinary **outside the bot entirely** — via Cloudinary's own web dashboard, or by asking Claude to
+  do it through the Cloudinary MCP tool — and only then types the resulting key into `/manage`.
+- **Every loadout image lives in one flat Cloudinary folder, `gun-builds`** (132 assets as of this
+  writing) — confirmed via `search-folders`, there is no per-weapon or per-category subfolder
+  structure at all. This folder is purely organizational inside Cloudinary's own Media Library UI —
+  it is **NOT part of the delivery URL** (`buildImageUrl()` in `utils/loadoutRender.js` interpolates
+  `imageKey` directly with no folder segment: `.../upload/f_auto,q_auto/v1/{imageKey}`), because this
+  Cloudinary account uses "dynamic folder" mode, where the display folder and the Public ID path are
+  decoupled. Don't assume a `gun-builds/` prefix belongs in `imageKey` — it doesn't, and never has.
+- **The actual root cause of the mystery: Cloudinary assigns an uploaded asset's Public ID from the
+  file's own name, unless you rename it during/after upload.** This is confirmed directly in the live
+  data — most weapons have clean, intentional keys (`BAL-27-1` through `BAL-27-5`, `FSS-HURRICANE-1`,
+  `DMZ-AK117-1`, `AK117-1`, `SKS-4`, `PKM-2`) that were clearly renamed at some point, but roughly a
+  dozen assets are STILL sitting under their raw camera-roll filenames (`IMG_5630`, `IMG_5631`,
+  `IMG_3123`, etc.) — never renamed. Whatever the Public ID ends up being (renamed or not) is EXACTLY
+  the string that has to be typed into `/manage`'s "Cloudinary Image Key" field, character-for-
+  character. The FSS Hurricane incident was almost certainly this exact mismatch: the screenshot's
+  original filename didn't match what was typed into the modal, so it 404'd until Harkirat manually
+  renamed the file and re-uploaded so the two finally lined up.
+- **The bot never validates that a typed key actually resolves to anything** — `buildImageUrl()` is
+  pure string interpolation, no network call, so a typo or a forgotten rename silently saves fine and
+  only shows up later as a broken image in Discord. Fixed with a real check: `utils/loadoutRender.js`'s
+  new `checkImageExists(imageKey)` does a HEAD request against the constructed URL after a save (Add
+  Loadout, Edit Loadout, and Bulk Add/Replace in `index.js` all call it) and appends a clear "no image
+  found at that key" warning to the confirmation message if it 404s — advisory only, never blocks the
+  save (a network hiccup is treated as "can't confirm," not "missing," so this can't produce a false
+  warning). This is the direct fix for the exact failure mode Harkirat hit — the mismatch is now
+  caught the moment it's saved, not discovered later by chance.
+- **Recommended naming convention going forward (already the majority pattern in the live data,
+  formalized here rather than invented): `WeaponKey-BuildNum`**, all-caps with hyphens, matching the
+  weapon's own display name (e.g. `BP50-1`, `FSS-HURRICANE-1`, DMZ builds prefixed `DMZ-` — e.g.
+  `DMZ-AK117-1`). Rename the asset to this in Cloudinary (during or right after upload) instead of
+  leaving the camera-roll default — this is now called out directly in `/manage`'s loadouts pages
+  (a new "How Images Work" info block, `commands/manage.js`'s `loadoutsPageDef()`) and in the Add/Edit
+  Loadout modals' own field label + placeholder (`buildAddLoadoutModal`/`buildEditLoadoutModal`),
+  not just here — the goal was to make this self-explanatory in the tool itself, not just in this file.
+- **Still not solved, and out of scope for this pass**: nothing renames the still-outstanding
+  `IMG_XXXX` assets already sitting in Cloudinary, and there's still no in-bot way to browse what's
+  actually in the `gun-builds` folder — this only fixes the workflow going forward and catches a
+  mismatch at save time. See the roadmap's "Verify Cloudinary folder organization" item (v5 list) for
+  the broader cleanup, which this session's findings directly answer the open question of (yes, it's
+  a real discrepancy — unrenamed uploads — not just how the Cloudinary UI groups things).
+
 ## Autocomplete search is punctuation/whitespace-insensitive, not just substring (`utils/search.js`)
 Every autocomplete route in the bot (loadout weapon search across `/dmz`/`/all`/`/<category>`,
 `/patch notes`' version search) used a plain `.includes()` (or an equivalent raw Mongo `$regex`),
@@ -2459,15 +2511,17 @@ Colors panel, `/timestamp`'s view option) for what actually shipped. Still open 
 parallel-track rule as the second batch (ship to `main`/live normally, clone into the v3 branch once it exists).
 **The `/manage` `section`→`data_for` rename also shipped in v2.21.0** (2026-07-18) — see the Command
 architecture section's `/manage` note. Still open from this batch:
-- `[P1 · M]` **`/manage` loadout data-entry UX overhaul** — the whole flow for adding/editing a loadout via
-  `/manage` is unintuitive/forgettable: clarify the steps, each button's purpose, and the field descriptions,
-  and **add placeholder text to the edit-loadout modal fields** (they currently have none — see L73). Critically,
-  DOCUMENT + surface the Cloudinary image workflow so it stops being a mystery: does the admin rename the
-  screenshot file before uploading? upload it directly? does the bot auto-fetch / auto-rename on Cloudinary?
-  Harkirat had to rename the FSS Hurricane screenshot locally + re-upload before it rendered, yet noticed the
-  secondary-weapon files DON'T follow the old Excel-era strict naming — so the actually-expected process is
-  unclear even to him. Make the flow self-explanatory. (Merges notes items L55 + L73 + the image-naming half
-  of L59.)
+- ~~**`/manage` loadout data-entry UX overhaul**~~ — **SHIPPED 2026-07-18** (committed, VM deploy pending as
+  of this entry — check "Deployment & Ops" / DEVLOG for whether it's actually live yet). Added a "How Images
+  Work" info block to both Loadouts pages, clarified the Add/Edit Loadout modals' field labels + placeholders
+  (attachments now has an example; the Cloudinary Image Key field explains the real convention), and — the
+  real meat — a genuine live Cloudinary existence check (`utils/loadoutRender.js`'s `checkImageExists()`) that
+  now warns in the confirmation message if a saved image key doesn't resolve to anything, on Add/Edit/Bulk
+  Add alike. The Cloudinary mystery itself is now fully documented with the ACTUAL confirmed workflow (verified
+  live against the account, not guessed) — see the new "The Cloudinary image workflow, finally documented"
+  subsection under "MP loadout system" above for the full writeup, including the root cause (Cloudinary
+  assigns the Public ID from the uploaded file's own name unless renamed — confirmed via still-unrenamed
+  `IMG_XXXX` assets sitting in the live `gun-builds` folder).
 - `[P2 · M · 🧩needs-design]` **Much richer in-bot logging/tracking** — right now when something breaks it's
   hard to tell WHICH component failed and why. Add granular internal logging so failures are attributable.
   Related-but-distinct from the webhook-alerting heavy half (per-alert IDs / downloadable text-log — see

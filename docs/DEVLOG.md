@@ -449,6 +449,59 @@ than tag 40 lines — consistency without busywork.
 
 ---
 
+## 2026-07-18 (new session) — Solving a mystery Harkirat couldn't solve about his own bot
+
+The top P1 roadmap item this session: `/manage`'s loadout add/edit flow was "unintuitive and
+forgettable," and specifically the Cloudinary image step was a genuine mystery — Harkirat had to
+rename the FSS Hurricane screenshot locally and re-upload before it rendered, noticed some
+Secondaries files never got the old strict naming, and couldn't say with confidence whether the
+expected process was rename-then-upload, upload-then-rename, or something the bot did automatically.
+That last uncertainty was the interesting part: this is a two-person project, and neither person
+actually knew the answer.
+
+Rather than write documentation that was really just an educated guess dressed up as an explanation,
+I went and looked. The Cloudinary MCP tool was already available in this environment —
+`search-folders` against the live account returned exactly one folder, `gun-builds` (132 assets), and
+`search-assets` scoped to it dumped every real asset with its Public ID, filename, and upload date.
+That's where the actual root cause fell out: most weapons have clean, intentional keys (`BAL-27-1`
+through `BAL-27-5`, `FSS-HURRICANE-1`, `DMZ-AK117-1`) that were clearly renamed at some point, but
+roughly a dozen assets are still sitting under their raw camera-roll filenames — `IMG_5630`,
+`IMG_5631`, `IMG_3123`, and so on. Cloudinary assigns an uploaded asset's Public ID from the file's
+own name unless you rename it during or after upload, full stop. There's no auto-fetch, no
+auto-rename, nothing magic — the admin uploads outside the bot entirely, and whatever Public ID
+Cloudinary lands on has to be typed into the modal character-for-character. The FSS Hurricane
+incident was almost certainly exactly this: the screenshot's original filename didn't match what got
+typed into the field, so it 404'd until the two were forced to line up by hand.
+
+Confirming this live also answered a question flagged for a totally separate future session (the v5
+"verify Cloudinary folder organization" item) — yes, it's a real discrepancy, not just how the
+Cloudinary UI happens to group things. One live lookup closed two open questions at once.
+
+The fix isn't just prose, though — `buildImageUrl()` has always been pure string interpolation with
+zero network call, so a typo or a forgotten rename has always saved silently and only shown up later
+as a broken card in Discord. That's the actual bug behind the mystery, not just an documentation gap.
+Added `checkImageExists()` (`utils/loadoutRender.js`) — a HEAD request against the constructed URL,
+run right after Add/Edit/Bulk-Add save, appending a plain warning to the confirmation message if
+nothing resolves. Deliberately advisory, never blocking: a network hiccup has to read as "can't
+confirm," never as "missing," or the warning would cry wolf on perfectly good keys. Verified against
+the real account before calling it done — a known-good key came back `true`, a made-up one came back
+`false`, and the bulk-import placeholder URL correctly short-circuited to `true` without ever being
+checked (it's not a Cloudinary key at all).
+
+Also skipped something on purpose: a full local Gateway boot test. This bot is single-token and the
+GCP VM is the live production instance right now — booting a second local copy against the same token
+would race it, exactly the failure mode already burned into memory once. Instead I ran every changed
+function directly (`buildManagePage()` for both loadout pages, every modal builder including the
+legacy-missing-`imageKey` edge case, `checkImageExists()` against real and fake keys) — real coverage
+of the actual new code paths, without the multi-instance risk. The genuine end-to-end proof waits for
+a live click-test after this deploys, same as it should.
+
+The meta-lesson: "document the workflow" was phrased as a writing task, but the honest version of that
+task was an investigation — the account with the actual answer was one MCP call away, and guessing at
+a plausible-sounding process would have been worse than useless the moment it turned out wrong.
+
+---
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
