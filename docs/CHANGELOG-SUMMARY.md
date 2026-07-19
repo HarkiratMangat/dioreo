@@ -11,8 +11,6 @@ A peek at what's planned (not built yet):
 - **Richer colour extraction** — more variety pulled from your avatar, so a standout colour doesn't
   get missed.
 - **Page arrows that loop** back to the first page on longer builds instead of dead-ending.
-- **A clearer, friendlier admin panel** — better button labels, field hints, and a documented image
-  workflow for adding weapon builds.
 
 ### Further out
 - **A `/help` command** explaining everything the bot can do, with a way to reach Dior directly for
@@ -28,6 +26,13 @@ A peek at what's planned (not built yet):
   own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
 
 ---
+
+## v2.23.0 — July 18, 2026
+- **The admin panel's weapon-build page is finally clear about images.** It now explains right there
+  that build screenshots have to be uploaded to Cloudinary separately (not through the bot), and that
+  whatever name Cloudinary gives the file has to be typed in exactly. Adding or editing a build now
+  also warns right away if that image can't be found yet, instead of silently saving a broken picture
+  you'd only discover later.
 
 ## v2.22.0 — July 18, 2026
 - **`/settings` now goes quietly inactive after 10 minutes of no use** — leave the panel open and
