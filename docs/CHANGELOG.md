@@ -218,6 +218,30 @@ changelog until v3 actually launches.
   reference to these files across CLAUDE.md and memory was updated to match; historical narrative
   entries describing their PAST gitignored status were left as accurate history, not rewritten.
 
+## v2.22.1 — 2026-07-18
+**Workflow glossary rewrite + central-notes confirmation system — docs only, no bot code touched**
+(this push) — minor
+
+Follow-up to v2.22.0's push, same day. Two threads, purely process/documentation, no bot behavior
+changed:
+
+- **document/commit/push/deploy glossary rewrite.** `docs/SESSION-START.md`'s NON-NEGOTIABLES section
+  used to define "push" as always meaning the full deploy cycle — that stopped being literally true the
+  moment v2.22.0 shipped as commit+push with the VM deploy deliberately held. Rewritten into 4 clearly
+  separable steps (commit = local only; push = code reaches GitHub, bot untouched; deploy = the VM
+  actually goes live; document = syncing the written record), with the default-chain assumption stated
+  explicitly rather than baked into one overloaded word. Synced into `user_working_agreement.md` too.
+- **`docs/diors-builds notes.md`'s confirmation-mark system finalized.** Built earlier this session as a
+  real MarkEdit extension (files live in MarkEdit's own app container, not this repo — see
+  `reference_markedit_extension_api` memory for the full build/debug story and exact paths), landed on
+  its final spec after several rounds: 4 shortlisted symbols (✴︎ ✦ ◆ ℋ), 8 final colors (amber, orange,
+  pink, violet, periwinkle, cobalt blue, cyan, turquoise), all switchable live via a "Confirmation Mark"
+  menu in MarkEdit's Extensions bar, no restart needed for color/default changes. The file's own 🔑
+  Legend section now documents the finalized system in place of the earlier placeholder text, and every
+  one of the 5 original notes-file questions that prompted this whole thread is formally closed
+  (`[x] ✓`) rather than just answered inline. Full narrative in DEVLOG's "Building a real MarkEdit
+  extension" entry.
+
 ## v2.22.0 — 2026-07-18
 **`/settings` passive idle-timeout auto-disable** (this push) — moderate — ⚠️ **committed + pushed to
 `main`, VM deploy HELD** (Harkirat's explicit call, to keep working before a full session-end deploy —

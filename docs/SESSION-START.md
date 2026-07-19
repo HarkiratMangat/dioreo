@@ -46,20 +46,33 @@ New session on Dior's Builds. Before anything else:
 2. NON-NEGOTIABLES — I've had to re-flag these before, so self-check them without
    waiting to be reminded:
    • Never commit or push without asking me first — every time; approval never carries over.
-   • "Push" = the FULL cycle to the GCP VM (cutover done 2026-07-17; Render RETIRED/suspended, don't
-     deploy to it). Commit → `git push origin main` → deploy to the VM: `gcloud compute ssh
-     diors-builds-bot --zone=us-east1-b --command="cd ~/diors-builds && git pull && sudo systemctl
-     restart diors-bot"` → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, errors ~0;
-     `🔌 Shard 0 ready`/handleBotReady are the real "connected" proof, not just "process up") → exactly
-     ONE instance (single-token; the VM is it — stop any local test run). A `git push` alone does NOT
-     update the VM. See [[reference_vm_bot_commands]], [[project_deployment_migration_render_to_gcp]],
-     [[feedback_push_means_full_cycle]]. Bot alerts a Discord channel on each (re)start + on errors.
-   • "Document" = ALL layers, at push time: CLAUDE.md + the relevant memory files +
-     docs/CHANGELOG.md + docs/CHANGELOG-SUMMARY.md (+ a docs/DEVLOG.md narrative entry for a notable arc).
-     The changelog is the one that keeps getting skipped — don't skip it.
-     This ALSO applies to planning/roadmap sessions with NO code and NO push: if you changed
-     the roadmap or a standing rule, sync CLAUDE.md's planned-work AND both changelog roadmap
-     sections (they're sourced from it and must not drift) AND a DEVLOG entry.
+   • **GLOSSARY (rewritten 2026-07-18 — the old wording called "push" the automatic full cycle, which
+     stopped being true the moment v2.22.0 shipped as commit+push with the VM deploy deliberately held;
+     these are 4 separable steps, not one bundled action):**
+     - **Commit** = `git commit` on this Mac only. Touches nothing outside this machine.
+     - **Push** = `git push origin main`. The commit(s) become visible on GitHub; the LIVE bot is
+       untouched — the VM has no auto-pull, so pushing alone never changes what's actually running.
+     - **Deploy** = making a pushed commit go live on the VM: `gcloud compute ssh diors-builds-bot
+       --zone=us-east1-b --command="cd ~/diors-builds && git pull && sudo systemctl restart diors-bot"`
+       → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, errors ~0; `🔌 Shard 0
+       ready`/handleBotReady are the real "connected" proof, not just "process up") → confirm exactly
+       ONE instance is running (single-token; the VM is it — stop any local test run first).
+     - **Document** = updating the written record: CLAUDE.md + relevant memory files + `docs/CHANGELOG.md`
+       + `docs/CHANGELOG-SUMMARY.md` (+ a `docs/DEVLOG.md` narrative entry for a notable arc) + this
+       central notes file (mark resolved items). Whichever of these are actually relevant to what
+       changed — not a fixed checklist to run through blindly.
+     - **The default assumption, unless told otherwise, is still that "push" as a spoken instruction
+       means the WHOLE chain** — commit → document → push → deploy → verify live — same as the historical
+       convention (see [[feedback_push_means_full_cycle]]). But any step can be explicitly held (e.g.
+       "commit + push only, hold the VM deploy," which is exactly what happened for v2.22.0) — when that
+       happens, say so plainly in the summary rather than letting "pushed" imply "live."
+     - "Document" specifically is NOT only triggered by a push — a planning/roadmap session with NO
+       code and NO push still needs it if the roadmap or a standing rule changed: sync CLAUDE.md's
+       planned-work AND both changelog roadmap sections (sourced from it, must not drift) AND a DEVLOG
+       entry. The changelog is the one step that keeps getting skipped — don't skip it.
+     See [[reference_vm_bot_commands]], [[project_deployment_migration_render_to_gcp]],
+     [[feedback_push_means_full_cycle]], [[feedback_docs_at_push_time]]. Bot alerts a Discord channel
+     on each (re)start + on errors.
    • Versioning is 3-part vMAJOR.MODERATE.MINOR: a significant push bumps MODERATE (resets
      MINOR to 0), a small follow-up bumps MINOR; NEVER bump MAJOR (→ v3) without asking me.
      Cross-check the full `git log` so no push gets missed. ONE version number per PUSH, not

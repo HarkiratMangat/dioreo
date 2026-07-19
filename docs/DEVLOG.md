@@ -875,3 +875,81 @@ before a single session-end deploy cycle rather than deploying piecemeal. Docume
 "Passive idle-timeout auto-disable" section (replacing the old reactive-expiry writeup in "Panel
 interaction locks"), with the "Known open issues" and roadmap entries updated to point at the shipped
 mechanism instead of describing it as a still-open gap.
+
+## 2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session
+
+After the `/settings` passive-disable feature shipped (v2.22.0, VM deploy held), Harkirat asked me to
+read the fresh notes he'd dropped directly into `docs/diors-builds notes.md` mid-session — a
+confirmation-symbol system for the notes file's own ✓/✗ workflow, brighter check/cross colors, a
+comment-formatting preference, a mark-date convention, and a request to clarify what document/commit/
+push/deploy actually mean. What started as a documentation pass turned into a real, live-tested
+software build: a genuine MarkEdit extension, iterated through several rounds of real bugs, real user
+testing, and real design tradeoffs — closer to a normal engineering session than a docs update.
+
+**The scope grew organically, and that was the right call, not scope creep.** Harkirat's original ask
+was "add a legend and a confirmation symbol." What it actually became, one request at a time: a Legend
+section explaining the mark system, a full glossary rewrite (document/commit/push/deploy) that caught a
+real inconsistency in `docs/SESSION-START.md` (the old wording said "push" always means the full deploy
+cycle, which had just stopped being true that same session), a genuinely new MarkEdit extension with a
+5-section menu (Insert / Raw Marks / Bulk Update / Defaults / Setup), 4 shortlisted symbols and
+eventually 8 final colors, live no-restart color switching via a shared JS global, and a working toolbar
+button. Each step was a reasonable, in-scope extension of the last — the discipline was checking in with
+an artifact or a direct question before committing to each irreversible choice (symbol/color picks),
+not resisting the growth itself.
+
+**Found and read the real extension files instead of guessing from the earlier session's vague
+description.** A prior session's memory said "Built & verified MarkEdit ext (editor.js, live coloring)"
+with no file path recorded. Wasted a few tool calls searching the wrong app container
+(`app.markedit.MarkEdit`) before Harkirat directly supplied the real path
+(`~/Library/Containers/app.cyan.markedit/Data/Documents/`). Once there, reading the 3-4 already-installed
+example extensions (`case-tools.js`, `markedit-direct-preview.js`, the theming extension) gave the actual
+API patterns needed — settings.json read/write, `ME.addMainMenuItem`, CodeMirror decoration/dispatch,
+and critically `markedit-theme-zero.js`'s own `window.__markeditTheming__` global, which later became the
+key insight for making cross-script state live instead of restart-gated.
+
+**Shipped a v1 with two real bugs, found live, fixed the same session.** The toolbar button did nothing
+— its `actionName` string didn't match any registered menu item's actual title (routing is by exact
+string match, undocumented, discovered by reading how the sibling extensions wired their own toolbar
+setup). And a freshly-inserted confirmation symbol rendered in plain white instead of its color, because
+the coloring regex required a strict `[x] SYMBOL ✓` context that a bare test insertion never satisfied —
+fixed by dropping that restriction entirely, matching how ✓/✗ themselves already color unconditionally.
+Both were reported by Harkirat with a screenshot and a clear "what works / what's broken" breakdown,
+which made root-causing fast — neither bug needed guessing, both had an exact, checkable cause.
+
+**The "restart required" complaint led to a real architecture improvement, not a workaround.** The first
+version only synced state through settings.json, which MarkEdit only reads once at extension startup —
+so every pick needed an app restart. Rather than accept that, checked whether MarkEdit's extensions
+share a JS scope at all (they do — confirmed via the theming extension's own global-object pattern) and
+rebuilt around a shared `window.__diorConfirm__` object, making color changes and the bulk-update action
+apply live. Only genuine toolbar-structure changes (adding the button itself) still need a restart —
+that's an actual MarkEdit platform constraint, not something left unsolved.
+
+**A real, disciplined guess-and-test loop for undocumented API surface.** No `.d.ts` or bundled
+reference exists anywhere in the MarkEdit app container (checked directly, confirmed absent). Harkirat's
+own catch mid-thread: after screenshotting the native macOS Window-menu's real "Halves"/"Quarters"
+section headers, he pointed out that MarkEdit's extension bridge might expose the SAME native AppKit
+capability even though none of the installed example extensions demonstrated it — "don't use the API
+restrictions, check what macOS itself offers." Testing `{ enabled: false }` on a single isolated item
+confirmed it instantly (real section headers). The same method found `{ checked: true }` for a
+selected-state indicator. It did NOT find a way to tint a menu item's icon — tested 5 plausible field
+names (`iconColor`/`tint`/`color`/`symbolColor`/`hierarchicalColor`) in parallel across different items
+to save round trips, all came back plain white/gray, and the honest call was to stop guessing and revert
+rather than ship dead code with a pointless icon. All of this — confirmed-working, confirmed-broken, and
+the method itself — is now written down in a new `reference_markedit_extension_api` memory so a future
+session doesn't re-run the same 5 dead-end guesses.
+
+**Iterative design work stayed disciplined about not deciding FOR Harkirat.** The color/symbol
+narrowing went through roughly 6 rounds of artifacts — starting at 7 candidate symbols + a handful of
+colors, narrowing to 8, then 5, then a final 4 symbols and 8 colors, sorted by real computed HSL hue at
+his request, re-grouped, re-labeled, with every genuine design flaw he caught (a tinted "recommended"
+row background that quietly changed the exact contrast being judged; a check mark rendered in the
+sample line's plain body-text color instead of its real green) fixed as a real bug in the mockup, not
+argued away. This is the same "propose concrete options, don't decide for him" pattern already
+established for bot-facing palette work, just applied to a different kind of visual decision.
+
+**Closed the loop properly at the end, not left half-finished.** Every one of the 5 original notes-file
+questions got converted to the file's own `[x] ✓ (date) ~~text~~` closure format (they'd been answered
+inline earlier in the thread but never formally marked, which would have made them invisible to the
+existing Graveyard-sweep logic). The confirmation-mark system's final 4-symbol/8-color set was written
+into the file's own Legend, replacing the placeholder text from earlier in the session. Nothing from
+this whole arc was left in an ambiguous "answered but not closed" state.
