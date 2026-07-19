@@ -157,9 +157,12 @@ changelog until v3 actually launches.
 ---
 
 ## v2.23.0 — 2026-07-18
-**`/manage` loadout data-entry UX overhaul + Cloudinary workflow fix** (`de02ee9`) — moderate — ⚠️
-**committed + pushed to `main`, deploying to the VM together with v2.22.0 below** (check
-`scripts/vmstatus.sh` / DEVLOG before assuming this is actually live)
+**`/manage` loadout data-entry UX overhaul + Cloudinary workflow fix** (`de02ee9`) — moderate —
+**deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh` — Gateway connected, 0
+real errors, bundled with v2.22.0/v2.21.1 below in the same pull). ⚠️ **Harkirat has NOT yet
+live-click-tested the actual `/manage` loadout flow in Discord** — admin-only impact (doesn't affect
+normal user-facing commands), so he's deliberately continuing other work before doing that
+verification pass. Don't assume click-tested just because it's deployed.
 
 P1 roadmap item, filed 2026-07-18 from the third v2 batch, shipped same day.
 
@@ -282,9 +285,12 @@ changed:
   extension" entry.
 
 ## v2.22.0 — 2026-07-18
-**`/settings` passive idle-timeout auto-disable** (this push) — moderate — ⚠️ **committed + pushed to
-`main`, VM deploy HELD** (Harkirat's explicit call, to keep working before a full session-end deploy —
-check `scripts/vmstatus.sh` / DEVLOG before assuming this is actually live)
+**`/settings` passive idle-timeout auto-disable** (this push) — moderate —
+**deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh`, bundled with v2.23.0/
+v2.21.1 in the same pull — the deploy was deliberately held at push time to keep working, then
+completed the same session). ⚠️ **Harkirat has NOT yet live-tested the actual 10-minute passive
+idle-timeout behavior** (open `/settings`, leave it untouched for the full 10 minutes, confirm the
+buttons go dead with no click required) — don't assume click-tested just because it's deployed.
 
 Built the passive auto-disable feature designed earlier this same session (after two rounds of
 correction on the underlying Discord token mechanics — see v2.21.1 below and CLAUDE.md's "Known open

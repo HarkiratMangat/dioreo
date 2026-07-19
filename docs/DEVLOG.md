@@ -502,6 +502,64 @@ a plausible-sounding process would have been worse than useless the moment it tu
 
 ---
 
+## 2026-07-19 — A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga
+
+A long side-thread after the `/manage` work shipped: building a fourth confirmation-mark type
+(`※`, "follow-up") into the personal MarkEdit extension this project's own notes file runs on. Worth
+writing up not for the feature itself but for three separate times a plausible first guess turned out
+wrong, and how each one actually got resolved.
+
+**Round one — proposing before building.** Rather than guess at a symbol/color, I pulled up the exact
+design artifact from an *earlier session* (fetched live via its own claude.ai URL) to inherit its
+established visual language — same dark theme, same card format — and proposed four real candidates
+with a mockup of the actual multi-annotation scenario Harkirat described (inline mid-sentence, stacked
+next-line). He picked `※` in rose. Building against precedent instead of a blank page paid off; this
+part shipped clean on the first pass.
+
+**Round two — the `!important` gap, twice, in two different ways.** First live test found marks losing
+their color inside headings/bold/italic/comments, in both the CodeMirror editor and the rendered
+Preview pane — but for two *different* reasons that looked identical from the outside. In the preview,
+`span.style.color = "#e0708a"` is simply incapable of carrying `!important` — that's not a MarkEdit
+quirk, it's a hard JS limitation (a value string like `"red !important"` is invalid and silently sets
+nothing); the fix was `element.style.setProperty(prop, value, "important")`. In the editor, the
+decorations already HAD real `!important` in their inline style — verified by reading the code, not
+assumed — so that one was actually a CodeMirror decoration-nesting/precedence question instead, fixed
+by wrapping the extension in `Prec.highest(...)`. The lesson: two bugs that produce the same visible
+symptom can have completely unrelated causes, and confirming which is which (by actually reading what
+the code does, not pattern-matching the symptom) matters more than reaching for the fix that worked
+last time.
+
+**Round three — the crash, solved by an actual crash report instead of more guessing.** Toggling a new
+preview-behavior setting reproducibly force-quit the whole app. First attempt (defer the DOM-heavy
+refresh via `setTimeout`, reasoning from "this is probably a reentrant-callback timing issue") didn't
+fix it — confirmed by Harkirat re-testing, not assumed fixed and moved on. Rather than keep guessing,
+he supplied the actual macOS crash report, and reading it properly changed everything: `EXC_BREAKPOINT`
+from `libswiftCore.dylib`'s `_assertionFailure` means MarkEdit's own *native Swift code* deliberately
+tripped a `precondition`, not a JS bug and not memory corruption — a completely different class of
+problem than the timing theory assumed. Best-reasoned fix from that evidence: separate the async
+settings-persistence call from the DOM-heavy refresh entirely, so a toggle click never does both in one
+tick. That held — confirmed by Harkirat clicking every combination with zero crashes, including the
+refresh action in isolation. The real lesson isn't "always get a crash report" (obviously true) — it's
+that the FIRST fix attempt was reasoned from a plausible-sounding mechanism with no actual evidence
+behind it, and shipped anyway because it was *plausible*, not because it was *checked*. The second
+attempt only worked because it was grounded in something real.
+
+**Round four, the small one — a checkmark's padding was the whole clue.** Harkirat noticed our
+menu checkmarks looked embedded in the text (a `"✓ "` string I'd prepended as a workaround) instead of
+getting real native padding like MarkEdit's own "View Mode" menu. Rather than accept "close enough,"
+grepping MarkEdit's own bundled `markedit-preview.js` for how View Mode actually builds that menu
+turned up the real API: `state: () => ({ isSelected })`, a lazily-evaluated function — not the
+`checked: true` field I'd been guessing at (and which had been silently ignored the whole time). The
+"soft filter" for `CLAUDE.md`-as-a-fake-website (`.md` is a real ccTLD, Moldova) came from the same
+instinct — reading what the renderer actually does (a standard GFM bare-URL autolink extension against
+a real TLD list) instead of treating it as an opaque bug to route around blindly.
+
+The throughline across all four rounds: every wrong guess got caught and fixed *because* something
+concrete was checked afterward — a live screenshot, a re-test, an actual crash report, a grep of
+working code — never because a fix merely sounded right. None of this shipped on "should work now."
+
+---
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.

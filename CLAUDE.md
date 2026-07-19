@@ -2473,10 +2473,12 @@ so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (a
 - `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
 - ~~**Actually disable expired buttons, not just reply with a message**~~ — **SHIPPED for `/settings`
-  2026-07-18** (committed, VM deploy pending as of this entry — check "Deployment & Ops" / DEVLOG for
-  whether it's actually live yet before assuming so). See "Passive idle-timeout auto-disable" in the
-  "Panel interaction locks" section above for the shipped design (`utils/passiveExpiry.js`) — a
-  passive, sliding 10-minute idle `setTimeout` per message, not a click-triggered check.
+  2026-07-18, deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh`). ⚠️ Harkirat
+  has NOT yet live-tested the actual 10-minute idle behavior itself (open `/settings`, leave it alone
+  for the full window, confirm the buttons go dead with zero clicks) — deployed ≠ behaviorally
+  verified, don't conflate the two. See "Passive idle-timeout auto-disable" in the "Panel interaction
+  locks" section above for the shipped design (`utils/passiveExpiry.js`) — a passive, sliding
+  10-minute idle `setTimeout` per message, not a click-triggered check.
 - `[P2 · M · 🧩needs-design]` **Extend the same passive auto-disable pattern to more commands** —
   draws/calendar/drawprices/loadouts have NO expiry/auto-disable at all today, unlike `/settings` now.
   Extending `utils/passiveExpiry.js`'s `schedulePanelExpiry` to their own render/re-render sites is the
@@ -2511,8 +2513,10 @@ Colors panel, `/timestamp`'s view option) for what actually shipped. Still open 
 parallel-track rule as the second batch (ship to `main`/live normally, clone into the v3 branch once it exists).
 **The `/manage` `section`→`data_for` rename also shipped in v2.21.0** (2026-07-18) — see the Command
 architecture section's `/manage` note. Still open from this batch:
-- ~~**`/manage` loadout data-entry UX overhaul**~~ — **SHIPPED 2026-07-18** (committed, VM deploy pending as
-  of this entry — check "Deployment & Ops" / DEVLOG for whether it's actually live yet). Added a "How Images
+- ~~**`/manage` loadout data-entry UX overhaul**~~ — **SHIPPED 2026-07-18, deployed live to the VM
+  2026-07-19** (confirmed via `scripts/vmstatus.sh`). ⚠️ Harkirat has NOT yet live-click-tested the actual
+  `/manage` loadout flow in Discord — admin-only impact, so he's deliberately continuing other work
+  first; deployed ≠ behaviorally verified. Added a "How Images
   Work" info block to both Loadouts pages, clarified the Add/Edit Loadout modals' field labels + placeholders
   (attachments now has an example; the Cloudinary Image Key field explains the real convention), and — the
   real meat — a genuine live Cloudinary existence check (`utils/loadoutRender.js`'s `checkImageExists()`) that
