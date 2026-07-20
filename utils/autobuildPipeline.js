@@ -19,6 +19,17 @@ const { uploadLoadoutImage } = require('./loadoutImageCache');
 // by whichever function stashes a new entry).
 const pendingAutobuilds = new Map();
 
+// Tracks tokens currently mid-upload/write inside confirmAndWrite -- closes a real duplicate-write
+// race: `confirmAndWrite` only deletes a token from `pendingAutobuilds` AFTER its write durably
+// succeeds (a deliberate fix for an earlier data-loss bug, see git history around this file), which
+// means the token stays visible in the Map for the full duration of the Cloudinary upload + Mongo
+// write. Without this marker, two overlapping Confirm clicks on the same token (an admin
+// double-click, or a race with something else reading the same token) would both pass the "does
+// this token still exist" guard and both independently upload+write, producing two duplicate builds
+// for one weapon. Always released in a `finally` so an unexpected throw (e.g. doc.save() failing)
+// doesn't permanently strand the token as "in progress" for the rest of its 10-minute TTL.
+const confirmInProgress = new Set();
+
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW
 // source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for
 // why: an edited weapon name during review must never orphan an upload under the wrong key).
@@ -116,6 +127,14 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
 // same weapon was added in the meantime).
 const pendingImageRetries = new Map(); // retryToken -> confirmed data + { weaponKey, buildName, imageKey }
 
+// Same duplicate-write guard as confirmInProgress above, scoped to retryImageUpload's own token
+// space. This path is actually the MORE exposed of the two -- it's driven by the `/autobuild
+// retry_token:` slash command, not a button, so it gets none of index.js's generic anti-spam
+// cooldown (that guard is scoped to isButton()/isStringSelectMenu() only). Two quick resubmits of
+// the same retry_token (an accidental double-submit) would otherwise race freely for the entire
+// upload+write duration.
+const retryInProgress = new Set();
+
 // Sends a NEW ephemeral follow-up message carrying raw Components V2 JSON (a type-17 Container).
 // discord.js's high-level `interaction.followUp({components})` does NOT reliably serialize raw V2
 // JSON -- no builder class exists for a type-17 Container, the exact same limitation already
@@ -189,35 +208,50 @@ async function confirmAndWrite(interaction, token) {
         return interaction.followUp({ content: '❌ Category is still unresolved -- click **Edit** and set one before confirming.', ephemeral: true });
     }
 
-    const weaponKeyForLookup = data.weaponName.toLowerCase().replace(/\s+/g, '');
-    const siblingBuildNames = (await Loadout.find({ weaponKey: weaponKeyForLookup, mode: 'MP' }).select('buildName').lean()).map(l => l.buildName);
-    const { weaponKey, buildName, imageKey } = computeWeaponKeyAndBuild(data.weaponName, siblingBuildNames);
-
-    const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
-
-    if (uploadResult.success) {
-        // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility:
-        // Mongoose validation, a dropped connection), the token must still be sitting in
-        // pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere.
-        // (Found in review: this used to delete first, which meant a save() failure here lost the
-        // data permanently -- no Loadout doc, no recoverable token.)
-        const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
-        pendingAutobuilds.delete(token);
-        const card = buildPostCreationCard(doc, null);
-        return followUpV2Card(interaction, card);
+    // Claim the token before any slow work starts -- see confirmInProgress's own comment above for
+    // why this exists. Checked AFTER the two cheap validation returns above (an unresolved-category
+    // click never reaches Cloudinary/Mongo, so it's not part of the race this guards against).
+    if (confirmInProgress.has(token)) {
+        return interaction.followUp({ content: '⏳ Already processing this Confirm click -- give it a moment.', ephemeral: true });
     }
+    confirmInProgress.add(token);
 
-    // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey
-    // already computed) under a new retry token, ask for the image again.
-    const retryToken = crypto.randomBytes(8).toString('hex');
-    pendingImageRetries.set(retryToken, { ...data, weaponKey, buildName, imageKey });
-    setTimeout(() => pendingImageRetries.delete(retryToken), 10 * 60 * 1000).unref();
-    pendingAutobuilds.delete(token);
+    try {
+        const weaponKeyForLookup = data.weaponName.toLowerCase().replace(/\s+/g, '');
+        const siblingBuildNames = (await Loadout.find({ weaponKey: weaponKeyForLookup, mode: 'MP' }).select('buildName').lean()).map(l => l.buildName);
+        const { weaponKey, buildName, imageKey } = computeWeaponKeyAndBuild(data.weaponName, siblingBuildNames);
 
-    return interaction.followUp({
-        content: `⚠️ Image upload to Cloudinary failed (${uploadResult.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`,
-        ephemeral: true
-    });
+        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
+
+        if (uploadResult.success) {
+            // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility:
+            // Mongoose validation, a dropped connection), the token must still be sitting in
+            // pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere.
+            // (Found in review: this used to delete first, which meant a save() failure here lost the
+            // data permanently -- no Loadout doc, no recoverable token.)
+            const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
+            pendingAutobuilds.delete(token);
+            const card = buildPostCreationCard(doc, null);
+            return await followUpV2Card(interaction, card);
+        }
+
+        // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey
+        // already computed) under a new retry token, ask for the image again.
+        const retryToken = crypto.randomBytes(8).toString('hex');
+        pendingImageRetries.set(retryToken, { ...data, weaponKey, buildName, imageKey });
+        setTimeout(() => pendingImageRetries.delete(retryToken), 10 * 60 * 1000).unref();
+        pendingAutobuilds.delete(token);
+
+        return interaction.followUp({
+            content: `⚠️ Image upload to Cloudinary failed (${uploadResult.error}). Nothing was saved yet -- re-run this to try the image again:\n\`/autobuild retry_token:${retryToken} screenshot:<new attachment>\` (or use \`url:\` instead)\n\nIf it fails again, the loadout will be created anyway without an image, and you can fix it later via \`/manage\`.`,
+            ephemeral: true
+        });
+    } finally {
+        // Always released, whether this call finished normally (either branch above) or threw
+        // unexpectedly -- a genuine failure must not permanently block every later attempt on this
+        // token for the rest of its TTL.
+        confirmInProgress.delete(token);
+    }
 }
 
 // Second attempt, via /autobuild's retry_token option (commands/autobuild.js calls this directly --
@@ -232,23 +266,34 @@ async function retryImageUpload(interaction, token, newImageUrl) {
     // throws (Mongoose validation/connection error) on either branch, the token must still be in
     // pendingImageRetries so the confirmed data isn't silently lost with no Loadout doc written.
 
-    const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey);
-    if (uploadResult.success) {
-        const doc = await writeLoadoutDoc(data);
-        pendingImageRetries.delete(token);
-        const card = buildPostCreationCard(doc, null);
-        return followUpV2Card(interaction, card);
+    // Claim the token before any slow work starts -- see retryInProgress's own comment above.
+    if (retryInProgress.has(token)) {
+        return interaction.followUp({ content: '⏳ Already processing this retry -- give it a moment.', ephemeral: true });
     }
+    retryInProgress.add(token);
 
-    // Second failure -- write anyway with a placeholder key, never lose the already-confirmed data.
-    // checkImageExists() (called wherever the resulting card is later rendered, e.g. /all) correctly
-    // flags this as broken -- same existing warning path every other loadout save already goes
-    // through, nothing new needed for that part.
-    const placeholderKey = `PENDING-UPLOAD-${token}`;
-    const doc = await writeLoadoutDoc(data, placeholderKey);
-    pendingImageRetries.delete(token);
-    const card = buildPostCreationCard(doc, 'No image could be uploaded (tried twice). Fix it via `/manage` -> Edit Loadout -> set a real Cloudinary Image Key.');
-    return followUpV2Card(interaction, card);
+    try {
+        const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey);
+        if (uploadResult.success) {
+            const doc = await writeLoadoutDoc(data);
+            pendingImageRetries.delete(token);
+            const card = buildPostCreationCard(doc, null);
+            return await followUpV2Card(interaction, card);
+        }
+
+        // Second failure -- write anyway with a placeholder key, never lose the already-confirmed data.
+        // checkImageExists() (called wherever the resulting card is later rendered, e.g. /all) correctly
+        // flags this as broken -- same existing warning path every other loadout save already goes
+        // through, nothing new needed for that part.
+        const placeholderKey = `PENDING-UPLOAD-${token}`;
+        const doc = await writeLoadoutDoc(data, placeholderKey);
+        pendingImageRetries.delete(token);
+        const card = buildPostCreationCard(doc, 'No image could be uploaded (tried twice). Fix it via `/manage` -> Edit Loadout -> set a real Cloudinary Image Key.');
+        return await followUpV2Card(interaction, card);
+    } finally {
+        // Always released -- same reasoning as confirmInProgress's finally above.
+        retryInProgress.delete(token);
+    }
 }
 
 async function cancelReview(interaction, token) {
