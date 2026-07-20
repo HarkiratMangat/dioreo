@@ -618,7 +618,8 @@ client.on('interactionCreate', async interaction => {
     // stay completely unaffected.
     if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) && interaction.customId) {
         const MANAGE_CUSTOM_ID_PREFIXES = [
-            'mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_'
+            'mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_',
+            'autobuild_' // /autobuild's review-card buttons + edit modal (2026-07-19) -- same admin-only lock
         ];
         if (MANAGE_CUSTOM_ID_PREFIXES.some(prefix => interaction.customId.startsWith(prefix))) {
             const { ALLOWED_ADMIN_ID } = require('./commands/manage');
