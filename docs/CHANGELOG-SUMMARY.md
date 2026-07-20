@@ -24,11 +24,18 @@ A peek at what's planned (not built yet):
 - **A `/define` command** (Urban Dictionary lookup) — just for fun.
 - Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your
   own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
-- **Near-1-click loadout adding** — submit a build screenshot and the bot extracts the weapon name,
-  Gunsmith code, and attachments automatically instead of typing each one by hand. The full admin
-  command (review/edit before anything saves, then auto-uploads to Cloudinary) is built and wired up
-  already; a billing switch to Google Cloud's Vertex AI (instead of a separate Gemini credit balance
-  that ran dry) is what's still being finished and verified before a real live test.
+
+---
+
+## v2.25.0 — July 20, 2026
+- **New admin tool: near-1-click loadout adding.** Submit a build screenshot and the bot reads off the
+  weapon name, Gunsmith code, and attachments automatically instead of typing each one by hand — shows
+  a review screen first (edit or cancel before anything saves), then uploads the image and creates the
+  real loadout entry. Built, deployed, and live — Dior hasn't run the real end-to-end test in Discord
+  yet, so treat this as "should work" rather than "confirmed working" until he has.
+- Behind the scenes: switched the image-reading AI from a separate paid Google AI Studio balance (which
+  ran dry) to billing against the same Google Cloud account that already runs the bot's hosting — no
+  visible change, just a billing fix so the feature can actually run.
 
 ---
 

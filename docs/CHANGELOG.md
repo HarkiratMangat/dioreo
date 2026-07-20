@@ -156,6 +156,54 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.25.0 — 2026-07-20
+**`/autobuild`: screenshot → live loadout, built and shipped** (`d41a92f`..`299998a`, 18 commits) —
+moderate — pushed AND deployed live to the VM. *(Documented late — this whole feature shipped live
+across an earlier push with no numbered CHANGELOG entry at the time; backfilled now. Full technical
+detail lives in CLAUDE.md's "Loadout automation (screenshot → live loadout)" section — this entry is
+the release-notes summary, not a duplicate of it.)*
+
+- **New admin-only `/autobuild` command**: submit a Gunsmith screenshot (attachment or URL), the bot
+  runs it through an LLM vision call to extract weapon name / Gunsmith code / attachments, cleans up
+  common OCR mistakes (fuzzy-matches attachments against existing `Loadout` data, structurally corrects
+  the Gunsmith code's Number-Letter alternation), then shows a Confirm/Edit/Cancel review card before
+  anything saves — never auto-publishes straight from extraction, same "review before write" convention
+  every other `/manage` destructive action already uses.
+- On Confirm: auto-generates the `WEAPON-NAME-N` image key/build number deterministically (plain code,
+  no AI), uploads the image to Cloudinary, and writes the real `Loadout` doc — with an "Open Loadout"
+  button on success.
+- Built as 9 tasks + a final whole-branch review in one sitting (`commands/autobuild.js`,
+  `utils/autobuildPipeline.js`, `utils/visionExtract.js`, `utils/loadoutImageCache.js`, plus new
+  `adminParser.js` helpers). Review caught and fixed several real bugs before it ever went live: a
+  confirm/retry duplicate-write race window, an ephemeral-reply leak in the extraction error path, an
+  unawaited-promise/data-loss-ordering bug in the write pipeline, and the Edit modal needing
+  `sendV2Payload` + guards for undefined fields.
+- **Vision backend migrated from Google AI Studio to GCP Vertex AI** (`299998a`) after AI Studio's
+  separate Gemini prepay credit balance ran dry — Vertex AI bills against the same GCP project credits
+  already backing the VM, at identical Gemini pricing. Uses a keyless dual-layer OAuth token fetch (VM
+  instance metadata server first, local `gcloud` ADC as a Mac-side fallback) — no stored credentials.
+  Required the VM's service account to gain the `cloud-platform` instance scope (Harkirat stopped/
+  restarted the VM for this — new external IP) and routing `gemini-3.5-flash` through Vertex AI's
+  `global`/`us`/`eu` Multi-Region endpoints (single-region endpoints don't serve that model).
+- **Two real bugs fixed in this same commit**, found during review of a same-day Antigravity handoff
+  session (used while a Claude session was rate-limited): `gunsmithCode` was coming back with the
+  weapon name prepended (`"Locus-1B2A4B8C9C"` instead of `"1B2A4B8C9C"`) — fixed via a prompt change
+  plus a structural backstop (`correctGunsmithCode`'s `stripCodePrefix()`); and per-attachment slot-type
+  extraction (e.g. "Muzzle", "Barrel") was missing entirely despite being part of the original design —
+  added, attached as Cloudinary `context` metadata, not bot-facing.
+- Also in that same commit: fixed `DEFAULT_LOCATION`'s fallback (`'us-central1'` → `'us'`, the original
+  wrong single-region guess had never actually been corrected in code even after the working `.env`
+  override was found), and removed 2 unused npm dependencies the handoff had introduced
+  (`@google-cloud/vertexai`, `@google/genai` — the real implementation is a raw `fetch` call, no SDK).
+- **Comment accuracy fix** (`8d81f54`): `correctGunsmithCode`'s header comment was updated to describe
+  all 3 of its actual correction branches (type-mismatch look-alikes, same-type case normalization,
+  no-op) instead of only the first.
+- **Not yet done, on purpose** (Harkirat's explicit call, "we'll figure it out after a live test"):
+  visually disabling the review card's Cancel/Confirm buttons after use, and validating the Edit
+  modal's free-typed `category` field. **Status as of this entry: code-complete and deployed, but
+  Harkirat has not yet run the real end-to-end Discord test** — treat any bugs that surface from that
+  test as fresh work, not a continuation of this entry.
+
 ## v2.24.0 — 2026-07-20
 **Cloudinary `asset_folder` fix + full account cleanup + patch notes broken-image fix** — minor — pushed,
 NOT deployed to the VM yet (Harkirat's explicit call — no need to redeploy for this push).
@@ -936,42 +984,17 @@ per-push, and that "document" covers no-code/no-push planning sessions.
 Staging for work not yet live. Proposed number shifts with the work type (see the top-of-file
 versioning note). On push, graduate this into a numbered entry and reset to empty.
 
-### Proposed: v2.24.1
+**Note (2026-07-20): the block that used to sit here** (Vertex AI keyless migration + Antigravity-
+handoff fixes + the `correctGunsmithCode` comment correction, proposed as `v2.24.1`) **was actually
+already pushed and deployed live** — `git status` confirmed HEAD matched `origin/main` at the time this
+was caught, meaning that content had graduated in reality but never in this file. Backfilled into a
+real numbered entry, **`## v2.25.0`** above (not `v2.24.1` — bundled with the full `/autobuild` PoC
+build, which itself had ALSO never gotten a numbered entry despite being live since before the Vertex
+migration; the whole feature is a moderate bump, not a minor one). Caught when Harkirat pushed back on
+this exact gap being noticed and then left unfixed — see the working agreement on what "document"
+actually means: fix a found gap, don't just flag it and move on when it's in scope to correct.
 
-**Vertex AI keyless migration for loadout automation** (added by Antigravity)
-- Migrated the `/autobuild` screenshot-extraction pipeline in `utils/visionExtract.js` from Google AI Studio to GCP Vertex AI using Application Default Credentials (ADC).
-- Designed and implemented a dynamic dual-layer token-fetching engine that queries GCP's Compute Engine VM instance metadata server keylessly, with fallback execution on Mac using local `gcloud` ADC commands.
-- Corrected a payload schema mismatch on the Vertex AI REST API endpoint by introducing an explicit `"role": "user"` declaration on multi-modal contents, resolving an HTTP 400 rejection.
-- Engineered a fully dynamic, multi-region and global endpoint router in `utils/visionExtract.js` supporting standard regions, global endpoints (`locations/global`), and US/EU Multi-Region endpoints (`locations/us` / `locations/eu`) with zero prefix duplication in REST URLs.
-- Configured `.env` with new variables `GCP_PROJECT_ID` and `GCP_LOCATION=us` to route request flows keylessly using Gemini 3.5 Flash natively.
-- Authored a fully integrated, live-connected local verification script `scripts/test-vertex-extract.js` to securely query real loadout documents, build Cloudinary URLs, and run the complete extraction path.
-
-**Fixes to the above, after review** (added by Claude, same day) — see `docs/DEVLOG.md`'s 2026-07-20
-Claude entry for the full account of what needed fixing and why:
-- Fixed `gunsmithCode` incorrectly including a weapon-name prefix (e.g. `"Locus-1B2A4B8C9C"` instead of
-  `"1B2A4B8C9C"`) — the vision prompt now explicitly forbids the prefix, plus a new structural backstop
-  in `adminParser.js`'s `correctGunsmithCode` (`stripCodePrefix()`) as defense in depth.
-- Added the per-attachment slot-type extraction (e.g. "Muzzle", "Barrel") that was part of the original
-  design but never implemented — `visionExtract.js` now returns a parallel `attachmentSlots` array,
-  attached as Cloudinary `context` metadata by `loadoutImageCache.js`'s `uploadLoadoutImage()`. Not
-  bot-facing; `Loadout.attachments` and everything downstream stay plain strings, unchanged.
-- Fixed `DEFAULT_LOCATION`'s fallback value (`'us-central1'` → `'us'`) to match the actually-working
-  Multi-Region endpoint already set in `.env`'s `GCP_LOCATION` — the fallback itself was still wrong
-  even after the real `.env` value was found.
-- Removed unused `@google-cloud/vertexai`/`@google/genai` from `package.json`/`package-lock.json` —
-  confirmed via grep, zero imports anywhere; the implementation is a raw `fetch` call, no SDK.
-- Confirmed the shipped code genuinely uses `gemini-3.5-flash` (not a silent `gemini-2.5-flash`
-  fallback mentioned in Antigravity's own migration notes during debugging) via a fresh live extraction.
-
-**Comment correction: `correctGunsmithCode` accuracy** (`8d81f54`)
-- Fixed the top-level comment to accurately describe current behavior. The old comment incorrectly
-  claimed the function only fires on type mismatches and never touches same-type characters, but the
-  implementation now includes a third branch that normalizes lowercase letters in letter positions
-  (same type, wrong case). Updated the comment to clearly explain all three correction branches:
-  (1) actual type mismatches via look-alike maps, (2) case-normalization for lowercase letters in
-  letter positions (e.g., lowercase 'l' → 'I' in a letter slot), and (3) no-op for already-correct
-  characters. Emphasizes the WHY (handling vision model OCR errors) rather than just describing
-  the code line-by-line. All 5 verification test cases pass unchanged.
+### Proposed: v2.25.1
 
 **Housekeeping + `/manage` accent colors** (added by Claude, 2026-07-20) — committed, not pushed
 - Deleted 2 stale settings backups: `.claude/settings.local.json.bak-20260715-110452` and
