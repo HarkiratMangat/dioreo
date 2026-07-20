@@ -4,3 +4,4 @@ node_modules
 gun-builds/
 local/
 .claude/settings.local.json*
+.superpowers/
