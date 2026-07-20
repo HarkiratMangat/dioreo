@@ -248,6 +248,41 @@ function parseLoadoutBadges(badgesStr) {
     return { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized };
 }
 
+// Gunsmith-code structural corrector (added for /autobuild's vision-extraction pipeline) -- CODM
+// Gunsmith share codes alternate Number-Letter-Number-Letter... for their full length (confirmed
+// against a real shareCode already referenced in this codebase, manage.js's placeholder example
+// "1I2C6B8A9D"). A vision model reading a small, low-contrast in-game font is expected to
+// occasionally misread a character as its visual look-alike from the WRONG character class for its
+// position -- a digit-shaped glyph landing in a letter slot, or vice versa. Position parity (even
+// index = digit, odd index = letter) decides what a character SHOULD be; a small look-alike map
+// decides what to snap it to if it's currently the wrong type. A character already the right type
+// for its position is left completely untouched, even if it visually resembles something else (an
+// '8' correctly sitting in a digit slot is never touched, even though '8' can also look like 'B') --
+// this only fires on an actual type mismatch, never a same-type "does this look right" guess, which
+// would risk corrupting already-correct input.
+const DIGIT_TO_LETTER = { '0': 'O', '1': 'I', '8': 'B', '5': 'S' };
+const LETTER_TO_DIGIT = { O: '0', I: '1', L: '1', B: '8', S: '5' };
+const LOWERCASE_LETTER_CORRECTION = { 'l': 'I', 'o': 'O' }; // digit-like lowercase letters in letter positions
+
+function correctGunsmithCode(code) {
+    if (!code) return code;
+    return code.split('').map((ch, i) => {
+        const expectDigit = i % 2 === 0; // position 0,2,4,... = digit; 1,3,5,... = letter
+        if (expectDigit && /[A-Za-z]/.test(ch)) {
+            return LETTER_TO_DIGIT[ch.toUpperCase()] || ch; // no known look-alike -- leave as-is
+        }
+        if (!expectDigit && /[0-9]/.test(ch)) {
+            return DIGIT_TO_LETTER[ch] || ch;
+        }
+        // Normalize lowercase letters to uppercase in letter positions (Gunsmith codes use uppercase);
+        // digit-like lowercase letters have specific uppercase mappings.
+        if (!expectDigit && /[a-z]/.test(ch)) {
+            return LOWERCASE_LETTER_CORRECTION[ch] || ch.toUpperCase();
+        }
+        return ch; // already the right type for its position -- untouched
+    }).join('');
+}
+
 // Cloudinary placeholder used elsewhere for loadouts that don't have a real screenshot yet (see
 // scripts/createPlaceholderLoadouts.js) — reused here as the bulk-add default when a block omits
 // the image key, so a bulk submission is never blocked on having every image ready up front.
@@ -403,4 +438,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode };
