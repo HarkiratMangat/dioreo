@@ -50,6 +50,34 @@ function buildImageUrl(imageKey) {
     return imageKey.startsWith('http') ? imageKey : `https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/${imageKey}`;
 }
 
+// Deterministic weaponKey + next-build-number + Cloudinary-key computation for /autobuild -- no AI
+// involved (per the design spec). weaponKey matches the exact convention every other write site in
+// this codebase already uses (index.js's add_loadout_/edit_loadout_ handlers: lowercase, spaces
+// stripped). buildName follows a plain "Build N" convention specific to auto-created loadouts (there's
+// no human-typed variant label like "Aggressive Flex" available from a screenshot) -- N is computed
+// from the HIGHEST existing "Build N" number among this weapon's current builds, not a count, so a
+// deleted build in the middle can't produce a colliding buildName. Non-"Build N"-shaped existing names
+// are simply ignored for this max-finding purpose, not treated as errors.
+// imageKey follows the documented convention (CLAUDE.md's "Recommended naming convention" note):
+// WeaponKey-BuildNum, all-caps, hyphens preserved from the weapon name's own word breaks (a
+// multi-word name like "Holger 26" becomes "HOLGER-26", a single-word name stays single-word with no
+// hyphen invented that wasn't already implied by a space).
+function computeWeaponKeyAndBuild(weaponName, existingBuildNames) {
+    const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
+
+    let maxBuildNum = 0;
+    for (const name of existingBuildNames) {
+        const match = /^Build (\d+)$/.exec(name || '');
+        if (match) maxBuildNum = Math.max(maxBuildNum, parseInt(match[1], 10));
+    }
+    const nextBuildNum = maxBuildNum + 1;
+
+    const imageBase = weaponName.trim().toUpperCase().replace(/\s+/g, '-');
+    const imageKey = `${imageBase}-${nextBuildNum}`;
+
+    return { weaponKey, buildName: `Build ${nextBuildNum}`, imageKey };
+}
+
 // Real existence check against Cloudinary's CDN (2026-07-18, /manage loadout UX overhaul) -- this
 // bot has never validated an admin-typed Cloudinary key before saving a loadout, and buildImageUrl()
 // above CAN'T validate anything itself (it's pure string interpolation, no network call). This is
@@ -274,4 +302,4 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     return { components, flags: 32768 };
 }
 
-module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel };
+module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild };
