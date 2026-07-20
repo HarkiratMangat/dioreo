@@ -1160,6 +1160,41 @@ client.on('interactionCreate', async interaction => {
     // ==========================================
     if (interaction.isButton()) {
 
+        // --- AUTOBUILD: CONFIRM ---
+        if (interaction.customId.startsWith('autobuild_confirm_')) {
+            const token = interaction.customId.replace('autobuild_confirm_', '');
+            await interaction.deferUpdate();
+            const { confirmAndWrite } = require('./utils/autobuildPipeline');
+            return confirmAndWrite(interaction, token);
+        }
+
+        // --- AUTOBUILD: CANCEL ---
+        if (interaction.customId.startsWith('autobuild_cancel_')) {
+            const token = interaction.customId.replace('autobuild_cancel_', '');
+            await interaction.deferUpdate();
+            const { cancelReview } = require('./utils/autobuildPipeline');
+            return cancelReview(interaction, token);
+        }
+
+        // --- AUTOBUILD: OPEN LOADOUT --- answers THIS button's own interaction with a brand-new PUBLIC
+        // message (not an edit of the ephemeral confirmation), same shape /dmz's execute() uses for its
+        // own initial send. See the design spec's "Open Loadout" section.
+        if (interaction.customId.startsWith('autobuild_openloadout_')) {
+            const loadoutId = interaction.customId.replace('autobuild_openloadout_', '');
+            const Loadout = require('./models/Loadout');
+            const { buildLoadoutCard, getMpCategoryAccent } = require('./utils/loadoutRender');
+            const doc = await Loadout.findById(loadoutId).lean();
+            if (!doc) {
+                return interaction.reply({ content: '❌ That loadout no longer exists.', ephemeral: true });
+            }
+            const categoryBuilds = await Loadout.find({ category: doc.category, mode: 'MP' }).lean();
+            const accentColor = getMpCategoryAccent(doc.category);
+            const cardPayload = buildLoadoutCard([doc], 0, { color: accentColor, idPrefix: 'mp', isEphemeral: false, categoryBuilds });
+            await interaction.deferReply({ ephemeral: false });
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+        }
+
         // DRAW PRICES REGION TOGGLE BUTTON -- replaced the old select-menu ('select_price_region')
         // with a single toggle button per Harkirat's drawPrices_ui.json redesign. custom_id encodes
         // the region to SWITCH TO directly (drawprices.js always labels/IDs the button with the
