@@ -263,8 +263,14 @@ async function cancelReview(interaction, token) {
 function buildEditModal(token, data) {
     const modal = new ModalBuilder().setCustomId(`autobuild_editmodal_${token}`).setTitle('Edit Extracted Loadout');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('code').setLabel('Gunsmith Code').setStyle(TextInputStyle.Short).setValue(data.gunsmithCode).setRequired(true)),
+        // `|| ''` fallback on both -- TextInputBuilder.setValue(undefined) throws SYNCHRONOUSLY, which would
+        // throw inside showModal() before the interaction is ever acknowledged (the exact production incident
+        // documented in CLAUDE.md's `/manage` batch-refinement-pass section: buildEditDrawModal's
+        // .setValue(targetDraw.thumbnailUrl) on a legacy doc missing that field). Gemini extraction can
+        // genuinely leave weaponName/gunsmithCode undefined on a bad read, so this can't assume they're set
+        // the way category/badgesRaw two lines below already correctly don't assume.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('code').setLabel('Gunsmith Code').setStyle(TextInputStyle.Short).setValue(data.gunsmithCode || '').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line, 5 total)').setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category').setStyle(TextInputStyle.Short).setPlaceholder('AR / SMG / LMG / MARKSMAN / SNIPER / SHOTGUN / SECONDARIES').setValue(data.category || '').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('badges').setLabel('Badges (optional)').setStyle(TextInputStyle.Short).setPlaceholder('meta,best,top5,toxic').setValue(data.badgesRaw || '').setRequired(false))
@@ -305,7 +311,11 @@ async function applyEditSubmission(interaction, token) {
     pendingAutobuilds.set(token, updated);
 
     const card = buildReviewCard(token, updated);
-    return interaction.editReply(card);
+    // NOT interaction.editReply(card) -- `card` is raw Components V2 JSON (a type-17 Container), and
+    // discord.js's high-level editReply()/reply()/followUp()/update() don't reliably serialize that (no
+    // builder class exists for a type-17 Container). Same bypass runExtraction() already uses above for
+    // the identical shape of payload -- sendV2Payload PATCHes @original via a raw rest call instead.
+    return sendV2Payload(interaction, card.components, { flags: card.flags });
 }
 
 module.exports = { pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission };
