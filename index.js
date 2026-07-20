@@ -1204,9 +1204,9 @@ client.on('interactionCreate', async interaction => {
             const { pendingAutobuilds, buildEditModal } = require('./utils/autobuildPipeline');
             const data = pendingAutobuilds.get(token);
             if (!data) {
-                return interaction.reply({ content: '❌ This review has expired. Run `/autobuild` again.', ephemeral: true });
+                return await interaction.reply({ content: '❌ This review has expired. Run `/autobuild` again.', ephemeral: true });
             }
-            return interaction.showModal(buildEditModal(token, data));
+            return await interaction.showModal(buildEditModal(token, data));
         }
 
         // DRAW PRICES REGION TOGGLE BUTTON -- replaced the old select-menu ('select_price_region')
@@ -2346,7 +2346,7 @@ client.on('interactionCreate', async interaction => {
         if (customId.startsWith('autobuild_editmodal_')) {
             const token = customId.replace('autobuild_editmodal_', '');
             const { applyEditSubmission } = require('./utils/autobuildPipeline');
-            return applyEditSubmission(interaction, token);
+            return await applyEditSubmission(interaction, token);
         }
 
         // NOTE (fixed during review): this used to fetch unconditionally before branching on
