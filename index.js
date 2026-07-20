@@ -1,21 +1,11 @@
-// ==========================================
-// PHASE 1: WEB SERVER ARCHITECTURE (KEEP-ALIVE)
-// ==========================================
-// Express setup acts as a lightweight web server endpoint. This prevents modern hosting 
-// environments (like Render or Railway) from spinning down or idling the bot container 
-// during periods of inactivity on free/hobby tiers.
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
+// NOTE (removed 2026-07-20): a "PHASE 1: WEB SERVER ARCHITECTURE (KEEP-ALIVE)" banner used to sit
+// here, wrapping a small Express server whose only job was stopping Render/Railway's free tier from
+// idling the bot container during inactivity — a hosting-specific workaround, not part of the bot's
+// own logic. Removed once the bot moved to a GCP VM under systemd (2026-07-17), which runs the
+// process continuously and doesn't idle/spin down, so the keep-alive ping had nothing left to do.
+// Left as a breadcrumb, same convention as the PHASE 5 removal note further down, so Phase numbering
+// starting at 2 doesn't read like something's missing.
 const { sendAlert } = require('./utils/alertWebhook'); // Discord webhook alerting; reads LOG_WEBHOOK_URL lazily, no-op if unset
-
-app.get('/', (req, res) => {
-    res.send("Dior's Build Bot is running successfully!");
-});
-
-app.listen(port, "0.0.0.0", () => {
-    console.log(`📡 Keep-alive web infrastructure listening on port ${port}`);
-});
 
 // SAFETY NET: Node crashes the whole process on an unhandled promise rejection by default
 // (since Node 15). The interactionCreate handler's own try/catch already covers most Discord

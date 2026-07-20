@@ -209,6 +209,10 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
     - **Deferred to its own session (Opus 4.8 high):** per-alert unique IDs + a downloadable detailed
       text-log export, and a plain-language "what does each alert mean" explainer. Needs a persistent
       alert store + an export surface — real design, intentionally not in this light pass.
+      **Queued 2026-07-20 (not yet started)** — bundled together with the admin `/status` command
+      below into one Opus 4.8-high handoff, since `/status` would want to surface some of the same
+      alert-store/metrics data this needs anyway. See the `/status` bullet in "Next planned work" for
+      the other half.
 - **Render (retired):** service `srv-d850b2og4nts73fhpfog` **SUSPENDED** (not deleted). Keep as fallback
   until ~2026-07-24, then delete once GCP proves reliable. Do NOT deploy to it.
 - **Ops Agent — INSTALLED 2026-07-17** (was deferred; the earlier install-script 404 was transient — the
@@ -391,6 +395,27 @@ value. Several nav buttons use shorter custom_id suffixes than their actual comm
 name (e.g. button `nav_prices` → command `draw`). `index.js` has a
 `NAV_COMMAND_ALIASES` map bridging these — check it before assuming
 `client.commands.get(strippedCustomId)` will just work.
+
+## `/manage` per-page accent colors (2026-07-20)
+Every `/manage` page used to render with one flat neutral panel color (`PANEL_ACCENT`,
+`#2b2d31`) regardless of which entity it was showing. `commands/manage.js`'s new `PAGE_ACCENT` map
+gives each page its own identity color instead: Draws/Calendar/Patch Notes reuse their own command's
+existing `PRESET_ACCENT` value verbatim (copied in rather than `require()`'d from those 3 command
+files, to avoid coupling `manage.js`'s load to them for one constant each — keep in sync by hand if
+any of those `PRESET_ACCENT`s are ever re-picked, see the color repalette design-decision-log entry).
+Season has no page in `PAGES` at all (its two actions open their modal directly, see the Command
+architecture section above), so it needs no entry.
+- **MP/DMZ Loadouts have no existing command-level `PRESET_ACCENT` to borrow** — loadout cards use
+  per-category (`MP_CATEGORY_ACCENT`) or fixed per-mode colors, never one flat command identity color.
+  Rather than invent a hex value, their accents were **sampled directly off the actual emoji assets
+  already used as each page's icon**, using the bot's own extraction pipeline
+  (`utils/colorExtract.js`'s `getDominantColor()`) run once against the Discord CDN emoji PNGs: MP red
+  from `:Rank_7Legendary_CODM:` → `#FF3430` (`16725040`), DMZ blue from `:DMZ_CODM:` → `#337BA6`
+  (`3373990`). Same philosophy as the accent-color-extraction system elsewhere in this bot (real
+  extracted pixels over a guessed value) — these are one-time constants baked into `PAGE_ACCENT`, not
+  a live per-render extraction (the emoji assets themselves never change, unlike a user's avatar).
+- Verified all 5 pages resolve to their intended hex directly via `buildManagePage()`'s return value
+  before shipping.
 
 ## Panel interaction locks — `/manage` (admin-only) and `/settings` (author-lock + passive idle auto-disable) (2026-07-14)
 Two separate gaps, fixed the same session: `/manage`'s own slash-command `execute()` only ever
@@ -2585,11 +2610,14 @@ architecture section's `/manage` note. Still open from this batch:
 - `[P2 · S]` **Admin `/status` command** — surface VM health/metrics in-bot (a mini ping test: is the bot
   holding up, gateway state, RAM/CPU, restart count), admin-only, building directly on `scripts/vmstatus.sh` /
   `scripts/vmpeaks.sh`, which already compute all of this — so checking the bot doesn't require asking Claude
-  to run a script. (Notes item L60.)
-- `[P2 · S · 🔗bundle-with any /manage work]` **`/manage` accent colors** — give the panel per-page accent colors instead of a flat one: draws / calendar
-  / patch-notes pages use their own native command accent colors; Season End needs none (it's a direct modal
-  open, no panel is rendered); MP loadouts a red (from the `:Rank_7Legendary_CODM:` emoji), DMZ a blue (from
-  the `:DMZ_CODM:` emoji). Cosmetic; `PAGES` in `commands/manage.js` is the place. (Notes item L61.)
+  to run a script. (Notes item L60.) **Queued 2026-07-20** — bundled with the webhook-alert improvements
+  (per-alert IDs / log export / explainer, see "Deployment & Ops (GCP)" above) into one Opus 4.8-high
+  handoff, since Harkirat wants `/status` to also surface some of those same alert-store metrics — not
+  yet started.
+- ~~**`/manage` accent colors**~~ — **SHIPPED 2026-07-20.** See "`/manage` per-page accent colors" under
+  the Command architecture section below for what actually landed — it ended up as real sampled colors
+  off the Legendary-rank and DMZ emoji assets (via the bot's own `getDominantColor()` pipeline), not
+  invented hex values.
 
 ### Loadout automation (screenshot → live loadout) — `/autobuild` PoC BUILT 2026-07-19, Vertex AI
 ### migration BUILT + FIXED 2026-07-20, pending Harkirat's live Discord test
@@ -2873,18 +2901,32 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
 
 - **General bot/code housekeeping session** (added 2026-07-15, Harkirat's request — "at some point
   soon", not urgent). A dedicated pass for accumulated cruft rather than doing it piecemeal mid-feature.
-  Known items so far:
-  - Delete leftover config backups: `.claude/settings.local.json.bak-*` (shows as untracked in
-    `git status`) and `~/.claude/settings.json.bak-*`. Both changes they back up are verified working.
-  - Audit for other stale absolute paths after the 2026-07-14 repo relocation to `/Applications/Claude
-    Code/Diors-Builds`. The known ones are FIXED (the `SessionStart` hook now resolves via
-    `$CLAUDE_PROJECT_DIR`; two `node -c` permission entries are now relative) — this is a sweep for
-    anything missed, ideally preferring relative/dynamic paths so a future move can't rot them again.
-    **Note: the memory store staying at the `-Applications-Diors-Builds` slug is NOT part of this — it's
-    deliberate and move-proof, see the canonical-memory-path note at the top of this file.**
-  - General dead-code / stale-comment / unused-dependency review across the repo.
-  - Revisit whether `patchnotes.js`'s media carousel needs the component-count chunking `draws`/
-    `calendar` have (see "Known open issues").
+  **Most of this batch DONE 2026-07-20:**
+  - ~~Delete leftover config backups~~ — DONE: both `.claude/settings.local.json.bak-20260715-110452`
+    and `~/.claude/settings.json.bak-20260715-102110` deleted, after confirming the current settings
+    files they back up still parse as valid JSON.
+  - ~~Audit for other stale absolute paths~~ — DONE, came back clean: no live config/code references
+    the pre-relocation path anymore. The only remaining `/Applications/Diors-Builds` mentions are
+    historical incident narrative in `docs/SESSION-START.md`/`CHANGELOG.md`/`DEVLOG.md`, correctly
+    describing the past hook bug, not stale active paths. **Note: the memory store staying at the
+    `-Applications-Diors-Builds` slug is NOT part of this — it's deliberate and move-proof, see the
+    canonical-memory-path note at the top of this file.**
+  - ~~General dead-code / stale-comment / unused-dependency review~~ — DONE. Found and fixed 2 real
+    items: (1) the unused top-level `mongodb` npm dependency (declared in `package.json` but never
+    directly `require()`'d anywhere — only `mongoose`, which bundles its own driver, is actually used)
+    — removed via `npm uninstall mongodb`, confirmed `mongoose` and every touched command module still
+    load fine, `npm audit` unchanged (same pre-existing tracked discord.js/undici/xlsx findings, nothing
+    new). (2) `index.js`'s Express "keep-alive" HTTP server (the old "PHASE 1" banner) — existed purely
+    to stop Render/Railway's free tier from idling the bot; confirmed dead now that the bot's been on
+    the GCP VM under systemd since 2026-07-17 (doesn't idle/spin-down), and nothing else in the repo
+    referenced that endpoint or port 3000. Removed (code + the now-unused `express` dependency) with
+    Harkirat's explicit confirmation first, since it's a live-runtime change, not pure repo hygiene. A
+    breadcrumb note was left where "PHASE 1" used to sit, same convention as the existing removed-
+    "PHASE 5" note further down in `index.js`, so the phase numbering (now starting at 2) doesn't read
+    like something's missing. Checked every `utils/*.js` file for orphaned/unreferenced files — none
+    found.
+  - **Still open:** revisit whether `patchnotes.js`'s media carousel needs the component-count
+    chunking `draws`/`calendar` have (see "Known open issues") — not touched this pass.
 - **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
   request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
   badly (see the "Branch-testing discovery" note above and `[[feedback_multiple_bot_instances]]`).

@@ -280,13 +280,33 @@ function loadoutsPageDef(mode, headerLabel, icon) {
     };
 }
 
-// Neutral dark panel color — this is an internal admin tool, not one of the 5 public nav-button
-// commands, so it deliberately doesn't draw from the PRESET_ACCENT palette those use.
+// Neutral dark panel color — used only as the fallback for a page with no accent of its own.
 const PANEL_ACCENT = 0x2b2d31;
+
+// Per-page accent colors (2026-07-20) — each page reuses its matching command's own identity
+// color instead of the flat neutral panel color every page used before. Draws/Calendar/Patch
+// Notes mirror their own command's `PRESET_ACCENT` exactly (values copied rather than required
+// in, to avoid coupling manage.js's load to those 3 command modules for one constant each — keep
+// these in sync by hand if any of those 3 PRESET_ACCENT values are ever re-picked). Loadouts MP/DMZ
+// don't have an existing command-level PRESET_ACCENT to borrow (loadout cards use per-category/
+// per-mode colors, not one fixed identity color) — their accents were instead sampled directly off
+// the actual emoji assets already used as each page's icon (`utils/colorExtract.js`'s
+// `getDominantColor()`, the bot's own extraction algorithm, run once against the Discord CDN emoji
+// PNGs rather than a guessed hex): MP red from `:Rank_7Legendary_CODM:` → #FF3430, DMZ blue from
+// `:DMZ_CODM:` → #337BA6. Season has no page in `PAGES` at all (see the dropdown note below), so it
+// needs no entry here.
+const PAGE_ACCENT = {
+    draws: 7032445,       // Plum Fortune #6B4E7D — mirrors commands/draws.js's PRESET_ACCENT
+    calendar: 3821672,     // Slate Harbor #3A5068 — mirrors commands/calendar.js's PRESET_ACCENT
+    patchnotes: 15909424,  // Patch Gold #F2C230 — mirrors commands/patchnotes.js's PRESET_ACCENT
+    loadouts_mp: 16725040, // #FF3430 — sampled from the :Rank_7Legendary_CODM: emoji
+    loadouts_dmz: 3373990  // #337BA6 — sampled from the :DMZ_CODM: emoji
+};
 
 function buildManagePage(page) {
     const pageKey = PAGES[page] ? page : 'draws';
     const pageData = PAGES[pageKey];
+    const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
 
     const components = [
         { type: 10, content: `# ${emojis.database} Database Management\n## ${pageData.icon} ${pageData.headerLabel}` },
@@ -337,7 +357,7 @@ function buildManagePage(page) {
     ];
     components.push({ type: 1, components: [{ type: 3, custom_id: 'mng_pagesel', placeholder: 'Jump to a section...', options: pageOptions }] });
 
-    return [{ type: 17, accent_color: PANEL_ACCENT, components }];
+    return [{ type: 17, accent_color: accentColor, components }];
 }
 
 // --- Generic one-field "search by name" modal, shown when Edit/Delete is clicked — buttons can't

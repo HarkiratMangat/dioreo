@@ -973,3 +973,25 @@ Claude entry for the full account of what needed fixing and why:
   characters. Emphasizes the WHY (handling vision model OCR errors) rather than just describing
   the code line-by-line. All 5 verification test cases pass unchanged.
 
+**Housekeeping + `/manage` accent colors** (added by Claude, 2026-07-20) — committed, not pushed
+- Deleted 2 stale settings backups: `.claude/settings.local.json.bak-20260715-110452` and
+  `~/.claude/settings.json.bak-20260715-102110` (verified the current files they back up still parse
+  as valid JSON first).
+- Swept for stale absolute paths left from the 2026-07-14 repo relocation — came back clean, no live
+  code/config references the old path anymore.
+- **`/manage` pages now each get their own accent color** instead of one flat neutral gray — Draws/
+  Calendar/Patch Notes reuse their own command's existing `PRESET_ACCENT`; MP Loadouts gets a red
+  (`#FF3430`) and DMZ a blue (`#337BA6`), both sampled directly off the `:Rank_7Legendary_CODM:`/
+  `:DMZ_CODM:` emoji assets via the bot's own `getDominantColor()` extraction pipeline rather than a
+  guessed hex. See CLAUDE.md's new "`/manage` per-page accent colors" section for detail.
+- **Removed 2 unused dependencies**: `mongodb` (the raw driver — never directly `require()`'d, only
+  `mongoose` is actually used) and `express` (see next bullet). `npm audit`'s tracked vulnerability set
+  is unchanged (same pre-existing discord.js/undici/xlsx findings, nothing new).
+- **Removed `index.js`'s Express "keep-alive" HTTP server** — a Render/Railway free-tier workaround
+  that outlived its purpose once the bot moved to the GCP VM under systemd (2026-07-17), which doesn't
+  idle/spin-down. Confirmed nothing else in the repo referenced that endpoint or port 3000 first, and
+  got Harkirat's explicit confirmation before removing it since it's a live-runtime behavior change,
+  not pure repo hygiene. Left a breadcrumb comment where its old "PHASE 1" banner used to sit, matching
+  the existing convention already used for the earlier removed "PHASE 5" banner in the same file, so
+  the phase numbering (now starting at 2) doesn't read like something's missing.
+

@@ -729,6 +729,48 @@ now fixed and re-verified live as of this entry; see this same date's entry abov
 migration details this one is reviewing, and CLAUDE.md's "Loadout automation" section for the
 consolidated current status.
 
+## 2026-07-20 | Claude — Queued housekeeping while `/autobuild` awaits its live test
+
+With `/autobuild` code-complete but not yet live-tested by Harkirat, this session picked up a small
+mixed batch instead of waiting idle: the standing "general housekeeping" roadmap item, plus a cosmetic
+`/manage` request, plus one runtime cleanup that came up along the way. Also decided, jointly with
+Harkirat, to bundle two other open roadmap items (the webhook-alert improvements and the admin
+`/status` command) into a single future Opus 4.8-high handoff rather than doing them here — they
+overlap (Harkirat wants `/status` to surface some of the same alert-store metrics), and both are
+real design work better suited to a dedicated session than squeezed in alongside light cleanup.
+
+**Housekeeping, mostly mechanical:** deleted the two stale `.bak-*` config backups (verified the
+current files they back up still parse first), and swept for stale absolute paths left over from the
+2026-07-14 repo relocation — came back clean, the only remaining old-path mentions are this file's own
+and CHANGELOG's/SESSION-START's historical narrative describing the past hook bug, not live config.
+
+**`/manage` per-page accent colors**, the one genuinely new feature this session: every page used to
+render in one flat neutral gray regardless of which entity it showed. Draws/Calendar/Patch Notes now
+reuse their own command's existing `PRESET_ACCENT`. MP/DMZ Loadouts had no existing command-level
+accent to borrow (loadout cards use per-category/per-mode colors, never one fixed identity color), so
+rather than invent a red and a blue, ran the bot's own `getDominantColor()` extraction pipeline
+directly against the `:Rank_7Legendary_CODM:` and `:DMZ_CODM:` emoji CDN images — real sampled colors
+(`#FF3430`, `#337BA6`) instead of guessed ones, matching the same philosophy the avatar/banner accent
+system already uses elsewhere in this bot.
+
+**The one real find worth flagging on its own: `index.js`'s Express "keep-alive" server was dead
+weight.** It existed purely to stop Render/Railway's free tier from idling the bot container — a
+hosting-specific workaround, never part of the bot's own logic — and had quietly outlived its purpose
+once the bot moved to the GCP VM under systemd on 2026-07-17 (a process that doesn't idle/spin-down in
+the first place). Confirmed nothing else in the repo referenced that endpoint or port 3000 before
+touching it, and — since this changes actual runtime behavior on a live production box, not just repo
+hygiene — surfaced it to Harkirat and got an explicit "yes, remove it" before deleting the code and the
+now-unused `express` npm dependency. Left a breadcrumb note where its old "PHASE 1" banner comment used
+to sit, matching the exact convention this file already established for the earlier removed "PHASE 5"
+banner, so `index.js`'s phase numbering (now starting at 2) reads as intentional rather than something
+missing — a direct, deliberate callback to that earlier convention rather than reinventing one.
+
+While in there, also caught and removed one unused top-level dependency (`mongodb`, the raw driver —
+declared in `package.json` but never directly `require()`'d anywhere; only `mongoose`, which bundles
+its own compatible driver, is actually used). Confirmed via `npm audit` that removing both dependencies
+didn't change the tracked vulnerability set at all (still just the same pre-existing discord.js/undici/
+xlsx findings) — pure subtraction, no new exposure.
+
 ---
 
 # Part B — Lessons Ledger (thematic)
