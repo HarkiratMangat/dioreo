@@ -560,6 +560,73 @@ working code — never because a fix merely sounded right. None of this shipped 
 
 ---
 
+## 2026-07-20 — A "still active" link that was actually dead, and designing an automation idea properly
+
+Picked up where last session's Cloudinary deep-dive got cut off by a usage limit: 3 files sitting
+uncommitted (CLAUDE.md, `cloudinaryCache.js`, `patchNotesCache.js`), correct and held on purpose, plus
+one real open bug — `/patch notes`' Season 6 screenshots had gone dark, blocked on Harkirat re-supplying
+source URLs.
+
+**The link wasn't "maybe still active" — it was already proven dead, and Discord's own client was
+quietly hiding that fact.** Asked Harkirat for fresh URLs; he said the images still looked fine when he
+ran the command, so maybe the old ones were still working. Rather than take that at face value, ran a
+plain `curl` against the exact stored URL — 404, at the CDN origin itself, no ambiguity. The reason he
+still saw the images: `media.discordapp.net`'s signed attachment links (`ex=`/`is=`/`hm=` params) get
+silently refreshed by Discord's own client when it renders a message whose source channel the *viewer*
+can still resolve — a real, documented Discord behavior, not a bug. That refresh only happens
+client-side, for someone with access to the original channel; it does nothing for a server-side fetch
+(Cloudinary uploading via URL, or any other Discord user without that access). The general shape of the
+lesson: "it still looks fine to me" from inside a client that does its own silent patching is not
+evidence the underlying resource is actually alive — check the raw thing directly when that distinction
+matters.
+
+Harkirat supplied 5 fresh URLs, flagged upfront that he'd pasted them in reverse order relative to the
+patch note's `images[]` array — matching each URL's own filename suffix number (`_2`, `_4`, `_5`, `_6`,
+`_7`) against the array's existing order confirmed the correct sequence, rather than trusting the paste
+order or guessing. Each verified live via `curl` before touching anything, re-cached through the
+already-correct `cachePatchImage()` (no code changes needed — the caching logic was fine all along, this
+was purely stale pre-feature data), then the live `SeasonalData` doc's `images[]` updated directly via
+the MongoDB MCP tool (now connected and working, after last session's permissions fix) rather than going
+through `/manage`'s modals for a change that's really "replace this array with these exact 5 URLs in
+this exact order."
+
+**The loadout-automation idea — corrected twice, in ways worth remembering the shape of, not just the
+conclusion.** Harkirat proposed a screenshot → OCR → auto-rename → auto-Cloudinary-upload →
+auto-Mongo-doc pipeline, using PaddleOCR or Apple Vision Framework, submitted via a Discord modal. Two
+real corrections came out of actually thinking through the constraints rather than just agreeing with
+the framing:
+- **OCR was the wrong tool class for this job.** Raw OCR gives you text + coordinates; turning that into
+  "this string is the weapon name, these five are attachments" needs layout heuristics that break the
+  moment the game's own UI changes between seasons. What the task actually needs is *structured semantic
+  extraction*, which is what a vision-capable LLM does natively via a prompt — no heuristics to maintain,
+  no model to host on a 1GB VM. Recommending the "more sophisticated-sounding" option (a real OCR engine)
+  would have been the wrong call here; the simpler integration (one API call) is also the more robust one.
+- **Got the Discord-mechanics detail wrong on the first pass, and Harkirat caught it with a concrete
+  counter-example** rather than just accepting the claim. Said modals can't take file uploads — true —
+  but phrased it in a way that read as "so this can't accept a screenshot directly," which is false: a
+  *slash-command attachment option* (`addAttachmentOption()`) does exactly this, and he had a screenshot
+  of another bot using one sitting right there to point at. The fix wasn't just correcting the claim, it
+  was noticing that being right about the narrow mechanism (modals) while wrong about its implication
+  (the whole feature) is exactly the kind of error that sounds authoritative and still misleads. Checked
+  against his actual screenshot before restating the corrected version, rather than just taking his word
+  for it either.
+Also worth noting: Harkirat's own follow-up design (fuzzy-matching attachments against known values, and
+a structural Number-Letter-alternation corrector for Gunsmith codes targeting the exact O/0, D/O, B/8
+confusions he'd personally observed) was better-targeted than anything in the first pass — he'd actually
+watched the failure modes happen and named the fix precisely, which is a stronger source than "correcting
+OCR errors" in the abstract. Design captured in full in CLAUDE.md's new "Loadout automation" roadmap
+section; build deliberately deferred to its own future session rather than squeezed in here.
+
+On the vision-backend choice: confirmed plainly that a Claude Pro/Max subscription does not include any
+API usage at all (separate billing, pay-per-token, no included credits) — worth stating this clearly
+rather than letting an assumption like "I already pay for Claude, so this is free" go unchallenged.
+Recommended Gemini instead specifically because Harkirat already has unused GCP credits sitting in the
+same billing account that runs the bot's VM, and Gemini's API has a real free tier on top of that as a
+first line before any credits get touched at all — matching the actual resources on hand instead of
+defaulting to "use the same vendor as everything else."
+
+---
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.

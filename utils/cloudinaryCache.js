@@ -68,6 +68,16 @@ async function cacheThumbnail(title, sourceUrl) {
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(title), // folder is baked into this path (temp_draws/{slug})
+            // BUG FIX (found live, 2026-07-19): the `temp_draws/` prefix above is baked into the
+            // public_id string, but Cloudinary's newer "Folder" UI (asset_folder, a separate metadata
+            // field decoupled from the public_id path) never got told about it -- every draw thumbnail
+            // was uploading correctly and resolving correct URLs, but Cloudinary's own dashboard showed
+            // them all sitting in the root "Home" folder instead of grouped, which is exactly what
+            // confused Harkirat when browsing the account directly. Explicitly setting asset_folder
+            // fixes this going forward without touching the public_id shape (so no existing URL in
+            // MongoDB is affected) -- the ~12 pre-existing assets that predated this fix were moved into
+            // a real temp_draws/ folder by hand, one time, via the Cloudinary MCP tool's asset-update.
+            asset_folder: FOLDER,
             overwrite: true,
             invalidate: true,
             resource_type: 'image'

@@ -24,8 +24,17 @@ A peek at what's planned (not built yet):
 - **A `/define` command** (Urban Dictionary lookup) — just for fun.
 - Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your
   own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
+- **Near-1-click loadout adding** — submit a build screenshot and the bot extracts the weapon name,
+  Gunsmith code, and attachments automatically instead of typing each one by hand.
 
 ---
+
+## v2.24.0 — July 20, 2026
+- **Fixed `/patch notes`' broken images.** The current season's screenshots had gone dark (the
+  original hosting link expired) — replaced with fresh, permanently-hosted copies, so they display
+  reliably for everyone instead of only looking fine to whoever happened to still have cached access.
+- Behind-the-scenes Cloudinary cleanup — tidied up file organization so everything shows up properly
+  grouped in the admin dashboard.
 
 ## v2.23.0 — July 18, 2026
 - **The admin panel's weapon-build page is finally clear about images.** It now explains right there

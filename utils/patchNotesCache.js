@@ -51,6 +51,11 @@ async function cachePatchImage(patchId, imageIndex, sourceUrl) {
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(patchId, imageIndex),
+            // Same asset_folder fix as utils/cloudinaryCache.js's cacheThumbnail() -- the FOLDER
+            // prefix is already baked into the public_id path, but Cloudinary's newer "Folder" UI
+            // (asset_folder, decoupled from public_id) never got told about it, so nothing here would
+            // have shown up grouped in the dashboard even once it started actually caching successfully.
+            asset_folder: FOLDER,
             overwrite: true,
             invalidate: true,
             resource_type: 'image'

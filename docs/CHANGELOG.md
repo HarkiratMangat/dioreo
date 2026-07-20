@@ -156,6 +156,48 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.24.0 — 2026-07-20
+**Cloudinary `asset_folder` fix + full account cleanup + patch notes broken-image fix** — minor — pushed,
+NOT deployed to the VM yet (Harkirat's explicit call — no need to redeploy for this push).
+
+- `utils/cloudinaryCache.js` / `utils/patchNotesCache.js` now set Cloudinary's `asset_folder` on every
+  upload, not just a `temp_draws/`/`patch_notes/{id}/` prefix baked into the `public_id` path. Both
+  were always functionally correct (URLs always resolved right) — this only fixes Cloudinary's own
+  dashboard never recognizing them as organized into a folder, which is what made them look like they
+  were sitting in "Home" when browsed directly. No `public_id`/URL changes, so no MongoDB data needed
+  touching for this part.
+- **Live Cloudinary account audit + cleanup** (executed directly via the Cloudinary MCP tool + a
+  MongoDB cross-reference, not just code): confirmed the 10 `IMG_XXXX` "unrenamed" assets flagged last
+  session were actually already-superseded dead weight (re-uploaded correctly 15 minutes after the
+  original mistake, timestamps confirm it) — deleted. The 12 correctly-named replacement assets
+  (`DOBVRA-1`, `R9-0-1`, etc., `LOCUS-1`/`-2`) were sitting in Cloudinary's root folder instead of
+  `gun-builds` — moved (public_id/URLs untouched). ~26 of Cloudinary's own default demo assets
+  (`samples/*`) deleted, unrelated to the bot. `DMZ-Assaulter-1`/`DMZ-Scavenger-1` deliberately left
+  alone (Harkirat confirmed: reserved for a future DMZ feature, not a mistake). Real Cloudinary folders
+  now exist for all three subsystems: `gun-builds`, `temp_draws`, `patch_notes`.
+- **Also discovered: Cloudinary's `public_id` (the real URL identifier) and `display_name` (a purely
+  cosmetic dashboard label) are independently-editable fields** — several assets have a correctly-
+  renamed `public_id` but a stale `display_name` still showing the original upload filename, which is
+  what made them look unrenamed when browsing Cloudinary directly even though the bot's URLs were
+  already correct. Not fixed everywhere (cosmetic only), flagged as optional in CLAUDE.md.
+- **Patch notes broken-image bug FIXED (a data fix, not a code fix).** The live Season 6 patch note
+  entry's `images[]` were raw, already-dead `media.discordapp.net` links (confirmed 404 at the CDN
+  origin via direct `curl`, despite still rendering fine in Harkirat's own Discord client — that's
+  Discord's client silently refreshing an expired signed attachment link for a viewer who can still
+  resolve the source channel, which doesn't help a server-side fetch). Harkirat supplied 5 fresh URLs;
+  each verified live, re-cached through the existing `cachePatchImage()` (`patch_notes/
+  6a4bd78c9b44d22e27107d2c/0-4.webp`), and the live `SeasonalData` doc's `patchNotes[0].images` updated
+  directly via the MongoDB MCP tool. `/patch notes` now serves permanent Cloudinary URLs for this entry.
+- **Loadout-automation design captured, not built** (deferred to a dedicated future session) —
+  screenshot → LLM vision extraction (Gemini, not the Claude API — Claude Pro doesn't cover API billing)
+  → structural Gunsmith-code correction + attachment fuzzy-matching → confirm-before-publish → auto
+  weaponKey/build-numbering → Cloudinary upload + Mongo doc. Full design in CLAUDE.md's new "Loadout
+  automation (screenshot → live loadout)" section under the roadmap.
+
+Full technical writeup: CLAUDE.md's "MP loadout system" → "The Cloudinary image workflow, finally
+documented", "Patch notes Cloudinary caching", and "Loadout automation (screenshot → live loadout)"
+sections.
+
 ## v2.23.0 — 2026-07-18
 **`/manage` loadout data-entry UX overhaul + Cloudinary workflow fix** (`de02ee9`) — moderate —
 **deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh` — Gateway connected, 0
@@ -892,8 +934,8 @@ per-push, and that "document" covers no-code/no-push planning sessions.
 # 📋 Unreleased (committed locally, not yet pushed/deployed)
 
 Staging for work not yet live. Proposed number shifts with the work type (see the top-of-file
-versioning note). On deploy, graduate this into a numbered entry and reset to empty.
+versioning note). On push, graduate this into a numbered entry and reset to empty.
 
-*(Empty — the staged v2.23.0 content graduated into the numbered entry above (near the top of the
-version list) when this push went live. Nothing committed-but-unpushed right now.)*
+*(Empty — the staged v2.24.0 content graduated into the numbered entry above (near the top of the
+version list) when this push went out. Nothing committed-but-unpushed right now.)*
 

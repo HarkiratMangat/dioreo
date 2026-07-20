@@ -1778,12 +1778,36 @@ guessed from code alone) before writing this:
   (a new "How Images Work" info block, `commands/manage.js`'s `loadoutsPageDef()`) and in the Add/Edit
   Loadout modals' own field label + placeholder (`buildAddLoadoutModal`/`buildEditLoadoutModal`),
   not just here — the goal was to make this self-explanatory in the tool itself, not just in this file.
-- **Still not solved, and out of scope for this pass**: nothing renames the still-outstanding
-  `IMG_XXXX` assets already sitting in Cloudinary, and there's still no in-bot way to browse what's
-  actually in the `gun-builds` folder — this only fixes the workflow going forward and catches a
-  mismatch at save time. See the roadmap's "Verify Cloudinary folder organization" item (v5 list) for
-  the broader cleanup, which this session's findings directly answer the open question of (yes, it's
-  a real discrepancy — unrenamed uploads — not just how the Cloudinary UI groups things).
+- **Follow-up session (2026-07-19): the "unrenamed" IMG_XXXX assets fully investigated and cleaned up.**
+  A live account audit (all 133 `Loadout` docs' `imageKey`s cross-referenced against every Cloudinary
+  asset, via the Cloudinary MCP tool + a direct MongoDB query, not guessed) found the earlier diagnosis
+  was half right: those 10 `IMG_XXXX` assets were NOT actually causing any broken loadout images —
+  **zero current loadout docs referenced them.** Timestamps told the real story: all 10 were uploaded
+  in one 3-second batch, then the exact same 10 screenshots were re-uploaded correctly-named (`DOBVRA-1`,
+  `R9-0-1`, `50GS-1`/`-2`, `SHORTY-1`, `CROSSBOW-1`/`-2`, `L-CAR-9-1`/`-2`, `MACHINE-PISTOL-1`) just 15
+  minutes later — the admin caught the naming mistake almost immediately and fixed it, but the broken
+  originals were never deleted, and the fix re-uploads landed in Cloudinary's root "Home" folder
+  instead of `gun-builds` (same for `LOCUS-1`/`LOCUS-2`). **Also discovered along the way:** Cloudinary
+  tracks `public_id` (the real URL identifier) and `display_name` (a separate, purely cosmetic
+  dashboard label) as two independently-editable fields — several assets (`BAL-27-*`, `PKM-2`, `SKS-4`)
+  have a correctly-renamed `public_id` but a stale `display_name` still showing the original upload
+  filename, which is what made them LOOK unrenamed when browsing Cloudinary directly even though the
+  bot's URLs were already correct. **Resolved:** the 10 genuinely-orphaned `IMG_XXXX` assets deleted;
+  the 12 correctly-named-but-misplaced assets moved into `gun-builds` (via `asset-update`'s
+  `asset_folder`, which never touches `public_id`/the delivery URL); ~26 of Cloudinary's own default
+  demo assets (`samples/*`, `sample`, `cld-sample*`) also deleted, unrelated to the bot, just account
+  clutter. `DMZ-Assaulter-1`/`DMZ-Scavenger-1` (uploaded 2026-06-16, also orphaned) deliberately left
+  alone — confirmed with Harkirat these are for a future DMZ loadouts feature, not a mistake.
+  **Also fixed the root cause of "draws/patch-notes look like they're in the wrong folder":**
+  `utils/cloudinaryCache.js`/`utils/patchNotesCache.js` always correctly baked their folder into the
+  `public_id` path (`temp_draws/{slug}`, `patch_notes/{id}/{index}`), but never set Cloudinary's newer,
+  separate `asset_folder` field — so the dashboard's own "Folder" grouping never recognized them as
+  organized, even though the URLs were always correct. Both modules now pass `asset_folder` on upload;
+  the 12 pre-existing `temp_draws/` assets were moved into a real folder the same way as the loadout
+  cleanup above. Real Cloudinary folders now exist for all three subsystems: `gun-builds`, `temp_draws`,
+  `patch_notes`. **Still no in-bot way to browse what's in `gun-builds`** — that part of the original
+  "Verify Cloudinary folder organization" roadmap item is genuinely still open, though now much less
+  urgent since the account itself is clean.
 
 ## Autocomplete search is punctuation/whitespace-insensitive, not just substring (`utils/search.js`)
 Every autocomplete route in the bot (loadout weapon search across `/dmz`/`/all`/`/<category>`,
@@ -2004,6 +2028,31 @@ retention model, so this is its own module rather than a reuse of `cloudinaryCac
   sanitize it.
 - Runs on the same boot + 24h `setInterval` schedule as the draws cleanup (`index.js`'s
   `runCloudinaryCleanup()`), same Cloudinary account, separate `patch_notes/` folder.
+- **REAL LIVE BUG found 2026-07-19, FIXED 2026-07-20 (a data fix, not a code fix — the caching code was
+  always correct).** The only current patch note entry (Season 6 — Take Your Heart) had its `images[]`
+  array pointing to raw `media.discordapp.net` URLs, not Cloudinary ones — this caching module never
+  actually ran for it. Root cause: this entry's release date is 2026-07-06, BEFORE this whole caching
+  feature shipped (2026-07-13), and it was never re-submitted through `/manage`'s URLs 1/URLs 2 modals
+  since. Made materially worse by what it fell back to: `media.discordapp.net` URLs with `ex=`/`is=`/
+  `hm=` query params are Discord's newer SIGNED, time-limited CDN proxy links, not permanent — decoding
+  the `ex=` hex timestamp on the live entry confirmed it had been expired since 2026-07-07, meaning
+  `/patch notes` had been showing broken images for about two weeks with nothing in the bot ever
+  detecting or alerting on it. **Confirmed the raw stored URL was truly dead via a direct `curl` (404 at
+  the CDN origin) before doing anything** — worth noting Harkirat could still SEE the images fine in his
+  own Discord client the whole time despite this; that's Discord's client silently refreshing an expired
+  signed attachment link when rendering a message whose original channel it can still resolve, which
+  masks the dead link for a viewer with access but does nothing for a server-side fetch (Cloudinary, or
+  any other Discord user without access to the source channel) — don't mistake "still visible to the
+  admin in Discord" for "actually alive" again. Fixed once Harkirat supplied 5 fresh URLs (re-shared from
+  the original screenshots, arrived reverse-ordered relative to the array — reordered by matching each
+  URL's own filename suffix number, which happens to already sort ascending in the correct order): each
+  verified live (200) via `curl`, then re-cached through the existing, unmodified `cachePatchImage()`
+  (`patch_notes/6a4bd78c9b44d22e27107d2c/0-4.webp`), then the live `SeasonalData` doc's
+  `patchNotes[0].images` array updated directly via the MongoDB MCP tool to point at the new Cloudinary
+  URLs. Still open: whether an admin action or a boot-time check should flag a patch note entry whose
+  images are non-Cloudinary URLs, so this class of "silently stale before the feature existed" gap can't
+  recur unnoticed for other data created before a similar future caching feature ships — not built this
+  pass, just the immediate fix.
 
 ## Batch refinement pass (2026-07-12, evening — after the earlier same-day redesign/deploy work)
 A large follow-up batch covering `/draw prices`, `/manage`, and `/settings`, requested right after
@@ -2539,6 +2588,54 @@ architecture section's `/manage` note. Still open from this batch:
   / patch-notes pages use their own native command accent colors; Season End needs none (it's a direct modal
   open, no panel is rendered); MP loadouts a red (from the `:Rank_7Legendary_CODM:` emoji), DMZ a blue (from
   the `:DMZ_CODM:` emoji). Cosmetic; `PAGES` in `commands/manage.js` is the place. (Notes item L61.)
+
+### Loadout automation (screenshot → live loadout) — DESIGN CAPTURED 2026-07-20, not yet built
+`[P1 · L · 🧩needs-design → mostly resolved below]` Harkirat's own idea (`docs/diors-builds notes.md`),
+refined into a concrete design over a design-only conversation (no code written yet — build is deferred to a
+dedicated future session, explicitly NOT this one). Goal: submit a Gunsmith screenshot (phone photo or URL) and
+have the bot extract the weapon name, code, and 5 attachments, auto-generate the `WEAPON-NAME-N` image key,
+upload to Cloudinary, and create the `Loadout` doc — without hand-typing any of it.
+- **Vision backend: an LLM vision call, NOT a hosted OCR engine (PaddleOCR/Apple Vision rejected).** Raw OCR
+  returns a flat bag of text + coordinates, requiring brittle layout heuristics ("text at this Y-range is
+  attachment slot 3") that break the moment CODM's gunsmith screen layout changes between seasons. A
+  vision-capable LLM can be prompted directly for structured JSON (weapon name / code / 5 attachments) and
+  handles layout variance semantically. Also avoids hosting a Python model process on the e2-micro VM (real
+  resource risk on a 1GB-RAM box currently running at ~1% CPU) and avoids Apple Vision Framework's macOS-only
+  constraint (would tie automation to Harkirat's Mac being on, defeating the "from anywhere" goal).
+- **Chosen vision API: Gemini, not the Claude API** — Harkirat's Claude Pro/Max subscription does NOT cover API
+  usage (Claude Developer Platform billing is fully separate, pay-per-token, no included credits from a Pro
+  plan). Gemini's API has a genuine free tier (Google AI Studio, separate quota from GCP billing — expected to
+  comfortably cover this bot's low volume, a few loadouts a week) with a fallback path to Vertex AI billed
+  against the SAME GCP project/billing account already holding unused credits from the VM migration if the
+  free tier is ever actually exceeded. Keep the extraction call isolated behind one small module so swapping
+  vision backends later stays a one-file change.
+- **Submission mechanism: a slash-command attachment option (`SlashCommandBuilder.addAttachmentOption()`),
+  NOT a modal.** A modal genuinely cannot include a file-upload field (text inputs only) — corrected mid-design
+  after Harkirat pointed at a real example (another bot's emoji-upload slash command using this exact option
+  type). URL-paste (already how images are supplied today) stays supported as an alternative input alongside
+  the attachment option.
+- **Never auto-publish straight from extraction — always a Confirm/edit review step**, same convention every
+  other `/manage` destructive/data-writing action already uses. A wrong weapon name or garbled code silently
+  reaching real players is a worse failure mode than one extra tap.
+- **Pre-review error correction (reduces how often review is even needed, doesn't replace it):**
+  - Fuzzy-match each extracted attachment string against the distinct attachment values already in the
+    `Loadout` collection (reuse `utils/search.js`'s `fuzzyMatch()`) — a close match silently auto-corrects; no
+    match at all (a genuinely new attachment CODM just added) falls through to the review step untouched.
+  - **Gunsmith code structural corrector**: codes are always Number-Letter-Number-Letter... alternating.
+    Post-process the model's raw output character-by-character against that alternation — if a digit lands in
+    a letter-position and has a common look-alike (0→O, 8→B, 1→I/l), snap it to the letter form, and vice
+    versa for digit positions. This directly targets the exact confusions Harkirat has observed the model
+    make (O/0, D/O, B/8) and runs deterministically before anything reaches the review screen.
+- **Auto weaponKey/build-numbering is plain deterministic code, no AI involved** — slugify the extracted
+  weapon name the same way the bot already normalizes weapon keys, query Mongo for existing builds under that
+  weaponKey+mode, take the next build number (`WEAPON-NAME-1`, `-2`, ...).
+- **Proof-of-concept scope: a standalone test slash command first** (screenshot attachment + an optional
+  badges field, falling back to whatever's already classified for that weapon if left blank) — NOT wired into
+  the full `/manage` panel system yet. Full `/manage` integration is explicitly a later follow-up once the
+  standalone version proves out.
+- **Cloudinary structured metadata** (a real Cloudinary feature — custom fields attached per-asset) is a
+  nice-to-have for browsing the dashboard directly, not the source of truth — MongoDB stays what the bot
+  actually reads from either way.
 
 ### v3 (next MAJOR version) — roadmap (filed 2026-07-14 from Harkirat's plan-notes file)
 Harkirat's own planned feature set for the next whole-number version. **Not started; nothing here is a
