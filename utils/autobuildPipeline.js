@@ -28,7 +28,7 @@ function buildReviewCard(token, data) {
 
     const container = {
         type: 17,
-        accent_color: 2829617, // neutral gray (DEFAULT_MP_ACCENT below) -- category may still be unresolved at review time, so this card never guesses a per-category color
+        accent_color: 2829617, // neutral gray fallback (same as DEFAULT_MP_ACCENT in loadoutRender.js) -- category may still be unresolved at review time, so this card never guesses a per-category color
         components: [
             { type: 10, content: `# Review Extracted Loadout` },
             { type: 14, spacing: 1, divider: true },
@@ -78,7 +78,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         extracted = await extractLoadoutFromImage(sourceImageUrl);
     } catch (err) {
         console.error('Autobuild extraction failed:', err.message);
-        return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}` });
+        return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
     }
 
     const allLoadouts = await Loadout.find({ mode: 'MP' }).select('attachments').lean();
