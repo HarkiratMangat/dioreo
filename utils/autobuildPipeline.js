@@ -6,7 +6,7 @@
 // file already requires shared logic FROM utils/, never the reverse. Full design:
 // docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const crypto = require('crypto');
-const { Routes } = require('discord.js');
+const { Routes, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges } = require('./adminParser');
@@ -256,4 +256,56 @@ async function cancelReview(interaction, token) {
     return interaction.followUp({ content: '❌ Cancelled -- nothing was saved or uploaded.', ephemeral: true });
 }
 
-module.exports = { pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview };
+// Edit modal -- ALL fields in one modal (per the design spec's decision), pre-filled from the pending
+// token's current data. Discord caps a modal at 5 fields; attachments share ONE Paragraph field (one
+// per line, matching every other loadout modal's convention in commands/manage.js) so
+// weapon/code/attachments/category/badges all fit.
+function buildEditModal(token, data) {
+    const modal = new ModalBuilder().setCustomId(`autobuild_editmodal_${token}`).setTitle('Edit Extracted Loadout');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('code').setLabel('Gunsmith Code').setStyle(TextInputStyle.Short).setValue(data.gunsmithCode).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line, 5 total)').setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category').setStyle(TextInputStyle.Short).setPlaceholder('AR / SMG / LMG / MARKSMAN / SNIPER / SHOTGUN / SECONDARIES').setValue(data.category || '').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('badges').setLabel('Badges (optional)').setStyle(TextInputStyle.Short).setPlaceholder('meta,best,top5,toxic').setValue(data.badgesRaw || '').setRequired(false))
+    );
+    return modal;
+}
+
+// Modal submit -- re-runs the SAME post-processing (fuzzy-match + code-corrector) on whatever was
+// typed, per the design spec. `interaction` is the ModalSubmitInteraction, not yet deferred by the
+// caller -- this function defers itself (deferUpdate, since it's replacing the review card the modal
+// was opened from).
+async function applyEditSubmission(interaction, token) {
+    const data = pendingAutobuilds.get(token);
+    if (!data) {
+        return interaction.reply({ content: '❌ This review has expired. Run `/autobuild` again.', ephemeral: true });
+    }
+    await interaction.deferUpdate();
+
+    const weaponName = interaction.fields.getTextInputValue('weapon').trim();
+    const rawCode = interaction.fields.getTextInputValue('code').trim();
+    const rawAttachments = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(Boolean);
+    const category = interaction.fields.getTextInputValue('category').trim().toUpperCase();
+    const badgesRaw = interaction.fields.getTextInputValue('badges').trim();
+
+    const allLoadouts = await Loadout.find({ mode: 'MP' }).select('attachments').lean();
+    const knownAttachments = [...new Set(allLoadouts.flatMap(l => l.attachments))];
+    const correctedAttachments = [0, 1, 2, 3, 4].map(i => correctAttachmentName(rawAttachments[i] || '', knownAttachments));
+    const correctedCode = correctGunsmithCode(rawCode);
+
+    const updated = {
+        ...data,
+        weaponName,
+        gunsmithCode: correctedCode,
+        attachments: correctedAttachments,
+        category: category || null,
+        badgesRaw
+    };
+    pendingAutobuilds.set(token, updated);
+
+    const card = buildReviewCard(token, updated);
+    return interaction.editReply(card);
+}
+
+module.exports = { pendingAutobuilds, buildReviewCard, resolveCategoryAndBadges, runExtraction, confirmAndWrite, retryImageUpload, cancelReview, buildEditModal, applyEditSubmission };

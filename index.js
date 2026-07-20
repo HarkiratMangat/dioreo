@@ -1195,6 +1195,20 @@ client.on('interactionCreate', async interaction => {
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
 
+        // --- AUTOBUILD: EDIT BUTTON --- MUST stay in isButton(), never moved next to autobuild_editmodal_
+        // below -- see this feature's "Critical placement rule" (same class of bug CLAUDE.md documents
+        // already happening once for /manage's mng_editbtn_/mng_search_ pair). showModal() is valid as a
+        // response to a button click; it is NOT valid as a response to a modal submit.
+        if (interaction.customId.startsWith('autobuild_editbtn_')) {
+            const token = interaction.customId.replace('autobuild_editbtn_', '');
+            const { pendingAutobuilds, buildEditModal } = require('./utils/autobuildPipeline');
+            const data = pendingAutobuilds.get(token);
+            if (!data) {
+                return interaction.reply({ content: '❌ This review has expired. Run `/autobuild` again.', ephemeral: true });
+            }
+            return interaction.showModal(buildEditModal(token, data));
+        }
+
         // DRAW PRICES REGION TOGGLE BUTTON -- replaced the old select-menu ('select_price_region')
         // with a single toggle button per Harkirat's drawPrices_ui.json redesign. custom_id encodes
         // the region to SWITCH TO directly (drawprices.js always labels/IDs the button with the
@@ -2326,6 +2340,14 @@ client.on('interactionCreate', async interaction => {
         // `mng_editbtn_` up there). Left this breadcrumb so it doesn't get "helpfully" re-added next
         // to its `mng_search_` sibling above -- they look adjacent conceptually but are different
         // interaction TYPES.
+
+        // --- AUTOBUILD: EDIT MODAL SUBMIT --- see the breadcrumb on autobuild_editbtn_ above (isButton()
+        // block) for why this is a SEPARATE handler in a SEPARATE block, not a shared one.
+        if (customId.startsWith('autobuild_editmodal_')) {
+            const token = customId.replace('autobuild_editmodal_', '');
+            const { applyEditSubmission } = require('./utils/autobuildPipeline');
+            return applyEditSubmission(interaction, token);
+        }
 
         // NOTE (fixed during review): this used to fetch unconditionally before branching on
         // customId, but the loadout-only routes below never touch seasonalDoc at all -- every
