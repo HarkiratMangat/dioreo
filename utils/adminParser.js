@@ -3,6 +3,7 @@ const chrono = require('chrono-node');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 dayjs.extend(utc);
+const { fuzzyMatch, normalizeForSearch } = require('./search');
 
 // NOTE (fixed during review): the old implementation did `str.toLowerCase()` on the WHOLE string
 // first, then re-capitalized only the character immediately following whitespace. Real bugs fell
@@ -285,6 +286,26 @@ function correctGunsmithCode(code) {
     }).join('');
 }
 
+// Fuzzy-corrects one vision-extracted attachment name against the set of attachment strings already
+// used somewhere in the Loadout collection -- a vision model reading a small in-game label can get
+// spacing/punctuation/capitalization slightly wrong ("Gauge-9 Mo" for "Gauge-9 Mono") even when it
+// got the actual attachment right. Checks for an exact normalized match first (cheapest, most common
+// case once the model gets it basically right), then falls back to a two-directional fuzzyMatch scan
+// (either string could be the "noisier" one depending on what the model added or dropped) so a real
+// but imperfect read still resolves to the canonical stored spelling. No match at all -- likely a
+// genuinely new attachment CODM just added -- passes the extracted text through untouched rather than
+// forcing it onto something wrong.
+function correctAttachmentName(extracted, knownAttachments) {
+    if (!extracted) return extracted;
+    const normalizedExtracted = normalizeForSearch(extracted);
+
+    const exact = knownAttachments.find(known => normalizeForSearch(known) === normalizedExtracted);
+    if (exact) return exact;
+
+    const fuzzy = knownAttachments.find(known => fuzzyMatch(extracted, known) || fuzzyMatch(known, extracted));
+    return fuzzy || extracted;
+}
+
 // Cloudinary placeholder used elsewhere for loadouts that don't have a real screenshot yet (see
 // scripts/createPlaceholderLoadouts.js) — reused here as the bulk-add default when a block omits
 // the image key, so a bulk submission is never blocked on having every image ready up front.
@@ -440,4 +461,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName };
