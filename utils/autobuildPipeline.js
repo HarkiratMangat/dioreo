@@ -107,6 +107,11 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         weaponName: extracted.weaponName,
         gunsmithCode: correctedCode,
         attachments: correctedAttachments,
+        // Cloudinary-metadata-only, not admin-editable/bot-facing -- see loadoutImageCache.js's
+        // buildAttachmentContext(). Not re-corrected against knownAttachments the way `attachments`
+        // itself is: slot labels are a small closed vocabulary (Muzzle/Barrel/Optic/...), not free text
+        // prone to the same misread-spelling drift attachment NAMES have.
+        attachmentSlots: extracted.attachmentSlots,
         category,
         badgesRaw,
         mode: 'MP',
@@ -221,7 +226,7 @@ async function confirmAndWrite(interaction, token) {
         const siblingBuildNames = (await Loadout.find({ weaponKey: weaponKeyForLookup, mode: 'MP' }).select('buildName').lean()).map(l => l.buildName);
         const { weaponKey, buildName, imageKey } = computeWeaponKeyAndBuild(data.weaponName, siblingBuildNames);
 
-        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
+        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey, data.attachments, data.attachmentSlots);
 
         if (uploadResult.success) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility:
@@ -273,7 +278,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
     retryInProgress.add(token);
 
     try {
-        const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey);
+        const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey, data.attachments, data.attachmentSlots);
         if (uploadResult.success) {
             const doc = await writeLoadoutDoc(data);
             pendingImageRetries.delete(token);

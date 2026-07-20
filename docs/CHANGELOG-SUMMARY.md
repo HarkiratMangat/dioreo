@@ -25,7 +25,10 @@ A peek at what's planned (not built yet):
 - Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your
   own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
 - **Near-1-click loadout adding** — submit a build screenshot and the bot extracts the weapon name,
-  Gunsmith code, and attachments automatically instead of typing each one by hand.
+  Gunsmith code, and attachments automatically instead of typing each one by hand. The full admin
+  command (review/edit before anything saves, then auto-uploads to Cloudinary) is built and wired up
+  already; a billing switch to Google Cloud's Vertex AI (instead of a separate Gemini credit balance
+  that ran dry) is what's still being finished and verified before a real live test.
 
 ---
 

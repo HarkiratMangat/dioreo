@@ -938,6 +938,31 @@ versioning note). On push, graduate this into a numbered entry and reset to empt
 
 ### Proposed: v2.24.1
 
+**Vertex AI keyless migration for loadout automation** (added by Antigravity)
+- Migrated the `/autobuild` screenshot-extraction pipeline in `utils/visionExtract.js` from Google AI Studio to GCP Vertex AI using Application Default Credentials (ADC).
+- Designed and implemented a dynamic dual-layer token-fetching engine that queries GCP's Compute Engine VM instance metadata server keylessly, with fallback execution on Mac using local `gcloud` ADC commands.
+- Corrected a payload schema mismatch on the Vertex AI REST API endpoint by introducing an explicit `"role": "user"` declaration on multi-modal contents, resolving an HTTP 400 rejection.
+- Engineered a fully dynamic, multi-region and global endpoint router in `utils/visionExtract.js` supporting standard regions, global endpoints (`locations/global`), and US/EU Multi-Region endpoints (`locations/us` / `locations/eu`) with zero prefix duplication in REST URLs.
+- Configured `.env` with new variables `GCP_PROJECT_ID` and `GCP_LOCATION=us` to route request flows keylessly using Gemini 3.5 Flash natively.
+- Authored a fully integrated, live-connected local verification script `scripts/test-vertex-extract.js` to securely query real loadout documents, build Cloudinary URLs, and run the complete extraction path.
+
+**Fixes to the above, after review** (added by Claude, same day) — see `docs/DEVLOG.md`'s 2026-07-20
+Claude entry for the full account of what needed fixing and why:
+- Fixed `gunsmithCode` incorrectly including a weapon-name prefix (e.g. `"Locus-1B2A4B8C9C"` instead of
+  `"1B2A4B8C9C"`) — the vision prompt now explicitly forbids the prefix, plus a new structural backstop
+  in `adminParser.js`'s `correctGunsmithCode` (`stripCodePrefix()`) as defense in depth.
+- Added the per-attachment slot-type extraction (e.g. "Muzzle", "Barrel") that was part of the original
+  design but never implemented — `visionExtract.js` now returns a parallel `attachmentSlots` array,
+  attached as Cloudinary `context` metadata by `loadoutImageCache.js`'s `uploadLoadoutImage()`. Not
+  bot-facing; `Loadout.attachments` and everything downstream stay plain strings, unchanged.
+- Fixed `DEFAULT_LOCATION`'s fallback value (`'us-central1'` → `'us'`) to match the actually-working
+  Multi-Region endpoint already set in `.env`'s `GCP_LOCATION` — the fallback itself was still wrong
+  even after the real `.env` value was found.
+- Removed unused `@google-cloud/vertexai`/`@google/genai` from `package.json`/`package-lock.json` —
+  confirmed via grep, zero imports anywhere; the implementation is a raw `fetch` call, no SDK.
+- Confirmed the shipped code genuinely uses `gemini-3.5-flash` (not a silent `gemini-2.5-flash`
+  fallback mentioned in Antigravity's own migration notes during debugging) via a fresh live extraction.
+
 **Comment correction: `correctGunsmithCode` accuracy** (`8d81f54`)
 - Fixed the top-level comment to accurately describe current behavior. The old comment incorrectly
   claimed the function only fires on type mismatches and never touches same-type characters, but the

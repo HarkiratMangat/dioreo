@@ -267,8 +267,25 @@ const DIGIT_TO_LETTER = { '0': 'O', '1': 'I', '8': 'B', '5': 'S' };
 const LETTER_TO_DIGIT = { O: '0', I: '1', L: '1', B: '8', S: '5' };
 const LOWERCASE_LETTER_CORRECTION = { 'l': 'I', 'o': 'O' }; // digit-like lowercase letters in letter positions
 
+// Weapon-name-prefix backstop (added 2026-07-20, real bug found live: Vertex AI extraction returned
+// "Locus-1B2A4B8C9C" instead of "1B2A4B8C9C" -- the model prepended the weapon name even though the
+// prompt (utils/visionExtract.js) never asked for it). Fixed primarily at the prompt level, but this
+// is a structural backstop here too: a genuine code is a contiguous digit-letter-digit-letter... run,
+// so scan for the LONGEST such run anywhere in the string and use only that, discarding anything
+// before/after it (a weapon name prefix, stray punctuation, etc). Safe against false positives from a
+// weapon name itself -- a name needs its own digits and letters to alternate perfectly for several
+// characters running (e.g. "AK117" fails immediately: '1','1' are two digits in a row, never two
+// letters interleaved), which real weapon names don't do. A code with no prefix at all (the normal
+// case) matches itself in full, so this is a no-op for already-clean input.
+function stripCodePrefix(code) {
+    const runs = code.match(/\d[A-Za-z](?:\d[A-Za-z])*\d?/g);
+    if (!runs || runs.length === 0) return code; // nothing alternating found -- leave as-is, let the per-char corrector below do what it can
+    return runs.reduce((longest, run) => run.length > longest.length ? run : longest, runs[0]);
+}
+
 function correctGunsmithCode(code) {
     if (!code) return code;
+    code = stripCodePrefix(code);
     return code.split('').map((ch, i) => {
         const expectDigit = i % 2 === 0; // position 0,2,4,... = digit; 1,3,5,... = letter
         if (expectDigit && /[A-Za-z]/.test(ch)) {
