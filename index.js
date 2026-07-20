@@ -1165,7 +1165,7 @@ client.on('interactionCreate', async interaction => {
             const token = interaction.customId.replace('autobuild_confirm_', '');
             await interaction.deferUpdate();
             const { confirmAndWrite } = require('./utils/autobuildPipeline');
-            return confirmAndWrite(interaction, token);
+            return await confirmAndWrite(interaction, token);
         }
 
         // --- AUTOBUILD: CANCEL ---
@@ -1173,7 +1173,7 @@ client.on('interactionCreate', async interaction => {
             const token = interaction.customId.replace('autobuild_cancel_', '');
             await interaction.deferUpdate();
             const { cancelReview } = require('./utils/autobuildPipeline');
-            return cancelReview(interaction, token);
+            return await cancelReview(interaction, token);
         }
 
         // --- AUTOBUILD: OPEN LOADOUT --- answers THIS button's own interaction with a brand-new PUBLIC
@@ -1192,7 +1192,7 @@ client.on('interactionCreate', async interaction => {
             const cardPayload = buildLoadoutCard([doc], 0, { color: accentColor, idPrefix: 'mp', isEphemeral: false, categoryBuilds });
             await interaction.deferReply({ ephemeral: false });
             const { sendV2Payload } = require('./utils/sendV2Payload');
-            return sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
+            return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
         }
 
         // DRAW PRICES REGION TOGGLE BUTTON -- replaced the old select-menu ('select_price_region')

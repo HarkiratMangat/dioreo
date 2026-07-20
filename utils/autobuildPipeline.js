@@ -128,10 +128,20 @@ const pendingImageRetries = new Map(); // retryToken -> confirmed data + { weapo
 // ephemeral (64) -- every message in this admin-only flow stays private; only the "Open Loadout"
 // button click below produces a real public message.
 async function followUpV2Card(interaction, card) {
-    return interaction.client.rest.post(
-        Routes.webhook(interaction.applicationId, interaction.token),
-        { body: { flags: (card.flags || 32768) | 64, components: card.components } }
-    );
+    // Wrapped in its own try/catch, matching the identical precedent at index.js's 'displayName'
+    // Nitro-notice handler (~line 996-1020) -- a failure here happens AFTER the Loadout doc/Cloudinary
+    // upload has already succeeded (both callers below only ever reach this once their write is durable),
+    // so a dead interaction token here must never look like the whole Confirm/retry operation failed.
+    // Never rethrows -- the underlying data is already safely saved; a missed confirmation message is a
+    // silent-but-safe UX gap, not a data-loss bug.
+    try {
+        return await interaction.client.rest.post(
+            Routes.webhook(interaction.applicationId, interaction.token),
+            { body: { flags: (card.flags || 32768) | 64, components: card.components } }
+        );
+    } catch (notifyError) {
+        console.error('Failed to send autobuild post-creation card (interaction token likely expired) -- underlying Loadout doc was already saved successfully:', notifyError);
+    }
 }
 
 async function writeLoadoutDoc(data, imageKeyOverride) {
@@ -186,8 +196,13 @@ async function confirmAndWrite(interaction, token) {
     const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
 
     if (uploadResult.success) {
-        pendingAutobuilds.delete(token);
+        // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility:
+        // Mongoose validation, a dropped connection), the token must still be sitting in
+        // pendingAutobuilds so the confirmed data isn't silently lost with nothing written anywhere.
+        // (Found in review: this used to delete first, which meant a save() failure here lost the
+        // data permanently -- no Loadout doc, no recoverable token.)
         const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
+        pendingAutobuilds.delete(token);
         const card = buildPostCreationCard(doc, null);
         return followUpV2Card(interaction, card);
     }
@@ -212,11 +227,15 @@ async function retryImageUpload(interaction, token, newImageUrl) {
     if (!data) {
         return interaction.followUp({ content: '❌ That retry token has expired or was already used. Run `/autobuild` again from scratch.', ephemeral: true });
     }
-    pendingImageRetries.delete(token);
+    // NOTE: deletion moved to AFTER each write below actually succeeds (was deleted here, before
+    // either write attempt) -- same class of bug as confirmAndWrite's success path. If writeLoadoutDoc
+    // throws (Mongoose validation/connection error) on either branch, the token must still be in
+    // pendingImageRetries so the confirmed data isn't silently lost with no Loadout doc written.
 
     const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey);
     if (uploadResult.success) {
         const doc = await writeLoadoutDoc(data);
+        pendingImageRetries.delete(token);
         const card = buildPostCreationCard(doc, null);
         return followUpV2Card(interaction, card);
     }
@@ -227,6 +246,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
     // through, nothing new needed for that part.
     const placeholderKey = `PENDING-UPLOAD-${token}`;
     const doc = await writeLoadoutDoc(data, placeholderKey);
+    pendingImageRetries.delete(token);
     const card = buildPostCreationCard(doc, 'No image could be uploaded (tried twice). Fix it via `/manage` -> Edit Loadout -> set a real Cloudinary Image Key.');
     return followUpV2Card(interaction, card);
 }
