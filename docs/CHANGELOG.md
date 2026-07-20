@@ -936,6 +936,15 @@ per-push, and that "document" covers no-code/no-push planning sessions.
 Staging for work not yet live. Proposed number shifts with the work type (see the top-of-file
 versioning note). On push, graduate this into a numbered entry and reset to empty.
 
-*(Empty — the staged v2.24.0 content graduated into the numbered entry above (near the top of the
-version list) when this push went out. Nothing committed-but-unpushed right now.)*
+### Proposed: v2.24.1
+
+**Comment correction: `correctGunsmithCode` accuracy** (`8d81f54`)
+- Fixed the top-level comment to accurately describe current behavior. The old comment incorrectly
+  claimed the function only fires on type mismatches and never touches same-type characters, but the
+  implementation now includes a third branch that normalizes lowercase letters in letter positions
+  (same type, wrong case). Updated the comment to clearly explain all three correction branches:
+  (1) actual type mismatches via look-alike maps, (2) case-normalization for lowercase letters in
+  letter positions (e.g., lowercase 'l' → 'I' in a letter slot), and (3) no-op for already-correct
+  characters. Emphasizes the WHY (handling vision model OCR errors) rather than just describing
+  the code line-by-line. All 5 verification test cases pass unchanged.
 
