@@ -840,6 +840,167 @@ alerts — flagged in CLAUDE.md as two things to settle when `/status` is actual
 
 ---
 
+## 2026-07-21 — `/autobuild`'s first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives
+
+Harkirat ran the `/autobuild` PoC end-to-end in Discord for the first time and came back with a genuinely
+good bug report (4 structured tests + a "things I didn't like" list + annotated screenshots). This is
+exactly why we shipped a single-weapon proof-of-concept before mass-expanding — every finding here would
+have been N× more painful to unwind after building the full `/manage` integration on top. Worked this one
+autonomously (Harkirat was away).
+
+**The finding that turned out to be one root cause wearing three hats.** Three separate symptoms —
+"Open Loadout shows *Build 1 of 1*", "no pagination arrows", "can't tell which build it opened" — were all
+the *same* line: the `autobuild_openloadout_` handler built its card from `[doc]`, a single-element array.
+`buildLoadoutCard` derives both the "Build N of M" footer and whether to render pagination from
+`builds.length`, so one build in → "1 of 1", `buildPaginationRow` returns `null`, no arrows, and you're
+stuck on that one build with no way to see it in context. The normal `/all` route never hit this because it
+always passes the *whole* `weaponKey` result set. Fix was to do the same: query every build of the weapon
+and open **on** the just-created one (`findIndex` by `_id`). Three symptoms, one two-line fix — a good
+reminder to look for the shared cause before writing three separate patches.
+
+**Note #11 — edit in place, don't stack messages.** Confirm was POSTing a *new* "Loadout created" message
+while the ephemeral review card just sat there above it (dead buttons and all). Harkirat wanted the review
+card itself to *become* the confirmation. Swapped the new-message POST (`followUpV2Card`) for an in-place
+edit of `@original` (`sendV2Payload` PATCH, now `replaceWithV2Card`). The retry paths got the same treatment
+for free since they edit their own command's reply. Left the *upload-failure* path as a `followUp` on
+purpose — it's a rare edge, the review card's token is already consumed (re-clicking Confirm says "expired"),
+and converting a Components-V2 message to a plain-text error via edit isn't allowed by Discord anyway (the
+V2 flag is immutable once set), so a new message is the right shape there.
+
+**Badges describe the weapon, not the build.** Test 3: adding "Meta" during review put the badge only on the
+new build, not the weapon's others. We'd already solved this exact thing for `/manage`'s `edit_loadout_`
+(propagate to siblings via `updateMany`) — `/autobuild` just never did it. Added the same propagation inside
+`writeLoadoutDoc`, guarded on "at least one badge is actually set" so a blank can't wipe siblings. Subtle
+point that made this safe: `/autobuild` already *resolves* a blank badges field by inheriting from an
+existing sibling, so a still-blank value at write time genuinely means "no weapon-level badge exists" —
+skipping propagation there is correct, not a gap.
+
+**Duplicate detection — Harkirat's two soft rules, and why they're soft.** Test 1 (re-uploading an existing
+AK117) silently created a second identical doc. Harkirat's instinct was two *alternating* thresholds, and
+they're well-reasoned: (A) exact code + ≥4/5 attachments, or (B) code within ~2 chars + all 5 attachments.
+The "why alternating" is the interesting part — each rule tolerates a *different* vision-call error: rule A
+survives one misread attachment name, rule B survives a misread character or two in the code. Implemented
+verbatim (`findDuplicateLoadouts`), with a small generalization: check against **all** MP builds, not just
+the same `weaponKey` — an in-game Gunsmith code encodes the weapon, so a code match already implies the same
+weapon, and scoping to `weaponKey` would *miss* a dupe whose weapon name the vision call misread. It's an
+**advisory review-card warning**, never a hard block, matching the whole feature's review-first philosophy.
+Wrote a 9-case offline test (both rules, both boundaries, case/space insensitivity) before trusting it.
+
+**Category conflict — warn, don't silently split; and a deliberate *non*-change to build numbering.** Test 4:
+Harkirat deliberately picked MARKSMAN for a weapon already saved as AR, and the bot happily registered AK117
+under *both* categories, then numbered the new one "Build 4". His note asked the natural question — "if it
+thinks this is a marksman, shouldn't it be Build 1?" I made a judgment call to **not** make build numbering
+per-category, and to warn on the conflict instead. Reasoning: a weapon's identity is its `weaponKey`, and in
+CODM a weapon belongs to exactly one category — so a weapon existing under two categories is *itself* the
+bug. Per-category numbering would legitimize that broken state; the review-card warning prevents it from
+happening unnoticed while still letting Harkirat override if he ever really wants to (review-first again).
+Documented this explicitly because it's a place I intentionally didn't do the literal thing the note mused
+about.
+
+**The metadata question, answered by asking where the data lives.** Harkirat questioned whether Cloudinary
+*structured* metadata would be more appropriate than the *context* metadata the Antigravity session shipped,
+"since we only have a finite number of attachment slots." Good instinct in the abstract — but two things made
+me keep `context` for now: (1) structured metadata needs fields *predefined on the Cloudinary account* first,
+an external config step I shouldn't do autonomously while he's away; and (2) the use case he tied it to —
+duplicate detection — doesn't actually read Cloudinary at all. The attachment *names* and the Gunsmith
+*code* already live on the `Loadout` Mongo doc, which is what the dupe check queries. The slot data in
+Cloudinary is purely "index and retain," which `context` already satisfies. It also matches the design spec,
+which lists structured metadata as explicitly out-of-scope/nice-to-have. So: no change, but the reasoning is
+here for Harkirat to overrule later if he wants the queryable-field benefits enough to define the account
+fields.
+
+**Follow-up, same session — Harkirat overruled it (and was right to).** He came back and asked for the
+structured fields after all: one per Gunsmith slot, plus mode and weapon name, leaving build number and
+Gunsmith code to my judgment. So I built it. Probing the account first paid off twice: it confirmed the plan
+tier *does* support structured metadata (not always a given), and it surfaced a stray pre-existing `Barrel`
+string field (unused, empty on every asset) that happened to fit the schema exactly — so the creation script
+reuses it instead of colliding. Thirteen fields total, created idempotently
+(`scripts/createCloudinaryMetadataFields.js` reads the single `METADATA_FIELDS` list in
+`loadoutImageCache.js`, lists what exists, fills the gaps — safe to re-run). Two design calls worth naming:
+(1) **Mode is a plain string, not an enum**, even though it's a closed MP/DMZ vocabulary — an enum would
+validate values but an invalid value would *reject the write*, and since the metadata now rides on the image
+upload, a rejected write could cascade into a failed upload; a string can't be "invalid," so it's the safe
+choice for a path I can't live-test (tightening to an enum later is trivial). (2) **the metadata write is
+decoupled from the image upload** — `update_metadata` runs as a best-effort step *after* the upload succeeds,
+in its own swallowed try/catch, so the thing that actually matters (the image) is never held hostage by a
+metadata hiccup. Included both judgment-call fields (build number as a real integer, Gunsmith code as a
+string — the latter being the strongest unique build identifier). Verified the whole path against a real
+asset: `buildStructuredMetadata` → `update_metadata` → read the values back off the asset, all 9 present and
+correct, unused slots correctly omitted. Deliberately did **not** backfill existing assets — the per-slot
+data only exists at vision-extraction time (never stored in Mongo), and the four non-slot fields, while
+backfillable from the Loadout docs, are a separate ~130-asset job I left for a conscious later decision
+rather than sweeping the whole account unprompted.
+
+**Second follow-up, same session — the whole metadata system, expanded.** Harkirat came back with a batch:
+backfill the existing weapons from Mongo, add patch-notes metadata (season / image order / release date),
+add badge + date metadata to loadouts, keep all of it auto-synced when he edits things, and delete the AK117
+test junk. This is where a design decision from an hour earlier paid off enormous dividends: because I'd
+made the metadata write a **separate step from the image upload**, turning "set on upload" into "sync from a
+Loadout doc anywhere" was a clean refactor, not a rewrite. The linchpin is `buildLoadoutMetadata(doc)` — one
+function that turns a Loadout doc into its full metadata object, so `/autobuild`, every `/manage` edit path,
+bulk upsert, badge propagation, and the backfill all funnel through it and can't drift. "Keep it in sync when
+I edit" stopped being a scary open-ended ask and became "call `syncLoadoutMetadata(doc)` wherever a loadout
+changes." A few things worth remembering from the build:
+- **Dates for free from the ObjectId.** The Loadout schema has no `createdAt`, but a Mongo ObjectId embeds
+  its creation timestamp — `doc._id.getTimestamp()` — so `Created_At` backfilled correctly onto every
+  existing asset (real 2026-07-07 dates, not "today") with zero schema change. `Last_Updated` mirrors the
+  existing `lastUpdated`.
+- **Always-write the badge fields.** `Is_Meta`/`Is_Toxic` are written as `"true"`/`"false"` and `Rank` as
+  its value-or-`''` on *every* sync, specifically so an edit that REMOVES a badge clears it in Cloudinary
+  instead of leaving a stale `true` behind. A sync that only ever *sets* would be a one-way ratchet.
+- **The `.png` public_id trap.** The backfill's first pass would have silently missed the real `AK117-1`:
+  its imageKey is `AK117-1.png`, but a Cloudinary public_id has no extension, and `update_metadata` on a
+  mismatched id returns `public_ids: []` **without throwing** — a success-shaped no-op. Caught it because I
+  probed one asset before trusting the batch (strip the extension, and check the returned `public_ids` isn't
+  empty). Classic "the API didn't error so it must have worked" trap; the empty-array check is the guard.
+- **Search reindex lag looked like a bug for a second.** Right after the patch backfill, `cloudinary.search`
+  showed metadata on images 0–1 but not 2–4. Momentary "did the loop fail?" — but `cloudinary.api.resource`
+  (authoritative, not the search index) showed all five correct. The Search API reindexes async; the writes
+  were fine. Verify writes with `api.resource`, not `search`.
+- **Cleanup was guarded, not trusted.** Deleting the 3 AK117 test dupes: matched them by `imageKey ∈
+  {AK117-2,3,4}` AND asserted each was created 2026-07-21 AND that exactly 3 matched before deleting
+  anything — so a fat-fingered query couldn't take out the real `AK117-1`. Result verified: only the two real
+  builds (MP + DMZ) remain.
+Net: 22 fields, 132 loadouts + 5 patch images backfilled and queryable, sync wired at every edit site, test
+junk gone — all verified against the live account, none of it committed/pushed (Harkirat's standing rule).
+
+**Third follow-up — the per-slot vision backfill, and how a metadata job turned into a data audit.** The
+one thing the Mongo backfill *couldn't* do was fill the per-slot fields (Muzzle/Barrel/...) for existing
+builds — that mapping only exists at vision-extraction time. Harkirat authorized the GCP spend to close it:
+run the vision model over all 132 existing loadout images. The design decision that made this safe: **take
+the SLOT labels from vision, but map each onto the STORED Mongo attachment name**, not vision's name. A
+vision misread of "Suppressor" as "Supressor" then can't corrupt anything — the slot is what we want from
+the image; the name stays authoritative. Matching is 3-pass (exact → substring → Levenshtein ≤2), and an
+attachment that matches nothing is left *unset* rather than guessed.
+
+First pass: 113/132 fully mapped, 19 partial. The partials are where it got interesting. Two loadouts came
+back **0/5** — L-CAR 9 Build 2 and CROSSBOW Build 1. Diagnosing them: the L-CAR 9's image was a *crossbow*,
+and the crossbow's image was an *L-CAR 9*. **Their images are swapped.** The vision read both perfectly; the
+0/5 was the matcher correctly refusing to write a crossbow's slots onto an L-CAR 9's stored data. Then two
+improvements — a Levenshtein pass (for stored typos like "Strippled"/"Supressor") and uncapping the vision
+prompt from 5 to 9 attachments for DMZ (which equips more than 5, so the fixed-5 prompt had been truncating
+them) — took it to **122/132**, with DMZ builds like AK117 going from 5/9 to a full 9/9.
+
+The final 10 partials are *all pre-existing data bugs the backfill surfaced*, and the pattern is consistent:
+several are **build-image swaps within one weapon** — 3-LINE RIFLE B1↔B2 have their barrel crossed, TYPE 19
+B1↔B2 have three attachments crossed, LW3-TUNDRA B1↔B3 their stock/suppressor — plus a stored typo (STRIKER's
+"Fast Reload **Reload** Case") and one revolver slot vision didn't emit (J358's "Trigger Action"). The
+throughline: the 2026-07-19 manual Cloudinary re-upload almost certainly crossed several builds' images.
+**None auto-fixed** — same principle as everywhere else this session: I can't tell whether the stored data or
+the image is the correct one, and "fixing" it changes what the bot displays, so it's Harkirat's call. The
+lesson worth keeping: a good backfill that *validates* instead of *assuming* doubles as a data audit — the
+0/5s and partials weren't failures, they were the job finding the truth and declining to paper over it.
+`visionExtract` grew an optional `{ maxAttachments }` (default 5) to make the DMZ uncapping possible without
+touching the `/autobuild` path at all.
+
+**Deliberately left for the live re-test (not fixed blind):** the upload-failure path still leaves a
+lingering (harmless, token-consumed) review card; and I couldn't exercise any of this against real
+Discord/Mongo/Cloudinary — everything was verified offline (syntax-load of all five touched files, module
+load + export check, warning-render check, and the 9-case dupe/build-numbering test). The true test is
+Harkirat clicking through it once more.
+
+---
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.

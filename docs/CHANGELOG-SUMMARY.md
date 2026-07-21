@@ -27,6 +27,19 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.28.0 — July 21, 2026
+- **New in `/draw prices`: the Advanced Double Legendary Weapon Draw.** A full breakdown for both CP
+  regions of the three ways to spin it — **Regular Purchase**, **Advanced Purchase**, and the "Trap" — with
+  per-pull costs, running totals, and a strategy guide for getting all 4 items, just the 2 Legendaries, or
+  1 random Legendary at the lowest CP. It's on its own page — page through with the ◀ ▶ arrows.
+- **Pagination arrows now loop.** Anywhere the bot has ◀ ▶ page arrows (draws, calendar, draw prices,
+  settings, colours, loadout builds), pressing Next on the last page now wraps around to the first instead
+  of doing nothing — and Prev on the first page jumps to the last.
+- Behind the scenes: a round of fixes to the admin `/autobuild` tool and richer Cloudinary image
+  organisation (nothing players interact with directly).
+
+---
+
 ## v2.26.0 — July 20, 2026
 - **New admin tool: `/alerts`.** The bot already messages Dior privately when something goes wrong (a
   crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a

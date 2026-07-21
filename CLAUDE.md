@@ -43,7 +43,7 @@ navigability system is deferred to the memory-architecture project ([[reference_
 - **Accent color & View Colors** — Accent color system (extraction algorithm · latency fix · `displayName` · `dynamicProfile` · clarifications) · "View Colors" panel (k-means algorithm · relative labels · per-page layout · Refresh Colors · still-frame extraction · CPU incident · preview sizing · icon sourcing)
 - **Image caching** — Draw thumbnail Cloudinary cache · Patch notes Cloudinary caching
 - **Other systems** — Light anti-spam cooldown
-- **Design-decision log & history** — Design decision log · Batch refinement pass (07-12) · Slash-command wording overpass · Color repalette · Post-deploy fixes & polish · "Browse other builds" dropdown · `/draw prices` layout correction
+- **Design-decision log & history** — Design decision log · Batch refinement pass (07-12) · Slash-command wording overpass · Color repalette · Post-deploy fixes & polish · "Browse other builds" dropdown · `/draw prices` layout correction · `/draw prices` Advanced Double Legendary page
 - **Status & roadmap** — Known open issues · Next planned work (Remaining/2nd/3rd v2 batches · v3 · v4 · v5)
 
 ---
@@ -1570,13 +1570,25 @@ of sync the way the `/timestamp` duplication already has (see above):
   between them, which showed up as a disproportionately large gap between the two
   lines. Dropping the `#` prefix removes that margin while `toBoldItalicUnicode()`
   keeps the same visual weight without literal heading markup.
-- `buildPaginationRow({ totalChunks, currentPage, prevCustomId, nextCustomId,
-  indicatorCustomId })` — the Prev/Next row used by `/calendar` and `/draws`' sub-page
-  navigation: emoji-only Left/Right buttons (`emojiMap.js`'s `left`/`right`, no text
-  label), a numbers-only page counter (no "Page" word). Returns `null` when
-  `totalChunks <= 1` — **callers must check for that and skip pushing the row**, don't
-  assume it's always safe to push directly. Reuse this for any future paginated command
-  rather than hand-rolling another slightly-different prev/next row.
+- `buildPaginationRow({ totalChunks, currentPage, makeCustomId | prevCustomId/nextCustomId,
+  indicatorCustomId })` — the Prev/Next row used by `/calendar`/`/draws`' sub-page navigation and
+  every other pager (drawprices, `/settings`, View Colors, `/alerts`, loadout cards): emoji-only
+  Left/Right buttons (`emojiMap.js`'s `left`/`right`, no text label), a numbers-only page counter (no
+  "Page" word). Returns `null` when `totalChunks <= 1` — **callers must check for that and skip pushing
+  the row**, don't assume it's always safe to push directly.
+  - **The arrows LOOP, they don't disable (2026-07-21, Harkirat's request).** Next on the last page
+    wraps to the first page and Prev on the first wraps to the last; neither arrow is ever `disabled`
+    anymore (only the middle counter is, as a plain label). This replaced the old
+    `disabled: currentPage === 0 / === totalChunks - 1` end-caps and applies at EVERY page count
+    including exactly 2 (both arrows then point at the other page — intentional). The old
+    "keep disabled at exactly 2 pages" roadmap caveat was deliberately overridden here.
+  - **Two ways to pass custom_ids — don't mix them.** `makeCustomId(targetPage)` is preferred and used
+    by every caller whose id bakes in a target PAGE NUMBER (drawprices/draws/calendar/settings/colors/
+    alerts): the helper computes the WRAPPED prev/next page and calls `makeCustomId` to build each id,
+    so the modulo lives in ONE place. The legacy `prevCustomId`/`nextCustomId` strings are only for
+    loadout cards, whose id encodes a DIRECTION + current index and whose index.js handler already does
+    the modulo wrap itself — those are passed through verbatim and just needed the un-disable. A new
+    paginated command should use `makeCustomId` and let the helper handle wrapping.
 - `buildGlobalNavRow(activeCustomId)` — the 5-button Calendar/Draws/Draw Prices/Patch
   Notes/Season End row, used by all five of those commands. Used to be hand-copied
   nearly identically into each file, differing only in which button was styled as the
@@ -2520,6 +2532,32 @@ memory) — the ACTUAL final, Harkirat-confirmed structure:
   multiple times and got dropped by mistake mid-session when a blanket "large divider spacing
   across the board" pass over-applied; don't reintroduce it.
 
+## `/draw prices`' "Advanced Double Legendary Weapon Draw" — its own 3rd page (2026-07-21)
+A new, distinctly-shaped draw type added to `/draw prices` from Harkirat's own 10/30 CP breakdown. It
+does NOT fit the shared `draws: []` model every other entry uses — it has **three purchase modes per
+spin** (Regular / Advanced / the "Trap") plus a **strategy breakdown** — so it's given its own builder
+and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildDrawEntries`.
+- **Its own page 3.** `SUBPAGES` still holds only the two key-driven pages; the new page lives at
+  `ADVANCED_PAGE_INDEX` (`= SUBPAGES.length`), and `TOTAL_PAGES` (`= SUBPAGES.length + 1`) is what the
+  page clamp and the pagination row now use (were `SUBPAGES.length`). `buildContainer` renders
+  `currentPage === ADVANCED_PAGE_INDEX` via `buildAdvancedDoubleLegendaryEntry(regionKey)` instead of
+  `buildDrawEntries`. **If you add more key-driven pages, push to `SUBPAGES` — `ADVANCED_PAGE_INDEX`/
+  `TOTAL_PAGES` re-derive automatically** and the Advanced page stays last.
+- **Everything numeric is DERIVED, nothing hand-typed** — same rule the rest of this file enforces (see
+  `DRAW_DATA`'s comment). `ADVANCED_DOUBLE_LEGENDARY` stores ONLY the Regular + Advanced per-pull arrays
+  per region. From those: **Trap = always exactly 2× Regular** per pull (Regular spin + buying the 2nd
+  item afterward = two Regular Purchases); all three totals = array sums; the three **strategy costs** =
+  cumulative slices (Reg 1-8 + Adv 9-10 / Reg 1-9 + Adv 10 / Reg 1-10); and the NOTE's "cheaper than a
+  Normal Draw (X vs Y)" **Y = the region's own Legendary Weapon Non-Reactive total, read from
+  `DRAW_DATA`** (not retyped). A wrong number can only ever exist in one place.
+- **Rendering reuses the command's existing conventions** — `boldDrawSequence`/`cumulativeSequence` via a
+  `{ draws }` shim (bold ` / `-joined pulls, `⌇` before the total, `-# CP Spent:` cumulative joined by
+  `›`, `cp2` icon on the quote-blocked headline). Laid out as separate Text Displays grouped by spacing-2
+  dividers (headline → 3 purchase modes → 2 cautions → strategy). ~27 components, well under the 40 cap.
+- **No index.js changes were needed** — the `price_subpage_*`/`price_region_*` handlers already parse the
+  page number generically and pass it through; the command clamps. Both regions have full data, so a
+  region switch preserves the Advanced page.
+
 ## Known open issues (not yet fixed — flagged, not silently patched)
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
@@ -2630,9 +2668,12 @@ Colors panel, `/timestamp`'s view option) for what actually shipped. Still open 
 - `[P2 · S · 🔗bundle-with personality pass]` **View Colors: always show the Display Name / Nameplate / Deco
   pages even when unset/no Nitro** — instead of hiding them, render a humor/"bully" page (no colors shown).
   Ties into the personality direction in the v3 list below.
-- `[P2 · S]` **Pagination loop-back when >3 pages** (e.g. the Bal-27 loadout) — wrap last→first instead of a
-  disabled button on the final page. **Keep the current disabled-state behavior at exactly 2 pages.**
-  Affects the shared `buildPaginationRow` helper, so check every caller before changing it.
+- ~~**Pagination loop-back**~~ — **SHIPPED + DEPLOYED live 2026-07-21 (v2.28.0).** `buildPaginationRow`
+  now wraps last→first / first→last at EVERY page count and never
+  disables the arrows. **Note the earlier "keep disabled at exactly 2 pages" caveat was deliberately
+  overridden** — Harkirat asked to loop "all pagination buttons," so 2-page pagers loop too (both arrows
+  point at the other page). See the `buildPaginationRow` note under "Shared UI builders" for the
+  makeCustomId-vs-legacy split. Flag if the 2-page redundant-arrows behavior should revert to disabled.
 
 **Third batch of v2 items (filed 2026-07-18 from the notes file — Harkirat's 2026-07-17 intake).** Same
 parallel-track rule as the second batch (ship to `main`/live normally, clone into the v3 branch once it exists).
@@ -2748,12 +2789,91 @@ in Harkirat's own words, and it's worth being concrete about why, not just that 
      2026-07-20**: the vision prompt's `attachments` field is now an array of `{slot, name}` objects;
      `visionExtract.js` returns a parallel `attachmentSlots` array alongside the existing `attachments`
      name array (kept separate on purpose — `Loadout.attachments` and every downstream consumer, the
-     review card, the Edit modal, stay plain strings, completely unchanged); `loadoutImageCache.js`'s
-     `uploadLoadoutImage()` now attaches this as Cloudinary `context` metadata (simple, always-available
-     key/value pairs — not Cloudinary's stricter "Structured Metadata Fields" feature, which requires
-     predefining fields on the account first; that's a possible future upgrade, not needed for "index
-     and retain," which `context` already satisfies). Re-verified live: a real extraction now returns
-     `attachmentSlots: ["Muzzle","Barrel","Stock","Ammunition","Rear Grip"]` alongside the matching names.
+     review card, the Edit modal, stay plain strings, completely unchanged). Re-verified live: a real
+     extraction now returns `attachmentSlots: ["Muzzle","Barrel","Stock","Ammunition","Rear Grip"]`
+     alongside the matching names. **⚠️ SUPERSEDED 2026-07-21 — `uploadLoadoutImage()` originally wrote
+     this as Cloudinary `context` metadata (loose key/value pairs), but Harkirat then asked for real
+     Structured Metadata Fields, so context was replaced entirely; see the "Cloudinary Structured
+     Metadata for loadouts" section right below.**
+
+### Cloudinary Structured Metadata for loadouts AND patch notes (2026-07-21, `/autobuild` live-test follow-up + expansion)
+Harkirat's call after the first live test: switch loadout-image metadata from Cloudinary `context` (loose
+key/value pairs) to real **Structured Metadata Fields** (account-level defined, validated, queryable in the
+dashboard + Admin API), then (same session) expand it — badge + date fields, an equivalent set for patch
+notes, auto-sync on every edit, and a backfill of all existing assets. **22 fields total**, created on the
+live account via the idempotent `scripts/createCloudinaryMetadataFields.js` (lists existing fields, creates
+only the missing ones — safe to re-run when a field is added; reads BOTH schema lists). external_ids are
+Title_Case with `_` for multi-word (a space isn't a legal external_id char); the account already had a
+stray unused `Barrel` string field that happened to match the schema, so the script reuses it.
+- **Loadout fields (18)** — `utils/loadoutImageCache.js`'s exported `METADATA_FIELDS` (single source of
+  truth): one per MP Gunsmith slot (`Muzzle`/`Barrel`/`Optic`/`Stock`/`Perk`/`Laser`/`Underbarrel`/
+  `Ammunition`/`Rear_Grip`, all `string`), `Weapon_Name`/`Mode`/`Gunsmith_Code` (string), `Build_Number`
+  (integer), badges `Is_Meta`/`Is_Toxic`/`Rank` (string — `Rank` holds MP `categoryRank` OR DMZ
+  `dmzRangeRank`), and dates `Created_At`/`Last_Updated` (date). `Created_At` is read **for free from the
+  Mongo ObjectId's embedded timestamp** (no schema change); `Last_Updated` mirrors `Loadout.lastUpdated`.
+- **Patch-notes fields (4)** — `utils/patchNotesCache.js`'s exported `PATCH_METADATA_FIELDS`: `Patch_Id`
+  (the immutable subdoc `_id`), `Patch_Season` (human-readable title, `cleanPatchTitle`'d), `Patch_Image_Order`
+  (integer, absolute index in `images[]`), `Patch_Release_Date` (date). Account fields are global — a loadout
+  asset just doesn't set the `Patch_*` fields and vice versa.
+- **`Mode` is a plain string, NOT an enum**, even though MP/DMZ is closed — an enum *rejects* invalid values,
+  and a rejected metadata write could cascade into trouble; a string can't be "invalid." Same reasoning for
+  the badge booleans (stored as the strings `"true"`/`"false"`). Tightening `Mode` to an enum later is trivial.
+- **Metadata is a SEPARATE best-effort step from any image upload.** `uploadLoadoutImage()` is image-ONLY;
+  `syncLoadoutMetadata(doc, [attachmentSlots])` sets the metadata from a **Loadout doc** in its own swallowed
+  try/catch (never throws, never fails a DB write or upload). This doc-centric design is the key to keeping
+  metadata in sync everywhere: `buildLoadoutMetadata(doc)` is the ONE place doc→metadata is computed, so
+  `/autobuild` write, `/manage` add/edit, bulk upsert, badge propagation, and the backfill all produce
+  identical output. Badge/date fields are ALWAYS written (`Is_Meta`/`Is_Toxic` true/false, `Rank` to its
+  value or `''`) so an edit that REMOVES a badge actually clears it rather than leaving a stale value.
+  `attachmentSlots` is the only thing not on the doc — passed by `/autobuild` (from the vision extraction) at
+  create time AND by the one-time vision slot-backfill (see below) for existing builds; omitted on `/manage`
+  edits, which leaves any existing per-slot metadata untouched (update_metadata MERGES). Patch side mirrors
+  this: `cachePatchImage(patchId, i, url, {season, releaseDate})` sets metadata after the upload;
+  `syncPatchEntryMetadata(entry, seasonTitle)` re-syncs all of a patch's images on a date/season edit.
+- **⚠️ public_id extension gotcha (real, cost a silent no-op at first):** a few imageKeys carry a file
+  extension (`AK117-1.png`) but a Cloudinary **public_id has none**. `buildImageUrl` tolerates it (delivery
+  URLs resolve the extension), but `update_metadata(md, ["AK117-1.png"])` **silently matches nothing** —
+  returns `public_ids: []`, no error thrown. `syncLoadoutMetadata` therefore strips a trailing image
+  extension (`imageKeyToPublicId`) AND checks the returned `public_ids` is non-empty (treating an empty match
+  as "asset not found," not success). If loadout metadata ever silently fails to appear, check this first.
+- **Auto-sync on edit is wired at every mutation site** (Harkirat's "if I edit these, it updates Cloudinary
+  by itself" ask): `index.js`'s `edit_loadout_` (syncs the edited build + all siblings, since badges are
+  weapon-level and propagate), `add_loadout_` (syncs the new build; best-effort no-op if the admin hasn't
+  uploaded the image to that key yet), the bulk-add/replace loop (syncs each touched weapon once after the
+  loop), and `scripts/applyBadgesBulk.js`. Patch side: `modal_patch_urls_1/2` (metadata on cache),
+  `modal_patch_dateinfo` (re-sync date across all images), `modal_season_titles_deadlines` (re-sync season on
+  rename). **Known accepted gap:** a `/manage` edit that changes ATTACHMENTS does NOT update the per-slot
+  fields (only `/autobuild` has the slot mapping) — existing slot metadata is left as-is, not wiped.
+- **Backfilled (2026-07-21), not deferred.** `scripts/backfillLoadoutMetadata.js` synced the non-slot fields
+  onto **132/133** existing loadouts (the 1 skip is PHARO's `placehold.co` "Coming Soon" external-URL
+  placeholder — no asset to tag). `scripts/backfillPatchMetadata.js` tagged all 5 Season 6 patch images. Both
+  re-runnable.
+- **Per-slot fields ALSO backfilled via a one-time vision batch (2026-07-21, Harkirat authorized the GCP
+  spend).** `scripts/backfillLoadoutSlots.js` runs the Gemini vision model over every existing loadout image
+  to recover the slot→attachment mapping the Mongo-only backfill couldn't. **KEY SAFETY:** it takes the SLOT
+  labels from vision but maps each onto the STORED Mongo attachment NAME (authoritative, what the card shows)
+  via 3-pass name-matching (exact → substring → Levenshtein ≤2), so a vision misread of a NAME can never
+  corrupt the metadata — only the slot label comes from vision, and an unmatched attachment is left unset
+  rather than guessed. Result: **122/132 fully mapped.** `visionExtract.extractLoadoutFromImage` gained an
+  optional `{ maxAttachments }` (default 5, so `/autobuild` is byte-identical; the backfill passes 9 for DMZ,
+  which equips up to 9 and was being truncated by the fixed-5 prompt). Re-runnable; supports a
+  `SLOT_RERUN_ONLY="weaponName::buildName::mode,..."` env filter to cheaply re-process a subset.
+  - **The 10 non-fully-mapped are PRE-EXISTING DATA BUGS the batch surfaced, not backfill failures** — the
+    matcher correctly declined to write mismatched slots. Flagged to Harkirat, NOT auto-fixed (can't tell
+    which side — stored data vs image — is authoritative; fixing changes his displayed cards): (1) **full
+    image swaps** — `L-CAR-9-2`'s image is a crossbow and `CROSSBOW-1`'s is an L-CAR 9 (0/5 each); (2)
+    **build-image swaps within a weapon** — `3-LINE RIFLE` B1↔B2 (barrel crossed), `TYPE 19` B1↔B2 (stock/
+    perk/ammo crossed), `LW3-TUNDRA` B1↔B3 (suppressor/stock crossed); (3) a **stored typo** — `STRIKER`'s
+    "Fast Reload **Reload** Case" (doubled word; vision read the correct "Fast Reload Case"); (4) a **genuine
+    vision miss** — `J358`'s revolver-specific "Trigger Action" slot. Likely all originate from the manual
+    re-upload during the 2026-07-19 Cloudinary cleanup. Verified live via `cloudinary.api.resource` read-backs +
+  queryable searches (`metadata.Is_Meta=true` → 34 builds, `metadata.Mode=MP` → 124, etc.). **Note:** the
+  Cloudinary **Search** API reindexes asynchronously, so a just-written value can lag in `cloudinary.search`
+  for a few seconds even though `cloudinary.api.resource` shows it immediately — don't mistake search lag for
+  a failed write.
+- **Test-data cleanup (done same session):** the 3 MP AK117 dupes added during the live test (`AK117-2/3/4`,
+  created 2026-07-21) were deleted from Mongo AND Cloudinary (guarded by a created-date + imageKey check).
+  The real `AK117-1.png` (MP) and `DMZ-AK117-1` were kept.
 - Also touched, worth a plain factual note without editorializing further: it added an unused
   `@google-cloud/vertexai`/`@google/genai` dependency pair to `package.json` (confirmed via grep — zero
   imports anywhere in the codebase; the actual implementation is a raw `fetch` call, matching this
@@ -2770,11 +2890,14 @@ in Harkirat's own words, and it's worth being concrete about why, not just that 
   any `.env` (e.g. the VM's, not yet re-synced with this new variable as of this writing) is missing
   that key.
 
-**Current status: code-complete and locally re-verified (`scripts/test-vertex-extract.js` against a
-real Mongo loadout + Cloudinary image, live Vertex AI call), NOT yet re-tested on the VM or in live
-Discord.** Next: verify on the VM via SSH (keyless ADC via the instance metadata server this time, not
-the local-Mac `gcloud` fallback), then commit/push/redeploy so Harkirat can run the real end-to-end
-Discord test this whole feature has been blocked on.
+**Current status: DEPLOYED live to the VM 2026-07-21 (v2.28.0)** — code-complete, locally re-verified
+(`scripts/test-vertex-extract.js` against a real Mongo loadout + Cloudinary image, live Vertex AI call),
+and now pushed + pulled + restarted on the VM. **Still NOT exercised end-to-end on the VM / in live
+Discord** — the one remaining gap is Harkirat running the real `/autobuild` flow in Discord, which this
+deploy finally unblocks. When he does: the VM path uses keyless ADC via the instance metadata server (not
+the local-Mac `gcloud` fallback); the VM's `.env` may still lack `GCP_LOCATION`, but `visionExtract.js`'s
+fallback is now the correct `'us'`, so extraction should work regardless. If `/autobuild` errors live,
+check the VM has Vertex AI reachable via the metadata-server token first (see `visionExtract.js` header).
 
 ---
 

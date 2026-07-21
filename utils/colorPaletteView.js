@@ -331,8 +331,7 @@ async function buildColorPalettePanel({ source, data, targetUserId, avatarThumbn
     // needed). Same shared helper /calendar and /draws already use for their own sub-page nav.
     const subpageRow = buildPaginationRow({
         totalChunks: totalPages, currentPage: effectiveSubpage,
-        prevCustomId: `colors_subpage_${effectiveSource}_${effectiveSubpage - 1}|${targetUserId}`,
-        nextCustomId: `colors_subpage_${effectiveSource}_${effectiveSubpage + 1}|${targetUserId}`,
+        makeCustomId: (p) => `colors_subpage_${effectiveSource}_${p}|${targetUserId}`,
         indicatorCustomId: 'colors_subpage_indicator'
     });
     if (subpageRow) containerComponents.push(subpageRow);

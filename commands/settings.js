@@ -378,7 +378,7 @@ module.exports = {
         // was describing; moved below the nav row instead, right before the footer.
         const paginationRow = buildPaginationRow({
             totalChunks: 2, currentPage: page,
-            prevCustomId: `set_page_${page - 1}|${userId}`, nextCustomId: `set_page_${page + 1}|${userId}`,
+            makeCustomId: (p) => `set_page_${p}|${userId}`,
             indicatorCustomId: 'set_page_indicator'
         });
         if (paginationRow) containerComponents.push(paginationRow);

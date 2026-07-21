@@ -105,6 +105,9 @@ async function run() {
             );
             updatedWeaponCount++;
             updatedBuildCount += result.modifiedCount;
+            // Keep Cloudinary structured metadata in sync with the badges just applied (2026-07-21).
+            const { syncLoadoutMetadata } = require('../utils/loadoutImageCache');
+            for (const b of await Loadout.find({ weaponKey: match.weaponKey, mode: 'MP' })) await syncLoadoutMetadata(b);
             console.log(`✅ ${match.weaponName} (${category}): ${badgesStr} -> ${result.modifiedCount} build(s) updated`);
         }
     }

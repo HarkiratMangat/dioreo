@@ -35,7 +35,15 @@ const DEFAULT_PROJECT_ID = 'gen-lang-client-0549308254';
 // missing this var (e.g. a fresh VM .env that hasn't been re-synced since this variable was added).
 const DEFAULT_LOCATION = 'us';
 
-const PROMPT = `You are looking at a screenshot of a Call of Duty Mobile (CODM) "Gunsmith" weapon customization screen. Extract exactly this information and respond with ONLY a JSON object, no markdown code fences, no extra text:
+// Prompt is parameterized by how many attachment slots to expect. `buildPrompt(5)` returns the EXACT
+// original text (MP Gunsmith screens equip exactly 5, and /autobuild depends on this unchanged). The
+// >5 variant is only used by the one-time DMZ slot backfill (scripts/backfillLoadoutSlots.js) -- DMZ
+// builds equip up to 9 attachments, which the fixed-5 prompt was silently truncating.
+function buildPrompt(maxAttachments) {
+    const countClause = maxAttachments === 5
+        ? 'The attachments array must contain exactly 5 objects, one per equipped attachment slot, in the order they appear on screen.'
+        : `The attachments array must contain one object per EQUIPPED attachment slot, in the order they appear on screen -- there may be up to ${maxAttachments}; include every slot that actually has an attachment.`;
+    return `You are looking at a screenshot of a Call of Duty Mobile (CODM) "Gunsmith" weapon customization screen. Extract exactly this information and respond with ONLY a JSON object, no markdown code fences, no extra text:
 
 {
   "weaponName": "the weapon's name as shown on screen",
@@ -45,7 +53,8 @@ const PROMPT = `You are looking at a screenshot of a Call of Duty Mobile (CODM) 
   ]
 }
 
-The attachments array must contain exactly 5 objects, one per equipped attachment slot, in the order they appear on screen. If you cannot find a value for a field, use an empty string for that field (or an empty array entry for a missing attachment) rather than omitting the key.`;
+${countClause} If you cannot find a value for a field, use an empty string for that field (or an empty array entry for a missing attachment) rather than omitting the key.`;
+}
 
 // Antigravity (2026-07-20): Keyless OAuth 2.0 Token Retriever
 // Dynamically fetches the bearer token from the GCP Metadata Server when running on Compute Engine VM,
@@ -89,7 +98,10 @@ async function getGcpAccessToken() {
     throw new Error('GCP credentials missing: Instance metadata server unreachable and local gcloud ADC is unauthenticated. Please run "gcloud auth application-default login" locally.');
 }
 
-async function extractLoadoutFromImage(imageUrl) {
+// `maxAttachments` (default 5) -- how many attachment slots to extract. /autobuild always uses the
+// default 5 (MP), so its behavior is unchanged; the DMZ slot backfill passes 9. Kept as an option
+// rather than a separate function so there's still ONE extraction path to maintain.
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5 } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
@@ -127,7 +139,7 @@ async function extractLoadoutFromImage(imageUrl) {
         contents: [{
             role: 'user',
             parts: [
-                { text: PROMPT },
+                { text: buildPrompt(maxAttachments) },
                 { inline_data: { mime_type: contentType, data: base64Image } }
             ]
         }],
@@ -166,17 +178,18 @@ async function extractLoadoutFromImage(imageUrl) {
     // Attachments are now {slot, name} objects (added 2026-07-20 for Cloudinary structured metadata --
     // see this file's top comment). Accept a plain string too for robustness (a model response that
     // drops the object wrapper on an empty/unclear slot) rather than throwing on a partially-shaped item.
-    // Pad/truncate to exactly 5 -- the review card always shows 5 slots; a short array would leave
-    // later slots as `undefined` rather than an editable empty string.
-    const attachments = [0, 1, 2, 3, 4].map(i => {
+    // Pad/truncate to exactly `maxAttachments` (5 for /autobuild's review card, which always shows 5
+    // slots; a short array would leave later slots as `undefined` rather than an editable empty string).
+    const slotIndexes = Array.from({ length: maxAttachments }, (_, i) => i);
+    const attachments = slotIndexes.map(i => {
         const item = parsed.attachments[i];
         if (typeof item === 'string') return item;
         return (item && typeof item.name === 'string') ? item.name : '';
     });
-    // Parallel array, same 5-length convention as `attachments` -- NOT bot-facing (Loadout.attachments
-    // stays plain strings everywhere downstream), only ever consumed by uploadLoadoutImage() to attach
-    // as Cloudinary context metadata for indexing. See utils/autobuildPipeline.js/loadoutImageCache.js.
-    const attachmentSlots = [0, 1, 2, 3, 4].map(i => {
+    // Parallel array to `attachments` -- NOT bot-facing (Loadout.attachments stays plain strings
+    // everywhere downstream), only ever consumed to attach per-slot Cloudinary structured metadata for
+    // indexing. See utils/autobuildPipeline.js/loadoutImageCache.js.
+    const attachmentSlots = slotIndexes.map(i => {
         const item = parsed.attachments[i];
         return (item && typeof item.slot === 'string') ? item.slot : '';
     });

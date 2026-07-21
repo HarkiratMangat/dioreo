@@ -6,13 +6,13 @@
 // file already requires shared logic FROM utils/, never the reverse. Full design:
 // docs/superpowers/specs/2026-07-19-loadout-automation-poc-design.md.
 const crypto = require('crypto');
-const { Routes, ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
 const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges } = require('./adminParser');
 const { sendV2Payload } = require('./sendV2Payload');
-const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent } = require('./loadoutRender');
-const { uploadLoadoutImage } = require('./loadoutImageCache');
+const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
+const { uploadLoadoutImage, syncLoadoutMetadata } = require('./loadoutImageCache');
 
 // token -> { weaponName, gunsmithCode, attachments[5], category, badgesRaw, mode:'MP', sourceImageUrl, adminId }
 // Same short-lived-token pattern as index.js's pendingManageEdits (10 min TTL, set at insertion time
@@ -30,6 +30,34 @@ const pendingAutobuilds = new Map();
 // doesn't permanently strand the token as "in progress" for the rest of its 10-minute TTL.
 const confirmInProgress = new Set();
 
+// Recomputes the two advisory warnings shown on the review card (mutates `data` in place). Called at
+// initial extraction AND after every Edit submission, since editing the weapon/code/attachments/
+// category is exactly what changes whether either warning applies. Pure given `allMpBuilds` (the full
+// current MP loadout set) -- the caller does the DB fetch so this stays cheap to re-run.
+//   - categoryConflict: an existing build of THIS weapon is saved under a DIFFERENT category than the
+//     one chosen here (live-test 4 -- picking MARKSMAN for a weapon already saved as AR silently
+//     registered AK117 under two categories). weaponKey is the weapon's identity, so a weapon living
+//     under two categories is always a mistake worth flagging.
+//   - duplicateWarning: this looks like a build already in the DB (live-test 1 + note #14) -- see
+//     loadoutRender.js's findDuplicateLoadouts for the two soft rules.
+function refreshReviewWarnings(data, allMpBuilds) {
+    const weaponKey = (data.weaponName || '').toLowerCase().replace(/\s+/g, '');
+    const siblings = allMpBuilds.filter(b => b.weaponKey === weaponKey);
+    const conflicting = data.category
+        ? siblings.find(b => (b.category || '').toUpperCase() !== data.category.toUpperCase())
+        : null;
+    data.categoryConflict = conflicting ? conflicting.category : null;
+
+    const dupes = findDuplicateLoadouts({ gunsmithCode: data.gunsmithCode, attachments: data.attachments }, allMpBuilds);
+    if (dupes.length > 0) {
+        const d = dupes[0];
+        const extra = dupes.length > 1 ? ` _(+${dupes.length - 1} more)_` : '';
+        data.duplicateWarning = `⚠️ **Possible duplicate:** this looks like **${d.weaponName} — ${d.buildName}**, already in the database (matching Gunsmith code + ${d.overlap}/${d.total} attachments)${extra}. Only Confirm if it's genuinely a new build.`;
+    } else {
+        data.duplicateWarning = null;
+    }
+}
+
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW
 // source screenshot as the preview image (not yet uploaded to Cloudinary -- see the design spec for
 // why: an edited weapon name during review must never orphan an upload under the wrong key).
@@ -40,26 +68,35 @@ function buildReviewCard(token, data) {
         ? data.badgesRaw.trim()
         : '_(none entered -- will inherit from an existing build of this weapon if one exists)_';
 
+    const components = [
+        { type: 10, content: `# Review Extracted Loadout` },
+        { type: 14, spacing: 1, divider: true },
+        { type: 10, content: `**Weapon:** ${data.weaponName}\n**Category:** ${categoryLine}\n**Gunsmith Code:** \`${data.gunsmithCode}\`` },
+        { type: 10, content: `**Attachments:**\n${attachmentsLines}` },
+        { type: 10, content: `**Badges:** ${badgesLine}` }
+    ];
+    // Advisory warnings (never block Confirm) -- see refreshReviewWarnings above.
+    if (data.categoryConflict) {
+        components.push({ type: 10, content: `⚠️ **Category mismatch:** this weapon is already saved as **${data.categoryConflict}**. Saving it as **${data.category}** will register it under two categories — double-check the category before confirming (use **Edit** to change it).` });
+    }
+    if (data.duplicateWarning) {
+        components.push({ type: 10, content: data.duplicateWarning });
+    }
+    components.push({ type: 12, items: [{ media: { url: data.sourceImageUrl } }] });
+    components.push({ type: 14, spacing: 1, divider: true });
+    components.push({
+        type: 1,
+        components: [
+            { type: 2, style: 3, label: 'Confirm', custom_id: `autobuild_confirm_${token}` },
+            { type: 2, style: 1, label: 'Edit', custom_id: `autobuild_editbtn_${token}` },
+            { type: 2, style: 4, label: 'Cancel', custom_id: `autobuild_cancel_${token}` }
+        ]
+    });
+
     const container = {
         type: 17,
         accent_color: 2829617, // neutral gray fallback (same as DEFAULT_MP_ACCENT in loadoutRender.js) -- category may still be unresolved at review time, so this card never guesses a per-category color
-        components: [
-            { type: 10, content: `# Review Extracted Loadout` },
-            { type: 14, spacing: 1, divider: true },
-            { type: 10, content: `**Weapon:** ${data.weaponName}\n**Category:** ${categoryLine}\n**Gunsmith Code:** \`${data.gunsmithCode}\`` },
-            { type: 10, content: `**Attachments:**\n${attachmentsLines}` },
-            { type: 10, content: `**Badges:** ${badgesLine}` },
-            { type: 12, items: [{ media: { url: data.sourceImageUrl } }] },
-            { type: 14, spacing: 1, divider: true },
-            {
-                type: 1,
-                components: [
-                    { type: 2, style: 3, label: 'Confirm', custom_id: `autobuild_confirm_${token}` },
-                    { type: 2, style: 1, label: 'Edit', custom_id: `autobuild_editbtn_${token}` },
-                    { type: 2, style: 4, label: 'Cancel', custom_id: `autobuild_cancel_${token}` }
-                ]
-            }
-        ]
+        components
     };
     return { components: [container], flags: 32768 };
 }
@@ -95,8 +132,11 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });
     }
 
-    const allLoadouts = await Loadout.find({ mode: 'MP' }).select('attachments').lean();
-    const knownAttachments = [...new Set(allLoadouts.flatMap(l => l.attachments))];
+    // One fetch, reused for BOTH the attachment-name corrector's known-vocabulary set AND the
+    // duplicate/category-conflict warnings (refreshReviewWarnings) -- richer field select than the
+    // old attachments-only projection so those checks have shareCode/category/weaponName to work with.
+    const allMpBuilds = await Loadout.find({ mode: 'MP' }).select('weaponKey weaponName category buildName shareCode attachments').lean();
+    const knownAttachments = [...new Set(allMpBuilds.flatMap(l => l.attachments))];
     const correctedAttachments = extracted.attachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(extracted.gunsmithCode);
 
@@ -107,10 +147,12 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         weaponName: extracted.weaponName,
         gunsmithCode: correctedCode,
         attachments: correctedAttachments,
-        // Cloudinary-metadata-only, not admin-editable/bot-facing -- see loadoutImageCache.js's
-        // buildAttachmentContext(). Not re-corrected against knownAttachments the way `attachments`
-        // itself is: slot labels are a small closed vocabulary (Muzzle/Barrel/Optic/...), not free text
-        // prone to the same misread-spelling drift attachment NAMES have.
+        // Feeds the per-slot Cloudinary structured metadata (Muzzle/Barrel/... fields) via
+        // loadoutImageCache.js's buildLoadoutMetadata/SLOT_TO_FIELD -- Cloudinary-only, not written to
+        // the Loadout doc, which is exactly why the per-slot fields can only ever be filled by
+        // /autobuild. Not re-corrected against knownAttachments the way `attachments` itself is: slot
+        // labels are a small closed vocabulary (Muzzle/Barrel/Optic/...), not free text prone to the
+        // same misread-spelling drift attachment NAMES have.
         attachmentSlots: extracted.attachmentSlots,
         category,
         badgesRaw,
@@ -118,6 +160,7 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
         sourceImageUrl,
         adminId: interaction.user.id
     };
+    refreshReviewWarnings(data, allMpBuilds);
     pendingAutobuilds.set(token, data);
     setTimeout(() => pendingAutobuilds.delete(token), 10 * 60 * 1000).unref();
 
@@ -140,31 +183,21 @@ const pendingImageRetries = new Map(); // retryToken -> confirmed data + { weapo
 // upload+write duration.
 const retryInProgress = new Set();
 
-// Sends a NEW ephemeral follow-up message carrying raw Components V2 JSON (a type-17 Container).
-// discord.js's high-level `interaction.followUp({components})` does NOT reliably serialize raw V2
-// JSON -- no builder class exists for a type-17 Container, the exact same limitation already
-// documented at every other V2 send site in this codebase (utils/sendV2Payload.js's own header
-// comment; index.js's `set_accent_style`/'displayName' Nitro notice, which hit this same wall for a
-// brand-new follow-up message and worked around it with this identical raw POST). `sendV2Payload`
-// itself doesn't apply here because it PATCHes `@original` -- this needs a genuinely NEW message
-// (the post-creation card is a separate message from the review card, per the design spec), so this
-// mirrors that pattern with `rest.post(Routes.webhook(...))` instead of `rest.patch(...)`. Always
-// ephemeral (64) -- every message in this admin-only flow stays private; only the "Open Loadout"
-// button click below produces a real public message.
-async function followUpV2Card(interaction, card) {
-    // Wrapped in its own try/catch, matching the identical precedent at index.js's 'displayName'
-    // Nitro-notice handler (~line 996-1020) -- a failure here happens AFTER the Loadout doc/Cloudinary
-    // upload has already succeeded (both callers below only ever reach this once their write is durable),
-    // so a dead interaction token here must never look like the whole Confirm/retry operation failed.
-    // Never rethrows -- the underlying data is already safely saved; a missed confirmation message is a
-    // silent-but-safe UX gap, not a data-loss bug.
+// Replaces the message this interaction is answering (the ephemeral review card, or the retry
+// command's own reply) IN PLACE with the given Components V2 card, via sendV2Payload's `rest.patch(
+// @original)`. Changed 2026-07-21 from POSTing a brand-new message (per Harkirat's live-test note
+// #11: "instead of a new msg to open loadout, why not just edit the review panel, remove it, and edit
+// in the 'loadout created, open loadout' msg") -- so Confirm swaps the review card straight into the
+// post-creation card instead of leaving a stale review panel sitting above a new message.
+// Wrapped in its own try/catch: a failure here happens AFTER the Loadout doc/Cloudinary upload has
+// already durably succeeded (every caller only reaches this once its write is committed), so a dead
+// interaction token must never look like the whole Confirm/retry operation failed. Never rethrows --
+// a missed confirmation edit is a silent-but-safe UX gap, not a data-loss bug.
+async function replaceWithV2Card(interaction, card) {
     try {
-        return await interaction.client.rest.post(
-            Routes.webhook(interaction.applicationId, interaction.token),
-            { body: { flags: (card.flags || 32768) | 64, components: card.components } }
-        );
+        return await sendV2Payload(interaction, card.components, { flags: card.flags });
     } catch (notifyError) {
-        console.error('Failed to send autobuild post-creation card (interaction token likely expired) -- underlying Loadout doc was already saved successfully:', notifyError);
+        console.error('Failed to render autobuild post-creation card (interaction token likely expired) -- underlying Loadout doc was already saved successfully:', notifyError);
     }
 }
 
@@ -184,6 +217,30 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         isToxic
     });
     await doc.save();
+
+    // Badges describe the WEAPON, not one build variant -- sync them to every sibling build so a
+    // badge set here (e.g. Meta added during review) shows on the weapon's OTHER builds too (live-test
+    // 3: the badge only landed on the new build). Mirrors index.js's edit_loadout_ propagation.
+    // Guarded on "at least one badge is actually set" so a blank never WIPES siblings -- and because
+    // /autobuild already RESOLVES blank badges by inheriting from an existing sibling
+    // (resolveCategoryAndBadges), a still-blank value here genuinely means no weapon-level badge
+    // exists, so skipping propagation in that case is correct, not a gap.
+    const badgesSet = isMeta || categoryRank || isToxic;
+    if (badgesSet) {
+        await Loadout.updateMany(
+            { weaponKey: data.weaponKey, mode: 'MP', _id: { $ne: doc._id } },
+            { isMeta, categoryRank, isToxic }
+        );
+    }
+
+    // Cloudinary structured metadata (best-effort, never throws). The new build gets its per-slot data
+    // too (only the /autobuild path has the slot->attachment mapping from the vision extraction). If
+    // badges just propagated, re-sync the affected siblings so their Cloudinary badge metadata matches.
+    await syncLoadoutMetadata(doc, data.attachmentSlots);
+    if (badgesSet) {
+        const siblings = await Loadout.find({ weaponKey: data.weaponKey, mode: 'MP', _id: { $ne: doc._id } });
+        for (const sibling of siblings) await syncLoadoutMetadata(sibling);
+    }
     return doc;
 }
 
@@ -226,7 +283,10 @@ async function confirmAndWrite(interaction, token) {
         const siblingBuildNames = (await Loadout.find({ weaponKey: weaponKeyForLookup, mode: 'MP' }).select('buildName').lean()).map(l => l.buildName);
         const { weaponKey, buildName, imageKey } = computeWeaponKeyAndBuild(data.weaponName, siblingBuildNames);
 
-        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey, data.attachments, data.attachmentSlots);
+        // Image only -- structured metadata is set from the saved Loadout doc by writeLoadoutDoc ->
+        // syncLoadoutMetadata (which also has the per-slot data), so a metadata problem can never fail
+        // this upload.
+        const uploadResult = await uploadLoadoutImage(data.sourceImageUrl, imageKey);
 
         if (uploadResult.success) {
             // Delete AFTER the write succeeds, not before -- if doc.save() throws (a real possibility:
@@ -237,7 +297,7 @@ async function confirmAndWrite(interaction, token) {
             const doc = await writeLoadoutDoc({ ...data, weaponKey, buildName, imageKey });
             pendingAutobuilds.delete(token);
             const card = buildPostCreationCard(doc, null);
-            return await followUpV2Card(interaction, card);
+            return await replaceWithV2Card(interaction, card);
         }
 
         // First failure: do NOT write yet. Stash the confirmed data (with weaponKey/buildName/imageKey
@@ -278,12 +338,12 @@ async function retryImageUpload(interaction, token, newImageUrl) {
     retryInProgress.add(token);
 
     try {
-        const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey, data.attachments, data.attachmentSlots);
+        const uploadResult = await uploadLoadoutImage(newImageUrl, data.imageKey); // image only; metadata via writeLoadoutDoc -> syncLoadoutMetadata
         if (uploadResult.success) {
             const doc = await writeLoadoutDoc(data);
             pendingImageRetries.delete(token);
             const card = buildPostCreationCard(doc, null);
-            return await followUpV2Card(interaction, card);
+            return await replaceWithV2Card(interaction, card);
         }
 
         // Second failure -- write anyway with a placeholder key, never lose the already-confirmed data.
@@ -294,7 +354,7 @@ async function retryImageUpload(interaction, token, newImageUrl) {
         const doc = await writeLoadoutDoc(data, placeholderKey);
         pendingImageRetries.delete(token);
         const card = buildPostCreationCard(doc, 'No image could be uploaded (tried twice). Fix it via `/manage` -> Edit Loadout -> set a real Cloudinary Image Key.');
-        return await followUpV2Card(interaction, card);
+        return await replaceWithV2Card(interaction, card);
     } finally {
         // Always released -- same reasoning as confirmInProgress's finally above.
         retryInProgress.delete(token);
@@ -345,8 +405,10 @@ async function applyEditSubmission(interaction, token) {
     const category = interaction.fields.getTextInputValue('category').trim().toUpperCase();
     const badgesRaw = interaction.fields.getTextInputValue('badges').trim();
 
-    const allLoadouts = await Loadout.find({ mode: 'MP' }).select('attachments').lean();
-    const knownAttachments = [...new Set(allLoadouts.flatMap(l => l.attachments))];
+    // Same richer select as runExtraction -- reused for the attachment corrector AND the recomputed
+    // duplicate/category-conflict warnings (an Edit is exactly what changes whether either applies).
+    const allMpBuilds = await Loadout.find({ mode: 'MP' }).select('weaponKey weaponName category buildName shareCode attachments').lean();
+    const knownAttachments = [...new Set(allMpBuilds.flatMap(l => l.attachments))];
     const correctedAttachments = [0, 1, 2, 3, 4].map(i => correctAttachmentName(rawAttachments[i] || '', knownAttachments));
     const correctedCode = correctGunsmithCode(rawCode);
 
@@ -358,6 +420,7 @@ async function applyEditSubmission(interaction, token) {
         category: category || null,
         badgesRaw
     };
+    refreshReviewWarnings(updated, allMpBuilds);
     pendingAutobuilds.set(token, updated);
 
     const card = buildReviewCard(token, updated);

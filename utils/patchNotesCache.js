@@ -36,6 +36,63 @@ function safeErrorMessage(err) {
     return err?.message || err?.error?.message || 'Unknown Cloudinary error';
 }
 
+// --- Patch-notes Structured Metadata (2026-07-21, Harkirat's request) -------------------------------
+// Structured metadata fields for patch-notes images so each cached screenshot carries which season it
+// belongs to, its order in the carousel, and the season's release date. Created via
+// scripts/createCloudinaryMetadataFields.js (idempotent), same as the loadout fields. Account-global
+// fields -- a patch image just doesn't set the loadout fields and vice versa. Cloudinary-only, kept in
+// sync from the SeasonalData patchNotes[] entry (on image (re)cache, on release-date edit, and on
+// season rename -- see index.js). `Patch_Id` is the patch subdoc's own immutable `_id` (stable across
+// title renames, same reason the public_id is keyed by it); `Patch_Season` is the human-readable title.
+const PATCH_METADATA_FIELDS = [
+    { external_id: 'Patch_Id', label: 'Patch Id', type: 'string' },
+    { external_id: 'Patch_Season', label: 'Patch Season', type: 'string' },
+    { external_id: 'Patch_Image_Order', label: 'Patch Image Order', type: 'integer' },
+    { external_id: 'Patch_Release_Date', label: 'Patch Release Date', type: 'date' }
+];
+
+function toMetadataDate(d) {
+    if (!d) return undefined;
+    const dt = new Date(d);
+    return Number.isNaN(dt.getTime()) ? undefined : dt.toISOString().slice(0, 10);
+}
+
+function buildPatchMetadata({ patchId, season, order, releaseDate }) {
+    const md = {};
+    if (patchId) md.Patch_Id = String(patchId);
+    if (season) md.Patch_Season = season;
+    if (typeof order === 'number') md.Patch_Image_Order = order;
+    const rd = toMetadataDate(releaseDate);
+    if (rd) md.Patch_Release_Date = rd;
+    return md;
+}
+
+// Best-effort: sets/updates the structured metadata on ONE already-cached patch image. Never throws --
+// a metadata failure must never affect the image or the admin's save.
+async function setPatchImageMetadata(patchId, imageIndex, { season, releaseDate } = {}) {
+    try {
+        const md = buildPatchMetadata({ patchId, order: imageIndex, season, releaseDate });
+        if (Object.keys(md).length === 0) return;
+        await cloudinary.uploader.update_metadata(md, [publicIdFor(patchId, imageIndex)]);
+    } catch (err) {
+        console.error(`Patch image metadata set failed for ${patchId}/${imageIndex} (best-effort, non-fatal): ${safeErrorMessage(err)}`);
+    }
+}
+
+// Re-syncs metadata across EVERY cached image of a patch entry -- used when the release date or the
+// season title changes WITHOUT re-uploading the images (a /manage "date & info" edit, or a season
+// rename). `seasonTitle` is passed already-cleaned by the caller (index.js has cleanPatchTitle; this
+// util deliberately stays decoupled from the command layer). Each image's own order is preserved.
+async function syncPatchEntryMetadata(patchEntry, seasonTitle) {
+    if (!patchEntry?._id) return;
+    const patchId = String(patchEntry._id);
+    const season = seasonTitle || patchEntry.title;
+    const count = (patchEntry.images || []).length;
+    for (let i = 0; i < count; i++) {
+        await setPatchImageMetadata(patchId, i, { season, releaseDate: patchEntry.releaseDate });
+    }
+}
+
 // public_id shape: patch_notes/{patchId}/{imageIndex} -- imageIndex is the ABSOLUTE position in the
 // patch note's `images[]` array (0-9), not a per-modal-submission-local index, so re-submitting the
 // same slot (URLs 1 owns 0-4, URLs 2 owns 5-9 -- see index.js) always overwrites the same asset in
@@ -47,7 +104,11 @@ function publicIdFor(patchId, imageIndex) {
 // Uploads a REMOTE url straight into Cloudinary (server-side fetch, the bot never downloads the
 // image itself) -- never throws, a Cloudinary hiccup must fall back to the raw URL rather than
 // blocking the admin's save, same philosophy as utils/cloudinaryCache.js's cacheThumbnail().
-async function cachePatchImage(patchId, imageIndex, sourceUrl) {
+// `meta` (optional): { season, releaseDate } -- the patch's title + release date, so the cached image
+// carries its structured metadata immediately. Set in a SEPARATE best-effort step after the upload
+// (setPatchImageMetadata swallows its own errors), same decoupling as the loadout side: a metadata
+// hiccup must never turn a successful image cache into a fallback-to-raw-URL.
+async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(patchId, imageIndex),
@@ -60,6 +121,7 @@ async function cachePatchImage(patchId, imageIndex, sourceUrl) {
             invalidate: true,
             resource_type: 'image'
         });
+        await setPatchImageMetadata(patchId, imageIndex, meta);
         return { url: result.secure_url, cached: true, error: null };
     } catch (err) {
         const message = safeErrorMessage(err);
@@ -116,4 +178,4 @@ async function pruneOrphanedPatchFolders(keepPatchIds) {
     }
 }
 
-module.exports = { cachePatchImage, pruneOrphanedPatchFolders, FOLDER };
+module.exports = { cachePatchImage, pruneOrphanedPatchFolders, syncPatchEntryMetadata, setPatchImageMetadata, buildPatchMetadata, PATCH_METADATA_FIELDS, FOLDER };

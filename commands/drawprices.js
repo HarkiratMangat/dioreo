@@ -69,6 +69,33 @@ const DRAW_DATA = {
     }
 };
 
+// ADVANCED DOUBLE LEGENDARY WEAPON DRAW (added 2026-07-21, from Harkirat's own 10/30 CP breakdown).
+// A distinct, more elaborate draw type than everything in DRAW_DATA above: it offers THREE purchase
+// modes per spin (Regular / Advanced / the "Trap") PLUS a strategy breakdown, so it doesn't fit the
+// single `draws: []` derive-total model every other entry uses -- it gets its own builder
+// (buildAdvancedDoubleLegendaryEntry) on its own dedicated page instead.
+//
+// Deliberately stores ONLY the Regular and Advanced per-pull arrays -- same "never hand-type a
+// total, always derive it" rule the rest of this file follows (see DRAW_DATA's own comment). From
+// just these two arrays we derive EVERYTHING else shown:
+//   • Trap = ALWAYS exactly 2x the Regular per-pull cost (buying Regular to spin, then paying for
+//     the 2nd item afterward, costs the same as a Regular Purchase again -> two Regular Purchases).
+//   • Reg/Adv/Trap totals = the sum of each array.
+//   • The three Strategy costs = cumulative slices of Regular then Advanced (Reg 1-8 + Adv 9-10, etc).
+//   • The NOTE's "cheaper than a Normal Draw (X vs Y)" comparison Y = the Legendary Weapon
+//     (Non-Reactive) draw's own total for the same region, read straight from DRAW_DATA.
+// So a wrong number can only ever exist in one place, and nothing can silently drift from its source.
+const ADVANCED_DOUBLE_LEGENDARY = {
+    region_10: {
+        reg: [10, 30, 50, 120, 200, 320, 480, 680, 950, 1400],
+        adv: [16, 48, 80, 192, 320, 512, 768, 1088, 1520, 2240]
+    },
+    region_30: {
+        reg: [30, 80, 120, 300, 500, 800, 1200, 1700, 2400, 3900],
+        adv: [48, 128, 192, 480, 800, 1280, 1920, 2720, 3840, 6240]
+    }
+};
+
 // Display name + tier (for the emoji prefix) per draw type — same across both regions, so this
 // isn't duplicated inside DRAW_DATA. "Mythic Character + Legendary Weapon Draw" and "Legendary
 // Character + Legendary Weapon Draw" are each a single named in-game banner (not a combo of two
@@ -95,6 +122,13 @@ const DRAW_META = {
 const PAGE_1_KEYS = ['mythicWeapon', 'mythicCharacter', 'legendaryGunReactive', 'legendaryGunNonReactive', 'legendaryCharacterWeapon'];
 const PAGE_2_KEYS = ['doubleLegendaryWeapons', 'sevenSpinLegendaryWeapon', 'pickYourRewardCard', 'doubleEpicCharacters'];
 const SUBPAGES = [PAGE_1_KEYS, PAGE_2_KEYS];
+
+// The Advanced Double Legendary Weapon Draw (2026-07-21) gets its own dedicated page AFTER the two
+// key-driven pages -- it doesn't fit the shared `draws: []` model buildDrawEntries renders, so it's
+// built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of
+// SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
+const ADVANCED_PAGE_INDEX = SUBPAGES.length; // = 2 (the 3rd page)
+const TOTAL_PAGES = SUBPAGES.length + 1;      // 2 key pages + the Advanced page
 
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun
 // ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
@@ -176,6 +210,65 @@ function withInnerDividers(entryGroups, spacing = 1) {
     return components;
 }
 
+// Builds the Advanced Double Legendary Weapon Draw's whole page as a ready component list (Text
+// Displays + dividers), so buildContainer can splice it in exactly where withInnerDividers' output
+// would otherwise go. Everything numeric here is DERIVED from ADVANCED_DOUBLE_LEGENDARY's reg/adv
+// arrays (see that object's comment) -- nothing is hand-typed. Uses the same rendering conventions
+// as the other entries: bold ` / `-joined pull sequence, ⌇ before the total, a `-# CP Spent:`
+// cumulative line joined by `›`, and the cp2 icon on the quote-blocked headline (reuses
+// boldDrawSequence/cumulativeSequence via a `{ draws }` shim).
+function buildAdvancedDoubleLegendaryEntry(regionKey) {
+    const data = ADVANCED_DOUBLE_LEGENDARY[regionKey] || ADVANCED_DOUBLE_LEGENDARY.region_10;
+    const reg = data.reg;
+    const adv = data.adv;
+    // Trap = 2x Regular per pull (see the data object's comment) -- derived, never stored.
+    const trap = reg.map(n => n * 2);
+
+    const sum = arr => arr.reduce((a, b) => a + b, 0);
+    const sumRange = (arr, n) => arr.slice(0, n).reduce((a, b) => a + b, 0);
+    const regTotal = sum(reg);
+    const advTotal = sum(adv);
+    const trapTotal = sum(trap);
+
+    // "Normal Draw" comparison total = the standard Legendary Weapon (Non-Reactive) draw for the same
+    // region, read from DRAW_DATA rather than hand-typed so the claim can't drift if that draw changes.
+    const normalDrawTotal = sum(DRAW_DATA[regionKey].legendaryGunNonReactive.draws);
+
+    // Strategy costs, all derived: each strategy spins Regular for the early pulls then switches to
+    // Advanced for the last one or two (which unlock the 2nd Legendary + the Epics), assuming no lucky
+    // early pull. Reg 1-8 + Adv 9-10 / Reg 1-9 + Adv 10 / Reg 1-10.
+    const costAll4 = sumRange(reg, 8) + adv[8] + adv[9];
+    const cost2Leg = sumRange(reg, 9) + adv[9];
+    const cost1Leg = regTotal;
+
+    // Shim so the existing boldDrawSequence/cumulativeSequence (which read `.draws`) work here.
+    const seqTotal = (arr, total) => `${boldDrawSequence({ draws: arr })} ⌇ **\`${formatCP(total)} CP\`**\n-# **CP Spent:** ${cumulativeSequence({ draws: arr })}`;
+
+    const blocks = [
+        // 0: heading + both headline totals (quote-blocked, cp2 icon -- matches the other entries)
+        `**${emojis.legendary} Advanced Double Legendary Weapon Draw**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** *(see The Strategy below)*`,
+        // 1-3: the three purchase modes
+        `**Regular Purchase only:**\n${seqTotal(reg, regTotal)}`,
+        `**Advanced Purchase only:**\n${seqTotal(adv, advTotal)}`,
+        `**Trap (Regular Purchases + remaining item separately):**\n${seqTotal(trap, trapTotal)}`,
+        // 4-5: the two notes
+        `> **NOTE:** "Regular Purchase" spins on Double Draws are actually **cheaper** than a Normal Draw (${formatCP(regTotal)} CP vs ${formatCP(normalDrawTotal)} CP). The tradeoff is you can't pick *which* Legendary you'll receive.`,
+        `> **THE TRAP:** Buying "Regular Purchase" then paying for the 2nd item afterward costs **25% more** than buying "Advanced Purchase" upfront (the 2nd item alone costs the same as a Regular Purchase). **Commit before spinning** — otherwise you've essentially done 2 Regular Purchases and wasted CP.`,
+        // 6: strategy
+        `**${emojis.legendary} The Strategy**\n• **All 4** *(2 Legendaries, 2 Epics)* — Reg 1-8 → Adv 9-10 ⌇ **\`${formatCP(costAll4)} CP\`**\n• **2 Legendaries** *(only 1 Epic)* — Reg 1-9 → Adv 10 ⌇ **\`${formatCP(cost2Leg)} CP\`**\n• **1 Legendary** *(random)* — Reg 1-10 ⌇ **\`${formatCP(cost1Leg)} CP\`**\n-# Pick Regular or Advanced per spin based on what you want. Assumes you don't get lucky early.`
+    ];
+
+    // Group with a spacing-2 divider before each logical section (purchase modes / notes / strategy)
+    // -- none within a section -- so the page reads as clear sub-groups rather than one flat stack.
+    const dividerBefore = new Set([1, 4, 6]);
+    const components = [];
+    blocks.forEach((content, i) => {
+        if (dividerBefore.has(i)) components.push({ type: 14, spacing: 2, divider: true });
+        components.push({ type: 10, content });
+    });
+    return components;
+}
+
 /**
  * UI BUILDER: Constructs the V2 JSON Payload
  * Separated into its own function so the index.js dropdown/button router can call it directly
@@ -188,7 +281,7 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention
     // used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice
     // since the pagination row's own disabled state already prevents going out of bounds.
-    const currentPage = Math.min(Math.max(subpage, 0), SUBPAGES.length - 1);
+    const currentPage = Math.min(Math.max(subpage, 0), TOTAL_PAGES - 1);
 
     // Flat, divider-separated sequence per drawPrices_ui.json — no group headers at all (the old
     // Mythic/Legendary-Epic two-group split is gone). Split across 2 pages (see PAGE_1_KEYS/
@@ -201,7 +294,11 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // "title divider stays spacing 1" exception was dropped the same day per Harkirat's "large
     // spacing across the board" follow-up.
     const innerDividerSpacing = 2;
-    const entrySections = withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
+    // The Advanced Double Legendary page (the 3rd page) is rendered by its own builder since it
+    // doesn't fit the shared key/`draws: []` model; every other page goes through buildDrawEntries.
+    const entrySections = currentPage === ADVANCED_PAGE_INDEX
+        ? buildAdvancedDoubleLegendaryEntry(regionKey)
+        : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
     // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see
     // utils/paginationRow.js), same style as /calendar and /draws' sub-page navigation. Placed
@@ -210,10 +307,10 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // viewing 10 CP or 30 CP region prices" text read as if the page arrows were ALSO part of
     // switching region, which they aren't (Harkirat's explicit fix, 2026-07-12).
     const paginationRow = buildPaginationRow({
-        totalChunks: SUBPAGES.length,
+        totalChunks: TOTAL_PAGES,
         currentPage,
-        prevCustomId: `price_subpage_${regionKey}_${currentPage - 1}`,
-        nextCustomId: `price_subpage_${regionKey}_${currentPage + 1}`,
+        // Looping pager: the helper wraps last↔first and builds the id from the wrapped page.
+        makeCustomId: (p) => `price_subpage_${regionKey}_${p}`,
         indicatorCustomId: 'price_subpage_indicator'
     });
 

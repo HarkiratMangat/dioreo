@@ -57,8 +57,7 @@ function buildMainComponents({ summary, recent }) {
     const pager = buildPaginationRow({
         totalChunks: recent.totalPages,
         currentPage: recent.page,
-        prevCustomId: `alerts_page_${recent.page - 1}`,
-        nextCustomId: `alerts_page_${recent.page + 1}`,
+        makeCustomId: (p) => `alerts_page_${p}`,
         indicatorCustomId: 'alerts_pageind',
     });
     if (pager) {

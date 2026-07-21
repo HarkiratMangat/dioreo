@@ -110,8 +110,7 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
     // this visually identical to /draws' own pagination.
     const paginationRow = buildPaginationRow({
         totalChunks, currentPage: safeSubPage,
-        prevCustomId: `calsubpage_${safeSubPage - 1}`,
-        nextCustomId: `calsubpage_${safeSubPage + 1}`,
+        makeCustomId: (p) => `calsubpage_${p}`,
         indicatorCustomId: 'calsubpage_indicator'
     });
     // VIEW TOGGLE: switches between "Show Active Events Only" and "Show All Events". Only shown

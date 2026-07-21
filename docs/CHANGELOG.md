@@ -1044,8 +1044,9 @@ migration; the whole feature is a moderate bump, not a minor one). Caught when H
 this exact gap being noticed and then left unfixed — see the working agreement on what "document"
 actually means: fix a found gap, don't just flag it and move on when it's in scope to correct.
 
-## Proposed `v2.27.0` — silence routine gateway-reconnect alerts (log, don't post)
-Committed locally, not yet pushed/deployed.
+## `v2.27.0` (2026-07-21) — silence routine gateway-reconnect alerts (log, don't post)
+Admin/ops-only — nothing changes for players. Was committed & pushed earlier; **confirmed pulled + live
+on the VM 2026-07-21**, in the same deploy that shipped v2.28.0 below.
 - **The routine "Reconnecting to Discord" → "Gateway resumed" pair no longer posts to the Discord alert
   channel** — it's still fully LOGGED to the alert store, just not pushed as a message. These fire every
   1-3h as normal, self-recovering gateway churn (Discord cycling sessions / tiny network blips —
@@ -1061,6 +1062,98 @@ Committed locally, not yet pushed/deployed.
 - **Deferred to when `/status` is built** (noted in CLAUDE.md): `/alerts`' recent-list/export will show
   silent docs (they'll dominate by frequency — likely wants a filter), and silent docs share the 1000-doc
   retention cap with real alerts (may want their own retention). Log-now, present-later, per Harkirat.
-- Admin/ops-only — nothing changes for players. Verified offline (silent path skips fetch, both paths
-  record, flags correct); not yet deployed.
+- Verified offline (silent path skips fetch, both paths record, flags correct).
+
+## `v2.28.0` (2026-07-21) — `/autobuild` live-test fixes · Cloudinary metadata · new Advanced Double Legendary draw · looping pagination
+One push bundling four workstreams (the `/autobuild` + Cloudinary metadata batch had been sitting
+uncommitted across sessions; the draw-prices + pagination work is from the 2026-07-21 session). **Shipped
+live to the VM 2026-07-21.** Player-facing parts: the new draw type + looping pagination. Admin/back-end
+parts: the `/autobuild` fixes + Cloudinary metadata.
+
+### `/autobuild` live-test bug fixes
+First round of fixes from Harkirat's live `/autobuild` test (notes: `local/autobuild testing notes.md`).
+Admin-only feature.
+- **Open Loadout now renders the weapon's full build set + real pagination.** The PoC passed a
+  single-element array to `buildLoadoutCard`, so every "Open Loadout" card read **"Build 1 of 1"** with
+  no Prev/Next arrows, even for a weapon with several builds (live tests 1/3/4). Now queries every build
+  of that `weaponKey` and opens **on the just-created build** — correct "Build N of M", working
+  pagination. (`index.js` `autobuild_openloadout_` handler.)
+- **Confirm now edits the review card in place** into the "Loadout created / Open Loadout" card, instead
+  of leaving a stale review panel above a brand-new message (Harkirat's note #11). Applies to the retry
+  paths too. (`utils/autobuildPipeline.js` — `replaceWithV2Card` via `sendV2Payload` PATCH `@original`,
+  replacing the old new-message `followUpV2Card` POST.)
+- **Badges now propagate across every build of a weapon.** Setting e.g. "Meta" during `/autobuild` review
+  used to land the badge only on the newly-created build (live test 3) — badges describe the weapon, not
+  one variant. `writeLoadoutDoc` now `updateMany`s siblings (same `weaponKey`/`mode`), guarded on "a badge
+  is actually set" so a blank can never wipe siblings. Mirrors `/manage`'s `edit_loadout_` convention.
+- **Duplicate-loadout detection (advisory warning).** Re-submitting a screenshot of a build already in the
+  DB silently created a second identical doc (live test 1). New `findDuplicateLoadouts`
+  (`utils/loadoutRender.js`) flags a likely dupe on the review card via two soft rules (Harkirat's idea):
+  code **identical** + ≥4/5 attachments match, **or** code within **2 char edits** + all 5 attachments
+  match. Advisory only — Confirm still works, so a genuine new variant isn't blocked.
+- **Category-conflict warning.** Picking a category that differs from an existing build of the same weapon
+  silently registered the weapon under two categories (live test 4 — AK117 ended up both AR and MARKSMAN).
+  The review card now warns when the chosen category ≠ an existing build's category. **Build numbering
+  stays per-`weaponKey`, deliberately** (a weapon's identity is its key; the real bug is the miscategoriz-
+  ation, which this warning surfaces — not the numbering).
+- **Cloudinary metadata: switched to Structured Metadata Fields, then fully expanded + backfilled + kept
+  in sync** (Harkirat's follow-up calls). **22 account-level fields** created via the idempotent
+  `scripts/createCloudinaryMetadataFields.js`:
+  - **Loadouts (18):** one per Gunsmith slot (Muzzle/Barrel/Optic/Stock/Perk/Laser/Underbarrel/Ammunition/
+    Rear_Grip), **Weapon_Name**, **Mode**, **Build_Number** (int), **Gunsmith_Code**, badges **Is_Meta**/
+    **Is_Toxic**/**Rank**, and dates **Created_At**/**Last_Updated** (Created_At read for free from the Mongo
+    ObjectId timestamp — no schema change).
+  - **Patch notes (4):** **Patch_Id**, **Patch_Season**, **Patch_Image_Order** (int), **Patch_Release_Date** —
+    so each cached screenshot knows its season, carousel order, and release date.
+  - **Backfilled** all existing assets from Mongo: **132/133** loadouts (the 1 skip is PHARO's external-URL
+    "Coming Soon" placeholder) + all 5 Season 6 patch images.
+  - **Per-slot fields backfilled too, via a one-time vision batch** (`scripts/backfillLoadoutSlots.js`,
+    GCP-authorized spend) — ran the Gemini model over every existing loadout image to recover the
+    slot→attachment mapping Mongo didn't store, mapping vision's slot labels onto the authoritative stored
+    attachment names. **122/132 fully mapped.** The 10 partials turned out to be pre-existing data bugs the
+    batch *surfaced* (two loadout images fully swapped — `L-CAR-9-2`↔`CROSSBOW-1`, a few builds with crossed
+    attachments between variants, a stored typo, one revolver-slot miss) — flagged for Harkirat, not
+    auto-fixed. `visionExtract` gained an optional `maxAttachments` (default 5; DMZ uses 9) — `/autobuild`
+    behavior unchanged.
+  - **Auto-syncs on every edit** (the "if I edit these it updates Cloudinary by itself" ask): loadout
+    add/edit/bulk + badge propagation, and patch-notes date/URL/season-rename edits. Doc-centric design —
+    `syncLoadoutMetadata(doc)` / `syncPatchEntryMetadata(entry)` are the single sync points; metadata is
+    always a best-effort step decoupled from any image upload so it can never fail a save.
+  - Verified live end-to-end (write + `api.resource` read-back + queryable searches). Real gotcha handled: a
+    Cloudinary public_id has no file extension, so `AK117-1.png` had to be stripped to `AK117-1` for the
+    metadata API (which silently no-ops on a mismatched id).
+- **Removed the AK117 test data** created during the live test — the 3 MP dupe builds (`AK117-2/3/4`, Mongo
+  docs + Cloudinary images), guarded by a created-date check. The real MP `AK117-1` and DMZ `AK117-1` kept.
+
+### New "Advanced Double Legendary Weapon Draw" in `/draw prices`
+A brand-new draw type added to `/draw prices` from Harkirat's own 10/30 CP breakdown. User-facing.
+- **New 3rd page in `/draw prices`** dedicated to the **Advanced Double Legendary Weapon Draw** — a more
+  elaborate draw than the others: it offers **three purchase modes per spin** (Regular / Advanced / the
+  "Trap") plus a **strategy breakdown**, so it doesn't fit the shared `draws: []` model every other entry
+  uses. It gets its own builder (`buildAdvancedDoubleLegendaryEntry`) on its own page, reached via the same
+  Prev/Next pagination (now **3 pages**, was 2). Both CP regions have full data.
+- **Rendered with the same multi-component "section" style as the rest of the command** (separate Text
+  Displays grouped by spacing-2 dividers: headline totals → the 3 purchase modes → the two NOTE/THE-TRAP
+  cautions → the strategy list), not one flat text block. Keeps the literal in-game **"Regular Purchase"**
+  / **"Advanced Purchase"** labels verbatim.
+- **Every number is derived, never hand-typed** — same rule the rest of this file already enforces. Only
+  the Regular and Advanced per-pull arrays are stored per region; from those the code derives the **Trap**
+  (always exactly 2× Regular), all three totals, the running "CP Spent" lines, the three **strategy costs**
+  (Reg/Adv cumulative slices), and even the "cheaper than a Normal Draw (X vs Y)" comparison (Y read from
+  the region's own Legendary Weapon Non-Reactive total). So a wrong number can only ever live in one place.
+- Verified: all rendered totals/sequences match the source breakdown exactly for both regions; every page
+  stays under Discord's 40-component cap (max 33); and out-of-range pages clamp safely.
+
+### Bot-wide: pagination arrows now LOOP instead of disabling on the ends
+Every Prev/Next pager in the bot (draws & calendar sub-pages, draw prices, `/settings`, View Colors,
+`/alerts`, loadout cards) now **wraps around** — Next on the last page jumps to the first page, Prev on
+the first page jumps to the last — instead of the arrow going disabled at the end (Harkirat's request).
+- Centralised in the shared `utils/paginationRow.js`: the arrows are no longer disabled (only the middle
+  page counter stays a disabled label), and the wrap modulo lives in ONE place via a new
+  `makeCustomId(targetPage)` callback the 6 target-page callers now pass instead of pre-baked
+  `prevCustomId`/`nextCustomId` strings.
+- Loadout cards kept their existing direction-based custom_ids — their index.js handler already did the
+  modulo wrap on click, so they just needed the buttons un-disabled.
+- Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of
+  "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.
 

@@ -106,8 +106,7 @@ function buildContainer(seasonalDoc, page = 'new', subPage = 0, accentColor = PR
     const categoryKey = isNewPage ? 'new' : 'returning';
     const paginationRow = buildPaginationRow({
         totalChunks, currentPage: safeSubPage,
-        prevCustomId: `subpage_${categoryKey}_${safeSubPage - 1}`,
-        nextCustomId: `subpage_${categoryKey}_${safeSubPage + 1}`,
+        makeCustomId: (p) => `subpage_${categoryKey}_${p}`,
         indicatorCustomId: 'subpage_indicator'
     });
     if (paginationRow) {

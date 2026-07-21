@@ -78,6 +78,62 @@ function computeWeaponKeyAndBuild(weaponName, existingBuildNames) {
     return { weaponKey, buildName: `Build ${nextBuildNum}`, imageKey };
 }
 
+// Classic iterative Levenshtein (two-row), used only by findDuplicateLoadouts below for the
+// "code within N character edits" soft rule. Gunsmith codes are ~10 chars, so this is trivially cheap.
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+        const curr = [i];
+        for (let j = 1; j <= n; j++) {
+            curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        prev = curr;
+    }
+    return prev[n];
+}
+
+const normCode = (c) => (c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const normAtt = (a) => (a || '').toLowerCase().trim().replace(/\s+/g, ' ');
+
+// Duplicate-loadout detection for /autobuild (2026-07-21, from Harkirat's live-test note #14). Real,
+// previously-uncaught failure mode: re-submitting a screenshot of a build already in the database
+// silently created a SECOND identical Loadout doc (test 1 -- the exact-duplicate AK117). ADVISORY
+// only -- surfaced as a review-card warning, never a hard block -- so a genuine new variant can still
+// be Confirmed through, consistent with the whole feature's review-first philosophy.
+//
+// Two soft rules (Harkirat's own idea, lightly generalized). Checked against MP builds of ANY weapon,
+// not just the same weaponKey: an in-game Gunsmith code encodes the weapon, so a code match already
+// implies the same weapon -- scoping to weaponKey would MISS a duplicate whose weapon name the vision
+// call misread.
+//   Rule A: Gunsmith code IDENTICAL  AND  >= 4 of 5 attachments match  -> duplicate
+//           (tolerates the vision call misreading ONE attachment name)
+//   Rule B: Gunsmith code within 2 character edits  AND  every attachment matches  -> duplicate
+//           (tolerates it misreading a character or two of the code while attachments line up)
+// Returns [{ weaponName, buildName, overlap, total }] for each existing build that looks like a dupe.
+function findDuplicateLoadouts(candidate, existingBuilds) {
+    const candCode = normCode(candidate.gunsmithCode);
+    const candAtt = (candidate.attachments || []).map(normAtt).filter(Boolean);
+    const matches = [];
+    for (const build of existingBuilds || []) {
+        const buildCode = normCode(build.shareCode);
+        const buildAtt = (build.attachments || []).map(normAtt).filter(Boolean);
+        const buildSet = new Set(buildAtt);
+        const overlap = candAtt.filter(a => buildSet.has(a)).length;
+
+        const codeExact = candCode && buildCode && candCode === buildCode;
+        const codeClose = candCode && buildCode && levenshtein(candCode, buildCode) <= 2;
+        const allAttachmentsMatch = candAtt.length > 0 && overlap === candAtt.length && overlap === buildSet.size;
+
+        if ((codeExact && overlap >= 4) || (codeClose && allAttachmentsMatch)) {
+            matches.push({ weaponName: build.weaponName, buildName: build.buildName, overlap, total: candAtt.length });
+        }
+    }
+    return matches;
+}
+
 // Real existence check against Cloudinary's CDN (2026-07-18, /manage loadout UX overhaul) -- this
 // bot has never validated an admin-typed Cloudinary key before saving a loadout, and buildImageUrl()
 // above CAN'T validate anything itself (it's pure string interpolation, no network call). This is
@@ -266,6 +322,11 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     // formatting) as its own ephemeral message, same mechanism as "Copy Code" -- see index.js's
     // dmz/mp-prefixed button handler's `copyatt` action. Copy Code is skipped for DMZ (see the
     // Gunsmith Code section above) -- no real code to copy, so the row is 4 buttons max there.
+    // Loadout cards use the LEGACY prev/next-string form of buildPaginationRow (not makeCustomId):
+    // the id encodes a DIRECTION + the current index, and the dmz/mp button handler in index.js
+    // already does the modulo wrap on click ((index ± 1) % builds.length). So looping here needs
+    // nothing beyond buildPaginationRow no longer disabling the end buttons (2026-07-21) -- the
+    // handler already sends you from the last build to the first and vice-versa.
     const paginationRow = buildPaginationRow({
         totalChunks: builds.length,
         currentPage: index,
@@ -302,4 +363,4 @@ function buildLoadoutCard(builds, index, { color, idPrefix, isEphemeral = false,
     return { components, flags: 32768 };
 }
 
-module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild };
+module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, getMpCategoryAccent, displayCategoryLabel, computeWeaponKeyAndBuild, findDuplicateLoadouts };

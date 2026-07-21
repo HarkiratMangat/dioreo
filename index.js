@@ -1253,9 +1253,17 @@ client.on('interactionCreate', async interaction => {
             if (!doc) {
                 return interaction.reply({ content: '❌ That loadout no longer exists.', ephemeral: true });
             }
+            // Render the weapon's FULL build set (not just this one doc) so the Prev/Next pagination
+            // and the correct "Build N of M" footer render, opening ON the just-created build. The PoC
+            // passed [doc] alone (found in live testing 2026-07-20): builds.length === 1, so
+            // buildPaginationRow returned null and the footer wrongly read "Build 1 of 1" even for a
+            // weapon that has several builds. Same weaponKey scope the normal /all + /<category> route
+            // already uses. openIndex falls back to 0 if the doc somehow isn't in its own result set.
+            const builds = await Loadout.find({ weaponKey: doc.weaponKey, mode: 'MP' }).lean();
+            const openIndex = Math.max(0, builds.findIndex(b => String(b._id) === String(doc._id)));
             const categoryBuilds = await Loadout.find({ category: doc.category, mode: 'MP' }).lean();
             const accentColor = getMpCategoryAccent(doc.category);
-            const cardPayload = buildLoadoutCard([doc], 0, { color: accentColor, idPrefix: 'mp', isEphemeral: false, categoryBuilds });
+            const cardPayload = buildLoadoutCard(builds, openIndex, { color: accentColor, idPrefix: 'mp', isEphemeral: false, categoryBuilds });
             await interaction.deferReply({ ephemeral: false });
             const { sendV2Payload } = require('./utils/sendV2Payload');
             return await sendV2Payload(interaction, cardPayload.components, { flags: cardPayload.flags });
@@ -2772,6 +2780,11 @@ client.on('interactionCreate', async interaction => {
             current.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
             current.description = interaction.fields.getTextInputValue('description')?.trim() || '';
             await seasonalDoc.save();
+            // Keep this patch's cached images' Cloudinary metadata (release date/season) in sync
+            // (2026-07-21) -- the release date just changed and applies to every image of this entry.
+            const { syncPatchEntryMetadata } = require('./utils/patchNotesCache');
+            const { cleanPatchTitle: cleanTitleForMeta } = require('./commands/patchnotes');
+            await syncPatchEntryMetadata(current, cleanTitleForMeta(current.title));
             return interaction.followUp({ content: `✅ **Patch Notes Date/Info Updated!** ${current.title}` });
         }
 
@@ -2794,11 +2807,16 @@ client.on('interactionCreate', async interaction => {
             // never block the save -- cachePatchImage() falls back to the raw URL on failure, same
             // philosophy as resolveThumbnail() for draw thumbnails.
             const { cachePatchImage } = require('./utils/patchNotesCache');
+            const { cleanPatchTitle } = require('./commands/patchnotes');
             const patchId = current._id.toString();
             const slotOffset = slot === 1 ? 0 : 5;
+            // Structured metadata (2026-07-21) -- each cached image carries its season, order, and
+            // release date. cleanPatchTitle strips any legacy "Balance Changes for..." prefix so the
+            // Patch_Season value is the bare season name.
+            const patchMeta = { season: cleanPatchTitle(current.title), releaseDate: current.releaseDate };
             const newSlice = [];
             for (let i = 0; i < rawUrls.length; i++) {
-                const result = await cachePatchImage(patchId, slotOffset + i, rawUrls[i]);
+                const result = await cachePatchImage(patchId, slotOffset + i, rawUrls[i], patchMeta);
                 newSlice.push(result.url);
             }
 
@@ -2841,6 +2859,15 @@ client.on('interactionCreate', async interaction => {
             }
 
             await seasonalDoc.save();
+            // The most-recent patch's season title just changed -- re-sync its cached images'
+            // Patch_Season metadata to match (2026-07-21). Best-effort; keyed by the patch _id, which
+            // the rename never touches.
+            if (seasonalDoc.patchNotes.length > 0) {
+                const { syncPatchEntryMetadata } = require('./utils/patchNotesCache');
+                const { cleanPatchTitle: cleanTitleForMeta } = require('./commands/patchnotes');
+                const latestPatch = seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1];
+                await syncPatchEntryMetadata(latestPatch, cleanTitleForMeta(latestPatch.title));
+            }
             return interaction.followUp({ content: `✅ **Season Titles & Deadlines Updated!** The \`/season end\` module has been synced.` });
         }
 
@@ -2938,6 +2965,15 @@ client.on('interactionCreate', async interaction => {
                 { weaponKey, mode, _id: { $ne: targetId } },
                 { isMeta, categoryRank, dmzRangeRank, isToxic }
             );
+
+            // Keep Cloudinary structured metadata in sync (2026-07-21) -- re-sync this build AND every
+            // sibling, since badges are weapon-level and may have just propagated (and weaponName/
+            // category/attachments/code may have changed on this build). Best-effort, never throws.
+            // NOTE: if the ATTACHMENTS changed here, the per-slot Cloudinary fields (Muzzle/Barrel/...)
+            // aren't updated -- /manage has no slot mapping, only /autobuild does -- so any existing
+            // slot metadata is left as-is rather than wiped (update_metadata merges). Accepted gap.
+            const { syncLoadoutMetadata } = require('./utils/loadoutImageCache');
+            for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib);
 
             let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
             if (propagateResult.modifiedCount > 0) {
@@ -3056,6 +3092,12 @@ client.on('interactionCreate', async interaction => {
             });
 
             await newLoadout.save();
+            // Sync Cloudinary structured metadata for the new build (2026-07-21). Best-effort: if the
+            // admin hasn't uploaded the image to that key yet, the asset doesn't exist and this is a
+            // silent no-op (the metadata gets set on the next edit once the image is there). No slot
+            // data (only /autobuild has it). No badge propagation on ADD (see the note above), so only
+            // this one build is synced.
+            await require('./utils/loadoutImageCache').syncLoadoutMetadata(newLoadout);
             let confirmation = `✅ **Successfully saved Loadout: ${newLoadout.weaponName} (${newLoadout.buildName}, ${newLoadout.mode})!**`;
             if (unrecognized.length > 0) {
                 confirmation += `\n⚠️ Badge input not recognized and ignored: \`${unrecognized.join(', ')}\`. Valid options: \`meta\`, \`best\`, \`toxic\`, \`topN\` (e.g. \`top3\`), or a DMZ range badge (\`bestclose\`, \`bestmidlong\`, \`top3close\`, \`top5midlong\`).`;
@@ -3090,9 +3132,11 @@ client.on('interactionCreate', async interaction => {
             let created = 0;
             let updated = 0;
             const missingImages = []; // { label, imageKey } -- see checkImageExists() below
+            const touchedKeys = new Set(); // weaponKeys to re-sync Cloudinary metadata for after the loop
             for (const rawEntry of parsed) {
                 const entry = { ...rawEntry, mode: pageMode };
                 const { weaponKey, mode, buildName, imageKey } = entry;
+                touchedKeys.add(weaponKey);
                 const existing = await Loadout.findOne({ weaponKey, mode, buildName });
                 if (existing) {
                     await Loadout.updateOne({ _id: existing._id }, entry);
@@ -3112,6 +3156,14 @@ client.on('interactionCreate', async interaction => {
                 // instead of a single field, since a bulk import is exactly where a copy-paste typo
                 // in one block's Image Key is easiest to miss among many.
                 if (!(await checkImageExists(imageKey))) missingImages.push({ label: `${entry.weaponName} (${buildName})`, imageKey });
+            }
+
+            // Keep Cloudinary structured metadata in sync for every touched weapon (2026-07-21). Synced
+            // once per weaponKey after the loop (not per-block) so a paste with several builds of one
+            // weapon doesn't re-sync the same siblings repeatedly. Best-effort, never throws.
+            const { syncLoadoutMetadata } = require('./utils/loadoutImageCache');
+            for (const wk of touchedKeys) {
+                for (const b of await Loadout.find({ weaponKey: wk, mode: pageMode })) await syncLoadoutMetadata(b);
             }
 
             let confirmation = `✅ **Bulk Loadout Import Complete!**\n${created} new build(s) added, ${updated} existing build(s) updated.`;
