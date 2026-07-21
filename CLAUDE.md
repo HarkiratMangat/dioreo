@@ -208,6 +208,14 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
       "Gateway reconnecting" 2026-07-20 so it can't read as "restarting"), `warn`🟠 (Gateway disconnected —
       lost), `error`🔴 (crash / uncaught / DB failure / shard error). **Pings fire on `warn` + `error`
       only** (`shouldPing = opts.ping ?? (level==='error' || level==='warn')`); yellow/green never ping.
+      **⚠️ The reconnect→resume PAIR ('Reconnecting to Discord' + 'Gateway resumed') is now `silent`
+      (2026-07-20, v2.27.0 — Harkirat's call): still LOGGED to the alert store, but NOT posted to Discord.**
+      They fire every 1-3h as routine, self-recovering gateway churn (Discord cycling sessions / tiny
+      network blips — sub-second, resumed with full event replay = zero data loss), so they're pure channel
+      noise. Suppressing them from Discord is safe because the genuinely-bad case — a reconnect that FAILS
+      to resume — still surfaces loudly via the separate `warn`🟠 'Gateway disconnected' handler (which
+      pings). Verified live 2026-07-20 that these WERE firing every 1-3h with clean sub-second resumes (VM
+      journal). `sendAlert(..., { silent: true })` is the general mechanism (see next bullet).
       Every alert body carries a proper Discord `<t:unix:F> · <t:unix:R>` timestamp (in the DESCRIPTION —
       Discord doesn't parse `<t:>` in an embed footer). The "Bot online" gateway ping shows "measuring…"
       when `client.ws.ping` is still -1 (it's -1 until the first gateway heartbeat, which lands after
@@ -220,10 +228,18 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
       `alertWebhook.js` lean. **The store write is an INDEPENDENT fire-and-forget from the webhook POST**
       (neither awaits the other) — a Mongo outage can't block a Discord alert (a DB failure is itself an
       alert) and vice versa; `sendAlert` stays sync / never-throws / never-blocks and just mirrors what was
-      actually sent (post-throttle), so the store == the channel and stays naturally bounded. Because of
-      that decoupling the id is deliberately NOT on the live embed (that would couple it to a Mongo
-      round-trip); it lives in `/alerts` + the export. Retention is hybrid: older than **30 days** OR beyond
-      a **1000** hard cap, pruned ≤1/hour. The admin-only **`/alerts`** command (`commands/alerts.js`,
+      actually sent (post-throttle). Because of that decoupling the id is deliberately NOT on the live embed
+      (that would couple it to a Mongo round-trip); it lives in `/alerts` + the export. Retention is hybrid:
+      older than **30 days** OR beyond a **1000** hard cap, pruned ≤1/hour. **The store is a SUPERSET of the
+      channel, not a mirror (changed 2026-07-20, v2.27.0):** `sendAlert(title, detail, level, { silent:true })`
+      logs to the store but SKIPS the Discord POST — used for the routine reconnect/resume pair above; those
+      docs carry `silent:true` (new `AlertLog.silent` field) so a future `/status` can pull exactly the
+      reconnect history without ever cluttering the channel. A silent alert never pings (there's no message).
+      **⚠️ Two downstream decisions deferred to when `/status` is built:** (1) `/alerts`' recent-list + export
+      currently include silent docs, which will visually dominate given their frequency — likely wants a
+      filter/section split so real alerts stay legible; (2) high-frequency silent docs eat the shared 1000
+      cap, so a real crash could get pruned sooner — may want silent docs on their own retention. Neither is
+      addressed yet (Harkirat's framing: log them now, sort out the /status presentation later). The admin-only **`/alerts`** command (`commands/alerts.js`,
       auto-gated by adding `alerts_` to index.js's centralized panel-guard prefix list) is a V2 panel:
       severity summary (24h/7d counts + last error id/time), a paginated newest-first recent list (each
       with its id), an **Export Log** button (a `.txt` fuller than the embed, via `buildAlertExport()`), and

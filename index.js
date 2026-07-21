@@ -135,13 +135,20 @@ client.on('error', (error) => {
 // visible in real time, not just in journald. shardReady stays console-only (the initial connect is
 // announced by the "Bot online" alert below); the rest map to warn/error/info by severity.
 client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
-client.on('shardResume', (id, replayed) => { console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`); sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info'); });
+// The reconnect→resume PAIR is `silent` (2026-07-20, Harkirat's call): still logged to the alert store
+// (so /alerts + a future /status can print the reconnect history on demand), but NOT posted to the Discord
+// channel. These fire every 1-3h as routine, self-recovering gateway churn (Discord cycling sessions /
+// tiny network blips, sub-second, resumed with full event replay = zero data loss) — genuinely nothing to
+// act on, so they're pure channel noise. The GENUINELY-bad case is still loud: a reconnect that FAILS to
+// resume surfaces via 'Gateway disconnected' (shardDisconnect, orange, pings) below — a separate handler,
+// so suppressing the routine pair from Discord doesn't hide a real outage.
+client.on('shardResume', (id, replayed) => { console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`); sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info', { silent: true }); });
 // 'caution' (yellow), not 'warn' (orange): reconnecting is transient and self-recovering, so it's a
-// lower severity than a full 'Gateway disconnected' — and it doesn't ping (yellow never does).
-// "Reconnecting to Discord", NOT "restarting" (2026-07-20): the gateway WEBSOCKET dropped and is
+// lower severity than a full 'Gateway disconnected'. Now silent (logged, not posted) — see the pair note
+// above. "Reconnecting to Discord", NOT "restarting" (2026-07-20): the gateway WEBSOCKET dropped and is
 // re-establishing on its own — the bot PROCESS never died, systemd never fired. Calling it "restarting"
-// would falsely imply a crash. caution/yellow = transient + self-recovering, so it never pings.
-client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Reconnecting to Discord', `Shard ${id}'s gateway websocket dropped and is reconnecting. The bot process itself is fine (nothing crashed, systemd didn't fire).`, 'caution'); });
+// would falsely imply a crash.
+client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Reconnecting to Discord', `Shard ${id}'s gateway websocket dropped and is reconnecting. The bot process itself is fine (nothing crashed, systemd didn't fire).`, 'caution', { silent: true }); });
 client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
 client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); sendAlert('Gateway shard error', error, 'error'); });
 

@@ -49,60 +49,69 @@ function describe(v) {
 // Fire-and-forget — callers do NOT await (and shouldn't, on a hot path).
 //   level: 'info' | 'caution' | 'warn' | 'error'  (warn + error ping by default)
 //   opts.ping: force-override whether to actively @mention (rarely needed now that warn pings by default)
+//   opts.silent: LOG to the store but do NOT post to the Discord channel — for routine, self-recovering
+//     gateway churn (reconnect/resume, every 1-3h) that's noise in the channel but worth keeping in the
+//     persisted log for /alerts + a future /status. A silent alert can never ping (no message to attach to).
 function sendAlert(title, detail = '', level = 'error', opts = {}) {
     const url = process.env.LOG_WEBHOOK_URL;
-    if (!url) return; // alerting disabled
+    if (!url) return; // alerting disabled (store + webhook are both off when unconfigured)
 
     const key = `${level}:${title}`;
     const now = Date.now();
     if (now - (lastSent.get(key) || 0) < THROTTLE_MS) return; // throttled
     lastSent.set(key, now);
 
-    // Ping on orange (warn — gateway lost) AND red (error) by default; yellow/green never ping on their
-    // own. opts.ping can still force it either way.
-    const shouldPing = opts.ping ?? (level === 'error' || level === 'warn');
+    // Context needed whether or not we actually post to Discord (the store records it either way).
     const host = process.env.NODE_ENV === 'production' ? 'GCP VM' : 'local';
     const rss = Math.round(process.memoryUsage().rss / 1024 / 1024); // MB — surfaces leaks/OOM trends
     const uptimeSec = Math.floor(process.uptime()); // raw seconds; formatUptime() for display, stored raw
-    // Proper Discord timestamp (2026-07-17) — `<t:unix:F>` renders as a full, timezone-correct,
-    // hover-expandable time in EVERY viewer's own locale, instead of relying only on the small native
-    // embed-footer time. Goes in the DESCRIPTION because Discord does NOT parse `<t:>` markdown in an
-    // embed footer (footer text is literal), so a `<t:>` there would show as raw text.
-    const unixNow = Math.floor(now / 1000);
-    const timeLine = `🕐 <t:${unixNow}:F> · <t:${unixNow}:R>`;
     const rawDesc = describe(detail).slice(0, 1800);
-    const description = rawDesc ? `${rawDesc}\n\n${timeLine}` : timeLine;
 
-    const body = {
-        // Ping puts the mention in `content` AND allow-lists it; non-ping suppresses ALL mentions so an
-        // info alert can never accidentally notify (even if a detail string contains a stray <@...>).
-        // Include the icon + title in the content itself so the phone/desktop NOTIFICATION PREVIEW says
-        // what the ping is about (the embed doesn't show in the notification), not a vague bare @mention.
-        content: shouldPing ? `<@${PING_USER_ID}> ${LEVEL_ICON[level] || LEVEL_ICON.error} **${title}**` : undefined,
-        allowed_mentions: shouldPing ? { users: [PING_USER_ID] } : { parse: [] },
-        embeds: [{
-            title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${title}`.slice(0, 256),
-            description: description || undefined,
-            color: LEVEL_COLOR[level] ?? LEVEL_COLOR.error,
-            footer: { text: `Dior's Builds · ${host} · RSS ${rss}MB · up ${formatUptime(uptimeSec)}` },
-            timestamp: new Date().toISOString(),
-        }],
-    };
+    const silent = opts.silent === true;
+    // Ping on orange (warn — gateway lost) AND red (error) by default; yellow/green never ping on their
+    // own. opts.ping can still force it either way. A silent alert never pings (nothing is posted).
+    const shouldPing = silent ? false : (opts.ping ?? (level === 'error' || level === 'warn'));
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-    })
-        .catch(() => { /* alerting failure must never surface */ })
-        .finally(() => clearTimeout(timeout));
+    if (!silent) {
+        // Proper Discord timestamp (2026-07-17) — `<t:unix:F>` renders as a full, timezone-correct,
+        // hover-expandable time in EVERY viewer's own locale, instead of relying only on the small native
+        // embed-footer time. Goes in the DESCRIPTION because Discord does NOT parse `<t:>` markdown in an
+        // embed footer (footer text is literal), so a `<t:>` there would show as raw text.
+        const unixNow = Math.floor(now / 1000);
+        const timeLine = `🕐 <t:${unixNow}:F> · <t:${unixNow}:R>`;
+        const description = rawDesc ? `${rawDesc}\n\n${timeLine}` : timeLine;
+
+        const body = {
+            // Ping puts the mention in `content` AND allow-lists it; non-ping suppresses ALL mentions so an
+            // info alert can never accidentally notify (even if a detail string contains a stray <@...>).
+            // Include the icon + title in the content itself so the phone/desktop NOTIFICATION PREVIEW says
+            // what the ping is about (the embed doesn't show in the notification), not a vague bare @mention.
+            content: shouldPing ? `<@${PING_USER_ID}> ${LEVEL_ICON[level] || LEVEL_ICON.error} **${title}**` : undefined,
+            allowed_mentions: shouldPing ? { users: [PING_USER_ID] } : { parse: [] },
+            embeds: [{
+                title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${title}`.slice(0, 256),
+                description: description || undefined,
+                color: LEVEL_COLOR[level] ?? LEVEL_COLOR.error,
+                footer: { text: `Dior's Builds · ${host} · RSS ${rss}MB · up ${formatUptime(uptimeSec)}` },
+                timestamp: new Date().toISOString(),
+            }],
+        };
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+        })
+            .catch(() => { /* alerting failure must never surface */ })
+            .finally(() => clearTimeout(timeout));
+    }
 
     // Persist to the alert store — INDEPENDENT of the POST above (see hard rules). Fire-and-forget, never
-    // awaited, never throws. Mirrors what was actually sent (this runs only after the throttle passed).
-    recordAlert({ level, title, detail: rawDesc, pinged: shouldPing, host, rssMb: rss, uptimeSec });
+    // awaited, never throws. Runs for silent alerts too — logging them is the whole point of `silent`.
+    recordAlert({ level, title, detail: rawDesc, pinged: shouldPing, host, rssMb: rss, uptimeSec, silent });
 }
 
 module.exports = { sendAlert };

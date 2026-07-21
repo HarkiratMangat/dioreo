@@ -77,6 +77,7 @@ function recordAlert(fields) {
             title: fields.title,
             detail: fields.detail,
             pinged: !!fields.pinged,
+            silent: !!fields.silent, // logged-but-not-posted (routine gateway reconnect/resume)
             host: fields.host,
             rssMb: fields.rssMb,
             uptimeSec: fields.uptimeSec,

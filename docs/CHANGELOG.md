@@ -1044,7 +1044,23 @@ migration; the whole feature is a moderate bump, not a minor one). Caught when H
 this exact gap being noticed and then left unfixed — see the working agreement on what "document"
 actually means: fix a found gap, don't just flag it and move on when it's in scope to correct.
 
-*(Empty — v2.26.0 was pushed + deployed this session and graduated into its numbered entry above,
-including the previously-staged v2.25.1 housekeeping/`/manage`-colors work that folded into it. Nothing is
-currently committed-but-unpushed.)*
+## Proposed `v2.27.0` — silence routine gateway-reconnect alerts (log, don't post)
+Committed locally, not yet pushed/deployed.
+- **The routine "Reconnecting to Discord" → "Gateway resumed" pair no longer posts to the Discord alert
+  channel** — it's still fully LOGGED to the alert store, just not pushed as a message. These fire every
+  1-3h as normal, self-recovering gateway churn (Discord cycling sessions / tiny network blips —
+  sub-second, resumed with full event replay = zero data loss), so they were pure channel noise. Harkirat's
+  call: keep the history for a future `/status` to print on demand, stop the every-few-hours pings-that-
+  aren't-really-pings. Confirmed via the VM journal that these were firing ~every 1-3h with clean
+  sub-second resumes before making the change.
+- **Mechanism:** new `sendAlert(..., { silent: true })` option (`utils/alertWebhook.js`) — logs to the
+  store, skips the webhook POST, never pings. Store docs carry a new `silent:true` flag (`AlertLog.silent`)
+  so `/status` can later pull exactly the reconnect history. The genuinely-bad case is untouched and still
+  loud: a reconnect that FAILS to resume surfaces via the separate 🟠 "Gateway disconnected" handler (which
+  pings), so suppressing the routine pair can't hide a real outage.
+- **Deferred to when `/status` is built** (noted in CLAUDE.md): `/alerts`' recent-list/export will show
+  silent docs (they'll dominate by frequency — likely wants a filter), and silent docs share the 1000-doc
+  retention cap with real alerts (may want their own retention). Log-now, present-later, per Harkirat.
+- Admin/ops-only — nothing changes for players. Verified offline (silent path skips fetch, both paths
+  record, flags correct); not yet deployed.
 

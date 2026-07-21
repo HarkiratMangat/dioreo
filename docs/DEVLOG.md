@@ -817,6 +817,29 @@ the work. Everything verified offline against live Mongo (id atomicity, uptime t
 
 ---
 
+## 2026-07-20 (later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it
+
+Harkirat asked what the "Gateway reconnecting → resumed" alerts hitting his channel every few hours actually
+meant, and whether the bot had been going down. The tempting move is to answer from general Discord knowledge
+("it's normal, don't worry"). Instead I pulled 3 days of the VM's shard-lifecycle journal — and the logs told
+the whole story cleanly: every single one was `reconnecting...` → `resumed (1 events replayed)` within the
+SAME second, ~every 1-3h, all clean. That "1 events replayed" is the tell — a *resume* (not a fresh re-login)
+with Discord replaying the gap = zero data loss. So: the bot never went down, this is routine gateway churn
+(Discord cycling sessions / tiny network blips), and it's universal to every Discord bot. Evidence beat
+assertion — and it turned "probably fine" into "provably fine, here's the log."
+
+Then he made the right product call: these are genuinely nothing, so stop posting them — but **keep logging
+them** for a future `/status` to print on demand. That's a nice little design constraint: log-but-don't-post.
+Built it as a `sendAlert(..., { silent:true })` option — skips the webhook POST, still records to the store
+with a new `silent:true` flag so `/status` can pull exactly the reconnect history later. The safety check that
+made this OK to ship: the genuinely-bad case (a reconnect that *fails* to resume) is a *separate* handler
+(🟠 "Gateway disconnected", which pings), so silencing the routine pair can't mask a real outage. One
+deliberate note left for later: this makes the store a *superset* of the channel (it was a mirror), and those
+high-frequency silent docs will both dominate `/alerts`' list and share the 1000-doc retention cap with real
+alerts — flagged in CLAUDE.md as two things to settle when `/status` is actually built, not silently.
+
+---
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
