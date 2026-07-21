@@ -1195,3 +1195,22 @@ loadout data corrections he verified by hand. **Admin/back-end only** — nothin
   Build 1 & 2.
 - **Striker's "Fast Reload Reload Case"** confirmed correct as-is (real in-game label, not a typo) — no change.
 
+## `v2.30.0` (2026-07-21) — `/draw prices` Advanced Double Legendary page redesign + full-caps draw headings
+Player-facing visual pass on `/draw prices`, matching Harkirat's own hand-drawn mockup
+(`local/advanced leggy_format.json`). No data or math changed — every number is still DERIVED from the
+raw per-pull arrays (`DRAW_DATA`, `ADVANCED_DOUBLE_LEGENDARY`); only rendering/wording moved.
+- **Advanced Double Legendary Weapon Draw page (page 3) rebuilt to the mockup** (`buildAdvancedDouble
+  LegendaryEntry`): full-caps heading + `Reg / Adv` headline totals with a `(See **The Strategy** below)`
+  pointer; three quote-styled purchase modes (`'Regular Purchase' Only`, `'Advanced Purchase' Only`,
+  `'Regular Purchase' + Remaining Item Separately`); the `NOTE` and `THE TRAP` callouts reworded to the
+  mockup copy; and **The Strategy** split from one bullet block into three separate Text Displays (its
+  `### ` heading rides the first), each with an inline CP icon on its cost.
+- **The mockup only specified the 10 CP region; the 30 CP region was cloned from the same design** with
+  its own correctly-derived figures (Reg 11,030 / Adv 17,648 / Trap 22,060; "cheaper than a Normal Draw"
+  comparison 11,830; strategies 14,810 / 13,370 / 11,030 — all re-summed and verified).
+- **Every draw-price entry heading is now FULL-CAPS** (the lines with the tier emoji prefix), across both
+  key-driven pages and the Advanced page, for consistency. `DRAW_META.name` stays the canonical mixed-case
+  source of truth; only the rendered heading is uppercased (`meta.name.toUpperCase()`).
+- Verified by dumping `buildContainer()` JSON and re-summing every total against its own array, and
+  recursively counting components: all pages stay well under Discord's 40-component cap (max ~35 incl. the
+  share button). Closes notes items L74 (Advanced redesign) + L75 (full-caps headings).

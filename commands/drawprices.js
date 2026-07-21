@@ -165,7 +165,11 @@ function buildDrawEntries(regionKey, keys) {
         const meta = DRAW_META[key];
         const entry = region[key];
         const icon = TIER_ICON[meta.tier];
-        if (!entry) return [`**${icon} ${meta.name}**\n*Dior is lazy and hasn't done the research **yet** for this draw. More draws and updated info coming soon.*`];
+        // Full-caps draw name in every entry heading (2026-07-21, Harkirat's request -- consistency
+        // with the Advanced page's own full-caps heading). meta.name stays the canonical mixed-case
+        // source of truth; only the rendered heading is uppercased.
+        const heading = meta.name.toUpperCase();
+        if (!entry) return [`**${icon} ${heading}**\n*Dior is lazy and hasn't done the research **yet** for this draw. More draws and updated info coming soon.*`];
 
         const total = entry.draws.reduce((a, b) => a + b, 0);
         const blocks = [];
@@ -180,7 +184,7 @@ function buildDrawEntries(regionKey, keys) {
         } else {
             totalLine = `> ${emojis.cp2} **\`${formatCP(total)} CP\`**`;
         }
-        blocks.push(`**${icon} ${meta.name}**\n${totalLine}`);
+        blocks.push(`**${icon} ${heading}**\n${totalLine}`);
 
         // Block 2: bold pull sequence + cumulative spend, own Text Display.
         blocks.push(`${boldDrawSequence(entry)} ⌇ **\`${formatCP(total)} CP\`**\n-# **CP Spent:** ${cumulativeSequence(entry)}`);
@@ -244,22 +248,31 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
     // Shim so the existing boldDrawSequence/cumulativeSequence (which read `.draws`) work here.
     const seqTotal = (arr, total) => `${boldDrawSequence({ draws: arr })} ⌇ **\`${formatCP(total)} CP\`**\n-# **CP Spent:** ${cumulativeSequence({ draws: arr })}`;
 
+    // Layout matches Harkirat's own hand-drawn mockup (local/advanced leggy_format.json, 2026-07-21):
+    // FULL-CAPS heading, three quote-styled purchase modes, the NOTE + THE TRAP callouts, then the
+    // Strategy split into THREE separate Text Displays (its own `### ` heading on the first) so each
+    // strategy option reads as its own line with an inline cp2 icon on its cost. Every number is still
+    // DERIVED above -- only the wording/structure changed from the earlier version, not the math.
     const blocks = [
-        // 0: heading + both headline totals (quote-blocked, cp2 icon -- matches the other entries)
-        `**${emojis.legendary} Advanced Double Legendary Weapon Draw**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** *(see The Strategy below)*`,
-        // 1-3: the three purchase modes
-        `**Regular Purchase only:**\n${seqTotal(reg, regTotal)}`,
-        `**Advanced Purchase only:**\n${seqTotal(adv, advTotal)}`,
-        `**Trap (Regular Purchases + remaining item separately):**\n${seqTotal(trap, trapTotal)}`,
-        // 4-5: the two notes
-        `> **NOTE:** "Regular Purchase" spins on Double Draws are actually **cheaper** than a Normal Draw (${formatCP(regTotal)} CP vs ${formatCP(normalDrawTotal)} CP). The tradeoff is you can't pick *which* Legendary you'll receive.`,
-        `> **THE TRAP:** Buying "Regular Purchase" then paying for the 2nd item afterward costs **25% more** than buying "Advanced Purchase" upfront (the 2nd item alone costs the same as a Regular Purchase). **Commit before spinning** — otherwise you've essentially done 2 Regular Purchases and wasted CP.`,
-        // 6: strategy
-        `**${emojis.legendary} The Strategy**\n• **All 4** *(2 Legendaries, 2 Epics)* — Reg 1-8 → Adv 9-10 ⌇ **\`${formatCP(costAll4)} CP\`**\n• **2 Legendaries** *(only 1 Epic)* — Reg 1-9 → Adv 10 ⌇ **\`${formatCP(cost2Leg)} CP\`**\n• **1 Legendary** *(random)* — Reg 1-10 ⌇ **\`${formatCP(cost1Leg)} CP\`**\n-# Pick Regular or Advanced per spin based on what you want. Assumes you don't get lucky early.`
+        // 0: FULL-CAPS heading + both headline totals (quote-blocked, cp2 icon -- matches the mockup)
+        `**${emojis.legendary} ADVANCED DOUBLE LEGENDARY WEAPON DRAW**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** (See **The Strategy** below)`,
+        // 1-3: the three purchase modes (the 3rd is the "trap" pricing -- Regular spin then buying the
+        // remaining item separately, i.e. 2x Regular per pull)
+        `**'Regular Purchase' Only**\n${seqTotal(reg, regTotal)}`,
+        `**'Advanced Purchase' Only**\n${seqTotal(adv, advTotal)}`,
+        `**'Regular Purchase' + Remaining Item Separately**\n${seqTotal(trap, trapTotal)}`,
+        // 4-5: the two callouts
+        `> **NOTE:** Buying 'Regular Purchase' only, in these Double Draws, to acquire 1 Leggy weapon is actually **CHEAPER** than Normal Draws (${formatCP(regTotal)} CP vs ${formatCP(normalDrawTotal)} CP). Tradeoff is you just can't pick *which* Leggy you'll receive.`,
+        `> **THE TRAP:** Buying 'Regular Purchase', then paying for the 2nd remaining item afterwards costs **25% MORE** than just buying 'Advanced Purchase' upfront. **Commit before spinning!** Otherwise you essentially just did 2 'Regular Purchases' and wasted money.`,
+        // 6-8: the Strategy, as three separate Text Displays (heading rides on the first block)
+        `### **The Strategy, If You Want...**\n**Both Weapons & Characters**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
+        `**Both Weapons + 1 Random Character**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
+        `**1 Random Weapon + 1 Random Character**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
     ];
 
-    // Group with a spacing-2 divider before each logical section (purchase modes / notes / strategy)
-    // -- none within a section -- so the page reads as clear sub-groups rather than one flat stack.
+    // Group with a spacing-2 divider before each logical section (purchase modes / callouts /
+    // strategy) -- none within a section -- so the page reads as clear sub-groups. The three strategy
+    // blocks (6-8) sit together under one divider, matching the mockup.
     const dividerBefore = new Set([1, 4, 6]);
     const components = [];
     blocks.forEach((content, i) => {
