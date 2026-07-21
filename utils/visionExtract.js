@@ -35,25 +35,30 @@ const DEFAULT_PROJECT_ID = 'gen-lang-client-0549308254';
 // missing this var (e.g. a fresh VM .env that hasn't been re-synced since this variable was added).
 const DEFAULT_LOCATION = 'us';
 
-// Prompt is parameterized by how many attachment slots to expect. `buildPrompt(5)` returns the EXACT
-// original text (MP Gunsmith screens equip exactly 5, and /autobuild depends on this unchanged). The
-// >5 variant is only used by the one-time DMZ slot backfill (scripts/backfillLoadoutSlots.js) -- DMZ
-// builds equip up to 9 attachments, which the fixed-5 prompt was silently truncating.
+// Prompt is parameterized by how many attachment slots to expect (up to `maxAttachments`). /autobuild
+// passes the default 5 (MP); the DMZ slot backfill (scripts/backfillLoadoutSlots.js) passes 9 (DMZ
+// equips up to 9). Rewritten 2026-07-21 after live v2 testing surfaced two real misreads:
+//   - weaponName was grabbing the equipped SKIN's stylized title (e.g. "R9-0 - Death's Voice") instead
+//     of the base weapon ("R9-0"), which cascaded into a wrong weaponKey/imageKey and a brand-new
+//     "weapon" being created instead of a build added to the existing one. Now asks for the base weapon
+//     only (a structural backstop, adminParser.js's normalizeWeaponName, strips a skin suffix too).
+//   - a RESTRICTED slot (a slot locked by another attachment, shown with a crossed-out/prohibited icon)
+//     was being emitted as if the slot LABEL were an attachment (J358's "Trigger Action"). Now explicitly
+//     told to skip restricted AND empty slots, and never to output a slot label as an attachment name.
+// The old "exactly 5" wording is gone -- forcing a count is what made a restricted-slot weapon hallucinate
+// a 5th attachment; the pipeline pads/filters for the review card instead.
 function buildPrompt(maxAttachments) {
-    const countClause = maxAttachments === 5
-        ? 'The attachments array must contain exactly 5 objects, one per equipped attachment slot, in the order they appear on screen.'
-        : `The attachments array must contain one object per EQUIPPED attachment slot, in the order they appear on screen -- there may be up to ${maxAttachments}; include every slot that actually has an attachment.`;
     return `You are looking at a screenshot of a Call of Duty Mobile (CODM) "Gunsmith" weapon customization screen. Extract exactly this information and respond with ONLY a JSON object, no markdown code fences, no extra text:
 
 {
-  "weaponName": "the weapon's name as shown on screen",
+  "weaponName": "the BASE weapon's name ONLY, e.g. 'R9-0', 'AK117', 'Fennec'. Do NOT include any weapon SKIN, blueprint, or camo name. The screen often shows the equipped skin's stylized title joined to the weapon by a spaced dash (e.g. it may display 'R9-0 - Death's Voice', but the weapon is just 'R9-0'). Return only the underlying weapon name -- never the skin name, never a 'weapon - skin' combination.",
   "gunsmithCode": "ONLY the short alphanumeric share code itself (usually labeled 'Code' or similar), alternating numbers and letters, e.g. '1B2A4B8C9C'. Do NOT include the weapon name, a hyphen, or any other prefix/suffix -- return the code characters only, nothing else.",
   "attachments": [
-    {"slot": "the attachment slot's on-screen label, e.g. Muzzle, Barrel, Optic, Stock, Underbarrel, Rear Grip, Ammunition, Perk, Laser", "name": "the equipped attachment's name in that slot"}
+    {"slot": "the attachment slot's on-screen label, e.g. Muzzle, Barrel, Optic, Stock, Underbarrel, Rear Grip, Ammunition, Perk, Laser, Trigger Action", "name": "the equipped attachment's name in that slot"}
   ]
 }
 
-${countClause} If you cannot find a value for a field, use an empty string for that field (or an empty array entry for a missing attachment) rather than omitting the key.`;
+Include one object per slot that ACTUALLY HAS AN ATTACHMENT EQUIPPED, in the order they appear on screen -- up to ${maxAttachments}. IMPORTANT: skip any slot that is EMPTY, and skip any slot showing a crossed-out or prohibited icon (a slashed circle, or a struck-through symbol) -- that icon means the slot is RESTRICTED (locked by another equipped attachment) and has nothing equipped, so it must NOT appear in the array at all. Never invent an attachment for a restricted or empty slot, and never output a slot's label as if it were the attachment name. If you genuinely cannot read a value for a field that IS equipped, use an empty string for that field rather than omitting the key.`;
 }
 
 // Antigravity (2026-07-20): Keyless OAuth 2.0 Token Retriever

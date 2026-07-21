@@ -27,6 +27,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.29.0 — July 21, 2026
+- **Fixed swapped loadout pictures** — the L-CAR 9 and Crossbow builds were showing each other's
+  screenshots; they now show the right ones.
+- Behind the scenes: another round of fixes to the admin `/autobuild` tool (reads the weapon name and
+  attachments more accurately) and some loadout data tidy-up. Nothing else players interact with directly.
+
+---
+
 ## v2.28.0 — July 21, 2026
 - **New in `/draw prices`: the Advanced Double Legendary Weapon Draw.** A full breakdown for both CP
   regions of the three ways to spin it — **Regular Purchase**, **Advanced Purchase**, and the "Trap" — with

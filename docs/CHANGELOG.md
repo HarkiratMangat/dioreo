@@ -1157,3 +1157,41 @@ the first page jumps to the last — instead of the arrow going disabled at the 
 - Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of
   "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.
 
+## `v2.29.0` (2026-07-21) — `/autobuild` v2-test fixes · loadout data corrections
+Second `/autobuild` round from Harkirat's live v2 test (`local/Autobuild testing v2.md`), plus a batch of
+loadout data corrections he verified by hand. **Admin/back-end only** — nothing changes for players.
+
+### `/autobuild` extraction fixes
+- **Weapon SKIN name no longer mistaken for the weapon.** The vision model was reading the equipped skin's
+  stylized title (e.g. `R9-0 - Death's Voice`) as the weapon name, which cascaded into a wrong
+  `weaponKey`/`imageKey` and created a brand-new "weapon" instead of adding a build to the existing one
+  (and broke category auto-inference along the way). Fixed at two layers: the prompt now asks for the
+  **base weapon only** (`utils/visionExtract.js`), and a structural backstop `normalizeWeaponName()`
+  (`utils/adminParser.js`) strips a spaced-dash/em-dash skin suffix — base weapon hyphens are unspaced
+  (`R9-0`, `CX-9`, `L-CAR 9`) so a real name is never touched.
+- **Weapon names normalized to ALL-CAPS.** Autobuild stored title-case (`Machine Pistol`) while every
+  migrated build is uppercase (`MACHINE PISTOL`), so a new build showed out of place in `/manage`'s
+  disambiguation dropdown. `normalizeWeaponName()` now uppercases too (weaponKey is already
+  case-insensitive and imageKey already uppercased, so only the stored display value needed fixing).
+- **Restricted attachment slots are skipped.** A slot locked by another attachment (crossed-out /
+  prohibited icon) was being emitted as if the slot LABEL were an attachment (that's how J358 got a
+  `"Trigger Action"` attachment). The prompt now explicitly skips restricted AND empty slots and never
+  outputs a slot label as a name; the old "exactly 5" wording that forced a hallucinated 5th is gone.
+- **Attachments always display in canonical slot order** (Optic → Muzzle → Barrel → Stock → Laser →
+  Underbarrel → Trigger Action → Rear Grip → Ammunition → Perk), via `orderAttachmentsBySlot()`. Applies
+  to `/autobuild` builds (which carry per-slot labels); builds created before this keep their entry order
+  until a separate reorder pass. Empty/restricted slots are filtered before storage, kept aligned with
+  their slot labels so per-slot Cloudinary metadata never maps a name onto the wrong slot.
+- `/manage`'s **"How Images Work"** info block updated — it said the bot never uploads images; `/autobuild`
+  now does (screenshot → Cloudinary + loadout in one step), so it's presented as the fast path alongside
+  the manual-key entry.
+
+### Loadout data corrections (Harkirat-verified)
+- **L-CAR 9 Build 2 ↔ Crossbow Build 1 images were swapped** (each screenshot uploaded under the other's
+  Cloudinary key during the 2026-07-19 re-upload; the attachment data was always correct). Bytes swapped
+  back and verified by etag; metadata re-synced.
+- **J358's `"Trigger Action"`** removed — it was a restricted slot, not an attachment.
+- **3 `/autobuild` test builds deleted** (Mongo + Cloudinary): Machine Pistol Build 2, R9-0 — Death's Voice
+  Build 1 & 2.
+- **Striker's "Fast Reload Reload Case"** confirmed correct as-is (real in-game label, not a typo) — no change.
+

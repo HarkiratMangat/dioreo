@@ -2892,12 +2892,42 @@ stray unused `Barrel` string field that happened to match the schema, so the scr
 
 **Current status: DEPLOYED live to the VM 2026-07-21 (v2.28.0)** — code-complete, locally re-verified
 (`scripts/test-vertex-extract.js` against a real Mongo loadout + Cloudinary image, live Vertex AI call),
-and now pushed + pulled + restarted on the VM. **Still NOT exercised end-to-end on the VM / in live
-Discord** — the one remaining gap is Harkirat running the real `/autobuild` flow in Discord, which this
-deploy finally unblocks. When he does: the VM path uses keyless ADC via the instance metadata server (not
-the local-Mac `gcloud` fallback); the VM's `.env` may still lack `GCP_LOCATION`, but `visionExtract.js`'s
-fallback is now the correct `'us'`, so extraction should work regardless. If `/autobuild` errors live,
-check the VM has Vertex AI reachable via the metadata-server token first (see `visionExtract.js` header).
+and now pushed + pulled + restarted on the VM. When run live: the VM path uses keyless ADC via the
+instance metadata server (not the local-Mac `gcloud` fallback); the VM's `.env` may still lack
+`GCP_LOCATION`, but `visionExtract.js`'s fallback is now the correct `'us'`, so extraction should work
+regardless. If `/autobuild` errors live, check the VM has Vertex AI reachable via the metadata-server
+token first (see `visionExtract.js` header).
+
+**v2 live-test fixes — SHIPPED v2.29.0 (2026-07-21), deployed live.** Harkirat ran a real `/autobuild`
+test (`local/Autobuild testing v2.md`); the positives (dup warning, category-required gate, review-card-
+into-confirmation, Open Loadout pagination, badge inheritance) all worked. Two real misreads fixed, plus
+two enhancements — all admin/back-end:
+- **Skin name ≠ weapon name.** Vision was grabbing the equipped skin's stylized title (`R9-0 - Death's
+  Voice`) as `weaponName`, cascading into a wrong `weaponKey`/`imageKey` (a NEW weapon created instead of
+  a build added) and a failed category auto-inference. Fixed at the prompt (`visionExtract.js`, asks for
+  the base weapon) AND a structural backstop `normalizeWeaponName()` (`adminParser.js`) that strips a
+  spaced-dash/em-dash skin suffix — base-weapon hyphens are unspaced (`R9-0`/`CX-9`/`L-CAR 9`) so a real
+  name is never cut. Applied in `runExtraction` AND `applyEditSubmission`.
+- **Casing → ALL-CAPS.** `normalizeWeaponName()` also uppercases (`Machine Pistol` → `MACHINE PISTOL`),
+  matching every migrated build. Only the stored display value needed it (weaponKey is case-insensitive,
+  imageKey already uppercased by `computeWeaponKeyAndBuild`).
+- **Restricted slots skipped.** A slot locked by another attachment (crossed-out/⊘ icon) was emitted as
+  if the slot LABEL were an attachment (J358's `"Trigger Action"`). Prompt now skips restricted+empty
+  slots and never outputs a label as a name; the old "exactly 5" force is gone (pipeline pads/filters
+  for the review card).
+- **Canonical attachment order** (Optic→Muzzle→Barrel→Stock→Laser→Underbarrel→Trigger Action→Rear
+  Grip→Ammunition→Perk) via `adminParser.orderAttachmentsBySlot()`, applied in `runExtraction` (+ a
+  `cleanAttachmentPairs` chokepoint in `writeLoadoutDoc` filters empties keeping attachments↔slots
+  aligned, so per-slot Cloudinary metadata never maps a name onto the wrong slot). **Existing builds
+  (no stored slot labels) keep their entry order — a bot-wide reorder pass is a separate follow-up.**
+- **Data corrections same push** (Harkirat-verified): L-CAR-9-2 ↔ CROSSBOW-1 images swapped back (were
+  crossed during the 2026-07-19 re-upload; verified by etag), J358 `"Trigger Action"` removed, 3 test
+  builds deleted, Striker's "Fast Reload Reload Case" confirmed correct (real in-game label).
+- **Still open (flagged, not built):** `/manage` attachment edits still don't update per-slot Cloudinary
+  metadata (no slot labels in that modal — a proper fix needs slot input or slots stored in Mongo; the
+  autobuild EDIT path handles this safely by keeping slots only when the attachment list is unchanged);
+  bot-wide attachment reorder of existing builds; DMZ full-slot handling (needs Harkirat to teach the
+  DMZ slot layout — DMZ builds don't label slots unless empty).
 
 ---
 

@@ -323,6 +323,49 @@ function correctAttachmentName(extracted, knownAttachments) {
     return fuzzy || extracted;
 }
 
+// Weapon-name normalizer for /autobuild (added 2026-07-21, live v2 testing). Two jobs:
+//  (1) Strip a cosmetic SKIN/blueprint name. In CODM's Gunsmith the base weapon (e.g. "R9-0") is what
+//      identifies a build, but the screen also shows the equipped skin's stylized title ("R9-0 -
+//      Death's Voice"), which the vision model tends to grab. Skin names are appended after a SPACED
+//      separator (" - " / " – " / " — "); base weapon names use UNspaced hyphens (R9-0, CX-9, DR-H,
+//      L-CAR 9), so cutting at the first spaced dash/em-dash drops the skin without touching a
+//      hyphenated base name. The prompt (utils/visionExtract.js) is the primary fix; this is a
+//      structural backstop, same pattern as stripCodePrefix() for the gunsmith code.
+//  (2) Uppercase + collapse whitespace, so a title-cased read ("Machine Pistol") is stored as
+//      "MACHINE PISTOL" -- matching the all-caps convention every migrated weaponName already uses
+//      (a title-cased autobuild entry showed up out of place in /manage's disambiguation dropdown).
+//      weaponKey is case-insensitive and imageKey is uppercased downstream (loadoutRender.js's
+//      computeWeaponKeyAndBuild), so this only fixes the stored DISPLAY value -- but the skin strip in
+//      (1) genuinely fixes the key/imageKey too.
+function normalizeWeaponName(raw) {
+    if (!raw) return raw;
+    const base = String(raw).trim().replace(/\s+[-–—]\s+.*$/, '').trim();
+    return base.toUpperCase().replace(/\s+/g, ' ');
+}
+
+// Canonical CODM Gunsmith slot order, used to display a build's attachments consistently regardless of
+// the order the vision model happened to read them in (Harkirat's request, 2026-07-21). Only applies
+// where per-slot labels exist -- i.e. /autobuild extractions; builds stored before this (plain-string
+// attachments, no slot labels) keep their original entry order until a separate reorder pass.
+const CANONICAL_SLOT_ORDER = ['optic', 'muzzle', 'barrel', 'stock', 'laser', 'underbarrel', 'trigger action', 'rear grip', 'ammunition', 'perk'];
+// Slot-label variants the vision model (or the game) might use, normalized to the canonical labels above.
+const SLOT_ALIASES = { sight: 'optic', 'under barrel': 'underbarrel', ammo: 'ammunition', 'rear_grip': 'rear grip', grip: 'rear grip', 'trigger_action': 'trigger action' };
+function canonicalSlot(slot) {
+    const s = (slot || '').toLowerCase().trim();
+    return SLOT_ALIASES[s] || s;
+}
+function slotRank(slot) {
+    const idx = CANONICAL_SLOT_ORDER.indexOf(canonicalSlot(slot));
+    return idx === -1 ? CANONICAL_SLOT_ORDER.length : idx; // unknown/blank slots sort to the end
+}
+// Reorders parallel attachments[] / slots[] arrays into CANONICAL_SLOT_ORDER. Stable: entries with the
+// same rank (or unknown slots) keep their relative order. Returns new aligned arrays.
+function orderAttachmentsBySlot(attachments, slots) {
+    const rows = (attachments || []).map((name, i) => ({ name, slot: (slots || [])[i] || '', i }));
+    rows.sort((a, b) => slotRank(a.slot) - slotRank(b.slot) || a.i - b.i);
+    return { attachments: rows.map(r => r.name), slots: rows.map(r => r.slot) };
+}
+
 // Cloudinary placeholder used elsewhere for loadouts that don't have a real screenshot yet (see
 // scripts/createPlaceholderLoadouts.js) — reused here as the bulk-add default when a block omits
 // the image key, so a bulk submission is never blocked on having every image ready up front.
@@ -478,4 +521,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot };

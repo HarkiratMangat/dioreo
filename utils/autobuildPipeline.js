@@ -9,7 +9,7 @@ const crypto = require('crypto');
 const { ModalBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('./visionExtract');
-const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges } = require('./adminParser');
+const { correctAttachmentName, correctGunsmithCode, parseLoadoutBadges, normalizeWeaponName, orderAttachmentsBySlot } = require('./adminParser');
 const { sendV2Payload } = require('./sendV2Payload');
 const { computeWeaponKeyAndBuild, buildLoadoutCard, getMpCategoryAccent, findDuplicateLoadouts } = require('./loadoutRender');
 const { uploadLoadoutImage, syncLoadoutMetadata } = require('./loadoutImageCache');
@@ -56,6 +56,24 @@ function refreshReviewWarnings(data, allMpBuilds) {
     } else {
         data.duplicateWarning = null;
     }
+}
+
+// Canonically orders the parallel attachments[]/slots[] arrays (adminParser.orderAttachmentsBySlot) and
+// drops empty/blank entries -- a restricted or unread slot pads to '' during extraction, and a slot the
+// vision model was (now) told to skip simply isn't there. Keeps the two arrays ALIGNED so per-slot
+// Cloudinary metadata never maps an attachment name onto the wrong slot. Shared by runExtraction (for
+// the review card + the stored data) and writeLoadoutDoc (defense-in-depth for the retry path).
+function cleanAttachmentPairs(attachments, slots) {
+    const ordered = orderAttachmentsBySlot(attachments, slots);
+    const outA = [];
+    const outS = [];
+    ordered.attachments.forEach((name, i) => {
+        const n = (name || '').trim();
+        if (!n) return;
+        outA.push(n);
+        outS.push(ordered.slots[i] || '');
+    });
+    return { attachments: outA, attachmentSlots: outS };
 }
 
 // Ephemeral review card: weapon/code/attachments/category/badges as extracted so far, plus the RAW
@@ -139,21 +157,29 @@ async function runExtraction(interaction, sourceImageUrl, explicitCategory, badg
     const knownAttachments = [...new Set(allMpBuilds.flatMap(l => l.attachments))];
     const correctedAttachments = extracted.attachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(extracted.gunsmithCode);
+    // Strip skin suffix + normalize casing so the weaponKey/imageKey/display value all resolve to the
+    // real weapon (see normalizeWeaponName) -- this is the fix for the v2-test "new weapon created from
+    // the skin name" cascade. Everything below uses the normalized name, not the raw extraction.
+    const weaponName = normalizeWeaponName(extracted.weaponName);
+    // Reorder into canonical slot order, then drop empty/restricted slots (they pad to '' upstream),
+    // keeping attachments and their parallel slot labels aligned so per-slot metadata stays correct.
+    const { attachments: cleanAttachments, attachmentSlots: cleanSlots } = cleanAttachmentPairs(correctedAttachments, extracted.attachmentSlots);
 
-    const { category, badgesRaw } = await resolveCategoryAndBadges(extracted.weaponName, explicitCategory, badgesOption);
+    const { category, badgesRaw } = await resolveCategoryAndBadges(weaponName, explicitCategory, badgesOption);
 
     const token = crypto.randomBytes(8).toString('hex');
     const data = {
-        weaponName: extracted.weaponName,
+        weaponName,
         gunsmithCode: correctedCode,
-        attachments: correctedAttachments,
+        attachments: cleanAttachments,
         // Feeds the per-slot Cloudinary structured metadata (Muzzle/Barrel/... fields) via
         // loadoutImageCache.js's buildLoadoutMetadata/SLOT_TO_FIELD -- Cloudinary-only, not written to
         // the Loadout doc, which is exactly why the per-slot fields can only ever be filled by
-        // /autobuild. Not re-corrected against knownAttachments the way `attachments` itself is: slot
+        // /autobuild. Kept aligned to `attachments` above by cleanAttachmentPairs (same order, same
+        // filtering). Not re-corrected against knownAttachments the way `attachments` itself is: slot
         // labels are a small closed vocabulary (Muzzle/Barrel/Optic/...), not free text prone to the
         // same misread-spelling drift attachment NAMES have.
-        attachmentSlots: extracted.attachmentSlots,
+        attachmentSlots: cleanSlots,
         category,
         badgesRaw,
         mode: 'MP',
@@ -203,13 +229,17 @@ async function replaceWithV2Card(interaction, card) {
 
 async function writeLoadoutDoc(data, imageKeyOverride) {
     const { isMeta, categoryRank, isToxic } = parseLoadoutBadges(data.badgesRaw);
+    // Final safety pass: never persist an empty/blank attachment (a restricted/unread slot), and keep
+    // the parallel slot labels aligned for the metadata sync below. Idempotent for the normal path
+    // (runExtraction already cleaned these); the point is to also cover the retry path.
+    const { attachments, attachmentSlots } = cleanAttachmentPairs(data.attachments, data.attachmentSlots);
     const doc = new Loadout({
         weaponKey: data.weaponKey,
         weaponName: data.weaponName,
         category: data.category,
         mode: 'MP',
         buildName: data.buildName,
-        attachments: data.attachments,
+        attachments,
         imageKey: imageKeyOverride || data.imageKey,
         shareCode: data.gunsmithCode,
         isMeta,
@@ -236,7 +266,7 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
     // Cloudinary structured metadata (best-effort, never throws). The new build gets its per-slot data
     // too (only the /autobuild path has the slot->attachment mapping from the vision extraction). If
     // badges just propagated, re-sync the affected siblings so their Cloudinary badge metadata matches.
-    await syncLoadoutMetadata(doc, data.attachmentSlots);
+    await syncLoadoutMetadata(doc, attachmentSlots);
     if (badgesSet) {
         const siblings = await Loadout.find({ weaponKey: data.weaponKey, mode: 'MP', _id: { $ne: doc._id } });
         for (const sibling of siblings) await syncLoadoutMetadata(sibling);
@@ -381,7 +411,7 @@ function buildEditModal(token, data) {
         // the way category/badgesRaw two lines below already correctly don't assume.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('weapon').setLabel('Weapon Name').setStyle(TextInputStyle.Short).setValue(data.weaponName || '').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('code').setLabel('Gunsmith Code').setStyle(TextInputStyle.Short).setValue(data.gunsmithCode || '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (One per line, 5 total)').setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('attachments').setLabel('Attachments (one per line)').setStyle(TextInputStyle.Paragraph).setValue(data.attachments.join('\n')).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category').setStyle(TextInputStyle.Short).setPlaceholder('AR / SMG / LMG / MARKSMAN / SNIPER / SHOTGUN / SECONDARIES').setValue(data.category || '').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('badges').setLabel('Badges (optional)').setStyle(TextInputStyle.Short).setPlaceholder('meta,best,top5,toxic').setValue(data.badgesRaw || '').setRequired(false))
     );
@@ -399,7 +429,9 @@ async function applyEditSubmission(interaction, token) {
     }
     await interaction.deferUpdate();
 
-    const weaponName = interaction.fields.getTextInputValue('weapon').trim();
+    // Same normalizer as the initial extraction: strip a skin suffix + force the all-caps convention,
+    // so a manually-typed "Machine Pistol" or "R9-0 - Death's Voice" is stored consistently too.
+    const weaponName = normalizeWeaponName(interaction.fields.getTextInputValue('weapon'));
     const rawCode = interaction.fields.getTextInputValue('code').trim();
     const rawAttachments = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(Boolean);
     const category = interaction.fields.getTextInputValue('category').trim().toUpperCase();
@@ -409,14 +441,26 @@ async function applyEditSubmission(interaction, token) {
     // duplicate/category-conflict warnings (an Edit is exactly what changes whether either applies).
     const allMpBuilds = await Loadout.find({ mode: 'MP' }).select('weaponKey weaponName category buildName shareCode attachments').lean();
     const knownAttachments = [...new Set(allMpBuilds.flatMap(l => l.attachments))];
-    const correctedAttachments = [0, 1, 2, 3, 4].map(i => correctAttachmentName(rawAttachments[i] || '', knownAttachments));
+    // Variable length now (was force-padded to exactly 5) -- a restricted-slot weapon legitimately has
+    // fewer, and blank lines were already filtered out above.
+    const correctedAttachments = rawAttachments.map(a => correctAttachmentName(a, knownAttachments));
     const correctedCode = correctGunsmithCode(rawCode);
+
+    // The Edit modal carries attachment NAMES only, no slot labels, so an edit that changes the
+    // attachment list can't keep a valid slot->name mapping. Keep the extraction's slots ONLY if the
+    // list is unchanged (a badge/category-only edit, the common case) so per-slot metadata survives;
+    // otherwise clear it, so a later Confirm writes no per-slot metadata rather than WRONG per-slot
+    // metadata. (buildLoadoutMetadata skips per-slot fields entirely when slots is empty.)
+    const attachmentsUnchanged = correctedAttachments.length === data.attachments.length
+        && correctedAttachments.every((a, i) => a === data.attachments[i]);
+    const attachmentSlots = attachmentsUnchanged ? data.attachmentSlots : [];
 
     const updated = {
         ...data,
         weaponName,
         gunsmithCode: correctedCode,
         attachments: correctedAttachments,
+        attachmentSlots,
         category: category || null,
         badgesRaw
     };
