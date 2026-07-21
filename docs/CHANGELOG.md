@@ -990,59 +990,24 @@ green copy button"
 # 📋 Unreleased (committed, not yet pushed)
 
 Staging area for work that's committed locally but hasn't gone live yet, so it has no permanent version
-number. Add each commit here as it's made, and keep a **proposed** version number at the top that shifts
-with the type of work accumulated: doc/housekeeping-only stacks a MINOR bump (e.g. v2.18.**2**), but the
-moment a moderate-level feature lands here, everything in this section folds into that MODERATE entry
-instead (e.g. v2.19.**0**) — one push, one version. On push, move this content up into a real numbered
-entry and reset this section to empty.
+number. On push, graduate this content up into a real numbered entry (newest-first, at the TOP of the
+list above) and reset this section to empty.
 
-### ~~Proposed: v2.18.2~~ — SHIPPED (see the numbered v2.18.2 entry above)
-*Stale staging block — predates the graduate-on-push cleanup. Content below duplicates the released
-v2.18.2 entry; safe to delete in the housekeeping pass.*
-
-**Memory-path correction & housekeeping to-do** (`cf6cad7`) — docs only, no bot code
-- **Corrected an imprecise claim in the canonical-memory-path note.** It said the
-  `-Applications-Claude-Code-Diors-Builds` path "does not exist". The *project folder* does exist — the
-  harness writes this repo's session transcripts there after the 2026-07-14 relocation to
-  `/Applications/Claude Code/Diors-Builds`. It's specifically the `memory/` **subdir** that's absent and
-  must stay absent. As originally written, a future session could check, see the folder, conclude the
-  note was stale, and migrate memory — precisely what the note exists to prevent.
-- **Recorded that memory deliberately does NOT follow the repo path**, with the reasoning, in CLAUDE.md
-  + `SESSION-START.md` + the working agreement. The harness project-folder slug is derived from the repo
-  location, so a memory store that tracks it breaks on *every* future folder move and needs re-migrating
-  each time; a fixed, explicitly-named store makes moves irrelevant. Worded as "do not 'fix' this by
-  migrating" so a later session doesn't undo it. Verified: canonical store = 26 files, and the
-  harness-side `memory/` subdir is correctly absent.
-- **Filed a general bot/code housekeeping session** into "Next planned work" — leftover `*.bak-*` config
-  backups, a sweep for stale absolute paths missed after the relocation (preferring relative/dynamic
-  ones that can't rot on a future move), dead-code/stale-comment/unused-dependency review, and the
-  `/patch notes` carousel chunking question. Memory slug explicitly **out of scope** so housekeeping
-  doesn't reverse the decision above.
-
-**Not in git (local tooling, no version needed):** fixed the `SessionStart` hook, which had been silently
-injecting an empty string — it `cat`-ed the pre-relocation `/Applications/Diors-Builds/SESSION-START.md`
-with `2>/dev/null` swallowing the failure, so *no* session-start guidance loaded for an unknown number of
-sessions. Now resolves via `$CLAUDE_PROJECT_DIR` and emits a loud ⚠️ warning if the file is ever missing
-instead of going quiet (verified: 1 char → ~5,100). Two stale `node -c` permission entries made relative.
-The session-start block also gained today's rules: the `/rename Opus4.8-M · Title` convention, one-version-
-per-push, and that "document" covers no-code/no-push planning sessions.
+*Currently empty — all committed work is live on the VM.*
 
 ---
 
-# 📋 Unreleased (committed locally, not yet pushed/deployed)
+# 🚚 Shipped, pending graduation into the numbered list above (v2.27.0 – v2.30.0)
 
-Staging for work not yet live. Proposed number shifts with the work type (see the top-of-file
-versioning note). On push, graduate this into a numbered entry and reset to empty.
-
-**Note (2026-07-20): the block that used to sit here** (Vertex AI keyless migration + Antigravity-
-handoff fixes + the `correctGunsmithCode` comment correction, proposed as `v2.24.1`) **was actually
-already pushed and deployed live** — `git status` confirmed HEAD matched `origin/main` at the time this
-was caught, meaning that content had graduated in reality but never in this file. Backfilled into a
-real numbered entry, **`## v2.25.0`** above (not `v2.24.1` — bundled with the full `/autobuild` PoC
-build, which itself had ALSO never gotten a numbered entry despite being live since before the Vertex
-migration; the whole feature is a moderate bump, not a minor one). Caught when Harkirat pushed back on
-this exact gap being noticed and then left unfixed — see the working agreement on what "document"
-actually means: fix a found gap, don't just flag it and move on when it's in scope to correct.
+**These four entries are LIVE on the VM — they are NOT unreleased**, despite historically sitting under an
+"Unreleased" header (now corrected). They're physically parked down here because each was written into the
+staging area and never relocated up into the chronological numbered list (which runs newest-first from the
+top of this file). **Graduating them** — moving each above `## v2.26.0` in newest-first order and deleting
+this section — is a queued housekeeping/organization task: it's pure text relocation with no content to
+write, deliberately deferred to a focused org pass rather than risking a large mid-feature reorder. They're
+kept here, clearly labeled as shipped, so nothing reads as an actual missing-changelog gap in the meantime.
+(The stale duplicate `v2.18.2` staging block that used to sit above this was deleted here — it duplicated the
+released v2.18.2 entry and was self-flagged safe to remove.)
 
 ## `v2.27.0` (2026-07-21) — silence routine gateway-reconnect alerts (log, don't post)
 Admin/ops-only — nothing changes for players. Was committed & pushed earlier; **confirmed pulled + live

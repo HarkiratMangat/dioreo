@@ -14,8 +14,8 @@ walked back, the reasoning behind decisions, platform gotchas, concerns, and tip
 major prior milestones from CLAUDE.md + memory. A **full backfill from prior chat transcripts is
 planned** (deferred for token budget) — those chats hold reasoning/interactions/discoveries that never
 made it into CLAUDE.md or memory. Entries marked `[backfill — expand later]` are the shallow ones to
-deepen in that pass. Local-only (gitignored), like the changelogs — this is candid and stays off the
-public repo.
+deepen in that pass. **Tracked in git** since 2026-07-18 (moved into `docs/` alongside the changelogs —
+was local-only/gitignored before that); still candid, written for us, just now with real `git` history.
 
 ---
 
@@ -998,6 +998,50 @@ lingering (harmless, token-consumed) review card; and I couldn't exercise any of
 Discord/Mongo/Cloudinary — everything was verified offline (syntax-load of all five touched files, module
 load + export check, warning-render check, and the 9-case dupe/build-numbering test). The true test is
 Harkirat clicking through it once more.
+
+---
+
+## 2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no
+
+The code part of this session was small and went perfectly: rebuild `/draw prices`' Advanced Double
+Legendary page to Harkirat's mockup, uppercase every draw heading, ship v2.30.0. Every number derives
+from the raw arrays (verified via a `buildContainer()` JSON dump), stayed under the 40-component cap,
+deployed clean to the VM. If the session had ended there it would have *looked* complete.
+
+It wasn't, and the interesting part is how far "looks done" was from "is done."
+
+**First miss, caught by my own verify pass.** When Harkirat asked "is everything synced/live?", my
+first instinct was to affirm. Instead I ran the actual checks — and three things were off: a `v2.25.0`
+tag existed locally but had never been pushed to origin; the VM's git HEAD was two doc-commits behind
+origin (the bot ran identical code, but the tree wasn't truly synced); and the working tree wasn't
+clean. Two were trivially fixable (pushed the tag, `git pull` on the VM). The lesson re-learned:
+**"is it caught up" is a question you answer by running commands, not by recalling what you did.** The
+affirm-first instinct is the exact failure.
+
+**Second miss, and the real one — the notes file.** I'd told Harkirat the modified `docs/diors-builds
+notes.md` was "his, predates the session, not mine to commit," and left it. That was wrong on the
+policy: `docs/diors-builds notes.md` is **tracked** and is an explicit part of the Document flow
+([[project-central-notes-file]]). Worse: the two things I shipped this session — the Advanced redesign
+and full-caps headings — were literally **L74 and L75 in that file, sitting unmarked**. I did the exact
+thing the file itself complains about at length (a chat acknowledgement that leaves no in-file trail),
+which had *already* been flagged as a repeat offense. The correct move was to mark them `[x] ✓` and drop
+a dated session-status block the same session — which I only did once Harkirat pushed back hard enough to
+make me actually go read the policy instead of reasoning from a generic "don't touch someone's
+uncommitted work" instinct.
+
+**Third miss — scoping "document" to only my own changes.** When Harkirat asked whether *everything*
+(both changelogs, DEVLOG, memory, CLAUDE.md) was caught up, the honest audit found real gaps beyond my
+own work: CHANGELOG-SUMMARY was missing v2.30.0; the CHANGELOG's 2.27–2.30 entries were stranded in
+stale, mislabeled "Unreleased" staging blocks (present, but disorganized and one block literally lying
+that shipped versions were "not yet pushed"). Per [[feedback-docs-at-push-time]]'s own "fix gaps you
+notice" clause, these are in-scope to fix, not just flag.
+
+**The throughline:** a generic-good-practice instinct ("don't commit someone else's file," "that's
+pre-existing, not mine") quietly overrode a project-specific rule I could have re-read in thirty
+seconds. The safeguard isn't "try harder to remember" — it's: when asked *are we caught up*, treat it
+as a checklist against the **full** doc set (both changelogs + DEVLOG + memory + CLAUDE.md + the notes
+file's in-file marks + git/tag/VM sync), verified command-by-command, and read the actual policy before
+declaring any of it out of scope.
 
 ---
 

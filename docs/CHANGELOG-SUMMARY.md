@@ -27,6 +27,15 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.30.0 — July 21, 2026
+- **`/draw prices` got a visual refresh.** The Advanced Double Legendary Weapon Draw page is redesigned
+  to a cleaner layout — three clearly-labelled purchase modes, the "note" and "trap" tips called out, and
+  the strategy guide broken into its own easy-to-read lines (both CP regions).
+- **Every draw's heading is now in FULL CAPS** (the lines with the legendary/mythic icon), so the whole
+  `/draw prices` list reads consistently.
+
+---
+
 ## v2.29.0 — July 21, 2026
 - **Fixed swapped loadout pictures** — the L-CAR 9 and Crossbow builds were showing each other's
   screenshots; they now show the right ones.
