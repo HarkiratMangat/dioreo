@@ -2552,8 +2552,22 @@ and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildD
   `DRAW_DATA`** (not retyped). A wrong number can only ever exist in one place.
 - **Rendering reuses the command's existing conventions** — `boldDrawSequence`/`cumulativeSequence` via a
   `{ draws }` shim (bold ` / `-joined pulls, `⌇` before the total, `-# CP Spent:` cumulative joined by
-  `›`, `cp2` icon on the quote-blocked headline). Laid out as separate Text Displays grouped by spacing-2
-  dividers (headline → 3 purchase modes → 2 cautions → strategy). ~27 components, well under the 40 cap.
+  `›`, `cp2` icon on the quote-blocked headline).
+- **Layout redesigned 2026-07-21 (v2.30.0) to match Harkirat's own hand-drawn mockup**
+  (`local/advanced leggy_format.json`) — this replaced the earlier "~27 component, single strategy block"
+  version. Current shape, grouped by spacing-2 dividers into three sections (`dividerBefore = {1,4,6}`):
+  **headline** (full-caps name + Reg/Adv totals + `(See **The Strategy** below)` pointer) → **3 purchase
+  modes** (`'Regular Purchase' Only` / `'Advanced Purchase' Only` / `'Regular Purchase' + Remaining Item
+  Separately`) → **2 callouts** (`NOTE` / `THE TRAP`) → **The Strategy** as THREE separate Text Displays
+  (its `### ` heading rides the first block; each strategy line carries an inline `cp2` icon on its cost).
+  9 Text Displays + 3 internal dividers. The mockup only drew the 10 CP region — the 30 CP region is the
+  same design fed its own derived numbers. Re-verified via a `buildContainer()` JSON dump: every total
+  re-sums correctly and every page/region stays under the 40-component cap (max ~35 incl. share button).
+- **All draw-price entry headings are FULL-CAPS** (2026-07-21, v2.30.0) — both the two key-driven pages
+  (`buildDrawEntries`, via `meta.name.toUpperCase()`) and the Advanced page. `DRAW_META.name` stays the
+  canonical mixed-case source of truth; only the rendered heading is uppercased. Applies to the
+  tier-emoji heading lines only, NOT the Upgrade sub-heading or the Strategy heading (neither has a tier
+  emoji prefix).
 - **No index.js changes were needed** — the `price_subpage_*`/`price_region_*` handlers already parse the
   page number generically and pass it through; the command clamps. Both regions have full data, so a
   region switch preserves the Advanced page.
