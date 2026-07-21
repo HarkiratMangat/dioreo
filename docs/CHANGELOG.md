@@ -1214,3 +1214,6 @@ raw per-pull arrays (`DRAW_DATA`, `ADVANCED_DOUBLE_LEGENDARY`); only rendering/w
 - Verified by dumping `buildContainer()` JSON and re-summing every total against its own array, and
   recursively counting components: all pages stay well under Discord's 40-component cap (max ~35 incl. the
   share button). Closes notes items L74 (Advanced redesign) + L75 (full-caps headings).
+- **Docs synced** (`6c13a56`, doc-only follow-up, no redeploy): CLAUDE.md's Advanced Double Legendary
+  section rewritten from the old single-strategy-block description to this redesign's 3-block shape +
+  the full-caps heading rule.
