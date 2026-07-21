@@ -27,7 +27,7 @@ A peek at what's planned (not built yet):
 
 ---
 
-## v2.26.0 — July 20, 2026 *(built, not yet pushed live)*
+## v2.26.0 — July 20, 2026
 - **New admin tool: `/alerts`.** The bot already messages Dior privately when something goes wrong (a
   crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a
   short ID (like `Jul20-03`), and `/alerts` lets Dior browse recent ones, download the full log as a file,

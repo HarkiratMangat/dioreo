@@ -227,8 +227,11 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
       auto-gated by adding `alerts_` to index.js's centralized panel-guard prefix list) is a V2 panel:
       severity summary (24h/7d counts + last error id/time), a paginated newest-first recent list (each
       with its id), an **Export Log** button (a `.txt` fuller than the embed, via `buildAlertExport()`), and
-      a **"What alerts mean?"** explainer subpage. Verified offline against live Mongo (id atomicity,
-      `formatUptime` tiers, panel build ≤40 components, roundtrip) — NOT yet live-tested in Discord.
+      a **"What alerts mean?"** explainer subpage. **Deployed to the VM 2026-07-21 (v2.26.0); the store is
+      verified LIVE in production** — the boot's own "Bot online" alert wrote the first real doc (`Jul21-01`,
+      UTC rollover confirmed working). Verified offline too (id atomicity, `formatUptime` tiers, panel build
+      ≤40 components, roundtrip). **Still NOT click-tested:** the interactive `/alerts` panel itself
+      (Export Log / explainer / pagination) in Discord — needs a real admin click-through.
     - **Escalating uptime format (2026-07-20)** — `utils/alertStore.js`'s `formatUptime()`, in every alert
       footer (was raw `up 730m`): always the top TWO units — `42Min` → `3H 42Min` → `2D 22H` → `1W 3D` →
       `1M 3W` → `1Y 2M`. Minutes render as `Min` so a bare `M` is unambiguously months (Harkirat's tier-1
