@@ -9,7 +9,13 @@
 //  - NEVER throws — every failure path is swallowed.
 //  - NEVER blocks — fire-and-forget with an 8s abort timeout.
 //  - Throttled per (level+title) to 1/min, so an error loop can't spam the channel or self-DoS.
+//  - Persists each SENT alert to Mongo (utils/alertStore, added 2026-07-20) as an INDEPENDENT
+//    fire-and-forget — the store write and the webhook POST never await each other, so a DB outage
+//    can't block a Discord alert (a DB failure is itself an alert), and a Discord outage can't block the
+//    log. Because of that decoupling the store-assigned id is NOT shown on the embed; it lives in /alerts.
 // LOG_WEBHOOK_URL is a SECRET (posts to Harkirat's channel) — .env only, never the repo.
+
+const { formatUptime, recordAlert } = require('./alertStore');
 
 // Active-ping target: Harkirat's Discord user id. Notice-worthy alerts (errors, gateway disconnects)
 // include a real <@mention> so he gets a phone/desktop notification; routine info alerts do NOT ping.
@@ -57,7 +63,7 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
     const shouldPing = opts.ping ?? (level === 'error' || level === 'warn');
     const host = process.env.NODE_ENV === 'production' ? 'GCP VM' : 'local';
     const rss = Math.round(process.memoryUsage().rss / 1024 / 1024); // MB — surfaces leaks/OOM trends
-    const upMin = Math.round(process.uptime() / 60);
+    const uptimeSec = Math.floor(process.uptime()); // raw seconds; formatUptime() for display, stored raw
     // Proper Discord timestamp (2026-07-17) — `<t:unix:F>` renders as a full, timezone-correct,
     // hover-expandable time in EVERY viewer's own locale, instead of relying only on the small native
     // embed-footer time. Goes in the DESCRIPTION because Discord does NOT parse `<t:>` markdown in an
@@ -78,7 +84,7 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
             title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${title}`.slice(0, 256),
             description: description || undefined,
             color: LEVEL_COLOR[level] ?? LEVEL_COLOR.error,
-            footer: { text: `Dior's Builds · ${host} · RSS ${rss}MB · up ${upMin}m` },
+            footer: { text: `Dior's Builds · ${host} · RSS ${rss}MB · up ${formatUptime(uptimeSec)}` },
             timestamp: new Date().toISOString(),
         }],
     };
@@ -93,6 +99,10 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
     })
         .catch(() => { /* alerting failure must never surface */ })
         .finally(() => clearTimeout(timeout));
+
+    // Persist to the alert store — INDEPENDENT of the POST above (see hard rules). Fire-and-forget, never
+    // awaited, never throws. Mirrors what was actually sent (this runs only after the throttle passed).
+    recordAlert({ level, title, detail: rawDesc, pinged: shouldPing, host, rssMb: rss, uptimeSec });
 }
 
 module.exports = { sendAlert };

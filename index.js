@@ -138,7 +138,10 @@ client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
 client.on('shardResume', (id, replayed) => { console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`); sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info'); });
 // 'caution' (yellow), not 'warn' (orange): reconnecting is transient and self-recovering, so it's a
 // lower severity than a full 'Gateway disconnected' — and it doesn't ping (yellow never does).
-client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Gateway reconnecting', `Shard ${id} lost its connection and is reconnecting.`, 'caution'); });
+// "Reconnecting to Discord", NOT "restarting" (2026-07-20): the gateway WEBSOCKET dropped and is
+// re-establishing on its own — the bot PROCESS never died, systemd never fired. Calling it "restarting"
+// would falsely imply a crash. caution/yellow = transient + self-recovering, so it never pings.
+client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Reconnecting to Discord', `Shard ${id}'s gateway websocket dropped and is reconnecting. The bot process itself is fine (nothing crashed, systemd didn't fire).`, 'caution'); });
 client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
 client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); sendAlert('Gateway shard error', error, 'error'); });
 
@@ -288,7 +291,45 @@ client.once(Events.ClientReady, handleBotReady);
 // before that, so the "Bot online" alert used to say a nonsensical "gateway -1ms". Show "measuring…"
 // until a real ping exists. Shared by the daily heartbeat below (defensive there too).
 function formatPing(ms) { return ms >= 0 ? `${Math.round(ms)}ms` : 'measuring…'; }
-client.once(Events.ClientReady, (c) => sendAlert('Bot online', `Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info'));
+
+// Manual-vs-automatic restart labeling (2026-07-20). The bot can't natively know WHY systemd started it,
+// so scripts/deploy.sh writes a `.restart-reason` marker (gitignored) right before restarting; on boot we
+// read + CONSUME it here. A marker => a deliberate restart (deploy/manual); no marker => an unattended
+// restart (systemd auto-restart after a crash, OR a bare `systemctl restart` that skipped deploy.sh).
+// Fully swallowed — a marker problem must never affect boot.
+const RESTART_MARKER = path.join(__dirname, '.restart-reason');
+function readRestartReason() {
+    try {
+        if (!fs.existsSync(RESTART_MARKER)) return null;
+        const raw = fs.readFileSync(RESTART_MARKER, 'utf8').trim();
+        fs.unlinkSync(RESTART_MARKER); // consume-once, whatever we found
+        const [reason, tsStr] = raw.split(/\s+/); // "<reason> <unix-seconds>" (deploy.sh format)
+        const ts = parseInt(tsStr, 10);
+        // Only honor a FRESH marker (<10 min) so a stale one left by a failed/earlier deploy can't
+        // mislabel a much-later crash-restart as a deploy. Too old => treat as no marker.
+        if (Number.isFinite(ts) && (Date.now() / 1000 - ts) > 600) return null;
+        return reason || null;
+    } catch { return null; }
+}
+// systemd auto-restart count — informational context on the automatic path only. VM-only; off the VM (no
+// systemd unit) execSync throws and we return ''. Its reset semantics are fuzzy, so it's raw context, not
+// something we interpret as crash-vs-fresh.
+function restartContext() {
+    try {
+        // execFileSync (no shell) — the args are static anyway, but this is the shell-free form.
+        const { execFileSync } = require('child_process');
+        const n = execFileSync('systemctl', ['show', 'diors-bot', '-p', 'NRestarts', '--value'],
+            { encoding: 'utf8', timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        return /^\d+$/.test(n) ? `systemd NRestarts=${n}` : '';
+    } catch { return ''; }
+}
+client.once(Events.ClientReady, (c) => {
+    const reason = readRestartReason();
+    const kind = reason === 'deploy' ? '🚀 Manual deploy (git pull + restart)'
+        : reason === 'manual' ? '🔧 Manual restart'
+        : (() => { const ctx = restartContext(); return `♻️ Automatic/unattended restart${ctx ? ` (${ctx})` : ''}`; })();
+    sendAlert('Bot online', `${kind}\nLogged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
+});
 
 // DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) — an info-level, NON-pinging alert once every 24h so a
 // long, quiet uptime is proven-alive rather than merely assumed. The other alerts only fire on
@@ -609,7 +650,8 @@ client.on('interactionCreate', async interaction => {
     if ((interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) && interaction.customId) {
         const MANAGE_CUSTOM_ID_PREFIXES = [
             'mng_', 'modal_', 'add_loadout_', 'edit_loadout_', 'edit_calendar_', 'edit_draw_', 'add_draw_',
-            'autobuild_' // /autobuild's review-card buttons + edit modal (2026-07-19) -- same admin-only lock
+            'autobuild_', // /autobuild's review-card buttons + edit modal (2026-07-19) -- same admin-only lock
+            'alerts_' // /alerts panel buttons (export/explain/back/page) (2026-07-20) -- admin-only, auto-gated here
         ];
         if (MANAGE_CUSTOM_ID_PREFIXES.some(prefix => interaction.customId.startsWith(prefix))) {
             const { ALLOWED_ADMIN_ID } = require('./commands/manage');
@@ -1149,6 +1191,33 @@ client.on('interactionCreate', async interaction => {
     // --- STEP 6.4: BUTTON INTERCEPTORS ---
     // ==========================================
     if (interaction.isButton()) {
+
+        // --- /alerts PANEL (admin-only; already auto-gated by the centralized `alerts_` guard above) ---
+        // Export: a FRESH ephemeral message carrying the .txt, so the panel itself is left untouched.
+        if (interaction.customId === 'alerts_export') {
+            await interaction.deferReply({ flags: 64 });
+            const { buildAlertExport } = require('./utils/alertStore');
+            const text = await buildAlertExport();
+            const stamp = new Date().toISOString().slice(0, 10);
+            return interaction.editReply({ content: '📄 Alert log export:', files: [{ attachment: Buffer.from(text, 'utf-8'), name: `dior-alerts-${stamp}.txt` }] });
+        }
+        // Explain <-> Back: re-render the SAME panel message between its main + explainer views. sendV2Payload
+        // patches @original (keeps the message's own ephemerality — Discord ignores flag changes on edit).
+        if (interaction.customId === 'alerts_explain' || interaction.customId === 'alerts_back') {
+            await interaction.deferUpdate();
+            const { buildAlertsPanel } = require('./commands/alerts');
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            const view = interaction.customId === 'alerts_explain' ? 'explain' : 'main';
+            return sendV2Payload(interaction, await buildAlertsPanel({ view }));
+        }
+        // Pagination through the recent-alert list (custom_id encodes the target page, stateless).
+        if (interaction.customId.startsWith('alerts_page_')) {
+            await interaction.deferUpdate();
+            const { buildAlertsPanel } = require('./commands/alerts');
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            const page = parseInt(interaction.customId.replace('alerts_page_', ''), 10) || 0;
+            return sendV2Payload(interaction, await buildAlertsPanel({ page, view: 'main' }));
+        }
 
         // --- AUTOBUILD: CONFIRM ---
         if (interaction.customId.startsWith('autobuild_confirm_')) {

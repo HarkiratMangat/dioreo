@@ -773,6 +773,50 @@ xlsx findings) — pure subtraction, no new exposure.
 
 ---
 
+## 2026-07-20 (later) — The alert log, and three process misses caught before the build even started
+
+This session was handed a spec: build the "webhook alerting heavier half" (per-alert IDs + a downloadable
+log + an explainer) bundled with a new admin `/status` command. Two things reshaped it before a line of
+feature code got written.
+
+First, **Harkirat de-scoped `/status` on the spot** — "unsure of its usability at the moment, don't want
+to spend time on it right now." Good call: it un-bundled cleanly, and the alert store I was about to build
+is exactly what a future `/status` would read from anyway, so nothing was lost. The design also quietly
+dodged the handoff's biggest worry — that the bot's systemd user couldn't read its own journal without a
+permissions tweak — because the bot knows its *own* gateway state directly (`client.ws`) and the 1h error
+count can come from the alert store, so `/status` never actually needed journald at all. Noted for whenever
+it's built.
+
+Second, and more instructive: **Harkirat called out a pattern of recent sloppiness**, and he was right on
+all three counts. (1) The `/rename` string + model recommendation had silently stopped appearing on recent
+Sonnet sessions. Verified why: it's a *behavioral* convention, not hook-enforced — the SessionStart hook
+only injects a file, model-agnostically; actually producing the recommendation rides entirely on the model.
+So it decays exactly when the model is weaker or a big custom prompt splits attention. Fix: a ⚡ FIRST
+ACTION banner at the very top of `SESSION-START.md` (which the hook injects first), so the instruction is
+in front of every session regardless of model. (2) A notes-file item about a MarkEdit Return-key regression
+had been discussed and deferred in a *prior* session — but that session never recorded the decision, so
+this session read a bare unmarked bullet and confidently announced it as "genuinely new." That framing was
+my own error stacked on the prior lapse. Searched memory/deferred-items/DEVLOG/changelog — zero record,
+confirming the drop — then annotated the notes item and filed it to deferred-items' Active Bugs so it can't
+resurface as noise again. Two lessons banked: don't assert "new" from an unannotated item, and record a
+defer/deprioritize decision the same turn it's made (the "document isn't only push-triggered" rule, applied
+to in-chat decisions).
+
+The build itself was uneventful in the good way. A design pass settled every fork with Harkirat (UTC ids,
+30d/1000 retention, escalating uptime, a `deploy.sh` marker for manual-vs-auto restart), then straight
+execution: two models (`AlertLog` + an atomic `AlertCounter`, because a `count()+1` id would race a
+same-second crash burst into a unique-index collision), `utils/alertStore.js` for the store + `/alerts`
+read helpers, a one-line independent fire-and-forget wired into `sendAlert` (kept fully decoupled from the
+webhook POST so a DB outage can't swallow an alert and vice versa — a DB failure is *itself* an alert), and
+the admin `/alerts` panel. The one genuinely useful find came from *reading the actual tracker* rather than
+just the handoff: `deferred-items.md` had folded three more specifics into this feature (the "reconnecting"
+reword, an exact escalating-uptime spec, and manual-vs-auto restart labeling) that the handoff never
+mentioned. Surfacing those — and building them — is the difference between doing the assignment and doing
+the work. Everything verified offline against live Mongo (id atomicity, uptime tiers, panel build under the
+40-component cap, full roundtrip); the live Discord test is the one thing that has to wait for a deploy.
+
+---
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.

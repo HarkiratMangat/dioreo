@@ -69,12 +69,14 @@ message, View Colors download buttons, `/manage` `section`→`data_for`) — see
 - **Richer in-bot diagnostic logging** (filed 2026-07-18) — so a failure points at exactly which component
   broke and why (distinct from the webhook alerting heavy-half below and the v3 DB-change audit log).
 - **Admin `/status` command** (filed 2026-07-18) — VM health/metrics (gateway state, RAM/CPU, restart count)
-  surfaced in-bot, built on `scripts/vmstatus.sh` / `vmpeaks.sh`.
+  surfaced in-bot, built on `scripts/vmstatus.sh` / `vmpeaks.sh`. **Un-bundled from the webhook work
+  2026-07-20** (Harkirat's call — unsure of its usability right now); still deferred as its own session.
 - **`/manage` per-page accent colors** (filed 2026-07-18) — native command colours for draws/calendar/patch
   notes pages; red/blue for MP/DMZ loadouts; none for Season End (direct modal open).
-- **Webhook alerting — heavy half** (own session, Opus 4.8 high) — per-alert unique IDs + a downloadable
-  detailed text-log export; needs a persistent alert store + an export surface. The light half (4-level
-  severity, `<t:>` timestamps, "-1ms" fix) shipped in v2.20.0.
+- ~~**Webhook alerting — heavy half**~~ — **BUILT 2026-07-20, in Proposed v2.26.0 below** (not yet
+  pushed). Per-alert IDs + a downloadable text-log export + a plain-language explainer, via a Mongo alert
+  store and the new admin `/alerts` command; plus the folded-in legibility fixes (escalating uptime,
+  "Reconnecting to Discord" reword, manual-vs-auto restart labeling). The light half shipped in v2.20.0.
 
 #### v3 (next MAJOR — pre-release track)
 Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept out of the summary
@@ -994,7 +996,38 @@ migration; the whole feature is a moderate bump, not a minor one). Caught when H
 this exact gap being noticed and then left unfixed — see the working agreement on what "document"
 actually means: fix a found gap, don't just flag it and move on when it's in scope to correct.
 
-### Proposed: v2.25.1
+### Proposed: v2.26.0
+*(Was v2.25.1 while only housekeeping was staged; folded up to a MODERATE bump the moment the alert-log
+feature below landed here — one push, one version.)*
+
+**Persistent alert log + `/alerts` command** (Claude, 2026-07-20) — NOT yet pushed/deployed. Delivers the
+"webhook alerting, heavier half" roadmap item (per-alert IDs + downloadable log + explainer) plus the 3
+legibility specifics folded into it. `/status` was **un-bundled** from this work and stays deferred on its
+own (Harkirat's call — unsure of its usability right now).
+- **Every alert is now persisted to Mongo** (`models/AlertLog.js`) with a short, human-referenceable ID —
+  `MMMDD-NN` on the UTC day, e.g. `Jul20-03` ("the 3rd alert on Jul 20"). IDs are generated race-free via
+  an atomic per-day counter (`models/AlertCounter.js`) so a same-second crash burst can't collide.
+  Retention is bounded: older than 30 days OR beyond a 1000 hard cap, pruned ≤1/hour.
+- **`utils/alertStore.js`** owns all of it (record/prune + the `/alerts` read helpers), keeping
+  `alertWebhook.js` lean. The store write is an **independent fire-and-forget** from the Discord POST —
+  neither awaits the other — so a Mongo outage can't stop an alert reaching Discord (a DB failure is
+  itself an alert), and a Discord outage can't stop the log. `sendAlert` stays synchronous / never-throws /
+  never-blocks; the store just mirrors what actually got sent (post-throttle), so it's naturally bounded.
+- **New admin-only `/alerts` command** — a Components V2 panel: a severity summary (counts for last 24h /
+  7d + the last error's ID & time), a paginated newest-first list of recent alerts (each showing its ID),
+  an **Export Log** button (replies with a `.txt` fuller than the embed), and a **"What alerts mean?"**
+  explainer subpage. Every `alerts_` component is auto-gated by index.js's existing centralized admin lock.
+- **Escalating uptime format** in every alert footer (was raw minutes like `730m`): always the top two
+  units — `42Min` → `3H 42Min` → `2D 22H` → `1W 3D` → `1M 3W` → `1Y 2M` (minutes shown as `Min` so a bare
+  `M` is unambiguously months). `utils/alertStore.js`'s `formatUptime()`.
+- **"Gateway reconnecting" reworded to "Reconnecting to Discord"** — clarifies the bot *process* is fine and
+  only the gateway websocket dropped; deliberately NOT "restarting" (which would falsely imply a crash).
+- **Manual-vs-automatic restart labeling.** New VM-side `scripts/deploy.sh` writes a gitignored
+  `.restart-reason` marker right before restarting; the bot reads + consumes it on boot, so the "Bot
+  online" alert now reads **🚀 Manual deploy** / **🔧 Manual restart** / **♻️ Automatic/unattended restart**
+  (with `systemd NRestarts` as context) instead of a generic "Bot online" for every start. A stale marker
+  (>10 min) is ignored. Using `deploy.sh` is now the deploy path (replaces the raw
+  `git pull && systemctl restart` sequence) — a bare `systemctl restart` correctly shows as automatic.
 
 **Housekeeping + `/manage` accent colors** (added by Claude, 2026-07-20) — committed, not pushed
 - Deleted 2 stale settings backups: `.claude/settings.local.json.bak-20260715-110452` and

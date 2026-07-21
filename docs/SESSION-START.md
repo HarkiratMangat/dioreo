@@ -1,5 +1,14 @@
 # Session-start prompt — Dior's Builds
 
+> ## ⚡ FIRST ACTION THIS SESSION — do this in your opening message, before anything else
+> Output, proactively (NOT only when asked): **(1)** a ready-to-paste `/rename` string in the format
+> `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus4.8-H · Webhook alerts · Jul 20`), and **(2)** a
+> one-line best **model + single effort level** recommendation for this session's work — and on a large
+> opening batch, a short "defer these to their own session" list (each with its own model+effort). This is
+> a standing non-negotiable (`feedback_suggest_model_switch` memory) that has **silently degraded on recent
+> sessions** because nothing structurally enforced it — this banner is the backstop. A hook can't *compute*
+> the recommendation, only surface this reminder, so actually doing it is on you. Full spec below + in memory.
+
 **This file is auto-loaded into every session by the `SessionStart` hook** in
 `.claude/settings.local.json` — it does not need pasting. `user_working_agreement.md` points here as
 the single source; it is NOT mirrored there, so edit this file directly.

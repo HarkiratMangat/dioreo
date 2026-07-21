@@ -162,9 +162,14 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   → auto-restarts on crash AND on VM reboot. Logs → journald (`sudo journalctl -u diors-bot`). Installed
   on the VM: Node 24, npm, git, **ffmpeg** (system binary for `utils/stillFrame.js`). Secrets live in
   `~/diors-builds/.env` (scp'd from the Mac; includes `LOG_WEBHOOK_URL`).
-- **Deploy = git-based (the new "push"):** `git push origin main` → on the VM `cd ~/diors-builds && git
-  pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. **A `git push` alone does NOT
-  update the VM.** No auto-deploy (the VM is stable; not needed). See [[feedback_push_means_full_cycle]].
+- **Deploy = git-based (the new "push"):** `git push origin main` → on the VM run **`./scripts/deploy.sh`**
+  (added 2026-07-20; does `git pull` → writes the `.restart-reason` marker → `sudo systemctl restart
+  diors-bot` → `vmstatus.sh`) → verify. `./scripts/deploy.sh manual` restarts WITHOUT pulling (e.g. after
+  an `.env` change). The old raw `cd ~/diors-builds && git pull && sudo systemctl restart diors-bot` still
+  works, but skipping deploy.sh means the "Bot online" alert can't label the restart as a deliberate deploy
+  (it'll correctly show as "automatic/unattended" — see the alert restart-labeling note below). **A `git
+  push` alone does NOT update the VM.** No auto-deploy (the VM is stable; not needed). See
+  [[feedback_push_means_full_cycle]].
 - **Repo went PRIVATE 2026-07-18** (was public; Harkirat's call, unrelated to any security incident) —
   this broke the VM's `git pull`, which had been pulling anonymously over a plain `https://github.com/...`
   remote (worked fine on a public repo, silently requires auth the moment it isn't). Fixed with a
@@ -199,20 +204,45 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
     on boot ("Bot online" already covers startup, and a restart resets the timer but emits its own boot
     ping, so no health gap is left uncovered).
     - **Severity is 4 levels** (reshaped 2026-07-17): `info`🟢 (Bot online / Gateway resumed / heartbeat),
-      `caution`🟡 (Gateway reconnecting — transient/self-recovering), `warn`🟠 (Gateway disconnected —
+      `caution`🟡 (Reconnecting to Discord — transient websocket blip, self-recovering; reworded from
+      "Gateway reconnecting" 2026-07-20 so it can't read as "restarting"), `warn`🟠 (Gateway disconnected —
       lost), `error`🔴 (crash / uncaught / DB failure / shard error). **Pings fire on `warn` + `error`
       only** (`shouldPing = opts.ping ?? (level==='error' || level==='warn')`); yellow/green never ping.
       Every alert body carries a proper Discord `<t:unix:F> · <t:unix:R>` timestamp (in the DESCRIPTION —
       Discord doesn't parse `<t:>` in an embed footer). The "Bot online" gateway ping shows "measuring…"
       when `client.ws.ping` is still -1 (it's -1 until the first gateway heartbeat, which lands after
       ClientReady) instead of the old nonsensical "-1ms" — see `formatPing()`.
-    - **Deferred to its own session (Opus 4.8 high):** per-alert unique IDs + a downloadable detailed
-      text-log export, and a plain-language "what does each alert mean" explainer. Needs a persistent
-      alert store + an export surface — real design, intentionally not in this light pass.
-      **Queued 2026-07-20 (not yet started)** — bundled together with the admin `/status` command
-      below into one Opus 4.8-high handoff, since `/status` would want to surface some of the same
-      alert-store/metrics data this needs anyway. See the `/status` bullet in "Next planned work" for
-      the other half.
+    - **SHIPPED 2026-07-20 (v2.26.0) — persistent alert log + `/alerts`.** Every alert `sendAlert` posts is
+      now persisted to Mongo (`models/AlertLog.js`) with a short human-referenceable id — `MMMDD-NN` on the
+      **UTC** day, e.g. `Jul20-03` ("the 3rd alert on Jul 20") — generated race-free via an atomic per-day
+      counter (`models/AlertCounter.js`, `findOneAndUpdate($inc)`; a `count()+1` would collide a same-second
+      crash burst on the unique `alertId`). `utils/alertStore.js` owns the store + read helpers, keeping
+      `alertWebhook.js` lean. **The store write is an INDEPENDENT fire-and-forget from the webhook POST**
+      (neither awaits the other) — a Mongo outage can't block a Discord alert (a DB failure is itself an
+      alert) and vice versa; `sendAlert` stays sync / never-throws / never-blocks and just mirrors what was
+      actually sent (post-throttle), so the store == the channel and stays naturally bounded. Because of
+      that decoupling the id is deliberately NOT on the live embed (that would couple it to a Mongo
+      round-trip); it lives in `/alerts` + the export. Retention is hybrid: older than **30 days** OR beyond
+      a **1000** hard cap, pruned ≤1/hour. The admin-only **`/alerts`** command (`commands/alerts.js`,
+      auto-gated by adding `alerts_` to index.js's centralized panel-guard prefix list) is a V2 panel:
+      severity summary (24h/7d counts + last error id/time), a paginated newest-first recent list (each
+      with its id), an **Export Log** button (a `.txt` fuller than the embed, via `buildAlertExport()`), and
+      a **"What alerts mean?"** explainer subpage. Verified offline against live Mongo (id atomicity,
+      `formatUptime` tiers, panel build ≤40 components, roundtrip) — NOT yet live-tested in Discord.
+    - **Escalating uptime format (2026-07-20)** — `utils/alertStore.js`'s `formatUptime()`, in every alert
+      footer (was raw `up 730m`): always the top TWO units — `42Min` → `3H 42Min` → `2D 22H` → `1W 3D` →
+      `1M 3W` → `1Y 2M`. Minutes render as `Min` so a bare `M` is unambiguously months (Harkirat's tier-1
+      example wrote `M` for minutes but his own unit legend says `M`=months, so `Min` won). Fixed unit
+      sizes: week 7d, month 30d, year 365d.
+    - **Manual-vs-automatic restart labeling (2026-07-20).** The bot can't natively know WHY systemd started
+      it, so `scripts/deploy.sh` (the VM-side deploy — see the Deploy bullet above) writes a gitignored
+      `.restart-reason` marker right before restarting; index.js's `readRestartReason()` reads + CONSUMES it
+      on `ClientReady` (only if fresh, <10 min, so a stale marker can't mislabel a later crash-restart). The
+      "Bot online" alert now reads **🚀 Manual deploy** / **🔧 Manual restart** / **♻️ Automatic/unattended
+      restart** (with `systemd NRestarts` as raw context on the automatic path — its reset semantics are
+      fuzzy, so not over-interpreted). No marker => automatic (a crash-recovery, OR a bare `systemctl
+      restart` that skipped deploy.sh). A manual `systemctl stop` can't self-alert (process is down) — an
+      accepted gap; the marker distinguishes the meaningful case (deliberate restart vs crash-recovery).
 - **Render (retired):** service `srv-d850b2og4nts73fhpfog` **SUSPENDED** (not deleted). Keep as fallback
   until ~2026-07-24, then delete once GCP proves reliable. Do NOT deploy to it.
 - **Ops Agent — INSTALLED 2026-07-17** (was deferred; the earlier install-script 404 was transient — the
@@ -2610,10 +2640,15 @@ architecture section's `/manage` note. Still open from this batch:
 - `[P2 · S]` **Admin `/status` command** — surface VM health/metrics in-bot (a mini ping test: is the bot
   holding up, gateway state, RAM/CPU, restart count), admin-only, building directly on `scripts/vmstatus.sh` /
   `scripts/vmpeaks.sh`, which already compute all of this — so checking the bot doesn't require asking Claude
-  to run a script. (Notes item L60.) **Queued 2026-07-20** — bundled with the webhook-alert improvements
-  (per-alert IDs / log export / explainer, see "Deployment & Ops (GCP)" above) into one Opus 4.8-high
-  handoff, since Harkirat wants `/status` to also surface some of those same alert-store metrics — not
-  yet started.
+  to run a script. (Notes item L60.) **UN-BUNDLED 2026-07-20 and still deferred** — it was originally
+  queued alongside the webhook-alert improvements, but when that session started Harkirat chose to defer
+  `/status` on its own ("unsure of its usability at the moment, don't want to spend time on it right now").
+  The webhook half **shipped without it** (v2.26.0, see "Deployment & Ops (GCP)" above — the alert store
+  now exists, so a future `/status` CAN read severity counts / last-error from `utils/alertStore.js`'s
+  `getAlertSummary()` if it's ever built). Note the earlier plan for `/status` to read historical CPU/RAM
+  peaks needs the keyless-ADC + Cloud Monitoring path (see `utils/visionExtract.js`'s token fetch); live VM
+  state (systemctl/gateway/RAM) needs no such thing and no journal permission (gateway state comes straight
+  off `client.ws`). Revisit as its own session if/when Harkirat wants it.
 - ~~**`/manage` accent colors**~~ — **SHIPPED 2026-07-20.** See "`/manage` per-page accent colors" under
   the Command architecture section below for what actually landed — it ended up as real sampled colors
   off the Legendary-rank and DMZ emoji assets (via the bot's own `getDominantColor()` pipeline), not

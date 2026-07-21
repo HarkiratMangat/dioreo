@@ -27,6 +27,18 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.26.0 — July 20, 2026 *(built, not yet pushed live)*
+- **New admin tool: `/alerts`.** The bot already messages Dior privately when something goes wrong (a
+  crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a
+  short ID (like `Jul20-03`), and `/alerts` lets Dior browse recent ones, download the full log as a file,
+  and read a plain-language guide to what each colour (🟢🟡🟠🔴) means.
+- **Clearer alerts.** "Bot online" now says whether it was a deliberate deploy/restart or an automatic
+  recovery; the "reconnecting" alert makes clear the bot didn't crash (just the connection blipped); and
+  how-long-it's-been-running reads naturally now (e.g. `2D 22H` instead of a raw minute count).
+- Admin-only — nothing changes for players.
+
+---
+
 ## v2.25.0 — July 20, 2026
 - **New admin tool: near-1-click loadout adding.** Submit a build screenshot and the bot reads off the
   weapon name, Gunsmith code, and attachments automatically instead of typing each one by hand — shows
