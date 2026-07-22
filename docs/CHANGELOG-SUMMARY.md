@@ -26,6 +26,15 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.31.0 — July 22, 2026
+- *Internal only — nothing players see or interact with changed.* Reorganized the project's own developer
+  documentation (the giant `CLAUDE.md` was split into focused, on-demand files) so future work stays fast
+  and well-organized. Also added behind-the-scenes cost tracking for the AI image-reading used by
+  `/autobuild` (a log line per call, so spend is easy to audit) — invisible to players; no commands, draws,
+  loadouts, or on-screen behaviour changed.
+
+---
+
 ## v2.30.2 — July 21, 2026
 - **Fixed a crash that could break whole commands.** On pages with exactly two sub-pages, the ◀ ▶ arrows
   could make Discord reject the entire message — so `/settings`, `/draws`, `/calendar`, the colour panel and

@@ -22,7 +22,8 @@ Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
   the MODERATE field, no second dot — e.g. `v2.71` meant v2.7.1, `v2.51` meant v2.5.1, `v1.61` meant
   v1.6.1; a single-decimal `v2.7` meant v2.7.0). At Harkirat's request these were retroactively renumbered
   to explicit `vMAJOR.MODERATE.MINOR` so the whole file reads in one consistent scheme — no bot code or git
-  tags were affected (pre-`v2.17.3` versions were never tagged; see the version-tagging note in CLAUDE.md).
+  tags were affected (pre-`v2.17.3` versions were never tagged; see the version-tagging note in
+  `docs/reference/deployment-and-ops.md`).
   Fixing the notation also surfaced and corrected one pre-existing ordering slip (v2.7.1, a `.1` follow-up,
   had sat below v2.7.0 — now above it, matching every other pair and the newest-first order).
 
@@ -1228,4 +1229,46 @@ Staging area for work that's committed locally but hasn't gone live yet, so it h
 number. On push, graduate this content up into a real numbered entry (newest-first, at the TOP of the
 list above) and reset this section to empty.
 
-*(Nothing currently unreleased — everything committed is live on the VM.)*
+### v2.31.0 (proposed) — CLAUDE.md modularized into path-scoped rules + vision cost logging (2026-07-22)
+*Two things ship together in this one push (Harkirat's call, to get everything live and in sync): the
+CLAUDE.md modularization (the bulk of it, docs/architecture only) **and** a small pre-existing bot-code
+change from earlier the same day — per-call Vertex AI vision cost logging — that had been sitting
+uncommitted. Because real `utils/` code changed, **this push DOES require a VM redeploy** (the earlier
+draft of this entry said "docs only, no redeploy" — that was only true before the code files were folded
+in). `v2.31.0` is a MODERATE bump: a repo-wide structural change plus a new observability feature.*
+- **Root `CLAUDE.md` cut from 3,272 lines → 182** (~111k startup tokens → ~15k). It now holds only the
+  hard invariants (canonical memory path, `.env` gitignore, Cloudinary secret-logging ban,
+  user-installed-only architecture, DB schema gotcha, deploy summary, context-comments rule), a platform
+  cheat-sheet, and a 🗺️ navigation map. Everything else moved to:
+  - **13 path-scoped `.claude/rules/*.md`** (a real Claude Code feature, verified against the docs) — each
+    with a `paths:` glob so a subsystem's detail loads into context ONLY when you read a matching file.
+    Files: commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui,
+    accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions,
+    models, scripts-and-migrations.
+  - **`docs/ROADMAP.md`** (now the authoritative roadmap — was CLAUDE.md's "Next planned work"),
+    **`docs/reference/deployment-and-ops.md`** (stack + GCP + version tagging), **`docs/reference/known-issues.md`**,
+    **`docs/reference/design-history.md`**.
+- **Zero content loss** — a move + index + inline cleanup, verified by section→destination ledger, line
+  accounting (3,272 → 3,618 total across the new files, the delta being added frontmatter/intros/nav-map),
+  and a 22-phrase subsystem spot-check. All 13 rule files' YAML frontmatter parse-validated.
+- **All cross-references rewired**: ~30 dangling "see X above/below" refs re-pointed across the new files;
+  `docs/README.md`, `docs/SESSION-START.md`, and ~8 operative memory pointers updated (roadmap authority →
+  `docs/ROADMAP.md`); historical changelog/DEVLOG/plan refs resolve via the root nav-map redirect.
+- New memory `reference_claude_md_rules_structure` + design spec
+  `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`. Also filed a concrete plan to
+  split `index.js` (3.3k lines) into `handlers/*.js` as its own future session (`docs/ROADMAP.md`).
+- Invariants deliberately kept in root because only root `CLAUDE.md` survives `/compact`; path-scoped
+  rules reload on the next matching file read. Verify with `/context`.
+- **Bundled bot-code change — Vertex AI vision cost logging** (`utils/visionExtract.js` + 3 callers,
+  written earlier 2026-07-22, folded into this push rather than left dangling): a new `logVisionCallCost()`
+  emits one structured `console.log` line (`vision_call_cost` — taskName, model, region, input/output
+  tokens, estimated USD) per extraction, captured by journald on the VM. Added after a ~$20 GCP spike whose
+  root cause took two days to trace because Cloud Monitoring only reports aggregate per-model/region/day
+  token totals, not per-call detail; this closes that gap with zero new dependency. The spike itself was
+  diagnosed as the 2026-07-20 Antigravity migration/debugging session hammering the `global` endpoint (~16M
+  input tokens in one day), NOT this bot's production path — decision recorded in-file to **stay on
+  `gemini-3.5-flash`, not upgrade to `gemini-3.6-flash`** (no published pricing, `global`-only region, and
+  its "fewer turns" efficiency gain doesn't apply to a single-shot image→JSON call). Callers
+  (`autobuildPipeline`, `backfillLoadoutSlots`, `test-vertex-extract`) now pass a `taskName` for
+  attribution. The cost logger is wrapped in try/catch so it can never break an extraction; production
+  `/autobuild` behavior is otherwise unchanged.

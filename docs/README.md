@@ -15,7 +15,10 @@ kind of content lives and who's responsible for keeping it current.
 
 | File | What it is | When you touch it | Audience |
 |---|---|---|---|
-| **`../CLAUDE.md`** (repo root) | **The deepest source of truth** — architecture, design decisions, every "why". ~3,000 lines with its own 🗺️ Table of Contents. | Every time you change how the bot is built or make a non-obvious decision. Keep the ToC in sync when adding/removing a top-level `##`. | Claude (primarily), Harkirat |
+| **`../CLAUDE.md`** (repo root) | **Invariants + navigation map** (~180 lines, modularized 2026-07-22). The hard safety/architecture rules that must load every session, a platform cheat-sheet, and the 🗺️ nav map pointing to where each subsystem's detail lives. | When an invariant changes, or a subsystem's home moves. Keep the nav-map table in sync when you add/remove a rule file. | Claude (primarily), Harkirat |
+| **`../.claude/rules/*.md`** | **Path-scoped subsystem detail** — the deep "why" for each subsystem, loaded into context ONLY when you read a matching file (`paths:` frontmatter glob). 13 files (commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui, accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions, models, scripts-and-migrations). | When you change how that subsystem is built. Update the matching rule (the old "update CLAUDE.md" habit now splits by area). | Claude |
+| **`ROADMAP.md`** | **The authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). Moved out of CLAUDE.md 2026-07-22. The `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY) sections are synced VIEWS of it. | Every roadmap/planning change — sync all three. | Claude, Harkirat |
+| **`reference/`** | On-demand reference docs: `deployment-and-ops.md` (stack, GCP VM/systemd/alerting, version tagging), `known-issues.md`, `design-history.md`. Read when ops/history detail is needed. | When ops setup or a flagged issue changes. | Claude |
 | **`CHANGELOG.md`** | **Detailed release log** — one entry per real push, newest-first, incl. internal/housekeeping. Also holds the `🔮 Planned & Upcoming` roadmap (synced from CLAUDE.md) and, at the very bottom, `📋 Unreleased` for committed-but-unpushed work. | Every push (or committed work → Unreleased). Graduate Unreleased → a numbered entry when it ships. | Claude, Harkirat |
 | **`CHANGELOG-SUMMARY.md`** | **Plain-language "What's New"** — player-facing. Represents **every version number** (ops/docs-only ones folded into a version range or a one-line note, so none is ever skipped), but only real user-facing changes get a full bullet. Holds the `🔜 Coming soon` roadmap view. | Same push as CHANGELOG.md; add a friendly line for user-facing changes, a range/one-liner otherwise. | Harkirat / end-users |
 | **`DEVLOG.md`** | **The narrative journey & lessons** — the reasoning, dead-ends, root causes, and "note to future self." Part A = chronological story; Part B = thematic lessons ledger. Has its own ToC. | When a session produces real reasoning, a discovery, a walk-back, or a notable bug hunt. Not every commit. | Claude + Harkirat (us) |
@@ -36,20 +39,23 @@ kind of content lives and who's responsible for keeping it current.
 
 ## How they relate (don't duplicate — sync)
 
-- **`CLAUDE.md` is the source of truth for the roadmap.** Its "Next planned work" is authoritative; the
-  `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY) sections are *synced views* of it — update
-  all three together, or they silently drift (that's a real records bug, not cosmetic).
+- **`docs/ROADMAP.md` is the source of truth for the roadmap** (moved out of CLAUDE.md 2026-07-22). Its
+  v2–v5 lists are authoritative; the `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY)
+  sections are *synced views* of it — update all three together, or they silently drift (a real records bug).
 - **The notes file feeds the roadmap, it doesn't hold it.** A feature idea lands in the notes as intake, gets
-  FILED into CLAUDE.md + the changelog roadmaps, then LEAVES the notes file. The roadmap is never duplicated in
-  the notes file.
+  FILED into `docs/ROADMAP.md` + the changelog roadmaps, then LEAVES the notes file. The roadmap is never
+  duplicated in the notes file.
 - **Memory holds the rules; the docs hold the record.** A workflow lesson → memory. A shipped change → changelog.
-  The "why" behind the code → CLAUDE.md. The story of getting there → DEVLOG.
+  The "why" behind the code → CLAUDE.md's invariants + the matching **`.claude/rules/*.md`**. The story of
+  getting there → DEVLOG.
 
 ## Responsibilities / chores checklist (per push)
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per push, not per commit.
 2. `CHANGELOG.md`: a numbered entry (or `Unreleased` if committed-not-pushed).
 3. `CHANGELOG-SUMMARY.md`: a friendly line (user-facing) or a range/one-liner (ops/docs-only) — never skip the number.
-4. `CLAUDE.md`: update any design/architecture note the change affects; keep the ToC current.
+4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change
+   affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md).
+   Keep the root nav-map table current if you add/remove a rule file.
 5. `DEVLOG.md`: a narrative entry if the work had real reasoning/discovery.
 6. Memory: update any rule the session established or corrected.
 7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**.

@@ -38,12 +38,14 @@ paste the full block after any session where something slipped.
 New session on Dior's Builds. Before anything else:
 
 1. Read ~/.claude/projects/-Applications-Diors-Builds/memory/user_working_agreement.md
-   in full (it links every other memory), treat CLAUDE.md as the deepest source of
-   truth for this repo, and skim the changelog-system memory before touching any
-   changelog or version number.
+   in full (it links every other memory). CLAUDE.md (root) holds the invariants + a 🗺️
+   navigation map; deep subsystem detail lives in path-scoped `.claude/rules/*.md` (loads
+   ONLY when you touch matching code) and `docs/` (ROADMAP, reference/ ops+history) —
+   modularized 2026-07-22, follow the root nav map to find a topic. Skim the changelog-system
+   memory before touching any changelog or version number.
    Also read `docs/diors-builds notes.md` — my central scratchpad for thoughts/plans.
-   It's raw intake, NOT source of truth (CLAUDE.md is); keep it tidy, and mark items
-   [x] implemented / [-] abandoned per its own header. See the central-notes memory.
+   It's raw intake, NOT source of truth (CLAUDE.md + the rules are); keep it tidy, and mark
+   items [x] implemented / [-] abandoned per its own header. See the central-notes memory.
    ⚠️ Canonical Diors memory = the -Applications-Diors-Builds path (read/write ONLY there).
    The harness may point you at -Applications-Claude-Code-Diors-Builds (repo-slug): its folder
    exists (transcripts) but Diors memory is NOT there — don't migrate it (fixed store =
@@ -66,19 +68,20 @@ New session on Dior's Builds. Before anything else:
        → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, errors ~0; `🔌 Shard 0
        ready`/handleBotReady are the real "connected" proof, not just "process up") → confirm exactly
        ONE instance is running (single-token; the VM is it — stop any local test run first).
-     - **Document** = updating the written record: CLAUDE.md + relevant memory files + `docs/CHANGELOG.md`
-       + `docs/CHANGELOG-SUMMARY.md` (+ a `docs/DEVLOG.md` narrative entry for a notable arc) + this
-       central notes file (mark resolved items). Whichever of these are actually relevant to what
-       changed — not a fixed checklist to run through blindly.
+     - **Document** = updating the written record: CLAUDE.md (invariants/nav) **or the matching
+       `.claude/rules/*.md`** (subsystem detail) + `docs/ROADMAP.md` (if the roadmap changed) + relevant
+       memory files + `docs/CHANGELOG.md` + `docs/CHANGELOG-SUMMARY.md` (+ a `docs/DEVLOG.md` narrative
+       entry for a notable arc) + this central notes file (mark resolved items). Whichever of these are
+       actually relevant to what changed — not a fixed checklist to run through blindly.
      - **The default assumption, unless told otherwise, is still that "push" as a spoken instruction
        means the WHOLE chain** — commit → document → push → deploy → verify live — same as the historical
        convention (see [[feedback_push_means_full_cycle]]). But any step can be explicitly held (e.g.
        "commit + push only, hold the VM deploy," which is exactly what happened for v2.22.0) — when that
        happens, say so plainly in the summary rather than letting "pushed" imply "live."
      - "Document" specifically is NOT only triggered by a push — a planning/roadmap session with NO
-       code and NO push still needs it if the roadmap or a standing rule changed: sync CLAUDE.md's
-       planned-work AND both changelog roadmap sections (sourced from it, must not drift) AND a DEVLOG
-       entry. The changelog is the one step that keeps getting skipped — don't skip it.
+       code and NO push still needs it if the roadmap or a standing rule changed: sync `docs/ROADMAP.md`
+       AND both changelog roadmap sections (sourced from it, must not drift) AND a DEVLOG entry. The
+       changelog is the one step that keeps getting skipped — don't skip it.
      See [[reference_vm_bot_commands]], [[project_deployment_migration_render_to_gcp]],
      [[feedback_push_means_full_cycle]], [[feedback_docs_at_push_time]]. Bot alerts a Discord channel
      on each (re)start + on errors.
@@ -94,13 +97,12 @@ New session on Dior's Builds. Before anything else:
      permanent, unambiguous marker once it's real. Once tagged, `git describe --tags` on any
      later commit shows exactly how many commits deep past the last real push you are, for
      free. **When backfilling a tag, cross-check CHANGELOG.md directly — don't trust commit
-     messages alone**: a first pass here missed `v2.18.1` entirely because none of its 3 bundled
+     messages alone**: a first pass once missed `v2.18.1` entirely because none of its 3 bundled
      commits (`f7b4575`/`c4b1c19`/`1600b8e`) mention "v2.18.1" in their own message; only
-     CHANGELOG.md's actual entry names which commits it covers. Backfilled tags currently:
-     `v2.17.3` (`426a444`), `v2.18.0` (`5c403a7`), `v2.18.1` (`1600b8e`). Did NOT backfill the
-     full history back to v1.0 — most earlier bumps span date-grouped CHANGELOG ranges without
-     an unambiguous 1:1 commit mapping, and a wrong permanent tag is worse than no tag. See
-     CLAUDE.md's "Version tagging" section.
+     CHANGELOG.md's actual entry names which commits it covers. **The FULL tag backfill is now DONE
+     (2026-07-21): every version `v1.0.0`→`v2.30.2` is tagged, 58 tags, zero gaps** (the earlier "no
+     clean 1:1 mapping" concern was a false premise — almost every CHANGELOG entry cites its own commit
+     hash). See the "Version tagging" reference in `docs/reference/deployment-and-ops.md`.
    • Mark chat chapters FINELY — one per distinct TOPIC (a question answered, a problem
      debugged, a small task done), NOT per broad phase; even one-edit tasks get one, and
      so do answers with no tool calls. Often ~1 per turn that raises something new.

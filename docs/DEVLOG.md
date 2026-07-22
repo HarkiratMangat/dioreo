@@ -52,6 +52,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-21 — `/autobuild`'s first live test: six findings, one shared root, a metadata question
 - 2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no
 - 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
+- 2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1525,6 +1526,53 @@ the boundary case was reasoned about instead of exercised. A one-line harness wo
 shipped. **Two:** the crash was only found because I read a number in a status line I could easily have
 skipped. "errors(1h): 9" on an otherwise-green deploy is exactly the kind of thing a rushing session waves
 off. Reading it turned a docs session into catching a day-old production outage across five commands.
+
+---
+
+## 2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction
+
+Harkirat relayed a plan Gemini had written him: split the giant `CLAUDE.md` (which was making every
+session start at ~111k tokens, 111k of them just this one file) into Claude Code's `.claude/rules/`
+system. He was explicit — don't follow it blindly, verify it, use my own richer context, come back with
+*my* plan.
+
+**The flip.** My opening instinct was that Gemini had hallucinated — `.claude/rules/` sounded like
+Cursor's `.cursor/rules/`, not a real Claude Code feature. So I said so, and then did the thing this whole
+session was supposed to be about: I checked instead of asserting. The official Claude Code memory docs say
+plainly that `.claude/rules/*.md` with `paths:` YAML frontmatter is real, native, and loads a file into
+context *only when you read a file matching its glob*. Gemini was right about the mechanism; I was wrong to
+doubt it — and the "verify before you assert" reflex cut toward correcting **me**, not the outside
+suggestion. Good reminder that the reflex isn't there to win arguments with other agents; it's there to
+stop *me* shipping a confident wrong claim.
+
+**Where my context actually earned its keep** was the three things Gemini's plan got wrong or missed, all
+of which would have caused real problems: (1) **compaction** — only root `CLAUDE.md` is re-injected after
+`/compact`; a path-scoped rule reloads only on the next matching file read, so Gemini's "slim root to
+50–100 lines" would have put hard safety invariants (canonical memory path, `.env`, the Cloudinary
+secret-logging ban, the user-installed-only architecture) somewhere a post-compaction session might not
+have loaded. Every invariant stayed physically in root. (2) Path rules only fire on reading a *code* file,
+so roadmap/ops/history — needed in planning sessions that touch no code — went to on-demand `docs/` files,
+not rules that would silently never trigger. (3) A version footgun on 2.1.206 (a bad glob breaks the Read
+tool) that Harkirat cleared mid-session by updating to 2.1.207.
+
+**The execution.** Byte-exact `sed` extraction for every moved block (no retyping = no transcription
+drift), a section→destination ledger for all 39 sections, then inline cleanup as I went — Harkirat was
+firm that "move + index" must NOT mean sideline the fixes sitting right there, so stale claims and
+cross-refs got repaired, not just relocated. The tail was the unglamorous part that actually makes it
+"seamless": ~30 dangling "see X above/below" references re-pointed across the new files (grep, categorize
+intra-file vs cross-file, fix only the cross-file ones), then `docs/README.md`, `docs/SESSION-START.md`,
+and ~8 operative memory pointers (roadmap authority → `docs/ROADMAP.md`) rewired, with a redirect
+convention so historical changelog/DEVLOG refs still resolve via the root nav map instead of being
+revisionist-rewritten. Verified zero-loss three ways: line accounting (3,272 → 3,618, the delta all
+frontmatter/intros), a 22-phrase subsystem spot-check, and YAML-parsing every rule's frontmatter.
+
+**The one I didn't do.** Harkirat also invited splitting `index.js` (3.3k lines, ~2.7k of them one
+`interactionCreate` handler). It's a genuinely good idea and I evaluated it for real — but it's a live-bot
+*code* refactor (boot test + deploy + verify), a completely different risk class from a docs reorg, and
+folding it into this session would have been the exact "too much at once" failure. So it's filed in
+`docs/ROADMAP.md` with a concrete incremental `handlers/*.js` plan and the specific risks (the crash-safety
+net, the shared-closure state, routing order) — a teed-up item, not a shrug. Result: root `CLAUDE.md`
+182 lines (from 3,272), 13 path-scoped rules, 3 reference docs, an authoritative `docs/ROADMAP.md`.
 
 ---
 
