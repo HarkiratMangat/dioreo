@@ -144,7 +144,7 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
 async function runExtraction(interaction, sourceImageUrl, explicitCategory, badgesOption) {
     let extracted;
     try {
-        extracted = await extractLoadoutFromImage(sourceImageUrl);
+        extracted = await extractLoadoutFromImage(sourceImageUrl, { taskName: 'autobuild_live' });
     } catch (err) {
         console.error('Autobuild extraction failed:', err.message);
         return interaction.followUp({ content: `❌ Couldn't extract loadout data from that image: ${err.message}`, ephemeral: true });

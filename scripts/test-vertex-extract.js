@@ -47,7 +47,7 @@ async function main() {
         console.log('🧠 Invoking Vertex AI Gemini 3.5 Flash Vision Extraction (Keyless ADC)...');
 
         const startTime = Date.now();
-        const extracted = await extractLoadoutFromImage(imageUrl);
+        const extracted = await extractLoadoutFromImage(imageUrl, { taskName: 'manual_test_script' });
         const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
         console.log('\n✨ ===== EXTRACTION RESULT ===== ✨');

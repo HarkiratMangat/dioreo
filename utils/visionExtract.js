@@ -14,6 +14,23 @@
 // current recommended model before reusing this module elsewhere; new model families ship fast (see
 // the design spec's own note on this exact choice going stale mid-session, from outdated training
 // data, the first time it was picked).
+// Claude (2026-07-22): evaluated switching to gemini-3.6-flash (released ~2026-07-21) after a ~$20
+// GCP cost spike prompted a billing investigation. Root cause of the spike was NOT this pipeline's
+// normal usage -- Cloud Monitoring's token_count metric showed ~16.3M input tokens burned in a single
+// day (2026-07-20) against the `global` endpoint specifically, ~16x every other day/model/region
+// combined (the legitimate 132-loadout bulk backfill on 07-21, on the production `us` endpoint, was
+// only ~230K input + 207K output tokens -- a few cents, exactly as estimated). The `global`-endpoint
+// spike lines up with the Antigravity migration/debugging session from 2026-07-20 (see this file's
+// next comment block, and docs/DEVLOG.md's 2026-07-20 entry) -- almost certainly a debugging/retry
+// loop hammering generateContent while chasing the endpoint-404/role-format issues, not a code path
+// this bot runs in production. No stray process was found still running, so this isn't an ongoing
+// leak. Decision: STAY on gemini-3.5-flash, not gemini-3.6-flash, for now -- gemini-3.6-flash's own
+// docs (fetched 2026-07-22) only list `global` as a supported endpoint/region (no `us`/`eu` Multi-
+// Region yet), no pricing table was published as of this writing, and its stated efficiency gain is
+// "fewer turns" on multi-step/agentic workflows -- this pipeline is a single-shot image-to-JSON call,
+// so that specific saving doesn't apply here. Revisit once gemini-3.6-flash has published pricing and
+// a `us`/`eu` region option (avoids repeating the exact endpoint-availability confusion that caused
+// this incident) -- don't switch models again without checking both first.
 // Antigravity (2026-07-20): Migrated to GCP Vertex AI using keyless Application Default Credentials (ADC)
 // to resolve Google AI Studio prepayment limits and draw from the GCP billing credits.
 // Claude (2026-07-20): fixed several issues found after reviewing Antigravity's changes -- see
@@ -25,6 +42,55 @@
 // prompt fix); and attachments now also extract each slot's on-screen label (e.g. "Muzzle", "Barrel")
 // for Cloudinary structured metadata -- a requirement Antigravity's session never implemented at all.
 const { execSync } = require('child_process');
+
+// Claude (2026-07-22): per-call token/cost logging, added after the $20 spike investigation above.
+// Cloud Monitoring's token_count metric only reports aggregate totals per model/region/day -- it has
+// no per-call detail, so diagnosing WHICH call was responsible for a spike took two days of forensic
+// digging (see this file's dated comment above) instead of a single log line. This closes that gap.
+// Google Cloud Assist recommended a full Cloud Logging (winston/SDK) middleware that also logs the
+// exact prompt text; adapted rather than followed literally:
+//  - Token counts + computed cost: implemented below, via a plain structured console.log line --
+//    journald already captures every console line on the VM (`sudo journalctl -u diors-bot`, see
+//    CLAUDE.md's "Deployment & Ops" section), so this needs zero new dependency and zero new GCP
+//    service. Adding @google-cloud/logging (or winston+a GCP transport) for a bot at this call volume
+//    (a few loadouts a week) would be the kind of unused-dependency weight this repo's own housekeeping
+//    passes have specifically gone back and removed elsewhere (see CLAUDE.md's "unused mongodb/express
+//    dependency" cleanup) -- console.log->journald already fully covers the "searchable structured log"
+//    need at this scale.
+//  - Exact prompt text: deliberately NOT logged. The "prompt" here is a full base64-encoded screenshot
+//    (often hundreds of KB) -- logging it verbatim would balloon every log line for no debugging value
+//    beyond what the token count already conveys, and would mean re-persisting a copy of the user's
+//    uploaded image data outside of Cloudinary (which already stores it, once a build is confirmed) for
+//    no real benefit.
+// Pricing below confirmed live 2026-07-22 (cloud.google.com/vertex-ai/generative-ai/pricing) -- this is
+// an estimate for observability, not a billing source of truth; re-check these numbers if Google revises
+// gemini-3.5-flash's price sheet (unlikely to happen silently, but this constant can't self-update).
+const PRICING_PER_1M_TOKENS = {
+    global: { input: 1.50, output: 9.00 },
+    regional: { input: 1.65, output: 9.90 }, // 'us' / 'eu' Multi-Region endpoints (this pipeline's default)
+};
+
+function logVisionCallCost(taskName, gcpLocation, gcpModel, usageMetadata) {
+    try {
+        const rates = gcpLocation === 'global' ? PRICING_PER_1M_TOKENS.global : PRICING_PER_1M_TOKENS.regional;
+        const inputTokens = usageMetadata?.promptTokenCount || 0;
+        const outputTokens = usageMetadata?.candidatesTokenCount || 0;
+        const estimatedCostUsd = (inputTokens / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output;
+        console.log(JSON.stringify({
+            log: 'vision_call_cost',
+            taskName: taskName || 'unspecified',
+            model: gcpModel,
+            location: gcpLocation,
+            inputTokens,
+            outputTokens,
+            estimatedCostUsd: Number(estimatedCostUsd.toFixed(6)),
+            timestamp: new Date().toISOString(),
+        }));
+    } catch (e) {
+        // Never let cost logging break the actual extraction -- same "logging must never affect the
+        // thing it observes" rule utils/alertWebhook.js already documents for Discord alerting.
+    }
+}
 
 const MODEL = 'publishers/google/models/gemini-3.5-flash';
 const DEFAULT_PROJECT_ID = 'gen-lang-client-0549308254';
@@ -106,7 +172,7 @@ async function getGcpAccessToken() {
 // `maxAttachments` (default 5) -- how many attachment slots to extract. /autobuild always uses the
 // default 5 (MP), so its behavior is unchanged; the DMZ slot backfill passes 9. Kept as an option
 // rather than a separate function so there's still ONE extraction path to maintain.
-async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5 } = {}) {
+async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5, taskName } = {}) {
     const accessToken = await getGcpAccessToken();
     const gcpProjectId = process.env.GCP_PROJECT_ID || DEFAULT_PROJECT_ID;
     const gcpLocation = process.env.GCP_LOCATION || DEFAULT_LOCATION;
@@ -166,6 +232,9 @@ async function extractLoadoutFromImage(imageUrl, { maxAttachments = 5 } = {}) {
     }
 
     const data = await res.json();
+    // Logged as soon as we have a response, regardless of what happens to the text below -- tokens are
+    // already spent the moment Vertex AI replies, whether or not the JSON that follows parses cleanly.
+    logVisionCallCost(taskName, gcpLocation, gcpModel, data?.usageMetadata);
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('Gemini response had no extractable text content');
 

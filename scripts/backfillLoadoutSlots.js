@@ -82,7 +82,7 @@ async function processOne(doc) {
     const maxAttachments = doc.mode === 'DMZ' ? 9 : 5;
     let vision;
     for (let attempt = 1; attempt <= 3; attempt++) {
-        try { vision = await extractLoadoutFromImage(url, { maxAttachments }); break; }
+        try { vision = await extractLoadoutFromImage(url, { maxAttachments, taskName: 'backfill_slots_bulk' }); break; }
         catch (e) {
             if (attempt === 3) return { doc, status: 'vision-fail', reason: e.message };
             await new Promise(r => setTimeout(r, 1500 * attempt));
