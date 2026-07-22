@@ -1055,6 +1055,47 @@ never had because it "read nicely," which is exactly the kind of unrequested emb
 faithful port into a wrong one. This whole session became a case study in the gap between *looks done* and
 *is done* — code, docs, and sync all three.
 
+## 2026-07-22 — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
+
+The handoff was a docs/memory audit. Step one was mechanical: push the already-committed v2.30.1
+(the Advanced-page fix), deploy it, verify. I pushed, ran `deploy.sh`, the VM fast-forwarded, and the boot
+log showed the clean `handleBotReady()` markers. Done — except `vmstatus.sh` also printed `errors(1h): 9`,
+and I'd promised myself (and Harkirat had *demanded*) no shrugging off anything I noticed.
+
+So I actually read the errors instead of assuming they were leftover noise. All nine were the same stack:
+`DiscordAPIError[50035] Invalid Form Body — components[0].components[9].components[2].custom_id
+[COMPONENT_CUSTOM_ID_DUPLICATED]`, thrown from `draws.js`. They sat *above* the "Stopping diors-bot" line,
+so they were the OLD process, pre-deploy — nothing to do with v2.30.1. A separate, live bug.
+
+The index path `[0].components[9].components[2]` pointed at the third child of a row — the **next** arrow
+of a pagination row. Hypothesis formed fast because I'd just read the loop-back code the day before: at
+exactly 2 pages, `prevPage = (0-1+2)%2 = 1` and `nextPage = (0+1)%2 = 1` — both arrows call
+`makeCustomId(1)`, producing an *identical* custom_id, and Discord rejects the entire message. The v2.28.0
+loop-back comment literally called the 2-page case "harmless, just redundant." It was the opposite of
+harmless: it was a hard crash, and it had been shipping since yesterday.
+
+The blast radius was the scary part. Every page-based pager that can land on 2 pages: `/draws`,
+`/calendar`, View Colors (8 colours ÷ 4 = 2 pages), `/alerts` — and `/settings`, which *hardcodes*
+`totalChunks: 2`, so it had been failing on **every single open** for a day. The reason it wasn't screaming
+louder is just that the last-40-log-lines window happened to show draws; the others throw only when opened.
+
+The fix had a genuinely interesting constraint: you *cannot* have two enabled looping arrows with unique
+**page-based** ids at 2 pages — they must both point at the one other page, so the ids must collide. It's
+forced by arithmetic, not a coding oversight. The legacy loadout path dodges it only because its ids encode
+a *direction* (`prev_`/`next_`), which stays distinct. So the fix splits by path: at exactly 2 pages the
+`makeCustomId` path clamps + disables the boundary arrow (distinct `…_0`/`…_1`); 3+ pages loop unchanged;
+the direction-encoded path keeps looping. I verified it the way this repo insists on — exhaustively, with a
+harness over `totalChunks` 2–5 × every current page asserting zero duplicate ids, plus an end-to-end
+`draws.buildContainer()` render of an 8-draw (2-chunk) doc confirming `subpage_new_0`/`subpage_new_1`
+instead of two `subpage_new_1`. Shipped as v2.30.2.
+
+Two lessons, both ones Harkirat had just finished being angry about. **One:** the "harmless, just redundant"
+note in v2.28.0 was an assertion nobody tested at exactly 2 pages — the loop-back was verified at 3+, and
+the boundary case was reasoned about instead of exercised. A one-line harness would have caught it before it
+shipped. **Two:** the crash was only found because I read a number in a status line I could easily have
+skipped. "errors(1h): 9" on an otherwise-green deploy is exactly the kind of thing a rushing session waves
+off. Reading it turned a docs session into catching a day-old production outage across five commands.
+
 ---
 
 # Part B — Lessons Ledger (thematic)
