@@ -185,6 +185,13 @@ the fix itself is a one-file internal change.
   items from the roadmap; backfilled the missing **v2.26.0 git tag**; a full notes-scratchpad tidy (SESSION
   STATUS #4, inline answers/marks, ℋ-item sweep) with its intake filed into CLAUDE.md/deferred-items; plus
   CLAUDE.md staleness fixes and a memory-alignment pass. No bot behaviour changed by any of it.
+- **Second doc batch (same session, Harkirat's follow-up asks):** normalized every pre-v2.8.0 version from the
+  old two-decimal notation to uniform 3-part (`v2.71`→`v2.7.1`, etc., both changelogs) and fixed the
+  v2.7.1/v2.7.0 ordering slip it exposed; purged the obsolete "Harkirat's Space" in-file references (it's now
+  its own external file); added **`docs/README.md`** (a documentation-ecosystem map — what each doc is, when to
+  touch it, per-push chores) and a **ToC to `DEVLOG.md`**; and a second memory pass — a scannable "🔴 THE RULES
+  THAT GET SKIPPED" checklist atop `user_working_agreement.md` (so the non-negotiables reach every model tier),
+  plus rot-proofing a stale hardcoded "current version" line in the changelog-system memory.
 
 ## v2.30.1 — 2026-07-21 (`c419fcf`) — `/draw prices` Advanced Double Legendary page corrections
 Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent

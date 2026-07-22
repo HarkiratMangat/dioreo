@@ -19,6 +19,37 @@ was local-only/gitignored before that); still candid, written for us, just now w
 
 ---
 
+# 🗺️ Table of contents
+*Greppable heading map (added 2026-07-21) — jump by searching the entry text, not a line number (numbers
+rot on every edit). **Keep in sync** when you add an entry. Part B drifted into holding dated entries too;
+left as-is for now rather than restructuring.*
+
+**Part A — The Journey (chronological)**
+- 2026-07-13 — The color-panel saga: one report, five root causes
+- *Earlier milestones* `[backfill — expand later from transcripts]`
+- 2026-07-14 — Access locks, a scope-correction, and a perf finding that was architecture not a bug
+- 2026-07-14/15 — Planning sessions: a roadmap out to v5, and two landmines found while filing notes
+- 2026-07-17 — The Render outage that became a migration to GCP
+- 2026-07-17 (later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, a disabled API
+- 2026-07-18 — A tidy session: turning the scratchpad into a conveyor, not a landfill
+- 2026-07-18 (new session) — Solving a mystery Harkirat couldn't solve about his own bot
+- 2026-07-19 — A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga
+- 2026-07-20 — A "still active" link that was actually dead, and designing an automation idea properly
+- 2026-07-20 | Antigravity — The Vertex AI Keyless ADC Migration
+- 2026-07-20 | Claude — Reviewing the Antigravity handoff: what held up, what didn't
+- 2026-07-20 | Claude — Queued housekeeping while `/autobuild` awaits its live test
+- 2026-07-20 (later) — The alert log, and three process misses caught before the build even started
+- 2026-07-20 (later still) — "wtf are these reconnect alerts?" → answer with evidence, then act
+- 2026-07-21 — `/autobuild`'s first live test: six findings, one shared root, a metadata question
+- 2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no
+- 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
+
+**Part B — Lessons Ledger (thematic + some dated entries)** — starts at the "Lessons Ledger" heading; holds
+the thematic takeaways plus dated deep-dives (2026-07-16 Gateway hang · 2026-07-18 quick-wins batch ·
+private-repo deploy break · 15-note dump · button-disable correction · passive auto-disable · MarkEdit ext).
+
+---
+
 # Part A — The Journey (chronological)
 
 ## 2026-07-13 — The color-panel saga: one report, five root causes
