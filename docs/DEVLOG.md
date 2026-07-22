@@ -1043,6 +1043,18 @@ as a checklist against the **full** doc set (both changelogs + DEVLOG + memory +
 file's in-file marks + git/tag/VM sync), verified command-by-command, and read the actual policy before
 declaring any of it out of scope.
 
+**Coda — and I'd botched the actual feature too.** Harkirat then pointed at notes line 83: the v2.30.0
+Advanced Double Legendary page I'd shipped *didn't even match the mockup he handed me*. A marked-up
+screenshot showed I'd invented three section dividers that were never in `advanced leggy_format.json`, and
+used `### **The Strategy, If You Want...**` where he wanted a plain-bold `**The Strategy. If You Want...**`
+(period, not comma). Fixed both (`dividerBefore` set deleted; heading corrected), verified via a
+`buildContainer()` dump (2 dividers total — title + footer — both regions, totals still derive), committed
+as **v2.30.1 but deliberately NOT pushed/deployed** per his instruction. The lesson stacks on the one
+above: "matches the mockup" is a claim to *verify against the mockup*, not assert — I'd added structure it
+never had because it "read nicely," which is exactly the kind of unrequested embellishment that turns a
+faithful port into a wrong one. This whole session became a case study in the gap between *looks done* and
+*is done* — code, docs, and sync all three.
+
 ---
 
 # Part B — Lessons Ledger (thematic)

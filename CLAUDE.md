@@ -2554,15 +2554,26 @@ and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildD
   `{ draws }` shim (bold ` / `-joined pulls, `⌇` before the total, `-# CP Spent:` cumulative joined by
   `›`, `cp2` icon on the quote-blocked headline).
 - **Layout redesigned 2026-07-21 (v2.30.0) to match Harkirat's own hand-drawn mockup**
-  (`local/advanced leggy_format.json`) — this replaced the earlier "~27 component, single strategy block"
-  version. Current shape, grouped by spacing-2 dividers into three sections (`dividerBefore = {1,4,6}`):
-  **headline** (full-caps name + Reg/Adv totals + `(See **The Strategy** below)` pointer) → **3 purchase
-  modes** (`'Regular Purchase' Only` / `'Advanced Purchase' Only` / `'Regular Purchase' + Remaining Item
-  Separately`) → **2 callouts** (`NOTE` / `THE TRAP`) → **The Strategy** as THREE separate Text Displays
-  (its `### ` heading rides the first block; each strategy line carries an inline `cp2` icon on its cost).
-  9 Text Displays + 3 internal dividers. The mockup only drew the 10 CP region — the 30 CP region is the
-  same design fed its own derived numbers. Re-verified via a `buildContainer()` JSON dump: every total
-  re-sums correctly and every page/region stays under the 40-component cap (max ~35 incl. share button).
+  (`local/advanced leggy_format.json`), then **corrected 2026-07-21 (v2.30.1, committed but NOT yet
+  pushed/deployed as of this writing)** after a marked-up screenshot from Harkirat
+  (`local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png`) flagged two mistakes in the v2.30.0
+  version. Current (corrected) shape — the whole entry is a flat run of Text Displays with **NO internal
+  dividers**: **headline** (full-caps name + Reg/Adv totals + `(See **The Strategy** below)` pointer) →
+  **3 purchase modes** (`'Regular Purchase' Only` / `'Advanced Purchase' Only` / `'Regular Purchase' +
+  Remaining Item Separately`) → **2 callouts** (`NOTE` / `THE TRAP`) → **The Strategy** as THREE separate
+  Text Displays (each strategy line carries an inline `cp2` icon on its cost). 9 Text Displays, 0 internal
+  dividers.
+  - **The two v2.30.1 corrections:** (1) the v2.30.0 builder added three spacing-2 dividers
+    (`dividerBefore = {1,4,6}` — after the headline, after the purchase modes, after the callouts) that
+    were **never in the mockup**; removed entirely (`buildAdvancedDoubleLegendaryEntry` now just
+    `blocks.map(c => ({type:10, content:c}))`). The ONLY dividers on this page are the title divider above
+    the headline and the footer divider below, both added by `buildContainer`, not the entry builder.
+    (2) the strategy heading was `### **The Strategy, If You Want...**`; Harkirat's exact correction is a
+    plain bold line with a period: **`**The Strategy. If You Want...**`** (no `### `, comma → period).
+  - The mockup only drew the 10 CP region — the 30 CP region is the same design fed its own derived
+    numbers. Re-verified via a `buildContainer()` JSON dump after the correction: the container has exactly
+    2 dividers (title + footer), every total re-sums correctly, and every page/region stays well under the
+    40-component cap (Advanced page ≈ 26 incl. nav + share).
 - **All draw-price entry headings are FULL-CAPS** (2026-07-21, v2.30.0) — both the two key-driven pages
   (`buildDrawEntries`, via `meta.name.toUpperCase()`) and the Advanced page. `DRAW_META.name` stays the
   canonical mixed-case source of truth; only the rendered heading is uppercased. Applies to the

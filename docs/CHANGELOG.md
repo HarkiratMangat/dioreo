@@ -993,7 +993,22 @@ Staging area for work that's committed locally but hasn't gone live yet, so it h
 number. On push, graduate this content up into a real numbered entry (newest-first, at the TOP of the
 list above) and reset this section to empty.
 
-*Currently empty — all committed work is live on the VM.*
+### Proposed: v2.30.1 — `/draw prices` Advanced Double Legendary page corrections (committed, NOT yet pushed/deployed)
+Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent
+(`local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png`) — the v2.30.0 version got the mockup wrong
+in two spots:
+- **Removed three internal dividers that were never in the mockup** — the v2.30.0 builder added spacing-2
+  dividers after the headline, after the three purchase modes, and after the callouts (`dividerBefore =
+  {1,4,6}`). None are in `local/advanced leggy_format.json`; all removed. The page is now a flat run of
+  Text Displays with the only dividers being the title divider above and footer divider below (both from
+  `buildContainer`, not the entry builder).
+- **Strategy heading corrected** from `### **The Strategy, If You Want...**` to the exact plain-bold form
+  Harkirat specified: `**The Strategy. If You Want...**` (no `### ` heading, comma → period).
+- Applies to both CP regions. Re-verified via a `buildContainer()` JSON dump: container now has exactly 2
+  dividers (title + footer), totals still derive from the arrays, ≈26 components (well under the 40 cap).
+- **Deliberately NOT pushed/deployed this session** (Harkirat's instruction) — committed only, to be
+  shipped in the next session. When it ships, graduate this into a real numbered `## v2.30.1` entry above
+  and add the matching user-facing line to `CHANGELOG-SUMMARY.md`.
 
 ---
 
