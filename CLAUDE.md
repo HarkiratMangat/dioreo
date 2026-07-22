@@ -2971,6 +2971,22 @@ two enhancements — all admin/back-end:
   autobuild EDIT path handles this safely by keeping slots only when the attachment list is unchanged);
   bot-wide attachment reorder of existing builds; DMZ full-slot handling (needs Harkirat to teach the
   DMZ slot layout — DMZ builds don't label slots unless empty).
+- **`/autobuild` follow-ups filed 2026-07-21 from the notes scratchpad (for the next `/autobuild` session):**
+  - **Ephemeral/`hidden` toggle for `/autobuild`** — the same visibility option every other command has.
+  - **Bulk `/autobuild` PoC** — `/autobuild amount:{single,multiple}`; `multiple` opens a modal taking one
+    build per line (`<category> | <badge(s)> | URL`, category/badges optional), runs the vision pipeline over
+    each, and shows a **paginated review panel** where per-page Edit/Confirm/Cancel act on that build, plus
+    **Confirm All / Cancel All**, and an "open loadout" dropdown on the all-confirmed message. Screenshot/URL
+    single-options don't apply under `multiple` (error out telling the user to drop them). Reuses the single
+    `/autobuild` vision + review + write pipeline per build.
+  - **DMZ full-slot vision** — the PoC's prompt/slot handling is MP-only (5-slot cap); teach it to detect a
+    DMZ build, capture all up-to-9 attachments, and tag it `mode: DMZ` with DMZ metadata. **Blocked on
+    Harkirat teaching the DMZ slot layout** (one DMZ screenshot with EMPTY slots so labels show, or the fixed
+    slot positions top-to-bottom). Ties into the "DMZ full-slot handling" gap noted just above.
+  - **The proper `/manage` attachment→per-slot-metadata fix** (the "Still open" gap above) — Harkirat wants a
+    real fix, not a documented gap. Needs a design call (a slot input in the modal, or storing slot labels in
+    Mongo so `/manage` edits can re-derive them). He wants a fuller explanation of the chosen approach when
+    it's tackled.
 
 ---
 
@@ -3026,6 +3042,26 @@ Harkirat's own planned feature set for the next whole-number version. **Not star
 committed design yet** — these are captured intents to brainstorm/spec properly when each is picked up.
 Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot strategy lives in
 [[project_dior_builds_changelog_system]], not repeated here.
+
+**Filed 2026-07-21 from the notes scratchpad (new intake, not yet designed):**
+- **Multi-user admin access (provide/revoke).** Let Harkirat grant/revoke selected users access to some or
+  all admin-level commands. **Store the allowlist in MongoDB, not hardcoded** (decided 2026-07-21) — it must
+  be editable at runtime (grant/revoke with no code change + redeploy); hardcoding the IDs would make every
+  access change a deploy. The current single-admin `ALLOWED_ADMIN_ID` const stays as the ultimate owner; the
+  Mongo allowlist layers on top. Ties into the `/manage` → `/admin` restructure below.
+- **"Recommended" loadout badge** — for weapons with multiple build variants; the recommended build always
+  renders FIRST in pagination order. (New badge alongside the existing Meta/Toxic/rank badges — see the MP
+  loadout badges section above; a weapon-level or per-build flag, decide at design.)
+- **"Troll Build" badge** — for joke/silly builds. Emoji provided: `<a:TrollBuild:1529192136208154725>`.
+  Independent flag like `isToxic` (see `buildBadgesLine()`).
+- **Optional paginated multi-weapon loadout view** — browse many weapons in one paginated view with
+  thumbnails + category-switch controls; for multi-build weapons show the "Recommended" build. **Overlaps the
+  `/meta` and `/loadout` consolidation items below** — reconcile into one shape at design time, don't build
+  three separate paginated browsers.
+- **Partial "hot-reload" of a pushed file** — a way to make a pushed code change go live WITHOUT a full VM
+  redeploy each time (its own design session — Node doesn't hot-swap `require`d modules trivially; realistic
+  options are a watch-and-restart, a targeted module reload, or accepting the current `deploy.sh` restart as
+  already fast). Scope when picked up.
 - **`/meta` command** — view all weapons marked Meta. Options `mode:MP/DMZ`, `category:AR/SMG/...`,
   same hidden/ephemeral option as others; visibility tied to the `loadoutVisibility` toggle. Paginated
   through each meta build (a weapon's multiple builds shown in order, then the next weapon); in-panel
