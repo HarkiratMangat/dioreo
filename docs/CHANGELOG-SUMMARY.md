@@ -10,7 +10,6 @@ A peek at what's planned (not built yet):
 - **Snappier page-switching** in busier commands (like flipping between New/Returning draws).
 - **Richer colour extraction** — more variety pulled from your avatar, so a standout colour doesn't
   get missed.
-- **Page arrows that loop** back to the first page on longer builds instead of dead-ending.
 
 ### Further out
 - **A `/help` command** explaining everything the bot can do, with a way to reach Dior directly for
@@ -24,6 +23,19 @@ A peek at what's planned (not built yet):
 - **A `/define` command** (Urban Dictionary lookup) — just for fun.
 - Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your
   own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
+
+---
+
+## v2.30.2 — July 21, 2026
+- **Fixed a crash that could break whole commands.** On pages with exactly two sub-pages, the ◀ ▶ arrows
+  could make Discord reject the entire message — so `/settings`, `/draws`, `/calendar`, the colour panel and
+  `/alerts` could fail to open. They work again (on a 2-page view the arrows simply grey out at the ends).
+
+---
+
+## v2.30.1 — July 21, 2026
+- **Small `/draw prices` fix.** Tidied the Advanced Double Legendary page to match the intended layout —
+  removed a few extra divider lines and corrected the "Strategy" heading.
 
 ---
 
@@ -54,6 +66,13 @@ A peek at what's planned (not built yet):
   of doing nothing — and Prev on the first page jumps to the last.
 - Behind the scenes: a round of fixes to the admin `/autobuild` tool and richer Cloudinary image
   organisation (nothing players interact with directly).
+
+---
+
+## v2.27.0 — July 21, 2026
+- Backend/ops only — nothing changes for players. Quieted the routine "reconnecting to Discord" status
+  pings in Dior's private alert channel (they still get logged, just no longer posted) so a real problem
+  stands out. Listed here only so no version number is skipped.
 
 ---
 
@@ -95,14 +114,15 @@ A peek at what's planned (not built yet):
   also warns right away if that image can't be found yet, instead of silently saving a broken picture
   you'd only discover later.
 
-## v2.22.0 — July 18, 2026
+## v2.22.0 & v2.22.1 — July 18, 2026
 - **`/settings` now goes quietly inactive after 10 minutes of no use** — leave the panel open and
   forget about it, and its buttons/dropdowns just stop responding on their own (no error message,
   nothing to click). Actively using it — clicking around, changing a setting — keeps it alive
   indefinitely; it's only a full 10 minutes of silence that puts it to sleep. Just run `/settings`
   again for a fresh one.
+- *(v2.22.1 was a docs-only point release — no bot changes.)*
 
-## v2.21.0 — July 18, 2026
+## v2.21.0 & v2.21.1 — July 18, 2026
 - **`/settings` finally has a hide option** — just like every other command, so you can keep your
   settings panel private if you want.
 - **Better weapon search** — typing a short or partial name (like `loc`) now works instead of just
@@ -117,6 +137,7 @@ A peek at what's planned (not built yet):
 - **Smarter weapon search** — typing a weapon-class word like "pistol", "smg", or "assault rifle" now
   shows every matching weapon in that category, not just ones whose own name happens to contain that
   word. (`/secondaries` stays exactly as its own command — we just made it easier to find.)
+- *(v2.21.1 was a docs/ops-only point release — no bot changes.)*
 
 ## v2.20.0 — July 17, 2026
 - **Fixed the admin Edit tool.** Editing an existing loadout (or draw/calendar entry) from the `/manage`
@@ -134,7 +155,7 @@ A peek at what's planned (not built yet):
 - Behind the scenes: the bot now watches its own health and alerts Dior instantly if anything goes wrong,
   so outages get caught fast instead of going unnoticed.
 
-## v2.18.0 — July 14, 2026
+## v2.18.0–v2.18.3 — July 14–16, 2026
 - **The admin panel (`/manage`) is now locked down to Dior only** — no one else can press its buttons
   anymore, even if the panel ends up visible to others.
 - **`/settings` is now locked to whoever ran it**, and the panel now expires after 15 minutes so an
@@ -142,11 +163,14 @@ A peek at what's planned (not built yet):
 - The **"Share Publicly" button is now "Show Everyone"**, with a new custom icon.
 - **`/timestamp` can now show plain, copyable text** instead of the usual styled panel — add
   `format: Text` when using the command.
+- *(v2.18.1–v2.18.2 were docs/tooling point releases; v2.18.3 added admin-side connection diagnostics —
+  nothing players interact with directly.)*
 
-## v2.17.0–v2.17.1 — July 13, 2026
+## v2.17.0–v2.17.3 — July 13, 2026
 - Fixed "This interaction failed" errors that could hit any command — the new color panel was
   overloading the bot's free hosting and making unrelated commands time out. It's now much lighter.
 - The color panel's Banner, Display Name, and Nameplate previews are now sized consistently.
+- *(v2.17.2 was a small memory optimization; v2.17.3 was docs-only.)*
 
 ## v2.16.0 — July 13, 2026
 - **New `/colors` command** (and a "View Colors" button in `/settings`): see the real colors pulled
@@ -168,24 +192,27 @@ A peek at what's planned (not built yet):
   Season End) and clearer, more consistent command wording.
 - Fixed a crash when editing an item in the admin panel.
 
-## v2.10.0–v2.11.0 — July 12, 2026
+## v2.10.0–v2.11.1 — July 12, 2026
 - Big redesign of **`/draw prices`** (cleaner per-draw breakdowns, 2 pages), the **`/manage`** admin
   panel (safer edits with confirm/undo steps), and **`/settings`** (2 pages, more preferences).
 - Draw images are now backed up so they don't break when the original link dies.
+- *(v2.11.1 was a follow-up polish pass across those same commands.)*
 
 ## v2.9.0 — July 9, 2026
 - The admin `/update` command was folded into `/manage`, so there's one admin command instead of two.
 
-## v2.8.0 — July 9, 2026
+## v2.8.0 & v2.8.1 — July 9, 2026
 - DMZ builds can now show range-based rank badges (Best/Top Close Range, Best/Top Mid-Long Range).
+- *(v2.8.1 was a small fix to how those DMZ badges are scoped.)*
 
-## v2.7 — July 9, 2026
+## v2.7 & v2.7.1 — July 9, 2026
 - Fixed DMZ loadouts showing a fake "Gunsmith Code" that couldn't actually be used in-game.
 - Added a big batch of real weapon data: full DMZ builds for the first time ever (SO-14, Type 19,
   AS VAL, AK117, Fennec, J358, Outlaw), extra builds for PKM and SKS, and several new Secondaries
   (Machine Pistol, Crossbow, Dobvra, Shorty) plus a new Shotgun (R9-0).
 - Fixed two weapons that had the wrong name saved: "GS50" is actually **.50 GS**, and "LCAR" is
   actually **L-CAR 9**.
+- *(v2.7.1 was an internal repo change only.)*
 
 ## v2.6 — July 8, 2026
 - 7 weapons that only had a badge (no real build yet) now show up in the bot with a "Coming Soon"

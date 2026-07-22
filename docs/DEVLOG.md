@@ -1055,7 +1055,7 @@ never had because it "read nicely," which is exactly the kind of unrequested emb
 faithful port into a wrong one. This whole session became a case study in the gap between *looks done* and
 *is done* — code, docs, and sync all three.
 
-## 2026-07-22 — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
+## 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
 
 The handoff was a docs/memory audit. Step one was mechanical: push the already-committed v2.30.1
 (the Advanced-page fix), deploy it, verify. I pushed, ran `deploy.sh`, the VM fast-forwarded, and the boot

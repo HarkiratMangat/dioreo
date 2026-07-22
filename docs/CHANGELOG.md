@@ -26,8 +26,11 @@ bottom of this file for work that's committed but not yet pushed.
 
 **Detailed vs. summary coverage:** every real push gets an entry here, including purely internal
 housekeeping (repo/tooling changes, nothing a player would notice). [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)
-only covers versions with an actual user-facing or bot-behavior change — trivial/internal-only
-entries (like v2.71 below) are intentionally left out of it.
+**represents every version number too — no number is skipped** (Harkirat's rule, 2026-07-21: "easier to
+delete than to add"). It stays player-focused, so trivial/internal/docs-only point releases aren't given
+their own prose write-up — instead they're folded into a neighbouring entry's version range (e.g.
+`v2.18.0–v2.18.3`) or noted in one line (e.g. "*v2.22.1 was a docs-only point release*"), so a reader can
+still see the version existed. Only genuinely user-facing changes get a real bullet.
 
 ---
 
@@ -53,30 +56,22 @@ how committed we are. Items graduate into a numbered version entry below once th
   maintain it himself. Distinct from CLAUDE.md and the terse VM command card — a human operator's guide.
 
 #### Remaining v2 polish batch (filed 2026-07-14/15 from the plan-notes file)
-Ships to `main`/live as normal `v2.x` pushes, in parallel with v3 pre-release work. 8 of the original
-items in this batch shipped in v2.21.0 (`/timestamp` `format`→`view`, `/settings` `hidden` option,
-mobile description trim, short/partial loadout search, admin override + reworded action-blocked
-message, View Colors download buttons, `/manage` `section`→`data_for`) — see that entry above.
+Ships to `main`/live as normal `v2.x` pushes, in parallel with v3 pre-release work. Most of this batch has
+already shipped and graduated into the numbered list below: **8 items in v2.21.0** (`/timestamp`
+`format`→`view`, `/settings` `hidden` option, mobile description trim, short/partial loadout search, admin
+override + reworded action-blocked message, View Colors download buttons, `/manage` `section`→`data_for`),
+plus **`/manage` loadout data-entry UX** (v2.23.0), **`/manage` per-page accent colors** (v2.24.0),
+**webhook alerting heavy-half** (v2.26.0 — per-alert IDs, `/alerts`, text-log export, legibility fixes), and
+**pagination loop-back** (v2.28.0, with its 2-page crash fixed in v2.30.2). Still open from this batch:
 - **View Colors: wider colour variety** — a real avatar returned 6 of 8 requested colours and missed a
   useful yellow. Minimal images correctly returning 2-4 on one page must NOT be padded out to a quota.
   Needs its own focused session — determinism is a hard constraint (Refresh's change-detection).
 - **View Colors: humour pages for unset Display Name / Nameplate / Deco** instead of hiding them.
-- **Pagination loop-back past 3 pages** (e.g. Bal-27) — wrap last→first instead of a disabled button;
-  keep the current disabled behaviour at exactly 2 pages.
-- **`/manage` loadout data-entry UX** (filed 2026-07-18) — clearer steps, button purposes and field
-  descriptions, placeholder text in the edit-loadout modal, and a documented Cloudinary image workflow
-  (rename the screenshot? upload directly? auto-fetch?) so admin data entry isn't guesswork.
 - **Richer in-bot diagnostic logging** (filed 2026-07-18) — so a failure points at exactly which component
-  broke and why (distinct from the webhook alerting heavy-half below and the v3 DB-change audit log).
+  broke and why (distinct from the webhook alerting heavy-half, now shipped, and the v3 DB-change audit log).
 - **Admin `/status` command** (filed 2026-07-18) — VM health/metrics (gateway state, RAM/CPU, restart count)
   surfaced in-bot, built on `scripts/vmstatus.sh` / `vmpeaks.sh`. **Un-bundled from the webhook work
   2026-07-20** (Harkirat's call — unsure of its usability right now); still deferred as its own session.
-- **`/manage` per-page accent colors** (filed 2026-07-18) — native command colours for draws/calendar/patch
-  notes pages; red/blue for MP/DMZ loadouts; none for Season End (direct modal open).
-- ~~**Webhook alerting — heavy half**~~ — **BUILT 2026-07-20, in Proposed v2.26.0 below** (not yet
-  pushed). Per-alert IDs + a downloadable text-log export + a plain-language explainer, via a Mongo alert
-  store and the new admin `/alerts` command; plus the folded-in legibility fixes (escalating uptime,
-  "Reconnecting to Discord" reword, manual-vs-auto restart labeling). The light half shipped in v2.20.0.
 
 #### v3 (next MAJOR — pre-release track)
 Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept out of the summary
@@ -157,6 +152,218 @@ changelog until v3 actually launches.
   context is available to the bot.
 
 ---
+
+## v2.30.2 — 2026-07-21 (`231b133`) — fix pagination duplicate-custom_id crash at exactly 2 pages
+A live production crash, found in the VM logs while verifying the v2.30.1 deploy (9× in one hour on `/draws`
+alone). Introduced by v2.28.0's pagination loop-back. **Player-facing** (it took down whole commands), though
+the fix itself is a one-file internal change.
+- **The bug:** on the page-number (`makeCustomId`) pagination path, wrapping at exactly **2 pages** makes both
+  arrows target the one "other" page, so `makeCustomId(prevPage) === makeCustomId(nextPage)` — two buttons with
+  an **identical `custom_id`**. Discord hard-rejects that (`Invalid Form Body … COMPONENT_CUSTOM_ID_DUPLICATED`)
+  and the **entire message fails to send**, so the command throws. v2.28.0's own note calling the 2-page case
+  "harmless, just redundant" was the opposite of true.
+- **Blast radius:** `/draws`, `/calendar`, `/settings` (which hardcodes 2 pages — so it crashed on **every
+  open** for a day), View Colors (8 colours → 2 pages) and `/alerts`. Any page-based pager that lands on 2 pages.
+- **Fix** (`utils/paginationRow.js`): it's mathematically impossible to have two *enabled looping* arrows with
+  unique page-based ids at 2 pages (both must point at the same page). So at exactly 2 pages on that path the
+  helper now **clamps + disables the boundary arrow** (`prev → max(0, cp-1)`, `next → min(last, cp+1)`), giving
+  distinct ids (`…_0` vs `…_1`). 3+ pages loop unchanged. The legacy direction-encoded (`prev_`/`next_`) path
+  used by loadout cards is inherently unique even at 2 pages and keeps looping, untouched.
+- Verified exhaustively: a harness over `totalChunks` 2–5 × every current page (zero duplicate ids), plus an
+  end-to-end `draws.buildContainer()` render of a 2-chunk doc (`subpage_new_0`/`subpage_new_1`, not two
+  `subpage_new_1`). Left as clamp-at-2; a cosmetic single-toggle-button alternative is possible later
+  (Harkirat's call).
+
+## v2.30.1 — 2026-07-21 (`c419fcf`) — `/draw prices` Advanced Double Legendary page corrections
+Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent
+(`local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png`) — the v2.30.0 version got the mockup wrong
+in two spots:
+- **Removed three internal dividers that were never in the mockup** — the v2.30.0 builder added spacing-2
+  dividers after the headline, after the three purchase modes, and after the callouts (`dividerBefore =
+  {1,4,6}`). None are in `local/advanced leggy_format.json`; all removed. The page is now a flat run of
+  Text Displays with the only dividers being the title divider above and footer divider below (both from
+  `buildContainer`, not the entry builder).
+- **Strategy heading corrected** from `### **The Strategy, If You Want...**` to the exact plain-bold form
+  Harkirat specified: `**The Strategy. If You Want...**` (no `### ` heading, comma → period).
+- Applies to both CP regions. Re-verified via a `buildContainer()` JSON dump: container now has exactly 2
+  dividers (title + footer), totals still derive from the arrays, ≈26 components (well under the 40 cap).
+- **Shipped + deployed live to the VM 2026-07-21** (committed 2026-07-21 as `c419fcf`, held one session per
+  Harkirat's instruction, then pushed/deployed the next session). Re-verified live via a `buildContainer()`
+  dump after deploy: exactly 2 dividers (title + footer) on both regions, correct plain-bold heading.
+
+## v2.30.0 — 2026-07-21 (`91567dc`) — `/draw prices` Advanced Double Legendary page redesign + full-caps draw headings
+Player-facing visual pass on `/draw prices`, matching Harkirat's own hand-drawn mockup
+(`local/advanced leggy_format.json`). No data or math changed — every number is still DERIVED from the
+raw per-pull arrays (`DRAW_DATA`, `ADVANCED_DOUBLE_LEGENDARY`); only rendering/wording moved.
+- **Advanced Double Legendary Weapon Draw page (page 3) rebuilt to the mockup** (`buildAdvancedDouble
+  LegendaryEntry`): full-caps heading + `Reg / Adv` headline totals with a `(See **The Strategy** below)`
+  pointer; three quote-styled purchase modes (`'Regular Purchase' Only`, `'Advanced Purchase' Only`,
+  `'Regular Purchase' + Remaining Item Separately`); the `NOTE` and `THE TRAP` callouts reworded to the
+  mockup copy; and **The Strategy** split from one bullet block into three separate Text Displays (its
+  `### ` heading rides the first), each with an inline CP icon on its cost.
+- **The mockup only specified the 10 CP region; the 30 CP region was cloned from the same design** with
+  its own correctly-derived figures (Reg 11,030 / Adv 17,648 / Trap 22,060; "cheaper than a Normal Draw"
+  comparison 11,830; strategies 14,810 / 13,370 / 11,030 — all re-summed and verified).
+- **Every draw-price entry heading is now FULL-CAPS** (the lines with the tier emoji prefix), across both
+  key-driven pages and the Advanced page, for consistency. `DRAW_META.name` stays the canonical mixed-case
+  source of truth; only the rendered heading is uppercased (`meta.name.toUpperCase()`).
+- Verified by dumping `buildContainer()` JSON and re-summing every total against its own array, and
+  recursively counting components: all pages stay well under Discord's 40-component cap (max ~35 incl. the
+  share button). Closes notes items L74 (Advanced redesign) + L75 (full-caps headings).
+- **Docs synced** (`6c13a56`, doc-only follow-up, no redeploy): CLAUDE.md's Advanced Double Legendary
+  section rewritten from the old single-strategy-block description to this redesign's 3-block shape +
+  the full-caps heading rule.
+
+## v2.29.0 — 2026-07-21 (`7960454`) — `/autobuild` v2-test fixes · loadout data corrections
+Second `/autobuild` round from Harkirat's live v2 test (`local/Autobuild testing v2.md`), plus a batch of
+loadout data corrections he verified by hand. **Admin/back-end only** — nothing changes for players.
+
+### `/autobuild` extraction fixes
+- **Weapon SKIN name no longer mistaken for the weapon.** The vision model was reading the equipped skin's
+  stylized title (e.g. `R9-0 - Death's Voice`) as the weapon name, which cascaded into a wrong
+  `weaponKey`/`imageKey` and created a brand-new "weapon" instead of adding a build to the existing one
+  (and broke category auto-inference along the way). Fixed at two layers: the prompt now asks for the
+  **base weapon only** (`utils/visionExtract.js`), and a structural backstop `normalizeWeaponName()`
+  (`utils/adminParser.js`) strips a spaced-dash/em-dash skin suffix — base weapon hyphens are unspaced
+  (`R9-0`, `CX-9`, `L-CAR 9`) so a real name is never touched.
+- **Weapon names normalized to ALL-CAPS.** Autobuild stored title-case (`Machine Pistol`) while every
+  migrated build is uppercase (`MACHINE PISTOL`), so a new build showed out of place in `/manage`'s
+  disambiguation dropdown. `normalizeWeaponName()` now uppercases too (weaponKey is already
+  case-insensitive and imageKey already uppercased, so only the stored display value needed fixing).
+- **Restricted attachment slots are skipped.** A slot locked by another attachment (crossed-out /
+  prohibited icon) was being emitted as if the slot LABEL were an attachment (that's how J358 got a
+  `"Trigger Action"` attachment). The prompt now explicitly skips restricted AND empty slots and never
+  outputs a slot label as a name; the old "exactly 5" wording that forced a hallucinated 5th is gone.
+- **Attachments always display in canonical slot order** (Optic → Muzzle → Barrel → Stock → Laser →
+  Underbarrel → Trigger Action → Rear Grip → Ammunition → Perk), via `orderAttachmentsBySlot()`. Applies
+  to `/autobuild` builds (which carry per-slot labels); builds created before this keep their entry order
+  until a separate reorder pass. Empty/restricted slots are filtered before storage, kept aligned with
+  their slot labels so per-slot Cloudinary metadata never maps a name onto the wrong slot.
+- `/manage`'s **"How Images Work"** info block updated — it said the bot never uploads images; `/autobuild`
+  now does (screenshot → Cloudinary + loadout in one step), so it's presented as the fast path alongside
+  the manual-key entry.
+
+### Loadout data corrections (Harkirat-verified)
+- **L-CAR 9 Build 2 ↔ Crossbow Build 1 images were swapped** (each screenshot uploaded under the other's
+  Cloudinary key during the 2026-07-19 re-upload; the attachment data was always correct). Bytes swapped
+  back and verified by etag; metadata re-synced.
+- **J358's `"Trigger Action"`** removed — it was a restricted slot, not an attachment.
+- **3 `/autobuild` test builds deleted** (Mongo + Cloudinary): Machine Pistol Build 2, R9-0 — Death's Voice
+  Build 1 & 2.
+- **Striker's "Fast Reload Reload Case"** confirmed correct as-is (real in-game label, not a typo) — no change.
+
+## v2.28.0 — 2026-07-21 (`cd7ba71`) — `/autobuild` live-test fixes · Cloudinary metadata · new Advanced Double Legendary draw · looping pagination
+One push bundling four workstreams (the `/autobuild` + Cloudinary metadata batch had been sitting
+uncommitted across sessions; the draw-prices + pagination work is from the 2026-07-21 session). **Shipped
+live to the VM 2026-07-21.** Player-facing parts: the new draw type + looping pagination. Admin/back-end
+parts: the `/autobuild` fixes + Cloudinary metadata.
+
+### `/autobuild` live-test bug fixes
+First round of fixes from Harkirat's live `/autobuild` test (notes: `local/autobuild testing notes.md`).
+Admin-only feature.
+- **Open Loadout now renders the weapon's full build set + real pagination.** The PoC passed a
+  single-element array to `buildLoadoutCard`, so every "Open Loadout" card read **"Build 1 of 1"** with
+  no Prev/Next arrows, even for a weapon with several builds (live tests 1/3/4). Now queries every build
+  of that `weaponKey` and opens **on the just-created build** — correct "Build N of M", working
+  pagination. (`index.js` `autobuild_openloadout_` handler.)
+- **Confirm now edits the review card in place** into the "Loadout created / Open Loadout" card, instead
+  of leaving a stale review panel above a brand-new message (Harkirat's note #11). Applies to the retry
+  paths too. (`utils/autobuildPipeline.js` — `replaceWithV2Card` via `sendV2Payload` PATCH `@original`,
+  replacing the old new-message `followUpV2Card` POST.)
+- **Badges now propagate across every build of a weapon.** Setting e.g. "Meta" during `/autobuild` review
+  used to land the badge only on the newly-created build (live test 3) — badges describe the weapon, not
+  one variant. `writeLoadoutDoc` now `updateMany`s siblings (same `weaponKey`/`mode`), guarded on "a badge
+  is actually set" so a blank can never wipe siblings. Mirrors `/manage`'s `edit_loadout_` convention.
+- **Duplicate-loadout detection (advisory warning).** Re-submitting a screenshot of a build already in the
+  DB silently created a second identical doc (live test 1). New `findDuplicateLoadouts`
+  (`utils/loadoutRender.js`) flags a likely dupe on the review card via two soft rules (Harkirat's idea):
+  code **identical** + ≥4/5 attachments match, **or** code within **2 char edits** + all 5 attachments
+  match. Advisory only — Confirm still works, so a genuine new variant isn't blocked.
+- **Category-conflict warning.** Picking a category that differs from an existing build of the same weapon
+  silently registered the weapon under two categories (live test 4 — AK117 ended up both AR and MARKSMAN).
+  The review card now warns when the chosen category ≠ an existing build's category. **Build numbering
+  stays per-`weaponKey`, deliberately** (a weapon's identity is its key; the real bug is the miscategoriz-
+  ation, which this warning surfaces — not the numbering).
+- **Cloudinary metadata: switched to Structured Metadata Fields, then fully expanded + backfilled + kept
+  in sync** (Harkirat's follow-up calls). **22 account-level fields** created via the idempotent
+  `scripts/createCloudinaryMetadataFields.js`:
+  - **Loadouts (18):** one per Gunsmith slot (Muzzle/Barrel/Optic/Stock/Perk/Laser/Underbarrel/Ammunition/
+    Rear_Grip), **Weapon_Name**, **Mode**, **Build_Number** (int), **Gunsmith_Code**, badges **Is_Meta**/
+    **Is_Toxic**/**Rank**, and dates **Created_At**/**Last_Updated** (Created_At read for free from the Mongo
+    ObjectId timestamp — no schema change).
+  - **Patch notes (4):** **Patch_Id**, **Patch_Season**, **Patch_Image_Order** (int), **Patch_Release_Date** —
+    so each cached screenshot knows its season, carousel order, and release date.
+  - **Backfilled** all existing assets from Mongo: **132/133** loadouts (the 1 skip is PHARO's external-URL
+    "Coming Soon" placeholder) + all 5 Season 6 patch images.
+  - **Per-slot fields backfilled too, via a one-time vision batch** (`scripts/backfillLoadoutSlots.js`,
+    GCP-authorized spend) — ran the Gemini model over every existing loadout image to recover the
+    slot→attachment mapping Mongo didn't store, mapping vision's slot labels onto the authoritative stored
+    attachment names. **122/132 fully mapped.** The 10 partials turned out to be pre-existing data bugs the
+    batch *surfaced* (two loadout images fully swapped — `L-CAR-9-2`↔`CROSSBOW-1`, a few builds with crossed
+    attachments between variants, a stored typo, one revolver-slot miss) — flagged for Harkirat, not
+    auto-fixed. `visionExtract` gained an optional `maxAttachments` (default 5; DMZ uses 9) — `/autobuild`
+    behavior unchanged.
+  - **Auto-syncs on every edit** (the "if I edit these it updates Cloudinary by itself" ask): loadout
+    add/edit/bulk + badge propagation, and patch-notes date/URL/season-rename edits. Doc-centric design —
+    `syncLoadoutMetadata(doc)` / `syncPatchEntryMetadata(entry)` are the single sync points; metadata is
+    always a best-effort step decoupled from any image upload so it can never fail a save.
+  - Verified live end-to-end (write + `api.resource` read-back + queryable searches). Real gotcha handled: a
+    Cloudinary public_id has no file extension, so `AK117-1.png` had to be stripped to `AK117-1` for the
+    metadata API (which silently no-ops on a mismatched id).
+- **Removed the AK117 test data** created during the live test — the 3 MP dupe builds (`AK117-2/3/4`, Mongo
+  docs + Cloudinary images), guarded by a created-date check. The real MP `AK117-1` and DMZ `AK117-1` kept.
+
+### New "Advanced Double Legendary Weapon Draw" in `/draw prices`
+A brand-new draw type added to `/draw prices` from Harkirat's own 10/30 CP breakdown. User-facing.
+- **New 3rd page in `/draw prices`** dedicated to the **Advanced Double Legendary Weapon Draw** — a more
+  elaborate draw than the others: it offers **three purchase modes per spin** (Regular / Advanced / the
+  "Trap") plus a **strategy breakdown**, so it doesn't fit the shared `draws: []` model every other entry
+  uses. It gets its own builder (`buildAdvancedDoubleLegendaryEntry`) on its own page, reached via the same
+  Prev/Next pagination (now **3 pages**, was 2). Both CP regions have full data.
+- **Rendered with the same multi-component "section" style as the rest of the command** (separate Text
+  Displays grouped by spacing-2 dividers: headline totals → the 3 purchase modes → the two NOTE/THE-TRAP
+  cautions → the strategy list), not one flat text block. Keeps the literal in-game **"Regular Purchase"**
+  / **"Advanced Purchase"** labels verbatim.
+- **Every number is derived, never hand-typed** — same rule the rest of this file already enforces. Only
+  the Regular and Advanced per-pull arrays are stored per region; from those the code derives the **Trap**
+  (always exactly 2× Regular), all three totals, the running "CP Spent" lines, the three **strategy costs**
+  (Reg/Adv cumulative slices), and even the "cheaper than a Normal Draw (X vs Y)" comparison (Y read from
+  the region's own Legendary Weapon Non-Reactive total). So a wrong number can only ever live in one place.
+- Verified: all rendered totals/sequences match the source breakdown exactly for both regions; every page
+  stays under Discord's 40-component cap (max 33); and out-of-range pages clamp safely.
+
+### Bot-wide: pagination arrows now LOOP instead of disabling on the ends
+Every Prev/Next pager in the bot (draws & calendar sub-pages, draw prices, `/settings`, View Colors,
+`/alerts`, loadout cards) now **wraps around** — Next on the last page jumps to the first page, Prev on
+the first page jumps to the last — instead of the arrow going disabled at the end (Harkirat's request).
+- Centralised in the shared `utils/paginationRow.js`: the arrows are no longer disabled (only the middle
+  page counter stays a disabled label), and the wrap modulo lives in ONE place via a new
+  `makeCustomId(targetPage)` callback the 6 target-page callers now pass instead of pre-baked
+  `prevCustomId`/`nextCustomId` strings.
+- Loadout cards kept their existing direction-based custom_ids — their index.js handler already did the
+  modulo wrap on click, so they just needed the buttons un-disabled.
+- Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of
+  "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.
+
+## v2.27.0 — 2026-07-21 (`042b5e9`) — silence routine gateway-reconnect alerts (log, don't post)
+Admin/ops-only — nothing changes for players. Was committed & pushed earlier; **confirmed pulled + live
+on the VM 2026-07-21**, in the same deploy that shipped v2.28.0 (above).
+- **The routine "Reconnecting to Discord" → "Gateway resumed" pair no longer posts to the Discord alert
+  channel** — it's still fully LOGGED to the alert store, just not pushed as a message. These fire every
+  1-3h as normal, self-recovering gateway churn (Discord cycling sessions / tiny network blips —
+  sub-second, resumed with full event replay = zero data loss), so they were pure channel noise. Harkirat's
+  call: keep the history for a future `/status` to print on demand, stop the every-few-hours pings-that-
+  aren't-really-pings. Confirmed via the VM journal that these were firing ~every 1-3h with clean
+  sub-second resumes before making the change.
+- **Mechanism:** new `sendAlert(..., { silent: true })` option (`utils/alertWebhook.js`) — logs to the
+  store, skips the webhook POST, never pings. Store docs carry a new `silent:true` flag (`AlertLog.silent`)
+  so `/status` can later pull exactly the reconnect history. The genuinely-bad case is untouched and still
+  loud: a reconnect that FAILS to resume surfaces via the separate 🟠 "Gateway disconnected" handler (which
+  pings), so suppressing the routine pair can't hide a real outage.
+- **Deferred to when `/status` is built** (noted in CLAUDE.md): `/alerts`' recent-list/export will show
+  silent docs (they'll dominate by frequency — likely wants a filter), and silent docs share the 1000-doc
+  retention cap with real alerts (may want their own retention). Log-now, present-later, per Harkirat.
+- Verified offline (silent path skips fetch, both paths record, flags correct).
 
 ## v2.26.0 — 2026-07-20 (`477d37c`)
 Pushed + deployed to the GCP VM this session; the alert store is **verified live in production** (the
@@ -338,68 +545,6 @@ P1 roadmap item, filed 2026-07-18 from the third v2 batch, shipped same day.
   (`FSS-HURRICANE-1` → true), a known-bad key (→ false), and the bulk-import placeholder URL (→ true,
   correctly never checked).
 
-## v2.21.0 — 2026-07-18
-**v2 quick-wins polish batch — 8 small user-facing items + doc housekeeping** (`c5b8663` + this push) — moderate
-
-- **`/timestamp`'s `format` option renamed to `view`** — "format" read as if it picked a timestamp
-  FORMAT (already `style`'s job); `view` is what it actually controls (Embed panel vs plain text).
-  Same shape as the earlier `ephemeral`→`private`→`hidden` renames.
-- **Added the `hidden` option to `/settings`** — every other command already had it; `/settings` was
-  simply missed. Same explicit-option > saved-preference > public priority (`resolveEphemeral`) as
-  everywhere else — the in-panel Show/Hide toggle still controls the SAVED preference exactly as before.
-- **Mobile-width pass across every slash command's descriptions** — several (Settings 83 chars,
-  Manage 68, Calendar 50, Season End's subcommand 69, Timestamp's datetime/timezone/view options, the
-  weapon/build options shared by `/dmz`/`/all`/`/<category>`) were truncating to "..." on Discord's
-  mobile command picker; trimmed to fit while preserving meaning. Left the standardized `hidden`
-  option wording untouched (already a deliberate, heavily-revised cross-command convention).
-- **Loadout search now handles a short/partial weapon name** (e.g. `loc`) instead of just failing.
-  New `findWeaponMatches()` (`utils/search.js`) fuzzy-matches the raw typed query against the
-  mode/category-scoped candidate list when the exact `weaponKey` lookup misses: an unambiguous single
-  match auto-resolves; 2+ matches replies with the real candidate names and asks the user to pick one
-  instead of silently guessing. Applied to `/dmz` and the shared `/all`+`/<category>` MP fallback.
-- **Admin (`ALLOWED_ADMIN_ID`) is never action-blocked on someone else's `/settings` or View Colors
-  panel anymore** — a new `resolvePanelActor()` helper (`index.js`) lets Harkirat through every
-  per-user author-lock (toggle/set/set_page/colors_view/colors_page/colors_subpage/colors_refresh)
-  while still rendering/mutating the ORIGINAL owner's data, never his own — achieved by swapping
-  `.user` on a synthetic interaction to the real fetched target user, not by relaxing the identity
-  check alone (which would have silently shown Harkirat's own avatar/prefs instead). `/manage`'s own
-  admin-only guard needed no override (it was already admin-only by design).
-- **Reworded every "action blocked" denial message** across `/manage`'s admin guard and every
-  `/settings`/View Colors author-lock — clearer, a little lighter, and says what to do instead (e.g.
-  "🔒 Not your dashboard! ... run `/settings` yourself").
-- **View Colors: added full-resolution Download Avatar / Download Banner buttons** to their respective
-  color pages, bottom, outside the container, beside Refresh Colors — matching `/settings`' existing
-  download-link buttons (style-5 Link buttons pointed at the 4096px CDN URL, visually the same grey as
-  a Secondary button, just backed by a direct link instead of an interaction). `utils/colorPalette.js`'s
-  `getPalettePanelData` now also surfaces `avatarFullUrl`/`bannerFullUrl` (free — already-computed CDN
-  URL strings, no extra fetch).
-- **`/manage`'s `section` option renamed to `data_for`** — "section" didn't describe what's actually
-  being picked (a data ENTITY: Draws/Calendar/Loadouts/Patch Notes/Season). Discord option names can't
-  contain spaces, so `data_for` is the closest valid spelling of the requested "data for".
-- **Docs (`c5b8663`):** added a title-only greppable table of contents to CLAUDE.md, filed 5 new v2
-  items + 2 v3 items + 2 someday items from the notes-scratchpad intake, applied the
-  `[Priority · Effort]` tag system to the near-term roadmap.
-- **`/secondaries` stays exactly as-is** (command name, DB category enum, and the command's own
-  description) — reconsidered the older "rename to `/secondary` + `/pistols` alias" roadmap idea and
-  dropped it. Two small display-only wording tweaks instead: the autocomplete tag (`/all`'s
-  `[SECONDARIES] weaponName`) and the rank badge line ("Best SECONDARIES") now read the singular
-  "SECONDARY" — the footer, command name, and description are untouched.
-- **New category-level search synonyms** (`utils/search.js`'s `resolveCategorySynonym`) — typing a
-  weapon-CLASS term (`pistol`, `assault rifle`, `smg`, `lmg`, `marksman`/`dmr`, `sniper`, `shotgun`,
-  `secondary`/`secondaries`, `handgun`) now surfaces every weapon in that category, not just weapons
-  whose own name happens to contain that word. This is the direct replacement for the shelved
-  `/pistols` alias idea (no new command needed) — applied to `/dmz`/`/all`/`/<category>` autocomplete
-  AND the short/partial-query exact-lookup fallback added earlier this batch.
-- **Repo housekeeping: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, and the
-  central notes scratchpad (`diors-builds notes.md` + its `notes-archive/`) all moved from
-  gitignored/local-only into a new TRACKED `docs/` folder** (Harkirat's request, so a real `git diff`/
-  `git log` covers their history instead of manual snapshots — the repo was public at the time and he
-  was consciously aware/OK with it). `.env` stays gitignored (secrets never belong in git history,
-  regardless of repo visibility). The `SessionStart` hook (`.claude/settings.local.json`) was updated
-  to the new `docs/SESSION-START.md` path and verified resolving correctly. Every structural/live
-  reference to these files across CLAUDE.md and memory was updated to match; historical narrative
-  entries describing their PAST gitignored status were left as accurate history, not rewritten.
-
 ## v2.22.1 — 2026-07-18
 **Workflow glossary rewrite + central-notes confirmation system — docs only, no bot code touched**
 (this push) — minor
@@ -507,6 +652,68 @@ Follow-up to v2.21.0's push, same day. Three threads, no bot code changed, no VM
 This entry replaces an earlier stale draft that only described the deploy-key fix, written before the
 button-expiry correction and note-filing pass landed on top of it. Full story in DEVLOG's three
 2026-07-18 "(later)" entries.
+
+## v2.21.0 — 2026-07-18
+**v2 quick-wins polish batch — 8 small user-facing items + doc housekeeping** (`c5b8663` + this push) — moderate
+
+- **`/timestamp`'s `format` option renamed to `view`** — "format" read as if it picked a timestamp
+  FORMAT (already `style`'s job); `view` is what it actually controls (Embed panel vs plain text).
+  Same shape as the earlier `ephemeral`→`private`→`hidden` renames.
+- **Added the `hidden` option to `/settings`** — every other command already had it; `/settings` was
+  simply missed. Same explicit-option > saved-preference > public priority (`resolveEphemeral`) as
+  everywhere else — the in-panel Show/Hide toggle still controls the SAVED preference exactly as before.
+- **Mobile-width pass across every slash command's descriptions** — several (Settings 83 chars,
+  Manage 68, Calendar 50, Season End's subcommand 69, Timestamp's datetime/timezone/view options, the
+  weapon/build options shared by `/dmz`/`/all`/`/<category>`) were truncating to "..." on Discord's
+  mobile command picker; trimmed to fit while preserving meaning. Left the standardized `hidden`
+  option wording untouched (already a deliberate, heavily-revised cross-command convention).
+- **Loadout search now handles a short/partial weapon name** (e.g. `loc`) instead of just failing.
+  New `findWeaponMatches()` (`utils/search.js`) fuzzy-matches the raw typed query against the
+  mode/category-scoped candidate list when the exact `weaponKey` lookup misses: an unambiguous single
+  match auto-resolves; 2+ matches replies with the real candidate names and asks the user to pick one
+  instead of silently guessing. Applied to `/dmz` and the shared `/all`+`/<category>` MP fallback.
+- **Admin (`ALLOWED_ADMIN_ID`) is never action-blocked on someone else's `/settings` or View Colors
+  panel anymore** — a new `resolvePanelActor()` helper (`index.js`) lets Harkirat through every
+  per-user author-lock (toggle/set/set_page/colors_view/colors_page/colors_subpage/colors_refresh)
+  while still rendering/mutating the ORIGINAL owner's data, never his own — achieved by swapping
+  `.user` on a synthetic interaction to the real fetched target user, not by relaxing the identity
+  check alone (which would have silently shown Harkirat's own avatar/prefs instead). `/manage`'s own
+  admin-only guard needed no override (it was already admin-only by design).
+- **Reworded every "action blocked" denial message** across `/manage`'s admin guard and every
+  `/settings`/View Colors author-lock — clearer, a little lighter, and says what to do instead (e.g.
+  "🔒 Not your dashboard! ... run `/settings` yourself").
+- **View Colors: added full-resolution Download Avatar / Download Banner buttons** to their respective
+  color pages, bottom, outside the container, beside Refresh Colors — matching `/settings`' existing
+  download-link buttons (style-5 Link buttons pointed at the 4096px CDN URL, visually the same grey as
+  a Secondary button, just backed by a direct link instead of an interaction). `utils/colorPalette.js`'s
+  `getPalettePanelData` now also surfaces `avatarFullUrl`/`bannerFullUrl` (free — already-computed CDN
+  URL strings, no extra fetch).
+- **`/manage`'s `section` option renamed to `data_for`** — "section" didn't describe what's actually
+  being picked (a data ENTITY: Draws/Calendar/Loadouts/Patch Notes/Season). Discord option names can't
+  contain spaces, so `data_for` is the closest valid spelling of the requested "data for".
+- **Docs (`c5b8663`):** added a title-only greppable table of contents to CLAUDE.md, filed 5 new v2
+  items + 2 v3 items + 2 someday items from the notes-scratchpad intake, applied the
+  `[Priority · Effort]` tag system to the near-term roadmap.
+- **`/secondaries` stays exactly as-is** (command name, DB category enum, and the command's own
+  description) — reconsidered the older "rename to `/secondary` + `/pistols` alias" roadmap idea and
+  dropped it. Two small display-only wording tweaks instead: the autocomplete tag (`/all`'s
+  `[SECONDARIES] weaponName`) and the rank badge line ("Best SECONDARIES") now read the singular
+  "SECONDARY" — the footer, command name, and description are untouched.
+- **New category-level search synonyms** (`utils/search.js`'s `resolveCategorySynonym`) — typing a
+  weapon-CLASS term (`pistol`, `assault rifle`, `smg`, `lmg`, `marksman`/`dmr`, `sniper`, `shotgun`,
+  `secondary`/`secondaries`, `handgun`) now surfaces every weapon in that category, not just weapons
+  whose own name happens to contain that word. This is the direct replacement for the shelved
+  `/pistols` alias idea (no new command needed) — applied to `/dmz`/`/all`/`/<category>` autocomplete
+  AND the short/partial-query exact-lookup fallback added earlier this batch.
+- **Repo housekeeping: `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, and the
+  central notes scratchpad (`diors-builds notes.md` + its `notes-archive/`) all moved from
+  gitignored/local-only into a new TRACKED `docs/` folder** (Harkirat's request, so a real `git diff`/
+  `git log` covers their history instead of manual snapshots — the repo was public at the time and he
+  was consciously aware/OK with it). `.env` stays gitignored (secrets never belong in git history,
+  regardless of repo visibility). The `SessionStart` hook (`.claude/settings.local.json`) was updated
+  to the new `docs/SESSION-START.md` path and verified resolving correctly. Every structural/live
+  reference to these files across CLAUDE.md and memory was updated to match; historical narrative
+  entries describing their PAST gitignored status were left as accurate history, not rewritten.
 
 ## v2.20.0 — 2026-07-17
 **Admin Edit-loadout fix + daily heartbeat + Ops Agent (RAM peaks)** (`64d4c38` + this push) — moderate
@@ -993,207 +1200,4 @@ Staging area for work that's committed locally but hasn't gone live yet, so it h
 number. On push, graduate this content up into a real numbered entry (newest-first, at the TOP of the
 list above) and reset this section to empty.
 
-### Proposed: v2.30.1 — `/draw prices` Advanced Double Legendary page corrections (committed, NOT yet pushed/deployed)
-Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent
-(`local/Screenshots/CleanShot 2026-07-21 at 20.16.48@2x.png`) — the v2.30.0 version got the mockup wrong
-in two spots:
-- **Removed three internal dividers that were never in the mockup** — the v2.30.0 builder added spacing-2
-  dividers after the headline, after the three purchase modes, and after the callouts (`dividerBefore =
-  {1,4,6}`). None are in `local/advanced leggy_format.json`; all removed. The page is now a flat run of
-  Text Displays with the only dividers being the title divider above and footer divider below (both from
-  `buildContainer`, not the entry builder).
-- **Strategy heading corrected** from `### **The Strategy, If You Want...**` to the exact plain-bold form
-  Harkirat specified: `**The Strategy. If You Want...**` (no `### ` heading, comma → period).
-- Applies to both CP regions. Re-verified via a `buildContainer()` JSON dump: container now has exactly 2
-  dividers (title + footer), totals still derive from the arrays, ≈26 components (well under the 40 cap).
-- **Deliberately NOT pushed/deployed this session** (Harkirat's instruction) — committed only, to be
-  shipped in the next session. When it ships, graduate this into a real numbered `## v2.30.1` entry above
-  and add the matching user-facing line to `CHANGELOG-SUMMARY.md`.
-
----
-
-# 🚚 Shipped, pending graduation into the numbered list above (v2.27.0 – v2.30.0)
-
-**These four entries are LIVE on the VM — they are NOT unreleased**, despite historically sitting under an
-"Unreleased" header (now corrected). They're physically parked down here because each was written into the
-staging area and never relocated up into the chronological numbered list (which runs newest-first from the
-top of this file). **Graduating them** — moving each above `## v2.26.0` in newest-first order and deleting
-this section — is a queued housekeeping/organization task: it's pure text relocation with no content to
-write, deliberately deferred to a focused org pass rather than risking a large mid-feature reorder. They're
-kept here, clearly labeled as shipped, so nothing reads as an actual missing-changelog gap in the meantime.
-(The stale duplicate `v2.18.2` staging block that used to sit above this was deleted here — it duplicated the
-released v2.18.2 entry and was self-flagged safe to remove.)
-
-## `v2.27.0` (2026-07-21) — silence routine gateway-reconnect alerts (log, don't post)
-Admin/ops-only — nothing changes for players. Was committed & pushed earlier; **confirmed pulled + live
-on the VM 2026-07-21**, in the same deploy that shipped v2.28.0 below.
-- **The routine "Reconnecting to Discord" → "Gateway resumed" pair no longer posts to the Discord alert
-  channel** — it's still fully LOGGED to the alert store, just not pushed as a message. These fire every
-  1-3h as normal, self-recovering gateway churn (Discord cycling sessions / tiny network blips —
-  sub-second, resumed with full event replay = zero data loss), so they were pure channel noise. Harkirat's
-  call: keep the history for a future `/status` to print on demand, stop the every-few-hours pings-that-
-  aren't-really-pings. Confirmed via the VM journal that these were firing ~every 1-3h with clean
-  sub-second resumes before making the change.
-- **Mechanism:** new `sendAlert(..., { silent: true })` option (`utils/alertWebhook.js`) — logs to the
-  store, skips the webhook POST, never pings. Store docs carry a new `silent:true` flag (`AlertLog.silent`)
-  so `/status` can later pull exactly the reconnect history. The genuinely-bad case is untouched and still
-  loud: a reconnect that FAILS to resume surfaces via the separate 🟠 "Gateway disconnected" handler (which
-  pings), so suppressing the routine pair can't hide a real outage.
-- **Deferred to when `/status` is built** (noted in CLAUDE.md): `/alerts`' recent-list/export will show
-  silent docs (they'll dominate by frequency — likely wants a filter), and silent docs share the 1000-doc
-  retention cap with real alerts (may want their own retention). Log-now, present-later, per Harkirat.
-- Verified offline (silent path skips fetch, both paths record, flags correct).
-
-## `v2.28.0` (2026-07-21) — `/autobuild` live-test fixes · Cloudinary metadata · new Advanced Double Legendary draw · looping pagination
-One push bundling four workstreams (the `/autobuild` + Cloudinary metadata batch had been sitting
-uncommitted across sessions; the draw-prices + pagination work is from the 2026-07-21 session). **Shipped
-live to the VM 2026-07-21.** Player-facing parts: the new draw type + looping pagination. Admin/back-end
-parts: the `/autobuild` fixes + Cloudinary metadata.
-
-### `/autobuild` live-test bug fixes
-First round of fixes from Harkirat's live `/autobuild` test (notes: `local/autobuild testing notes.md`).
-Admin-only feature.
-- **Open Loadout now renders the weapon's full build set + real pagination.** The PoC passed a
-  single-element array to `buildLoadoutCard`, so every "Open Loadout" card read **"Build 1 of 1"** with
-  no Prev/Next arrows, even for a weapon with several builds (live tests 1/3/4). Now queries every build
-  of that `weaponKey` and opens **on the just-created build** — correct "Build N of M", working
-  pagination. (`index.js` `autobuild_openloadout_` handler.)
-- **Confirm now edits the review card in place** into the "Loadout created / Open Loadout" card, instead
-  of leaving a stale review panel above a brand-new message (Harkirat's note #11). Applies to the retry
-  paths too. (`utils/autobuildPipeline.js` — `replaceWithV2Card` via `sendV2Payload` PATCH `@original`,
-  replacing the old new-message `followUpV2Card` POST.)
-- **Badges now propagate across every build of a weapon.** Setting e.g. "Meta" during `/autobuild` review
-  used to land the badge only on the newly-created build (live test 3) — badges describe the weapon, not
-  one variant. `writeLoadoutDoc` now `updateMany`s siblings (same `weaponKey`/`mode`), guarded on "a badge
-  is actually set" so a blank can never wipe siblings. Mirrors `/manage`'s `edit_loadout_` convention.
-- **Duplicate-loadout detection (advisory warning).** Re-submitting a screenshot of a build already in the
-  DB silently created a second identical doc (live test 1). New `findDuplicateLoadouts`
-  (`utils/loadoutRender.js`) flags a likely dupe on the review card via two soft rules (Harkirat's idea):
-  code **identical** + ≥4/5 attachments match, **or** code within **2 char edits** + all 5 attachments
-  match. Advisory only — Confirm still works, so a genuine new variant isn't blocked.
-- **Category-conflict warning.** Picking a category that differs from an existing build of the same weapon
-  silently registered the weapon under two categories (live test 4 — AK117 ended up both AR and MARKSMAN).
-  The review card now warns when the chosen category ≠ an existing build's category. **Build numbering
-  stays per-`weaponKey`, deliberately** (a weapon's identity is its key; the real bug is the miscategoriz-
-  ation, which this warning surfaces — not the numbering).
-- **Cloudinary metadata: switched to Structured Metadata Fields, then fully expanded + backfilled + kept
-  in sync** (Harkirat's follow-up calls). **22 account-level fields** created via the idempotent
-  `scripts/createCloudinaryMetadataFields.js`:
-  - **Loadouts (18):** one per Gunsmith slot (Muzzle/Barrel/Optic/Stock/Perk/Laser/Underbarrel/Ammunition/
-    Rear_Grip), **Weapon_Name**, **Mode**, **Build_Number** (int), **Gunsmith_Code**, badges **Is_Meta**/
-    **Is_Toxic**/**Rank**, and dates **Created_At**/**Last_Updated** (Created_At read for free from the Mongo
-    ObjectId timestamp — no schema change).
-  - **Patch notes (4):** **Patch_Id**, **Patch_Season**, **Patch_Image_Order** (int), **Patch_Release_Date** —
-    so each cached screenshot knows its season, carousel order, and release date.
-  - **Backfilled** all existing assets from Mongo: **132/133** loadouts (the 1 skip is PHARO's external-URL
-    "Coming Soon" placeholder) + all 5 Season 6 patch images.
-  - **Per-slot fields backfilled too, via a one-time vision batch** (`scripts/backfillLoadoutSlots.js`,
-    GCP-authorized spend) — ran the Gemini model over every existing loadout image to recover the
-    slot→attachment mapping Mongo didn't store, mapping vision's slot labels onto the authoritative stored
-    attachment names. **122/132 fully mapped.** The 10 partials turned out to be pre-existing data bugs the
-    batch *surfaced* (two loadout images fully swapped — `L-CAR-9-2`↔`CROSSBOW-1`, a few builds with crossed
-    attachments between variants, a stored typo, one revolver-slot miss) — flagged for Harkirat, not
-    auto-fixed. `visionExtract` gained an optional `maxAttachments` (default 5; DMZ uses 9) — `/autobuild`
-    behavior unchanged.
-  - **Auto-syncs on every edit** (the "if I edit these it updates Cloudinary by itself" ask): loadout
-    add/edit/bulk + badge propagation, and patch-notes date/URL/season-rename edits. Doc-centric design —
-    `syncLoadoutMetadata(doc)` / `syncPatchEntryMetadata(entry)` are the single sync points; metadata is
-    always a best-effort step decoupled from any image upload so it can never fail a save.
-  - Verified live end-to-end (write + `api.resource` read-back + queryable searches). Real gotcha handled: a
-    Cloudinary public_id has no file extension, so `AK117-1.png` had to be stripped to `AK117-1` for the
-    metadata API (which silently no-ops on a mismatched id).
-- **Removed the AK117 test data** created during the live test — the 3 MP dupe builds (`AK117-2/3/4`, Mongo
-  docs + Cloudinary images), guarded by a created-date check. The real MP `AK117-1` and DMZ `AK117-1` kept.
-
-### New "Advanced Double Legendary Weapon Draw" in `/draw prices`
-A brand-new draw type added to `/draw prices` from Harkirat's own 10/30 CP breakdown. User-facing.
-- **New 3rd page in `/draw prices`** dedicated to the **Advanced Double Legendary Weapon Draw** — a more
-  elaborate draw than the others: it offers **three purchase modes per spin** (Regular / Advanced / the
-  "Trap") plus a **strategy breakdown**, so it doesn't fit the shared `draws: []` model every other entry
-  uses. It gets its own builder (`buildAdvancedDoubleLegendaryEntry`) on its own page, reached via the same
-  Prev/Next pagination (now **3 pages**, was 2). Both CP regions have full data.
-- **Rendered with the same multi-component "section" style as the rest of the command** (separate Text
-  Displays grouped by spacing-2 dividers: headline totals → the 3 purchase modes → the two NOTE/THE-TRAP
-  cautions → the strategy list), not one flat text block. Keeps the literal in-game **"Regular Purchase"**
-  / **"Advanced Purchase"** labels verbatim.
-- **Every number is derived, never hand-typed** — same rule the rest of this file already enforces. Only
-  the Regular and Advanced per-pull arrays are stored per region; from those the code derives the **Trap**
-  (always exactly 2× Regular), all three totals, the running "CP Spent" lines, the three **strategy costs**
-  (Reg/Adv cumulative slices), and even the "cheaper than a Normal Draw (X vs Y)" comparison (Y read from
-  the region's own Legendary Weapon Non-Reactive total). So a wrong number can only ever live in one place.
-- Verified: all rendered totals/sequences match the source breakdown exactly for both regions; every page
-  stays under Discord's 40-component cap (max 33); and out-of-range pages clamp safely.
-
-### Bot-wide: pagination arrows now LOOP instead of disabling on the ends
-Every Prev/Next pager in the bot (draws & calendar sub-pages, draw prices, `/settings`, View Colors,
-`/alerts`, loadout cards) now **wraps around** — Next on the last page jumps to the first page, Prev on
-the first page jumps to the last — instead of the arrow going disabled at the end (Harkirat's request).
-- Centralised in the shared `utils/paginationRow.js`: the arrows are no longer disabled (only the middle
-  page counter stays a disabled label), and the wrap modulo lives in ONE place via a new
-  `makeCustomId(targetPage)` callback the 6 target-page callers now pass instead of pre-baked
-  `prevCustomId`/`nextCustomId` strings.
-- Loadout cards kept their existing direction-based custom_ids — their index.js handler already did the
-  modulo wrap on click, so they just needed the buttons un-disabled.
-- Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of
-  "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.
-
-## `v2.29.0` (2026-07-21) — `/autobuild` v2-test fixes · loadout data corrections
-Second `/autobuild` round from Harkirat's live v2 test (`local/Autobuild testing v2.md`), plus a batch of
-loadout data corrections he verified by hand. **Admin/back-end only** — nothing changes for players.
-
-### `/autobuild` extraction fixes
-- **Weapon SKIN name no longer mistaken for the weapon.** The vision model was reading the equipped skin's
-  stylized title (e.g. `R9-0 - Death's Voice`) as the weapon name, which cascaded into a wrong
-  `weaponKey`/`imageKey` and created a brand-new "weapon" instead of adding a build to the existing one
-  (and broke category auto-inference along the way). Fixed at two layers: the prompt now asks for the
-  **base weapon only** (`utils/visionExtract.js`), and a structural backstop `normalizeWeaponName()`
-  (`utils/adminParser.js`) strips a spaced-dash/em-dash skin suffix — base weapon hyphens are unspaced
-  (`R9-0`, `CX-9`, `L-CAR 9`) so a real name is never touched.
-- **Weapon names normalized to ALL-CAPS.** Autobuild stored title-case (`Machine Pistol`) while every
-  migrated build is uppercase (`MACHINE PISTOL`), so a new build showed out of place in `/manage`'s
-  disambiguation dropdown. `normalizeWeaponName()` now uppercases too (weaponKey is already
-  case-insensitive and imageKey already uppercased, so only the stored display value needed fixing).
-- **Restricted attachment slots are skipped.** A slot locked by another attachment (crossed-out /
-  prohibited icon) was being emitted as if the slot LABEL were an attachment (that's how J358 got a
-  `"Trigger Action"` attachment). The prompt now explicitly skips restricted AND empty slots and never
-  outputs a slot label as a name; the old "exactly 5" wording that forced a hallucinated 5th is gone.
-- **Attachments always display in canonical slot order** (Optic → Muzzle → Barrel → Stock → Laser →
-  Underbarrel → Trigger Action → Rear Grip → Ammunition → Perk), via `orderAttachmentsBySlot()`. Applies
-  to `/autobuild` builds (which carry per-slot labels); builds created before this keep their entry order
-  until a separate reorder pass. Empty/restricted slots are filtered before storage, kept aligned with
-  their slot labels so per-slot Cloudinary metadata never maps a name onto the wrong slot.
-- `/manage`'s **"How Images Work"** info block updated — it said the bot never uploads images; `/autobuild`
-  now does (screenshot → Cloudinary + loadout in one step), so it's presented as the fast path alongside
-  the manual-key entry.
-
-### Loadout data corrections (Harkirat-verified)
-- **L-CAR 9 Build 2 ↔ Crossbow Build 1 images were swapped** (each screenshot uploaded under the other's
-  Cloudinary key during the 2026-07-19 re-upload; the attachment data was always correct). Bytes swapped
-  back and verified by etag; metadata re-synced.
-- **J358's `"Trigger Action"`** removed — it was a restricted slot, not an attachment.
-- **3 `/autobuild` test builds deleted** (Mongo + Cloudinary): Machine Pistol Build 2, R9-0 — Death's Voice
-  Build 1 & 2.
-- **Striker's "Fast Reload Reload Case"** confirmed correct as-is (real in-game label, not a typo) — no change.
-
-## `v2.30.0` (2026-07-21) — `/draw prices` Advanced Double Legendary page redesign + full-caps draw headings
-Player-facing visual pass on `/draw prices`, matching Harkirat's own hand-drawn mockup
-(`local/advanced leggy_format.json`). No data or math changed — every number is still DERIVED from the
-raw per-pull arrays (`DRAW_DATA`, `ADVANCED_DOUBLE_LEGENDARY`); only rendering/wording moved.
-- **Advanced Double Legendary Weapon Draw page (page 3) rebuilt to the mockup** (`buildAdvancedDouble
-  LegendaryEntry`): full-caps heading + `Reg / Adv` headline totals with a `(See **The Strategy** below)`
-  pointer; three quote-styled purchase modes (`'Regular Purchase' Only`, `'Advanced Purchase' Only`,
-  `'Regular Purchase' + Remaining Item Separately`); the `NOTE` and `THE TRAP` callouts reworded to the
-  mockup copy; and **The Strategy** split from one bullet block into three separate Text Displays (its
-  `### ` heading rides the first), each with an inline CP icon on its cost.
-- **The mockup only specified the 10 CP region; the 30 CP region was cloned from the same design** with
-  its own correctly-derived figures (Reg 11,030 / Adv 17,648 / Trap 22,060; "cheaper than a Normal Draw"
-  comparison 11,830; strategies 14,810 / 13,370 / 11,030 — all re-summed and verified).
-- **Every draw-price entry heading is now FULL-CAPS** (the lines with the tier emoji prefix), across both
-  key-driven pages and the Advanced page, for consistency. `DRAW_META.name` stays the canonical mixed-case
-  source of truth; only the rendered heading is uppercased (`meta.name.toUpperCase()`).
-- Verified by dumping `buildContainer()` JSON and re-summing every total against its own array, and
-  recursively counting components: all pages stay well under Discord's 40-component cap (max ~35 incl. the
-  share button). Closes notes items L74 (Advanced redesign) + L75 (full-caps headings).
-- **Docs synced** (`6c13a56`, doc-only follow-up, no redeploy): CLAUDE.md's Advanced Double Legendary
-  section rewritten from the old single-strategy-block description to this redesign's 3-block shape +
-  the full-caps heading rule.
+*(Nothing currently unreleased — everything committed is live on the VM.)*

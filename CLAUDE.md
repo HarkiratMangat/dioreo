@@ -1577,7 +1577,7 @@ of sync the way the `/timestamp` duplication already has (see above):
   "Page" word). Returns `null` when `totalChunks <= 1` — **callers must check for that and skip pushing
   the row**, don't assume it's always safe to push directly.
   - **The arrows LOOP, they don't disable — EXCEPT at exactly 2 pages on the `makeCustomId` path
-    (2026-07-21 loop-back; the 2-page carve-out added 2026-07-22, v2.30.2).** Next on the last page
+    (2026-07-21 loop-back; the 2-page carve-out added 2026-07-21, v2.30.2).** Next on the last page
     wraps to the first page and Prev on the first wraps to the last; the middle counter is a plain
     disabled label. This replaced the old `disabled: currentPage === 0 / === totalChunks - 1`
     end-caps for 3+ pages. **⚠️ At exactly 2 pages the `makeCustomId` (page-number) path CANNOT loop
@@ -1586,7 +1586,7 @@ of sync the way the `/timestamp` duplication already has (see above):
     custom_id, which Discord hard-rejects (`Invalid Form Body … COMPONENT_CUSTOM_ID_DUPLICATED` → the
     WHOLE message fails to send, the command throws). This shipped as a real production crash in
     v2.28.0's loop-back and hit `/draws`, `/calendar`, `/settings` (hardcoded 2 pages — crashed on
-    every open), View Colors (8 colors → 2 pages) and `/alerts` (found live in the VM logs 2026-07-22,
+    every open), View Colors (8 colors → 2 pages) and `/alerts` (found live in the VM logs 2026-07-21,
     9× in one hour on `/draws` alone). The earlier "applies at EVERY page count including exactly 2 —
     intentional / harmless, just redundant" claim here was WRONG — it was the opposite of harmless.
     **Fix (v2.30.2):** at `totalChunks === 2` on the `makeCustomId` path only, the helper clamps
@@ -1595,7 +1595,7 @@ of sync the way the `/timestamp` duplication already has (see above):
     path encodes a DIRECTION not a page, so its two ids are inherently distinct even at 2 pages — it
     keeps looping untouched (loadout cards). If a single looping toggle button at 2 pages is ever
     wanted instead of the clamped pair, that's a layout change in `paginationRow.js` (Harkirat's call,
-    left as clamp-2026-07-22).
+    left as clamp-2026-07-21).
   - **Two ways to pass custom_ids — don't mix them.** `makeCustomId(targetPage)` is preferred and used
     by every caller whose id bakes in a target PAGE NUMBER (drawprices/draws/calendar/settings/colors/
     alerts): the helper computes the WRAPPED prev/next page and calls `makeCustomId` to build each id,
@@ -2708,11 +2708,11 @@ Colors panel, `/timestamp`'s view option) for what actually shipped. Still open 
   pages even when unset/no Nitro** — instead of hiding them, render a humor/"bully" page (no colors shown).
   Ties into the personality direction in the v3 list below.
 - ~~**Pagination loop-back**~~ — **SHIPPED v2.28.0 (2026-07-21); the 2-page case CRASH-FIXED in v2.30.2
-  (2026-07-22).** `buildPaginationRow` wraps last→first / first→last for 3+ pages and never disables
+  (2026-07-21).** `buildPaginationRow` wraps last→first / first→last for 3+ pages and never disables
   those arrows. **⚠️ The original "loop at EVERY page count including exactly 2" was a bug, not a
   feature** — at exactly 2 pages the page-based (`makeCustomId`) arrows both targeted the one other
   page, producing an IDENTICAL custom_id that Discord rejects, taking down the whole render on
-  `/draws`/`/calendar`/`/settings`/View Colors/`/alerts` (found live 2026-07-22). v2.30.2 clamps +
+  `/draws`/`/calendar`/`/settings`/View Colors/`/alerts` (found live 2026-07-21). v2.30.2 clamps +
   disables the boundary arrow at exactly 2 pages on that path; the legacy direction-encoded path
   (loadout cards) still loops. So the "2-page redundant-arrows should revert to disabled?" question is
   now ANSWERED (reverted, forced by the crash) — the only remaining option is the cosmetic single-toggle
