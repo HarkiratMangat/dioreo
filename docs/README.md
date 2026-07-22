@@ -59,3 +59,9 @@ kind of content lives and who's responsible for keeping it current.
 `vMAJOR.MODERATE.MINOR` (3-part, uniform throughout as of 2026-07-21). Full rules in
 `CHANGELOG.md`'s versioning header and the `project_dior_builds_changelog_system` memory (the source of truth
 for the scheme). To find the current live version: `git describe --tags` or `scripts/vmstatus.sh`.
+
+## Date/time convention (all records)
+Write dates with a **time and timezone** — `YYYY-MM-DD HH:MM TZ` (e.g. `2026-07-21 22:46 EDT`), not a bare
+date (Harkirat's standing request, 2026-07-21 ~22:46 EDT). The time is a second factor for exact intra-day
+ordering when several things ship the same day; always state the timezone because the VM runs UTC while
+Harkirat is ET. Get the real clock time with `date "+%Y-%m-%d %H:%M %Z"`.

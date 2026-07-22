@@ -198,7 +198,9 @@ the fix itself is a one-file internal change.
   moved 7 dated narrative entries that had drifted into the "thematic" Part B back into their chronological
   Part A slots (Part B is now purely thematic); recorded Harkirat's decision on the `/manage` per-slot fix
   (store slot labels in Mongo); and a memory note capturing the "notice-a-gap-then-shrug" tell (I did it this
-  session and Harkirat caught it).
+  session and Harkirat caught it). Also adopted a new standing convention (his request): **dates in records
+  now carry a time + timezone** (`YYYY-MM-DD HH:MM TZ`) as a second factor for intra-day ordering — recorded
+  in memory + `docs/README.md`.
 
 ## v2.30.1 — 2026-07-21 (`c419fcf`) — `/draw prices` Advanced Double Legendary page corrections
 Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent
