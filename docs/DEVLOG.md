@@ -21,18 +21,27 @@ was local-only/gitignored before that); still candid, written for us, just now w
 
 # 🗺️ Table of contents
 *Greppable heading map (added 2026-07-21) — jump by searching the entry text, not a line number (numbers
-rot on every edit). **Keep in sync** when you add an entry. Part B drifted into holding dated entries too;
-left as-is for now rather than restructuring.*
+rot on every edit). **Keep in sync** when you add an entry. Part A is strictly chronological; Part B is
+purely thematic — a dated narrative entry goes in Part A, a reusable takeaway goes in a Part B bullet.
+(2026-07-21: seven dated entries that had drifted into Part B were moved back into their chronological
+Part A slots — don't re-file dated deep-dives under Part B.)*
 
 **Part A — The Journey (chronological)**
 - 2026-07-13 — The color-panel saga: one report, five root causes
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 - 2026-07-14 — Access locks, a scope-correction, and a perf finding that was architecture not a bug
 - 2026-07-14/15 — Planning sessions: a roadmap out to v5, and two landmines found while filing notes
+- 2026-07-16 — A silent 14-minute Gateway hang, and a documentation gap it exposed
 - 2026-07-17 — The Render outage that became a migration to GCP
 - 2026-07-17 (later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, a disabled API
 - 2026-07-18 — A tidy session: turning the scratchpad into a conveyor, not a landfill
 - 2026-07-18 (new session) — Solving a mystery Harkirat couldn't solve about his own bot
+- 2026-07-18 — The v2 quick-wins polish batch: 8 filed items, shipped in one pass
+- 2026-07-18 (later) — Going private broke the deploy, and a documentation lapse right after fixing it
+- 2026-07-18 (later still) — A 15-note dump, and two real findings worth keeping
+- 2026-07-18 (yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly
+- 2026-07-18 (new session) — Building the passive auto-disable, and confirming it matches the spec
+- 2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session
 - 2026-07-19 — A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga
 - 2026-07-20 — A "still active" link that was actually dead, and designing an automation idea properly
 - 2026-07-20 | Antigravity — The Vertex AI Keyless ADC Migration
@@ -44,9 +53,9 @@ left as-is for now rather than restructuring.*
 - 2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no
 - 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
 
-**Part B — Lessons Ledger (thematic + some dated entries)** — starts at the "Lessons Ledger" heading; holds
-the thematic takeaways plus dated deep-dives (2026-07-16 Gateway hang · 2026-07-18 quick-wins batch ·
-private-repo deploy break · 15-note dump · button-disable correction · passive auto-disable · MarkEdit ext).
+**Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
+root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
+lessons / tips · Concerns / open risks · Collaboration insights.
 
 ---
 
@@ -296,6 +305,73 @@ collision at all — no suspending Render, no racing.
 
 ---
 
+## 2026-07-16 — A silent 14-minute Gateway hang, and a documentation gap it exposed
+
+A doc/tooling-only push (`cf6cad7`, `df8cc58` — a memory-path correction and adding git-tag
+versioning, zero bot code touched) triggered Render's normal auto-deploy. Build succeeded, MongoDB
+connected, Express bound its port, Render marked the service `live` — the usual sequence, except
+the bot's own two Gateway-confirmation lines (`✅ ... fully authenticated!`, `🚀 ... Discord Gateway
+system!`) never printed. Harkirat caught it by eye, comparing the log against what a normal deploy
+looks like — I'd checked the same logs moments earlier and read "MongoDB connected + Render says
+live" as good enough, which it wasn't.
+
+**Investigation (systematic-debugging skill, not a guess):** confirmed via `git diff` that the push
+touched only `CLAUDE.md` — ruling out a code regression outright. Checked all three places an
+instance-conflict could live: `ps aux` locally (clean), Railway via `railway status --project
+worthy-peace --environment production --json` (`activeDeployments: []`, nothing running there),
+and Render's own deploy history (exactly one `live` deploy, the previous one cleanly
+`deactivated`, no overlap). All ruled out with real evidence, not assumption. What was left: the
+process was genuinely alive and healthy by every check available (Mongo, Express, no crash), but
+`Events.ClientReady` simply hadn't fired, with zero error on `client.login()`'s promise or the
+`client.on('error', ...)` handler — a silent hang, not a crash. **It resolved on its own ~14 minutes
+after the deploy**, with no restart or intervention.
+
+**Root cause: genuinely not fully pinned down, and said so rather than inventing a confident
+answer.** The pattern (long silent delay, zero error, eventual self-resolution) is consistent with
+discord.js's internal WebSocket layer retrying the Gateway handshake with backoff — `login()`
+doesn't reject while it's still retrying, it just takes however long that takes — but none of that
+internal retry activity was logged, so there was no way to confirm which specific mechanism it was.
+Fixed the *visibility* gap regardless of the exact cause: added `shardReady`/`shardResume`/
+`shardReconnecting`/`shardDisconnect`/`shardError` logging (not the raw `'debug'` event, which
+would flood production logs with heartbeat noise) so a future occurrence has a real diagnostic
+trail instead of silence.
+
+**Went looking for precedent, since Harkirat recalled "something similar a few days back" tied to
+switching Render↔Railway.** Searched this project's own DEVLOG/CLAUDE.md/memory first — found
+nothing with this exact symptom. Then searched past session transcripts directly (a real tool for
+this, not just guessing) and found a July 13 session containing "switch back to Render once its
+network issue clears up" — real confirmation a prior Render-side networking issue existed, roughly
+matching the timeframe DEVLOG already vaguely describes as "the period of deploy-platform churn
+(Render ↔ Railway)" around the 2026-07-10 token-rotation incident. Did NOT do a full read of that
+~4,000-message session to extract the complete narrative — the token cost wasn't proportionate to
+what more detail would actually buy here, and the confirming snippet was enough to write this
+honestly without overclaiming a precise causal link between the two incidents.
+
+**A real documentation gap, found in passing, not invented for this entry:** `CHANGELOG.md`'s own
+header has said "see Unreleased at the bottom of this file" since it was written — that section
+never actually existed. This is the exact "Landmine 2" pattern already recorded in this file
+(2026-07-15 entry) recurring: a promised-but-missing section. Created it for real this time, with
+this incident's logging change as its first actual entry.
+
+### Lesson
+**"The deploy log looks mostly right" is not the same as "confirmed healthy."** I read a clean
+build + MongoDB connection + Render's own "live" status as sufficient and moved on; the two lines
+that actually confirm the BOT (not just the process) came online were silently missing, and I
+didn't notice until it was pointed out. The fix isn't "read logs more carefully next time" (that's
+not a repeatable process) — it's the shard-lifecycle logging above, so a real gap in the future
+produces an actual error/warning signal instead of requiring a human to notice an absence.
+
+**Follow-up, same day: disabled Render's auto-deploy, temporarily.** Harkirat's call, explicitly
+framed as "for now" — he plans to actually investigate the Gateway hang properly rather than keep
+absorbing an unexplained restart-time risk on every push. `git push` no longer redeploys the bot;
+a manual `render deploys create srv-d850b2og4nts73fhpfog --confirm` is now a required, separate
+step, documented in `CLAUDE.md`, `SESSION-START.md`, and `feedback_push_means_full_cycle.md`. This
+doesn't fix or explain the hang — it just reduces how often a restart happens (and therefore how
+often the risk is live) while the real investigation is still pending. Re-enable once that
+happens; don't let "temporary" quietly become permanent without someone actually deciding that.
+
+---
+
 ## 2026-07-17 — The Render outage that became a migration to GCP
 
 Started as "the bot won't respond." Ended as a full hosting migration. What's worth writing down is the
@@ -530,6 +606,329 @@ a live click-test after this deploys, same as it should.
 The meta-lesson: "document the workflow" was phrased as a writing task, but the honest version of that
 task was an investigation — the account with the actual answer was one MCP call away, and guessing at
 a plausible-sounding process would have been worse than useless the moment it turned out wrong.
+
+---
+
+## 2026-07-18 — The v2 quick-wins polish batch: 8 filed items, shipped in one pass
+
+Every item in this session was already fully specified — filed with a `[Priority · Effort]` tag in
+CLAUDE.md's "Next planned work" from earlier planning sessions, several with the design decision
+already made (e.g. the admin-override's "must not swap in his data" constraint was called out in the
+filing itself). This was a straight execution session, not a design one, but two of the eight items
+had a real correctness trap hiding under a simple-looking ask.
+
+**The admin-override trap.** "Never block ALLOWED_ADMIN_ID on someone else's panel" sounds like a
+one-line fix — relax `interaction.user.id !== targetUserId` to also allow the admin ID. But every one
+of the 7 lock sites (`/settings`' toggle/set/set_page buttons, all 4 View Colors handlers) re-renders
+by calling back into `settings.js`'s or `colorPalette.js`'s own logic, which reads `interaction.user`
+directly to decide WHOSE avatar/banner/prefs to show. Relaxing only the block check would have let
+Harkirat past the door, then silently rendered his own profile on someone else's panel — a worse bug
+than the block it was fixing, and exactly the failure mode the filing note had already flagged by
+name. Fixed with a `resolvePanelActor()` helper that returns the real target's fetched discord.js User
+object (or null to deny), and a synthetic interaction with `.user` swapped only at the specific call
+sites that read it — `deferReply`/`sendV2Payload` stay on the real interaction throughout, since they
+only need the token, not the user. Verified this reasoning against the actual code (didn't just trust
+the filing's warning at face value) before writing the fix.
+
+**The loadout search fallback tested honestly.** The naive "auto-resolve to the closest fuzzy match"
+option from the filing note was checked against real data before picking it: `findWeaponMatches('loc',
+...)` against a sample set returned BOTH `LOCUS` and `Lockwood 300` — auto-resolving either would have
+been a genuine wrong-answer risk, not a hypothetical one. Landed on ambiguity-based branching instead
+(exactly one match auto-resolves, 2+ asks the user to pick) rather than either option the filing note
+posed as an either/or — same instinct as the "test the naive alternative before a big rebuild" habit
+this project already has, just applied to a small fix instead of a big redesign.
+
+**Mechanical but worth noting:** `/manage`'s `section` option got renamed to `data_for`, not `data for`
+— Discord option names can't contain spaces at all, a constraint the filing note's exact wording
+("data for") didn't account for. Caught before it ever hit `SlashCommandBuilder.setName()`'s own
+validation (would have thrown at command-registration time, not silently).
+
+All 8 items verified via `node -c` syntax checks + directly instantiating every touched
+`SlashCommandBuilder` and calling `.toJSON()` (catches an invalid option name/description the same way
+Discord's own registration would, without needing a live bot connection) — no live Discord click-test
+was performed this session (would have needed briefly running a second bot instance alongside the
+already-live VM one, the exact multiple-instances hazard this project explicitly avoids); flagged
+explicitly as unverified-live rather than claimed as tested.
+
+---
+
+## 2026-07-18 (later) — Going private broke the deploy, and a documentation lapse right after fixing it
+
+Same session as the batch above, after Harkirat asked to flip the (until-then public) GitHub repo
+private and run the push flow. Flipping it (`gh repo edit --visibility private`) was clean. The actual
+deploy step wasn't: `gcloud compute ssh ... git pull` on the VM failed instantly — `fatal: could not
+read Username for 'https://github.com'`. The VM had been pulling anonymously over a plain HTTPS remote
+this whole time, which only ever worked because the repo was public; the moment it wasn't, GitHub
+required real authentication and there was none configured.
+
+**First instinct — reuse the already-authenticated `gh` CLI on the Mac — was correctly blocked.**
+Tried `gh auth token` to grab a working credential and hand it to the VM. The safety classifier stopped
+it: extracting a personal auth token, even for a legitimate deploy purpose, is exactly the same category
+as the earlier `~/.render/cli.yaml` block already recorded in CLAUDE.md — a project's own `.env` is
+in-scope, but a personal credential store/session token is a different, more sensitive thing, and pushing
+through it isn't the move even when the goal is legitimate. Stopped, explained what was being attempted
+and why to Harkirat, and proposed the actually-better fix instead of finding a workaround.
+
+**The better fix: a dedicated read-only SSH deploy key, not a workaround for the blocked token.**
+Generated a fresh ed25519 keypair ON the VM (`~/.ssh/diors_deploy_key`, no passphrase — it never leaves
+the VM), registered its public half via `gh repo deploy-key add` (a repo-settings operation using the
+already-authorized session, not a personal-credential extraction — same legitimate category as the
+visibility flip itself), pointed the VM's SSH config at it for `github.com`, and switched the remote from
+`https://github.com/...` to `git@github.com:...`. This is strictly better than the original plan (reusing
+a broad personal token) — least-privilege, scoped to exactly one repo, read-only, and doesn't touch
+Harkirat's own credentials at all. `git pull` worked immediately after.
+
+**A second, smaller mistake mid-verification:** ran `scripts/vmstatus.sh` from INSIDE the VM over SSH
+(`gcloud compute ssh ... --command="bash scripts/vmstatus.sh"`) and got "could not reach VM" for the
+VM-state check. The script needs the LOCAL machine's `gcloud` auth context to query the VM from the
+outside — running it from inside the VM asks it to look at itself the wrong way around. Re-ran it
+directly from the Mac and got a clean, real result (gateway confirmed connected, 0 restarts, 0 errors).
+Recorded in `reference_vm_bot_commands` so this isn't rediscovered by trial and error next time.
+
+**The actual lesson, and the one Harkirat called out directly:** after all of that got fixed and
+verified live, none of it got written down. CLAUDE.md, both changelogs, and memory all describe the
+deploy flow as it worked THAT SESSION, but the real, permanent facts — the repo is private now, the VM
+authenticates via a specific new SSH key, `vmstatus.sh` has a direction it must be run from — were left
+entirely undocumented. Reported the deploy as "done and verified" and moved straight to a wrap-up
+message, treating verification as the finish line instead of documentation. Harkirat: *"No documentation
+regarding this? Is it not needed? Or did you get careless and forget again?"* — direct, and fair. This is
+the same underlying failure mode as the "good enough" sweep earlier this same session (see
+`feedback_be_usage_conscious`'s dated entry), just at a different step of the workflow: doing the
+concrete task thoroughly, then treating "it works" as the end of the task instead of "it works AND it's
+recorded so the next person/session doesn't have to rediscover it." Fixed by going back through CLAUDE.md,
+`reference_vm_bot_commands`, and `project_deployment_migration_render_to_gcp` and writing all of the
+above down properly, plus this entry.
+
+---
+
+## 2026-07-18 (later still) — A 15-note dump, and two real findings worth keeping
+
+Before committing the deploy-key fix, Harkirat dropped 15 raw notes/questions that hadn't gone through
+the normal notes-file intake. Filed each into CLAUDE.md's roadmap or `deferred-items.md`, but two of them
+were genuinely answerable right now rather than just filing material, and both turned into real,
+checked findings instead of guesses:
+
+**Discord interaction tokens are hard-capped at 15 minutes — confirmed against Discord's own docs, not
+assumed.** Harkirat asked whether an expired button could be physically disabled instead of showing
+Discord's generic "This interaction failed." The honest answer turned out to be no, and not for a
+missing-feature reason: editing a message (to disable its buttons, or even to reply with a nicer custom
+"expired" message) requires the interaction's own token, and that token is dead after exactly 15
+minutes, full stop — confirmed via a web search against Discord's developer docs rather than trusted
+from memory. This bot also has zero standing guild permissions (the user-installed-only architecture),
+so there's no bot-token fallback path either. This retroactively explains why `/settings`' own expiry
+was set to exactly 15 minutes in an earlier session — not an arbitrary round number, it's Discord's
+actual ceiling, and the bot's own check has to fire before that ceiling to still have a live token to
+reply with. Documented as a real platform constraint in "Known open issues," not a build item.
+
+**Every avatar/banner/deco/nameplate read in the bot uses the GLOBAL Discord profile, confirmed via a
+full grep, never a per-server override.** Harkirat asked what happens if a user has a different avatar
+set for one specific server. Checked every single call site across the codebase (`utils/accentColor.js`,
+`commands/colors.js`, `commands/settings.js`, `index.js`) — all of them read `interaction.user`/
+`userFetch`, none read `interaction.member`. This is deliberate-by-necessity (a user-installed app can't
+reliably assume guild member context exists, since plenty of invocations happen in DMs), not an
+oversight, but it does mean per-server avatar overrides are invisible to the bot today — a real,
+previously-undocumented gap now written down instead of left implicit.
+
+Also verified (grep, not memory) that the "Tundra" weapon is currently stored/referenced as the bare
+name, not `LW3-Tundra` — matches the same "official name drops a manufacturer prefix" pattern already
+fixed once for GS50/LCAR, but couldn't confirm against the LIVE database (MongoDB MCP wasn't connected,
+and reading `.env` for the connection string was correctly blocked by the safety classifier — same
+category as every other credential-extraction block this session). Filed as a to-verify item rather
+than assumed fixed.
+
+---
+
+## 2026-07-18 (yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly
+
+Harkirat pushed back on the "buttons can't be disabled after 15 minutes" finding above almost
+immediately, and correctly: he pointed out that most of the bot's OTHER buttons (draws/calendar/
+loadout pagination) keep working indefinitely with no expiry at all — which flatly contradicts a claim
+that editing becomes impossible after 15 minutes. He was right, and the earlier finding was wrong.
+
+**What actually went wrong:** the underlying fact I sourced (Discord interaction tokens are valid 15
+minutes for editing/followups) was correctly verified against Discord's docs — that part wasn't
+fabricated. The error was in what I concluded FROM it: I treated "a token is valid 15 minutes" as
+"a MESSAGE becomes uneditable 15 minutes after it's created," which doesn't follow at all. The real
+mechanic (confirmed via a second, more targeted search): **every button click generates its own BRAND
+NEW interaction with its own fresh token**, completely independent of whatever created the message in
+the first place. That's exactly why old pagination messages keep working forever — each click supplies
+a new 15-minute window of its own, regardless of how old the message is. I also, without re-verifying,
+asserted that `/settings`' 15-minute expiry constant existed specifically BECAUSE of this Discord
+ceiling — that was pure invention on my part, presented as fact. It's a self-imposed business rule
+with no derivation from any platform limit; it could just as easily have been 5 minutes or an hour.
+
+**Corrected properly, not just walked back:** rewrote the CLAUDE.md "Known open issues" entry, the
+matching CHANGELOG.md entry, and the roadmap item, replacing the wrong claim with the actual mechanics
+and — importantly — the actually-buildable finding underneath it: `/settings` already replies with a
+friendly "expired" message on a stale click, but never edits the message to visually disable the
+buttons, even though the very click that triggers the expiry check carries a perfectly valid fresh
+token it could use to do exactly that. So the original ask ("disable the buttons instead of a generic
+error") turns out to be a real, buildable feature, not a platform wall — the opposite of what got
+reported the first time.
+
+**Lesson:** verifying the SOURCE fact isn't the same as verifying the CONCLUSION drawn from it. The web
+search result was accurate; the inference layered on top of it wasn't checked at all before being
+stated as confidently as the sourced part. When a fact and a conclusion get presented together, the
+conclusion needs its own scrutiny, especially when it's used to explain an existing design decision
+("this is exactly why X was chosen") — that specific shape of claim (retroactively justifying a past
+choice with a new fact) deserves extra suspicion, not less, since there's no way to verify a design
+intent after the fact without asking the person who made the choice.
+
+**Also this turn:** connected to the live MongoDB Atlas cluster (Harkirat's explicit permission,
+including reading the connection string from this project's own `.env` — same in-scope precedent as
+the `RENDER_API_KEY` case, not the personal-credential-store category that gets blocked). Confirmed
+"Tundra" is ALREADY stored correctly as `LW3-TUNDRA` (weaponKey `lw3-tundra`) — the earlier to-verify
+item from a few turns ago is resolved as a non-issue, the bare "Tundra" spelling only ever existed in
+the `applyBadgesBulk.js` fuzzy-match script, not the actual data. Pulled real size stats for the tier
+question: 144 total documents / ~135KB across the whole database, ~0.63KB average per `UserPreference`
+doc. At that rate, Atlas M0's 512MB free-tier storage cap is nowhere close for any realistic CODM-bot
+user count — storage isn't the constraint that will force an upgrade; Atlas's own operational guidance
+(dedicated resources/backups once uptime actually matters) is the more likely real trigger, not a hard
+data ceiling.
+
+---
+
+## 2026-07-18 (new session) — Building the passive auto-disable, and confirming it actually matches the spec
+
+Picked up in a fresh session from the handoff prompt. Two tasks: push the docs-only batch from the
+prior session (v2.21.1), and BUILD the passive auto-disable feature that got fully designed — after
+two rounds of correction — at the end of that same prior session (see the three "(later)" entries
+above). The design, restated once more for the record since it's now actually shipped: on first render
+of `/settings`, schedule a 10-minute `setTimeout` holding that render's own fresh interaction token; on
+any later interaction with the same message, cancel the pending timer and reschedule a fresh 10-minute
+one using the NEW interaction's own token; if 10 straight minutes pass with no interaction at all, the
+timer fires entirely on its own and disables every button/select on the message. A sliding idle window,
+not a fixed deadline — and genuinely passive, since the disable doesn't need a click to trigger it, just
+an already-held token used directly via a raw `PATCH`.
+
+**Built as `utils/passiveExpiry.js`** — `schedulePanelExpiry(interaction, messageId, components)`, an
+in-memory `Map<messageId, timeoutHandle>`, and a recursive `disableAllComponents()` that walks a
+Components V2 tree (containers/sections/action-row nesting, Section accessories) setting
+`disabled: true` on every button (type 2) and select (type 3) without mutating the source array.
+`commands/settings.js` dropped its old `SETTINGS_PANEL_TTL_MS`/`expiresAtOverride`/`|{expiresAt}`
+custom_id scheme entirely and calls `schedulePanelExpiry` right after its one send call, using
+`sendV2Payload`'s own return value for the message id (confirmed via `@discordjs/rest`'s own source
+that a `PATCH` response is parsed JSON with the message's `id` — no `fetchReply()` round-trip needed,
+sidestepping the exact "hard design problem" `dynamicProfile`'s message-id caching hit earlier this
+project). `index.js` lost the 4 now-dead reactive expiry checks (`set_`, `toggle_`, `set_page_`,
+`colors_view`) — Discord itself refuses a click on an actually-disabled component, so there was nothing
+left for those checks to catch.
+
+**Verification, and why it stopped short of a live test.** Syntax-checked all three files, then wrote a
+throwaway `node -e` script exercising `disableAllComponents()` against a payload shaped exactly like
+what `/settings` really sends (a Container with a Section+button accessory, an action-row select, an
+action-row link button, and a top-level share-button row) — confirmed all 4 real interactive components
+got `disabled: true`, the divider and text displays were untouched, and the source array wasn't
+mutated. Cross-checked every custom_id builder site in `settings.js` against its matching `.split('|')`
+parse in `index.js` to confirm the shortened shape (dropped trailing segment) matched on both sides.
+Deliberately did NOT boot the bot locally to click-test it live — this is a single-token bot and the
+GCP VM is the one live instance; a local boot would race it for every interaction, exactly the hazard
+`feedback_multiple_bot_instances` exists to prevent. This means the mechanism is offline-verified but
+not yet click-tested against a real Discord message.
+
+**The good catch: asked to confirm the build actually matched the spec before shipping, instead of
+trusting my own summary.** After presenting the finished feature, Harkirat pushed back — not because
+anything was wrong, but because my own recap language ("disable via the passive timer") wasn't
+unambiguous about WHEN the disable actually happens, and this exact mechanism had already been
+mis-described twice earlier in the prior session before landing on the right answer. He pointed at a
+screenshot of that prior session's own final, correct spec rather than re-explaining it from memory.
+Walked the built code back through that screenshot's own 3 bullets + caveat point by point (first-
+render scheduling, cancel-and-reschedule-on-any-interaction, passive no-click fire-after-10-minutes,
+in-memory-only caveat) and confirmed each one matches what's actually in the diff, not just what the
+summary claimed. This is the same underlying discipline as `feedback_verify_fix_actually_works` — but
+applied one level up: not just "does the code work," but "does my own description of what I built match
+what was actually agreed," checked against the source of truth (the earlier session's own words) rather
+than assumed from memory of "I think I got this right." Worth keeping as its own lesson: when a design
+went through multiple corrections before landing, a request to "confirm before shipping" isn't
+skepticism to brush off — it's exactly the right level of care for a spec with a known history of being
+gotten wrong.
+
+**Shipped as v2.22.0** — committed and pushed to `main`; Harkirat explicitly asked to HOLD the VM
+deploy so a real Discord click-through hasn't happened yet, wanting to keep working on other items
+before a single session-end deploy cycle rather than deploying piecemeal. Documented in CLAUDE.md's new
+"Passive idle-timeout auto-disable" section (replacing the old reactive-expiry writeup in "Panel
+interaction locks"), with the "Known open issues" and roadmap entries updated to point at the shipped
+mechanism instead of describing it as a still-open gap.
+
+---
+
+## 2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session
+
+After the `/settings` passive-disable feature shipped (v2.22.0, VM deploy held), Harkirat asked me to
+read the fresh notes he'd dropped directly into `docs/diors-builds notes.md` mid-session — a
+confirmation-symbol system for the notes file's own ✓/✗ workflow, brighter check/cross colors, a
+comment-formatting preference, a mark-date convention, and a request to clarify what document/commit/
+push/deploy actually mean. What started as a documentation pass turned into a real, live-tested
+software build: a genuine MarkEdit extension, iterated through several rounds of real bugs, real user
+testing, and real design tradeoffs — closer to a normal engineering session than a docs update.
+
+**The scope grew organically, and that was the right call, not scope creep.** Harkirat's original ask
+was "add a legend and a confirmation symbol." What it actually became, one request at a time: a Legend
+section explaining the mark system, a full glossary rewrite (document/commit/push/deploy) that caught a
+real inconsistency in `docs/SESSION-START.md` (the old wording said "push" always means the full deploy
+cycle, which had just stopped being true that same session), a genuinely new MarkEdit extension with a
+5-section menu (Insert / Raw Marks / Bulk Update / Defaults / Setup), 4 shortlisted symbols and
+eventually 8 final colors, live no-restart color switching via a shared JS global, and a working toolbar
+button. Each step was a reasonable, in-scope extension of the last — the discipline was checking in with
+an artifact or a direct question before committing to each irreversible choice (symbol/color picks),
+not resisting the growth itself.
+
+**Found and read the real extension files instead of guessing from the earlier session's vague
+description.** A prior session's memory said "Built & verified MarkEdit ext (editor.js, live coloring)"
+with no file path recorded. Wasted a few tool calls searching the wrong app container
+(`app.markedit.MarkEdit`) before Harkirat directly supplied the real path
+(`~/Library/Containers/app.cyan.markedit/Data/Documents/`). Once there, reading the 3-4 already-installed
+example extensions (`case-tools.js`, `markedit-direct-preview.js`, the theming extension) gave the actual
+API patterns needed — settings.json read/write, `ME.addMainMenuItem`, CodeMirror decoration/dispatch,
+and critically `markedit-theme-zero.js`'s own `window.__markeditTheming__` global, which later became the
+key insight for making cross-script state live instead of restart-gated.
+
+**Shipped a v1 with two real bugs, found live, fixed the same session.** The toolbar button did nothing
+— its `actionName` string didn't match any registered menu item's actual title (routing is by exact
+string match, undocumented, discovered by reading how the sibling extensions wired their own toolbar
+setup). And a freshly-inserted confirmation symbol rendered in plain white instead of its color, because
+the coloring regex required a strict `[x] SYMBOL ✓` context that a bare test insertion never satisfied —
+fixed by dropping that restriction entirely, matching how ✓/✗ themselves already color unconditionally.
+Both were reported by Harkirat with a screenshot and a clear "what works / what's broken" breakdown,
+which made root-causing fast — neither bug needed guessing, both had an exact, checkable cause.
+
+**The "restart required" complaint led to a real architecture improvement, not a workaround.** The first
+version only synced state through settings.json, which MarkEdit only reads once at extension startup —
+so every pick needed an app restart. Rather than accept that, checked whether MarkEdit's extensions
+share a JS scope at all (they do — confirmed via the theming extension's own global-object pattern) and
+rebuilt around a shared `window.__diorConfirm__` object, making color changes and the bulk-update action
+apply live. Only genuine toolbar-structure changes (adding the button itself) still need a restart —
+that's an actual MarkEdit platform constraint, not something left unsolved.
+
+**A real, disciplined guess-and-test loop for undocumented API surface.** No `.d.ts` or bundled
+reference exists anywhere in the MarkEdit app container (checked directly, confirmed absent). Harkirat's
+own catch mid-thread: after screenshotting the native macOS Window-menu's real "Halves"/"Quarters"
+section headers, he pointed out that MarkEdit's extension bridge might expose the SAME native AppKit
+capability even though none of the installed example extensions demonstrated it — "don't use the API
+restrictions, check what macOS itself offers." Testing `{ enabled: false }` on a single isolated item
+confirmed it instantly (real section headers). The same method found `{ checked: true }` for a
+selected-state indicator. It did NOT find a way to tint a menu item's icon — tested 5 plausible field
+names (`iconColor`/`tint`/`color`/`symbolColor`/`hierarchicalColor`) in parallel across different items
+to save round trips, all came back plain white/gray, and the honest call was to stop guessing and revert
+rather than ship dead code with a pointless icon. All of this — confirmed-working, confirmed-broken, and
+the method itself — is now written down in a new `reference_markedit_extension_api` memory so a future
+session doesn't re-run the same 5 dead-end guesses.
+
+**Iterative design work stayed disciplined about not deciding FOR Harkirat.** The color/symbol
+narrowing went through roughly 6 rounds of artifacts — starting at 7 candidate symbols + a handful of
+colors, narrowing to 8, then 5, then a final 4 symbols and 8 colors, sorted by real computed HSL hue at
+his request, re-grouped, re-labeled, with every genuine design flaw he caught (a tinted "recommended"
+row background that quietly changed the exact contrast being judged; a check mark rendered in the
+sample line's plain body-text color instead of its real green) fixed as a real bug in the mockup, not
+argued away. This is the same "propose concrete options, don't decide for him" pattern already
+established for bot-facing palette work, just applied to a different kind of visual decision.
+
+**Closed the loop properly at the end, not left half-finished.** Every one of the 5 original notes-file
+questions got converted to the file's own `[x] ✓ (date) ~~text~~` closure format (they'd been answered
+inline earlier in the thread but never formally marked, which would have made them invisible to the
+existing Graveyard-sweep logic). The confirmation-mark system's final 4-symbol/8-color set was written
+into the file's own Legend, replacing the placeholder text from earlier in the session. Nothing from
+this whole arc was left in an ambiguous "answered but not closed" state.
 
 ---
 
@@ -1257,379 +1656,3 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
   (deploy + verify live + only one instance running), not just `git push`.
 - **Honest reporting builds trust** — recording the 0%-benefit convergence result, the misread Railway
   logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.
-
-## 2026-07-16 — A silent 14-minute Gateway hang, and a documentation gap it exposed
-
-A doc/tooling-only push (`cf6cad7`, `df8cc58` — a memory-path correction and adding git-tag
-versioning, zero bot code touched) triggered Render's normal auto-deploy. Build succeeded, MongoDB
-connected, Express bound its port, Render marked the service `live` — the usual sequence, except
-the bot's own two Gateway-confirmation lines (`✅ ... fully authenticated!`, `🚀 ... Discord Gateway
-system!`) never printed. Harkirat caught it by eye, comparing the log against what a normal deploy
-looks like — I'd checked the same logs moments earlier and read "MongoDB connected + Render says
-live" as good enough, which it wasn't.
-
-**Investigation (systematic-debugging skill, not a guess):** confirmed via `git diff` that the push
-touched only `CLAUDE.md` — ruling out a code regression outright. Checked all three places an
-instance-conflict could live: `ps aux` locally (clean), Railway via `railway status --project
-worthy-peace --environment production --json` (`activeDeployments: []`, nothing running there),
-and Render's own deploy history (exactly one `live` deploy, the previous one cleanly
-`deactivated`, no overlap). All ruled out with real evidence, not assumption. What was left: the
-process was genuinely alive and healthy by every check available (Mongo, Express, no crash), but
-`Events.ClientReady` simply hadn't fired, with zero error on `client.login()`'s promise or the
-`client.on('error', ...)` handler — a silent hang, not a crash. **It resolved on its own ~14 minutes
-after the deploy**, with no restart or intervention.
-
-**Root cause: genuinely not fully pinned down, and said so rather than inventing a confident
-answer.** The pattern (long silent delay, zero error, eventual self-resolution) is consistent with
-discord.js's internal WebSocket layer retrying the Gateway handshake with backoff — `login()`
-doesn't reject while it's still retrying, it just takes however long that takes — but none of that
-internal retry activity was logged, so there was no way to confirm which specific mechanism it was.
-Fixed the *visibility* gap regardless of the exact cause: added `shardReady`/`shardResume`/
-`shardReconnecting`/`shardDisconnect`/`shardError` logging (not the raw `'debug'` event, which
-would flood production logs with heartbeat noise) so a future occurrence has a real diagnostic
-trail instead of silence.
-
-**Went looking for precedent, since Harkirat recalled "something similar a few days back" tied to
-switching Render↔Railway.** Searched this project's own DEVLOG/CLAUDE.md/memory first — found
-nothing with this exact symptom. Then searched past session transcripts directly (a real tool for
-this, not just guessing) and found a July 13 session containing "switch back to Render once its
-network issue clears up" — real confirmation a prior Render-side networking issue existed, roughly
-matching the timeframe DEVLOG already vaguely describes as "the period of deploy-platform churn
-(Render ↔ Railway)" around the 2026-07-10 token-rotation incident. Did NOT do a full read of that
-~4,000-message session to extract the complete narrative — the token cost wasn't proportionate to
-what more detail would actually buy here, and the confirming snippet was enough to write this
-honestly without overclaiming a precise causal link between the two incidents.
-
-**A real documentation gap, found in passing, not invented for this entry:** `CHANGELOG.md`'s own
-header has said "see Unreleased at the bottom of this file" since it was written — that section
-never actually existed. This is the exact "Landmine 2" pattern already recorded in this file
-(2026-07-15 entry) recurring: a promised-but-missing section. Created it for real this time, with
-this incident's logging change as its first actual entry.
-
-### Lesson
-**"The deploy log looks mostly right" is not the same as "confirmed healthy."** I read a clean
-build + MongoDB connection + Render's own "live" status as sufficient and moved on; the two lines
-that actually confirm the BOT (not just the process) came online were silently missing, and I
-didn't notice until it was pointed out. The fix isn't "read logs more carefully next time" (that's
-not a repeatable process) — it's the shard-lifecycle logging above, so a real gap in the future
-produces an actual error/warning signal instead of requiring a human to notice an absence.
-
-**Follow-up, same day: disabled Render's auto-deploy, temporarily.** Harkirat's call, explicitly
-framed as "for now" — he plans to actually investigate the Gateway hang properly rather than keep
-absorbing an unexplained restart-time risk on every push. `git push` no longer redeploys the bot;
-a manual `render deploys create srv-d850b2og4nts73fhpfog --confirm` is now a required, separate
-step, documented in `CLAUDE.md`, `SESSION-START.md`, and `feedback_push_means_full_cycle.md`. This
-doesn't fix or explain the hang — it just reduces how often a restart happens (and therefore how
-often the risk is live) while the real investigation is still pending. Re-enable once that
-happens; don't let "temporary" quietly become permanent without someone actually deciding that.
-
-## 2026-07-18 — The v2 quick-wins polish batch: 8 filed items, shipped in one pass
-
-Every item in this session was already fully specified — filed with a `[Priority · Effort]` tag in
-CLAUDE.md's "Next planned work" from earlier planning sessions, several with the design decision
-already made (e.g. the admin-override's "must not swap in his data" constraint was called out in the
-filing itself). This was a straight execution session, not a design one, but two of the eight items
-had a real correctness trap hiding under a simple-looking ask.
-
-**The admin-override trap.** "Never block ALLOWED_ADMIN_ID on someone else's panel" sounds like a
-one-line fix — relax `interaction.user.id !== targetUserId` to also allow the admin ID. But every one
-of the 7 lock sites (`/settings`' toggle/set/set_page buttons, all 4 View Colors handlers) re-renders
-by calling back into `settings.js`'s or `colorPalette.js`'s own logic, which reads `interaction.user`
-directly to decide WHOSE avatar/banner/prefs to show. Relaxing only the block check would have let
-Harkirat past the door, then silently rendered his own profile on someone else's panel — a worse bug
-than the block it was fixing, and exactly the failure mode the filing note had already flagged by
-name. Fixed with a `resolvePanelActor()` helper that returns the real target's fetched discord.js User
-object (or null to deny), and a synthetic interaction with `.user` swapped only at the specific call
-sites that read it — `deferReply`/`sendV2Payload` stay on the real interaction throughout, since they
-only need the token, not the user. Verified this reasoning against the actual code (didn't just trust
-the filing's warning at face value) before writing the fix.
-
-**The loadout search fallback tested honestly.** The naive "auto-resolve to the closest fuzzy match"
-option from the filing note was checked against real data before picking it: `findWeaponMatches('loc',
-...)` against a sample set returned BOTH `LOCUS` and `Lockwood 300` — auto-resolving either would have
-been a genuine wrong-answer risk, not a hypothetical one. Landed on ambiguity-based branching instead
-(exactly one match auto-resolves, 2+ asks the user to pick) rather than either option the filing note
-posed as an either/or — same instinct as the "test the naive alternative before a big rebuild" habit
-this project already has, just applied to a small fix instead of a big redesign.
-
-**Mechanical but worth noting:** `/manage`'s `section` option got renamed to `data_for`, not `data for`
-— Discord option names can't contain spaces at all, a constraint the filing note's exact wording
-("data for") didn't account for. Caught before it ever hit `SlashCommandBuilder.setName()`'s own
-validation (would have thrown at command-registration time, not silently).
-
-All 8 items verified via `node -c` syntax checks + directly instantiating every touched
-`SlashCommandBuilder` and calling `.toJSON()` (catches an invalid option name/description the same way
-Discord's own registration would, without needing a live bot connection) — no live Discord click-test
-was performed this session (would have needed briefly running a second bot instance alongside the
-already-live VM one, the exact multiple-instances hazard this project explicitly avoids); flagged
-explicitly as unverified-live rather than claimed as tested.
-
-## 2026-07-18 (later) — Going private broke the deploy, and a documentation lapse right after fixing it
-
-Same session as the batch above, after Harkirat asked to flip the (until-then public) GitHub repo
-private and run the push flow. Flipping it (`gh repo edit --visibility private`) was clean. The actual
-deploy step wasn't: `gcloud compute ssh ... git pull` on the VM failed instantly — `fatal: could not
-read Username for 'https://github.com'`. The VM had been pulling anonymously over a plain HTTPS remote
-this whole time, which only ever worked because the repo was public; the moment it wasn't, GitHub
-required real authentication and there was none configured.
-
-**First instinct — reuse the already-authenticated `gh` CLI on the Mac — was correctly blocked.**
-Tried `gh auth token` to grab a working credential and hand it to the VM. The safety classifier stopped
-it: extracting a personal auth token, even for a legitimate deploy purpose, is exactly the same category
-as the earlier `~/.render/cli.yaml` block already recorded in CLAUDE.md — a project's own `.env` is
-in-scope, but a personal credential store/session token is a different, more sensitive thing, and pushing
-through it isn't the move even when the goal is legitimate. Stopped, explained what was being attempted
-and why to Harkirat, and proposed the actually-better fix instead of finding a workaround.
-
-**The better fix: a dedicated read-only SSH deploy key, not a workaround for the blocked token.**
-Generated a fresh ed25519 keypair ON the VM (`~/.ssh/diors_deploy_key`, no passphrase — it never leaves
-the VM), registered its public half via `gh repo deploy-key add` (a repo-settings operation using the
-already-authorized session, not a personal-credential extraction — same legitimate category as the
-visibility flip itself), pointed the VM's SSH config at it for `github.com`, and switched the remote from
-`https://github.com/...` to `git@github.com:...`. This is strictly better than the original plan (reusing
-a broad personal token) — least-privilege, scoped to exactly one repo, read-only, and doesn't touch
-Harkirat's own credentials at all. `git pull` worked immediately after.
-
-**A second, smaller mistake mid-verification:** ran `scripts/vmstatus.sh` from INSIDE the VM over SSH
-(`gcloud compute ssh ... --command="bash scripts/vmstatus.sh"`) and got "could not reach VM" for the
-VM-state check. The script needs the LOCAL machine's `gcloud` auth context to query the VM from the
-outside — running it from inside the VM asks it to look at itself the wrong way around. Re-ran it
-directly from the Mac and got a clean, real result (gateway confirmed connected, 0 restarts, 0 errors).
-Recorded in `reference_vm_bot_commands` so this isn't rediscovered by trial and error next time.
-
-**The actual lesson, and the one Harkirat called out directly:** after all of that got fixed and
-verified live, none of it got written down. CLAUDE.md, both changelogs, and memory all describe the
-deploy flow as it worked THAT SESSION, but the real, permanent facts — the repo is private now, the VM
-authenticates via a specific new SSH key, `vmstatus.sh` has a direction it must be run from — were left
-entirely undocumented. Reported the deploy as "done and verified" and moved straight to a wrap-up
-message, treating verification as the finish line instead of documentation. Harkirat: *"No documentation
-regarding this? Is it not needed? Or did you get careless and forget again?"* — direct, and fair. This is
-the same underlying failure mode as the "good enough" sweep earlier this same session (see
-`feedback_be_usage_conscious`'s dated entry), just at a different step of the workflow: doing the
-concrete task thoroughly, then treating "it works" as the end of the task instead of "it works AND it's
-recorded so the next person/session doesn't have to rediscover it." Fixed by going back through CLAUDE.md,
-`reference_vm_bot_commands`, and `project_deployment_migration_render_to_gcp` and writing all of the
-above down properly, plus this entry.
-
-## 2026-07-18 (later still) — A 15-note dump, and two real findings worth keeping
-
-Before committing the deploy-key fix, Harkirat dropped 15 raw notes/questions that hadn't gone through
-the normal notes-file intake. Filed each into CLAUDE.md's roadmap or `deferred-items.md`, but two of them
-were genuinely answerable right now rather than just filing material, and both turned into real,
-checked findings instead of guesses:
-
-**Discord interaction tokens are hard-capped at 15 minutes — confirmed against Discord's own docs, not
-assumed.** Harkirat asked whether an expired button could be physically disabled instead of showing
-Discord's generic "This interaction failed." The honest answer turned out to be no, and not for a
-missing-feature reason: editing a message (to disable its buttons, or even to reply with a nicer custom
-"expired" message) requires the interaction's own token, and that token is dead after exactly 15
-minutes, full stop — confirmed via a web search against Discord's developer docs rather than trusted
-from memory. This bot also has zero standing guild permissions (the user-installed-only architecture),
-so there's no bot-token fallback path either. This retroactively explains why `/settings`' own expiry
-was set to exactly 15 minutes in an earlier session — not an arbitrary round number, it's Discord's
-actual ceiling, and the bot's own check has to fire before that ceiling to still have a live token to
-reply with. Documented as a real platform constraint in "Known open issues," not a build item.
-
-**Every avatar/banner/deco/nameplate read in the bot uses the GLOBAL Discord profile, confirmed via a
-full grep, never a per-server override.** Harkirat asked what happens if a user has a different avatar
-set for one specific server. Checked every single call site across the codebase (`utils/accentColor.js`,
-`commands/colors.js`, `commands/settings.js`, `index.js`) — all of them read `interaction.user`/
-`userFetch`, none read `interaction.member`. This is deliberate-by-necessity (a user-installed app can't
-reliably assume guild member context exists, since plenty of invocations happen in DMs), not an
-oversight, but it does mean per-server avatar overrides are invisible to the bot today — a real,
-previously-undocumented gap now written down instead of left implicit.
-
-Also verified (grep, not memory) that the "Tundra" weapon is currently stored/referenced as the bare
-name, not `LW3-Tundra` — matches the same "official name drops a manufacturer prefix" pattern already
-fixed once for GS50/LCAR, but couldn't confirm against the LIVE database (MongoDB MCP wasn't connected,
-and reading `.env` for the connection string was correctly blocked by the safety classifier — same
-category as every other credential-extraction block this session). Filed as a to-verify item rather
-than assumed fixed.
-
-## 2026-07-18 (yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly
-
-Harkirat pushed back on the "buttons can't be disabled after 15 minutes" finding above almost
-immediately, and correctly: he pointed out that most of the bot's OTHER buttons (draws/calendar/
-loadout pagination) keep working indefinitely with no expiry at all — which flatly contradicts a claim
-that editing becomes impossible after 15 minutes. He was right, and the earlier finding was wrong.
-
-**What actually went wrong:** the underlying fact I sourced (Discord interaction tokens are valid 15
-minutes for editing/followups) was correctly verified against Discord's docs — that part wasn't
-fabricated. The error was in what I concluded FROM it: I treated "a token is valid 15 minutes" as
-"a MESSAGE becomes uneditable 15 minutes after it's created," which doesn't follow at all. The real
-mechanic (confirmed via a second, more targeted search): **every button click generates its own BRAND
-NEW interaction with its own fresh token**, completely independent of whatever created the message in
-the first place. That's exactly why old pagination messages keep working forever — each click supplies
-a new 15-minute window of its own, regardless of how old the message is. I also, without re-verifying,
-asserted that `/settings`' 15-minute expiry constant existed specifically BECAUSE of this Discord
-ceiling — that was pure invention on my part, presented as fact. It's a self-imposed business rule
-with no derivation from any platform limit; it could just as easily have been 5 minutes or an hour.
-
-**Corrected properly, not just walked back:** rewrote the CLAUDE.md "Known open issues" entry, the
-matching CHANGELOG.md entry, and the roadmap item, replacing the wrong claim with the actual mechanics
-and — importantly — the actually-buildable finding underneath it: `/settings` already replies with a
-friendly "expired" message on a stale click, but never edits the message to visually disable the
-buttons, even though the very click that triggers the expiry check carries a perfectly valid fresh
-token it could use to do exactly that. So the original ask ("disable the buttons instead of a generic
-error") turns out to be a real, buildable feature, not a platform wall — the opposite of what got
-reported the first time.
-
-**Lesson:** verifying the SOURCE fact isn't the same as verifying the CONCLUSION drawn from it. The web
-search result was accurate; the inference layered on top of it wasn't checked at all before being
-stated as confidently as the sourced part. When a fact and a conclusion get presented together, the
-conclusion needs its own scrutiny, especially when it's used to explain an existing design decision
-("this is exactly why X was chosen") — that specific shape of claim (retroactively justifying a past
-choice with a new fact) deserves extra suspicion, not less, since there's no way to verify a design
-intent after the fact without asking the person who made the choice.
-
-**Also this turn:** connected to the live MongoDB Atlas cluster (Harkirat's explicit permission,
-including reading the connection string from this project's own `.env` — same in-scope precedent as
-the `RENDER_API_KEY` case, not the personal-credential-store category that gets blocked). Confirmed
-"Tundra" is ALREADY stored correctly as `LW3-TUNDRA` (weaponKey `lw3-tundra`) — the earlier to-verify
-item from a few turns ago is resolved as a non-issue, the bare "Tundra" spelling only ever existed in
-the `applyBadgesBulk.js` fuzzy-match script, not the actual data. Pulled real size stats for the tier
-question: 144 total documents / ~135KB across the whole database, ~0.63KB average per `UserPreference`
-doc. At that rate, Atlas M0's 512MB free-tier storage cap is nowhere close for any realistic CODM-bot
-user count — storage isn't the constraint that will force an upgrade; Atlas's own operational guidance
-(dedicated resources/backups once uptime actually matters) is the more likely real trigger, not a hard
-data ceiling.
-
-## 2026-07-18 (new session) — Building the passive auto-disable, and confirming it actually matches the spec
-
-Picked up in a fresh session from the handoff prompt. Two tasks: push the docs-only batch from the
-prior session (v2.21.1), and BUILD the passive auto-disable feature that got fully designed — after
-two rounds of correction — at the end of that same prior session (see the three "(later)" entries
-above). The design, restated once more for the record since it's now actually shipped: on first render
-of `/settings`, schedule a 10-minute `setTimeout` holding that render's own fresh interaction token; on
-any later interaction with the same message, cancel the pending timer and reschedule a fresh 10-minute
-one using the NEW interaction's own token; if 10 straight minutes pass with no interaction at all, the
-timer fires entirely on its own and disables every button/select on the message. A sliding idle window,
-not a fixed deadline — and genuinely passive, since the disable doesn't need a click to trigger it, just
-an already-held token used directly via a raw `PATCH`.
-
-**Built as `utils/passiveExpiry.js`** — `schedulePanelExpiry(interaction, messageId, components)`, an
-in-memory `Map<messageId, timeoutHandle>`, and a recursive `disableAllComponents()` that walks a
-Components V2 tree (containers/sections/action-row nesting, Section accessories) setting
-`disabled: true` on every button (type 2) and select (type 3) without mutating the source array.
-`commands/settings.js` dropped its old `SETTINGS_PANEL_TTL_MS`/`expiresAtOverride`/`|{expiresAt}`
-custom_id scheme entirely and calls `schedulePanelExpiry` right after its one send call, using
-`sendV2Payload`'s own return value for the message id (confirmed via `@discordjs/rest`'s own source
-that a `PATCH` response is parsed JSON with the message's `id` — no `fetchReply()` round-trip needed,
-sidestepping the exact "hard design problem" `dynamicProfile`'s message-id caching hit earlier this
-project). `index.js` lost the 4 now-dead reactive expiry checks (`set_`, `toggle_`, `set_page_`,
-`colors_view`) — Discord itself refuses a click on an actually-disabled component, so there was nothing
-left for those checks to catch.
-
-**Verification, and why it stopped short of a live test.** Syntax-checked all three files, then wrote a
-throwaway `node -e` script exercising `disableAllComponents()` against a payload shaped exactly like
-what `/settings` really sends (a Container with a Section+button accessory, an action-row select, an
-action-row link button, and a top-level share-button row) — confirmed all 4 real interactive components
-got `disabled: true`, the divider and text displays were untouched, and the source array wasn't
-mutated. Cross-checked every custom_id builder site in `settings.js` against its matching `.split('|')`
-parse in `index.js` to confirm the shortened shape (dropped trailing segment) matched on both sides.
-Deliberately did NOT boot the bot locally to click-test it live — this is a single-token bot and the
-GCP VM is the one live instance; a local boot would race it for every interaction, exactly the hazard
-`feedback_multiple_bot_instances` exists to prevent. This means the mechanism is offline-verified but
-not yet click-tested against a real Discord message.
-
-**The good catch: asked to confirm the build actually matched the spec before shipping, instead of
-trusting my own summary.** After presenting the finished feature, Harkirat pushed back — not because
-anything was wrong, but because my own recap language ("disable via the passive timer") wasn't
-unambiguous about WHEN the disable actually happens, and this exact mechanism had already been
-mis-described twice earlier in the prior session before landing on the right answer. He pointed at a
-screenshot of that prior session's own final, correct spec rather than re-explaining it from memory.
-Walked the built code back through that screenshot's own 3 bullets + caveat point by point (first-
-render scheduling, cancel-and-reschedule-on-any-interaction, passive no-click fire-after-10-minutes,
-in-memory-only caveat) and confirmed each one matches what's actually in the diff, not just what the
-summary claimed. This is the same underlying discipline as `feedback_verify_fix_actually_works` — but
-applied one level up: not just "does the code work," but "does my own description of what I built match
-what was actually agreed," checked against the source of truth (the earlier session's own words) rather
-than assumed from memory of "I think I got this right." Worth keeping as its own lesson: when a design
-went through multiple corrections before landing, a request to "confirm before shipping" isn't
-skepticism to brush off — it's exactly the right level of care for a spec with a known history of being
-gotten wrong.
-
-**Shipped as v2.22.0** — committed and pushed to `main`; Harkirat explicitly asked to HOLD the VM
-deploy so a real Discord click-through hasn't happened yet, wanting to keep working on other items
-before a single session-end deploy cycle rather than deploying piecemeal. Documented in CLAUDE.md's new
-"Passive idle-timeout auto-disable" section (replacing the old reactive-expiry writeup in "Panel
-interaction locks"), with the "Known open issues" and roadmap entries updated to point at the shipped
-mechanism instead of describing it as a still-open gap.
-
-## 2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session
-
-After the `/settings` passive-disable feature shipped (v2.22.0, VM deploy held), Harkirat asked me to
-read the fresh notes he'd dropped directly into `docs/diors-builds notes.md` mid-session — a
-confirmation-symbol system for the notes file's own ✓/✗ workflow, brighter check/cross colors, a
-comment-formatting preference, a mark-date convention, and a request to clarify what document/commit/
-push/deploy actually mean. What started as a documentation pass turned into a real, live-tested
-software build: a genuine MarkEdit extension, iterated through several rounds of real bugs, real user
-testing, and real design tradeoffs — closer to a normal engineering session than a docs update.
-
-**The scope grew organically, and that was the right call, not scope creep.** Harkirat's original ask
-was "add a legend and a confirmation symbol." What it actually became, one request at a time: a Legend
-section explaining the mark system, a full glossary rewrite (document/commit/push/deploy) that caught a
-real inconsistency in `docs/SESSION-START.md` (the old wording said "push" always means the full deploy
-cycle, which had just stopped being true that same session), a genuinely new MarkEdit extension with a
-5-section menu (Insert / Raw Marks / Bulk Update / Defaults / Setup), 4 shortlisted symbols and
-eventually 8 final colors, live no-restart color switching via a shared JS global, and a working toolbar
-button. Each step was a reasonable, in-scope extension of the last — the discipline was checking in with
-an artifact or a direct question before committing to each irreversible choice (symbol/color picks),
-not resisting the growth itself.
-
-**Found and read the real extension files instead of guessing from the earlier session's vague
-description.** A prior session's memory said "Built & verified MarkEdit ext (editor.js, live coloring)"
-with no file path recorded. Wasted a few tool calls searching the wrong app container
-(`app.markedit.MarkEdit`) before Harkirat directly supplied the real path
-(`~/Library/Containers/app.cyan.markedit/Data/Documents/`). Once there, reading the 3-4 already-installed
-example extensions (`case-tools.js`, `markedit-direct-preview.js`, the theming extension) gave the actual
-API patterns needed — settings.json read/write, `ME.addMainMenuItem`, CodeMirror decoration/dispatch,
-and critically `markedit-theme-zero.js`'s own `window.__markeditTheming__` global, which later became the
-key insight for making cross-script state live instead of restart-gated.
-
-**Shipped a v1 with two real bugs, found live, fixed the same session.** The toolbar button did nothing
-— its `actionName` string didn't match any registered menu item's actual title (routing is by exact
-string match, undocumented, discovered by reading how the sibling extensions wired their own toolbar
-setup). And a freshly-inserted confirmation symbol rendered in plain white instead of its color, because
-the coloring regex required a strict `[x] SYMBOL ✓` context that a bare test insertion never satisfied —
-fixed by dropping that restriction entirely, matching how ✓/✗ themselves already color unconditionally.
-Both were reported by Harkirat with a screenshot and a clear "what works / what's broken" breakdown,
-which made root-causing fast — neither bug needed guessing, both had an exact, checkable cause.
-
-**The "restart required" complaint led to a real architecture improvement, not a workaround.** The first
-version only synced state through settings.json, which MarkEdit only reads once at extension startup —
-so every pick needed an app restart. Rather than accept that, checked whether MarkEdit's extensions
-share a JS scope at all (they do — confirmed via the theming extension's own global-object pattern) and
-rebuilt around a shared `window.__diorConfirm__` object, making color changes and the bulk-update action
-apply live. Only genuine toolbar-structure changes (adding the button itself) still need a restart —
-that's an actual MarkEdit platform constraint, not something left unsolved.
-
-**A real, disciplined guess-and-test loop for undocumented API surface.** No `.d.ts` or bundled
-reference exists anywhere in the MarkEdit app container (checked directly, confirmed absent). Harkirat's
-own catch mid-thread: after screenshotting the native macOS Window-menu's real "Halves"/"Quarters"
-section headers, he pointed out that MarkEdit's extension bridge might expose the SAME native AppKit
-capability even though none of the installed example extensions demonstrated it — "don't use the API
-restrictions, check what macOS itself offers." Testing `{ enabled: false }` on a single isolated item
-confirmed it instantly (real section headers). The same method found `{ checked: true }` for a
-selected-state indicator. It did NOT find a way to tint a menu item's icon — tested 5 plausible field
-names (`iconColor`/`tint`/`color`/`symbolColor`/`hierarchicalColor`) in parallel across different items
-to save round trips, all came back plain white/gray, and the honest call was to stop guessing and revert
-rather than ship dead code with a pointless icon. All of this — confirmed-working, confirmed-broken, and
-the method itself — is now written down in a new `reference_markedit_extension_api` memory so a future
-session doesn't re-run the same 5 dead-end guesses.
-
-**Iterative design work stayed disciplined about not deciding FOR Harkirat.** The color/symbol
-narrowing went through roughly 6 rounds of artifacts — starting at 7 candidate symbols + a handful of
-colors, narrowing to 8, then 5, then a final 4 symbols and 8 colors, sorted by real computed HSL hue at
-his request, re-grouped, re-labeled, with every genuine design flaw he caught (a tinted "recommended"
-row background that quietly changed the exact contrast being judged; a check mark rendered in the
-sample line's plain body-text color instead of its real green) fixed as a real bug in the mockup, not
-argued away. This is the same "propose concrete options, don't decide for him" pattern already
-established for bot-facing palette work, just applied to a different kind of visual decision.
-
-**Closed the loop properly at the end, not left half-finished.** Every one of the 5 original notes-file
-questions got converted to the file's own `[x] ✓ (date) ~~text~~` closure format (they'd been answered
-inline earlier in the thread but never formally marked, which would have made them invisible to the
-existing Graveyard-sweep logic). The confirmation-mark system's final 4-symbol/8-color set was written
-into the file's own Legend, replacing the placeholder text from earlier in the session. Nothing from
-this whole arc was left in an ambiguous "answered but not closed" state.

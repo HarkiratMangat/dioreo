@@ -192,6 +192,13 @@ the fix itself is a one-file internal change.
   touch it, per-push chores) and a **ToC to `DEVLOG.md`**; and a second memory pass — a scannable "🔴 THE RULES
   THAT GET SKIPPED" checklist atop `user_working_agreement.md` (so the non-negotiables reach every model tier),
   plus rot-proofing a stale hardcoded "current version" line in the changelog-system memory.
+- **Third doc batch (same session):** **completed the git-tag backfill — every version now has a tag,
+  `v1.0.0`→`v2.30.2`, 58 tags, zero gaps** (the old "no clean commit mapping" deferral was a false premise;
+  nearly every entry cited its own hash, verified monotonic before pushing); **restructured `DEVLOG.md`** —
+  moved 7 dated narrative entries that had drifted into the "thematic" Part B back into their chronological
+  Part A slots (Part B is now purely thematic); recorded Harkirat's decision on the `/manage` per-slot fix
+  (store slot labels in Mongo); and a memory note capturing the "notice-a-gap-then-shrug" tell (I did it this
+  session and Harkirat caught it).
 
 ## v2.30.1 — 2026-07-21 (`c419fcf`) — `/draw prices` Advanced Double Legendary page corrections
 Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent

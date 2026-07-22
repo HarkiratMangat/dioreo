@@ -293,12 +293,16 @@ alone (an earlier pass here missed `v2.18.1` entirely — it bundles 3 commits, 
 `1600b8e`, pushed together as one version per the existing "one push, one number" rule, and none of
 the 3 commit messages themselves say "v2.18.1"). Confirmed via `git describe --tags` after tagging:
 `v2.18.1-1-gcf6cad7` — exactly matches `git status`'s "ahead of origin by 1 commit," i.e. only the
-current HEAD is genuinely unreleased. **Deliberately did NOT backfill further back than v2.17.3.**
-Most of this repo's ~40+ earlier version bumps span date-grouped ranges in `CHANGELOG.md` without
-an unambiguous 1:1 commit mapping (e.g. five separate bumps all dated one day) — tagging those
-would mean guessing, and a wrong permanent tag is worse than no tag. If a clean historical mapping
-is ever worked out, backfill then; until that's actually done, treat pre-`v2.17.3` history as
-untagged by design, not an oversight.
+current HEAD is genuinely unreleased. **FULL BACKFILL COMPLETED 2026-07-21 — every version now has a
+tag: `v1.0.0` → `v2.30.2`, 58 tags, zero gaps.** The earlier "deliberately did NOT backfill further back
+than v2.17.3" stance was based on a false premise (that pre-v2.17.3 versions had "no unambiguous 1:1
+commit mapping" because of same-day multi-version bumps). In fact **almost every pre-v2.17.3 CHANGELOG
+entry already cites its own commit hash in the description** — the mapping was sitting right there. The two
+that didn't (`v2.6.0`, `v2.7.0`) were resolved from the git log: `v2.6.0` → `043a3bc` (the LAST commit of
+its multi-commit bundle, per the tag-on-last-commit convention), `v2.7.0` → `23ce7fc`. The whole mapping
+was verified **monotonic** (every tag's commit date ascends with its version) before pushing — so there's
+no guessing and no wrong tag. `git describe --tags` now works cleanly against any commit in the repo's
+history. The pre-2026-07-21 backfilled tags (`v2.17.3`/`v2.18.0`/`v2.18.1`) mentioned above are unchanged.
 
 ## Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain
@@ -2984,9 +2988,11 @@ two enhancements — all admin/back-end:
     Harkirat teaching the DMZ slot layout** (one DMZ screenshot with EMPTY slots so labels show, or the fixed
     slot positions top-to-bottom). Ties into the "DMZ full-slot handling" gap noted just above.
   - **The proper `/manage` attachment→per-slot-metadata fix** (the "Still open" gap above) — Harkirat wants a
-    real fix, not a documented gap. Needs a design call (a slot input in the modal, or storing slot labels in
-    Mongo so `/manage` edits can re-derive them). He wants a fuller explanation of the chosen approach when
-    it's tackled.
+    real fix, not a documented gap. **APPROACH DECIDED 2026-07-21 (Harkirat ack'd Claude's recommendation):
+    store the slot labels in MongoDB on the `Loadout` doc** (a schema addition), so `/manage` edits can
+    re-derive/update the per-slot Cloudinary metadata without needing a slot-picker in the modal. Rejected
+    alternative was adding a slot input to the edit modal. Build it in the `/autobuild` session; Harkirat
+    wants a fuller walkthrough of the implementation when it's tackled.
 
 ---
 
