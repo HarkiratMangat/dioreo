@@ -173,6 +173,13 @@ the fix itself is a one-file internal change.
   end-to-end `draws.buildContainer()` render of a 2-chunk doc (`subpage_new_0`/`subpage_new_1`, not two
   `subpage_new_1`). Left as clamp-at-2; a cosmetic single-toggle-button alternative is possible later
   (Harkirat's call).
+- **Documentation cycle shipped alongside this version (doc-only, no separate version):** the records audit
+  this session — graduated v2.27.0–v2.30.1 out of the old "pending graduation"/"Unreleased" staging into the
+  numbered list above; fixed the scrambled 2026-07-18 ordering; backfilled `CHANGELOG-SUMMARY.md` so no
+  version number is skipped (v2.27.0 + the older minors via range-extension); pruned four already-shipped
+  items from the roadmap; backfilled the missing **v2.26.0 git tag**; a full notes-scratchpad tidy (SESSION
+  STATUS #4, inline answers/marks, ℋ-item sweep) with its intake filed into CLAUDE.md/deferred-items; plus
+  CLAUDE.md staleness fixes and a memory-alignment pass. No bot behaviour changed by any of it.
 
 ## v2.30.1 — 2026-07-21 (`c419fcf`) — `/draw prices` Advanced Double Legendary page corrections
 Two fixes to the v2.30.0 Advanced Double Legendary page, from a marked-up screenshot Harkirat sent
