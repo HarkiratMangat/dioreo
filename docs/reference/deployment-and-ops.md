@@ -34,8 +34,11 @@ Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root 
   setup; only matters if `git pull` on the VM ever fails with an auth error). In short: VM
   `diors-builds-bot` (e2-micro, `us-east1-b`,
   project `gen-lang-client-0549308254`) runs the bot under **systemd** (unit `diors-bot`, auto-restart on
-  crash + reboot). **"Push"/deploy is git-based:** `git push origin main` → on the VM `cd ~/diors-builds
-  && git pull && sudo systemctl restart diors-bot` → verify `scripts/vmstatus.sh`. Render's free tier was
+  crash + reboot). **Deploy is git-based, and separate from merge (Branch → Commit → Push → PR → Merge →
+  Deploy workflow, adopted 2026-07-24 12:24 EDT):** a merge lands code on `main`; deploy is the deliberate
+  next step that makes the VM run it — `./scripts/deploy.sh` (or the raw `cd ~/diors-builds && git pull &&
+  sudo systemctl restart diors-bot`) → verify `scripts/vmstatus.sh`. A merge can sit undeployed
+  indefinitely. Render's free tier was
   proven unable to hold the Discord gateway (10-14 min connects → zombie sockets; identical code connects
   in seconds on the VM) — see memory [[project_deployment_migration_render_to_gcp]] + DEVLOG's 2026-07-17
   entry. **Render service `srv-d850b2og4nts73fhpfog` is SUSPENDED — do NOT deploy to it or treat it as
@@ -93,14 +96,16 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   → auto-restarts on crash AND on VM reboot. Logs → journald (`sudo journalctl -u diors-bot`). Installed
   on the VM: Node 24, npm, git, **ffmpeg** (system binary for `utils/stillFrame.js`). Secrets live in
   `~/diors-builds/.env` (scp'd from the Mac; includes `LOG_WEBHOOK_URL`).
-- **Deploy = git-based (the new "push"):** `git push origin main` → on the VM run **`./scripts/deploy.sh`**
+- **Deploy = git-based, a separate step AFTER merge** (re-scoped 2026-07-24 12:24 EDT — code reaches
+  `main` via a squash-merge now, not a direct push): on the VM run **`./scripts/deploy.sh`**
   (added 2026-07-20; does `git pull` → writes the `.restart-reason` marker → `sudo systemctl restart
   diors-bot` → `vmstatus.sh`) → verify. `./scripts/deploy.sh manual` restarts WITHOUT pulling (e.g. after
   an `.env` change). The old raw `cd ~/diors-builds && git pull && sudo systemctl restart diors-bot` still
   works, but skipping deploy.sh means the "Bot online" alert can't label the restart as a deliberate deploy
-  (it'll correctly show as "automatic/unattended" — see the alert restart-labeling note below). **A `git
-  push` alone does NOT update the VM.** No auto-deploy (the VM is stable; not needed). See
-  [[feedback_push_means_full_cycle]].
+  (it'll correctly show as "automatic/unattended" — see the alert restart-labeling note below). **A merge
+  alone does NOT update the VM** — deploy is asked separately every time, and a merged version can sit
+  undeployed indefinitely. No auto-deploy-on-merge (considered and deferred — see `docs/ROADMAP.md`'s
+  "Process / tooling" section). See [[feedback_push_means_full_cycle]], [[project_git_workflow]].
 - **Repo went PRIVATE 2026-07-18** (was public; Harkirat's call, unrelated to any security incident) —
   this broke the VM's `git pull`, which had been pulling anonymously over a plain `https://github.com/...`
   remote (worked fine on a public repo, silently requires auth the moment it isn't). Fixed with a
@@ -208,15 +213,18 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   (`journalctl -u google-cloud-ops-agent-opentelemetry-collector | grep -i denied`) before suspecting the
   query. **Still deferred:** guest disk-usage peaks in `vmpeaks.sh` (the agent now provides the metric).
 
-## Version tagging (added 2026-07-16)
+## Version tagging (added 2026-07-16; re-scoped to merge-time 2026-07-24 12:24 EDT)
 The `vMAJOR.MODERATE.MINOR` convention itself is defined in `docs/SESSION-START.md` (tracked in git,
-canonical source — don't duplicate the full rules here), including the existing "ONE version per
-PUSH, not per commit" rule and `docs/CHANGELOG.md`'s "Unreleased" section with a proposed number. What's
-new: **each real push's version now also gets an actual git tag** (e.g. `v2.18.1`), complementing
-(not replacing) that existing system — the CHANGELOG's proposed number is the human-readable plan,
-the tag is the permanent, unambiguous marker once it's real. This makes `git describe --tags` give
-free, zero-maintenance visibility into exactly what's committed-but-unpushed since the last real
-push.
+canonical source — don't duplicate the full rules here). **Under the Branch → Commit → Push → PR → Merge
+→ Deploy workflow (adopted 2026-07-24 12:24 EDT), the version-earning unit is the MERGED PR, not the push** — a
+squash-merge collapses a branch to one commit on `main`, and that squash commit is what gets tagged.
+`docs/CHANGELOG.md`'s "Unreleased" section holds the proposed number for whatever's on the open branch/PR
+awaiting merge. **Each merged PR's version gets an actual git tag** on the squash commit (e.g. `v2.18.1`),
+complementing (not replacing) the CHANGELOG entry — the CHANGELOG's proposed number is the human-readable
+plan, the tag is the permanent, unambiguous marker once it's real. This makes `git describe --tags` give
+free, zero-maintenance visibility into exactly how many commits deep past the last merged version you are.
+(Historically — pre-2026-07-24 — the tag landed on the last commit of a direct push to `main`; that model
+is retired now that all work flows through a branch + squash-merge first.)
 
 **Backfilled tags: `v2.17.3` (`426a444`), `v2.18.0` (`5c403a7`), and `v2.18.1` (`1600b8e`)** — found
 by cross-checking `CHANGELOG.md` directly against `git log`, not by guessing from commit messages

@@ -37,6 +37,13 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config(); // Secure injection of environment variables from local or cloud environment
 
+// package.json's `version` is bumped at every git-workflow MERGE (not on every commit/push -- see
+// project_git_workflow memory) and is otherwise dead at runtime, so reading it here is free/safe. This
+// is the "what's actually running" signal: main's version = latest tag = package.json on main; the VM's
+// running version = package.json on whatever commit the VM last deployed -- the two can legitimately
+// diverge since deploy is a separate, optional step from merge.
+const { version: BOT_VERSION } = require('./package.json');
+
 const mongoose = require('mongoose'); // Add to dependency imports
 const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
@@ -335,7 +342,7 @@ client.once(Events.ClientReady, (c) => {
     const kind = reason === 'deploy' ? '🚀 Manual deploy (git pull + restart)'
         : reason === 'manual' ? '🔧 Manual restart'
         : (() => { const ctx = restartContext(); return `♻️ Automatic/unattended restart${ctx ? ` (${ctx})` : ''}`; })();
-    sendAlert('Bot online', `${kind}\nLogged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
+    sendAlert('Bot online', `${kind}\nv${BOT_VERSION} · Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
 });
 
 // DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) — an info-level, NON-pinging alert once every 24h so a

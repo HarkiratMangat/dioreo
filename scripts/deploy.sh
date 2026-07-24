@@ -13,6 +13,12 @@
 # NOTE: this replaces the old manual command sequence (`git pull && sudo systemctl restart diors-bot`).
 # Using it is what makes the manual-vs-auto restart labeling work — a bare `systemctl restart` that skips
 # this script will (correctly) show up as an "automatic/unattended restart".
+#
+# Under the Branch -> Commit -> Push -> PR -> Merge -> Deploy workflow (adopted 2026-07-24 12:24 EDT),
+# `git pull` here pulls whatever squash-merge commit is on `main` -- deploy is a deliberate, separate,
+# per-merge-optional step (a merged version can sit undeployed indefinitely), never implied by the merge
+# itself. This script's own mechanics (pull -> mark -> restart -> status) are unchanged by that workflow
+# switch; only WHEN a human/Claude chooses to run it changed.
 set -euo pipefail
 cd "$(dirname "$0")/.."   # repo root, regardless of where invoked from
 REASON="${1:-deploy}"

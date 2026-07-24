@@ -13,10 +13,10 @@ Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
   detailed reasoning behind it than the entries above.
 - **Three-part `vMAJOR.MODERATE.MINOR`** (restructured 2026-07-12). `MAJOR` (whole-number, e.g.
   v2 → v3) = a major overhaul or major new functionality — only bumped deliberately, with Harkirat's
-  confirmation. `MODERATE` (middle field) = a significant push: a new feature, a real design change,
+  confirmation. `MODERATE` (middle field) = a significant PR: a new feature, a real design change,
   several large bug fixes, or a bundle of adjustments — bumping it resets `MINOR` to 0. `MINOR` (last
-  field) = a small adjustment/fix/correction committed on top. `MODERATE` can climb past 9 (v2.10.x,
-  v2.11.x, …) indefinitely; reaching double digits is NOT a reason to bump `MAJOR`.
+  field) = a small adjustment/fix/correction. `MODERATE` can climb past 9 (v2.10.x, v2.11.x, …)
+  indefinitely; reaching double digits is NOT a reason to bump `MAJOR`.
 - **Notation — now uniform three-part throughout (normalized 2026-07-21).** Entries v2.7.1 and earlier
   were originally written in a condensed **two-decimal** notation (the trailing MINOR digit crammed onto
   the MODERATE field, no second dot — e.g. `v2.71` meant v2.7.1, `v2.51` meant v2.5.1, `v1.61` meant
@@ -26,11 +26,18 @@ Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
   `docs/reference/deployment-and-ops.md`).
   Fixing the notation also surfaced and corrected one pre-existing ordering slip (v2.7.1, a `.1` follow-up,
   had sat below v2.7.0 — now above it, matching every other pair and the newest-first order).
+- **The unit that earns a version number changed 2026-07-24 12:24 EDT: "push-that-went-live" →
+  "merged PR."** Under the new Branch → Commit → Push → PR → Merge → Deploy workflow (see
+  `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`),
+  each merged PR squashes to ONE commit on `main` and gets ONE version number + one git tag on that squash
+  commit — not per raw commit, not per push of a feature branch. Everything through v2.32.0 above was
+  numbered under the old "one push, one number" rule; that history is left as-is, only the *going-forward*
+  unit changed.
 
-Only pushes that actually went live get a permanent version number — see **Unreleased** at the
-bottom of this file for work that's committed but not yet pushed.
+Only merged PRs get a permanent version number — see **Unreleased** at the bottom of this file for
+work still on an open branch/PR.
 
-**Detailed vs. summary coverage:** every real push gets an entry here, including purely internal
+**Detailed vs. summary coverage:** every merged PR gets an entry here, including purely internal
 housekeeping (repo/tooling changes, nothing a player would notice). [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)
 **represents every version number too — no number is skipped** (Harkirat's rule, 2026-07-21: "easier to
 delete than to add"). It stays player-focused, so trivial/internal/docs-only point releases aren't given
@@ -1294,12 +1301,33 @@ green copy button"
 
 ---
 
-# 📋 Unreleased (committed, not yet pushed)
+# 📋 Unreleased (open branch/PR, not yet merged)
 
-Staging area for work that's committed locally but hasn't gone live yet, so it has no permanent version
-number. On push, graduate this content up into a real numbered entry (newest-first, at the TOP of the
-list above) and reset this section to empty.
+**Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open
+branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on
+`feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version
+until the squash-merge mints one. On merge, graduate this content up into a real numbered entry (newest-
+first, at the TOP of the list above, with the real squash-commit hash + tag) and reset this section to
+empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
+that model is retired now that all work flows through a branch first.)
 
-*Nothing staged. (`v2.31.0` was graduated to a numbered entry above and `v2.32.0` shipped on 2026-07-24 —
-see the top of the list. Under the incoming branch/PR workflow, in-flight work will live on its own
-branch/PR rather than in this section; its role is redefined in the workflow-overhaul release.)*
+**Proposed `v2.33.0`** — on branch `feat/git-workflow`, not yet merged. *(This is the inaugural dogfood
+of the workflow it describes — drafted here now, finalized with the real squash-commit hash + tag at
+merge.)*
+- **Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow**, replacing the old
+  "everything on `main`, push = version bump" model. Version now mints at MERGE (squash), not push;
+  branch commits are free/unversioned checkpoints; push/merge/deploy are each asked separately, every
+  time. Design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`.
+- Consistency sweep across the repo-doc side to match: `CLAUDE.md`'s git-workflow invariant,
+  `docs/SESSION-START.md`'s NON-NEGOTIABLES glossary + a hardened FIRST-ACTION gate, both changelogs'
+  Versioning headers, `docs/ROADMAP.md`, `docs/README.md`'s per-merge chore checklist,
+  `docs/reference/deployment-and-ops.md`'s version-tagging section, `scripts/deploy.sh` comments, and
+  the 4 coupled memory files (`feedback_docs_at_push_time`, `feedback_push_means_full_cycle`,
+  `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system`).
+- **The one code change:** `index.js`'s "Bot online" boot alert now reads and reports `package.json`'s
+  version, so a lagging VM deploy is visible at a glance against `main`'s latest tag. `package.json`
+  bumped from a stale `1.0.0` to `2.33.0` as part of this merge.
+- Moved the changelog doc-check hook (`.claude/settings.local.json`) from firing on every `git commit`
+  to firing on `gh pr merge` — the right grain now that branch checkpoint commits are free.
+- *(This entry itself is the first real-world proof of the new model: drafted here on the branch as the
+  work happened, per the "docs land in the PR" rule.)*
