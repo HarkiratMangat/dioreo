@@ -159,7 +159,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.32.0 — 2026-07-24 (`987750a`) — `/manage` patch notes: multi-season management + manual title override
+## v2.32.0 — 2026-07-24 12:12 EDT (`987750a`) — `/manage` patch notes: multi-season management + manual title override
 The patch-notes admin page could only ever edit the **one** entry that happened to be "current" — there was
 no way to *start* a new season's notes at all (the notes-file's own "PRIORITY: WHAT A HUGE MISS BY US" item).
 This adds the missing lifecycle. Implemented in a prior session (Sonnet 5, "Part 3") and carried uncommitted
@@ -191,7 +191,7 @@ it's trusted in production.
 CLAUDE.md modularization (the bulk of it, docs/architecture only) **and** a small pre-existing bot-code change
 from earlier the same day — per-call Vertex AI vision cost logging — that had been sitting uncommitted.
 Because real `utils/` code changed, this push required a VM redeploy. `v2.31.0` is a MODERATE bump: a repo-wide
-structural change plus a new observability feature. (Finalized 2026-07-24: this entry had been left in the
+structural change plus a new observability feature. (Finalized 2026-07-24 12:12 EDT: this entry had been left in the
 "Unreleased/proposed" staging area and untagged even though it shipped live as `116ccd6`; graduated to a real
 numbered entry and the `v2.31.0` tag backfilled onto `116ccd6` during the workflow-overhaul session.)*
 - **Root `CLAUDE.md` cut from 3,272 lines → 182** (~111k startup tokens → ~15k). It now holds only the hard

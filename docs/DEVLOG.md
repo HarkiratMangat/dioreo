@@ -1575,7 +1575,7 @@ folding it into this session would have been the exact "too much at once" failur
 net, the shared-closure state, routing order) — a teed-up item, not a shrug. Result: root `CLAUDE.md`
 182 lines (from 3,272), 13 path-scoped rules, 3 reference docs, an authoritative `docs/ROADMAP.md`.
 
-## 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
+## 2026-07-24 12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
 
 A new session opened to overhaul the git workflow (branch → PR → merge → version-at-merge). Before
 touching any of that, the handoff said the prior session's "Part 3" (patch-notes multi-season
