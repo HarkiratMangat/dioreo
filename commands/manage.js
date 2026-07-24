@@ -189,6 +189,7 @@ const PAGES = {
         headerLabel: 'Patch Notes',
         groups: [
             {
+                heading: 'Current Season',
                 blocks: [
                     `### ${emojis.mngInfo} Release Date & Additional Info\n-# View, edit, or clear the release date and additional info for the current balance changes.`,
                     `### ${emojis.mngUrls} URLs\n-# View, edit, or clear the URLs for the current balance changes. First 5 only.`,
@@ -199,6 +200,26 @@ const PAGES = {
                     { id: 'urls1', label: 'URLs 1', style: 1 },
                     { id: 'urls2', label: 'URLs 2', style: 1 }
                 ]
+            },
+            // "Add New Season" (2026-07-24) -- previously the biggest gap in this page: there was no
+            // way to START a new season's patch notes at all, only edit whichever entry already
+            // happened to be "current." Pushes a new patchNotes[] entry, which becomes Current Season
+            // and demotes the old one to Past Seasons -- see index.js's modal_patch_addseason handler.
+            {
+                blocks: [`### ${emojis.mngAdd} Add New Season\n-# Add release notes for a new season. After saving, this data becomes the Current Season and the previous data moves to Past Seasons.`],
+                buttons: [{ id: 'addseason', label: 'Add New Season', style: 3 }]
+            },
+            // "Past Seasons" (2026-07-24) -- a select menu (not a search modal like Edit/Delete
+            // elsewhere on this panel) since the full list of past seasons is short enough to just
+            // pick from directly. Options are built dynamically from the DB at render time (see
+            // buildManagePage's `dynamicData` param) rather than baked into this static PAGES entry,
+            // since they change every time a season is added.
+            {
+                style: 'select',
+                blocks: [`### ${emojis.mngEdit} Past Seasons\n-# Select a past season to view or edit its release date, additional info, and URLs.`],
+                selectId: 'mng_patchseason_pick',
+                placeholder: 'Select a past season...',
+                optionsKey: 'pastSeasons'
             },
             {
                 blocks: [`### ${emojis.mngPurge} Purge All Patch Notes\n-# Permanently erase the release date, additional info, and URL history to start fresh for a new season.`],
@@ -303,7 +324,21 @@ const PAGE_ACCENT = {
     loadouts_dmz: 3373990  // #337BA6 — sampled from the :DMZ_CODM: emoji
 };
 
-function buildManagePage(page) {
+// Builds Patch Notes' "Past Seasons" select-menu options from a live seasonalDoc (2026-07-24) --
+// shared by both call sites that render the patchnotes page (manage.js's own execute() and index.js's
+// mng_pagesel handler) so there's exactly one definition of "which entries count as past, in what
+// order." Excludes the current (last) entry -- only PAST seasons belong here -- most-recent-first,
+// capped at Discord's 25-option select-menu limit.
+function buildPastSeasonsOptions(seasonalDoc) {
+    const { displayTitle } = require('./patchnotes');
+    const entries = seasonalDoc?.patchNotes || [];
+    return entries.slice(0, -1).reverse().slice(0, 25).map(p => ({
+        label: displayTitle(p).slice(0, 100),
+        value: p._id.toString()
+    }));
+}
+
+function buildManagePage(page, dynamicData = {}) {
     const pageKey = PAGES[page] ? page : 'draws';
     const pageData = PAGES[pageKey];
     const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
@@ -328,6 +363,22 @@ function buildManagePage(page) {
                     components: [{ type: 10, content: item.text }],
                     accessory: { type: 2, style: item.button.style, label: item.button.label, custom_id: `mng_act_${pageKey}_${item.button.id}` }
                 });
+            });
+        } else if (group.style === 'select') {
+            // Section + select menu (2026-07-24, Patch Notes' "Past Seasons") -- options come from
+            // `dynamicData[group.optionsKey]` rather than this static PAGES table, since they're
+            // built fresh from the DB every render (see index.js's mng_pagesel/manage.js's execute()
+            // call sites). Discord requires at least 1 option and rejects an empty array outright, so
+            // an empty result falls back to one disabled placeholder option instead of omitting the
+            // row -- same "always render the row, just inert" approach as Loadouts' empty-state info
+            // block above, rather than a conditional layout the rest of this file doesn't otherwise do.
+            group.blocks.forEach(content => components.push({ type: 10, content }));
+            const dynamicOptions = dynamicData[group.optionsKey];
+            const hasOptions = Array.isArray(dynamicOptions) && dynamicOptions.length > 0;
+            const options = hasOptions ? dynamicOptions : [{ label: 'No past seasons yet', value: 'none', default: true }];
+            components.push({
+                type: 1,
+                components: [{ type: 3, custom_id: group.selectId, placeholder: group.placeholder || 'Select...', options, disabled: !hasOptions }]
             });
         } else {
             group.blocks.forEach(content => components.push({ type: 10, content }));
@@ -598,7 +649,11 @@ function buildPatchDateInfoModal(currentEntry) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15').setValue(currentEntry ? formatAdminDate(currentEntry.releaseDate) : '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(currentEntry?.description || '').setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(currentEntry?.description || '').setRequired(false)),
+        // Manual title override (2026-07-24) -- for when patch notes release before the new season's
+        // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
+        // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title Override (blank = auto)').setStyle(TextInputStyle.Short).setValue(currentEntry?.titleOverride || '').setRequired(false))
     );
     return modal;
 }
@@ -617,6 +672,41 @@ function buildPatchUrlsModal(slot, currentEntry) {
         ...[0, 1, 2, 3, 4].map(i => new ActionRowBuilder().addComponents(
             new TextInputBuilder().setCustomId(`url${i}`).setLabel(`Image URL ${baseIndex + i}`).setStyle(TextInputStyle.Short).setValue(slice[i] || '').setRequired(false)
         ))
+    );
+    return modal;
+}
+
+// "Add New Season" (2026-07-24) -- pushes a brand-new entry onto patchNotes[], which becomes the new
+// "current" entry (the old current entry automatically becomes a past season -- it's simply no
+// longer the last item in the array, nothing else needs to change about it). Unlike Date/Info's 2
+// fields, this needs all 5 of a modal's field slots at once since there's no existing entry yet to
+// spread the URLs input across separate dateinfo/urls1/urls2 actions -- so URLs 1/2 are collected
+// here as multi-line paragraph fields (one URL per line) instead of 5 individually-addressable Short
+// fields each, same shape Harkirat's own mockup called for.
+function buildPatchAddSeasonModal() {
+    const modal = new ModalBuilder().setCustomId('modal_patch_addseason').setTitle('Add New Season');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
+    );
+    return modal;
+}
+
+// "Past Seasons" edit (2026-07-24) -- same 5-field shape as Add New Season above, but pre-filled from
+// and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick`
+// select menu), addressed by its own `_id` in the custom_id -- never touches which entry is
+// "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry.
+function buildPatchEditSeasonModal(entry) {
+    const modal = new ModalBuilder().setCustomId(`modal_patch_editseason_${entry._id}`).setTitle('Edit Past Season');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(entry.releaseDate)).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(entry.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
     );
     return modal;
 }
@@ -685,12 +775,13 @@ module.exports = {
     PAGES,
     PURGE_LABELS,
     buildManagePage,
+    buildPastSeasonsOptions,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
     buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal,
     buildLoadoutsBulkAddModal, buildLoadoutsBulkRemoveModal, buildAddLoadoutModal, buildEditLoadoutModal,
     buildLoadoutsExportUpTo5Modal, buildLoadoutsExportCategoryModal,
-    buildPatchDateInfoModal, buildPatchUrlsModal,
+    buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
 
     async execute(interaction) {
@@ -718,6 +809,15 @@ module.exports = {
         const argPrivate = interaction.options.getBoolean('hidden');
         const isEphemeral = argPrivate === null ? true : argPrivate;
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
-        return sendV2Payload(interaction, buildManagePage(section));
+
+        // Patch Notes' "Past Seasons" dropdown needs a live DB read to build its options -- every
+        // other page renders from PAGES alone. Only fetched when actually landing on that page.
+        let dynamicData = {};
+        if (section === 'patchnotes') {
+            const SeasonalData = require('../models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            dynamicData = { pastSeasons: buildPastSeasonsOptions(seasonalDoc) };
+        }
+        return sendV2Payload(interaction, buildManagePage(section, dynamicData));
     }
 };

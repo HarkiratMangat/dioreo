@@ -29,6 +29,15 @@ function cleanPatchTitle(title) {
     return title.replace(/^balance changes for\s*/i, '').trim();
 }
 
+// Resolves a patch entry's actual displayed title -- `titleOverride` (2026-07-24, /manage "Add New
+// Season"/"Past Seasons") wins when set (an admin-typed placeholder, e.g. patch notes released
+// before the new season's real name is announced), otherwise falls back to the auto-synced `title`.
+// Every display site (here, index.js's autocomplete, the manage-panel dropdown) should call this
+// instead of reading `patch.title` directly, so the override can never be silently ignored somewhere.
+function displayTitle(patch) {
+    return cleanPatchTitle(patch.titleOverride || patch.title);
+}
+
 function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
     // Array Trimming: Prevent dropdown menu overload by grabbing only the 5 most recent records
     const recentPatches = seasonalDoc.patchNotes.slice(-5).reverse();
@@ -49,7 +58,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     // the calendar_update_ui.json redesign; see utils/titleBlock.js. Older entries that still have
     // the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering
     // "Balance Changes — Balance Changes for...".
-    const cleanTitle = cleanPatchTitle(activePatch.title);
+    const cleanTitle = displayTitle(activePatch);
     const components = [
         // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
         // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
@@ -77,7 +86,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     // Build historical dropdown options
     const historyOptions = recentPatches.map((patch, index) => ({
-        label: cleanPatchTitle(patch.title),
+        label: displayTitle(patch),
         value: `patch_${patch._id}`,
         default: activePatch._id.toString() === patch._id.toString() // Pre-select current view
     }));
@@ -100,6 +109,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
 module.exports = {
     cleanPatchTitle,
+    displayTitle,
 
     // COMMAND DEFINITION: Base 'patch', Subcommand 'notes'
     data: new SlashCommandBuilder()

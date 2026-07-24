@@ -20,7 +20,15 @@ const SeasonalDataSchema = new mongoose.Schema({
     // /patchnotes
     patchNotes: [{
         title: { type: String }, // Now holds just the season # & name (e.g. "Season 6: Take Your Heart"),
-        // not the full "Balance Changes for..." string — see patchnotes.js
+        // not the full "Balance Changes for..." string — see patchnotes.js. Kept auto-synced to
+        // currentSeasonTitle for the current entry (see index.js's modal_season_titles_deadlines) --
+        // titleOverride below is what actually decides what's DISPLAYED.
+        titleOverride: { type: String, default: '' }, // Manual per-entry title override (2026-07-24,
+        // /manage "Add New Season"/"Past Seasons" edit) -- lets Harkirat set a placeholder season
+        // title on a patch entry when the real season title isn't finalized yet (e.g. patch notes
+        // released before the new season's name is announced). Blank = no override, falls back to
+        // `title` above. Every display site must read `titleOverride || title`, never `title` alone
+        // -- see patchnotes.js's exported `displayTitle()`.
         description: { type: String, default: '' }, // Optional extra info; left blank shows nothing
         releaseDate: { type: Date },
         // Cloudinary URLs (2026-07-13) -- re-hosted from whatever external URL the admin typed, via

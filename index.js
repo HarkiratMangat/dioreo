@@ -707,17 +707,18 @@ client.on('interactionCreate', async interaction => {
             // Required because we changed the base command name to 'patch' for subcommands
             if (commandName === 'patch') {
                 const SeasonalData = require('./models/SeasonalData');
-                const { cleanPatchTitle } = require('./commands/patchnotes');
+                const { displayTitle } = require('./commands/patchnotes');
                 const doc = await SeasonalData.findOne({ docType: 'global' }).lean(); // read-only here
                 if (!doc || !doc.patchNotes) return await interaction.respond([]);
 
-                // Strip the legacy "Balance Changes for..." prefix here too, same as the main
-                // render + history dropdown, so pre-redesign entries don't look inconsistent here.
+                // displayTitle() strips the legacy "Balance Changes for..." prefix AND prefers a
+                // manual titleOverride (2026-07-24), same as the main render + history dropdown, so
+                // this stays consistent with what's actually shown everywhere else.
                 const filtered = doc.patchNotes
-                    .filter(p => fuzzyMatch(focusedValue, cleanPatchTitle(p.title)))
+                    .filter(p => fuzzyMatch(focusedValue, displayTitle(p)))
                     .slice(0, 25);
 
-                return await interaction.respond(filtered.map(p => ({ name: cleanPatchTitle(p.title), value: p._id.toString() })));
+                return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
 
             // Standard Loadout Dictionary Autocomplete Mapping
@@ -1095,7 +1096,16 @@ client.on('interactionCreate', async interaction => {
 
             await interaction.deferUpdate();
             const { sendV2Payload } = require('./utils/sendV2Payload');
-            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage));
+
+            // Patch Notes' "Past Seasons" dropdown needs a live DB read for its options -- see
+            // manage.js's buildPastSeasonsOptions()/execute() for the matching initial-render path.
+            let dynamicData = {};
+            if (targetPage === 'patchnotes') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                dynamicData = { pastSeasons: manageCommand.buildPastSeasonsOptions(seasonalDoc) };
+            }
+            return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData));
         }
 
         // E. MANAGE PANEL DISAMBIGUATION SELECT -- shown by the `mng_search_` modal-submit handler
@@ -1139,6 +1149,28 @@ client.on('interactionCreate', async interaction => {
             }
 
             return await resolveManagePanelAction(interaction, group, action, match);
+        }
+
+        // E.1 MANAGE PANEL: PATCH NOTES "PAST SEASONS" PICK (2026-07-24) -- Patch Notes' own select
+        // menu, separate from the generic mng_pick_ disambiguation above (that one only exists
+        // because a search-modal query can match multiple items; this one's options ARE the full
+        // list already, so picking one goes straight to its edit modal, no search step at all).
+        if (interaction.customId === 'mng_patchseason_pick') {
+            const pickedId = interaction.values[0];
+            if (pickedId === 'none') return await interaction.deferUpdate(); // the disabled placeholder option -- shouldn't normally fire, but no-op if it somehow does
+            const SeasonalData = require('./models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            const entry = seasonalDoc?.patchNotes?.find(p => p._id.toString() === pickedId);
+            if (!entry) {
+                try {
+                    await interaction.update({ content: '❌ That season no longer exists -- it may have been changed or removed since this panel loaded.', components: [] });
+                } catch (notifyError) {
+                    console.error('Failed to notify user of stale patch-season pick (interaction likely expired):', notifyError);
+                }
+                return;
+            }
+            const manageCommand = client.commands.get('manage');
+            return await interaction.showModal(manageCommand.buildPatchEditSeasonModal(entry));
         }
 
         // F. LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump
@@ -2002,6 +2034,10 @@ client.on('interactionCreate', async interaction => {
                 if (action === 'dateinfo') return await interaction.showModal(manageCommand.buildPatchDateInfoModal(currentEntry));
                 if (action === 'urls1') return await interaction.showModal(manageCommand.buildPatchUrlsModal(1, currentEntry));
                 if (action === 'urls2') return await interaction.showModal(manageCommand.buildPatchUrlsModal(2, currentEntry));
+                // "Add New Season" (2026-07-24) -- always opens blank, unlike dateinfo/urls1/urls2
+                // which reuse/prefill the existing current entry. Submitting it always PUSHES a new
+                // entry -- see modal_patch_addseason below.
+                if (action === 'addseason') return await interaction.showModal(manageCommand.buildPatchAddSeasonModal());
             }
         }
 
@@ -2779,13 +2815,18 @@ client.on('interactionCreate', async interaction => {
             const current = getOrCreateCurrentPatch();
             current.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
             current.description = interaction.fields.getTextInputValue('description')?.trim() || '';
+            // Manual title override (2026-07-24) -- blank clears it, which reverts the effective
+            // display title back to the auto-synced `title` (currentSeasonTitle) -- see the schema
+            // comment on titleOverride + patchnotes.js's displayTitle().
+            current.titleOverride = interaction.fields.getTextInputValue('season_title')?.trim() || '';
             await seasonalDoc.save();
             // Keep this patch's cached images' Cloudinary metadata (release date/season) in sync
             // (2026-07-21) -- the release date just changed and applies to every image of this entry.
             const { syncPatchEntryMetadata } = require('./utils/patchNotesCache');
-            const { cleanPatchTitle: cleanTitleForMeta } = require('./commands/patchnotes');
-            await syncPatchEntryMetadata(current, cleanTitleForMeta(current.title));
-            return interaction.followUp({ content: `✅ **Patch Notes Date/Info Updated!** ${current.title}` });
+            const { displayTitle } = require('./commands/patchnotes');
+            const effectiveTitle = displayTitle(current);
+            await syncPatchEntryMetadata(current, effectiveTitle);
+            return interaction.followUp({ content: `✅ **Patch Notes Date/Info Updated!** ${effectiveTitle}` });
         }
 
         if (customId === 'modal_patch_urls_1' || customId === 'modal_patch_urls_2') {
@@ -2807,13 +2848,13 @@ client.on('interactionCreate', async interaction => {
             // never block the save -- cachePatchImage() falls back to the raw URL on failure, same
             // philosophy as resolveThumbnail() for draw thumbnails.
             const { cachePatchImage } = require('./utils/patchNotesCache');
-            const { cleanPatchTitle } = require('./commands/patchnotes');
+            const { displayTitle } = require('./commands/patchnotes');
             const patchId = current._id.toString();
             const slotOffset = slot === 1 ? 0 : 5;
             // Structured metadata (2026-07-21) -- each cached image carries its season, order, and
-            // release date. cleanPatchTitle strips any legacy "Balance Changes for..." prefix so the
-            // Patch_Season value is the bare season name.
-            const patchMeta = { season: cleanPatchTitle(current.title), releaseDate: current.releaseDate };
+            // release date. displayTitle() prefers a manual titleOverride (2026-07-24) and strips any
+            // legacy "Balance Changes for..." prefix, so Patch_Season always matches what's shown.
+            const patchMeta = { season: displayTitle(current), releaseDate: current.releaseDate };
             const newSlice = [];
             for (let i = 0; i < rawUrls.length; i++) {
                 const result = await cachePatchImage(patchId, slotOffset + i, rawUrls[i], patchMeta);
@@ -2826,7 +2867,76 @@ client.on('interactionCreate', async interaction => {
             current.images = slot === 1 ? [...newSlice, ...otherSlice] : [...otherSlice, ...newSlice];
 
             await seasonalDoc.save();
-            return interaction.followUp({ content: `✅ **Patch Notes URLs ${slot} Updated!** ${current.title} now has ${current.images.length} image(s) total.` });
+            return interaction.followUp({ content: `✅ **Patch Notes URLs ${slot} Updated!** ${displayTitle(current)} now has ${current.images.length} image(s) total.` });
+        }
+
+        // "Add New Season" (2026-07-24) -- always PUSHES a brand-new patchNotes[] entry, becoming the
+        // new "current" entry (the old current entry automatically becomes a past season -- it's
+        // simply no longer the last item in the array). URLs come in as two multi-line fields (one
+        // URL per line) instead of 5 individually-addressable Short fields, since there's no existing
+        // entry to spread this across separate dateinfo/urls1/urls2 actions the way the current-entry
+        // flow does -- matches Harkirat's own mockup shape.
+        if (customId === 'modal_patch_addseason') {
+            await interaction.deferReply({ ephemeral: true });
+            const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);
+            const urlList = [...parseUrlLines(interaction.fields.getTextInputValue('urls1')), ...parseUrlLines(interaction.fields.getTextInputValue('urls2'))];
+
+            seasonalDoc.patchNotes.push({
+                title: seasonalDoc.currentSeasonTitle || 'Untitled Season',
+                titleOverride: interaction.fields.getTextInputValue('season_title')?.trim() || '',
+                description: interaction.fields.getTextInputValue('description')?.trim() || '',
+                releaseDate: parseAdminDate(interaction.fields.getTextInputValue('release_date')),
+                images: []
+            });
+            const newEntry = seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1];
+
+            // Re-host each submitted URL into this new entry's own Cloudinary folder, same pipeline
+            // urls1/urls2 use for the current entry (see the comment on that handler above).
+            const { cachePatchImage } = require('./utils/patchNotesCache');
+            const { displayTitle } = require('./commands/patchnotes');
+            const patchId = newEntry._id.toString();
+            const patchMeta = { season: displayTitle(newEntry), releaseDate: newEntry.releaseDate };
+            const cachedUrls = [];
+            for (let i = 0; i < urlList.length; i++) {
+                const result = await cachePatchImage(patchId, i, urlList[i], patchMeta);
+                cachedUrls.push(result.url);
+            }
+            newEntry.images = cachedUrls;
+
+            await seasonalDoc.save();
+            return interaction.followUp({ content: `✅ **New Season Added!** "${displayTitle(newEntry)}" is now the Current Season (${cachedUrls.length} image(s)). The previous entry has moved to Past Seasons.` });
+        }
+
+        // "Past Seasons" edit (2026-07-24) -- same field shape as Add New Season above, but updates
+        // ONE SPECIFIC existing entry in place (picked via the page's mng_patchseason_pick select
+        // menu, addressed here by its own `_id` baked into the custom_id) -- never touches which
+        // entry is "current." `.id()` is Mongoose's built-in DocumentArray subdocument lookup.
+        if (customId.startsWith('modal_patch_editseason_')) {
+            await interaction.deferReply({ ephemeral: true });
+            const entryId = customId.replace('modal_patch_editseason_', '');
+            const entry = seasonalDoc.patchNotes.id(entryId);
+            if (!entry) return await interaction.followUp({ content: '❌ That season no longer exists -- it may have been changed or removed since this modal opened.' });
+
+            entry.titleOverride = interaction.fields.getTextInputValue('season_title')?.trim() || '';
+            entry.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
+            entry.description = interaction.fields.getTextInputValue('description')?.trim() || '';
+
+            const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);
+            const urlList = [...parseUrlLines(interaction.fields.getTextInputValue('urls1')), ...parseUrlLines(interaction.fields.getTextInputValue('urls2'))];
+
+            const { cachePatchImage } = require('./utils/patchNotesCache');
+            const { displayTitle } = require('./commands/patchnotes');
+            const patchId = entry._id.toString();
+            const patchMeta = { season: displayTitle(entry), releaseDate: entry.releaseDate };
+            const cachedUrls = [];
+            for (let i = 0; i < urlList.length; i++) {
+                const result = await cachePatchImage(patchId, i, urlList[i], patchMeta);
+                cachedUrls.push(result.url);
+            }
+            entry.images = cachedUrls;
+
+            await seasonalDoc.save();
+            return interaction.followUp({ content: `✅ **Past Season Updated!** "${displayTitle(entry)}" now has ${cachedUrls.length} image(s).` });
         }
 
         // --- ADMIN ROUTE E: SEASON TITLES + DEADLINES (merged) ---
