@@ -131,11 +131,9 @@ two enhancements — all admin/back-end:
 - **Data corrections same push** (Harkirat-verified): L-CAR-9-2 ↔ CROSSBOW-1 images swapped back (were
   crossed during the 2026-07-19 re-upload; verified by etag), J358 `"Trigger Action"` removed, 3 test
   builds deleted, Striker's "Fast Reload Reload Case" confirmed correct (real in-game label).
-- **Still open (flagged, not built):** `/manage` attachment edits still don't update per-slot Cloudinary
-  metadata (no slot labels in that modal — a proper fix needs slot input or slots stored in Mongo; the
-  autobuild EDIT path handles this safely by keeping slots only when the attachment list is unchanged);
-  bot-wide attachment reorder of existing builds; DMZ full-slot handling (needs Harkirat to teach the
-  DMZ slot layout — DMZ builds don't label slots unless empty).
+- **Still open (flagged, not built):** bot-wide attachment reorder of existing builds; DMZ full-slot
+  handling (needs Harkirat to teach the DMZ slot layout — DMZ builds don't label slots unless empty).
+  (The `/manage` attachment→per-slot-metadata gap that used to be listed here is FIXED — see below.)
 - **`/autobuild` follow-ups filed 2026-07-21 from the notes scratchpad (for the next `/autobuild` session):**
   - **Ephemeral/`hidden` toggle for `/autobuild`** — the same visibility option every other command has.
   - **Bulk `/autobuild` PoC** — `/autobuild amount:{single,multiple}`; `multiple` opens a modal taking one
@@ -148,12 +146,18 @@ two enhancements — all admin/back-end:
     DMZ build, capture all up-to-9 attachments, and tag it `mode: DMZ` with DMZ metadata. **Blocked on
     Harkirat teaching the DMZ slot layout** (one DMZ screenshot with EMPTY slots so labels show, or the fixed
     slot positions top-to-bottom). Ties into the "DMZ full-slot handling" gap noted just above.
-  - **The proper `/manage` attachment→per-slot-metadata fix** (the "Still open" gap above) — Harkirat wants a
-    real fix, not a documented gap. **APPROACH DECIDED 2026-07-21 (Harkirat ack'd Claude's recommendation):
-    store the slot labels in MongoDB on the `Loadout` doc** (a schema addition), so `/manage` edits can
-    re-derive/update the per-slot Cloudinary metadata without needing a slot-picker in the modal. Rejected
-    alternative was adding a slot input to the edit modal. Build it in the `/autobuild` session; Harkirat
-    wants a fuller walkthrough of the implementation when it's tackled.
+  - **The proper `/manage` attachment→per-slot-metadata fix — BUILT 2026-07-24 18:07 EDT** (was flagged
+    "Still open" above). Approach decided 2026-07-21 (Harkirat ack'd Claude's recommendation): store the
+    slot labels in MongoDB on the `Loadout` doc (a schema addition), rejecting the alternative of adding a
+    slot-picker input to the edit modal. Implementation: `models/Loadout.js` gained `attachmentSlots`
+    (parallel array to `attachments`); `utils/autobuildPipeline.js`'s `writeLoadoutDoc` now persists it on
+    every new `/autobuild` write; `scripts/backfillLoadoutSlots.js` now persists its recovered mapping onto
+    each pre-existing doc too (not just Cloudinary), so already-vision-processed builds benefit going
+    forward, not only new ones; `index.js`'s `edit_loadout_` keeps the stored slots (and re-syncs real
+    per-slot Cloudinary fields) only when the submitted attachment list is byte-for-byte unchanged from
+    what's stored — the common "fix a typo/badge" edit — and clears them on any real content/order change,
+    since slot identity can't be safely carried forward onto a different attachment set without re-running
+    vision (same invalidation rule `applyEditSubmission` already used for the autobuild-native Edit path).
 
 ---
 

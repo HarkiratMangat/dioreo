@@ -1329,5 +1329,17 @@ merge.)*
   bumped from a stale `1.0.0` to `2.33.0` as part of this merge.
 - Moved the changelog doc-check hook (`.claude/settings.local.json`) from firing on every `git commit`
   to firing on `gh pr merge` — the right grain now that branch checkpoint commits are free.
+- **Fixed the `/manage` attachment-edit → per-slot-Cloudinary-metadata gap** (the design decided
+  2026-07-21, built now): `Loadout` gained a real `attachmentSlots` field (`models/Loadout.js`),
+  populated by `/autobuild`'s `writeLoadoutDoc` on every new build and backfilled onto pre-existing
+  builds by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_` now re-syncs the real
+  per-slot Cloudinary fields (Muzzle/Barrel/etc.) when the edited attachment list is unchanged from
+  what's stored, and safely clears the stored mapping when it genuinely changes. See
+  `.claude/rules/autobuild.md` + `.claude/rules/loadout-images-and-metadata.md`.
+- A full `docs/diors-builds notes.md` review pass — answered/fixed everything Harkirat flagged there
+  (Legend formatting corrections, the bullet-comment convention, moved several answers that had only
+  lived in a SESSION STATUS block back to their own bullets, a real Firestore-migration assessment,
+  and the loadout-slot fix above), folded into this same branch/PR per the notes file's own "answers
+  land in the tracked file, and the file rides along in the same PR as any code it triggered" pattern.
 - *(This entry itself is the first real-world proof of the new model: drafted here on the branch as the
   work happened, per the "docs land in the PR" rule.)*

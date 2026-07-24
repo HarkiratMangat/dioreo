@@ -3042,6 +3042,20 @@ client.on('interactionCreate', async interaction => {
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
             let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[1]);
 
+            // Slot labels (Muzzle/Barrel/...) only ever come from /autobuild's vision extraction, so this
+            // plain-text modal can't supply new ones -- the best it can do is KEEP the existing mapping,
+            // and only when it's still valid. Same convention as utils/autobuildPipeline.js's
+            // applyEditSubmission: valid only if the attachment list is byte-for-byte unchanged (same
+            // length + same names in the same order); any real content/order change invalidates slot
+            // identity, so it's cleared rather than carried forward misaligned onto the wrong attachment.
+            // This is what lets syncLoadoutMetadata below re-sync per-slot Cloudinary fields on the common
+            // "just fixing a typo/badge" edit (2026-07-24 18:07 EDT, closes the former "accepted gap" in
+            // loadout-images-and-metadata.md) instead of always skipping them.
+            const existingAttachments = existingLoadout?.attachments || [];
+            const attachmentsUnchanged = attachmentsArray.length === existingAttachments.length
+                && attachmentsArray.every((a, i) => a === existingAttachments[i]);
+            const attachmentSlots = attachmentsUnchanged ? (existingLoadout?.attachmentSlots || []) : [];
+
             const weaponName = interaction.fields.getTextInputValue('weapon');
             const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
             const buildName = interaction.fields.getTextInputValue('build');
@@ -3062,6 +3076,7 @@ client.on('interactionCreate', async interaction => {
                 weaponKey,
                 buildName,
                 attachments: attachmentsArray,
+                attachmentSlots,
                 imageKey,
                 category: metaParts[0]?.toUpperCase() || 'AR',
                 mode,
@@ -3086,11 +3101,11 @@ client.on('interactionCreate', async interaction => {
             // Keep Cloudinary structured metadata in sync (2026-07-21) -- re-sync this build AND every
             // sibling, since badges are weapon-level and may have just propagated (and weaponName/
             // category/attachments/code may have changed on this build). Best-effort, never throws.
-            // NOTE: if the ATTACHMENTS changed here, the per-slot Cloudinary fields (Muzzle/Barrel/...)
-            // aren't updated -- /manage has no slot mapping, only /autobuild does -- so any existing
-            // slot metadata is left as-is rather than wiped (update_metadata merges). Accepted gap.
+            // Each sibling (including the just-edited build, refetched fresh above) now carries its OWN
+            // persisted attachmentSlots -- pass it through so per-slot fields actually re-sync when valid
+            // (see the attachmentsUnchanged logic above), instead of unconditionally skipping them.
             const { syncLoadoutMetadata } = require('./utils/loadoutImageCache');
-            for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib);
+            for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib, sib.attachmentSlots);
 
             let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
             if (propagateResult.modifiedCount > 0) {

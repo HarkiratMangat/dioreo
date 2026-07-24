@@ -240,6 +240,7 @@ async function writeLoadoutDoc(data, imageKeyOverride) {
         mode: 'MP',
         buildName: data.buildName,
         attachments,
+        attachmentSlots,
         imageKey: imageKeyOverride || data.imageKey,
         shareCode: data.gunsmithCode,
         isMeta,
