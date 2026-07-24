@@ -7,6 +7,14 @@ const LoadoutSchema = new mongoose.Schema({
     mode: { type: String, enum: ['MP', 'DMZ'], required: true },
     buildName: { type: String, default: 'Standard Build' }, // Allows multiple builds per gun
     attachments: [{ type: String }], // Array handles varied attachment limits natively
+    // Parallel array to `attachments` (same index alignment) holding each slot's Gunsmith label
+    // (e.g. "Muzzle", "Barrel") -- ONLY ever populated by /autobuild's vision extraction, since a
+    // manual /manage add/edit has no slot data to offer. Persisting this on the doc (added
+    // 2026-07-24 18:07 EDT, closing the "accepted gap" in loadout-images-and-metadata.md) is what lets a later
+    // /manage attachment edit re-sync per-slot Cloudinary metadata for the common case -- editing an
+    // existing build WITHOUT changing which attachments are equipped -- instead of always leaving it
+    // stale. See index.js's edit_loadout_ handler for the actual re-sync/invalidation logic.
+    attachmentSlots: [{ type: String }],
     // `imageKey` supports EITHER a bare Cloudinary key (the original design, prefixed with the
     // Cloudinary base URL at render time) OR a full external URL -- added for the builds.xlsx
     // migration, which briefly had 2 imgur-hosted LOCUS rows before those were re-uploaded to

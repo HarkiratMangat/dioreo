@@ -83,12 +83,19 @@ worked in-memory but silently reverted on the next fresh fetch. **Whenever you a
 add it to the corresponding schema in `models/` in the same change.** Full data-model detail:
 `.claude/rules/models.md`.
 
-### Deploy = git-based (never commit/push without asking — see the working agreement)
-The bot runs on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd**
-(unit `diors-bot`, auto-restart on crash + reboot). **"Push"/deploy:** `git push origin main` → on the VM
-`./scripts/deploy.sh` (`git pull` → restart) → verify `scripts/vmstatus.sh`. **A `git push` alone does NOT
-update the VM.** Commit / push / deploy / document are four separate steps (working-agreement
-non-negotiable). Full setup, alerting, monitoring, version-tagging: `docs/reference/deployment-and-ops.md`.
+### Git workflow = Branch → Commit → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT)
+Never push, merge, or deploy without asking first — approval never carries over (branch commits are the
+one exception: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
+on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
+`diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
+the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
+`gh pr merge --squash` + `package.json` bump + version tag (asked — the merge-yes IS the version-number-yes;
+MAJOR always asked separately) → **deploy**, a separate optional step: on the VM, `./scripts/deploy.sh`
+(`git pull` → restart) → verify `scripts/vmstatus.sh` (asked). **A merge alone does NOT update the VM** —
+a merged version can sit undeployed indefinitely; say plainly which steps happened ("merged v2.x, deploy
+held"), never let "merged" imply "live." Full lifecycle, versioning, and doc-placement rules:
+`docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`.
+Full VM/ops setup, alerting, monitoring, version-tagging: `docs/reference/deployment-and-ops.md`.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it

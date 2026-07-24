@@ -1,13 +1,18 @@
 # Session-start prompt — Dior's Builds
 
-> ## ⚡ FIRST ACTION THIS SESSION — do this in your opening message, before anything else
-> Output, proactively (NOT only when asked): **(1)** a ready-to-paste `/rename` string in the format
+> ## ⚡ FIRST ACTION THIS SESSION — HARD GATE, before ANY other content in your opening message
+> **Do not write task content, exploration, tool calls, or a greeting before this.** Your literal first
+> lines of output this session MUST be: **(1)** a ready-to-paste `/rename` string in the format
 > `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus4.8-H · Webhook alerts · Jul 20`), and **(2)** a
 > one-line best **model + single effort level** recommendation for this session's work — and on a large
 > opening batch, a short "defer these to their own session" list (each with its own model+effort). This is
-> a standing non-negotiable (`feedback_suggest_model_switch` memory) that has **silently degraded on recent
-> sessions** because nothing structurally enforced it — this banner is the backstop. A hook can't *compute*
-> the recommendation, only surface this reminder, so actually doing it is on you. Full spec below + in memory.
+> a standing non-negotiable (`feedback_suggest_model_switch` memory) that **degraded repeatedly across
+> sessions** (including on Opus 4.8-High — see `feedback_docs_at_push_time`'s compliance-drift note)
+> because nothing structurally enforced it. The `UserPromptSubmit` hook re-injects this as a per-turn
+> nudge until it's done — **a nudge you keep receiving after your first response means you skipped it; go
+> back and do it now, don't wait for a natural pause.** A hook can only *remind*, it cannot *compute* the
+> recommendation or verify you complied — that verification is entirely on you, every single session, no
+> exceptions for "this session felt too urgent to pause for it." Full spec below + in memory.
 
 **This file is auto-loaded into every session by the `SessionStart` hook** in
 `.claude/settings.local.json` — it does not need pasting. `user_working_agreement.md` points here as
@@ -56,53 +61,69 @@ New session on Dior's Builds. Before anything else:
 
 2. NON-NEGOTIABLES — I've had to re-flag these before, so self-check them without
    waiting to be reminded:
-   • Never commit or push without asking me first — every time; approval never carries over.
-   • **GLOSSARY (rewritten 2026-07-18 — the old wording called "push" the automatic full cycle, which
-     stopped being true the moment v2.22.0 shipped as commit+push with the VM deploy deliberately held;
-     these are 4 separable steps, not one bundled action):**
-     - **Commit** = `git commit` on this Mac only. Touches nothing outside this machine.
-     - **Push** = `git push origin main`. The commit(s) become visible on GitHub; the LIVE bot is
-       untouched — the VM has no auto-pull, so pushing alone never changes what's actually running.
-     - **Deploy** = making a pushed commit go live on the VM: `gcloud compute ssh diors-builds-bot
-       --zone=us-east1-b --command="cd ~/diors-builds && git pull && sudo systemctl restart diors-bot"`
+   • Never push, merge, or deploy without asking me first — every time; approval never carries over.
+     Branch commits are the one FREE exception (checkpoints, no version, never reach `main` alone
+     under squash-merge) — don't ask for those.
+   • **GLOSSARY (rewritten 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy
+     workflow — supersedes the 2026-07-18 "4 separable steps on `main`" wording; full design:
+     `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`, canonical memory
+     `project_git_workflow.md`):**
+     - **Branch** = `git checkout -b feat/x` off `main` for a feature. Free, no approval.
+     - **Commit** = `git commit` on the branch — a free checkpoint ("save progress"). No approval, no
+       version. We never commit directly to `main` anymore (a rare direct-to-`main` hotfix commit is
+       the one exception, still gated like a push).
+     - **Push** = `git push -u origin feat/x` (the BRANCH, not `main`). Uploads the branch to GitHub;
+       the live bot is untouched. Asked.
+     - **PR** = `gh pr create` — "done, or done pending review/testing." `--draft` ONLY when a real
+       test/review gap exists, ready otherwise. Not an approval gate (solo repo, can't self-approve) —
+       it's the review/staging surface + the version anchor. Free (an already-approved push just gets
+       organized into a PR).
+     - **Merge** = `gh pr merge --squash` + `package.json` version bump + `git tag -a vX.Y.Z <squash-sha>`.
+       **This is where the version is minted** — asked, and the merge-yes IS the version-number-yes
+       (state the proposed number in the same breath). MAJOR bumps (→ v3) always need a separate
+       explicit ask. Each merged PR collapses to ONE commit on `main` = one version = one tag.
+     - **Deploy** = making a merged commit go live on the VM: `./scripts/deploy.sh` (or the raw
+       `gcloud compute ssh diors-builds-bot --zone=us-east1-b --command="cd ~/diors-builds && ./scripts/deploy.sh"`)
        → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, errors ~0; `🔌 Shard 0
        ready`/handleBotReady are the real "connected" proof, not just "process up") → confirm exactly
-       ONE instance is running (single-token; the VM is it — stop any local test run first).
+       ONE instance is running (single-token; the VM is it — stop any local test run first). **Separate
+       and optional per merge** — a merged version can sit undeployed indefinitely (docs-only being the
+       obvious case); `main`'s version and the VM's running version (its boot alert reads `package.json`)
+       can legitimately diverge. Asked.
      - **Document** = updating the written record: CLAUDE.md (invariants/nav) **or the matching
        `.claude/rules/*.md`** (subsystem detail) + `docs/ROADMAP.md` (if the roadmap changed) + relevant
        memory files + `docs/CHANGELOG.md` + `docs/CHANGELOG-SUMMARY.md` (+ a `docs/DEVLOG.md` narrative
-       entry for a notable arc) + this central notes file (mark resolved items). Whichever of these are
-       actually relevant to what changed — not a fixed checklist to run through blindly.
-     - **The default assumption, unless told otherwise, is still that "push" as a spoken instruction
-       means the WHOLE chain** — commit → document → push → deploy → verify live — same as the historical
-       convention (see [[feedback_push_means_full_cycle]]). But any step can be explicitly held (e.g.
-       "commit + push only, hold the VM deploy," which is exactly what happened for v2.22.0) — when that
-       happens, say so plainly in the summary rather than letting "pushed" imply "live."
-     - "Document" specifically is NOT only triggered by a push — a planning/roadmap session with NO
-       code and NO push still needs it if the roadmap or a standing rule changed: sync `docs/ROADMAP.md`
+       entry for a notable arc) + this central notes file (mark resolved items). Docs now ride IN the
+       PR's diff (drafted on the branch as the change happens, finalized — real number + squash hash +
+       tag — at merge), reviewed alongside the code rather than a separate "at push time" ritual.
+       Whichever of these are actually relevant to what changed — not a fixed checklist to run through
+       blindly.
+     - **Say plainly which steps actually happened** ("merged v2.x, deploy held") — never let "merged"
+       imply "live," the same discipline the old wording asked for around "pushed."
+     - "Document" specifically is NOT only triggered by a merge — a planning/roadmap session with NO
+       code and NO branch still needs it if the roadmap or a standing rule changed: sync `docs/ROADMAP.md`
        AND both changelog roadmap sections (sourced from it, must not drift) AND a DEVLOG entry. The
        changelog is the one step that keeps getting skipped — don't skip it.
      See [[reference_vm_bot_commands]], [[project_deployment_migration_render_to_gcp]],
-     [[feedback_push_means_full_cycle]], [[feedback_docs_at_push_time]]. Bot alerts a Discord channel
-     on each (re)start + on errors.
-   • Versioning is 3-part vMAJOR.MODERATE.MINOR: a significant push bumps MODERATE (resets
-     MINOR to 0), a small follow-up bumps MINOR; NEVER bump MAJOR (→ v3) without asking me.
-     Cross-check the full `git log` so no push gets missed. ONE version number per PUSH, not
-     per commit — a push of N commits gets one number listing every hash. Anything committed
-     but not pushed goes in docs/CHANGELOG.md's "Unreleased" section with a proposed number.
-     **Git-tag every real push's version (added 2026-07-16)** — e.g. `git tag -a v2.18.1
-     <hash> -m "..."` on the exact push commit (for a multi-commit push, tag the LAST commit
-     in that push, not the first). Complements the Unreleased-section proposed number, doesn't
-     replace it: the CHANGELOG's proposed number is the human-readable plan, the tag is the
-     permanent, unambiguous marker once it's real. Once tagged, `git describe --tags` on any
-     later commit shows exactly how many commits deep past the last real push you are, for
-     free. **When backfilling a tag, cross-check CHANGELOG.md directly — don't trust commit
-     messages alone**: a first pass once missed `v2.18.1` entirely because none of its 3 bundled
-     commits (`f7b4575`/`c4b1c19`/`1600b8e`) mention "v2.18.1" in their own message; only
-     CHANGELOG.md's actual entry names which commits it covers. **The FULL tag backfill is now DONE
-     (2026-07-21): every version `v1.0.0`→`v2.30.2` is tagged, 58 tags, zero gaps** (the earlier "no
-     clean 1:1 mapping" concern was a false premise — almost every CHANGELOG entry cites its own commit
-     hash). See the "Version tagging" reference in `docs/reference/deployment-and-ops.md`.
+     [[project_git_workflow]], [[feedback_push_means_full_cycle]], [[feedback_docs_at_push_time]]. Bot
+     alerts a Discord channel on each (re)start + on errors.
+   • Versioning is 3-part vMAJOR.MODERATE.MINOR, **minted at MERGE, not push** (changed 2026-07-24 12:24 EDT): a
+     significant merged PR bumps MODERATE (resets MINOR to 0), a small one bumps MINOR; NEVER bump
+     MAJOR (→ v3) without asking me. ONE version number per merged PR, not per commit or per push — a
+     PR of N checkpoint commits still gets one number via the squash. An open branch/PR IS the new
+     "Unreleased" (proposed number sits in the changelog's Unreleased section, graduates to a real
+     numbered entry + tag at squash-merge); unreleased branch commits carry no version, referenced
+     informally as "based on `<last merged version>`, at commit `<sha>`."
+     **Git-tag the squash commit on every merge** — `git tag -a v2.18.1 <squash-sha> -m "..."`, then
+     push the tag. `git describe --tags` on any later commit shows exactly how many commits deep past
+     the last merged version you are, for free. **When backfilling a historical tag, cross-check
+     CHANGELOG.md directly — don't trust commit messages alone**: a first pass once missed `v2.18.1`
+     entirely because none of its 3 bundled commits (`f7b4575`/`c4b1c19`/`1600b8e`) mention "v2.18.1" in
+     their own message; only CHANGELOG.md's actual entry names which commits it covers. **The FULL tag
+     backfill (pre-workflow-overhaul history) is DONE (2026-07-21): every version `v1.0.0`→`v2.30.2` is
+     tagged, 58 tags, zero gaps** (the earlier "no clean 1:1 mapping" concern was a false premise —
+     almost every CHANGELOG entry cites its own commit hash). See the "Version tagging" reference in
+     `docs/reference/deployment-and-ops.md`.
    • Mark chat chapters FINELY — one per distinct TOPIC (a question answered, a problem
      debugged, a small task done), NOT per broad phase; even one-edit tasks get one, and
      so do answers with no tool calls. Often ~1 per turn that raises something new.

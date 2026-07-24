@@ -18,6 +18,21 @@ individually. **Version horizon already implies priority — v3 ≈ P2, v4/v5 �
 so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (after v5) is priority-tagged in
 `deferred-items.md` (the cross-project focus view), not duplicated here.*
 
+### Process / tooling (not a version-numbered feature, tracked here for visibility)
+- ~~**Git branch/PR/merge workflow overhaul**~~ — **SHIPPED as v2.33.0** (the inaugural dogfood
+  squash-merge on `feat/git-workflow`). Replaced the old "everything on `main`, push = version bump"
+  model with Branch → Commit → Push → PR → Merge → Deploy; version now mints at merge (squash), not
+  push. Design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`; canonical
+  description: memory `project_git_workflow.md`. (Notes file L138, PRIORITY #2 — filed by Harkirat
+  2026-07-24 11:29 EDT, marked shipped in-file once this merge actually lands.)
+- `[P3 · M · ⛓️blocked-by nothing, just deferred]` **Auto-deploy on merge** (GitHub Action/webhook →
+  VM `git pull` + restart) — considered during the workflow-overhaul design and explicitly REJECTED
+  for the initial rollout: it's real new infra, and it complicates `deploy.sh`'s deliberate-vs-crash
+  restart-reason labeling (the `.restart-reason` marker assumes a human or script running `deploy.sh`
+  directly, not a webhook firing unattended). Deploy stays a manual, separate, per-merge-optional step
+  for now (a merged version can sit undeployed indefinitely, docs-only being the obvious case). Revisit
+  only if the manual step becomes an actual friction point, not preemptively.
+
 ### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
 - `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.

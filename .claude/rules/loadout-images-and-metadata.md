@@ -263,8 +263,14 @@ stray unused `Barrel` string field that happened to match the schema, so the scr
   uploaded the image to that key yet), the bulk-add/replace loop (syncs each touched weapon once after the
   loop), and `scripts/applyBadgesBulk.js`. Patch side: `modal_patch_urls_1/2` (metadata on cache),
   `modal_patch_dateinfo` (re-sync date across all images), `modal_season_titles_deadlines` (re-sync season on
-  rename). **Known accepted gap:** a `/manage` edit that changes ATTACHMENTS does NOT update the per-slot
-  fields (only `/autobuild` has the slot mapping) — existing slot metadata is left as-is, not wiped.
+  rename). **FIXED 2026-07-24 18:07 EDT (was: "Known accepted gap"):** `Loadout` now has its own
+  `attachmentSlots` field (`models/Loadout.js`), populated by `/autobuild`'s `writeLoadoutDoc` and
+  backfilled onto pre-existing docs by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_`
+  keeps the stored slots (and re-syncs the real per-slot Cloudinary fields) when the edited attachment
+  list is byte-for-byte unchanged from what's stored — the common "fix a typo/badge" edit — and clears
+  them when the list actually changed content/order, since slot identity can't be safely carried forward
+  onto a different attachment set without re-running vision. See `.claude/rules/autobuild.md`'s "Still
+  open" section for the original design decision this implements.
 - **Backfilled (2026-07-21), not deferred.** `scripts/backfillLoadoutMetadata.js` synced the non-slot fields
   onto **132/133** existing loadouts (the 1 skip is PHARO's `placehold.co` "Coming Soon" external-URL
   placeholder — no asset to tag). `scripts/backfillPatchMetadata.js` tagged all 5 Season 6 patch images. Both

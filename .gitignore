@@ -1,8 +1,20 @@
-node_modules
-.env
+# Dependencies & System Junk
+node_modules/
 .DS_Store
-.restart-reason
+.env
+
+# Project-Specific Local Files
 gun-builds/
 local/
+.restart-reason
+repomix-output.xml
+builds.xlsx
+
+# AI CLI & Memory Folders
+# NOTE: ignore ONLY the local settings, NOT all of .claude/ -- .claude/rules/*.md (13 path-scoped rule
+# files) and .claude/settings.json are deliberately TRACKED (see the CLAUDE.md modularization, v2.31.0).
+# A blanket `.claude/` would silently stop new rule files from being committed. `.remember/` and
+# `.superpowers/` are local skill scratch (never were tracked) -- fine to ignore (confirmed 2026-07-24).
 .claude/settings.local.json*
+.remember/
 .superpowers/

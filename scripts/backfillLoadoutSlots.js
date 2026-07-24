@@ -90,6 +90,10 @@ async function processOne(doc) {
     }
     const aligned = alignSlots(doc.attachments || [], vision.attachments, vision.attachmentSlots);
     const mapped = aligned.filter(Boolean).length;
+    // Persist the recovered mapping on the Mongo doc itself (added 2026-07-24 18:07 EDT), not just Cloudinary --
+    // this is what makes a FUTURE /manage edit of one of these pre-existing builds able to re-sync
+    // per-slot metadata too, the same as a build created directly via /autobuild.
+    await Loadout.findByIdAndUpdate(doc._id, { attachmentSlots: aligned });
     const res = await syncLoadoutMetadata(doc, aligned);
     return { doc, status: res.success ? 'ok' : 'sync-fail', mapped, total: (doc.attachments || []).length, reason: res.error };
 }

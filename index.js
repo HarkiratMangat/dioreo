@@ -37,6 +37,13 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config(); // Secure injection of environment variables from local or cloud environment
 
+// package.json's `version` is bumped at every git-workflow MERGE (not on every commit/push -- see
+// project_git_workflow memory) and is otherwise dead at runtime, so reading it here is free/safe. This
+// is the "what's actually running" signal: main's version = latest tag = package.json on main; the VM's
+// running version = package.json on whatever commit the VM last deployed -- the two can legitimately
+// diverge since deploy is a separate, optional step from merge.
+const { version: BOT_VERSION } = require('./package.json');
+
 const mongoose = require('mongoose'); // Add to dependency imports
 const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
@@ -335,7 +342,7 @@ client.once(Events.ClientReady, (c) => {
     const kind = reason === 'deploy' ? '🚀 Manual deploy (git pull + restart)'
         : reason === 'manual' ? '🔧 Manual restart'
         : (() => { const ctx = restartContext(); return `♻️ Automatic/unattended restart${ctx ? ` (${ctx})` : ''}`; })();
-    sendAlert('Bot online', `${kind}\nLogged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
+    sendAlert('Bot online', `${kind}\nv${BOT_VERSION} · Logged in as ${c.user?.tag} · ${c.guilds.cache.size} servers · gateway ${formatPing(c.ws.ping)}`, 'info');
 });
 
 // DAILY "STILL HEALTHY" HEARTBEAT (2026-07-17) — an info-level, NON-pinging alert once every 24h so a
@@ -3035,6 +3042,20 @@ client.on('interactionCreate', async interaction => {
             const attachmentsArray = interaction.fields.getTextInputValue('attachments').split('\n').map(s => s.trim()).filter(s => s.length > 0);
             let { isMeta, categoryRank, dmzRangeRank, isToxic, unrecognized } = parseLoadoutBadges(metaParts[1]);
 
+            // Slot labels (Muzzle/Barrel/...) only ever come from /autobuild's vision extraction, so this
+            // plain-text modal can't supply new ones -- the best it can do is KEEP the existing mapping,
+            // and only when it's still valid. Same convention as utils/autobuildPipeline.js's
+            // applyEditSubmission: valid only if the attachment list is byte-for-byte unchanged (same
+            // length + same names in the same order); any real content/order change invalidates slot
+            // identity, so it's cleared rather than carried forward misaligned onto the wrong attachment.
+            // This is what lets syncLoadoutMetadata below re-sync per-slot Cloudinary fields on the common
+            // "just fixing a typo/badge" edit (2026-07-24 18:07 EDT, closes the former "accepted gap" in
+            // loadout-images-and-metadata.md) instead of always skipping them.
+            const existingAttachments = existingLoadout?.attachments || [];
+            const attachmentsUnchanged = attachmentsArray.length === existingAttachments.length
+                && attachmentsArray.every((a, i) => a === existingAttachments[i]);
+            const attachmentSlots = attachmentsUnchanged ? (existingLoadout?.attachmentSlots || []) : [];
+
             const weaponName = interaction.fields.getTextInputValue('weapon');
             const weaponKey = weaponName.toLowerCase().replace(/\s+/g, '');
             const buildName = interaction.fields.getTextInputValue('build');
@@ -3055,6 +3076,7 @@ client.on('interactionCreate', async interaction => {
                 weaponKey,
                 buildName,
                 attachments: attachmentsArray,
+                attachmentSlots,
                 imageKey,
                 category: metaParts[0]?.toUpperCase() || 'AR',
                 mode,
@@ -3079,11 +3101,11 @@ client.on('interactionCreate', async interaction => {
             // Keep Cloudinary structured metadata in sync (2026-07-21) -- re-sync this build AND every
             // sibling, since badges are weapon-level and may have just propagated (and weaponName/
             // category/attachments/code may have changed on this build). Best-effort, never throws.
-            // NOTE: if the ATTACHMENTS changed here, the per-slot Cloudinary fields (Muzzle/Barrel/...)
-            // aren't updated -- /manage has no slot mapping, only /autobuild does -- so any existing
-            // slot metadata is left as-is rather than wiped (update_metadata merges). Accepted gap.
+            // Each sibling (including the just-edited build, refetched fresh above) now carries its OWN
+            // persisted attachmentSlots -- pass it through so per-slot fields actually re-sync when valid
+            // (see the attachmentsUnchanged logic above), instead of unconditionally skipping them.
             const { syncLoadoutMetadata } = require('./utils/loadoutImageCache');
-            for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib);
+            for (const sib of await Loadout.find({ weaponKey, mode })) await syncLoadoutMetadata(sib, sib.attachmentSlots);
 
             let confirmation = `✅ **Loadout Updated Successfully!** ${weaponName} (${buildName})`;
             if (propagateResult.modifiedCount > 0) {
