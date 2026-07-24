@@ -159,6 +159,77 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.32.0 — 2026-07-24 (`987750a`) — `/manage` patch notes: multi-season management + manual title override
+The patch-notes admin page could only ever edit the **one** entry that happened to be "current" — there was
+no way to *start* a new season's notes at all (the notes-file's own "PRIORITY: WHAT A HUGE MISS BY US" item).
+This adds the missing lifecycle. Implemented in a prior session (Sonnet 5, "Part 3") and carried uncommitted
+into this one; committed here as the **last old-model direct-to-`main` release** before the branch/PR
+workflow switch. **Syntax-checked but NOT yet tested on the live bot** — pending a real `/manage` run before
+it's trusted in production.
+- **"Add New Season"** — a new button + 5-field modal (`modal_patch_addseason`: title override, release date,
+  additional info, URLs 1, URLs 2). Submitting **pushes** a fresh `patchNotes[]` entry, which becomes the
+  Current Season; the previous current entry automatically becomes a Past Season (it's simply no longer the
+  last item in the array — nothing else about it changes). Submitted URLs are re-hosted into the new entry's
+  own Cloudinary folder, same pipeline the current-entry URL flow uses.
+- **"Past Seasons"** — a select menu (not a search modal — the full list is short enough to pick from
+  directly) that opens the chosen past entry in an edit modal (`modal_patch_editseason_<id>`), updating that
+  one entry **in place** by its `_id` and never touching which entry is "current." Options are built live from
+  the DB every render (`buildPastSeasonsOptions()` — most-recent-first, current excluded, capped at Discord's
+  25-option select limit), so `buildManagePage()` now takes a `dynamicData` param; both render call sites
+  (manage.js's `execute()` and index.js's `mng_pagesel`) fetch the doc when landing on the patch-notes page.
+  An empty list renders one disabled placeholder option rather than an (illegal) empty select.
+- **Manual title override (`titleOverride`)** — a new schema field + a `displayTitle(patch)` helper
+  (`cleanPatchTitle(titleOverride || title)`) exported from `patchnotes.js` and threaded through **every**
+  display site (main render, history dropdown, autocomplete, the manage dropdown, and Cloudinary
+  `Patch_Season` metadata) so an override can never be silently ignored. Purpose: set a placeholder title when
+  patch notes drop before the new season's real name is announced (Harkirat's example: notes out Jul 23,
+  season title still pending). Blank reverts to the auto-synced `title` (`currentSeasonTitle`); the Date/Info
+  modal also gained a "Season Title Override" field for the current entry.
+
+## v2.31.0 — 2026-07-22 (`116ccd6`) — CLAUDE.md modularized into path-scoped rules + vision cost logging
+*Two things shipped together in this one push (Harkirat's call, to get everything live and in sync): the
+CLAUDE.md modularization (the bulk of it, docs/architecture only) **and** a small pre-existing bot-code change
+from earlier the same day — per-call Vertex AI vision cost logging — that had been sitting uncommitted.
+Because real `utils/` code changed, this push required a VM redeploy. `v2.31.0` is a MODERATE bump: a repo-wide
+structural change plus a new observability feature. (Finalized 2026-07-24: this entry had been left in the
+"Unreleased/proposed" staging area and untagged even though it shipped live as `116ccd6`; graduated to a real
+numbered entry and the `v2.31.0` tag backfilled onto `116ccd6` during the workflow-overhaul session.)*
+- **Root `CLAUDE.md` cut from 3,272 lines → 182** (~111k startup tokens → ~15k). It now holds only the hard
+  invariants (canonical memory path, `.env` gitignore, Cloudinary secret-logging ban, user-installed-only
+  architecture, DB schema gotcha, deploy summary, context-comments rule), a platform cheat-sheet, and a 🗺️
+  navigation map. Everything else moved to:
+  - **13 path-scoped `.claude/rules/*.md`** (a real Claude Code feature, verified against the docs) — each with
+    a `paths:` glob so a subsystem's detail loads into context ONLY when you read a matching file. Files:
+    commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui,
+    accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions,
+    models, scripts-and-migrations.
+  - **`docs/ROADMAP.md`** (now the authoritative roadmap — was CLAUDE.md's "Next planned work"),
+    **`docs/reference/deployment-and-ops.md`** (stack + GCP + version tagging), **`docs/reference/known-issues.md`**,
+    **`docs/reference/design-history.md`**.
+- **Zero content loss** — a move + index + inline cleanup, verified by section→destination ledger, line
+  accounting (3,272 → 3,618 total across the new files, the delta being added frontmatter/intros/nav-map), and
+  a 22-phrase subsystem spot-check. All 13 rule files' YAML frontmatter parse-validated.
+- **All cross-references rewired**: ~30 dangling "see X above/below" refs re-pointed across the new files;
+  `docs/README.md`, `docs/SESSION-START.md`, and ~8 operative memory pointers updated (roadmap authority →
+  `docs/ROADMAP.md`); historical changelog/DEVLOG/plan refs resolve via the root nav-map redirect.
+- New memory `reference_claude_md_rules_structure` + design spec
+  `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`. Also filed a concrete plan to split
+  `index.js` (3.3k lines) into `handlers/*.js` as its own future session (`docs/ROADMAP.md`).
+- Invariants deliberately kept in root because only root `CLAUDE.md` survives `/compact`; path-scoped rules
+  reload on the next matching file read. Verify with `/context`.
+- **Bundled bot-code change — Vertex AI vision cost logging** (`utils/visionExtract.js` + 3 callers, written
+  earlier 2026-07-22, folded into this push rather than left dangling): a new `logVisionCallCost()` emits one
+  structured `console.log` line (`vision_call_cost` — taskName, model, region, input/output tokens, estimated
+  USD) per extraction, captured by journald on the VM. Added after a ~$20 GCP spike whose root cause took two
+  days to trace because Cloud Monitoring only reports aggregate per-model/region/day token totals, not per-call
+  detail; this closes that gap with zero new dependency. The spike itself was diagnosed as the 2026-07-20
+  Antigravity migration/debugging session hammering the `global` endpoint (~16M input tokens in one day), NOT
+  this bot's production path — decision recorded in-file to **stay on `gemini-3.5-flash`, not upgrade to
+  `gemini-3.6-flash`** (no published pricing, `global`-only region, and its "fewer turns" efficiency gain
+  doesn't apply to a single-shot image→JSON call). Callers (`autobuildPipeline`, `backfillLoadoutSlots`,
+  `test-vertex-extract`) now pass a `taskName` for attribution. The cost logger is wrapped in try/catch so it
+  can never break an extraction; production `/autobuild` behavior is otherwise unchanged.
+
 ## v2.30.2 — 2026-07-21 (`231b133`) — fix pagination duplicate-custom_id crash at exactly 2 pages
 A live production crash, found in the VM logs while verifying the v2.30.1 deploy (9× in one hour on `/draws`
 alone). Introduced by v2.28.0's pagination loop-back. **Player-facing** (it took down whole commands), though
@@ -1229,46 +1300,6 @@ Staging area for work that's committed locally but hasn't gone live yet, so it h
 number. On push, graduate this content up into a real numbered entry (newest-first, at the TOP of the
 list above) and reset this section to empty.
 
-### v2.31.0 (proposed) — CLAUDE.md modularized into path-scoped rules + vision cost logging (2026-07-22)
-*Two things ship together in this one push (Harkirat's call, to get everything live and in sync): the
-CLAUDE.md modularization (the bulk of it, docs/architecture only) **and** a small pre-existing bot-code
-change from earlier the same day — per-call Vertex AI vision cost logging — that had been sitting
-uncommitted. Because real `utils/` code changed, **this push DOES require a VM redeploy** (the earlier
-draft of this entry said "docs only, no redeploy" — that was only true before the code files were folded
-in). `v2.31.0` is a MODERATE bump: a repo-wide structural change plus a new observability feature.*
-- **Root `CLAUDE.md` cut from 3,272 lines → 182** (~111k startup tokens → ~15k). It now holds only the
-  hard invariants (canonical memory path, `.env` gitignore, Cloudinary secret-logging ban,
-  user-installed-only architecture, DB schema gotcha, deploy summary, context-comments rule), a platform
-  cheat-sheet, and a 🗺️ navigation map. Everything else moved to:
-  - **13 path-scoped `.claude/rules/*.md`** (a real Claude Code feature, verified against the docs) — each
-    with a `paths:` glob so a subsystem's detail loads into context ONLY when you read a matching file.
-    Files: commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui,
-    accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions,
-    models, scripts-and-migrations.
-  - **`docs/ROADMAP.md`** (now the authoritative roadmap — was CLAUDE.md's "Next planned work"),
-    **`docs/reference/deployment-and-ops.md`** (stack + GCP + version tagging), **`docs/reference/known-issues.md`**,
-    **`docs/reference/design-history.md`**.
-- **Zero content loss** — a move + index + inline cleanup, verified by section→destination ledger, line
-  accounting (3,272 → 3,618 total across the new files, the delta being added frontmatter/intros/nav-map),
-  and a 22-phrase subsystem spot-check. All 13 rule files' YAML frontmatter parse-validated.
-- **All cross-references rewired**: ~30 dangling "see X above/below" refs re-pointed across the new files;
-  `docs/README.md`, `docs/SESSION-START.md`, and ~8 operative memory pointers updated (roadmap authority →
-  `docs/ROADMAP.md`); historical changelog/DEVLOG/plan refs resolve via the root nav-map redirect.
-- New memory `reference_claude_md_rules_structure` + design spec
-  `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`. Also filed a concrete plan to
-  split `index.js` (3.3k lines) into `handlers/*.js` as its own future session (`docs/ROADMAP.md`).
-- Invariants deliberately kept in root because only root `CLAUDE.md` survives `/compact`; path-scoped
-  rules reload on the next matching file read. Verify with `/context`.
-- **Bundled bot-code change — Vertex AI vision cost logging** (`utils/visionExtract.js` + 3 callers,
-  written earlier 2026-07-22, folded into this push rather than left dangling): a new `logVisionCallCost()`
-  emits one structured `console.log` line (`vision_call_cost` — taskName, model, region, input/output
-  tokens, estimated USD) per extraction, captured by journald on the VM. Added after a ~$20 GCP spike whose
-  root cause took two days to trace because Cloud Monitoring only reports aggregate per-model/region/day
-  token totals, not per-call detail; this closes that gap with zero new dependency. The spike itself was
-  diagnosed as the 2026-07-20 Antigravity migration/debugging session hammering the `global` endpoint (~16M
-  input tokens in one day), NOT this bot's production path — decision recorded in-file to **stay on
-  `gemini-3.5-flash`, not upgrade to `gemini-3.6-flash`** (no published pricing, `global`-only region, and
-  its "fewer turns" efficiency gain doesn't apply to a single-shot image→JSON call). Callers
-  (`autobuildPipeline`, `backfillLoadoutSlots`, `test-vertex-extract`) now pass a `taskName` for
-  attribution. The cost logger is wrapped in try/catch so it can never break an extraction; production
-  `/autobuild` behavior is otherwise unchanged.
+*Nothing staged. (`v2.31.0` was graduated to a numbered entry above and `v2.32.0` shipped on 2026-07-24 —
+see the top of the list. Under the incoming branch/PR workflow, in-flight work will live on its own
+branch/PR rather than in this section; its role is redefined in the workflow-overhaul release.)*

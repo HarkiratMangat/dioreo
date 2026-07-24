@@ -26,6 +26,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.32.0 — July 24, 2026
+- **Patch notes now span multiple seasons.** Dior can start a fresh season's patch notes (with past
+  seasons kept editable) and set a placeholder season title when notes go out before the new season's
+  name is announced — so the patch notes you see always show a sensible title. *(Mostly an admin-side
+  tool; the player-visible effect is simply correctly-titled, up-to-date patch notes.)*
+
+---
+
 ## v2.31.0 — July 22, 2026
 - *Internal only — nothing players see or interact with changed.* Reorganized the project's own developer
   documentation (the giant `CLAUDE.md` was split into focused, on-demand files) so future work stays fast

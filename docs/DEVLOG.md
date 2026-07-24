@@ -53,6 +53,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no
 - 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
 - 2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction
+- 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1573,6 +1574,30 @@ folding it into this session would have been the exact "too much at once" failur
 `docs/ROADMAP.md` with a concrete incremental `handlers/*.js` plan and the specific risks (the crash-safety
 net, the shared-closure state, routing order) — a teed-up item, not a shrug. Result: root `CLAUDE.md`
 182 lines (from 3,272), 13 path-scoped rules, 3 reference docs, an authoritative `docs/ROADMAP.md`.
+
+## 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
+
+A new session opened to overhaul the git workflow (branch → PR → merge → version-at-merge). Before
+touching any of that, the handoff said the prior session's "Part 3" (patch-notes multi-season
+management) had *just shipped*. The habit-path is to trust that and branch off `main`. Verifying instead
+— a plain `git status` — told a different story: **Part 3 was sitting uncommitted in the working tree.**
+Four modified files, never committed, never pushed, never deployed. "Shipped" was aspirational.
+
+Pulling that thread found more. `v2.31.0` (the CLAUDE.md modularization) genuinely *had* gone live days
+earlier as `116ccd6` — but the detailed changelog still had it parked in the "Unreleased (proposed)"
+staging area, and **there was no `v2.31.0` git tag at all** (tags stopped at v2.30.2), even though the
+*summary* changelog had already graduated it. One shipped version, two different half-finished
+finalizations.
+
+The lesson isn't new but it keeps re-earning its place: **a prior session's "done/shipped" is a claim,
+not evidence.** One `git status` + `git tag` check at the top of the session caught a whole feature that
+would otherwise have been silently swept into an unrelated branch, plus an orphaned version number.
+Cleanup: finalized v2.31.0 (graduated it to a numbered entry and backfilled its tag onto `116ccd6`);
+wrote Part 3's docs from scratch (it had *none* anywhere — changelog, summary, DEVLOG, notes all silent);
+syntax-checked the four files and committed it as the **last old-model direct-to-`main` release**,
+`v2.32.0`. It's shipped to `main` but still **untested on the live bot** — flagged, deploy deliberately
+held. (The workflow overhaul that this session actually exists to build gets its own entry when it
+merges as its inaugural squash-PR.)
 
 ---
 
