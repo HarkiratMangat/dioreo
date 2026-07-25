@@ -6,7 +6,7 @@
 
 <!-- HOW THIS FILE WORKS (reworked 2026-07-18, Claude — replaces the old "filed stays unmarked" note, then reworked again same day for the confirmation-gate rule below): this is a SCRATCHPAD, not a store, so thoughts don't live here forever. -->
 <!-- 1. New thoughts land in the working sections below as raw INTAKE. -->
-<!-- 2. On a tidy pass, each actionable thought is FILED into its real home — a feature/bug → docs/ROADMAP.md (the authoritative roadmap, moved out of CLAUDE.md 2026-07-22) + both CHANGELOG roadmaps; a workflow lesson → memory; a reminder/cross-project item → /Applications/Claude Code/deferred-items.md — and then LEAVES the working sections. The roadmap is NOT duplicated here (see the pointer further down); docs/ROADMAP.md is the roadmap source of truth, and CLAUDE.md (invariants + nav map) + the .claude/rules/*.md files it maps to are the source of truth for architecture/design. -->
+<!-- 2. On a tidy pass, each actionable thought is FILED into its real home — a feature/bug → docs/ROADMAP.md (the authoritative roadmap, moved out of CLAUDE.md 2026-07-22) + both CHANGELOG roadmaps; a workflow lesson → memory; a deferred maintenance/tech-debt item → docs/deferred-items.md (split out of the cross-project tracker 2026-07-25 15:56 EDT); a reminder/cross-project item → /Applications/Claude Code/deferred-items.md — and then LEAVES the working sections. The roadmap is NOT duplicated here (see the pointer further down); docs/ROADMAP.md is the roadmap source of truth, and CLAUDE.md (invariants + nav map) + the .claude/rules/*.md files it maps to are the source of truth for architecture/design. -->
 <!-- 3. A thought that's RESOLVED is marked in place per the 🔑 Legend below (`[x] ✓`/`[x] ✗`, a mark-date, and eventually Harkirat's own confirmation mark once he's picked one). -->
 <!-- 4. A resolved item is ONLY swept down into the Graveyard once it carries Harkirat's confirmation mark (added 2026-07-18, per his own catch: Claude's ✓/✗ alone isn't proof he's actually SEEN the answer yet) — without that mark, it stays in the working section indefinitely, no matter how many sessions pass. Marks made in the SAME session stay put regardless either way, confirmed or not. -->
 <!-- 5. Don't read the Graveyard section by default (added 2026-07-24, Harkirat's own token-conscious ask) — it's a dead archive, not part of the active working set. Only open it when actually looking something up from it, or when doing the sweep/organization pass that moves resolved+confirmed items into it. -->
@@ -175,8 +175,9 @@ planned work"**, mirrored in both changelog roadmap sections (`CHANGELOG.md` "�
 
 **This scratchpad no longer duplicates that list** (it was the main thing making the file endless). New
 feature ideas start here as intake in the sections above, then get filed into CLAUDE.md + the changelogs on
-the next tidy. To see or change the roadmap, go there. The deferred maintenance/tech-debt long-tail +
-cross-project reminders live in `/Applications/Claude Code/deferred-items.md`.
+the next tidy. To see or change the roadmap, go there. The deferred maintenance/tech-debt long-tail lives in
+`docs/deferred-items.md` (this repo, split out 2026-07-25 15:56 EDT); cross-project reminders + confirmed
+bugs still live in `/Applications/Claude Code/deferred-items.md`.
 
 ---
 

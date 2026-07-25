@@ -12,11 +12,12 @@ system → `.claude/rules/loadout-images-and-metadata.md`. The `/autobuild` FOLL
 autobuild session) are documented at the end of `.claude/rules/autobuild.md`.*
 
 *Items carry the `[Priority · Effort]` tag system (full spec: `reference_priority_tier_system` memory; quick
-legend atop `deferred-items.md`). **Priority** P0 now → P3 someday; **Effort** XS→L (with model+effort for real
-builds); flags 🔗bundle-with 🧩needs-design ⛓️blocked-by. The near-term **v2** items below are tagged
-individually. **Version horizon already implies priority — v3 ≈ P2, v4/v5 ≈ P3** unless explicitly promoted —
-so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail (after v5) is priority-tagged in
-`deferred-items.md` (the cross-project focus view), not duplicated here.*
+legend atop `/Applications/Claude Code/deferred-items.md`). **Priority** P0 now → P3 someday; **Effort** XS→L
+(with model+effort for real builds); flags 🔗bundle-with 🧩needs-design ⛓️blocked-by. The near-term **v2**
+items below are tagged individually. **Version horizon already implies priority — v3 ≈ P2, v4/v5 ≈ P3**
+unless explicitly promoted — so those aren't per-item tagged. The deferred maintenance/tech-debt long-tail
+(after v5) is priority-tagged in **this project's own** `docs/deferred-items.md` (split out of the
+cross-project tracker 2026-07-25 15:56 EDT), not duplicated here.*
 
 ### Process / tooling (not a version-numbered feature, tracked here for visibility)
 - ~~**Git branch/PR/merge workflow overhaul**~~ — **SHIPPED as v2.33.0** (the inaugural dogfood
