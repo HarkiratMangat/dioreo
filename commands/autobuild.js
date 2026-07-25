@@ -20,6 +20,7 @@ module.exports = {
         .addStringOption(option => option.setName('category').setDescription('Weapon category (optional -- will look up or ask if omitted)').addChoices(...CATEGORY_CHOICES.map(c => ({ name: c, value: c }))))
         .addStringOption(option => option.setName('badges').setDescription('meta,best,top5,toxic (optional -- blank inherits from an existing build of this weapon)'))
         .addStringOption(option => option.setName('retry_token').setDescription('Only used when re-submitting an image after a Cloudinary upload failure'))
+        .addBooleanOption(option => option.setName('private').setDescription('Reply privately, only you can see it (default: true)'))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]),
 
     async execute(interaction) {
@@ -31,6 +32,10 @@ module.exports = {
         const url = interaction.options.getString('url');
         const retryToken = interaction.options.getString('retry_token');
         const imageUrl = attachment ? attachment.url : (url ? url.trim() : null);
+        // Explicit option only -- unlike the loadout lookup commands' `private`, this has no saved
+        // preference layer to fall back on (admin-only PoC, single admin, not worth the extra state).
+        // Omitted -> stays private, matching the behavior before this option existed.
+        const isEphemeral = interaction.options.getBoolean('private') ?? true;
 
         // retry_token path (Task 7 adds retryImageUpload) -- Discord modals can't accept file
         // attachments, so "ask for the image again" after a Cloudinary failure has to be a fresh
@@ -40,7 +45,7 @@ module.exports = {
             if (!imageUrl) {
                 return interaction.reply({ content: '❌ Provide `screenshot` or `url` with a retry_token.', ephemeral: true });
             }
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ ephemeral: isEphemeral });
             const { retryImageUpload } = require('../utils/autobuildPipeline');
             return retryImageUpload(interaction, retryToken, imageUrl);
         }
@@ -49,7 +54,7 @@ module.exports = {
             return interaction.reply({ content: '❌ Provide exactly one of `screenshot` or `url`.', ephemeral: true });
         }
 
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ ephemeral: isEphemeral });
         const category = interaction.options.getString('category');
         const badges = interaction.options.getString('badges');
         return runExtraction(interaction, imageUrl, category, badges);
