@@ -26,6 +26,11 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.33.1 — July 25, 2026
+- *Internal/admin-only — an options tweak to Dior's private build-import tool. Nothing players see.*
+
+---
+
 ## v2.33.0 — July 24, 2026
 - *Internal only — nothing players see or interact with changed.* Switched how updates get built and
   released (proper git branches + review before anything goes live), and fixed a behind-the-scenes data

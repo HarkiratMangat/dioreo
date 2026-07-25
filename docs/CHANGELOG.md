@@ -166,6 +166,13 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.33.1 — 2026-07-25 18:35 EDT (`8c44f97`) — `/autobuild` private toggle
+- Added a `private` boolean option to `/autobuild` (default `true`, matching the always-ephemeral behavior
+  that existed before this option), applied to both the main flow and the `retry_token` retry flow's
+  `deferReply`. Explicit-option-only — no saved-preference layer like the loadout commands' `private`,
+  since this is a single-admin PoC command, not worth the extra `UserPreference` state. `/autobuild` stays
+  fully admin-gated (`ALLOWED_ADMIN_ID` check) regardless of this option — no exposure risk from the toggle.
+
 ## v2.33.0 — 2026-07-24 18:18 EDT (`904dec8`) — Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow
 *The inaugural dogfood of the workflow it describes — squash-merged via `gh pr merge --squash` from
 `feat/git-workflow` (PR #1), the first version ever minted at MERGE rather than at push.*
