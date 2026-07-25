@@ -166,6 +166,36 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.33.0 — 2026-07-24 18:18 EDT (`904dec8`) — Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow
+*The inaugural dogfood of the workflow it describes — squash-merged via `gh pr merge --squash` from
+`feat/git-workflow` (PR #1), the first version ever minted at MERGE rather than at push.*
+- **Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow**, replacing the old
+  "everything on `main`, push = version bump" model. Version now mints at MERGE (squash), not push;
+  branch commits are free/unversioned checkpoints; push/merge/deploy are each asked separately, every
+  time. Design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`.
+- Consistency sweep across the repo-doc side to match: `CLAUDE.md`'s git-workflow invariant,
+  `docs/SESSION-START.md`'s NON-NEGOTIABLES glossary + a hardened FIRST-ACTION gate, both changelogs'
+  Versioning headers, `docs/ROADMAP.md`, `docs/README.md`'s per-merge chore checklist,
+  `docs/reference/deployment-and-ops.md`'s version-tagging section, `scripts/deploy.sh` comments, and
+  the 4 coupled memory files (`feedback_docs_at_push_time`, `feedback_push_means_full_cycle`,
+  `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system`).
+- `index.js`'s "Bot online" boot alert now reads and reports `package.json`'s version, so a lagging VM
+  deploy is visible at a glance against `main`'s latest tag. `package.json` bumped from a stale `1.0.0`
+  to `2.33.0` as part of this merge.
+- Moved the changelog doc-check hook (`.claude/settings.local.json`) from firing on every `git commit`
+  to firing on `gh pr merge` — the right grain now that branch checkpoint commits are free.
+- **Fixed the `/manage` attachment-edit → per-slot-Cloudinary-metadata gap** (design decided
+  2026-07-21, built this PR): `Loadout` gained a real `attachmentSlots` field (`models/Loadout.js`),
+  populated by `/autobuild`'s `writeLoadoutDoc` on every new build and backfilled onto pre-existing
+  builds by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_` now re-syncs the real
+  per-slot Cloudinary fields (Muzzle/Barrel/etc.) when the edited attachment list is unchanged from
+  what's stored, and safely clears the stored mapping when it genuinely changes. See
+  `.claude/rules/autobuild.md` + `.claude/rules/loadout-images-and-metadata.md`. ⚠️ Syntax-checked,
+  not yet live-tested against a real `/manage` edit.
+- A full `docs/diors-builds notes.md` review pass — answered/fixed everything flagged there (Legend
+  formatting corrections, the bullet-comment convention, moved several answers that had only lived in
+  a SESSION STATUS block back to their own bullets, a real Firestore-migration assessment).
+
 ## v2.32.0 — 2026-07-24 12:12 EDT (`987750a`) — `/manage` patch notes: multi-season management + manual title override
 The patch-notes admin page could only ever edit the **one** entry that happened to be "current" — there was
 no way to *start* a new season's notes at all (the notes-file's own "PRIORITY: WHAT A HUGE MISS BY US" item).
@@ -1311,35 +1341,5 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-**Proposed `v2.33.0`** — on branch `feat/git-workflow`, not yet merged. *(This is the inaugural dogfood
-of the workflow it describes — drafted here now, finalized with the real squash-commit hash + tag at
-merge.)*
-- **Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow**, replacing the old
-  "everything on `main`, push = version bump" model. Version now mints at MERGE (squash), not push;
-  branch commits are free/unversioned checkpoints; push/merge/deploy are each asked separately, every
-  time. Design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`.
-- Consistency sweep across the repo-doc side to match: `CLAUDE.md`'s git-workflow invariant,
-  `docs/SESSION-START.md`'s NON-NEGOTIABLES glossary + a hardened FIRST-ACTION gate, both changelogs'
-  Versioning headers, `docs/ROADMAP.md`, `docs/README.md`'s per-merge chore checklist,
-  `docs/reference/deployment-and-ops.md`'s version-tagging section, `scripts/deploy.sh` comments, and
-  the 4 coupled memory files (`feedback_docs_at_push_time`, `feedback_push_means_full_cycle`,
-  `feedback_wait_for_commit_push_confirmation`, `project_dior_builds_changelog_system`).
-- **The one code change:** `index.js`'s "Bot online" boot alert now reads and reports `package.json`'s
-  version, so a lagging VM deploy is visible at a glance against `main`'s latest tag. `package.json`
-  bumped from a stale `1.0.0` to `2.33.0` as part of this merge.
-- Moved the changelog doc-check hook (`.claude/settings.local.json`) from firing on every `git commit`
-  to firing on `gh pr merge` — the right grain now that branch checkpoint commits are free.
-- **Fixed the `/manage` attachment-edit → per-slot-Cloudinary-metadata gap** (the design decided
-  2026-07-21, built now): `Loadout` gained a real `attachmentSlots` field (`models/Loadout.js`),
-  populated by `/autobuild`'s `writeLoadoutDoc` on every new build and backfilled onto pre-existing
-  builds by `scripts/backfillLoadoutSlots.js`. `index.js`'s `edit_loadout_` now re-syncs the real
-  per-slot Cloudinary fields (Muzzle/Barrel/etc.) when the edited attachment list is unchanged from
-  what's stored, and safely clears the stored mapping when it genuinely changes. See
-  `.claude/rules/autobuild.md` + `.claude/rules/loadout-images-and-metadata.md`.
-- A full `docs/diors-builds notes.md` review pass — answered/fixed everything Harkirat flagged there
-  (Legend formatting corrections, the bullet-comment convention, moved several answers that had only
-  lived in a SESSION STATUS block back to their own bullets, a real Firestore-migration assessment,
-  and the loadout-slot fix above), folded into this same branch/PR per the notes file's own "answers
-  land in the tracked file, and the file rides along in the same PR as any code it triggered" pattern.
-- *(This entry itself is the first real-world proof of the new model: drafted here on the branch as the
-  work happened, per the "docs land in the PR" rule.)*
+*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.0, the last entry to sit here,
+graduated to a real numbered entry above on 2026-07-24 18:18 EDT when PR #1 squash-merged as `904dec8`.)*

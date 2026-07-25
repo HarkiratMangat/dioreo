@@ -54,6 +54,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
 - 2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction
 - 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
+- 2026-07-24 (later) — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1598,6 +1599,38 @@ syntax-checked the four files and committed it as the **last old-model direct-to
 `v2.32.0`. It's shipped to `main` but still **untested on the live bot** — flagged, deploy deliberately
 held. (The workflow overhaul that this session actually exists to build gets its own entry when it
 merges as its inaugural squash-PR.)
+
+## 2026-07-24 18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
+
+The workflow overhaul this session actually opened to build finally shipped, and it shipped by
+*being used on itself* — no separate dry run, the first real branch was this one. `feat/git-workflow`
+carried the design doc, the CLAUDE.md/memory/hook consistency sweep, and (folded in per Harkirat's own
+request, since the notes file rides along in whatever PR it triggers) a full `docs/diors-builds
+notes.md` review pass that happened to surface a real, separately-shippable bug: `/manage` attachment
+edits had no way to re-sync per-slot Cloudinary metadata, because the slot labels Gemini's vision
+extraction produces were never persisted anywhere — `Loadout` had no field for them. Fixed by adding
+`attachmentSlots` to the schema (the schema-save gotcha in its purest form: the data existed at
+extraction time, in `visionExtract.js`'s output, and just evaporated on save because nothing declared
+where it should land) and threading it through `autobuildPipeline.js`, `backfillLoadoutSlots.js`, and
+`index.js`'s edit handler.
+
+`gh pr create` → `gh pr merge --squash --delete-branch` landed as `904dec8`, and the changelog entry
+that had sat in "Unreleased (proposed)" on the branch — deliberately drafted *before* the hash existed,
+per the new "docs land in the PR" rule — graduated to a real numbered `v2.33.0` entry with that hash
+filled in, the first version ever minted at merge instead of at push. The mechanical asymmetry this
+exposes: everything *about* the merge (the changelog's own version header, the notes-file mark, the git
+tag) can only be finalized *after* the merge completes, so "squash-merge as vX" always implies a small
+follow-up commit on `main` immediately after — not a separate ask each time, since finishing what
+"merge" was asked to do isn't a new action, but worth naming explicitly so a future session doesn't
+mistake the gap between "merged" and "tagged" for something having gone wrong.
+
+One process note surfaced by the notes-file pass, independent of any code: Harkirat's complaint that
+SESSION STATUS blocks buried answers to his direct questions where he'd never think to look for them
+(a question at line 133 got answered at line 151, inside a same-numbered status block he only found by
+accident). The fix wasn't a new mark or a new section — it was removing a layer: an answer directed at
+a person always goes at the bullet it answers, full stop. A status block, if written at all, is a
+same-session index of what got touched, never a place content *for someone* lives. Simpler beats
+cleverer, again.
 
 ---
 
