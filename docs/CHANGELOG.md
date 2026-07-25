@@ -1348,5 +1348,16 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.0, the last entry to sit here,
-graduated to a real numbered entry above on 2026-07-24 18:18 EDT when PR #1 squash-merged as `904dec8`.)*
+## v2.33.2 (proposed) — `docs/split-deferred-items` — Split Diors Builds deferred items into `docs/deferred-items.md`
+*Docs-only — no code/deploy impact.*
+- Moved the project-specific Queued/Someday maintenance-and-tech-debt list out of the cross-project
+  `/Applications/Claude Code/deferred-items.md` tracker into a new tracked `docs/deferred-items.md`, so it
+  gets real `git diff`/`git log` history like the rest of `docs/`. 🐞 Active Bugs, 🔔 Reminders, and
+  Cross-project/meta stay in the shared tracker; the shared file now carries a short pointer instead, plus
+  a flagged TODO that the Gif Background Remover skill project still needs the identical split later.
+- Updated every repo reference (`CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`, `docs/diors-builds
+  notes.md`) that specifically routed Diors-Builds maintenance items to the old shared file, so they now
+  point at `docs/deferred-items.md` instead. Genuinely cross-project routing (bugs/reminders/meta) left as-is.
+- Corresponding memory-file updates (`MEMORY.md`, `reference_deferred_items_file.md`,
+  `user_working_agreement.md`, `project_central_notes_file.md`) at
+  `~/.claude/projects/-Applications-Diors-Builds/memory/` — outside this repo, not part of this diff.
