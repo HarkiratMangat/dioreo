@@ -21,6 +21,7 @@ kind of content lives and who's responsible for keeping it current.
 | **`../CLAUDE.md`** (repo root) | **Invariants + navigation map** (~180 lines, modularized 2026-07-22). The hard safety/architecture rules that must load every session, a platform cheat-sheet, and the 🗺️ nav map pointing to where each subsystem's detail lives. | When an invariant changes, or a subsystem's home moves. Keep the nav-map table in sync when you add/remove a rule file. | Claude (primarily), Harkirat |
 | **`../.claude/rules/*.md`** | **Path-scoped subsystem detail** — the deep "why" for each subsystem, loaded into context ONLY when you read a matching file (`paths:` frontmatter glob). 13 files (commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui, accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions, models, scripts-and-migrations). | When you change how that subsystem is built. Update the matching rule (the old "update CLAUDE.md" habit now splits by area). | Claude |
 | **`ROADMAP.md`** | **The authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). Moved out of CLAUDE.md 2026-07-22. The `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY) sections are synced VIEWS of it. | Every roadmap/planning change — sync all three. | Claude, Harkirat |
+| **`deferred-items.md`** | **This project's own deferred maintenance/tech-debt long-tail** + features big enough for their own session (Queued/Someday). NOT a copy of `ROADMAP.md`. Split out of the cross-project tracker 2026-07-25 15:56 EDT so it's tracked in-repo. | When something's deferred or ships/drops. | Claude, Harkirat |
 | **`reference/`** | On-demand reference docs: `deployment-and-ops.md` (stack, GCP VM/systemd/alerting, version tagging), `known-issues.md`, `design-history.md`. Read when ops/history detail is needed. | When ops setup or a flagged issue changes. | Claude |
 | **`CHANGELOG.md`** | **Detailed release log** — one entry per merged PR, newest-first, incl. internal/housekeeping. Also holds the `🔮 Planned & Upcoming` roadmap (synced from CLAUDE.md) and, at the very bottom, `📋 Unreleased` for the open branch/PR awaiting merge. | Every merge (draft the entry on the branch as work happens, finalize — real number + squash hash + tag — at merge). Graduate Unreleased → a numbered entry when it merges. | Claude, Harkirat |
 | **`CHANGELOG-SUMMARY.md`** | **Plain-language "What's New"** — player-facing. Represents **every version number** (ops/docs-only ones folded into a version range or a one-line note, so none is ever skipped), but only real user-facing changes get a full bullet. Holds the `🔜 Coming soon` roadmap view. | Same merge as CHANGELOG.md; add a friendly line for user-facing changes, a range/one-liner otherwise. | Harkirat / end-users |
@@ -35,8 +36,9 @@ kind of content lives and who's responsible for keeping it current.
   canonical-memory-path note). Standing rules for how to work. **Start at `user_working_agreement.md`** — its
   top "🔴 THE RULES THAT GET SKIPPED" checklist is the fastest way to load the non-negotiables. `MEMORY.md`
   is the index.
-- **`/Applications/Claude Code/deferred-items.md`** (outside this repo) — the cross-project deferred/bug/tech-debt
-  tracker. 🐞 Active Bugs at the top. Check it first when touching a known-buggy area.
+- **`/Applications/Claude Code/deferred-items.md`** (outside this repo) — the **cross-project** tracker: 🐞
+  Active Bugs (check it first when touching a known-buggy area), 🔔 Reminders, and cross-project/meta items.
+  Diors-specific maintenance/tech-debt now lives in `deferred-items.md` above instead (in this folder).
 
 ---
 

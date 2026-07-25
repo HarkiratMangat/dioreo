@@ -164,7 +164,10 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
 - **Memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` (start at `user_working_agreement.md`).
-- **`/Applications/Claude Code/deferred-items.md`** — cross-project deferral/bug tracker.
+- **`docs/deferred-items.md`** — this project's own deferred maintenance/tech-debt long-tail + big-enough-
+  for-its-own-session features (split out of the cross-project tracker 2026-07-25 15:56 EDT).
+- **`/Applications/Claude Code/deferred-items.md`** — cross-project tracker (🐞 Active Bugs, 🔔 Reminders,
+  cross-project/meta); Diors-specific maintenance items now live in `docs/deferred-items.md` above instead.
 
 ---
 
