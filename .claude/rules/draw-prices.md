@@ -41,9 +41,8 @@ and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildD
   `DRAW_DATA`'s comment). `ADVANCED_DOUBLE_LEGENDARY` stores ONLY the Regular + Advanced per-pull arrays
   per region. From those: **Trap = always exactly 2× Regular** per pull (Regular spin + buying the 2nd
   item afterward = two Regular Purchases); all three totals = array sums; the three **strategy costs** =
-  cumulative slices (Reg 1-8 + Adv 9-10 / Reg 1-9 + Adv 10 / Reg 1-10); and the NOTE's "cheaper than a
-  Normal Draw (X vs Y)" **Y = the region's own Legendary Weapon Non-Reactive total, read from
-  `DRAW_DATA`** (not retyped). A wrong number can only ever exist in one place.
+  cumulative slices (Reg 1-8 + Adv 9-10 / Reg 1-9 + Adv 10 / Reg 1-10). A wrong number can only ever
+  exist in one place.
 - **Rendering reuses the command's existing conventions** — `boldDrawSequence`/`cumulativeSequence` via a
   `{ draws }` shim (bold ` / `-joined pulls, `⌇` before the total, `-# CP Spent:` cumulative joined by
   `›`, `cp2` icon on the quote-blocked headline).
@@ -54,9 +53,9 @@ and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildD
   version. Current (corrected) shape — the whole entry is a flat run of Text Displays with **NO internal
   dividers**: **headline** (full-caps name + Reg/Adv totals + `(See **The Strategy** below)` pointer) →
   **3 purchase modes** (`'Regular Purchase' Only` / `'Advanced Purchase' Only` / `'Regular Purchase' +
-  Remaining Item Separately`) → **2 callouts** (`NOTE` / `THE TRAP`) → **The Strategy** as THREE separate
-  Text Displays (each strategy line carries an inline `cp2` icon on its cost). 9 Text Displays, 0 internal
-  dividers.
+  Remaining Item Separately`) → **1 callout** (`THE TRAP`; the `NOTE` callout was removed entirely
+  2026-07-25 per Harkirat's request) → **The Strategy** as THREE separate Text Displays (each strategy
+  line carries an inline `cp2` icon on its cost). 8 Text Displays, 0 internal dividers.
   - **The two v2.30.1 corrections:** (1) the v2.30.0 builder added three spacing-2 dividers
     (`dividerBefore = {1,4,6}` — after the headline, after the purchase modes, after the callouts) that
     were **never in the mockup**; removed entirely (`buildAdvancedDoubleLegendaryEntry` now just
