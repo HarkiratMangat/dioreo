@@ -26,7 +26,7 @@ A peek at what's planned (not built yet):
 
 ---
 
-## v2.33.2 (proposed) — July 25, 2026
+## v2.33.2 — July 25, 2026
 - *Internal docs-only — reorganized where Dior's own to-do/tech-debt list lives. Nothing players see.*
 
 ## v2.33.1 — July 25, 2026

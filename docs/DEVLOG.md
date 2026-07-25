@@ -55,6 +55,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction
 - 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
 - 2026-07-24 (later) — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
+- 2026-07-25 — Second dogfood of the branch workflow: splitting deferred-items.md
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1631,6 +1632,33 @@ accident). The fix wasn't a new mark or a new section — it was removing a laye
 a person always goes at the bullet it answers, full stop. A status block, if written at all, is a
 same-session index of what got touched, never a place content *for someone* lives. Simpler beats
 cleverer, again.
+
+## 2026-07-25 16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md
+
+A pure docs reorg, but the first PR through the new workflow that wasn't the workflow-adoption PR
+itself — good early evidence the process holds up on ordinary work, not just its own launch. The
+cross-project `/Applications/Claude Code/deferred-items.md` tracker had grown to cover multiple
+projects' maintenance/tech-debt backlogs in one un-tracked file outside any repo, which meant Diors
+Builds' own deferred list had no `git diff`/`git log` history the way the rest of `docs/` does. Split
+its "Queued" and "Someday/tech-debt" sections out into a new tracked `docs/deferred-items.md`, leaving
+🐞 Active Bugs, 🔔 Reminders, and Cross-project/meta in the shared file (those genuinely span projects
+or aren't project-specific, so they stay put) plus a short pointer + a flagged TODO for the still-
+undone Gif Background Remover half of the same split.
+
+The more mechanical part was the reference sweep: `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`,
+`docs/diors-builds notes.md`, and four memory files all had prose that specifically routed "Diors-
+Builds maintenance item → deferred-items.md" without saying which one. Grepping for every
+`deferred-items` mention and reading each in context (rather than blind find/replace) was necessary
+because several of those mentions were about 🐞 Active Bugs or 🔔 Reminders items, which correctly
+still point at the shared cross-project file — only the maintenance/tech-debt routing needed to move.
+Historical mentions in `DEVLOG.md`/`CHANGELOG.md` and the `notes-archive/` snapshots were deliberately
+left untouched, since they're records of what was true at the time, not live routing.
+
+Also a small process note: Harkirat pointed out that after he'd already said "go through the full flow
+… merge" in one message, asking again before actually merging was redundant — the merge-yes was already
+given, re-asking just adds friction without adding safety. Worth remembering: a single sentence can
+authorize the whole remaining sequence of gated steps in one shot; don't re-derive a confirmation
+that's already in the transcript.
 
 ---
 
