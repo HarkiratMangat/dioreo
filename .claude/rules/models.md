@@ -42,4 +42,8 @@ the same change**, or it will not actually save.
   autocomplete keystroke and every `/<category>` command filters on this pair together;
   harmless at the current collection size (~100-200 docs) but cheap to add ahead of it
   actually mattering.
+- `BotInstance.js` (added 2026-07-25) — singleton lock doc (`_id: 'singleton'`) backing the
+  startup single-instance guard. `hostname`/`pid`/`startedAt`/`lastHeartbeat`, refreshed on a
+  10s interval by whichever process holds it. See `utils/instanceLock.js` and `docs/ROADMAP.md`'s
+  "Single-instance guard" entry for the full mechanism.
 

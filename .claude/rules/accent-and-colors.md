@@ -516,9 +516,12 @@ they race each other's `deferReply`/`deferUpdate` (10062/40060). **This very lik
 the ORIGINAL 10062 wave too**, not just the CPU angle. Fixed by killing the 3 local processes
 (Railway was already fully removed — its "Offline" CLI status was real, the logs seen were
 historical). Lesson now in memory (`[[feedback_multiple_bot_instances]]`) and folded into the push
-flow (kill stray local instances so only Render runs). A permanent single-instance guard is on the
-Next-planned-work list below. **Note also:** a `git push`/Render deploy does NOT stop local
-processes — they're different machines; only explicitly killing them does.
+flow (kill stray local instances so only the live instance runs). **A permanent single-instance
+guard was BUILT 2026-07-25** — see `docs/ROADMAP.md`'s entry and `utils/instanceLock.js` — a
+Mongo heartbeat lock that refuses to `client.login()` if another instance's heartbeat is still
+fresh, closing this specific failure mode going forward. **Note also:** a `git push`/deploy does
+NOT stop local processes on its own — they're different machines; only explicitly killing them, or
+now the lock refusing to start, prevents the collision.
 
 ### View Colors preview sizing (2026-07-13, follow-up to the CPU pass)
 Three preview-size fixes after the CPU work, all confirmed on the branch deploy before merge:
