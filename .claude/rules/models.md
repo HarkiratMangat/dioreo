@@ -42,8 +42,10 @@ the same change**, or it will not actually save.
   autocomplete keystroke and every `/<category>` command filters on this pair together;
   harmless at the current collection size (~100-200 docs) but cheap to add ahead of it
   actually mattering.
-- `BotInstance.js` (added 2026-07-25) — singleton lock doc (`_id: 'singleton'`) backing the
-  startup single-instance guard. `hostname`/`pid`/`startedAt`/`lastHeartbeat`, refreshed on a
-  10s interval by whichever process holds it. See `utils/instanceLock.js` and `docs/ROADMAP.md`'s
+- `BotInstance.js` (added 2026-07-25) — lock doc backing the startup single-instance guard, one
+  PER BOT TOKEN (`_id` = a hash of `BOT_TOKEN`, not a fixed singleton -- a production bot and a
+  separate test/dev bot application must be allowed to run simultaneously even against the same
+  Mongo cluster). `hostname`/`pid`/`startedAt`/`lastHeartbeat`, refreshed on a 10s interval by
+  whichever process holds a given token's lock. See `utils/instanceLock.js` and `docs/ROADMAP.md`'s
   "Single-instance guard" entry for the full mechanism.
 
