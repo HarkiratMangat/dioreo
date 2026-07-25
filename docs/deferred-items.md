@@ -18,6 +18,18 @@ memory (also documented atop the cross-project `deferred-items.md`).
 ## Queued — worth its own dedicated session
 *Real, self-contained builds; spin each up as its own session at the tagged setup. All P2 (Harkirat's call
 2026-07-18: keep deferred, none urgent right now).*
+- `[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the 2-commit
+  reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
+  §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow
+  launched (`904dec8`→`acc1d8d` for v2.33.0, `8c44f97`→`e5c93d8` for v2.33.1, `6a64e37`→`4b91218` for
+  v2.33.2 — verified via `git log`) has actually produced 2 commits: the squash-merge, then a follow-up
+  "finalize changelog/DEVLOG with the real hash" commit. Root cause: the changelog convention cites the
+  squash commit's own hash inline, but a commit can't contain its own hash, and `gh pr merge --squash`
+  merges straight to GitHub's remote — there's no local staging step to fold the two together. Harkirat's
+  ask (2026-07-25 16:20 EDT): keep doing the 2-commit pattern for now (don't change process ad hoc), but
+  give this to a dedicated Opus session with room to actually reason about a better design (e.g. dropping
+  the inline hash citation, a different finalize mechanism, or accepting/documenting the 2-commit reality)
+  rather than deciding it inline. See `project_git_workflow` memory for the same open question.
 - `[P2 · L · Opus4.8-H · 🧩needs-design]` **View Colors — wider colour variety.** juul's avatar returned 6
   of 8 requested colours and missed a useful yellow (assume one root cause). Keep the existing
   2-4-on-one-page behaviour for genuinely minimal images (juul's banner correctly returned 4). Real
