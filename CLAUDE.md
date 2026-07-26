@@ -22,7 +22,7 @@ navigation map**. Subsystem detail lives in:
   X section" reference — the topic is findable here).
 
 Full design + the section→destination ledger: `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`.
-*(Breadcrumb: the separate, PAUSED cross-project memory-architecture redesign is unrelated to this repo-local
+*(Breadcrumb: the separate, INDEFINITELY PARKED cross-project memory-architecture redesign is unrelated to this repo-local
 split and does not gate it — see the canonical-memory-path note below.)*
 
 ---
@@ -43,7 +43,7 @@ project folder from the repo path — so it now points sessions at
   `-Applications-Diors-Builds` path above. Don't migrate Diors memory to match the repo slug: it would
   break on every future folder move, whereas a fixed store is move-proof (decided with Harkirat 2026-07-15).
 - **⚠️ Do NOT create, delete, or symlink `-Applications-Claude-Code-Diors-Builds/memory` from a Diors
-  session.** That path is claimed by the PAUSED cross-project **memory-architecture redesign** (a separate
+  session.** That path is claimed by the INDEFINITELY PARKED cross-project **memory-architecture redesign** (a separate
   project working out of `/Applications/Claude Code/`), whose plan is to make it a **symlink → the
   canonical store**. An earlier "that subdir must never exist, delete it if it appears" note is SUPERSEDED
   and caused real interference once (a Diors session deleted the empty slug dir 2026-07-17 — harmless,
@@ -152,7 +152,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 ### `docs/` — read on demand (planning / ops / history; not code-triggered)
 | File | Covers |
 |---|---|
-| `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. |
+| `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
 | `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
@@ -162,12 +162,19 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
+  Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
 - **Memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` (start at `user_working_agreement.md`).
-- **`docs/deferred-items.md`** — this project's own deferred maintenance/tech-debt long-tail + big-enough-
-  for-its-own-session features (split out of the cross-project tracker 2026-07-25 15:56 EDT).
-- **`/Applications/Claude Code/deferred-items.md`** — cross-project tracker (🐞 Active Bugs, 🔔 Reminders,
-  cross-project/meta); Diors-specific maintenance items now live in `docs/deferred-items.md` above instead.
+- **`docs/db-deferred-list.md`** — **this project's own deferred work**: 🐞 Active Bugs · 🔔 Reminders ·
+  🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. If a session working only in
+  this repo would need it, it's here. (Split out of the cross-project tracker 2026-07-25 15:56 EDT;
+  renamed + completed 2026-07-25 21:43 EDT, when its bugs/reminders/resolved items finally moved in too.)
+- **`docs/archive/`** — dead archive, **don't read by default**: `graveyard.md` (swept intake from the
+  notes file — it is no longer a section inside that file) · `resolved-list.md` (closed items from
+  `db-deferred-list.md`) · the dated pre-tidy notes snapshot.
+- **`/Applications/Claude Code/meta-deferred-list.md`** — cross-project tracker ONLY: cross-project bugs
+  (the MarkEdit extensions), Claude/Anthropic product feedback, meta/architecture work, and the canonical
+  Priority·Effort legend. Anything Dior's-Builds-specific belongs in `docs/db-deferred-list.md` above.
 
 ---
 
@@ -178,10 +185,14 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
-  central `diors-builds notes.md` (+ `notes-archive/`). Un-gitignored at Harkirat's explicit request so a
-  real `git diff`/`git log` covers their history. The `SessionStart` hook (`.claude/settings.local.json`)
-  reads `docs/SESSION-START.md` directly — if that file's location ever moves, update the hook's path in the
-  SAME change.
+  central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
+  real `git diff`/`git log` covers their history. ⚠️ **Two `SessionStart` hooks in `.claude/settings.local.json` PARSE these
+  files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
+  by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
+  `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME
+  change and dry-run it** (the `# Graveyard` anchor it used before 2026-07-25 21:43 EDT was removed by the
+  archive split and would have silently un-bounded the scan). Note `settings.local.json` is **gitignored**
+  — hook fixes are local-only and do NOT ride in a PR.
 
 ## Stack (summary)
 discord.js v14 (`^14.26.4`) · Node.js (v24 on the VM) · MongoDB Atlas via Mongoose · `chrono-node`

@@ -1,8 +1,9 @@
 # Known open issues (flagged, not silently patched)
 
 *Read on demand / when touching a flagged area. Moved from CLAUDE.md on 2026-07-22 13:27 EDT; root
-CLAUDE.md's nav map points here. Also cross-check `/Applications/Claude Code/deferred-items.md`
-(🐞 Active Bugs).*
+CLAUDE.md's nav map points here. Also cross-check `docs/db-deferred-list.md` (🐞 Active Bugs — this
+project's confirmed bugs moved in-repo 2026-07-25 21:43 EDT; `/Applications/Claude Code/meta-deferred-list.md`
+now only holds cross-project ones).*
 
 - `calendar.js` and `draws.js` both have defensive component-count chunking;
   `patchnotes.js`'s media carousel does not (untested at scale — likely fine since

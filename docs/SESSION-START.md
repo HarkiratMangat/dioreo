@@ -55,7 +55,7 @@ New session on Dior's Builds. Before anything else:
    The harness may point you at -Applications-Claude-Code-Diors-Builds (repo-slug): its folder
    exists (transcripts) but Diors memory is NOT there — don't migrate it (fixed store =
    move-proof). And do NOT create/delete/symlink that slug's memory/ path — it's claimed by the
-   PAUSED cross-project memory-architecture redesign (symlink → canonical planned); leave it,
+   INDEFINITELY PARKED cross-project memory-architecture redesign (symlink → canonical planned); leave it,
    defer to that project (a Diors session wrongly deleted it 2026-07-17 on a superseded note).
    See feedback_defer_to_owning_project.
 
