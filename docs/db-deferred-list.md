@@ -147,13 +147,22 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're
   placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
   subsystem detail: `.claude/rules/manage-panel.md`.
-- `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask,
-  right after `.github/workflows/ci.yml` first shipped in PR #11). Today CI only runs `node --check` (no
-  test framework, no lint config exist yet in this repo). Real testing capability — a test framework
-  (Jest?), actual unit/integration tests for the higher-risk subsystems (loadout search/fuzzy-match,
-  draw-prices math, pagination), and possibly ESLint — would catch real bugs before merge instead of only
-  syntax errors, reducing the "did I break something" burden currently resting entirely on manual review.
-  Needs its own session: pick a test framework, decide what's worth covering first, wire it into `ci.yml`.
+- `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask).
+  **⚠️ Correction 2026-07-26 19:06 EDT: `.github/workflows/ci.yml` has NOT actually shipped yet** — PR
+  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) (`ci: add basic CI workflow`, branch
+  `claude/ci-setup-r4t8`) is still **open, unmerged**, sitting since 2026-07-25; this entry's original text
+  wrongly said it "first shipped in PR #11." Today there is genuinely no CI at all on `main` — no
+  `node --check`, no test framework, no lint config. **Tool choices decided 2026-07-26 19:06 EDT
+  (dotenvx-adjacent tooling discussion): Vitest** for the test framework (fast, near-zero-config, ESM-friendly — a good fit
+  given there's no build step) **and Biome** for lint+format (single Rust binary covering both, no
+  ESLint+Prettier config sprawl to build from scratch since neither exists here yet). Real unit/integration
+  coverage for the higher-risk subsystems (loadout search/fuzzy-match, draw-prices math, pagination) would
+  catch real bugs before merge instead of only syntax errors — and `scripts/checkEmojiCaptures.js` (the
+  require-time emoji-capture check, see `docs/DEVLOG.md`'s 2026-07-26 16:04 EDT entry) is a natural first
+  Vitest test since it already exists as a standalone script. **Sequencing: merge PR #11 first** (or
+  rebase this work onto it) — no point building the Vitest/Biome expansion on top of a `ci.yml` that isn't
+  on `main` yet. Needs its own session: merge #11, add Vitest + Biome, decide what's worth covering first,
+  wire both into `ci.yml`.
   **Also consider `commitlint` in the same pass** (noted 2026-07-26 15:41 EDT while adopting the commit
   convention): the repo has **no** `commitlint`, `husky`, `semantic-release`, `standard-version`, or
   `conventional-changelog` installed — verified, not assumed — so `docs/reference/commit-and-branch-naming.md`

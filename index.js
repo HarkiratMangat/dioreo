@@ -35,7 +35,7 @@ process.on('uncaughtException', (err) => {
 // ==========================================
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config(); // Secure injection of environment variables from local or cloud environment
+require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's runtime log line (incl. its rotating promotional "tip" text)
 
 // package.json's `version` is bumped at every git-workflow MERGE (not on every commit/push -- see
 // project_git_workflow memory) and is otherwise dead at runtime, so reading it here is free/safe. This
