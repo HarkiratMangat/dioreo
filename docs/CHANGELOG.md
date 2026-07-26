@@ -166,6 +166,71 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.33.3 — 2026-07-26 11:18 EDT (`25b402c`) — Deferred-list restructure: finish the split, rename the files, split the archives out
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+The 2026-07-25 15:56 EDT split (v2.33.2) moved only Dior's Builds' tech-debt list out of the cross-project
+tracker and left everything else behind. This finishes it and reorganizes the result.
+
+- **Finished the split.** Moved into `docs/db-deferred-list.md`: all 4 `[Diors Builds]` 🔔 Reminders
+  (Render deletion, GCP watch, `/manage`+`/settings` live-test, CHANGELOG/DEVLOG archive split), a 🐞
+  Active Bugs section of its own, and the Priority·Effort legend the new file never got. The 6
+  `[Diors Builds]` Resolved entries moved to the new archive.
+- **Renamed** `/Applications/Claude Code/deferred-items.md` → **`meta-deferred-list.md`** and
+  `docs/deferred-items.md` → **`docs/db-deferred-list.md`** (`db` = Dior's Builds, a standing
+  abbreviation now). `docs/notes-archive/` → **`docs/archive/`**.
+- **Split the archives out of the active files.** New `docs/archive/graveyard.md` — the notes file's
+  `# Graveyard` section is gone from that file entirely, so the scratchpad no longer carries a dead
+  archive in every read. New `docs/archive/resolved-list.md` for closed `db-deferred-list.md` entries.
+  The cross-project file keeps its Resolved section inline (Harkirat's call — it's small and rarely read).
+- **Hook fix, same change:** the `SessionStart` notes-check in `.claude/settings.local.json` terminated
+  its scan at `/^# Graveyard/`, which the split removed. Re-anchored to the notes file's `## 📍` pointer
+  section and dry-run verified — still reports the same 4 open items.
+- **Stale ends swept** across `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`,
+  `docs/reference/known-issues.md`, the notes file, and 10 memory files: dead
+  "see CLAUDE.md's *X* section" pointers (that content moved to `docs/reference/` or `.claude/rules/` on
+  2026-07-22), the retired "don't over-invest in this file's structure" caveat, and the old file names.
+- **Two items re-measured, not just re-filed:** the Render-deletion reminder's `~2026-07-24` trigger has
+  **fired** (now P0, gated on a live `scripts/vmstatus.sh` check); and the CHANGELOG/DEVLOG archive-split
+  reminder said "~730 lines each, not there yet" when the real counts are **1,366 and 1,792** — bumped
+  P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
+- **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this
+  restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
+
+**Second verification pass** (Harkirat's ask — "better to do it now than have stale ends later") caught
+five more, all fixed:
+- `reference_enforcement_hooks.md` (memory) still documented the notes-check hook as scanning to
+  `# Graveyard` — the very anchor this change removed. Re-anchored, with a warning that an unbounded
+  scan fails silently.
+- `reference_priority_tier_system.md` said the 🐞/🔔 sections live in the cross-project file; they're
+  Dior's own now. Split into two entries.
+- **Two cross-project pointers broken by this rename**, repaired path-only with a dated note (nothing
+  else in either file touched, per `feedback_defer_to_owning_project`): the Gif-Background-Remover
+  project's `user_working_agreement.md`, and `local/memory-architecture-design.md`.
+- The notes file's 🔑 Legend still described sweeping "to the Graveyard" as if it were a section; now
+  names the file. Also removed an orphan `-` bullet and a doubled `---`.
+- `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that
+  `settings.local.json` is gitignored, so hook fixes never ride in a PR.
+- Added the reusable lessons to `DEVLOG.md`'s Part B ledger, not just the Part A narrative.
+
+**Third pass — status refresh on the two cross-project/meta items** (Harkirat's call, 2026-07-26 11:11 EDT):
+- The **hierarchical cross-project memory redesign** is now **⏸️ INDEFINITELY PARKED**, not "paused."
+  What it was built to solve has largely been handled another way — the MCP memory/recall layer
+  (`linksee`, `perseus-vault`, `context-mode`, `codebase-memory`), the 2026-07-22 CLAUDE.md → rules/
+  reference split, the enforcement hooks, and ongoing memory work. Status corrected in six places that
+  still said "PAUSED": root `CLAUDE.md` (×2), `docs/SESSION-START.md`, `user_working_agreement.md`,
+  `feedback_defer_to_owning_project.md`, and the venture's own STATUS + pointer-memory files.
+  **The slug-path guard explicitly survives the parking** — stated in each place, so nobody reads
+  "parked" as "the path is free now."
+- The **"Long-file / memory navigability pass"** was `⛓️blocked-by` that redesign — which would have
+  frozen it forever. **Unblocked and re-scoped** to *"Memory content audit + tag vocabulary"* `[P2 · M]`:
+  its long-file half already shipped with the 2026-07-22 modularization; what remains is the memory-file
+  content audit, the tag/hook vocabulary, ToCs for the long files, and tagging extended to code comments.
+  🔗 Bundled with Diors' own `.claude/rules/` two-tier rework — same idea, different files.
+- Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our
+  own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
+
 ## v2.33.2 — 2026-07-25 16:20 EDT (`6a64e37`) — Split Diors Builds deferred items into `docs/deferred-items.md`
 *Docs-only — no code/deploy impact.*
 - Moved the project-specific Queued/Someday maintenance-and-tech-debt list out of the cross-project
@@ -1362,67 +1427,6 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-## Proposed v2.33.3 — branch `docs/deferred-list-restructure` — Deferred-list restructure: finish the split, rename the files, split the archives
-
-**Internal / docs only — no bot code touched, nothing to deploy.**
-
-The 2026-07-25 15:56 EDT split (v2.33.2) moved only Dior's Builds' tech-debt list out of the cross-project
-tracker and left everything else behind. This finishes it and reorganizes the result.
-
-- **Finished the split.** Moved into `docs/db-deferred-list.md`: all 4 `[Diors Builds]` 🔔 Reminders
-  (Render deletion, GCP watch, `/manage`+`/settings` live-test, CHANGELOG/DEVLOG archive split), a 🐞
-  Active Bugs section of its own, and the Priority·Effort legend the new file never got. The 6
-  `[Diors Builds]` Resolved entries moved to the new archive.
-- **Renamed** `/Applications/Claude Code/deferred-items.md` → **`meta-deferred-list.md`** and
-  `docs/deferred-items.md` → **`docs/db-deferred-list.md`** (`db` = Dior's Builds, a standing
-  abbreviation now). `docs/notes-archive/` → **`docs/archive/`**.
-- **Split the archives out of the active files.** New `docs/archive/graveyard.md` — the notes file's
-  `# Graveyard` section is gone from that file entirely, so the scratchpad no longer carries a dead
-  archive in every read. New `docs/archive/resolved-list.md` for closed `db-deferred-list.md` entries.
-  The cross-project file keeps its Resolved section inline (Harkirat's call — it's small and rarely read).
-- **Hook fix, same change:** the `SessionStart` notes-check in `.claude/settings.local.json` terminated
-  its scan at `/^# Graveyard/`, which the split removed. Re-anchored to the notes file's `## 📍` pointer
-  section and dry-run verified — still reports the same 4 open items.
-- **Stale ends swept** across `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`,
-  `docs/reference/known-issues.md`, the notes file, and 10 memory files: dead
-  "see CLAUDE.md's *X* section" pointers (that content moved to `docs/reference/` or `.claude/rules/` on
-  2026-07-22), the retired "don't over-invest in this file's structure" caveat, and the old file names.
-- **Two items re-measured, not just re-filed:** the Render-deletion reminder's `~2026-07-24` trigger has
-  **fired** (now P0, gated on a live `scripts/vmstatus.sh` check); and the CHANGELOG/DEVLOG archive-split
-  reminder said "~730 lines each, not there yet" when the real counts are **1,366 and 1,792** — bumped
-  P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
-- **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this
-  restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
-
-**Second verification pass** (Harkirat's ask — "better to do it now than have stale ends later") caught
-five more, all fixed:
-- `reference_enforcement_hooks.md` (memory) still documented the notes-check hook as scanning to
-  `# Graveyard` — the very anchor this change removed. Re-anchored, with a warning that an unbounded
-  scan fails silently.
-- `reference_priority_tier_system.md` said the 🐞/🔔 sections live in the cross-project file; they're
-  Dior's own now. Split into two entries.
-- **Two cross-project pointers broken by this rename**, repaired path-only with a dated note (nothing
-  else in either file touched, per `feedback_defer_to_owning_project`): the Gif-Background-Remover
-  project's `user_working_agreement.md`, and `local/memory-architecture-design.md`.
-- The notes file's 🔑 Legend still described sweeping "to the Graveyard" as if it were a section; now
-  names the file. Also removed an orphan `-` bullet and a doubled `---`.
-- `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that
-  `settings.local.json` is gitignored, so hook fixes never ride in a PR.
-- Added the reusable lessons to `DEVLOG.md`'s Part B ledger, not just the Part A narrative.
-
-**Third pass — status refresh on the two cross-project/meta items** (Harkirat's call, 2026-07-26 11:11 EDT):
-- The **hierarchical cross-project memory redesign** is now **⏸️ INDEFINITELY PARKED**, not "paused."
-  What it was built to solve has largely been handled another way — the MCP memory/recall layer
-  (`linksee`, `perseus-vault`, `context-mode`, `codebase-memory`), the 2026-07-22 CLAUDE.md → rules/
-  reference split, the enforcement hooks, and ongoing memory work. Status corrected in six places that
-  still said "PAUSED": root `CLAUDE.md` (×2), `docs/SESSION-START.md`, `user_working_agreement.md`,
-  `feedback_defer_to_owning_project.md`, and the venture's own STATUS + pointer-memory files.
-  **The slug-path guard explicitly survives the parking** — stated in each place, so nobody reads
-  "parked" as "the path is free now."
-- The **"Long-file / memory navigability pass"** was `⛓️blocked-by` that redesign — which would have
-  frozen it forever. **Unblocked and re-scoped** to *"Memory content audit + tag vocabulary"* `[P2 · M]`:
-  its long-file half already shipped with the 2026-07-22 modularization; what remains is the memory-file
-  content audit, the tag/hook vocabulary, ToCs for the long files, and tagging extended to code comments.
-  🔗 Bundled with Diors' own `.claude/rules/` two-tier rework — same idea, different files.
-- Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our
-  own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
+*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.3, the last entry to sit
+here, graduated to a real numbered entry above on 2026-07-26 11:18 EDT when PR #13 squash-merged
+as `25b402c`.)*
