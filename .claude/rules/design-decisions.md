@@ -145,8 +145,9 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
     rather than fabricating a number.
   - **Second pass (2026-07-12, per `drawPrices_ui.json` — Harkirat's own hand-adjusted mockup):**
     dropped the two group headers (Mythic-Tier / Legendary & Epic-Tier) for one flat
-    divider-separated sequence, each entry down to a single tier emoji (`TIER_ICON`, not the old
-    tier+Epic combo). "Legendary BR Vehicle Draw" removed entirely (absent from Harkirat's own
+    divider-separated sequence, each entry down to a single tier emoji (`tierIcon()` — a module-level
+    `TIER_ICON` const until 2026-07-26 16:04 EDT, when it was made per-render because the const froze
+    pre-sync emoji ids; not the old tier+Epic combo). "Legendary BR Vehicle Draw" removed entirely (absent from Harkirat's own
     hand-built mockup, read as deliberate) — its `altLast` mechanism went with it, nothing else ever
     used that field. Region switcher became a toggle button instead of a select-menu, persisting to
     `UserPreference.defaultRegion` on click.
