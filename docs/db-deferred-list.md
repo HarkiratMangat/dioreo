@@ -102,6 +102,18 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Two are P1 now** —
 the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items added since.*
 
+- `[P2 · M · Opus5-H · ⚠️touches-prod]` **Rename the production database off Mongoose's `test` default.**
+  Added 2026-07-26 13:24 EDT; Harkirat explicitly deferred this to its own session mid-bring-up. The prod
+  Atlas `MONGODB_URI` carries no database path, so Mongoose silently defaulted to a db literally named
+  **`test`** — that's where all 5 live collections (`loadouts` 133, `alertlogs` 180, `userpreferences` 15,
+  `alertcounters` 6, `seasonaldatas` 1) actually sit. Nothing is broken; it's a naming/clarity problem that
+  gets riskier to fix the longer it waits. Target `diors-builds` (the local dev clone already uses
+  `diors-builds-dev`, so dev is already correct and needs no change). **This is a live-prod migration, not a
+  config tweak** — it needs: copy `test` → `diors-builds` on Atlas, update `MONGODB_URI` in the VM's `.env`,
+  restart `diors-bot` via systemd, verify with `scripts/vmstatus.sh`, and only then drop the old db after a
+  soak period. Do it in a low-traffic window; the bot is briefly down across the restart. Note the same URI
+  is read by `scripts/` one-off tools, so check those too before dropping `test`.
+
 - `[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the 2-commit
   reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
   §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow
@@ -142,6 +154,17 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   draw-prices math, pagination), and possibly ESLint — would catch real bugs before merge instead of only
   syntax errors, reducing the "did I break something" burden currently resting entirely on manual review.
   Needs its own session: pick a test framework, decide what's worth covering first, wire it into `ci.yml`.
+  **Also consider `commitlint` in the same pass** (noted 2026-07-26 15:41 EDT while adopting the commit
+  convention): the repo has **no** `commitlint`, `husky`, `semantic-release`, `standard-version`, or
+  `conventional-changelog` installed — verified, not assumed — so `docs/reference/commit-and-branch-naming.md`
+  is enforced entirely by hand. A `commitlint` job in `ci.yml` (or a `husky` `commit-msg` hook) would make
+  the subject format machine-checked, matching the "a checkable rule becomes a hook, not more prose"
+  strategy in the `reference_enforcement_hooks` memory. Worth weighing the two placements: CI catches it at
+  PR time (can't be bypassed, but late), a local hook catches it at commit time (instant, but skippable with
+  `--no-verify`). Knock-on: once subjects are machine-parseable, `conventional-changelog` could draft
+  `docs/CHANGELOG.md` entries instead of them being hand-written every release — though the hand-written
+  entries are currently far richer than a generator would produce, so that part is a genuine tradeoff, not
+  a free win.
 
 ---
 
