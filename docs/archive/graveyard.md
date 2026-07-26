@@ -24,7 +24,7 @@ here instead.
 
 ## Its sibling in this folder
 `docs/archive/resolved-list.md` — the same idea for **`docs/db-deferred-list.md`**: resolved, shipped,
-and dropped deferred-items entries move there. Two archives, deliberately separate, so it stays obvious
+and dropped deferred-list entries move there. Two archives, deliberately separate, so it stays obvious
 which active file a given dead item came out of.
 
 *Also in this folder: `diors-builds notes 2026-07-18 (pre-tidy).md`, a dated pre-tidy snapshot from

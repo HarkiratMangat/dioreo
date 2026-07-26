@@ -1820,6 +1820,18 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
 - **A project's own `.env` is in-scope for a credential; a personal `~/.` config file is not.**
 - **Be usage-conscious** — batch tool calls, don't re-read what's already in context.
 - **Mark chat chapters at phase shifts** — can't be hook-automated, has to be done deliberately.
+- **A split/move/rename is done when nothing is LEFT BEHIND, not when the obvious block has moved.**
+  Four checks before calling it: nothing project-specific still in the source, every cross-reference
+  updated, the new file stands alone (its legend came with it), and prose describing the old layout
+  rewritten. (2026-07-25 21:43 EDT, `feedback_no_half_measures_on_reorgs`.)
+- **A file rename IS a code change when something parses the file.** The grep surface is docs + rules +
+  **`.claude/settings*.json` hooks** + scripts + memory + *other projects'* memory dirs. A `SessionStart`
+  hook here was anchored to a `# Graveyard` heading an archive split removed — it would have failed
+  silently, never loudly. Dry-run the hook after touching what it reads.
+- **Deferred items containing a measurement rot; re-measure before you re-file.** Two examples the same
+  day: a reminder still claiming CHANGELOG/DEVLOG were "~730 lines each, not there yet" when they were
+  1,366 and 1,792, and a `[P2 now → P0 ~2026-07-24]` self-escalating tag whose trigger date had quietly
+  passed. The note freezes; the world doesn't.
 
 ### Concerns / open risks
 - **`ffmpeg` is unverified on Render's container** — decoration extraction works locally; if it breaks in

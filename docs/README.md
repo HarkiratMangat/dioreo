@@ -69,7 +69,7 @@ code) and finalized at merge:
    Keep the root nav-map table current if you add/remove a rule file.
 5. `DEVLOG.md`: a narrative entry if the work had real reasoning/discovery.
 6. Memory: update any rule the session established or corrected.
-7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**.
+7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**. Sweeps go to `archive/graveyard.md`, not to a section inside the notes file.
 8. At merge: `gh pr merge --squash`, then tag the squash commit (`git tag -a vX.Y.Z <squash-sha>`) and push the tag.
 
 ## Versioning

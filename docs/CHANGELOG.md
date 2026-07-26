@@ -1393,3 +1393,19 @@ tracker and left everything else behind. This finishes it and reorganizes the re
   P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
 - **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this
   restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
+
+**Second verification pass** (Harkirat's ask — "better to do it now than have stale ends later") caught
+five more, all fixed:
+- `reference_enforcement_hooks.md` (memory) still documented the notes-check hook as scanning to
+  `# Graveyard` — the very anchor this change removed. Re-anchored, with a warning that an unbounded
+  scan fails silently.
+- `reference_priority_tier_system.md` said the 🐞/🔔 sections live in the cross-project file; they're
+  Dior's own now. Split into two entries.
+- **Two cross-project pointers broken by this rename**, repaired path-only with a dated note (nothing
+  else in either file touched, per `feedback_defer_to_owning_project`): the Gif-Background-Remover
+  project's `user_working_agreement.md`, and `local/memory-architecture-design.md`.
+- The notes file's 🔑 Legend still described sweeping "to the Graveyard" as if it were a section; now
+  names the file. Also removed an orphan `-` bullet and a doubled `---`.
+- `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that
+  `settings.local.json` is gitignored, so hook fixes never ride in a PR.
+- Added the reusable lessons to `DEVLOG.md`'s Part B ledger, not just the Part A narrative.

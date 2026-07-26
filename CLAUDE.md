@@ -186,9 +186,13 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
   central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
-  real `git diff`/`git log` covers their history. The `SessionStart` hook (`.claude/settings.local.json`)
-  reads `docs/SESSION-START.md` directly — if that file's location ever moves, update the hook's path in the
-  SAME change.
+  real `git diff`/`git log` covers their history. ⚠️ **Two `SessionStart` hooks in `.claude/settings.local.json` PARSE these
+  files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
+  by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
+  `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME
+  change and dry-run it** (the `# Graveyard` anchor it used before 2026-07-25 21:43 EDT was removed by the
+  archive split and would have silently un-bounded the scan). Note `settings.local.json` is **gitignored**
+  — hook fixes are local-only and do NOT ride in a PR.
 
 ## Stack (summary)
 discord.js v14 (`^14.26.4`) · Node.js (v24 on the VM) · MongoDB Atlas via Mongoose · `chrono-node`
