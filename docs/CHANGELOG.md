@@ -200,6 +200,23 @@ eyeballing the bot Harkirat's real users were using. A second, fully separate Di
 - **Docs:** the workflow gains a free **Test** step between Commit and Push, `--draft` PRs are now rarer
   (most test gaps close locally), and the old blanket "stop any local run before deploying" rule is
   corrected to **per-token** — the dev bot has its own token and never conflicts.
+- **`fix(emoji): resolve emoji ids at render time, not require time`** — the sync above reported 39/39
+  re-pointed and was still wrong on screen, because **four sites read emoji values at `require()` time**.
+  `refreshEmojiIds()` runs from `handleBotReady`, long after every command module is loaded, and JS
+  strings copy by value — so anything captured at load time froze the pre-sync PROD id permanently.
+  Found only by live-testing on the dev bot: **every `/manage` page** (`manage.js`'s module-level `PAGES`
+  table), **`/draw prices` pages 1–2** (`TIER_ICON` — page 3 read live and was fine, which is what gave
+  the pattern away), **`/season end`'s BP icon** (a hardcoded `<:BP_CODM1:…>` literal that bypassed the
+  map entirely, now `emojiMap`'s `bp1`), and **the "Show Everyone" button** (`SHARE_BUTTON_ROW`).
+  `PAGES` is now built per render and exported as a getter so callers can't capture a stale copy either.
+- **New `scripts/checkEmojiCaptures.js`** — proxies `emojiMap` and fails if any module reads an emoji
+  value during `require()`. It found the "Show Everyone" site that manual review missed, and caught a
+  regression mid-fix where converting the `PAGES` export broke `manage.js`/`alerts.js`/`autobuild.js` at
+  load. The rule doc's old claim that "every consumer reads `emojis.foo` at render time" was false and
+  is corrected: **a module-level object literal containing `${emojis.x}` is the same bug as
+  destructuring, and much easier to miss.** CI candidate, noted in `docs/db-deferred-list.md`.
+  - **Prod was never affected** — its hardcoded ids were already correct, which is exactly why this
+    class of bug was invisible until a second app existed to expose it.
 ---
 
 ## v2.33.6 — 2026-07-26 18:07 EDT (`6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed

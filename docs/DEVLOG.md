@@ -60,6 +60,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-26 — Caught deferring, again, on the very hook built to stop it
 - 2026-07-26 (later) — Finally building a place to test, and the leak it sprang on the first boot
 - 2026-07-26 (later still) — Reversed twice on a convention, and both reversals were the system working
+- 2026-07-26 (evening) — The emoji sync reported 39/39 and was still wrong: four require-time captures
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1772,47 +1773,6 @@ leaves the same shape of gap available to slip through again in slightly differe
 caught needs to interrogate the mechanism that was supposed to prevent the miss, not just the surface
 symptom.
 
-## 2026-07-26 15:26 EDT — Reversed twice on a convention, and both reversals were the system working
-
-Harkirat objected to the `claude/*` branch prefixes and, reasonably concluding I was confused about the
-convention, had Gemini write a reference list — with the explicit instruction to *also do my own research,
-"because gemini is not the definitive source of truth since it's also AI."* That instruction earned its keep
-twice over.
-
-**Reversal one — mine, against his stated preference.** Mid-research he interrupted: he disliked the
-`<type>(<scope>): <description>` shape and wanted `/` instead of `: `, with no space. I'd already fetched the
-actual spec, and rule 1 is unambiguous — the type is followed by "REQUIRED terminal colon and space," with
-rule 5 repeating that the description must immediately follow it. So this wasn't a style preference with two
-defensible answers; it was a decision to leave the standard. I flagged exactly that in two sentences, checked
-what it would actually cost (no `commitlint`, `husky`, `semantic-release`, `standard-version`, or
-`conventional-changelog` installed — so: nothing today, only future interop), said it was his call, and
-started implementing his format.
-
-**Reversal two — his, back to the spec,** as soon as he saw the quoted rule text. The lesson isn't "I was
-right." It's that *stating the concern once, concretely, with the source quoted, then proceeding anyway* is
-what made the reversal possible. Refusing would have been obstruction; implementing silently would have
-buried a spec deviation in the repo's conventions with no record of the choice. Both his decisions are now
-recorded in `docs/reference/commit-and-branch-naming.md` and memory, specifically so no future session
-re-proposes the `/` variant as a fresh idea.
-
-**What the research actually caught, beyond the separator.** Gemini's list was accurate on the 11 standard
-types, the `!` notation, and the imperative/lowercase/no-period rules — but it included six types that
-aren't standard at all (`deps`, `release`, `sec`, `wip`, `types`, `i18n`), every one of which
-`@commitlint/config-conventional` rejects. The real forms are `build(deps):`, `chore(release):`, and
-`fix(security):`; `wip` belongs on a draft PR, never in history. It also silently conflated commit format
-with **branch** naming — the spec governs commit messages only and says nothing whatsoever about branches.
-That conflation was the actual source of the original confusion, and it would have survived untouched if I'd
-taken the list at face value.
-
-**A trap found by falling into it.** Renaming PR #2's head branch from `claude/remove-draw-prices-note-4aceoh`
-to the convention **auto-closed the PR**, and it could not be reopened once the old ref was gone — GitHub's
-rename only retargets PRs whose *base* moved, never the head. Cost: one PR number (#2 → #16), no work. That's
-now a 🚨 callout in the naming doc, and it's why #9 and #11 were deliberately **left** on their `claude/*`
-branches rather than "fixed" — re-creating them would throw away their numbers and review history for a
-purely cosmetic gain. Knowing when *not* to apply a new convention retroactively is part of adopting it.
-
----
-
 ## 2026-07-26 13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot
 
 The session opened as a PR review. It ended with the bot having a **development instance for the first
@@ -1863,6 +1823,87 @@ re-encoding; all three were referenced by `emojiMap`, so a silent skip would hav
 **Closing loop:** `--watch` is a *full process restart*, not hot-reload — Node freezes module code at
 load, so restart is the only correct answer. It does **not** close the roadmap's partial-hot-reload item,
 which is about skipping a VM redeploy. Different problem, adjacent relief.
+## 2026-07-26 15:26 EDT — Reversed twice on a convention, and both reversals were the system working
+
+Harkirat objected to the `claude/*` branch prefixes and, reasonably concluding I was confused about the
+convention, had Gemini write a reference list — with the explicit instruction to *also do my own research,
+"because gemini is not the definitive source of truth since it's also AI."* That instruction earned its keep
+twice over.
+
+**Reversal one — mine, against his stated preference.** Mid-research he interrupted: he disliked the
+`<type>(<scope>): <description>` shape and wanted `/` instead of `: `, with no space. I'd already fetched the
+actual spec, and rule 1 is unambiguous — the type is followed by "REQUIRED terminal colon and space," with
+rule 5 repeating that the description must immediately follow it. So this wasn't a style preference with two
+defensible answers; it was a decision to leave the standard. I flagged exactly that in two sentences, checked
+what it would actually cost (no `commitlint`, `husky`, `semantic-release`, `standard-version`, or
+`conventional-changelog` installed — so: nothing today, only future interop), said it was his call, and
+started implementing his format.
+
+**Reversal two — his, back to the spec,** as soon as he saw the quoted rule text. The lesson isn't "I was
+right." It's that *stating the concern once, concretely, with the source quoted, then proceeding anyway* is
+what made the reversal possible. Refusing would have been obstruction; implementing silently would have
+buried a spec deviation in the repo's conventions with no record of the choice. Both his decisions are now
+recorded in `docs/reference/commit-and-branch-naming.md` and memory, specifically so no future session
+re-proposes the `/` variant as a fresh idea.
+
+**What the research actually caught, beyond the separator.** Gemini's list was accurate on the 11 standard
+types, the `!` notation, and the imperative/lowercase/no-period rules — but it included six types that
+aren't standard at all (`deps`, `release`, `sec`, `wip`, `types`, `i18n`), every one of which
+`@commitlint/config-conventional` rejects. The real forms are `build(deps):`, `chore(release):`, and
+`fix(security):`; `wip` belongs on a draft PR, never in history. It also silently conflated commit format
+with **branch** naming — the spec governs commit messages only and says nothing whatsoever about branches.
+That conflation was the actual source of the original confusion, and it would have survived untouched if I'd
+taken the list at face value.
+
+**A trap found by falling into it.** Renaming PR #2's head branch from `claude/remove-draw-prices-note-4aceoh`
+to the convention **auto-closed the PR**, and it could not be reopened once the old ref was gone — GitHub's
+rename only retargets PRs whose *base* moved, never the head. Cost: one PR number (#2 → #16), no work. That's
+now a 🚨 callout in the naming doc, and it's why #9 and #11 were deliberately **left** on their `claude/*`
+branches rather than "fixed" — re-creating them would throw away their numbers and review history for a
+purely cosmetic gain. Knowing when *not* to apply a new convention retroactively is part of adopting it.
+
+## 2026-07-26 16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures
+
+The dev bot's whole purpose paid for itself within hours of existing. `refreshEmojiIds()` had been
+verified — a true no-op on prod, 39/39 re-pointed on dev — and it was genuinely correct. Then Harkirat
+actually *looked at Discord* and reported emojis broken on every `/manage` page, on `/draw prices` pages
+1–2 but **not** page 3, and on `/season end`'s BP icon.
+
+**That "but not page 3" was the entire diagnosis.** A sync that worked would work everywhere; a sync that
+failed would fail everywhere. Something that works on one page of one command and not its siblings is
+about *when* the value is read, not whether it's correct. `refreshEmojiIds()` runs from `handleBotReady`,
+which is long after every command module has been `require()`d — and **JS strings copy by value.** So any
+module that read an emoji at load time held a private copy of the pre-sync PROD id forever, while page 3,
+which built its heading inside a render function, picked up the fixed value.
+
+Four sites, three of which I found by reading: `manage.js`'s module-level `PAGES` table (~30 interpolations
+→ every page), `drawprices.js`'s `TIER_ICON` const (pages 1–2), and `seasonend.js`'s hardcoded
+`<:BP_CODM1:…>` literal, which bypassed the map entirely and so was invisible to a sync that only rewrites
+what's *in* the map.
+
+**The fourth site is the point of this entry.** Rather than trust that reading had found them all, I
+proxied `emojiMap` and recorded every string-valued property read that occurred while each module loaded.
+That test found `shareButton.js`'s `SHARE_BUTTON_ROW` — the "Show Everyone" button — which Harkirat hadn't
+reported and I hadn't spotted. Without it he'd have re-tested the three reported surfaces, seen them fixed,
+and shipped a still-broken button. It then immediately earned its keep a second time by catching a
+regression *I* introduced: `PAGES` turned out to be **exported** (a line my earlier grep missed), so
+converting it to a function broke `manage.js`, `alerts.js`, and `autobuild.js` at load. The test failed
+loudly; I'd otherwise have handed over three dead commands. The export is now a getter.
+
+**Two lessons worth keeping.** First, the rule file already warned "don't destructure `emojiMap` at module
+load" — and all four sites complied with that letter while violating its intent, because the real trap is
+*any* load-time read, and a module-level object literal full of `${emojis.x}` doesn't look like
+destructuring at all. A rule that names one instance of a bug class teaches people to avoid that instance.
+The doc now names the class. Second, the same file asserted "every consumer reads `emojis.foo` at render
+time" — stated as fact, false in four places, and *that* false confidence is what let the bug ship. It's
+now the executable check `scripts/checkEmojiCaptures.js`, because a claim a script can verify shouldn't be
+left as prose that quietly rots.
+
+Worth noting what was never at risk: **prod**. Its hardcoded ids were correct all along, which is precisely
+why this bug class stayed invisible until a second Discord application existed to expose it.
+
+---
+
 
 # Part B — Lessons Ledger (thematic)
 
