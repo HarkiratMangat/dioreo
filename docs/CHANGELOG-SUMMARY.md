@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.34.1 — July 26, 2026
+- *Internal docs-only — kept Dior's own developer notes pointing at the right bits of code after the
+  last update renamed a couple of them. Nothing players see.*
+
 ## v2.34.0 — July 26, 2026
 Behind-the-scenes only — nothing changes for you.
 

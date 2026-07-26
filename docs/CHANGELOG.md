@@ -166,6 +166,23 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.34.1 — 2026-07-26 18:20 EDT (`6124024`) — Rule files re-pointed at the symbols v2.34.0 renamed
+
+**Internal / docs only — no bot code touched. Does not change v2.34.0's still-pending deploy.**
+
+- **`manage-panel.md`** called `commands/manage.js`'s `const PAGES` "the single source of truth"; v2.34.0
+  made it **`buildPagesTable()`**, called per render, with the module export as a **getter**.
+- **`design-decisions.md`** referenced `TIER_ICON`; it is now **`tierIcon()`**.
+- Both corrections state **why** the symbol changed, so a future session doesn't "simplify" them back
+  into module-level consts and silently reintroduce the stale-emoji-id bug. That matters more than the
+  rename itself: the *original* rule warned only against **destructuring** `emojiMap`, and all four
+  broken sites complied with that letter while violating its intent.
+- Left deliberately unchanged: `rendering-and-ui.md`'s description of the pre-fix code (accurate **as
+  history**), and `manage-panel.md`'s "no key in `PAGES`" lines (still true — `PAGES` remains the local
+  name inside `buildManagePage()`).
+
+---
+
 ## v2.34.0 — 2026-07-26 18:24 EDT (`5d39e10`) — The local dev bot: a way to test before prod
 
 **⚠️ MERGED BUT NOT DEPLOYED.** First release since v2.33.0 that contains real bot code, so unlike the
