@@ -1,5 +1,8 @@
 // utils/emojiMap.js
 
+const fs = require('fs');
+const path = require('path');
+
 // Buttons have a dedicated `emoji` field ({ id, name, animated }) — unlike Text Displays, a
 // button's `label` is plain text only, so pasting a raw "<a:Name:123>" mention string into label
 // just shows that literal text instead of rendering the emoji. This parses the mention strings
@@ -10,7 +13,9 @@ function parseEmoji(mention) {
     return { animated: !!match[1], name: match[2], id: match[3] };
 }
 
-module.exports = {
+// Every mention string below is written with the PRODUCTION app's emoji ids, which stay the
+// literal source of truth in git. They are also the fallback if the sync below can't run.
+const emojis = {
     // /settings' "Made with love by @dior" footer -- replaced dioreo with diorHeart (2026-07-12,
     // same day, Harkirat's follow-up correction). Animated this time (a: prefix).
     diorHeart: '<a:diorHeart:1525941004929339594>',
@@ -73,5 +78,80 @@ module.exports = {
     // Harkirat-provided icon, lives in the button's `emoji` field via parseEmoji(), not baked into
     // `label` (see Components V2 point 4 above).
     share: '<a:Share:1526666464625430558>',
-    parseEmoji
 };
+
+const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');
+
+/**
+ * Re-points every mention string above at the ids owned by the app we actually booted as, matching
+ * on emoji NAME.
+ *
+ * Why this exists: these are Discord APPLICATION emojis, and an application emoji only renders for
+ * the app that owns it. The dev bot (a separate Discord application) has its own copies of all 72
+ * emojis under identical names but DIFFERENT ids, so the hardcoded prod ids above render as broken
+ * text there. Matching on name means one codebase serves both apps with no per-environment config,
+ * and it self-heals if an emoji is ever deleted and re-uploaded (which mints a new id).
+ *
+ * On prod this is a no-op that rewrites nothing — the ids already match. Deliberately fail-soft:
+ * any error leaves the hardcoded prod ids in place rather than taking the bot down over cosmetics.
+ *
+ * Mutates the exported object IN PLACE on purpose. Every consumer reads `emojis.foo` at render
+ * time (per interaction), not at require time, so in-place rewriting reaches all of them without a
+ * single call-site change.
+ *
+ * @param {import('discord.js').Client} client a logged-in client
+ * @returns {Promise<{synced: number, missing: string[], overridden: number}>}
+ */
+async function refreshEmojiIds(client) {
+    const result = { synced: 0, missing: [], overridden: 0 };
+    const appId = client.application?.id ?? client.user?.id;
+
+    try {
+        // Raw route string rather than `Routes.applicationEmojis(...)` -- the helper's availability
+        // varies across discord.js minors, the endpoint itself doesn't.
+        const res = await client.rest.get(`/applications/${appId}/emojis`);
+        const live = res?.items ?? res ?? [];
+        const byName = new Map(live.map(e => [e.name, e]));
+
+        for (const [key, value] of Object.entries(emojis)) {
+            if (typeof value !== 'string') continue;
+            const parsed = parseEmoji(value);
+            if (!parsed) continue;
+            const match = byName.get(parsed.name);
+            if (!match) { result.missing.push(`${key} (:${parsed.name}:)`); continue; }
+            const next = `<${match.animated ? 'a' : ''}:${match.name}:${match.id}>`;
+            if (next !== value) { emojis[key] = next; result.synced++; }
+        }
+    } catch (err) {
+        console.error('⚠️  Emoji id sync skipped, keeping hardcoded ids:', err?.message || err);
+        return result;
+    }
+
+    // Dev-only overlay, applied AFTER the name sync so it wins. Lets a dev-bot session point
+    // individual keys at throwaway test emojis that don't exist on prod at all, without editing
+    // (and risking committing) the tracked map above. Gitignored; absent in normal operation.
+    if (process.env.NODE_ENV === 'development') {
+        try {
+            if (fs.existsSync(DEV_OVERRIDE_FILE)) {
+                const overrides = JSON.parse(fs.readFileSync(DEV_OVERRIDE_FILE, 'utf8'));
+                for (const [key, mention] of Object.entries(overrides)) {
+                    if (typeof mention !== 'string' || !parseEmoji(mention)) {
+                        console.warn(`⚠️  emojiMap.dev.json: "${key}" is not a valid emoji mention, ignored`);
+                        continue;
+                    }
+                    emojis[key] = mention;
+                    result.overridden++;
+                }
+            }
+        } catch (err) {
+            console.error('⚠️  emojiMap.dev.json could not be read, ignoring it:', err?.message || err);
+        }
+    }
+
+    return result;
+}
+
+emojis.parseEmoji = parseEmoji;
+emojis.refreshEmojiIds = refreshEmojiIds;
+
+module.exports = emojis;

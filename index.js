@@ -211,6 +211,16 @@ if (fs.existsSync(commandsPath)) {
 async function handleBotReady() {
     console.log(`✅ Dior's Builds instance fully authenticated!`);
 
+    // Re-point emojiMap's mention strings at the ids owned by whichever app this token belongs to.
+    // Application emojis only render for their owning app, so the dev bot (a separate application
+    // with its own same-named copies) needs its own ids. No-op on prod. Awaited before anything
+    // renders; fail-soft internally, so a failure here can never block command registration.
+    const { refreshEmojiIds } = require('./utils/emojiMap');
+    const emojiSync = await refreshEmojiIds(client);
+    if (emojiSync.synced || emojiSync.overridden || emojiSync.missing.length) {
+        console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
+    }
+
     const Loadout = require('./models/Loadout');
     const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
     // Secondaries has no loadouts saved yet -- Harkirat wants the command ready to go the moment

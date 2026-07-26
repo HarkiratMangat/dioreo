@@ -7,6 +7,10 @@ node_modules/
 .env
 .env.*
 
+# Dev-bot-only emoji overrides consumed by utils/emojiMap.js's refreshEmojiIds() when
+# NODE_ENV=development. Local experimentation only -- never part of a release.
+utils/emojiMap.dev.json
+
 # Project-Specific Local Files
 gun-builds/
 local/
