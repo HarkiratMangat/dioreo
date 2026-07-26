@@ -47,6 +47,7 @@ const { version: BOT_VERSION } = require('./package.json');
 const mongoose = require('mongoose'); // Add to dependency imports
 const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
+const { acquireInstanceLock } = require('./utils/instanceLock');
 
 // CONNECT TO MONGO DB ATLAS STORAGE CLUSTER
 mongoose.connect(process.env.MONGODB_URI)
@@ -3452,5 +3453,15 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Initialize system authorization
-client.login(process.env.BOT_TOKEN);
+// Initialize system authorization -- gated on the single-instance lock so a stray leftover local
+// `node index.js` can't silently race an already-running instance (VM or another local process)
+// the way it did in the 2026-07-14 incident (see .claude/rules/accent-and-colors.md). The
+// acquireInstanceLock() query is issued via Mongoose, which buffers commands until the
+// mongoose.connect() call above actually finishes -- no extra wait-for-connection logic needed here.
+(async () => {
+    const acquired = await acquireInstanceLock();
+    if (!acquired) {
+        process.exit(1);
+    }
+    client.login(process.env.BOT_TOKEN);
+})();

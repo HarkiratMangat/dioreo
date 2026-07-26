@@ -314,10 +314,10 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
     (`Dio (Dev)`) is a **separate Discord application with its own token**, so running it alongside the VM
     is safe by design and must NOT be "cleaned up" before a deploy. Only a local run using **prod's** `.env`
     collides. The manual step above applies to that case only.
-  - **In flight:** open PR [#9](https://github.com/HarkiratMangat/diors-builds/pull/9) implements this as a
-    Mongo heartbeat lock (`models/BotInstance.js` + `utils/instanceLock.js`) and is already dev-bot-correct —
+  - **Merged:** PR [#9](https://github.com/HarkiratMangat/diors-builds/pull/9) implements this as a
+    Mongo heartbeat lock (`models/BotInstance.js` + `utils/instanceLock.js`) and is dev-bot-correct —
     its lock `_id` is a hash of `BOT_TOKEN` rather than a fixed singleton, precisely so a dev application can
-    run at the same time. Not merged as of 2026-07-26 13:45 EDT, so no guard exists on `main` yet.
+    run at the same time.
 - **Split `index.js` into per-subsystem handler modules** (filed 2026-07-22 13:55 EDT, during the CLAUDE.md
   modularization — Harkirat explicitly invited evaluating this; deliberately NOT done in that docs-only
   session because it's a live-bot code refactor, a different risk class). `[P2 · L · Opus5-H · 🧩needs-design]`.
