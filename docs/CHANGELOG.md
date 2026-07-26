@@ -166,6 +166,30 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.33.5 — 2026-07-26 14:59 EDT (`ea08a31`) — `/draw prices`: the NOTE callout comes off the Advanced Double Legendary page
+
+**First change merged after the local dev bot existed, and the first one live-verified before merge
+rather than after deploy.**
+
+- **Removed the `> **NOTE:**` callout** from the Advanced Double Legendary Weapon Draw page — the one
+  claiming a Regular-only purchase is *cheaper than a Normal Draw*. Harkirat's call: the comparison
+  invited the wrong read, and `THE TRAP` callout already carries the actionable warning. `THE TRAP` is
+  unchanged. The page drops from **9 Text Displays to 8**, one callout instead of two.
+- **Dropped the now-orphaned `normalDrawTotal` derivation** — it existed solely to feed the removed
+  callout's `X vs Y` comparison. Every remaining number on the page is still derived from `DRAW_DATA`,
+  so the "a wrong number can only ever exist in one place" property holds.
+- **Comments and the rule file were updated in the same change**, not left to drift — the builder's
+  inline block-index comments (`4-5: the two callouts` → `4: THE TRAP callout`) and
+  `.claude/rules/draw-prices.md`'s layout description both now describe the 8-display shape, each noting
+  the removal was Harkirat's request on 2026-07-25.
+- **Branch-name housekeeping:** this shipped as #16, not the original #2. Renaming the head branch
+  `claude/remove-draw-prices-note-4aceoh` → `chore/remove-draw-prices-note` (to match the repo's
+  `feat/`·`chore/`·`docs/` convention) made GitHub **auto-close** the PR — its rename only retargets PRs
+  whose *base* moved, never the head. Same commits, new number. Worth knowing before renaming the head
+  branch of the other outstanding `claude/*` PRs (#9, #11): rename first, or expect to re-open a new PR.
+
+---
+
 ## v2.33.4 — 2026-07-26 12:09 EDT (`95791b1`) — GitHub Projects roadmap board: build + re-sync after the deferred-list restructure
 
 **Internal / docs only — no bot code touched, nothing to deploy.**

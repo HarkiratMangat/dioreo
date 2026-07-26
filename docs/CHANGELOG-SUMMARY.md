@@ -26,6 +26,11 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.33.5 — July 26, 2026
+- **`/draw prices` — the Advanced Double Legendary page is a little cleaner.** The NOTE about Regular
+  purchases being cheaper than a Normal Draw is gone; the important warning (THE TRAP) stays exactly
+  where it was.
+
 ## v2.33.4 — July 26, 2026
 - *Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed
   a few stale references left over from the last reorg. Nothing players see.*
