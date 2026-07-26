@@ -147,7 +147,13 @@ function cumulativeSequence(entry) {
 
 // Single tier icon per drawPrices_ui.json (the old mythic/legendary headers combined their tier
 // emoji with the Epic emoji as a two-icon prefix; the new reference file uses just the one).
-const TIER_ICON = { mythic: emojis.mythic, legendary: emojis.legendary, epic: emojis.epic };
+// Resolved per-render, deliberately NOT a module-level const: refreshEmojiIds() rewrites emojiMap's
+// values at boot, long after this file is require()d, and JS strings copy by value -- so a const here
+// froze the pre-sync PROD ids and rendered as broken text on the dev bot (found 2026-07-26 15:52 EDT:
+// pages 1-2 broken, while page 3's heading -- which reads emojis.* at render time -- was fine).
+function tierIcon(tier) {
+    return { mythic: emojis.mythic, legendary: emojis.legendary, epic: emojis.epic }[tier];
+}
 
 // Returns one ARRAY of block strings per draw type (2 blocks normally, 3 if it has an Upgrade step)
 // -- NOT one joined string. Per example_reformat.json (2026-07-12), each entry splits into separate
@@ -162,7 +168,7 @@ function buildDrawEntries(regionKey, keys) {
     return keys.map(key => {
         const meta = DRAW_META[key];
         const entry = region[key];
-        const icon = TIER_ICON[meta.tier];
+        const icon = tierIcon(meta.tier);
         // Full-caps draw name in every entry heading (2026-07-21, Harkirat's request -- consistency
         // with the Advanced page's own full-caps heading). meta.name stays the canonical mixed-case
         // source of truth; only the rendered heading is uppercased.

@@ -26,6 +26,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## Unreleased (proposed v2.34.0) — July 26, 2026
+Behind-the-scenes only — nothing changes for you.
+
+Dior's Builds now has a **private test copy of itself** that runs on Dior's own computer. Changes can be
+tried out there first, instead of going straight to the bot you use. Fewer surprises, faster fixes.
+
+---
 ## v2.33.6 — July 26, 2026
 - *Internal docs-only — wrote down how Dior's own code changes get labelled, so the project's history
   stays consistent and machine-readable. Nothing players see.*

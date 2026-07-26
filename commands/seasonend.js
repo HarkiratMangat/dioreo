@@ -95,7 +95,7 @@ module.exports = {
             type: 17,
             accent_color: accentColor,
             components: [
-                buildEndBlock('<:BP_CODM1:1523190109065707560>', seasonalDoc?.bpTitle || 'Battle Pass', bpUnix),
+                buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix),
                 { type: 14, spacing: 2, divider: true }, // Structural Separator
 
                 buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix),

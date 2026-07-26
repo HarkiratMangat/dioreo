@@ -1,5 +1,10 @@
 # Design — Git branching / PR / versioning workflow overhaul
 
+> **Amendment 2026-07-26 13:45 EDT — a `Test` step now sits between Commit and Push.** The local dev bot
+> (`Dio (Dev)`) did not exist when this spec was written, so the whole design assumed testing could only
+> happen after a deploy. See §2's table + the amended draft-PR note. Setup:
+> `docs/reference/deployment-and-ops.md`.
+
 *Authored 2026-07-24 11:29 EDT (Claude, Opus 4.8). Brainstormed with Harkirat this session; all 5
 sections approved with refinements folded in. This is the design/spec; the implementation plan comes
 next (writing-plans).*
@@ -39,6 +44,7 @@ and sweep every file/doc/hook/memory that encodes the old model so the whole sys
 |---|---|---|---|
 | **Branch** | starting a feature | `git checkout -b feat/x` off `main` | No |
 | **Commit** | save progress (checkpoint) | `git commit` on the branch, freely | **No** (changed from old rule — safe under squash) |
+| **Test** | try it live before it's real | `node --watch --env-file=.env.dev index.js` → exercise in Discord | **No** (free) |
 | **Push** | upload saves to cloud | `git push -u origin feat/x` (the *branch*) | **Yes** |
 | **PR** | done / done-pending-test | `gh pr create` — `--draft` only if a test/review gap exists, ready otherwise | No (organizes an already-approved push) |
 | **Merge** | sync into `main`; mint version | `gh pr merge --squash` + `package.json` bump + tag | **Yes** (this yes *is* the version-number approval) |
@@ -53,6 +59,13 @@ and sweep every file/doc/hook/memory that encodes the old model so the whole sys
   anchor + consistency). Use `--draft` only when there is something to wait on (bot testing, a
   deliberate eyeball). No wait needed → open ready and merge; a docs fix can be `gh pr create` →
   `gh pr merge` back to back.
+- **⚠️ Amended 2026-07-26 13:45 EDT — the Test step changes when `--draft` is warranted.** The original
+  design assumed "bot testing" was an inherently *post-merge, post-deploy* activity, because before
+  `Dio (Dev)` existed there was no way to run the bot anywhere but prod. Now most test gaps can be
+  **closed on the branch before the PR is ever opened**, so `--draft` should be rarer: reach for it only
+  when the gap genuinely can't be closed locally (something needing real prod data, real users, or the
+  VM itself). "I haven't looked at it yet" is no longer a reason to draft — it's a reason to run the dev
+  bot. Local testing itself is free and never gated; see `docs/reference/deployment-and-ops.md`.
 - When Claude asks "OK to merge?", it states the **proposed version number** in the same breath, so
   the merge-yes bundles the version-number-yes. **MAJOR bumps (→ v3) always need an explicit separate
   ask**, unchanged.
