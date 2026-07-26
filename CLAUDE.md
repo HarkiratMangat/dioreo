@@ -83,9 +83,25 @@ worked in-memory but silently reverted on the next fresh fetch. **Whenever you a
 add it to the corresponding schema in `models/` in the same change.** Full data-model detail:
 `.claude/rules/models.md`.
 
-### Git workflow = Branch → Commit → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT)
-Never push, merge, or deploy without asking first — approval never carries over (branch commits are the
-one exception: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
+### There is a LOCAL DEV BOT — use it, and never point it at prod (built 2026-07-26 13:45 EDT)
+A **separate Discord application**, `Dio (Dev)` (`1529636846248919263`), exists purely to test changes
+locally before they reach prod. Run it from the repo root with **`node --watch --env-file=.env.dev index.js`**
+— it auto-restarts on every file save and branch switch, so any branch or PR can be tried live in Discord
+in seconds. **Default to testing on it** instead of shipping untested or asking Harkirat to eyeball prod.
+- **`.env.dev` is gitignored and is NOT prod's `.env`.** It carries the dev token, a LOCAL Mongo URI
+  (`mongodb://localhost:27017/diors-builds-dev`), `NODE_ENV=development`, and its own alert webhook.
+  **Never run a local instance with the PROD token** — prod is single-token, and a second connection on
+  the same token makes Discord route interactions randomly between them (see `feedback_multiple_bot_instances`).
+  Two instances on *different* tokens is fine and is the whole point. Prod's `.env` stays untouched and is
+  still what a bare `node index.js` picks up, so always pass `--env-file=.env.dev` explicitly.
+- **`dotenv.config()` at `index.js:38` runs AFTER `--env-file` and BACKFILLS anything the env-file omits.**
+  So omitting a key from `.env.dev` does NOT unset it — it silently inherits prod's value. To disable
+  something in dev you must set it **explicitly blank**, not leave it out. This bit the alert webhook once.
+Full setup, the emoji/DB cloning, and the caveats: `docs/reference/deployment-and-ops.md`.
+
+### Git workflow = Branch → Commit → Test (dev bot) → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT; Test step added 2026-07-26 13:45 EDT)
+Never push, merge, or deploy without asking first — approval never carries over (branch commits and
+**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
 the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
@@ -160,7 +176,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | File | Covers |
 |---|---|
 | `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
-| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging |
+| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
 

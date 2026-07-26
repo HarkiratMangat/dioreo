@@ -58,7 +58,8 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-25 — Second dogfood of the branch workflow: splitting deferred-items.md
 - 2026-07-25 (later) — "You did such a half-ass job of it": finishing a split that was never finished
 - 2026-07-26 — Caught deferring, again, on the very hook built to stop it
-- 2026-07-26 (later) — Reversed twice on a convention, and both reversals were the system working
+- 2026-07-26 (later) — Finally building a place to test, and the leak it sprang on the first boot
+- 2026-07-26 (later still) — Reversed twice on a convention, and both reversals were the system working
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1811,6 +1812,57 @@ branches rather than "fixed" — re-creating them would throw away their numbers
 purely cosmetic gain. Knowing when *not* to apply a new convention retroactively is part of adopting it.
 
 ---
+
+## 2026-07-26 13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot
+
+The session opened as a PR review. It ended with the bot having a **development instance for the first
+time in its life** — and the handoff prompt that framed it was already stale in four ways, which is the
+first lesson.
+
+**The handoff said `main` was at v2.33.1 (it was v2.33.4), that PR #2 was the only open PR (there were
+four), that a command-registration script needed finding (there is none — `index.js:240` self-registers
+on every boot), and — the dangerous one — that "no `.env` exists yet."** It did exist: 873 bytes, 13 keys,
+live prod secrets including the Atlas URI. Task 3 as written said "write a new gitignored `.env`," which
+would have **clobbered the production credentials**. The lesson isn't "handoffs go stale" — Harkirat said
+that himself up front. It's that a stale handoff's *instructions* stay confidently imperative even after
+its *facts* rot, and the instruction most worth re-checking is the one that writes to something.
+
+**Why a dev bot mattered.** Every visual change until now was verified by merging, deploying to the VM,
+and looking at the live bot real users were using. That's why `--draft` PRs existed in the workflow spec:
+"bot testing" was assumed to be inherently post-deploy, because there was nowhere else to do it. A second
+Discord application (`Dio (Dev)`) with its own token, its own local Mongo, and a read-only `mongodump`
+clone of prod's data changes that assumption, so the workflow gained a free **Test** step and `--draft`
+became something you reach for only when the gap genuinely can't be closed locally.
+
+**The leak, and why "omit it" was the wrong instinct.** The plan was to keep dev alerts out of the prod
+alert channel by simply *leaving `LOG_WEBHOOK_URL` out* of `.env.dev`. The first boot printed
+`injected env (8) from .env` — and `index.js:38`'s `dotenv.config()` runs **after** Node's `--env-file`
+and **backfills every var the env-file didn't set**. Omitting a key doesn't disable it; it silently
+inherits prod's value. The dev bot was wired to the real alert webhook. Fix was to set it explicitly
+**blank** (`alertWebhook.js`'s `if (!url) return` makes empty a clean no-op), confirmed by the injected
+count dropping 8 → 7. The arithmetic was also the proof that the *dev* token and *local* Mongo URI had
+won: 13 prod keys − 5 overlapping = 8. Worth internalizing: **"absent" and "disabled" are not the same
+thing in a layered-env setup.**
+
+**A verification near-miss.** To prove the bot wasn't secretly talking to Atlas, the first instinct was
+`lsof` on the process — which bled across processes and returned a list containing *both* localhost:27017
+and three Atlas endpoints. Completely inconclusive, and it would have been easy to read it either way.
+The decisive test was to stop inspecting and **reproduce the exact env resolution** in a one-line script
+(`node --env-file=.env.dev -e "require('dotenv').config(); ..."`). Reproducing beats observing when
+observation is noisy.
+
+**The emoji problem nobody predicted.** Cloning data wasn't enough: the bot's 39 emoji constants are
+**application** emojis, and an application emoji renders only for the app that owns it. The dev bot would
+have shown broken text everywhere. The fix that emerged is better than what either option in the original
+menu offered, because Harkirat asked for a hybrid — resolve ids by **name** at boot (so any app
+self-resolves, prod included, as a verified no-op) *plus* a gitignored dev-only overlay for testing emojis
+that don't exist on prod at all. Three animated emojis also blew Discord's 256 KB cap at 128px and needed
+re-encoding; all three were referenced by `emojiMap`, so a silent skip would have left real gaps in
+`/manage`. **Retrying the failures mattered more than the 69 that worked.**
+
+**Closing loop:** `--watch` is a *full process restart*, not hot-reload — Node freezes module code at
+load, so restart is the only correct answer. It does **not** close the roadmap's partial-hot-reload item,
+which is about skipping a VM redeploy. Different problem, adjacent relief.
 
 # Part B — Lessons Ledger (thematic)
 

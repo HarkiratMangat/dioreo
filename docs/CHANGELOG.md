@@ -166,6 +166,42 @@ changelog until v3 actually launches.
 
 ---
 
+## Unreleased — proposed **v2.34.0** — The local dev bot: a way to test before prod
+
+**Branch `feat/emoji-id-sync`. Not merged, not deployed.**
+
+The bot got its **first-ever local development instance** (2026-07-26 13:45 EDT). Until now there was no
+way to try a change before it reached prod — every visual check meant merging, deploying to the VM, and
+eyeballing the bot Harkirat's real users were using. A second, fully separate Discord application,
+**`Dio (Dev)` (`1529636846248919263`)**, now runs the same codebase against isolated local data.
+
+- **Setup** (all local/gitignored, no bot code involved): a dev Discord app (user-install `[1]`, no
+  privileged intents, matching prod's architecture); local MongoDB via the `mongodb/brew` tap seeded with
+  a **read-only `mongodump` of prod** (335/335 docs + indexes → `diors-builds-dev`); a gitignored
+  `.env.dev`; and `node --watch --env-file=.env.dev index.js`, which full-restarts on every save and
+  branch switch so any branch or PR is testable live in Discord in seconds.
+- **`feat: resolve application-emoji ids by name at boot`** — the one real code change. Application
+  emojis render only for the app that owns them, so `emojiMap.js`'s hardcoded prod ids showed as broken
+  text on the dev bot. All 72 emojis were cloned to the dev app under identical names, and
+  `refreshEmojiIds(client)` (called from `handleBotReady`) now re-points every mention string at the
+  booting app's own ids by **name**. One codebase serves both apps with no per-environment config, and it
+  self-heals if an emoji is deleted and re-uploaded. **Verified a true no-op on prod** (0 rewrites, 0
+  unmatched) and 39/39 re-pointed on dev. Fail-soft: any error keeps the hardcoded prod ids. An optional
+  gitignored `utils/emojiMap.dev.json` overlay (dev-only) allows per-key test emojis.
+- **`chore: widen .gitignore to .env.*`** — the existing `.env` entry is an exact match and never covered
+  `.env.dev`. Also added a `.git/info/exclude` entry so the dev secrets stay ignored even on branches that
+  predate the glob (which mattered immediately — checking out an older PR branch reverted the tracked
+  `.gitignore`).
+- **Two live findings worth remembering.** (1) `dotenv.config()` at `index.js:38` runs *after*
+  `--env-file` and **backfills** anything the env-file omits — so leaving `LOG_WEBHOOK_URL` out of
+  `.env.dev` silently inherited the real **prod alert webhook**; it must be set explicitly blank. (2)
+  Three animated emojis exceeded Discord's 256 KB cap at 128px and needed re-encoding at 96px — all three
+  are referenced by `emojiMap`, so silently skipping them would have left visible gaps in `/manage`.
+- **Docs:** the workflow gains a free **Test** step between Commit and Push, `--draft` PRs are now rarer
+  (most test gaps close locally), and the old blanket "stop any local run before deploying" rule is
+  corrected to **per-token** — the dev bot has its own token and never conflicts.
+---
+
 ## v2.33.6 — 2026-07-26 18:07 EDT (`6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
