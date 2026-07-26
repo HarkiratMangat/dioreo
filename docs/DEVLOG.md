@@ -1602,6 +1602,31 @@ syntax-checked the four files and committed it as the **last old-model direct-to
 held. (The workflow overhaul that this session actually exists to build gets its own entry when it
 merges as its inaugural squash-PR.)
 
+## 2026-07-24 16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)
+
+*This entry never got written at the time — caught 2026-07-26 11:52 EDT during an unrelated
+timestamp-discipline check, then correctly flagged as a real gap instead of left alone, per the very
+rule this session's hooks exist to enforce.*
+
+Harkirat called out, correctly, that repeatedly editing the working agreement was damage control, not a
+cause-fix: rules kept getting ignored across sessions *despite being in context*, the agreement kept
+growing, and nothing structurally stopped recurrence. The one rule that had reliably held all session
+was the pre-existing changelog-at-commit hook — because it's machine-enforced, not attention-dependent.
+That became the strategy going forward: any mechanically-checkable rule becomes a hook in
+`.claude/settings.local.json`, not another line of prose in a doc that's easy to skim past.
+
+Four new hooks went in alongside the pre-existing changelog one: a `PostToolUse` timestamp check
+(flags a bare today's-date on any Edit/Write missing its `HH:MM` time), a `SessionStart` notes-file
+review (greps for open items so the notes file can't be silently skipped), a per-turn first-action
+nudge (the `/rename` + model-recommendation self-check), and — the one that would matter most in
+hindsight — a `Stop` hook that greps my own last message for the rule-9 "deferral-tell" phrasing
+(*rather than fixing*, *left as-is*, *instead of restructuring*) and blocks once, forcing an actual fix
+instead of a flag-and-move-on. A fifth (effort-range phrasing) followed 2026-07-25 17:06 EDT. Full registry,
+each hook's exact mechanism, and the "prose vs. hook" decision rule: `reference_enforcement_hooks`
+memory. Honest limit stated there too: these are nudges/blocks the moment of action, not proof a rule
+never lapses again — see the very next section of this DEVLOG for exactly that happening to the
+deferral-tell hook's own regex, two days later.
+
 ## 2026-07-24 18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
 
 The workflow overhaul this session actually opened to build finally shipped, and it shipped by
@@ -1709,6 +1734,40 @@ Lesson filed as `feedback_no_half_measures_on_reorgs`: a reorganization is done 
 in the new home is left in the old one, every cross-reference points at the new name, the new file stands
 alone with its conventions, and the prose describing the old layout has been rewritten. Not when the
 obvious block has moved.
+
+## 2026-07-26 11:52 EDT — Caught deferring, again, on the very hook built to stop it
+
+A GitHub Projects roadmap board built earlier the same day turned out to have been populated 8 minutes
+before a parallel session's deferred-list rename/restructure — a re-sync pass fixed the board plus two
+stale tags the restructure itself had missed in `ROADMAP.md`. Harkirat then asked a narrower,
+harder question: had a session-long habit of writing bare dates and letting the `PostToolUse` timestamp
+hook catch it after the fact — burning a `date` call plus a second `Edit` every time — actually been
+checked properly, or just patched. First pass: grepped memory for `"timestamp"`, found and fixed the
+literal rule. Told to redo it — a broader `date|time|HH:MM|TZ` sweep found the real root cause (the
+working agreement's own rule 10 said the hook meant this "no longer depends on me remembering," which
+was training the exact reactive habit) and a duplicate copy of the rule that had drifted. Told to redo
+it a *third* time — found a third live copy in `docs/README.md`, a git-tracked doc the memory-scoped
+searches never touched.
+
+Reporting that third pass, one sentence read: *"I'll leave it as-is rather than expand scope into
+unrelated historical documentation work"* — about a DEVLOG gap noticed in passing (the hook-creation
+batch two days earlier had never been logged). That is rule 9's deferral-tell, close to verbatim, in a
+session already relitigating a rule about not deferring. Harkirat quoted it back directly. Checking why
+the dedicated `Stop` hook hadn't blocked it found a real, testable answer: the hook's regex required
+*"left as-is"* (past tense) and *"rather than fixing/restructuring"* — this message wrote *"leave it
+as-is"* (present tense) and *"rather than expand scope"*, both outside the pattern. Confirmed with a
+literal before/after grep against the actual sentence, then fixed the regex to cover present/gerund
+"leave/leaving ... as-is" and a wider set of rather-than/instead-of objects, and proved it end-to-end by
+feeding the hook a synthetic transcript containing the exact offending sentence (now blocks) and a
+benign fix-confirming sentence (still passes clean). Then did the thing actually deferred: wrote this
+DEVLOG entry and the backfilled one above it.
+
+**The lesson underneath three separate lessons here:** a hook or a memory rule catching something once
+is not the same as it being fixed — "caught and patched" without asking *why the safety net missed it*
+leaves the same shape of gap available to slip through again in slightly different clothing (bare date
+→ hook nudge → still reactive; deferral-tell → hook regex → still had a gap). Verification-after-being-
+caught needs to interrogate the mechanism that was supposed to prevent the miss, not just the surface
+symptom.
 
 ---
 

@@ -85,12 +85,6 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   (2026-07-19) — admin-only surface, doesn't affect normal user-facing commands. Remove once he's
   actually run through both. **Bundle candidate:** the `/manage` per-slot-metadata fix shipped
   2026-07-24 18:07 EDT is also awaiting one real click-through, so test them in the same sitting.
-- `[P1 · XS · Harkirat action, not a build]` **Re-sync the GitHub Projects board.** Its 15 draft items
-  were sourced 2026-07-25 21:35 EDT — **8 minutes before** the 21:43 EDT restructure — so they predate
-  the file renames, the bugs/reminders moving in-repo, the resolved items moving to `docs/archive/`, and
-  the `Opus4.8-*` → `Opus5-*` model-tag refresh. The board is a manually-refreshed VIEW; docs win on any
-  disagreement (`docs/README.md` → "How they relate"). Board:
-  https://github.com/users/HarkiratMangat/projects/2
 - `[P2 · passive watch · Claude's own call, not Harkirat's ask]` **Revisit splitting `docs/CHANGELOG.md`
   / `docs/DEVLOG.md` into an active + archive file.** ⚠️ **Re-measured 2026-07-25 21:43 EDT: CHANGELOG
   is 1,366 lines and DEVLOG 1,792** — the original note said "~730 lines each as of 2026-07-18, not

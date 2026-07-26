@@ -81,4 +81,8 @@ for the scheme). To find the current live version: `git describe --tags` or `scr
 Write dates with a **time and timezone** — `YYYY-MM-DD HH:MM TZ` (e.g. `2026-07-21 22:46 EDT`), not a bare
 date (Harkirat's standing request, 2026-07-21 ~22:46 EDT). The time is a second factor for exact intra-day
 ordering when several things ship the same day; always state the timezone because the VM runs UTC while
-Harkirat is ET. Get the real clock time with `date "+%Y-%m-%d %H:%M %Z"`.
+Harkirat is ET. **Get the real clock time proactively, ONCE, before drafting any dated content** —
+`date "+%Y-%m-%d %H:%M %Z"` — and reuse that value for every date written the rest of the turn. A
+`PostToolUse` hook flags a bare today-date after the fact, but it's a safety net for the rare miss, not
+license to fetch the time reactively every time (caught doing exactly that 2026-07-26 11:35 EDT — see
+`feedback_docs_at_push_time` / `feedback_be_usage_conscious` memory).
