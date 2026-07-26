@@ -63,7 +63,15 @@ const PURGE_LABELS = {
 // Display — most groups have one block per action, but Draws' Bulk-Delete+Purge group combines two
 // `### ` headers into a single block, matching its mockup's exact component layout) and a `buttons`
 // row (chunked into rows of 5 if it ever needs to grow past Discord's per-row cap).
-const PAGES = {
+// ⚠️ Built per-render by buildManagePage(), NOT a module-level `const PAGES = {...}` -- that's what it
+// used to be, and it silently broke EVERY emoji on EVERY /manage page on the dev bot (found
+// 2026-07-26 15:52 EDT). refreshEmojiIds() rewrites emojiMap's values at boot, long after this file is
+// require()d; the ~30 `${emojis.x}` interpolations below evaluate at table-build time and JS strings
+// copy by value, so building the table at require() time froze the pre-sync PROD ids permanently.
+// Rebuilding it per render costs ~30 template strings against a network round trip -- not worth
+// memoizing, and a cache would just reintroduce a subtler version of the same staleness bug.
+function buildPagesTable() {
+  return {
     draws: {
         label: 'Draws',
         icon: `${emojis.newDraws}${emojis.returningDraws}`,
@@ -227,7 +235,8 @@ const PAGES = {
             }
         ]
     }
-};
+  };
+}
 
 // Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a
 // different `mode` baked into every action id (so index.js's handlers know which collection slice
@@ -339,6 +348,8 @@ function buildPastSeasonsOptions(seasonalDoc) {
 }
 
 function buildManagePage(page, dynamicData = {}) {
+    // Built here, per render, so emoji ids are read AFTER refreshEmojiIds() has run (see buildPagesTable).
+    const PAGES = buildPagesTable();
     const pageKey = PAGES[page] ? page : 'draws';
     const pageData = PAGES[pageKey];
     const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
@@ -772,7 +783,9 @@ module.exports = {
         ))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
 
-    PAGES,
+    // Getter, not a value: the table must be built per access so emoji ids are read after
+    // refreshEmojiIds() has run (see buildPagesTable). Don't destructure this at module load.
+    get PAGES() { return buildPagesTable(); },
     PURGE_LABELS,
     buildManagePage,
     buildPastSeasonsOptions,

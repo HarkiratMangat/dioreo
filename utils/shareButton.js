@@ -16,19 +16,24 @@ const SHARE_BUTTON_CUSTOM_ID = 'share_public';
 // to Harkirat's own custom icon the same day -- goes through the button's dedicated `emoji` field
 // via parseEmoji(), NOT baked into `label` (a button's label is plain text only; see the Components
 // V2 lessons in CLAUDE.md -- pasting a raw mention string into label just shows it as literal text).
-const SHARE_BUTTON_ROW = {
-    type: 1,
-    components: [
-        { type: 2, style: 2, label: 'Show Everyone', custom_id: SHARE_BUTTON_CUSTOM_ID, emoji: emojis.parseEmoji(emojis.share) }
-    ]
-};
+// Built per call, NOT a module-level const: refreshEmojiIds() rewrites emojiMap at boot, after this
+// file is require()d, so a const here froze the pre-sync PROD id and the button rendered with a broken
+// emoji on the dev bot (found 2026-07-26 16:04 EDT by scripts/checkEmojiCaptures.js, not by eye).
+function shareButtonRow() {
+    return {
+        type: 1,
+        components: [
+            { type: 2, style: 2, label: 'Show Everyone', custom_id: SHARE_BUTTON_CUSTOM_ID, emoji: emojis.parseEmoji(emojis.share) }
+        ]
+    };
+}
 
 // Appends the row to a top-level components array (the array passed to `components:` in a
 // message payload, or returned by a command's buildContainer()) -- only when isEphemeral is true.
 // A public message never needs a button offering to make it public.
 function withShareButton(components, isEphemeral) {
     if (!isEphemeral) return components;
-    return [...components, SHARE_BUTTON_ROW];
+    return [...components, shareButtonRow()];
 }
 
 module.exports = { withShareButton, SHARE_BUTTON_CUSTOM_ID };

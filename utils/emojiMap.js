@@ -24,6 +24,10 @@ const emojis = {
     legacy: '<:6Legacy_CODM:1523190105739886663>',
     epic: '<:4Epic_CODM:1523190104489857054>',
     bp: '<:BP_CODM:1523190108386365470>',
+    // 2nd Battle Pass icon -- a DIFFERENT emoji from `bp` above, not a duplicate. Was hardcoded inline
+    // in seasonend.js, which meant refreshEmojiIds() never saw it and it stayed broken on the dev bot
+    // (found 2026-07-26 15:52 EDT). Every emoji must live here to be sync-able.
+    bp1: '<:BP_CODM1:1523190109065707560>',
     rank: '<:Rank_7Legendary_CODM:1523190127025717360>',
     dmz: '<:DMZ_CODM:1523190115319549963>',
     cp: '<:CP_CODM:1523190109753839637>',
