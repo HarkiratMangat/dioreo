@@ -184,9 +184,6 @@ well-specified execution/polish, not novel design.*
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided (see `docs/reference/known-issues.md`) — what's left is
   careful, well-specified execution across call sites, not open design work.
-- `[P2 · M · Sonnet5-H]` **Single-instance guard (startup lock)** — less critical now the bot lives on the
-  VM, but still wanted so a stray local `node index.js` can't race it. A well-defined mechanism
-  (refuse-to-start-if-already-connected), not a design question.
 - `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, notes L59)* read-only
   check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as
   designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above

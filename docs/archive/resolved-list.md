@@ -25,6 +25,16 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ~~[Diors Builds] Single-instance guard (startup lock)~~ → **SHIPPED 2026-07-26 18:43 EDT (v2.35.0,
+  `3b978a5`, PR #9)**. Token-scoped Mongo heartbeat lock (`models/BotInstance.js` +
+  `utils/instanceLock.js`, 10s heartbeat / 30s staleness); `index.js` calls `acquireInstanceLock()`
+  before `client.login()` and `process.exit(1)`s if another instance of the same `BOT_TOKEN` is already
+  alive. Lock `_id` is a hash of the token, not a global singleton, so the dev bot and the VM's prod
+  instance coexist on separate tokens. Boot-tested against the dev bot: clean single boot, second
+  instance on the same token refused and exits 1, `SIGINT` releases the lock and a fresh boot succeeds,
+  prod VM unaffected throughout (`scripts/vmstatus.sh`). Killing stray local instances by hand before a
+  push is no longer strictly required, though still harmless. Merged, **not yet deployed** — the VM is
+  still on v2.33.0's code.
 - ~~[Diors Builds] Re-sync the GitHub Projects board~~ → **DONE 2026-07-26 11:29 EDT (same session that caught it)**.
   The board's 15 draft items were re-synced against the 2026-07-25 21:43 EDT deferred-list restructure:
   `Opus4.8-H` → `Opus5-H` on the "View Colors" and "Real search + multi-select" cards' Model suggestion

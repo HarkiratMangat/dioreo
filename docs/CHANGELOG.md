@@ -52,10 +52,6 @@ Ideas, committed work, and known small gaps — nothing in this section has ship
 how committed we are. Items graduate into a numbered version entry below once they actually ship.
 
 ### 🛠️ Planned — intend to build
-- **Single-instance guard** — a startup lock so a stray local `node index.js` can't silently run
-  alongside the deployed Render bot. This is a single-token bot: two live instances race every
-  interaction (Discord routes each click to a random one) and cause the "different behavior each
-  click" + 10062/40060 errors seen behind v2.17.0. Refuse-to-start-if-already-connected is the fix.
 - **Real "search + multi-select" admin flow** — for "Delete Multiple" (all entities) and Loadouts'
   "Replace Multiple": search first, then tick which matches to act on. Today these are placeholder
   paste-a-list-of-names flows; this is the genuinely new interaction they're meant to become.
@@ -163,6 +159,28 @@ changelog until v3 actually launches.
   avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install
   pivot (Harkirat's call, 2026-07-18) rather than solving now, since v4 already changes how guild-member
   context is available to the bot.
+
+---
+
+## v2.35.0 — 2026-07-26 18:43 EDT (`3b978a5`) — Single-instance startup guard
+
+**Real bot code, MERGED BUT NOT DEPLOYED** — stacks on top of v2.34.0/v2.34.1's still-pending VM deploy.
+
+A stray leftover local `node index.js` racing the deployed instance on the same token has caused real
+incidents before (`[[feedback_multiple_bot_instances]]`, the original 2026-07-14 discovery). This closes
+it with a startup guard instead of a manual "remember to kill local processes" step.
+
+- **`utils/instanceLock.js` + `models/BotInstance.js`** — a Mongo heartbeat lock. `index.js` calls
+  `acquireInstanceLock()` right before `client.login()`; the lock writes a 10s heartbeat, and if another
+  instance's heartbeat is fresher than 30s (3 missed beats), the new process logs, alerts, and
+  `process.exit(1)`s instead of connecting. Best-effort lock release on `SIGINT`/`SIGTERM`.
+- **Scoped per-token, not a global singleton** — the lock `_id` is a hash of `BOT_TOKEN`, deliberately,
+  so the local dev bot (`Dio (Dev)`, its own token) can run alongside the VM's prod instance without
+  either refusing to start. Only two processes sharing the *same* token collide.
+- **Boot-tested locally against the dev bot** (`.env.dev`) before merge: a clean single boot succeeds; a
+  second instance on the same token is refused (`❌ Refusing to start...`) and exits 1; releasing the
+  first instance's lock via `SIGINT` clears the `BotInstance` doc and a fresh boot immediately succeeds;
+  the prod VM (different token) stayed healthy and unaffected throughout (`scripts/vmstatus.sh`).
 
 ---
 

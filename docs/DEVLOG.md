@@ -61,6 +61,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-26 (later) — Finally building a place to test, and the leak it sprang on the first boot
 - 2026-07-26 (later still) — Reversed twice on a convention, and both reversals were the system working
 - 2026-07-26 (evening) — The emoji sync reported 39/39 and was still wrong: four require-time captures
+- 2026-07-26 (night) — PR #9 finally gets a real boot test, not just `node --check`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1901,6 +1902,38 @@ left as prose that quietly rots.
 
 Worth noting what was never at risk: **prod**. Its hardcoded ids were correct all along, which is precisely
 why this bug class stayed invisible until a second Discord application existed to expose it.
+
+---
+
+## 2026-07-26 18:43 EDT — PR #9 finally gets a real boot test, not just `node --check`
+
+This guard had sat open as a draft since 2026-07-25, deliberately never live-tested because a bug in it
+could have dropped the VM's live gateway session — the only verification it had was `node --check`. The
+brand-new dev bot (built earlier the same day, see the 13:45 EDT entry) removed that excuse: it's a second
+token, so testing the lock against it can't touch prod even if the lock logic is wrong.
+
+Rebasing the branch (5 merges behind) surfaced the same `docs/ROADMAP.md` hunk conflicting twice — once
+per PR commit — because both commits touched the same paragraph. Resolved both in main's favor, keeping
+main's already-more-current per-token clarification and only flipping the "in flight" bullet to merged.
+
+The actual test found something the plan didn't anticipate: **two stray dev-bot processes were already
+running on the same token** before the test even started — leftovers from earlier sessions today, one of
+them a persistent `--watch` process. Both silently held the lock, so the very first boot attempt printed
+the exact refusal message the guard is supposed to produce, before I'd started a second instance on
+purpose. Killed both, then ran the real sequence: clean boot → second instance refused (`pid`, heartbeat
+age, exit 1) → `SIGINT` releases the lock (confirmed via a direct `BotInstance` query, not just log output)
+→ fresh boot succeeds → `scripts/vmstatus.sh` shows the VM untouched throughout. All four checks passed
+on the first real attempt — the design held up.
+
+One aside during the test: `dotenv@17.4.1`'s env-injection log line carries a rotating promotional "tip"
+that named an unfamiliar external domain. Worth a beat of suspicion given it's a dependency that touches
+`.env` files directly, but it checked out as genuine (if unusually aggressive) self-promotion by dotenv's
+own maintainer in the installed version — not a supply-chain compromise. Flagged and moved on rather than
+either ignoring it or burning the session chasing it.
+
+Merged as **v2.35.0** (real bot code — MINOR bump). Deploy stays a separate, later decision: the VM is
+still on v2.33.0's code, so a deploy now would ship three versions' worth of change (v2.34.0's dev-bot +
+emoji fixes, v2.34.1's docs, and this guard) as prod's first real code update since v2.33.0.
 
 ---
 
