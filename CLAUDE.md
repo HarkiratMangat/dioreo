@@ -96,6 +96,13 @@ a merged version can sit undeployed indefinitely; say plainly which steps happen
 held"), never let "merged" imply "live." Full lifecycle, versioning, and doc-placement rules:
 `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`.
 Full VM/ops setup, alerting, monitoring, version-tagging: `docs/reference/deployment-and-ops.md`.
+**Commit subjects and PR titles follow Conventional Commits v1.0.0 as specified** —
+`<type>(<optional scope>): <description>`, colon **and one space** (REQUIRED by spec rule 1), imperative,
+lowercase, no trailing period; `!` before the colon for breaking. Only the 11 standard types
+(`feat` `fix` `docs` `refactor` `perf` `style` `test` `build` `ci` `chore` `revert`) — never `deps`,
+`release`, `sec`, `wip`, `types`, `i18n`. **Branch names** are separate (the spec doesn't govern them):
+`<type>/<kebab-description>`. **Never rename a branch that has an open PR** — GitHub auto-closes it and it
+cannot be reopened. Vocabulary, mappings, and rationale: `docs/reference/commit-and-branch-naming.md`.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it

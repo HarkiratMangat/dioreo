@@ -126,6 +126,9 @@ Docs stop being a separate "at push time" ritual (the step that kept getting ski
   commit body by default; Claude curates that into one clean, structured message on `main` (good title
   + real "why" summary). Reasoning is consolidated, not lost. Branch checkpoints can therefore have
   terse messages; the authored message is written once, at squash-merge.
+- **Subject format (added 2026-07-26 15:20 EDT):** Conventional Commits v1.0.0 as specified —
+  `<type>(<optional scope>): <description>`, colon and one space. Full vocabulary, the six non-standard
+  types to avoid, and the branch-naming half: `docs/reference/commit-and-branch-naming.md`.
 
 ## 8 · Consistency sweep (files encoding the old model)
 
