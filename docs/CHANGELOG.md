@@ -166,9 +166,11 @@ changelog until v3 actually launches.
 
 ---
 
-## Unreleased — proposed **v2.34.0** — The local dev bot: a way to test before prod
+## v2.34.0 — 2026-07-26 18:24 EDT (`5d39e10`) — The local dev bot: a way to test before prod
 
-**Branch `feat/emoji-id-sync`. Not merged, not deployed.**
+**⚠️ MERGED BUT NOT DEPLOYED.** First release since v2.33.0 that contains real bot code, so unlike the
+v2.33.x docs-only run this one needs a VM deploy (`./scripts/deploy.sh` + `scripts/vmstatus.sh`) to
+actually go live. Until that runs, prod is still on v2.33.0's code.
 
 The bot got its **first-ever local development instance** (2026-07-26 13:45 EDT). Until now there was no
 way to try a change before it reached prod — every visual check meant merging, deploying to the VM, and
