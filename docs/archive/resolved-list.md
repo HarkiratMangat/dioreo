@@ -25,6 +25,13 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ~~[Diors Builds] Re-sync the GitHub Projects board~~ → **DONE 2026-07-26 11:29 EDT (same session that caught it)**.
+  The board's 15 draft items were re-synced against the 2026-07-25 21:43 EDT deferred-list restructure:
+  `Opus4.8-H` → `Opus5-H` on the "View Colors" and "Real search + multi-select" cards' Model suggestion
+  field, and every item body's `deferred-items.md` source citation updated to `db-deferred-list.md`.
+  Also caught 2 stale `Opus4.8-H` tags the restructure's own model-tag refresh had missed in
+  `docs/ROADMAP.md` (View Colors line 64, `index.js` split line 309) and fixed those too. Board:
+  https://github.com/users/HarkiratMangat/projects/2.
 - ~~[Diors Builds] Webhook alerting — heavier half~~ → **SHIPPED + DEPLOYED 2026-07-20/21 (v2.26.0,
   `477d37c`); store verified live in production** (boot alert wrote `Jul21-01`). Persistent Mongo alert
   store (`models/AlertLog` + atomic `models/AlertCounter`, `utils/alertStore.js`) with short `MMMDD-NN`

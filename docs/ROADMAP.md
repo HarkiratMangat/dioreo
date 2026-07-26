@@ -61,7 +61,7 @@ NORMALLY even while v3 pre-release work runs in parallel — see the parallel-tr
 action-blocked message, admin override on panel action-blocks, and the View Colors download buttons —
 see CHANGELOG.md's v2.21.0 entry and the relevant CLAUDE.md sections (Panel interaction locks, View
 Colors panel, `/timestamp`'s view option) for what actually shipped. Still open from this batch:
-- `[P2 · L · Opus4.8-H · 🧩needs-design]` **View Colors: extract a wider variety of colors** — juul's avatar
+- `[P2 · L · Opus5-H · 🧩needs-design]` **View Colors: extract a wider variety of colors** — juul's avatar
   (`local/juuls profile picture.png`) returned only 6 instead of the requested 8 AND missed a genuinely
   useful yellow; assume one root cause for both. **Keep existing behavior for genuinely minimal images**:
   juul's banner (`local/juuls banner.png`) correctly returned 4 on a single page — 2-4 colors on one page
@@ -306,7 +306,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   stray local instances is a manual step in the push flow.
 - **Split `index.js` into per-subsystem handler modules** (filed 2026-07-22 13:55 EDT, during the CLAUDE.md
   modularization — Harkirat explicitly invited evaluating this; deliberately NOT done in that docs-only
-  session because it's a live-bot code refactor, a different risk class). `[P2 · L · Opus4.8-H · 🧩needs-design]`.
+  session because it's a live-bot code refactor, a different risk class). `[P2 · L · Opus5-H · 🧩needs-design]`.
   **The problem:** `index.js` is ~3,313 lines, ~2,680 of which are a single `client.on('interactionCreate')`
   handler — a giant custom_id-prefix switch that has only grown. **Proposed shape:** extract per-subsystem
   routing into `handlers/*.js` (e.g. `handlers/{manage,settings,colors,loadouts,drawprices,autobuild,nav}.js`),
