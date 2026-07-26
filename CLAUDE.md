@@ -162,12 +162,19 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
+  Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
 - **Memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` (start at `user_working_agreement.md`).
-- **`docs/deferred-items.md`** — this project's own deferred maintenance/tech-debt long-tail + big-enough-
-  for-its-own-session features (split out of the cross-project tracker 2026-07-25 15:56 EDT).
-- **`/Applications/Claude Code/deferred-items.md`** — cross-project tracker (🐞 Active Bugs, 🔔 Reminders,
-  cross-project/meta); Diors-specific maintenance items now live in `docs/deferred-items.md` above instead.
+- **`docs/db-deferred-list.md`** — **this project's own deferred work**: 🐞 Active Bugs · 🔔 Reminders ·
+  🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. If a session working only in
+  this repo would need it, it's here. (Split out of the cross-project tracker 2026-07-25 15:56 EDT;
+  renamed + completed 2026-07-25 21:43 EDT, when its bugs/reminders/resolved items finally moved in too.)
+- **`docs/archive/`** — dead archive, **don't read by default**: `graveyard.md` (swept intake from the
+  notes file — it is no longer a section inside that file) · `resolved-list.md` (closed items from
+  `db-deferred-list.md`) · the dated pre-tidy notes snapshot.
+- **`/Applications/Claude Code/meta-deferred-list.md`** — cross-project tracker ONLY: cross-project bugs
+  (the MarkEdit extensions), Claude/Anthropic product feedback, meta/architecture work, and the canonical
+  Priority·Effort legend. Anything Dior's-Builds-specific belongs in `docs/db-deferred-list.md` above.
 
 ---
 
@@ -178,7 +185,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
-  central `diors-builds notes.md` (+ `notes-archive/`). Un-gitignored at Harkirat's explicit request so a
+  central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
   real `git diff`/`git log` covers their history. The `SessionStart` hook (`.claude/settings.local.json`)
   reads `docs/SESSION-START.md` directly — if that file's location ever moves, update the hook's path in the
   SAME change.

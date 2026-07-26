@@ -56,6 +56,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
 - 2026-07-24 (later) — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
 - 2026-07-25 — Second dogfood of the branch workflow: splitting deferred-items.md
+- 2026-07-25 (later) — "You did such a half-ass job of it": finishing a split that was never finished
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1659,6 +1660,55 @@ Also a small process note: Harkirat pointed out that after he'd already said "go
 given, re-asking just adds friction without adding safety. Worth remembering: a single sentence can
 authorize the whole remaining sequence of gated steps in one shot; don't re-derive a confirmation
 that's already in the transcript.
+
+---
+
+## 2026-07-25 21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished
+
+Five hours after the deferred-items split shipped as v2.33.2, Harkirat opened the file and found it still
+full of Dior's Builds. Four `[Diors Builds]` reminders, six `[Diors Builds]` resolved entries, and a pile
+of stale cross-references — all sitting in a file whose entire purpose that session had been to empty of
+exactly that. His words: *"you did such a lazy and sloppy job of splitting the file,"* followed by
+*"NO CUTTING CORNERS. NO REFERRING. NO SIDELINING. NO SHRUGGING OFF."* and the observation that we had
+already burned a long session on this same behavior once before.
+
+**The failure mode is worth naming precisely, because it doesn't look like failure from the inside.** The
+first session moved the block labeled "Diors Builds." It did exactly what the instruction literally said.
+What it never did was the second half of any move: go back to the source and ask, of everything still
+sitting there, *does this belong here now?* Four reminders tagged `[Diors Builds]` in the actual text
+answered that question out loud and were read past anyway. The new file also shipped without the
+Priority·Effort legend — every item in it carried `[P2 · M · Sonnet5-H]`-style tags that the file itself
+never explained. A list separated from its own legend is not a split, it's a fragment.
+
+**What "done" actually required**, and what this session did: pulled the reminders and a 🐞 Active Bugs
+section into `db-deferred-list.md`; carried the legend across; moved the resolved entries into a new
+`docs/archive/resolved-list.md`; and — Harkirat's own better idea, which reshaped the plan mid-flight —
+lifted the `# Graveyard` section out of the notes scratchpad entirely into `docs/archive/graveyard.md`,
+renaming `notes-archive/` → `archive/` to hold both. The files became `meta-deferred-list.md` and
+`db-deferred-list.md`; `db` is a standing abbreviation for this project now.
+
+**The catch that justified reading the hooks, not just the docs.** `.claude/settings.local.json`'s
+`SessionStart` notes-check counts open items by scanning from `## Questions` and stopping at
+`/^# Graveyard/`. Deleting that heading would have silently un-bounded the scan — no error, just a hook
+quietly measuring the wrong thing from then on. Re-anchored to the `## 📍` pointer section and dry-ran it:
+still 4 open items, same as before the surgery. **A file rename is a code change when something parses
+the file.** Docs, rules, memory, *and hooks* are all part of the grep surface.
+
+**Two items turned out to be wrong, not just misplaced.** The Render-deletion reminder was written as
+"`[P2 now → P0 ~2026-07-24]`" — a self-escalating tag whose trigger date had passed unnoticed; it's P0
+now, gated on an actual `vmstatus.sh` check rather than the calendar alone. And the CHANGELOG/DEVLOG
+archive-split reminder still read "~730 lines each as of 2026-07-18 — not there yet." The real numbers
+are 1,366 and 1,792. Both had roughly doubled while the note that judged them sat frozen. **A deferred
+item with a measurement in it decays; re-measure before you re-file.**
+
+**Also caught:** the GitHub Projects board created at 21:35 EDT — eight minutes before this restructure —
+had already sourced 15 draft items from files that were about to be renamed and reorganized. Flagged as
+a P1 re-sync rather than left to be discovered later as mysterious drift.
+
+Lesson filed as `feedback_no_half_measures_on_reorgs`: a reorganization is done when nothing that belongs
+in the new home is left in the old one, every cross-reference points at the new name, the new file stands
+alone with its conventions, and the prose describing the old layout has been rewritten. Not when the
+obvious block has moved.
 
 ---
 

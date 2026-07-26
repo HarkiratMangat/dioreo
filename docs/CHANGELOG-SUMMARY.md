@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.33.3 — July 25, 2026 *(proposed — awaiting merge)*
+- *Internal docs-only — finished the to-do-list reorganization v2.33.2 started, and moved the old
+  archives out of the way. Nothing players see.*
+
 ## v2.33.2 — July 25, 2026
 - *Internal docs-only — reorganized where Dior's own to-do/tech-debt list lives. Nothing players see.*
 

@@ -1362,5 +1362,34 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.2, the last entry to sit here,
-graduated to a real numbered entry above on 2026-07-25 16:20 EDT when PR #12 squash-merged as `6a64e37`.)*
+## Proposed v2.33.3 — branch `docs/deferred-list-restructure` — Deferred-list restructure: finish the split, rename the files, split the archives
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+The 2026-07-25 15:56 EDT split (v2.33.2) moved only Dior's Builds' tech-debt list out of the cross-project
+tracker and left everything else behind. This finishes it and reorganizes the result.
+
+- **Finished the split.** Moved into `docs/db-deferred-list.md`: all 4 `[Diors Builds]` 🔔 Reminders
+  (Render deletion, GCP watch, `/manage`+`/settings` live-test, CHANGELOG/DEVLOG archive split), a 🐞
+  Active Bugs section of its own, and the Priority·Effort legend the new file never got. The 6
+  `[Diors Builds]` Resolved entries moved to the new archive.
+- **Renamed** `/Applications/Claude Code/deferred-items.md` → **`meta-deferred-list.md`** and
+  `docs/deferred-items.md` → **`docs/db-deferred-list.md`** (`db` = Dior's Builds, a standing
+  abbreviation now). `docs/notes-archive/` → **`docs/archive/`**.
+- **Split the archives out of the active files.** New `docs/archive/graveyard.md` — the notes file's
+  `# Graveyard` section is gone from that file entirely, so the scratchpad no longer carries a dead
+  archive in every read. New `docs/archive/resolved-list.md` for closed `db-deferred-list.md` entries.
+  The cross-project file keeps its Resolved section inline (Harkirat's call — it's small and rarely read).
+- **Hook fix, same change:** the `SessionStart` notes-check in `.claude/settings.local.json` terminated
+  its scan at `/^# Graveyard/`, which the split removed. Re-anchored to the notes file's `## 📍` pointer
+  section and dry-run verified — still reports the same 4 open items.
+- **Stale ends swept** across `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`,
+  `docs/reference/known-issues.md`, the notes file, and 10 memory files: dead
+  "see CLAUDE.md's *X* section" pointers (that content moved to `docs/reference/` or `.claude/rules/` on
+  2026-07-22), the retired "don't over-invest in this file's structure" caveat, and the old file names.
+- **Two items re-measured, not just re-filed:** the Render-deletion reminder's `~2026-07-24` trigger has
+  **fired** (now P0, gated on a live `scripts/vmstatus.sh` check); and the CHANGELOG/DEVLOG archive-split
+  reminder said "~730 lines each, not there yet" when the real counts are **1,366 and 1,792** — bumped
+  P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
+- **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this
+  restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
