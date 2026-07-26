@@ -22,7 +22,7 @@ navigation map**. Subsystem detail lives in:
   X section" reference — the topic is findable here).
 
 Full design + the section→destination ledger: `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`.
-*(Breadcrumb: the separate, PAUSED cross-project memory-architecture redesign is unrelated to this repo-local
+*(Breadcrumb: the separate, INDEFINITELY PARKED cross-project memory-architecture redesign is unrelated to this repo-local
 split and does not gate it — see the canonical-memory-path note below.)*
 
 ---
@@ -43,7 +43,7 @@ project folder from the repo path — so it now points sessions at
   `-Applications-Diors-Builds` path above. Don't migrate Diors memory to match the repo slug: it would
   break on every future folder move, whereas a fixed store is move-proof (decided with Harkirat 2026-07-15).
 - **⚠️ Do NOT create, delete, or symlink `-Applications-Claude-Code-Diors-Builds/memory` from a Diors
-  session.** That path is claimed by the PAUSED cross-project **memory-architecture redesign** (a separate
+  session.** That path is claimed by the INDEFINITELY PARKED cross-project **memory-architecture redesign** (a separate
   project working out of `/Applications/Claude Code/`), whose plan is to make it a **symlink → the
   canonical store**. An earlier "that subdir must never exist, delete it if it appears" note is SUPERSEDED
   and caused real interference once (a Diors session deleted the empty slug dir 2026-07-17 — harmless,

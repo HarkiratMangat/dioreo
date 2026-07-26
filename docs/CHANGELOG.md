@@ -1409,3 +1409,20 @@ five more, all fixed:
 - `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that
   `settings.local.json` is gitignored, so hook fixes never ride in a PR.
 - Added the reusable lessons to `DEVLOG.md`'s Part B ledger, not just the Part A narrative.
+
+**Third pass — status refresh on the two cross-project/meta items** (Harkirat's call, 2026-07-26 11:11 EDT):
+- The **hierarchical cross-project memory redesign** is now **⏸️ INDEFINITELY PARKED**, not "paused."
+  What it was built to solve has largely been handled another way — the MCP memory/recall layer
+  (`linksee`, `perseus-vault`, `context-mode`, `codebase-memory`), the 2026-07-22 CLAUDE.md → rules/
+  reference split, the enforcement hooks, and ongoing memory work. Status corrected in six places that
+  still said "PAUSED": root `CLAUDE.md` (×2), `docs/SESSION-START.md`, `user_working_agreement.md`,
+  `feedback_defer_to_owning_project.md`, and the venture's own STATUS + pointer-memory files.
+  **The slug-path guard explicitly survives the parking** — stated in each place, so nobody reads
+  "parked" as "the path is free now."
+- The **"Long-file / memory navigability pass"** was `⛓️blocked-by` that redesign — which would have
+  frozen it forever. **Unblocked and re-scoped** to *"Memory content audit + tag vocabulary"* `[P2 · M]`:
+  its long-file half already shipped with the 2026-07-22 modularization; what remains is the memory-file
+  content audit, the tag/hook vocabulary, ToCs for the long files, and tagging extended to code comments.
+  🔗 Bundled with Diors' own `.claude/rules/` two-tier rework — same idea, different files.
+- Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our
+  own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
