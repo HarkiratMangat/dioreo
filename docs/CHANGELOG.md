@@ -166,6 +166,25 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.33.4 — 2026-07-26 12:09 EDT (`95791b1`) — GitHub Projects roadmap board: build + re-sync after the deferred-list restructure
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+- **Built the GitHub Projects Roadmap board** (https://github.com/users/HarkiratMangat/projects/2) via
+  `gh api graphql`: `Status`/`Priority`/`Effort`/`Model suggestion`/`Flags` fields, 15 draft items sourced
+  from `ROADMAP.md`'s remaining v2 items + `db-deferred-list.md`'s Queued section, plus 4 placeholder
+  cards for v3/v4/v5/Someday-tech-debt. Documented the division of labor in `docs/README.md` and
+  `CLAUDE.md`: the docs stay the detailed source of truth, the board is a manually-refreshed visual view.
+- **Re-synced the board + `ROADMAP.md`** against PR #13's deferred-list rename/restructure, which landed
+  8 minutes after the board was first populated: 2 items' Model suggestion field `Opus4.8-H`→`Opus5-H`,
+  every item body's `deferred-items.md` source citation → `db-deferred-list.md`, and 2 leftover
+  `Opus4.8-H` tags in `ROADMAP.md` itself that PR #13's own model-tag refresh had missed.
+- **Fixed a third stale copy of the timestamp-discipline convention** in `docs/README.md`'s "Date/time
+  convention" section — added the proactive-fetch-once guidance already applied to the two memory copies.
+- **Backfilled a missing DEVLOG entry** (2026-07-24 16:18 EDT) for the enforcement-hooks creation batch
+  that was never logged at the time, plus a new entry documenting this session's multi-pass verification
+  of the timestamp/deferral-tell hooks.
+
 ## v2.33.3 — 2026-07-26 11:18 EDT (`25b402c`) — Deferred-list restructure: finish the split, rename the files, split the archives out
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
@@ -1427,24 +1446,5 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-## v2.33.4 (proposed) — GitHub Projects roadmap board: build + re-sync after the deferred-list restructure
-
-**Internal / docs only — no bot code touched, nothing to deploy.**
-
-- **Built the GitHub Projects Roadmap board** (https://github.com/users/HarkiratMangat/projects/2) via
-  `gh api graphql`: `Status`/`Priority`/`Effort`/`Model suggestion`/`Flags` fields, 15 draft items sourced
-  from `ROADMAP.md`'s remaining v2 items + `db-deferred-list.md`'s Queued section, plus 4 placeholder
-  cards for v3/v4/v5/Someday-tech-debt. Documented the division of labor in `docs/README.md` and
-  `CLAUDE.md`: the docs stay the detailed source of truth, the board is a manually-refreshed visual view.
-- **Re-synced the board + `ROADMAP.md`** against PR #13's deferred-list rename/restructure, which landed
-  8 minutes after the board was first populated: 2 items' Model suggestion field `Opus4.8-H`→`Opus5-H`,
-  every item body's `deferred-items.md` source citation → `db-deferred-list.md`, and 2 leftover
-  `Opus4.8-H` tags in `ROADMAP.md` itself that PR #13's own model-tag refresh had missed.
-- **Fixed a third stale copy of the timestamp-discipline convention** in `docs/README.md`'s "Date/time
-  convention" section — added the proactive-fetch-once guidance already applied to the two memory copies.
-- **Backfilled a missing DEVLOG entry** (2026-07-24 16:18 EDT) for the enforcement-hooks creation batch
-  that was never logged at the time, plus a new entry documenting this session's multi-pass verification
-  of the timestamp/deferral-tell hooks.
-
-*(v2.33.4 is proposed here on the branch — no squash hash yet. Graduates to a real numbered entry above,
-with the real hash + tag, at merge.)*
+*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.4, the last entry to sit here,
+graduated to a real numbered entry above on 2026-07-26 12:09 EDT when PR #14 squash-merged as `95791b1`.)*

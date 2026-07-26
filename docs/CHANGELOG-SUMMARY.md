@@ -26,7 +26,7 @@ A peek at what's planned (not built yet):
 
 ---
 
-## v2.33.4 (proposed) — July 26, 2026
+## v2.33.4 — July 26, 2026
 - *Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed
   a few stale references left over from the last reorg. Nothing players see.*
 
