@@ -57,6 +57,8 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-24 (later) — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
 - 2026-07-25 — Second dogfood of the branch workflow: splitting deferred-items.md
 - 2026-07-25 (later) — "You did such a half-ass job of it": finishing a split that was never finished
+- 2026-07-26 — Caught deferring, again, on the very hook built to stop it
+- 2026-07-26 (later) — Reversed twice on a convention, and both reversals were the system working
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -1768,6 +1770,45 @@ leaves the same shape of gap available to slip through again in slightly differe
 → hook nudge → still reactive; deferral-tell → hook regex → still had a gap). Verification-after-being-
 caught needs to interrogate the mechanism that was supposed to prevent the miss, not just the surface
 symptom.
+
+## 2026-07-26 15:26 EDT — Reversed twice on a convention, and both reversals were the system working
+
+Harkirat objected to the `claude/*` branch prefixes and, reasonably concluding I was confused about the
+convention, had Gemini write a reference list — with the explicit instruction to *also do my own research,
+"because gemini is not the definitive source of truth since it's also AI."* That instruction earned its keep
+twice over.
+
+**Reversal one — mine, against his stated preference.** Mid-research he interrupted: he disliked the
+`<type>(<scope>): <description>` shape and wanted `/` instead of `: `, with no space. I'd already fetched the
+actual spec, and rule 1 is unambiguous — the type is followed by "REQUIRED terminal colon and space," with
+rule 5 repeating that the description must immediately follow it. So this wasn't a style preference with two
+defensible answers; it was a decision to leave the standard. I flagged exactly that in two sentences, checked
+what it would actually cost (no `commitlint`, `husky`, `semantic-release`, `standard-version`, or
+`conventional-changelog` installed — so: nothing today, only future interop), said it was his call, and
+started implementing his format.
+
+**Reversal two — his, back to the spec,** as soon as he saw the quoted rule text. The lesson isn't "I was
+right." It's that *stating the concern once, concretely, with the source quoted, then proceeding anyway* is
+what made the reversal possible. Refusing would have been obstruction; implementing silently would have
+buried a spec deviation in the repo's conventions with no record of the choice. Both his decisions are now
+recorded in `docs/reference/commit-and-branch-naming.md` and memory, specifically so no future session
+re-proposes the `/` variant as a fresh idea.
+
+**What the research actually caught, beyond the separator.** Gemini's list was accurate on the 11 standard
+types, the `!` notation, and the imperative/lowercase/no-period rules — but it included six types that
+aren't standard at all (`deps`, `release`, `sec`, `wip`, `types`, `i18n`), every one of which
+`@commitlint/config-conventional` rejects. The real forms are `build(deps):`, `chore(release):`, and
+`fix(security):`; `wip` belongs on a draft PR, never in history. It also silently conflated commit format
+with **branch** naming — the spec governs commit messages only and says nothing whatsoever about branches.
+That conflation was the actual source of the original confusion, and it would have survived untouched if I'd
+taken the list at face value.
+
+**A trap found by falling into it.** Renaming PR #2's head branch from `claude/remove-draw-prices-note-4aceoh`
+to the convention **auto-closed the PR**, and it could not be reopened once the old ref was gone — GitHub's
+rename only retargets PRs whose *base* moved, never the head. Cost: one PR number (#2 → #16), no work. That's
+now a 🚨 callout in the naming doc, and it's why #9 and #11 were deliberately **left** on their `claude/*`
+branches rather than "fixed" — re-creating them would throw away their numbers and review history for a
+purely cosmetic gain. Knowing when *not* to apply a new convention retroactively is part of adopting it.
 
 ---
 

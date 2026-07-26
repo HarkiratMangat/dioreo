@@ -166,6 +166,38 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.33.6 — 2026-07-26 18:07 EDT (`6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+- **New `docs/reference/commit-and-branch-naming.md`** — the source of truth for commit subjects, branch
+  names, and PR titles. Format is **Conventional Commits v1.0.0 exactly as specified**:
+  `<type>(<optional scope>): <description>`, colon **and one space** (spec rule 1 makes both REQUIRED),
+  imperative, lowercase, no trailing period, `!` before the colon for breaking changes.
+- **A custom `<type>(<scope>)/<description>` separator was proposed and rejected** (Harkirat's call, both
+  directions, 2026-07-26 15:26 EDT). Recorded as a decision rather than left silent, so it isn't
+  re-proposed later: staying compliant keeps a future changelog generator or release automation able to
+  parse the history without a custom parser.
+- **Type vocabulary fixed to the 11 standard types** (`feat` `fix` `docs` `refactor` `perf` `style` `test`
+  `build` `ci` `chore` `revert`). Six commonly-cited types are **not** standard and
+  `@commitlint/config-conventional` rejects all of them — mapped to their real equivalents:
+  `deps`→`build(deps)`, `release`→`chore(release)`, `sec`/`security`→`fix(security)`; `wip` belongs on a
+  draft PR; `types`/`i18n` don't apply here.
+- **Branch naming documented as a SEPARATE convention** — the spec governs commit messages only and says
+  nothing about branch names. Conflating the two was the original source of confusion.
+- **The GitHub branch-rename trap is now written down** — renaming a *head* branch **auto-closes** its PR
+  and it cannot be reopened (rename only retargets PRs whose *base* moved). This cost PR #2 → #16 earlier
+  the same day. #9 and #11 were deliberately **left** on their `claude/*` branches rather than renamed;
+  re-creating them would discard their numbers and review history for a cosmetic gain.
+- **`commitlint` folded into the existing CI deferred item** rather than filed as a new one — verified
+  that no commit tooling is installed at all, so the convention is hand-enforced today. The note weighs a
+  CI job (unbypassable but late) against a `husky` `commit-msg` hook (instant but skippable with
+  `--no-verify`), and flags the `conventional-changelog` knock-on as a genuine tradeoff, since the
+  hand-written entries here are richer than a generator's.
+- Pointers added in `CLAUDE.md`'s git-workflow invariant, `docs/README.md`, and the workflow design spec.
+
+---
+
 ## v2.33.5 — 2026-07-26 14:59 EDT (`ea08a31`) — `/draw prices`: the NOTE callout comes off the Advanced Double Legendary page
 
 **First change merged after the local dev bot existed, and the first one live-verified before merge
