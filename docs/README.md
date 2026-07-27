@@ -70,7 +70,24 @@ code) and finalized at merge:
 5. `DEVLOG.md`: a narrative entry if the work had real reasoning/discovery.
 6. Memory: update any rule the session established or corrected.
 7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**. Sweeps go to `archive/graveyard.md`, not to a section inside the notes file.
-8. At merge: `gh pr merge --squash`, then tag the squash commit (`git tag -a vX.Y.Z <squash-sha>`) and push the tag.
+8. At merge: `gh pr merge --squash`, then a **second** `chore(release): finalize …` commit on `main`
+   carrying steps 2–3 + the `package.json` bump, and tag **that** commit (`git tag -a vX.Y.Z`), then
+   `git push origin main --follow-tags`.
+   ⚠️ **Corrected 2026-07-27 20:40 EDT — this step used to say "tag the squash commit
+   (`git tag -a vX.Y.Z <squash-sha>`)", which is not what actually happens.** Verified against the real
+   tags: `v2.35.5` points at `a8b383e` (the finalize commit), not `3e12737` (its squash commit), and
+   every release since has followed the same shape. The cause is structural — the changelog entry cites
+   the squash commit's own hash inline, and a commit cannot contain its own hash — so the finalize
+   commit is unavoidable under the current convention. **This is the same discrepancy tracked as
+   `[P1 · S · Opus5-H · 🧩needs-design]` "Resolve the '1 commit + 1 tag per merge' promise vs. the
+   2-commit reality" in `docs/db-deferred-list.md`**, and as an open question in
+   `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §10. Until that session happens,
+   the 2-commit pattern above is the real, intended process — follow it rather than "fixing" it ad hoc.
+9. **Sanity-check the records before calling the merge done.** Cheap, and it has caught real drift twice:
+   newest `package.json` version == newest `CHANGELOG.md` entry == newest `CHANGELOG-SUMMARY.md` entry;
+   every changelog version has a git tag and a summary line (no number skipped); every SHA cited in a
+   changelog entry actually resolves (`git cat-file -e <sha>^{commit}`); and `git fetch --prune` before
+   trusting `git branch -a`, which lists long-merged branches otherwise.
 
 ## Versioning
 `vMAJOR.MODERATE.MINOR` (3-part, uniform throughout as of 2026-07-21). Full rules in

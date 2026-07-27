@@ -2231,3 +2231,48 @@ only, which under the new structure would have meant **no v3 PR ever ran CI** �
 silent, because a repo with no runs looks identical to a repo whose runs all pass. Added
 `v3-pre-release` to both trigger lists before merging, so the branch inherits CI at birth rather than
 being retrofitted after something slips through.
+
+## 2026-07-27 20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't
+
+The back half of this session was cleanup, and the interesting part is how much of it was *wrong in
+ways that looked fine*.
+
+**Render is gone.** The P0 said delete it once GCP had proven reliable for ~a week; the trigger had
+fired three days earlier and nobody had acted, because the entry also said to verify VM health first
+and that verification had never been done. So: `scripts/vmstatus.sh` (RUNNING, active, **0 restarts**,
+~11h uptime, RAM 564/969MB, disk 15%) plus `journalctl -u diors-bot -p err --since '1 hour ago'`
+returning nothing. Then `DELETE` → `204`, then a follow-up `GET` → `404 not found`, because a 204 tells
+you the request was accepted, not that the thing is gone. Ten days after cutover, the GCP VM is now the
+only host and there is no fallback. One small artifact of the check worth remembering: `vmstatus.sh`
+reported `errors(1h): 1` while the journal showed no error-priority entries at all — its counter reads
+a different source, so don't treat that number alone as a health signal.
+
+**The VM divergence turned out to be trivial once actually inspected** — which is the lesson, since it
+had sat as a scary-sounding open item. Two VM-only commits, both exactly the pair the morning's
+force-push erased; a clean working tree; and a runtime delta consisting solely of the dev-only
+Cloudinary guard, which is inert in prod. So `git reset --hard origin/main` risked nothing. Deliberately
+did **not** restart the service: that would be a deploy, and a deploy is separately gated. The VM's
+files now sit ahead of its running process, which is just the normal post-pull, pre-restart state.
+
+**Then the sweep.** Asked to check the docs for gaps, the temptation is to read them. Reading is what
+had already failed. Scripting the checks instead found, in a couple of minutes:
+
+- **7 items present in both `ROADMAP.md` and `db-deferred-list.md`** — several with identical tags —
+  while *each file's own header* claimed it did not duplicate the other. Worse, in the two richest
+  pairs the *deferred* copy held the real design detail and the roadmap held a stub, so the "obvious"
+  fix of deleting the deferred copy would have destroyed the better record. Nothing was deleted; all 14
+  entries got a `⇄` pointer and both headers now state the actual division of labour.
+- **`docs/README.md`'s chore checklist told you to tag the squash commit.** Every tag in the repo points
+  at the *finalize* commit instead — `v2.35.5` → `a8b383e`, not `3e12737`. The instruction had simply
+  never matched practice, and it's structural: the changelog entry cites the squash commit's own hash,
+  and a commit can't contain its own hash. That's the same knot as the open "1 commit + 1 tag" design
+  item, which today added nine more instances of evidence to.
+- **A deferred entry that went stale the same day it was written** — the CI item still insisted there
+  was "genuinely no CI at all on `main`" hours after CI merged.
+- **`CLAUDE.md`'s memory-file count was wrong again**, nine hours after being corrected this morning.
+  Twice in one day is less a mistake than a signal that a hard number in prose has a short half-life.
+
+The through-line: every one of these looked correct in isolation and only failed against current
+reality. Prose can't check itself, so the sweep is now filed as a script-then-CI-job item rather than
+a thing to remember to do — the same "checkable rule becomes a hook, not more prose" move this project
+already applies elsewhere.
