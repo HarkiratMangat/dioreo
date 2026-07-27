@@ -162,6 +162,31 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.15 — 2026-07-27 20:45 EDT (`f913975`) — A scripted records sweep, and the chore checklist that was wrong
+**Docs/meta only — no runtime change, not deployed.** The VM's files are at v2.35.13; its running
+process is still on v2.35.4's code (never restarted).
+- **`docs/README.md`'s chore checklist told you to tag the squash commit.** It doesn't happen and never
+  has: `v2.35.5`'s tag points at `a8b383e` (the finalize commit), not `3e12737` (its squash), and every
+  release since the workflow launched has the same shape. The cause is **structural** — a changelog entry
+  cites the squash commit's own hash inline, and a commit cannot contain its own hash, so a second
+  `chore(release): finalize …` commit is unavoidable under the current convention. Step 8 now describes
+  the real 2-commit process and points at the open `[P1]` design item instead of being "fixed" ad hoc.
+- **New checklist step 9 — sanity-check the records at merge.** Newest `package.json` == newest
+  `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every version has a tag and a summary line; every
+  cited SHA resolves; `git fetch --prune` before trusting `git branch -a`.
+- **Filed `[P2 · S]`: make the sweep a script, then a CI job**, bundled with the Vitest/Biome expansion.
+  It caught two genuine defects today that reading had missed, and prose had already failed at both —
+  the same "a checkable rule becomes a hook, not more prose" case this project applies elsewhere.
+- **Verified clean rather than assumed:** all 10 versions shipped today carry a git tag *and* a summary
+  line with no number skipped; all cited SHAs resolve via `git cat-file -e`; `CLAUDE.md`'s memory count
+  (57) matches the store; `MEMORY.md` indexes every memory file with zero broken links; both
+  `SessionStart` hook anchors in the notes file are intact.
+- **Three findings deliberately left alone**, because "stale-looking" isn't the same as wrong: dangling
+  `[[wikilinks]]` legitimately mark memories worth writing later; `utils/emojiMap.dev.json` is referenced
+  but absent **by design** (an optional dev-only override `utils/emojiMap.js:87` reads defensively); and
+  the "no CI on `main`" lines in CHANGELOG/DEVLOG are historical records of what was true when written.
+- Memory `feedback_push_means_full_cycle` corrected — it still described Render as "suspended/retired".
+
 ## v2.35.14 — 2026-07-27 20:25 EDT (`5a41a91`) — Render deleted, VM divergence fixed: GCP is now the only host
 **Real infrastructure change, but no runtime change and no deploy.** The bot process was never
 restarted and is still running v2.35.4's code.
