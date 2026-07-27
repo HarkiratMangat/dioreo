@@ -26,6 +26,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.7 — July 27, 2026
+- *Internal docs-only — a note-to-self about finishing setup on Dior's private planning board.
+  Nothing players see.*
+
+## v2.35.6 — July 27, 2026
+- *Internal planning-only — wrote down how the next big version of the bot will be built without
+  disturbing the one you're using. Nothing players see.*
+
 ## v2.35.5 — July 27, 2026
 - *Internal docs-only — corrected a wrong file count in the developer notes and wrote down a
   cosmetic GitHub issue to look at later. Nothing players see.*
