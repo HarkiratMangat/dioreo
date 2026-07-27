@@ -21,6 +21,16 @@ unless explicitly promoted — so those aren't per-item tagged. The deferred mai
 cross-project tracker 2026-07-25 15:56 EDT, renamed 2026-07-25 21:43 EDT), not duplicated here — as are
 this project's confirmed bugs and reminders.*
 
+> **⇄ How this file and `db-deferred-list.md` actually relate (measured 2026-07-27 19:45 EDT).** The
+> "not duplicated here" line above was aspirational: a cross-check found **7 items present in both
+> files**, several with identical tags, and in the two richest cases (pagination perf, View Colors
+> colour variety) the *deferred list* holds the fuller design detail while this file holds a stub.
+> Rather than delete either copy, every one of those 7 now carries a `⇄` cross-reference naming the
+> other location. **The rule going forward: this file answers "which version does it belong to,"
+> `db-deferred-list.md` answers "how big is it, what's decided, when does it get a session."** An item
+> may legitimately appear in both — but it must carry the `⇄` marker, or the two copies will drift
+> apart silently, which is exactly what happened here.
+
 ### Process / tooling (not a version-numbered feature, tracked here for visibility)
 - ~~**v3 development structure**~~ — **SETTLED 2026-07-27 18:05 EDT, shipped as v2.35.6.** Design:
   `docs/superpowers/specs/2026-07-27-v3-development-structure-design.md`. v3 is built on a long-lived
@@ -55,6 +65,7 @@ this project's confirmed bugs and reminders.*
 ### Remaining v2 items (near-term, not yet started — filed 2026-07-14 from Harkirat's plan-notes file)
 - `[P2 · M]` **Pagination double round-trip perf fix** — already in "Known open issues" above; deferred,
   cross-cutting (touches every paginated command), do when Harkirat greenlights it.
+  ⇄ **Also in `docs/db-deferred-list.md` (🧹 Someday) as "Pagination perf hybrid" — the DEFERRED copy is the richer one** (it carries the already-decided hybrid design + model tag). This entry is the version-horizon view only; update both or they drift.
 - ~~**Actually disable expired buttons, not just reply with a message**~~ — **SHIPPED for `/settings`
   2026-07-18, deployed live to the VM 2026-07-19** (confirmed via `scripts/vmstatus.sh`). ⚠️ Harkirat
   has NOT yet live-tested the actual 10-minute idle behavior itself (open `/settings`, leave it alone
@@ -83,8 +94,8 @@ Colors panel, `/timestamp`'s view option) for what actually shipped. Still open 
   juul's banner (`local/juuls banner.png`) correctly returned 4 on a single page — 2-4 colors on one page
   must stay the outcome for low-variety sources, NOT be padded out to a quota. See the k-means section in `.claude/rules/accent-and-colors.md`
   (over-clustering at K=1.5× and the 30-RGB merge step are the likely levers; the determinism
-  requirement is non-negotiable — Refresh's change-detection depends on it). **Own session, Opus 4.8
-  high** — real algorithmic work, not a filing item.
+  requirement is non-negotiable — Refresh's change-detection depends on it). **Own session, Opus5-H** — real algorithmic work, not a filing item.
+  ⇄ **Also in `docs/db-deferred-list.md` (🗂️ Queued) as "View Colors — wider colour variety" — the DEFERRED copy is the richer one** (root cause, the determinism constraint, the algorithm levers). This entry is the version-horizon view only; update both or they drift.
 - `[P2 · S · 🔗bundle-with personality pass]` **View Colors: always show the Display Name / Nameplate / Deco
   pages even when unset/no Nitro** — instead of hiding them, render a humor/"bully" page (no colors shown).
   Ties into the personality direction in the v3 list below.
@@ -202,6 +213,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
 - **Different view options for the slash commands** (unspecified in the notes — expand when picked up).
 - **Ship the redesigned changelog artifact** (personal-use release-log visual — see
   [[project_changelog_redesign]], currently paused).
+  ⇄ Also in `docs/db-deferred-list.md` (🧹 Someday) with its `[P3 · M · Opus5-M]` tag. Same item; this is the version-horizon view.
 - **A `/help` command** (filed 2026-07-15) — detail the bot's commands/features, and reference the
   command in the bot's own Discord description so people can find it. **Must include a way to contact
   Harkirat** (filed 2026-07-18, notes) — his Discord, in case a user found a bug or wants to request
@@ -285,6 +297,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   status/logs/metrics, the whole backend — so Harkirat can maintain it himself instead of relying on Claude
   for every operation. Distinct from CLAUDE.md (architecture/design truth aimed at Claude) and from
   [[reference_vm_bot_commands]] (a terse command card) — this is a human operator's friendly how-to guide.
+  ⇄ Also in `docs/db-deferred-list.md` (🧹 Someday) with its `[P3 · M · Opus5-M]` tag. Same item; this is the version-horizon view.
 - **Verify Cloudinary folder organization** (added 2026-07-18, notes L59) — confirm the designed folder
   separation is actually happening in the live account: draw thumbnails in `temp_draws/`, patch-notes images
   in `patch_notes/{patchId}/`, loadouts by bare key. Harkirat noticed assets that "look like they're in the
@@ -292,6 +305,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   Investigate whether that's a real discrepancy (→ then file as a bug) or just how the Cloudinary UI groups
   them. Read-only check via the Cloudinary MCP/dashboard; low priority, no code unless a real problem surfaces.
 
+  ⇄ Also in `docs/db-deferred-list.md` (🧹 Someday) with its `[P2 · XS · Sonnet5-L]` tag. Same item; this is the version-horizon view.
 - **General bot/code housekeeping session** (added 2026-07-15, Harkirat's request — "at some point
   soon", not urgent). A dedicated pass for accumulated cruft rather than doing it piecemeal mid-feature.
   **Most of this batch DONE 2026-07-20:**
@@ -320,6 +334,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
     found.
   - **Still open:** revisit whether `patchnotes.js`'s media carousel needs the component-count
     chunking `draws`/`calendar` have (see "Known open issues") — not touched this pass.
+  ⇄ Also in `docs/db-deferred-list.md` (🧹 Someday) as "General housekeeping session". Same item; this is the version-horizon view.
 - **Single-instance guard for the bot itself** (added 2026-07-13 to the to-do list, Harkirat's
   request — do later, not urgent). This is a single-token bot; multiple concurrent instances collide
   badly (see the Branch-testing-discovery note in `.claude/rules/accent-and-colors.md` and `[[feedback_multiple_bot_instances]]`).
@@ -358,6 +373,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   deferred task (waiting on token budget, Harkirat's call) is to retrieve the actual prior chat
   transcripts — which hold reasoning/interactions/discoveries that never reached CLAUDE.md or memory —
   and merge/expand them into DEVLOG's Part A journey + Part B lessons ledger.
+  ⇄ Also in `docs/db-deferred-list.md` (🧹 Someday) with its `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` tag. Same item; this is the version-horizon view.
 - **Changelog is now caught up** (done 2026-07-13): `CHANGELOG.md`/`CHANGELOG-SUMMARY.md` are current
   through v2.17.3 under the 3-part scheme, with a roadmap section added to each. Was ~9 versions behind
   before this; no longer pending.
