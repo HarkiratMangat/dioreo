@@ -1,13 +1,20 @@
 # Dependencies & System Junk
 node_modules/
 .DS_Store
+# `.env` alone is an EXACT match and does NOT cover sibling env files. The glob was added 2026-07-26
+# 15:32 EDT when the local dev bot introduced `.env.dev` (dev Discord token + local Mongo URI) -- without it that
+# file would have been silently stageable. Any future `.env.<anything>` is covered by the same rule.
 .env
+.env.*
+
+# Dev-bot-only emoji overrides consumed by utils/emojiMap.js's refreshEmojiIds() when
+# NODE_ENV=development. Local experimentation only -- never part of a release.
+utils/emojiMap.dev.json
 
 # Project-Specific Local Files
 gun-builds/
 local/
 .restart-reason
-repomix-output.xml
 builds.xlsx
 
 # AI CLI & Memory Folders
@@ -18,3 +25,7 @@ builds.xlsx
 .claude/settings.local.json*
 .remember/
 .superpowers/
+
+
+# Harkirats-Space note file
+docs/Harkirats-Space.md

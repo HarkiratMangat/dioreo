@@ -76,6 +76,16 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
   Both are a couple minutes total, no data changes, purely view/display config. Nothing else is pending
   on the board itself.
+- `[P2 · XS · trigger = next deploy]` **The GCP VM's local git history is intentionally behind/diverged
+  from `origin/main`, as of 2026-07-27 08:29 EDT.** `main` was force-pushed that session (rewriting a
+  v2.36.0→v2.35.4 version-number correction out of history entirely, per Harkirat's explicit request —
+  see DEVLOG's 2026-07-27 08:29 EDT entry) after the VM had already pulled and deployed the pre-rewrite
+  commits. The deployed FILE CONTENTS are byte-identical either way (verified via diff before the
+  force-push), so the bot itself is unaffected and no restart is needed right now — but the VM's `git
+  status` will show `ahead/behind` against `origin/main` until someone runs `git fetch && git reset
+  --hard origin/main` there (Harkirat asked to hold off on this for now). The next real deploy's `git
+  pull` will fail on this non-fast-forward divergence unless that reset happens first — don't let
+  `scripts/deploy.sh` run blind into that failure; check for it and reset first if needed.
 - `[P0 · S · trigger has FIRED]` **Delete the suspended Render service** (`srv-d850b2og4nts73fhpfog`).
   The condition was "~2026-07-24, once the GCP VM has proven reliable for ~a week" — **that date has
   passed** (as of 2026-07-25 21:43 EDT), so this escalated from P2 to P0 on schedule and is now simply
@@ -116,6 +126,18 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Two are P1 now** —
 the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items added since.*
 
+- `[P2 · M · Opus5-H · ⚠️touches-prod]` **Rename the production database off Mongoose's `test` default.**
+  Added 2026-07-26 13:24 EDT; Harkirat explicitly deferred this to its own session mid-bring-up. The prod
+  Atlas `MONGODB_URI` carries no database path, so Mongoose silently defaulted to a db literally named
+  **`test`** — that's where all 5 live collections (`loadouts` 133, `alertlogs` 180, `userpreferences` 15,
+  `alertcounters` 6, `seasonaldatas` 1) actually sit. Nothing is broken; it's a naming/clarity problem that
+  gets riskier to fix the longer it waits. Target `diors-builds` (the local dev clone already uses
+  `diors-builds-dev`, so dev is already correct and needs no change). **This is a live-prod migration, not a
+  config tweak** — it needs: copy `test` → `diors-builds` on Atlas, update `MONGODB_URI` in the VM's `.env`,
+  restart `diors-bot` via systemd, verify with `scripts/vmstatus.sh`, and only then drop the old db after a
+  soak period. Do it in a low-traffic window; the bot is briefly down across the restart. Note the same URI
+  is read by `scripts/` one-off tools, so check those too before dropping `test`.
+
 - `[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the 2-commit
   reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
   §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow
@@ -149,13 +171,33 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're
   placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
   subsystem detail: `.claude/rules/manage-panel.md`.
-- `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask,
-  right after `.github/workflows/ci.yml` first shipped in PR #11). Today CI only runs `node --check` (no
-  test framework, no lint config exist yet in this repo). Real testing capability — a test framework
-  (Jest?), actual unit/integration tests for the higher-risk subsystems (loadout search/fuzzy-match,
-  draw-prices math, pagination), and possibly ESLint — would catch real bugs before merge instead of only
-  syntax errors, reducing the "did I break something" burden currently resting entirely on manual review.
-  Needs its own session: pick a test framework, decide what's worth covering first, wire it into `ci.yml`.
+- `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask).
+  **⚠️ Correction 2026-07-26 19:06 EDT: `.github/workflows/ci.yml` has NOT actually shipped yet** — PR
+  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) (`ci: add basic CI workflow`, branch
+  `claude/ci-setup-r4t8`) is still **open, unmerged**, sitting since 2026-07-25; this entry's original text
+  wrongly said it "first shipped in PR #11." Today there is genuinely no CI at all on `main` — no
+  `node --check`, no test framework, no lint config. **Tool choices decided 2026-07-26 19:06 EDT
+  (dotenvx-adjacent tooling discussion): Vitest** for the test framework (fast, near-zero-config, ESM-friendly — a good fit
+  given there's no build step) **and Biome** for lint+format (single Rust binary covering both, no
+  ESLint+Prettier config sprawl to build from scratch since neither exists here yet). Real unit/integration
+  coverage for the higher-risk subsystems (loadout search/fuzzy-match, draw-prices math, pagination) would
+  catch real bugs before merge instead of only syntax errors — and `scripts/checkEmojiCaptures.js` (the
+  require-time emoji-capture check, see `docs/DEVLOG.md`'s 2026-07-26 16:04 EDT entry) is a natural first
+  Vitest test since it already exists as a standalone script. **Sequencing: merge PR #11 first** (or
+  rebase this work onto it) — no point building the Vitest/Biome expansion on top of a `ci.yml` that isn't
+  on `main` yet. Needs its own session: merge #11, add Vitest + Biome, decide what's worth covering first,
+  wire both into `ci.yml`.
+  **Also consider `commitlint` in the same pass** (noted 2026-07-26 15:41 EDT while adopting the commit
+  convention): the repo has **no** `commitlint`, `husky`, `semantic-release`, `standard-version`, or
+  `conventional-changelog` installed — verified, not assumed — so `docs/reference/commit-and-branch-naming.md`
+  is enforced entirely by hand. A `commitlint` job in `ci.yml` (or a `husky` `commit-msg` hook) would make
+  the subject format machine-checked, matching the "a checkable rule becomes a hook, not more prose"
+  strategy in the `reference_enforcement_hooks` memory. Worth weighing the two placements: CI catches it at
+  PR time (can't be bypassed, but late), a local hook catches it at commit time (instant, but skippable with
+  `--no-verify`). Knock-on: once subjects are machine-parseable, `conventional-changelog` could draft
+  `docs/CHANGELOG.md` entries instead of them being hand-written every release — though the hand-written
+  entries are currently far richer than a generator would produce, so that part is a genuine tradeoff, not
+  a free win.
 
 ---
 
@@ -168,16 +210,31 @@ well-specified execution/polish, not novel design.*
 - `[P1 · XS · Harkirat action, not a build]` **Update the bot's Discord Developer Portal listing** (filed
   2026-07-18, notes) — description, name, and banner image. Pure Discord Dev Portal task, not something
   Claude can do (no tool access to that UI); flagging so it doesn't get lost.
+- `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable**
+  *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries
+  `Dior <diorswrld@discord.com>`, which is not a verified address on the GitHub account, so GitHub renders
+  the author as flat text with no profile link. Verified via
+  `gh api repos/HarkiratMangat/Diors-Builds/commits --jq '.[].author.login'` → `null`. **Already fixed
+  going forward**: the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`
+  (see memory `feedback_git_commit_identity`), so all NEW commits link correctly — this item is only about
+  the existing history. Fixing it means a `filter-repo`/`filter-branch` rewrite of every pushed commit:
+  all SHAs change, the GCP VM pulls from this repo, and the 37 backfilled version tags would need
+  re-pointing. Cosmetic benefit vs. real blast radius — decide whether it's worth it at all before
+  scoping a session.
 - `[P2 · M · Sonnet5-H]` **General housekeeping session** — delete leftover `*.bak-*` config backups, sweep
   stale absolute paths, dead-code / stale-comment / unused-dependency review, decide `/patch notes` carousel
   component-count chunking.
+- `[P3 · S]` **Tool-discovery session (filed 2026-07-26 19:32 EDT)** — deferred by Harkirat's own request
+  during a dotenvx-adjacent tooling discussion, not yet scoped for a session. Candidates raised: `procs`
+  (modern `ps`, ties to the recurring stray-`node`-process hunt in `feedback_multiple_bot_instances`),
+  `git-delta` (nicer `git diff`/`show`), `zoxide`, `hyperfine` (ties to the "Pagination perf" item below),
+  Knip (automates the unused-file/dependency audits already done by hand at least twice), `act` (run
+  `ci.yml` locally once PR #11 merges), and a free-tier uptime/status-page service tying into the deferred
+  `/status` command + vmstatus overhaul. Nothing decided — just don't lose the list.
 - `[P2 · M · Sonnet5-H]` **Pagination perf hybrid** — single `UPDATE_MESSAGE` for the light string-building
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided (see `docs/reference/known-issues.md`) — what's left is
   careful, well-specified execution across call sites, not open design work.
-- `[P2 · M · Sonnet5-H]` **Single-instance guard (startup lock)** — less critical now the bot lives on the
-  VM, but still wanted so a stray local `node index.js` can't race it. A well-defined mechanism
-  (refuse-to-start-if-already-connected), not a design question.
 - `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, notes L59)* read-only
   check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as
   designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above

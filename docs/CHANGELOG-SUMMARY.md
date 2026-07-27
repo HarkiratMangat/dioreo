@@ -26,6 +26,57 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.5 — July 27, 2026
+- *Internal docs-only — corrected a wrong file count in the developer notes and wrote down a
+  cosmetic GitHub issue to look at later. Nothing players see.*
+
+## v2.35.4 — July 27, 2026
+- Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered
+  — it now correctly reflects the time you typed.
+
+## v2.35.3 — July 26, 2026
+- *Internal tooling-only — a maintenance script for Dior's test copy of the bot. Nothing players see.*
+
+## v2.35.2 — July 26, 2026
+Behind-the-scenes only — nothing changes for you.
+
+Tidied up the bot's startup messages and trimmed a tool it only needs for maintenance out of what it
+installs to run.
+
+---
+
+## v2.35.1 — July 26, 2026
+- *Internal docs-only — jotted down a list of developer tools to look at later. Nothing players see.*
+
+## v2.35.0 — July 26, 2026
+Behind-the-scenes only — nothing changes for you.
+
+The bot now refuses to start a second copy of itself by accident, so a leftover test run can't sneak in
+and cause the bot to act inconsistently.
+
+---
+
+## v2.34.1 — July 26, 2026
+- *Internal docs-only — kept Dior's own developer notes pointing at the right bits of code after the
+  last update renamed a couple of them. Nothing players see.*
+
+## v2.34.0 — July 26, 2026
+Behind-the-scenes only — nothing changes for you.
+
+Dior's Builds now has a **private test copy of itself** that runs on Dior's own computer. Changes can be
+tried out there first, instead of going straight to the bot you use. Fewer surprises, faster fixes.
+
+---
+
+## v2.33.6 — July 26, 2026
+- *Internal docs-only — wrote down how Dior's own code changes get labelled, so the project's history
+  stays consistent and machine-readable. Nothing players see.*
+
+## v2.33.5 — July 26, 2026
+- **`/draw prices` — the Advanced Double Legendary page is a little cleaner.** The NOTE about Regular
+  purchases being cheaper than a Normal Draw is gone; the important warning (THE TRAP) stays exactly
+  where it was.
+
 ## v2.33.4 — July 26, 2026
 - *Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed
   a few stale references left over from the last reorg. Nothing players see.*

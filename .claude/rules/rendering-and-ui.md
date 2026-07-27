@@ -43,6 +43,35 @@ Separators (type 14), Media Galleries (type 12). A few things that will bite you
    the emoji (this bit `draws.js`'s category-toggle buttons). Emoji has to go through the
    dedicated `emoji: { id, name, animated }` field instead. `emojiMap.js`'s `parseEmoji()`
    converts the mention strings already stored there into that shape.
+5. **These are APPLICATION emojis, and an application emoji renders ONLY for the app that owns it.**
+   (Added 2026-07-26 13:45 EDT with the local dev bot.) The 39 mention strings in `emojiMap.js` carry the
+   PROD app's ids; the dev bot is a *separate Discord application* whose 72 same-named emoji copies have
+   different ids, so the hardcoded ones render as broken text there. `emojiMap.js`'s
+   **`refreshEmojiIds(client)`** — called from `index.js`'s `handleBotReady` — fixes this by matching on
+   emoji **name** and re-pointing every string at the booting app's own ids. One codebase, both apps, no
+   per-environment config, and it self-heals if an emoji is deleted and re-uploaded (which mints a new
+   id). Verified a true no-op on prod (0 rewrites, 0 unmatched) and 39/39 re-pointed on dev.
+   - **It mutates the exported object in place on purpose** — a consumer that reads `emojis.foo` at render
+     time picks the change up with zero call-site changes.
+   - **⚠️ …but "every consumer reads at render time" was FALSE, and that assumption shipped a bug**
+     (found on the dev bot 2026-07-26 15:52 EDT, fixed 16:04 EDT). `refreshEmojiIds` runs from
+     `handleBotReady` — **long after every command module is `require()`d** — and JS strings copy by
+     value, so *anything* that reads an emoji value at load time freezes the pre-sync PROD id forever.
+     Four sites did exactly that: `manage.js`'s module-level `PAGES` table (broke **every** `/manage`
+     emoji), `drawprices.js`'s `TIER_ICON` const (broke pages 1–2 while page 3, which reads live, was
+     fine), `shareButton.js`'s `SHARE_BUTTON_ROW`, and `seasonend.js`'s hardcoded `<:BP_CODM1:…>` literal
+     that bypassed the map entirely. **The trap is not just destructuring** — a module-level object
+     literal containing `${emojis.x}` is the same bug and is much easier to miss.
+   - **Rule:** read `emojis.x` inside the render function, or build the containing table per render.
+     Every emoji must live in `emojiMap.js` — a hardcoded literal elsewhere is invisible to the sync.
+   - **Enforced by `scripts/checkEmojiCaptures.js`**, which proxies `emojiMap` and fails if any module
+     reads an emoji value during `require()`. It found all four sites; manual review had found three.
+     Run it after touching emoji rendering (CI candidate — see `docs/db-deferred-list.md`).
+   - **Fail-soft:** any API/parse error leaves the hardcoded prod ids in place. Cosmetics must never take
+     the bot down.
+   - An optional **gitignored `utils/emojiMap.dev.json`** overlay (applied after the name sync, only when
+     `NODE_ENV=development`) lets a dev session point individual keys at throwaway test emojis that don't
+     exist on prod at all, without editing — or risking committing — the tracked map.
 
 
 ## Shared UI builders (`utils/titleBlock.js`, `utils/paginationRow.js`, `utils/globalNav.js`,

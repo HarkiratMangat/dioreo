@@ -64,14 +64,19 @@ New session on Dior's Builds. Before anything else:
    • Never push, merge, or deploy without asking me first — every time; approval never carries over.
      Branch commits are the one FREE exception (checkpoints, no version, never reach `main` alone
      under squash-merge) — don't ask for those.
-   • **GLOSSARY (rewritten 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy
-     workflow — supersedes the 2026-07-18 "4 separable steps on `main`" wording; full design:
+   • **GLOSSARY (rewritten 2026-07-24 12:24 EDT for the Branch → Commit → Test → Push → PR → Merge → Deploy
+     workflow; **Test** step added 2026-07-26 13:45 EDT — supersedes the 2026-07-18 "4 separable steps on `main`" wording; full design:
      `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`, canonical memory
      `project_git_workflow.md`):**
      - **Branch** = `git checkout -b feat/x` off `main` for a feature. Free, no approval.
      - **Commit** = `git commit` on the branch — a free checkpoint ("save progress"). No approval, no
        version. We never commit directly to `main` anymore (a rare direct-to-`main` hotfix commit is
        the one exception, still gated like a push).
+     - **Test** = running the branch on the **local dev bot** (`node --watch --env-file=.env.dev index.js`)
+       and exercising it live in Discord. Free, no approval — added 2026-07-26 13:45 EDT when `Dio (Dev)`
+       was built. **This is now the default before asking to push/merge anything user-visible**, instead
+       of shipping untested or asking Harkirat to eyeball prod. `--watch` auto-restarts on every save and
+       branch switch. Setup + caveats: `docs/reference/deployment-and-ops.md`.
      - **Push** = `git push -u origin feat/x` (the BRANCH, not `main`). Uploads the branch to GitHub;
        the live bot is untouched. Asked.
      - **PR** = `gh pr create` — "done, or done pending review/testing." `--draft` ONLY when a real
@@ -86,7 +91,11 @@ New session on Dior's Builds. Before anything else:
        `gcloud compute ssh diors-builds-bot --zone=us-east1-b --command="cd ~/diors-builds && ./scripts/deploy.sh"`)
        → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, errors ~0; `🔌 Shard 0
        ready`/handleBotReady are the real "connected" proof, not just "process up") → confirm exactly
-       ONE instance is running (single-token; the VM is it — stop any local test run first). **Separate
+       ONE instance is running **on the PROD token** (the VM is it — stop any local run that uses prod's
+       `.env`). ⚠️ Corrected 2026-07-26 13:45 EDT: this rule is **per-token**, not per-machine. The local
+       dev bot (`Dio (Dev)`, its own application + token, run via `node --watch --env-file=.env.dev index.js`)
+       does NOT conflict and does NOT need stopping — running it alongside prod is the intended setup.
+       **Separate
        and optional per merge** — a merged version can sit undeployed indefinitely (docs-only being the
        obvious case); `main`'s version and the VM's running version (its boot alert reads `package.json`)
        can legitimately diverge. Asked.
@@ -152,15 +161,18 @@ New session on Dior's Builds. Before anything else:
      context), proactively hand me a TIGHT, pasteable handoff prompt (+ the /rename string) so it
      starts aligned with no re-derivation or wasted tokens. See feedback_session_handoff_prompts.
    • If the bot behaves erratically or inconsistently, suspect MULTIPLE RUNNING INSTANCES
-     first (`ps aux | grep index.js`, Railway, Render) before any code/cache theory.
+     **ON THE SAME TOKEN** first (`ps aux | grep index.js`) before any code/cache theory. The
+     separate-token dev bot is not a collision (Render/Railway are both retired).
 
 3. Work style: be token-conscious (batch calls, don't re-read what's already in context);
    check sibling code before guessing from prose/screenshots; verify a fix actually works
    (real repro or a trace point, not just "looks right"); test the naive alternative before
    a big rebuild.
 
-4. Infra facts: single-token, user-installed-only bot — only ONE instance may run anywhere at
-   once. HOST = GCP VM `diors-builds-bot` (us-east1-b, project gen-lang-client-0549308254) under
+4. Infra facts: user-installed-only bot — only ONE instance may run **per bot token** (corrected
+   2026-07-26 13:45 EDT; there is now a **local dev bot** on its own token — see
+   `project_local_dev_bot` + `docs/reference/deployment-and-ops.md` — which runs alongside prod by
+   design). HOST = GCP VM `diors-builds-bot` (us-east1-b, project gen-lang-client-0549308254) under
    systemd (unit `diors-bot`, auto-restart on crash + reboot). Deploy = git push + `git pull &&
    systemctl restart` on the VM. Render RETIRED/suspended (delete ~2026-07-24). Secrets
    (BOT_TOKEN / MONGODB_URI / CLOUDINARY_URL / LOG_WEBHOOK_URL) live in `.env` (local + on the VM).

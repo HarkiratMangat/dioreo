@@ -147,6 +147,12 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   redeploy each time (its own design session — Node doesn't hot-swap `require`d modules trivially; realistic
   options are a watch-and-restart, a targeted module reload, or accepting the current `deploy.sh` restart as
   already fast). Scope when picked up.
+  - **Still open, but materially less painful since 2026-07-26 13:45 EDT.** The local dev bot now covers the
+    *iteration* half of this pain: `node --watch --env-file=.env.dev index.js` auto-restarts on every save
+    and branch switch, so trying a change no longer requires a deploy at all. This item is now specifically
+    about **the VM** — avoiding a full redeploy for an already-pushed change. Note `--watch` is a **full
+    process restart**, not a module hot-swap, and Node documents it as not-for-production, so it is not
+    itself the answer here. See `docs/reference/deployment-and-ops.md`.
 - **`/meta` command** — view all weapons marked Meta. Options `mode:MP/DMZ`, `category:AR/SMG/...`,
   same hidden/ephemeral option as others; visibility tied to the `loadoutVisibility` toggle. Paginated
   through each meta build (a weapon's multiple builds shown in order, then the next weapon); in-panel
@@ -304,6 +310,14 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   Add a startup lock / refuse-to-start-if-already-connected mechanism so a stray leftover local
   `node index.js` can't silently race the deployed Render instance again. Until this exists, killing
   stray local instances is a manual step in the push flow.
+  - **⚠️ Clarified 2026-07-26 13:45 EDT — the collision is PER-TOKEN, not per-machine.** The local dev bot
+    (`Dio (Dev)`) is a **separate Discord application with its own token**, so running it alongside the VM
+    is safe by design and must NOT be "cleaned up" before a deploy. Only a local run using **prod's** `.env`
+    collides. The manual step above applies to that case only.
+  - **Merged:** PR [#9](https://github.com/HarkiratMangat/diors-builds/pull/9) implements this as a
+    Mongo heartbeat lock (`models/BotInstance.js` + `utils/instanceLock.js`) and is dev-bot-correct —
+    its lock `_id` is a hash of `BOT_TOKEN` rather than a fixed singleton, precisely so a dev application can
+    run at the same time.
 - **Split `index.js` into per-subsystem handler modules** (filed 2026-07-22 13:55 EDT, during the CLAUDE.md
   modularization — Harkirat explicitly invited evaluating this; deliberately NOT done in that docs-only
   session because it's a live-bot code refactor, a different risk class). `[P2 · L · Opus5-H · 🧩needs-design]`.

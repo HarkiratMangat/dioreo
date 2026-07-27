@@ -33,7 +33,9 @@ split and does not gate it — see the canonical-memory-path note below.)*
 live solely in one.*
 
 ### Canonical memory path
-**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (26 files).**
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (55 memory files
++ `MEMORY.md`, counted 2026-07-27 11:10 EDT; the count is a sanity signal, not a spec — if you land
+somewhere empty or missing, you're at the wrong path).**
 Always read AND write memory there, regardless of what the session prompt suggests. Harkirat relocated
 the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
 project folder from the repo path — so it now points sessions at
@@ -83,9 +85,25 @@ worked in-memory but silently reverted on the next fresh fetch. **Whenever you a
 add it to the corresponding schema in `models/` in the same change.** Full data-model detail:
 `.claude/rules/models.md`.
 
-### Git workflow = Branch → Commit → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT)
-Never push, merge, or deploy without asking first — approval never carries over (branch commits are the
-one exception: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
+### There is a LOCAL DEV BOT — use it, and never point it at prod (built 2026-07-26 13:45 EDT)
+A **separate Discord application**, `Dio (Dev)` (`1529636846248919263`), exists purely to test changes
+locally before they reach prod. Run it from the repo root with **`node --watch --env-file=.env.dev index.js`**
+— it auto-restarts on every file save and branch switch, so any branch or PR can be tried live in Discord
+in seconds. **Default to testing on it** instead of shipping untested or asking Harkirat to eyeball prod.
+- **`.env.dev` is gitignored and is NOT prod's `.env`.** It carries the dev token, a LOCAL Mongo URI
+  (`mongodb://localhost:27017/diors-builds-dev`), `NODE_ENV=development`, and its own alert webhook.
+  **Never run a local instance with the PROD token** — prod is single-token, and a second connection on
+  the same token makes Discord route interactions randomly between them (see `feedback_multiple_bot_instances`).
+  Two instances on *different* tokens is fine and is the whole point. Prod's `.env` stays untouched and is
+  still what a bare `node index.js` picks up, so always pass `--env-file=.env.dev` explicitly.
+- **`dotenv.config()` at `index.js:38` runs AFTER `--env-file` and BACKFILLS anything the env-file omits.**
+  So omitting a key from `.env.dev` does NOT unset it — it silently inherits prod's value. To disable
+  something in dev you must set it **explicitly blank**, not leave it out. This bit the alert webhook once.
+Full setup, the emoji/DB cloning, and the caveats: `docs/reference/deployment-and-ops.md`.
+
+### Git workflow = Branch → Commit → Test (dev bot) → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT; Test step added 2026-07-26 13:45 EDT)
+Never push, merge, or deploy without asking first — approval never carries over (branch commits and
+**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
 the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
@@ -96,6 +114,13 @@ a merged version can sit undeployed indefinitely; say plainly which steps happen
 held"), never let "merged" imply "live." Full lifecycle, versioning, and doc-placement rules:
 `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`.
 Full VM/ops setup, alerting, monitoring, version-tagging: `docs/reference/deployment-and-ops.md`.
+**Commit subjects and PR titles follow Conventional Commits v1.0.0 as specified** —
+`<type>(<optional scope>): <description>`, colon **and one space** (REQUIRED by spec rule 1), imperative,
+lowercase, no trailing period; `!` before the colon for breaking. Only the 11 standard types
+(`feat` `fix` `docs` `refactor` `perf` `style` `test` `build` `ci` `chore` `revert`) — never `deps`,
+`release`, `sec`, `wip`, `types`, `i18n`. **Branch names** are separate (the spec doesn't govern them):
+`<type>/<kebab-description>`. **Never rename a branch that has an open PR** — GitHub auto-closes it and it
+cannot be reopened. Vocabulary, mappings, and rationale: `docs/reference/commit-and-branch-naming.md`.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it
@@ -153,7 +178,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | File | Covers |
 |---|---|
 | `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
-| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging |
+| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
 
@@ -199,5 +224,7 @@ discord.js v14 (`^14.26.4`) · Node.js (v24 on the VM) · MongoDB Atlas via Mong
 (admin date parsing) · `dayjs` (user-facing timestamps) · `jimp` (pure-JS accent-color extraction) ·
 `ffmpeg` (system binary on `PATH` — `utils/stillFrame.js` uses it for APNG/animated frames) ·
 `color-namer` (hex→name) · `cloudinary` (image caching/upload). `xlsx` is NOT used at runtime anymore
-(only `scripts/migrateBuildsToMongo.js`). Full stack notes + why-each + the retired Render/Railway
+(only `scripts/migrateBuildsToMongo.js`) and now sits in **`devDependencies`** (moved 2026-07-26 19:19 EDT) — a
+production-only `npm install --omit=dev` would drop it, which is correct, but that also means that one
+migration script needs a full install to run. Full stack notes + why-each + the retired Render/Railway
 history: `docs/reference/deployment-and-ops.md`.

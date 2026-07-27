@@ -213,6 +213,86 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   (`journalctl -u google-cloud-ops-agent-opentelemetry-collector | grep -i denied`) before suspecting the
   query. **Still deferred:** guest disk-usage peaks in `vmpeaks.sh` (the agent now provides the metric).
 
+## Local dev bot — `Dio (Dev)` (built 2026-07-26 13:45 EDT, first-ever local instance)
+*Authoritative setup reference. The one-paragraph invariant version lives in the root `CLAUDE.md`.*
+
+Before 2026-07-26 13:45 EDT there was **no way to try a change before it hit prod** — every visual/behavioural
+check meant merging, deploying to the VM, and eyeballing the live bot Harkirat's own users were using.
+`Dio (Dev)` closes that: a **second, fully separate Discord application** that runs the same codebase
+against isolated local data, so any branch or PR can be exercised live in Discord first.
+
+**Run it:**
+```bash
+node --watch --env-file=.env.dev index.js
+```
+- `--watch` is Node's built-in file watcher: on any change in the module graph it does a **full process
+  restart** (new PID, new gateway + Mongo connection, `index.js` re-run top to bottom). It is **not**
+  hot-reload — Node's module cache is immutable once loaded, so a restart is the only correct answer.
+  Switching branches restarts it too, which is what makes "test any PR" a one-command operation.
+  Node explicitly documents `--watch` as **not for production**; this is a local-dev tool only. It does
+  NOT satisfy the roadmap's partial-hot-reload item (`docs/ROADMAP.md`), which is about avoiding a VM
+  redeploy — a different problem.
+- **Caveat:** every restart re-registers all 20 global slash commands, which Discord rate-limits. Rapid
+  saves can surface registration errors in the log; harmless (they're already registered).
+
+**What's separate from prod, and what's shared:**
+| Thing | Dev | Note |
+|---|---|---|
+| Discord application | `Dio (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
+| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). Seeded by `mongodump` (read-only on prod) → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'` |
+| Alert webhook | its own `LOG_WEBHOOK_URL`, own channel | must NOT be prod's — see the dotenv trap below |
+| Emojis | its own 72 application-emoji copies | same names, different ids — see below |
+| Cloudinary / Vertex AI (`GCP_*`) | **shared with prod** | deliberate. Vertex needs no new credentials: it uses the local `gcloud` ADC already on Harkirat's Mac |
+
+**⚠️ The dotenv backfill trap (cost a real leak on the first boot).** `index.js:38` calls
+`dotenv.config()` **after** `--env-file` has loaded. dotenv does not override already-set vars, but it
+**does backfill any var the env-file didn't set** — so *omitting* a key from `.env.dev` silently inherits
+prod's value rather than unsetting it. `LOG_WEBHOOK_URL` was left out on the assumption that meant "off",
+and the dev bot inherited the real prod alert webhook. **Fix: set it explicitly blank**, not absent
+(`utils/alertWebhook.js`'s `if (!url) return` makes empty a clean no-op). Sanity check: the boot line
+`injected env (N) from .env` — N is how many prod vars leaked in; it should only ever be genuinely-dead keys.
+
+**⚠️ Application emojis are per-application.** An application emoji renders ONLY for the app that owns it,
+so the dev bot cannot use prod's ids. All 72 were cloned to the dev app under identical names (3 animated
+ones — `Database`, `BulkDelete`, `Edit` — needed re-encoding at 96px to fit Discord's 256 KB cap). The
+code side is `utils/emojiMap.js`'s **`refreshEmojiIds(client)`**, called from `handleBotReady`: it matches
+on emoji NAME and re-points every mention string at the booting app's own ids. Verified a true no-op on
+prod (0 rewrites, 0 unmatched) and a full re-point on dev (39/39). Fail-soft — any error keeps the
+hardcoded prod ids. An optional gitignored `utils/emojiMap.dev.json` overlay (applied only when
+`NODE_ENV=development`, after the name sync) lets a dev session point individual keys at throwaway test
+emojis that don't exist on prod.
+
+**⚠️ Never run a local instance on the PROD token.** Prod is single-token: two gateway connections on the
+same token make Discord route each interaction to one of them at random (see the
+`feedback_multiple_bot_instances` memory). Two instances on **different** tokens — which is exactly what
+prod-on-VM plus dev-on-Mac is — is safe and is the entire point. The old blanket "stop any local run
+before deploying" rule only ever applied to same-token runs.
+
+**Killing the dev process does NOT remove its commands from the `/` picker — use
+`scripts/devCommands.js` (added 2026-07-26 21:47 EDT).** Slash-command registration is stored on
+Discord's side against the **application**, not the process: `index.js` writes it once per boot with
+`rest.put(Routes.applicationCommands(client.user.id), …)` and Discord keeps it indefinitely. Because the
+bot is user-installed, `Dio (Dev)`'s 20 commands therefore follow Harkirat into every server and DM,
+duplicating prod's identical list, whether or not anything is running. Picking one just yields
+"The application did not respond" after the 3s interaction timeout.
+
+```bash
+node scripts/devCommands.js list     # what the dev app currently has registered
+node scripts/devCommands.js clear    # register an empty list -> gone from the picker
+```
+
+There is no "restore" mode on purpose — **the next dev-bot boot re-registers everything**, since that
+PUT runs on every startup. Two independent safeguards keep this off prod: the script reads `.env.dev`
+**directly off disk** rather than through `process.env` (a `dotenv`-based script could hold the prod
+token via the backfill behavior described above), and it aborts if `.env.dev`'s `BOT_TOKEN` matches
+`.env`'s. It also prints the resolved application name/id before acting — if that ever says
+`Dior's Builds` instead of `Dio (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
+`Dio (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
+
+**Secrets hygiene:** `.env.dev` is covered by `.gitignore`'s `.env.*` glob, by a `.git/info/exclude`
+entry (so it stays ignored even on branches that predate that glob), and by the `block-env-staging`
+hookify rule, whose pattern already matches `.env.dev`.
+
 ## Version tagging (added 2026-07-16; re-scoped to merge-time 2026-07-24 12:24 EDT)
 The `vMAJOR.MODERATE.MINOR` convention itself is defined in `docs/SESSION-START.md` (tracked in git,
 canonical source — don't duplicate the full rules here). **Under the Branch → Commit → Push → PR → Merge

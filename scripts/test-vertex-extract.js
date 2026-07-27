@@ -3,7 +3,7 @@
 // Connects to your real MongoDB database, pulls an imageKey, constructs a Cloudinary URL,
 // and executes the extractLoadoutFromImage pipeline against Vertex AI.
 
-require('dotenv').config();
+require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's log line + its rotating promotional "tip"
 const mongoose = require('mongoose');
 const Loadout = require('../models/Loadout');
 const { extractLoadoutFromImage } = require('../utils/visionExtract');

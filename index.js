@@ -35,7 +35,7 @@ process.on('uncaughtException', (err) => {
 // ==========================================
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config(); // Secure injection of environment variables from local or cloud environment
+require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's runtime log line (incl. its rotating promotional "tip" text)
 
 // package.json's `version` is bumped at every git-workflow MERGE (not on every commit/push -- see
 // project_git_workflow memory) and is otherwise dead at runtime, so reading it here is free/safe. This
@@ -47,10 +47,19 @@ const { version: BOT_VERSION } = require('./package.json');
 const mongoose = require('mongoose'); // Add to dependency imports
 const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinaryCache');
 const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
+const { acquireInstanceLock } = require('./utils/instanceLock');
 
-// CONNECT TO MONGO DB ATLAS STORAGE CLUSTER
+// CONNECT TO MONGO (Atlas in prod; a LOCAL mongodb://localhost database under `.env.dev`)
+// The success line names the actual host rather than hardcoding "Atlas Cluster" -- it used to claim
+// Atlas unconditionally, which reads like the DEV bot just connected to the PRODUCTION database when
+// it did nothing of the sort (mis-read exactly that way 2026-07-26 21:04 EDT). Host only, never the
+// full URI: that string carries the Atlas credentials.
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('🍃 Successfully authenticated and established secure link to MongoDB Atlas Cluster!'))
+    .then(() => {
+        const host = mongoose.connection.host || 'unknown host';
+        const dbName = mongoose.connection.name || 'unknown db';
+        console.log(`🍃 Successfully authenticated and established secure link to MongoDB (${host}/${dbName})!`);
+    })
     .catch(err => { console.error('❌ Database connection failure detailed error:', err); sendAlert('MongoDB connection failure', err, 'error'); });
 
 // Destructuring modern discord.js elements with structural lifecycle elements (Events binding)
@@ -210,6 +219,16 @@ if (fs.existsSync(commandsPath)) {
  */
 async function handleBotReady() {
     console.log(`✅ Dior's Builds instance fully authenticated!`);
+
+    // Re-point emojiMap's mention strings at the ids owned by whichever app this token belongs to.
+    // Application emojis only render for their owning app, so the dev bot (a separate application
+    // with its own same-named copies) needs its own ids. No-op on prod. Awaited before anything
+    // renders; fail-soft internally, so a failure here can never block command registration.
+    const { refreshEmojiIds } = require('./utils/emojiMap');
+    const emojiSync = await refreshEmojiIds(client);
+    if (emojiSync.synced || emojiSync.overridden || emojiSync.missing.length) {
+        console.log(`😀 Emoji ids: ${emojiSync.synced} re-pointed to this app, ${emojiSync.overridden} dev-overridden, ${emojiSync.missing.length} unmatched${emojiSync.missing.length ? ` (${emojiSync.missing.join(', ')})` : ''}`);
+    }
 
     const Loadout = require('./models/Loadout');
     const dbCategories = await Loadout.distinct('category', { mode: 'MP' });
@@ -1177,7 +1196,9 @@ client.on('interactionCreate', async interaction => {
                 return;
             }
             const manageCommand = client.commands.get('manage');
-            return await interaction.showModal(manageCommand.buildPatchEditSeasonModal(entry));
+            const PatchEditUserPreference = require('./models/UserPreference');
+            const patchEditAdminPrefs = await PatchEditUserPreference.findOne({ discordId: interaction.user.id });
+            return await interaction.showModal(manageCommand.buildPatchEditSeasonModal(entry, patchEditAdminPrefs?.timezone));
         }
 
         // F. LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump
@@ -2038,7 +2059,11 @@ client.on('interactionCreate', async interaction => {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
                 const currentEntry = seasonalDoc?.patchNotes?.length ? seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1] : null;
-                if (action === 'dateinfo') return await interaction.showModal(manageCommand.buildPatchDateInfoModal(currentEntry));
+                if (action === 'dateinfo') {
+                    const PatchDateInfoUserPreference = require('./models/UserPreference');
+                    const patchDateInfoAdminPrefs = await PatchDateInfoUserPreference.findOne({ discordId: interaction.user.id });
+                    return await interaction.showModal(manageCommand.buildPatchDateInfoModal(currentEntry, patchDateInfoAdminPrefs?.timezone));
+                }
                 if (action === 'urls1') return await interaction.showModal(manageCommand.buildPatchUrlsModal(1, currentEntry));
                 if (action === 'urls2') return await interaction.showModal(manageCommand.buildPatchUrlsModal(2, currentEntry));
                 // "Add New Season" (2026-07-24) -- always opens blank, unlike dateinfo/urls1/urls2
@@ -2370,7 +2395,7 @@ client.on('interactionCreate', async interaction => {
         const Loadout = require('./models/Loadout');
         // Hoisted once here instead of being re-required with a different destructured subset in
         // nearly every branch below (all inside the same already-required module scope).
-        const { parseAdminDate, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
+        const { parseAdminDate, parseReleaseDateTime, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
         const { fuzzyMatch } = require('./utils/search');
         // checkImageExists() (2026-07-18, /manage loadout UX overhaul) -- real Cloudinary existence
         // check used by add_loadout_/edit_loadout_/modal_loadouts_bulk_add_ below.
@@ -2820,7 +2845,13 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'modal_patch_dateinfo') {
             await interaction.deferReply({ ephemeral: true });
             const current = getOrCreateCurrentPatch();
-            current.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
+            // parseReleaseDateTime (not the plain parseAdminDate every other admin date field uses)
+            // -- patch notes release times are typed in Harkirat's own local clock whenever a time is
+            // included at all; see the function's own comment in adminParser.js for why this field
+            // alone gets that treatment.
+            const UserPreference = require('./models/UserPreference');
+            const adminPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            current.releaseDate = parseReleaseDateTime(interaction.fields.getTextInputValue('release_date'), adminPrefs?.timezone);
             current.description = interaction.fields.getTextInputValue('description')?.trim() || '';
             // Manual title override (2026-07-24) -- blank clears it, which reverts the effective
             // display title back to the auto-synced `title` (currentSeasonTitle) -- see the schema
@@ -2888,11 +2919,15 @@ client.on('interactionCreate', async interaction => {
             const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);
             const urlList = [...parseUrlLines(interaction.fields.getTextInputValue('urls1')), ...parseUrlLines(interaction.fields.getTextInputValue('urls2'))];
 
+            // See modal_patch_dateinfo above -- patch notes release times are local-clock, not UTC-0,
+            // whenever a time is actually typed alongside the date.
+            const AddSeasonUserPreference = require('./models/UserPreference');
+            const addSeasonAdminPrefs = await AddSeasonUserPreference.findOne({ discordId: interaction.user.id });
             seasonalDoc.patchNotes.push({
                 title: seasonalDoc.currentSeasonTitle || 'Untitled Season',
                 titleOverride: interaction.fields.getTextInputValue('season_title')?.trim() || '',
                 description: interaction.fields.getTextInputValue('description')?.trim() || '',
-                releaseDate: parseAdminDate(interaction.fields.getTextInputValue('release_date')),
+                releaseDate: parseReleaseDateTime(interaction.fields.getTextInputValue('release_date'), addSeasonAdminPrefs?.timezone),
                 images: []
             });
             const newEntry = seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1];
@@ -2925,7 +2960,10 @@ client.on('interactionCreate', async interaction => {
             if (!entry) return await interaction.followUp({ content: '❌ That season no longer exists -- it may have been changed or removed since this modal opened.' });
 
             entry.titleOverride = interaction.fields.getTextInputValue('season_title')?.trim() || '';
-            entry.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
+            // See modal_patch_dateinfo above -- local-clock, not UTC-0, whenever a time is typed.
+            const EditSeasonUserPreference = require('./models/UserPreference');
+            const editSeasonAdminPrefs = await EditSeasonUserPreference.findOne({ discordId: interaction.user.id });
+            entry.releaseDate = parseReleaseDateTime(interaction.fields.getTextInputValue('release_date'), editSeasonAdminPrefs?.timezone);
             entry.description = interaction.fields.getTextInputValue('description')?.trim() || '';
 
             const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);
@@ -3442,5 +3480,15 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Initialize system authorization
-client.login(process.env.BOT_TOKEN);
+// Initialize system authorization -- gated on the single-instance lock so a stray leftover local
+// `node index.js` can't silently race an already-running instance (VM or another local process)
+// the way it did in the 2026-07-14 incident (see .claude/rules/accent-and-colors.md). The
+// acquireInstanceLock() query is issued via Mongoose, which buffers commands until the
+// mongoose.connect() call above actually finishes -- no extra wait-for-connection logic needed here.
+(async () => {
+    const acquired = await acquireInstanceLock();
+    if (!acquired) {
+        process.exit(1);
+    }
+    client.login(process.env.BOT_TOKEN);
+})();

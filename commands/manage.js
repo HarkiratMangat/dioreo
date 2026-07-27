@@ -33,7 +33,7 @@
 // (renamed/re-styled to match the new buttons) as a deliberate placeholder, not an oversight.
 
 const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-const { formatAdminDate } = require('../utils/adminParser');
+const { formatAdminDate, formatReleaseDateTime } = require('../utils/adminParser');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const emojis = require('../utils/emojiMap');
 
@@ -63,7 +63,15 @@ const PURGE_LABELS = {
 // Display — most groups have one block per action, but Draws' Bulk-Delete+Purge group combines two
 // `### ` headers into a single block, matching its mockup's exact component layout) and a `buttons`
 // row (chunked into rows of 5 if it ever needs to grow past Discord's per-row cap).
-const PAGES = {
+// ⚠️ Built per-render by buildManagePage(), NOT a module-level `const PAGES = {...}` -- that's what it
+// used to be, and it silently broke EVERY emoji on EVERY /manage page on the dev bot (found
+// 2026-07-26 15:52 EDT). refreshEmojiIds() rewrites emojiMap's values at boot, long after this file is
+// require()d; the ~30 `${emojis.x}` interpolations below evaluate at table-build time and JS strings
+// copy by value, so building the table at require() time froze the pre-sync PROD ids permanently.
+// Rebuilding it per render costs ~30 template strings against a network round trip -- not worth
+// memoizing, and a cache would just reintroduce a subtler version of the same staleness bug.
+function buildPagesTable() {
+  return {
     draws: {
         label: 'Draws',
         icon: `${emojis.newDraws}${emojis.returningDraws}`,
@@ -227,7 +235,8 @@ const PAGES = {
             }
         ]
     }
-};
+  };
+}
 
 // Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a
 // different `mode` baked into every action id (so index.js's handlers know which collection slice
@@ -339,6 +348,8 @@ function buildPastSeasonsOptions(seasonalDoc) {
 }
 
 function buildManagePage(page, dynamicData = {}) {
+    // Built here, per render, so emoji ids are read AFTER refreshEmojiIds() has run (see buildPagesTable).
+    const PAGES = buildPagesTable();
     const pageKey = PAGES[page] ? page : 'draws';
     const pageData = PAGES[pageKey];
     const accentColor = PAGE_ACCENT[pageKey] ?? PANEL_ACCENT;
@@ -645,10 +656,10 @@ function buildEditLoadoutModal(targetLoadout, targetId) {
 // --- PATCH NOTES modal builders --- (all 3 operate on the single "current" entry — the last item
 // in patchNotes[], the one whose title stays synced to currentSeasonTitle — rather than a
 // search-and-pick flow. If none exists yet, Date/Info's submit creates the first one.)
-function buildPatchDateInfoModal(currentEntry) {
+function buildPatchDateInfoModal(currentEntry, userTimezone) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15').setValue(currentEntry ? formatAdminDate(currentEntry.releaseDate) : '').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
@@ -687,7 +698,7 @@ function buildPatchAddSeasonModal() {
     const modal = new ModalBuilder().setCustomId('modal_patch_addseason').setTitle('Add New Season');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15').setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
@@ -699,11 +710,11 @@ function buildPatchAddSeasonModal() {
 // and submitted back onto ONE SPECIFIC existing entry (picked via the page's `mng_patchseason_pick`
 // select menu), addressed by its own `_id` in the custom_id -- never touches which entry is
 // "current." `images` slices the same 0-4/5-9 way urls1/urls2 already do for the current entry.
-function buildPatchEditSeasonModal(entry) {
+function buildPatchEditSeasonModal(entry, userTimezone) {
     const modal = new ModalBuilder().setCustomId(`modal_patch_editseason_${entry._id}`).setTitle('Edit Past Season');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(entry.releaseDate)).setRequired(true)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(entry.description || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
@@ -772,7 +783,9 @@ module.exports = {
         ))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
 
-    PAGES,
+    // Getter, not a value: the table must be built per access so emoji ids are read after
+    // refreshEmojiIds() has run (see buildPagesTable). Don't destructure this at module load.
+    get PAGES() { return buildPagesTable(); },
     PURGE_LABELS,
     buildManagePage,
     buildPastSeasonsOptions,

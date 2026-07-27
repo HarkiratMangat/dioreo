@@ -1225,6 +1225,8 @@ Expected: `ALL SYNTAX OK`.
 
 This is a single-token bot — running a second live instance (alongside the production VM's `diors-bot` systemd service) makes Discord route interactions to a random instance and both instances' `deferReply`/`deferUpdate` calls race each other, which has caused real production incidents in this codebase before (see CLAUDE.md's "Single-instance guard" note).
 
+> **⚠️ Superseded 2026-07-26 13:45 EDT (historical plan — kept as written).** The collision is **per token**. A local dev bot (`Dio (Dev)`, `node --watch --env-file=.env.dev index.js`) now exists on its own token and its own local Mongo, so this step's "confirm no other instance before a local boot" only applies to a local run using **prod's** `.env`. See `docs/reference/deployment-and-ops.md`.
+
 Run: `ps aux | grep "node index.js" | grep -v grep`
 
 If the VM is currently running the bot live (check via `scripts/vmstatus.sh` if you have SSH access, or ask Harkirat), do **not** also boot a local instance for verification — hand Task 6-8's manual Discord checklists back to Harkirat to run against the live bot instead (after he deploys this branch/commit to the VM himself), rather than risking a local/production collision.
