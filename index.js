@@ -35,7 +35,7 @@ process.on('uncaughtException', (err) => {
 // ==========================================
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config(); // Secure injection of environment variables from local or cloud environment
+require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's runtime log line (incl. its rotating promotional "tip" text)
 
 // package.json's `version` is bumped at every git-workflow MERGE (not on every commit/push -- see
 // project_git_workflow memory) and is otherwise dead at runtime, so reading it here is free/safe. This
@@ -49,9 +49,17 @@ const { resolveThumbnail, pruneExpiredThumbnails } = require('./utils/cloudinary
 const { pruneOrphanedPatchFolders } = require('./utils/patchNotesCache');
 const { acquireInstanceLock } = require('./utils/instanceLock');
 
-// CONNECT TO MONGO DB ATLAS STORAGE CLUSTER
+// CONNECT TO MONGO (Atlas in prod; a LOCAL mongodb://localhost database under `.env.dev`)
+// The success line names the actual host rather than hardcoding "Atlas Cluster" -- it used to claim
+// Atlas unconditionally, which reads like the DEV bot just connected to the PRODUCTION database when
+// it did nothing of the sort (mis-read exactly that way 2026-07-26 21:04 EDT). Host only, never the
+// full URI: that string carries the Atlas credentials.
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('🍃 Successfully authenticated and established secure link to MongoDB Atlas Cluster!'))
+    .then(() => {
+        const host = mongoose.connection.host || 'unknown host';
+        const dbName = mongoose.connection.name || 'unknown db';
+        console.log(`🍃 Successfully authenticated and established secure link to MongoDB (${host}/${dbName})!`);
+    })
     .catch(err => { console.error('❌ Database connection failure detailed error:', err); sendAlert('MongoDB connection failure', err, 'error'); });
 
 // Destructuring modern discord.js elements with structural lifecycle elements (Events binding)

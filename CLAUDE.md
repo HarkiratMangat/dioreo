@@ -222,5 +222,7 @@ discord.js v14 (`^14.26.4`) · Node.js (v24 on the VM) · MongoDB Atlas via Mong
 (admin date parsing) · `dayjs` (user-facing timestamps) · `jimp` (pure-JS accent-color extraction) ·
 `ffmpeg` (system binary on `PATH` — `utils/stillFrame.js` uses it for APNG/animated frames) ·
 `color-namer` (hex→name) · `cloudinary` (image caching/upload). `xlsx` is NOT used at runtime anymore
-(only `scripts/migrateBuildsToMongo.js`). Full stack notes + why-each + the retired Render/Railway
+(only `scripts/migrateBuildsToMongo.js`) and now sits in **`devDependencies`** (moved 2026-07-26 19:19 EDT) — a
+production-only `npm install --omit=dev` would drop it, which is correct, but that also means that one
+migration script needs a full install to run. Full stack notes + why-each + the retired Render/Railway
 history: `docs/reference/deployment-and-ops.md`.
