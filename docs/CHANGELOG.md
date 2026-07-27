@@ -1666,5 +1666,27 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.4, the last entry to sit here,
-graduated to a real numbered entry above on 2026-07-26 12:09 EDT when PR #14 squash-merged as `95791b1`.)*
+## v2.36.0 (proposed) — Patch notes release date now supports a real local-clock time
+**Fixes a real display bug:** Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch
+note's release date field and saw `July 21, 2026 at 8:00 PM` after saving — not a parsing crash, a
+design mismatch. `parseAdminDate` (shared by every admin date field) unconditionally discards any
+typed time and normalizes to midnight UTC; `commands/patchnotes.js` then displays that value with a
+Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *viewer's* local timezone
+— for a UTC-4 viewer, that's the previous evening.
+- Added `utils/adminParser.js`'s `parseReleaseDateTime(dateStr, userTimezone)` — used only by patch
+  notes' 3 `modal_patch_*` handlers in `index.js` (Date & Info, Add New Season, Edit Past Season).
+  A bare date with no time still falls straight through to the existing `parseAdminDate` (UTC-0
+  midnight, unchanged for every other admin date field). The moment a time is also typed, it's now
+  treated as the admin's own local clock (`UserPreference.timezone`, same field `/settings`/
+  `/timestamp` already use) and converted to the real UTC instant — detected via chrono's
+  `isCertain('hour')`, the same check `utils/timestampHelper.js`'s `generateTimestamps()` already
+  relies on for the same distinction.
+- Added the reverse formatter, `formatReleaseDateTime`, so reopening either modal to tweak something
+  unrelated (e.g. the description) doesn't silently revert a previously-set release time back to
+  midnight on the next submit — it only omits the time when the stored instant is exact UTC midnight.
+- Draws/calendar/season-end deadlines are completely unaffected — they still use the plain
+  `parseAdminDate`/`formatAdminDate` UTC-0 functions.
+- See `.claude/rules/design-decisions.md` for the full before/after reasoning.
+
+*(v2.33.4, the previous entry to sit here, graduated to a real numbered entry above on 2026-07-26
+12:09 EDT when PR #14 squash-merged as `95791b1`.)*
