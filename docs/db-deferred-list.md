@@ -196,6 +196,17 @@ well-specified execution/polish, not novel design.*
 - `[P1 · XS · Harkirat action, not a build]` **Update the bot's Discord Developer Portal listing** (filed
   2026-07-18, notes) — description, name, and banner image. Pure Discord Dev Portal task, not something
   Claude can do (no tool access to that UI); flagging so it doesn't get lost.
+- `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable**
+  *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries
+  `Dior <diorswrld@discord.com>`, which is not a verified address on the GitHub account, so GitHub renders
+  the author as flat text with no profile link. Verified via
+  `gh api repos/HarkiratMangat/Diors-Builds/commits --jq '.[].author.login'` → `null`. **Already fixed
+  going forward**: the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`
+  (see memory `feedback_git_commit_identity`), so all NEW commits link correctly — this item is only about
+  the existing history. Fixing it means a `filter-repo`/`filter-branch` rewrite of every pushed commit:
+  all SHAs change, the GCP VM pulls from this repo, and the 37 backfilled version tags would need
+  re-pointing. Cosmetic benefit vs. real blast radius — decide whether it's worth it at all before
+  scoping a session.
 - `[P2 · M · Sonnet5-H]` **General housekeeping session** — delete leftover `*.bak-*` config backups, sweep
   stale absolute paths, dead-code / stale-comment / unused-dependency review, decide `/patch notes` carousel
   component-count chunking.
