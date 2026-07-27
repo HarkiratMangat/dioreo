@@ -90,12 +90,38 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   --hard origin/main` there (Harkirat asked to hold off on this for now). The next real deploy's `git
   pull` will fail on this non-fast-forward divergence unless that reset happens first — don't let
   `scripts/deploy.sh` run blind into that failure; check for it and reset first if needed.
+  **✅ FULLY DIAGNOSED 2026-07-27 20:05 EDT — this is now a one-command job, no investigation left.**
+  Verified live on the VM: it sits **2 ahead / 16 behind** `origin/main`. The 2 VM-only commits are
+  `f1dff2c` ("correct version number to v2.35.4 (was mislabeled v2.36.0)") and `42f024e`
+  ("finalize v2.36.0 changelog entries + version bump") — exactly the pair the force-push rewrote away,
+  so **nothing of value is lost by discarding them.** The VM's **working tree is clean** (no local
+  edits to preserve). The runtime delta from resetting is only `utils/cloudinary*.js` +
+  `utils/cloudinaryDevGuard.js` + `package.json` — i.e. the v2.35.9 dev-write guard, which is **inert in
+  prod** (`NODE_ENV` is unset there, so `IS_DEV` is false) — so the reset changes no production
+  behaviour. The fix, run in `~/diors-builds` on the VM:
+  ```bash
+  git fetch origin && git reset --hard origin/main
+  ```
+  **Do NOT restart the service as part of this** — that would be a deploy, which is separately gated.
+  After the reset the VM's *files* are at the current `main` while the *running process* stays on
+  v2.35.4's code until the next restart, which is the normal post-`git pull`, pre-restart state.
+  ⚠️ Blocked once (2026-07-27 20:05 EDT) by Claude Code's permission classifier, which correctly treats
+  `git reset --hard` on a live host as destructive — it needs Harkirat's explicit go-ahead or a Bash
+  permission rule.
 - `[P0 · S · trigger has FIRED]` **Delete the suspended Render service** (`srv-d850b2og4nts73fhpfog`).
   The condition was "~2026-07-24, once the GCP VM has proven reliable for ~a week" — **that date has
   passed** (as of 2026-07-25 21:43 EDT), so this escalated from P2 to P0 on schedule and is now simply
   due. Suspended today (no cost/risk), kept only as a fallback. **Before deleting:** run
   `scripts/vmstatus.sh` and confirm the VM is actually healthy — the escalation is calendar-driven, and
-  no session has verified the "held for a week" half. Then delete via the Render dashboard or REST API,
+  no session has verified the "held for a week" half.
+  **✅ HEALTH PRECONDITION MET 2026-07-27 20:00 EDT.** `scripts/vmstatus.sh` run live: VM `RUNNING`,
+  `diors-bot` service **active with 0 restarts**, up since 12:22 UTC, RAM 564/969MB, load 0.10, disk
+  15%, gateway resumed cleanly. `journalctl -u diors-bot -p err --since '1 hour ago'` returned **no
+  entries** (vmstatus's own `errors(1h): 1` counter reads a different source and did not correspond to
+  any error-priority journal entry). GCP cutover was 2026-07-17, so the "~a week" condition is 10 days
+  satisfied. **Only the deletion itself remains, and it is deliberately NOT automated** — it is
+  irreversible and on an external service, so it wants Harkirat's explicit yes rather than an agent's
+  judgement call. Then delete via the Render dashboard or REST API,
   and scrub the last Render references from `docs/reference/deployment-and-ops.md` +
   `project_deployment_migration_render_to_gcp` memory.
 - `[P2 · XS · passive watch]` **Watch that GCP holds long-term.** Cutover was 2026-07-17; the Discord
