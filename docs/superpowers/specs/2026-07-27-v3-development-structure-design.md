@@ -142,12 +142,19 @@ the same one that bit the alert webhook once, and is worth a pass eventually.
 
 Order is load-bearing: CI must be on `main` before the cut, so `v3-pre-release` inherits it at birth.
 
-1. **Delete three stale merged branches**, local and remote — `fix/patch-notes-release-local-time` (#23,
-   merged `f1d23da`, v2.35.4), `feat/dev-command-clear-script` (#22, merged `6d3f919`, v2.35.3),
+1. **Prune stale remote-tracking refs** — `git fetch --prune origin`. Three branches that appeared open
+   were already merged: `fix/patch-notes-release-local-time` (#23, merged `f1d23da`, v2.35.4),
+   `feat/dev-command-clear-script` (#22, merged `6d3f919`, v2.35.3),
    `docs/memory-count-and-attribution-deferral` (#24, merged `3e12737`, v2.35.5). Each was verified
    content-complete on `main` by a two-dot `git diff origin/main origin/<branch>` showing **zero
    code-file differences** — they appear "1 ahead" only because squash-merge leaves the original tip
    without a descendant on `main`.
+
+   **⚠️ This repo has GitHub's auto-delete-on-merge enabled, so the remote refs were already gone**
+   (confirmed 2026-07-27 17:52 EDT — `git push origin --delete` failed with "remote ref does not
+   exist" for all three). A plain `git fetch` does **not** prune, so `git branch -a` will keep listing
+   long-dead branches and misreport them as open work. Always `--prune` before auditing branch state;
+   the authoritative check is `gh pr list --state all`, not `git branch -a`.
 2. **PR #15** (`docs/board-view-setup-reminder`) — merge `origin/main` in (21 behind), resolve the likely
    `docs/db-deferred-list.md` conflict, merge, delete branch. Pure docs: a `[P1 · XS]` reminder for the
    two manual GitHub Projects view steps that GitHub's GraphQL API cannot automate. Sequenced before the
