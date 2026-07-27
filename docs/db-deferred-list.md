@@ -62,6 +62,16 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- `[P2 · XS · trigger = next deploy]` **The GCP VM's local git history is intentionally behind/diverged
+  from `origin/main`, as of 2026-07-27 08:29 EDT.** `main` was force-pushed that session (rewriting a
+  v2.36.0→v2.35.4 version-number correction out of history entirely, per Harkirat's explicit request —
+  see DEVLOG's 2026-07-27 08:29 EDT entry) after the VM had already pulled and deployed the pre-rewrite
+  commits. The deployed FILE CONTENTS are byte-identical either way (verified via diff before the
+  force-push), so the bot itself is unaffected and no restart is needed right now — but the VM's `git
+  status` will show `ahead/behind` against `origin/main` until someone runs `git fetch && git reset
+  --hard origin/main` there (Harkirat asked to hold off on this for now). The next real deploy's `git
+  pull` will fail on this non-fast-forward divergence unless that reset happens first — don't let
+  `scripts/deploy.sh` run blind into that failure; check for it and reset first if needed.
 - `[P0 · S · trigger has FIRED]` **Delete the suspended Render service** (`srv-d850b2og4nts73fhpfog`).
   The condition was "~2026-07-24, once the GCP VM has proven reliable for ~a week" — **that date has
   passed** (as of 2026-07-25 21:43 EDT), so this escalated from P2 to P0 on schedule and is now simply
