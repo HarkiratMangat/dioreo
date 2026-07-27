@@ -11,9 +11,9 @@
 // Safe to re-run: deletes existing mode:'MP' documents first, so running this twice doesn't
 // create duplicates. Run manually with `node scripts/migrateBuildsToMongo.js` — this is NOT
 // wired into the bot's normal startup, it's a one-off data-loading tool.
-require('dotenv').config();
+require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's log line + its rotating promotional "tip"
 const mongoose = require('mongoose');
-const xlsx = require('xlsx');
+const xlsx = require('xlsx'); // devDependency -- this one-off migration is the ONLY xlsx consumer in the repo
 const Loadout = require('../models/Loadout');
 
 // Same Cloudinary account/transform path already used elsewhere in this bot (e.g. draws.js's
