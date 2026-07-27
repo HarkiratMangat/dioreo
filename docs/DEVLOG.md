@@ -2041,6 +2041,11 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
 - **Media Gallery has no width control**; the **collectibles CDN ignores `?size=`** (but the avatar/
   banner CDN honors it).
 - **Jimp can't decode APNG** — animated decorations need an `ffmpeg` still-frame first.
+- **Slash-command registration belongs to the APPLICATION, not the process, and there is no UI for it.**
+  Killing a bot leaves its commands in the `/` picker forever (they just time out with "did not
+  respond"); only another API call removes them. The Developer Portal has no page for this at all —
+  hence `scripts/devCommands.js`. Same reason a *user-installed* app's stale commands are extra annoying:
+  they follow the user into every server and DM, not one guild.
 - **Cloudinary has no native per-asset TTL** — expiry is something the bot does on a schedule.
 - **Render free tier = 0.1 shared CPU**, no `suspend` in the CLI (REST API only); **Railway free tier
   blocks CLI deploys 8am–8pm ET** and isn't git-connected.

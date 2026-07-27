@@ -15,7 +15,6 @@ utils/emojiMap.dev.json
 gun-builds/
 local/
 .restart-reason
-repomix-output.xml
 builds.xlsx
 
 # AI CLI & Memory Folders
@@ -26,3 +25,7 @@ builds.xlsx
 .claude/settings.local.json*
 .remember/
 .superpowers/
+
+
+# Harkirats-Space note file
+docs/Harkirats-Space.md

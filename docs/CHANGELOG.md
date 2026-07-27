@@ -162,6 +162,31 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.3 — 2026-07-26 21:52 EDT (`6d3f919`) — `scripts/devCommands.js`: take the dev bot's commands out of the `/` picker
+
+**New script + docs only — `index.js` untouched, so no deploy needed.** The VM stays current at v2.35.2.
+
+- **The problem:** killing the dev-bot process does **not** remove `Dio (Dev)`'s slash commands from the
+  `/` picker. Registration is stored on Discord's side against the **application**, not the process —
+  `index.js` writes it once per boot and Discord keeps it indefinitely. Since the bot is user-installed,
+  those 20 commands follow Harkirat into every server and DM, duplicating prod's identical list whenever
+  he isn't testing; picking one just yields "The application did not respond" after the 3s timeout.
+  Discord exposes **no UI for this anywhere**, including the Developer Portal — it is API-only.
+- **`node scripts/devCommands.js list | clear`.** `clear` registers an empty command list.
+  **No restore mode, deliberately** — the next dev-bot boot re-registers everything, because that PUT
+  runs on every startup. The loop is: `clear` when done testing, boot when you want them back.
+- **Two independent guards against ever hitting prod**, since clearing prod's commands would strip every
+  command from the real bot until someone noticed: the script parses `.env.dev` **directly off disk**
+  rather than reading `process.env` (a `dotenv`-based script could silently hold the *prod* token via
+  dotenv's documented backfill behavior — see `CLAUDE.md`), and it aborts outright if `.env.dev`'s
+  `BOT_TOKEN` matches `.env`'s. It prints the resolved application name + id before acting, and error
+  output is limited to `rawError.message` — never the token, never the raw error object.
+- **Verified live, not just `node --check`:** `list` → `Dio (Dev)` + 20 commands; `clear` → 20 cleared,
+  re-`list` → none; an independent read-only check on the prod token → `Dior's Builds` still reports all
+  20 registered.
+
+---
+
 ## v2.35.2 — 2026-07-26 21:04 EDT (`b276e10`) — dotenv quieted, `xlsx` demoted, and a connect log that told the truth
 
 **Contains real bot code (`index.js`) — MERGED BUT NOT DEPLOYED.** Stacks onto v2.34.0–v2.35.0's still-pending

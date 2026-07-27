@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.3 — July 26, 2026
+- *Internal tooling-only — a maintenance script for Dior's test copy of the bot. Nothing players see.*
+
 ## v2.35.2 — July 26, 2026
 Behind-the-scenes only — nothing changes for you.
 
