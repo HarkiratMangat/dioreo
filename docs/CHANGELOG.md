@@ -162,6 +162,22 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.1 — 2026-07-26 20:52 EDT (`9288025`) — Tool-discovery session filed in the deferred list
+
+**Internal / docs only — no bot code touched. Does not change v2.34.0–v2.35.0's still-pending deploy.**
+
+- **`docs/db-deferred-list.md`** gains one `[P3 · S]` item under 🧹 Someday/tech-debt: a **tool-discovery
+  session** holding the CLI-tool candidates raised during a dotenvx-adjacent tooling discussion and
+  deferred on the spot rather than scoped — `procs`, `git-delta`, `zoxide`, `hyperfine`, Knip, `act`,
+  and a free-tier uptime/status-page service.
+- **Nothing is decided.** The item is deliberately a holding pen: several candidates already have a hook
+  into existing work (`procs` → the stray-`node`-process hunt in `[[feedback_multiple_bot_instances]]`,
+  `hyperfine` → the queued "Pagination perf hybrid" item, `act` → running `ci.yml` locally once PR #11
+  lands, an uptime service → the deferred `/status` command + `vmstatus.sh` overhaul), which is exactly
+  why the list was worth writing down instead of re-deriving it in three weeks.
+
+---
+
 ## v2.35.0 — 2026-07-26 18:43 EDT (`3b978a5`) — Single-instance startup guard
 
 **Real bot code, MERGED BUT NOT DEPLOYED** — stacks on top of v2.34.0/v2.34.1's still-pending VM deploy.

@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.1 — July 26, 2026
+- *Internal docs-only — jotted down a list of developer tools to look at later. Nothing players see.*
+
 ## v2.35.0 — July 26, 2026
 Behind-the-scenes only — nothing changes for you.
 
