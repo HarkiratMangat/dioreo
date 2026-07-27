@@ -180,6 +180,13 @@ well-specified execution/polish, not novel design.*
 - `[P2 · M · Sonnet5-H]` **General housekeeping session** — delete leftover `*.bak-*` config backups, sweep
   stale absolute paths, dead-code / stale-comment / unused-dependency review, decide `/patch notes` carousel
   component-count chunking.
+- `[P3 · S]` **Tool-discovery session (filed 2026-07-26 19:32 EDT)** — deferred by Harkirat's own request
+  during a dotenvx-adjacent tooling discussion, not yet scoped for a session. Candidates raised: `procs`
+  (modern `ps`, ties to the recurring stray-`node`-process hunt in `feedback_multiple_bot_instances`),
+  `git-delta` (nicer `git diff`/`show`), `zoxide`, `hyperfine` (ties to the "Pagination perf" item below),
+  Knip (automates the unused-file/dependency audits already done by hand at least twice), `act` (run
+  `ci.yml` locally once PR #11 merges), and a free-tier uptime/status-page service tying into the deferred
+  `/status` command + vmstatus overhaul. Nothing decided — just don't lose the list.
 - `[P2 · M · Sonnet5-H]` **Pagination perf hybrid** — single `UPDATE_MESSAGE` for the light string-building
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided (see `docs/reference/known-issues.md`) — what's left is
