@@ -3,7 +3,7 @@
 > ## ⚡ FIRST ACTION THIS SESSION — HARD GATE, before ANY other content in your opening message
 > **Do not write task content, exploration, tool calls, or a greeting before this.** Your literal first
 > lines of output this session MUST be: **(1)** a ready-to-paste `/rename` string in the format
-> `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus4.8-H · Webhook alerts · Jul 20`), and **(2)** a
+> `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus5-H · Webhook alerts · Jul 20`), and **(2)** a
 > one-line best **model + single effort level** recommendation for this session's work — and on a large
 > opening batch, a short "defer these to their own session" list (each with its own model+effort). This is
 > a standing non-negotiable (`feedback_suggest_model_switch` memory) that **degraded repeatedly across
@@ -148,7 +148,7 @@ New session on Dior's Builds. Before anything else:
      opening batch: recommend the single best setup for the session as a whole, then list any
      tasks to DEFER to their own session, each with its own model+effort (that's my
      work-weight estimate). Hand me a ready-to-paste rename string, formatted
-     `/rename [HOLD/MonDD] Opus4.8-M · Title · Mon DD` (updated 2026-07-17): optional
+     `/rename [HOLD/MonDD] Opus5-M · Title · Mon DD` (updated 2026-07-17): optional
      `[HOLD/MonDD]` leading flag ONLY when the project's on hold (compact hold-date, e.g.
      `[HOLD/Jul17]`), then Model<Version>-<Effort> (no space before the version, effort
      abbreviated L/M/H/X/Max), then " · " title, then " · Mon DD" = the SESSION START date

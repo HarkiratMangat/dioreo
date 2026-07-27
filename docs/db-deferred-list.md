@@ -15,6 +15,10 @@ now `/Applications/Claude Code/meta-deferred-list.md`.
 ## What is NOT in this file
 - **The feature roadmap** — `docs/ROADMAP.md` is authoritative (v2 remaining · v3 · v4 · v5 ·
   housekeeping). This file is deliberately NOT a copy of it: pointer, not duplicate.
+  **⇄ Reality check 2026-07-27 19:45 EDT:** 7 items were found in BOTH files, so "not a copy" was not
+  holding on its own. Each now carries a `⇄` cross-reference to its twin. Division of labour:
+  **ROADMAP = which version it belongs to; this file = size, decided design, and when it gets a
+  session.** Appearing in both is allowed — appearing in both *without* the `⇄` marker is the bug.
 - **Resolved / dropped items** — `docs/archive/resolved-list.md` (except standing 🚫 decided-no calls,
   which stay below on purpose so nobody re-raises them).
 - **Cross-project work, MarkEdit-extension bugs, Claude/Anthropic product feedback** —
@@ -167,6 +171,7 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   2-4-on-one-page behaviour for genuinely minimal images (juul's banner correctly returned 4). Real
   algorithm work; **determinism is a hard constraint** (Refresh's change-detection depends on it). Levers:
   over-clustering K=1.5× + the 30-RGB merge. Full subsystem detail: `.claude/rules/accent-and-colors.md`.
+  ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list (horizon only — the detail above is canonical).
 - `[P2 · L · Opus5-H]` **Real "search + multi-select" admin flow.** For `/manage`'s "Delete Multiple" (all
   entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're
   placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
@@ -244,6 +249,7 @@ well-specified execution/polish, not novel design.*
 - `[P2 · M · Sonnet5-H]` **General housekeeping session** — delete leftover `*.bak-*` config backups, sweep
   stale absolute paths, dead-code / stale-comment / unused-dependency review, decide `/patch notes` carousel
   component-count chunking.
+  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 - `[P3 · S]` **Tool-discovery session (filed 2026-07-26 19:32 EDT)** — deferred by Harkirat's own request
   during a dotenvx-adjacent tooling discussion, not yet scoped for a session. Candidates raised: `procs`
   (modern `ps`, ties to the recurring stray-`node`-process hunt in `feedback_multiple_bot_instances`),
@@ -255,17 +261,22 @@ well-specified execution/polish, not novel design.*
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided (see `docs/reference/known-issues.md`) — what's left is
   careful, well-specified execution across call sites, not open design work.
+  ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list as "Pagination double round-trip perf fix" (horizon only — the design detail above is canonical).
 - `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, notes L59)* read-only
   check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as
   designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above
   only if confirmed. Also tracked in `docs/reference/known-issues.md`.
+  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 - `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** —
   retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B.
+  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 - `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, notes L34)* a rich but
   noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so
   Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse
   `reference_vm_bot_commands` card. ("Not anytime soon.")
+  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 - `[P3 · M · Opus5-M]` **Ship the redesigned changelog artifact** — the "Armory Terminal" visual, paused.
+  ⇄ Also on `docs/ROADMAP.md`'s **v3** list (version horizon).
 - `[P3 · XS · Sonnet5-L · 🔗bundle-with next VM/ops touch]` **Guest disk-usage peaks in `scripts/vmpeaks.sh`**
   — small add mirroring the new `rampeak()` now that the Ops Agent (2026-07-17) provides the metric.
   🔗 Natural bundle with the Render-deletion reminder above, which is also a VM/ops touch.
