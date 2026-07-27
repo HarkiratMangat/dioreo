@@ -162,6 +162,18 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.7 — 2026-07-27 18:15 EDT (`801902f`) — Filed the roadmap board's remaining manual view setup
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
+touched, so the VM is still running v2.35.4's code.
+- **Filed a `[P1 · XS]` reminder in `docs/db-deferred-list.md`** for the two manual GitHub UI steps that
+  finish the [roadmap board](https://github.com/users/HarkiratMangat/projects/2)'s view design: a
+  Status-grouped Board view, and a Priority-grouped Table view. The board already has all 15 items and
+  every custom field populated via the API — but **GitHub's GraphQL API has no view-creation or
+  view-management mutations at all** (confirmed via introspection), so these two cannot be automated and
+  have to be clicked. The entry carries the click-by-click steps so it's actionable without a re-lookup.
+- Drafted 2026-07-26 12:12 EDT, merged now as part of clearing the branch backlog ahead of cutting
+  `v3-pre-release`.
+
 ## v2.35.6 — 2026-07-27 18:05 EDT (`a3bf9a9`) — Designed the v3 development structure
 **Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
 touched, so the VM is still running v2.35.4's code.
