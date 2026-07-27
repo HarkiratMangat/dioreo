@@ -1,6 +1,6 @@
 {
   "name": "diors-builds",
-  "version": "2.35.11",
+  "version": "2.35.12",
   "description": "",
   "main": "index.js",
   "scripts": {

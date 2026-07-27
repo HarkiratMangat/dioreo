@@ -162,6 +162,32 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.12 — 2026-07-27 19:55 EDT (`d013a9a`) — Reconciled the two tracking files; refreshed stale model tags
+**Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
+- **`ROADMAP.md` and `db-deferred-list.md` were duplicating each other while each claimed it didn't.**
+  A token-overlap cross-check (not eyeballing) found **7 items in both files**, several with identical
+  `[Priority · Effort]` tags — against ROADMAP's *"not duplicated here"* and the deferred list's
+  *"deliberately NOT a copy of it: pointer, not duplicate."*
+- **Nothing was deleted.** In the two richest pairs the *deferred* copy holds the fuller detail — the
+  already-decided hybrid design for pagination perf; the root cause, determinism constraint and
+  algorithm levers for View Colors — while ROADMAP holds a stub. Deleting either side loses
+  information, so all 14 entries got a `⇄` cross-reference naming their twin.
+- **Both headers now state the division of labour concretely:** ROADMAP answers *which version an item
+  belongs to*; `db-deferred-list.md` answers *how big it is, what's already decided, and when it earns a
+  session*. An item may appear in both — appearing in both **without** the `⇄` marker is the bug, since
+  that's precisely how these two drifted apart unnoticed.
+- **The 2026-07-25 21:43 EDT `Opus4.8-*` → `Opus5-*` refresh only covered `db-deferred-list.md`.**
+  Updated the live prescriptions it missed: ROADMAP's View Colors entry (`Own session, Opus 4.8 high`),
+  `SESSION-START.md`'s two `/rename` examples (read by every session and copied verbatim), and three
+  memory files. **Historical references deliberately left alone** — changelog, DEVLOG, spec authorship
+  lines, and the measured Opus-4.8-vs-Sonnet-5 comparison record what was true at the time.
+- **`CLAUDE.md`'s memory-file count was 55; the store holds 57.** The additions are
+  `project_dior_cli_repo.md` and `reference_dior_cli_terminal_palette.md`, filed 20:47 EDT today by the
+  `dior` CLI work. Worth flagging: this same count was corrected in v2.35.5 this morning and was stale
+  again within nine hours, which is a fair argument that a hard number costs more than it's worth here.
+  Noted, not acted on unilaterally.
+- `MEMORY.md`'s index verified complete against the store: 0 files unlisted, 0 broken links.
+
 ## v2.35.11 — 2026-07-27 19:30 EDT (`4d29f86`) — Corrected the CI deferred entry after its own precondition was met
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
 - **"Expand CI beyond syntax-check" was asserting something that had just stopped being true.** Its ⚠️

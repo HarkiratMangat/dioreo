@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.12 — July 27, 2026
+- *Internal docs-only — tidied Dior's own planning notes so the same to-do can't quietly exist in two
+  places with two different answers. Nothing players see.*
+
 ## v2.35.11 — July 27, 2026
 - *Internal docs-only — a developer note that had gone out of date the same day it was written.
   Nothing players see.*
