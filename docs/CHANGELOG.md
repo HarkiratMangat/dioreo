@@ -162,6 +162,31 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.14 — 2026-07-27 20:25 EDT (`5a41a91`) — Render deleted, VM divergence fixed: GCP is now the only host
+**Real infrastructure change, but no runtime change and no deploy.** The bot process was never
+restarted and is still running v2.35.4's code.
+- **Render service `srv-d850b2og4nts73fhpfog` is DELETED.** REST `DELETE` → `204`, and a follow-up `GET`
+  returns `404 not found` — confirmed gone rather than assumed from the status code. Service identity
+  was verified before deleting (name `diors-builds`, suspended by user, untouched since the 2026-07-17
+  cutover). The P0 trigger fired on schedule, and the health precondition was **actually checked**
+  rather than taken on the calendar's word: VM `RUNNING`, `diors-bot` active with **0 restarts**, ~11h
+  uptime, RAM 564/969MB, load 0.10, disk 15%, `journalctl -p err` over the previous hour empty.
+  **The GCP VM is now the only host — there is no fallback.**
+- **The VM's diverged git history is fixed** — `git fetch origin && git reset --hard origin/main`. Its 2
+  extra commits (`f1dff2c`, `42f024e`) were exactly the pair this morning's force-push erased, and the
+  working tree was clean, so nothing was lost. **The service was deliberately NOT restarted**, because
+  that would be a deploy: the VM's *files* now sit at v2.35.13 while the *running process* stays on
+  v2.35.4's code until the next restart — the normal post-`git pull`, pre-restart state. Verified after:
+  HEAD `771ea76`, no ahead/behind, `ActiveEnterTimestamp` unchanged at `12:22:05 UTC`.
+- **`deployment-and-ops.md`'s Render suspend/resume mechanics are now marked historical.** That block
+  carried its own expiry — *"kept for reference until the service is deleted"* — and the condition fired.
+- **Filed: revoke `RENDER_API_KEY`.** It now authenticates against an account with no services, so it
+  grants nothing while remaining a live secret in prod's `.env` and on the VM. `RAILWAY_TOKEN` is
+  probably in the same position (Railway was abandoned even earlier) and is worth checking in the same
+  pass. A credential with zero remaining purpose is pure downside.
+- Both reminders moved to `docs/archive/resolved-list.md` recording what was verified, not just that
+  they were done. Memory `project_deployment_migration_render_to_gcp` updated to match.
+
 ## v2.35.13 — 2026-07-27 20:10 EDT (`1773605`) — Diagnosed the VM divergence and cleared Render's health gate
 **Docs/meta only — no runtime change, not deployed, and the VM was explicitly NOT restarted.**
 - **The VM git divergence is now fully diagnosed rather than merely flagged.** Verified live: the VM sits

@@ -26,6 +26,15 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.14 — July 27, 2026
+Behind-the-scenes only — nothing changes for you.
+
+The bot's old backup host (which it moved off of back on July 17) has now been shut down for good,
+after checking the current server had been running cleanly. The bot itself wasn't touched or
+restarted — it kept running the whole time.
+
+---
+
 ## v2.35.13 — July 27, 2026
 - *Internal ops-only — checked the server hosting the bot is healthy and worked out exactly what a
   pending bit of housekeeping needs. Nothing players see; the bot was not restarted.*
