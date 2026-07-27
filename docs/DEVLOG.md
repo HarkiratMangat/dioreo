@@ -1937,6 +1937,37 @@ emoji fixes, v2.34.1's docs, and this guard) as prod's first real code update si
 
 ---
 
+## 2026-07-26 21:04 EDT — A cleanup branch found a log line that lies about which database you're on
+
+The branch itself was housekeeping: silence dotenv's promotional log line (the "aside" the 18:43 EDT entry
+above flagged), and move `xlsx` out of `dependencies` — it's required by exactly one one-off migration
+script and never at runtime. Both were already committed and sitting unpushed; the job was to verify and
+ship them.
+
+Verifying turned up two gaps in the work as written. First, the dotenv fix covered `index.js` and stopped
+there — four scripts still printed the promo line while four *others* already passed `quiet: true`, so the
+repo was inconsistent in both directions rather than one. Cheap to finish, and worth finishing in the same
+change instead of filing it.
+
+The second one only showed up because the branch got a real dev-bot boot test. The connect line printed
+**"Successfully authenticated and established secure link to MongoDB Atlas Cluster!"** — and I read it, for
+a genuine moment, as *the dev bot just connected to production*. It hadn't: `.env.dev` points at
+`mongodb://localhost`, and the string was simply hardcoded, written back when Atlas was the only database
+that existed. That's a pre-dev-bot assumption that quietly became a lie the day a second database appeared,
+and the failure mode is nasty in the specific way that matters — it doesn't break anything, it just tells
+you the wrong thing at exactly the moment you're checking whether you're about to touch prod. Now it prints
+the actual `host/dbName` (`localhost/diors-builds-dev`), never the URI, since that string carries the Atlas
+credentials.
+
+Worth naming the pattern: **the dev bot's value isn't only catching bugs in the change you're testing — it
+re-runs every startup assumption in an environment those assumptions were never written for.** Two boots
+of a docs-and-config branch produced a real correctness fix in `index.js`.
+
+Merged as **v2.35.2**. Contains real bot code, so it stacks onto the still-pending v2.34.0–v2.35.0 VM
+deploy — the VM is still on v2.33.0. Merge did not deploy.
+
+---
+
 
 # Part B — Lessons Ledger (thematic)
 

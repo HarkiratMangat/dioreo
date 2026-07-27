@@ -162,6 +162,39 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.2 — 2026-07-26 21:04 EDT (`b276e10`) — dotenv quieted, `xlsx` demoted, and a connect log that told the truth
+
+**Contains real bot code (`index.js`) — MERGED BUT NOT DEPLOYED.** Stacks onto v2.34.0–v2.35.0's still-pending
+VM deploy; the VM remains on v2.33.0's code.
+
+- **`dotenv` silenced everywhere, not just in `index.js`.** `require('dotenv').config({ quiet: true })`
+  suppresses dotenv's env-injection log line and the rotating promotional "tip" it carries (investigated
+  and cleared as genuine maintainer self-promotion, not a supply-chain compromise — see v2.35.0's entry).
+  The original pass covered `index.js` only, leaving four scripts noisy while four others were already
+  quiet; **all nine call sites now match.**
+- **`xlsx` moved to `devDependencies`** (+ lockfile). It has exactly one consumer in the repo,
+  `scripts/migrateBuildsToMongo.js`, a one-off migration — never bot runtime. `deploy.sh` never re-runs
+  `npm install`, so nothing changes on the VM today; this is correct categorization now and functional the
+  day a production-only install step exists. Documented in `CLAUDE.md`'s Stack section along with the one
+  consequence worth knowing: `npm install --omit=dev` correctly drops it, so that script needs a full install.
+- **🐞 The Mongo connect log claimed "Atlas Cluster" no matter what it connected to.** Hardcoded since
+  before a second database existed — so a **dev-bot** boot on the **local** database printed a line that
+  reads exactly like a **production** connection. Misread that way during this branch's own boot test,
+  which is the whole problem: it breaks nothing and misinforms you at the precise moment you're checking
+  whether you're about to touch prod. Now prints the connected `host/dbName`
+  (`MongoDB (localhost/diors-builds-dev)`), and deliberately **not** the URI — that string carries the
+  Atlas credentials.
+- **Docs corrections riding along:** `db-deferred-list.md` no longer claims PR
+  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11)'s `ci.yml` shipped (still open, unmerged —
+  there is no CI on `main`), and records **Vitest + Biome** as the decided tools for that CI-expansion
+  item; `diors-builds notes.md` flags **Sentry** (free tier) as a candidate for the `vmstatus.sh`-overhaul
+  session.
+- **Verified, not assumed:** `node --check` on every edited file; two dev-bot boots on `.env.dev`
+  (no promo line, correct host in the log, shard ready, 40 emoji ids re-pointed, gateway integrated);
+  `npm ls xlsx` still resolves. The prod VM was untouched — the v2.35.0 instance lock is token-scoped.
+
+---
+
 ## v2.35.1 — 2026-07-26 20:52 EDT (`9288025`) — Tool-discovery session filed in the deferred list
 
 **Internal / docs only — no bot code touched. Does not change v2.34.0–v2.35.0's still-pending deploy.**

@@ -26,6 +26,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.2 — July 26, 2026
+Behind-the-scenes only — nothing changes for you.
+
+Tidied up the bot's startup messages and trimmed a tool it only needs for maintenance out of what it
+installs to run.
+
+---
+
 ## v2.35.1 — July 26, 2026
 - *Internal docs-only — jotted down a list of developer tools to look at later. Nothing players see.*
 
