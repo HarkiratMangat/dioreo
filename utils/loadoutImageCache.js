@@ -19,6 +19,8 @@
 // key+secret in `request_options.auth`; only ever read `.message`/`.error.message` off a caught error.
 const cloudinary = require('cloudinary').v2;
 
+const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+
 const FOLDER = 'gun-builds'; // same flat folder every existing loadout image already lives in
 
 function safeErrorMessage(err) {
@@ -150,6 +152,10 @@ async function syncLoadoutMetadata(doc, attachmentSlots) {
     try {
         const md = buildLoadoutMetadata(doc, attachmentSlots);
         if (Object.keys(md).length === 0) return { success: false, error: 'nothing to set' };
+        // Dev bot shares prod's Cloudinary credentials -- this would rewrite the LIVE asset's metadata.
+        if (isCloudinaryWriteBlocked('update_metadata', publicId)) {
+            return { success: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+        }
         const res = await cloudinary.uploader.update_metadata(md, [publicId]);
         if (!res.public_ids || res.public_ids.length === 0) {
             return { success: false, error: `no Cloudinary asset at "${publicId}"` };
@@ -167,6 +173,13 @@ async function syncLoadoutMetadata(doc, attachmentSlots) {
 // IMAGE ONLY -- structured metadata is set separately by syncLoadoutMetadata(doc) once the Loadout doc
 // exists, so this never has to know anything about the loadout's data.
 async function uploadLoadoutImage(sourceUrl, imageKey) {
+    // The single most dangerous write in the bot from a dev instance: `public_id` is the bare imageKey
+    // (see the comment below), so `overwrite: true` against a key that already exists in prod would
+    // silently replace a LIVE loadout image. Folder-scoping cannot prevent it -- asset_folder is not
+    // part of the asset's identity.
+    if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${imageKey}`)) {
+        return { success: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+    }
     try {
         await cloudinary.uploader.upload(sourceUrl, {
             public_id: imageKey, // bare key, NOT folder-prefixed -- gun-builds is dynamic-folder mode,

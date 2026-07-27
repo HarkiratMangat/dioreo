@@ -24,6 +24,8 @@ if (!process.env.CLOUDINARY_URL) {
     console.error('⚠️ CLOUDINARY_URL is not set -- draw thumbnail caching will fail on every attempt.');
 }
 
+const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+
 const FOLDER = 'temp_draws';
 const EXPIRY_DAYS = 45;
 
@@ -65,6 +67,12 @@ function publicIdFor(title) {
 // URL already dead, network hiccup, etc.) is a normal, expected case this feature exists to route
 // around, not a reason to block the draw from saving at all.
 async function cacheThumbnail(title, sourceUrl) {
+    // Dev bot shares prod's Cloudinary credentials. Returning the same shape as the catch block below
+    // means resolveThumbnail() falls back to the raw URL exactly as it does for a real upload failure,
+    // so a draw still saves in dev -- it just isn't re-hosted.
+    if (isCloudinaryWriteBlocked('upload', publicIdFor(title))) {
+        return { url: null, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+    }
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(title), // folder is baked into this path (temp_draws/{slug})
@@ -181,6 +189,11 @@ async function pruneExpiredThumbnails(currentUrls) {
         if (toDelete.length === 0) return { deletedCount: 0, deleted: [] };
 
         const publicIds = toDelete.map(a => a.public_id);
+        // Irreversible against the live account -- and the dev bot's own boot/24h cleanup sweep would
+        // otherwise run this unprompted, deleting prod thumbnails with nobody having asked for anything.
+        if (isCloudinaryWriteBlocked('delete_resources', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
+            return { deletedCount: 0, deleted: [] };
+        }
         await cloudinary.api.delete_resources(publicIds, { invalidate: true });
         return { deletedCount: publicIds.length, deleted: publicIds };
     } catch (err) {

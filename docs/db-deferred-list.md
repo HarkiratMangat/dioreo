@@ -207,6 +207,23 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
+- `[P2 · M · 🧩needs-design · ⛓️blocked-by nothing, just deferred]` **Give the dev bot a real Cloudinary
+  write namespace instead of the fail-closed block.** Filed 2026-07-27 18:40 EDT alongside the guard in
+  `utils/cloudinaryDevGuard.js` (v2.35.9). The guard currently refuses **every** Cloudinary write when
+  `NODE_ENV=development`, which is correct and safe but means the dev bot cannot exercise the image
+  workflow at all — a real gap for the v3 items that touch images (`/autobuild`, `/admin` loadout images,
+  patch notes). The clean version is a parallel dev namespace, and it is **not uniform across the three
+  caches**, which is why it wasn't done inline:
+  - `temp_draws` and `patch_notes` bake the folder into the `public_id` (`temp_draws/{slug}`,
+    `patch_notes/{id}/{index}`), and their prune sweeps scan by `prefix: ${FOLDER}/` — so dev-scoping the
+    `FOLDER` const alone namespaces upload, read, and prune end-to-end. Genuinely easy.
+  - **`gun-builds` does not.** Loadout `public_id` is the bare `imageKey`, with the folder carried only in
+    `asset_folder` (a decoupled dashboard label). Dev-scoping needs the `public_id` itself prefixed, and
+    then `buildImageUrl()` in `utils/loadoutRender.js` has to agree — otherwise dev-uploaded images 404 on
+    render while prod-existing ones still resolve, which is a confusing half-working state.
+  Do this when a v3 feature actually needs dev-side image writes, not preemptively. Alternative worth
+  pricing at the same time: a separate free Cloudinary account for `.env.dev`, which is cleaner but makes
+  every existing loadout render broken in dev (their URLs live in Mongo pointing at prod).
 - `[P1 · XS · Harkirat action, not a build]` **Update the bot's Discord Developer Portal listing** (filed
   2026-07-18, notes) — description, name, and banner image. Pure Discord Dev Portal task, not something
   Claude can do (no tool access to that UI); flagging so it doesn't get lost.
