@@ -162,6 +162,35 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.6 — 2026-07-27 18:05 EDT (`a3bf9a9`) — Designed the v3 development structure
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
+touched, so the VM is still running v2.35.4's code.
+- **Settled how v3 gets built without conflicting with the live bot or `main`**, ahead of any v3 feature
+  work starting. Full design: `docs/superpowers/specs/2026-07-27-v3-development-structure-design.md`.
+  A long-lived **`v3-pre-release`** integration branch, cut off `main`; v3 features use the existing
+  convention (`feat/*` branches, squash-merged PRs) with `--base v3-pre-release`. v2 hotfixes are
+  unchanged and keep going to `main`, which stays live-safe at every commit **by construction** rather
+  than by a feature gate — decided that way because v3's changes are *renames and removals* of live
+  commands (`/manage`→`/admin`, collapsing the MP loadout commands), where a dormant-code mistake would
+  be a live outage rather than a cosmetic bug.
+- **Corrected the 2026-07-14 directive's sync mechanism: cherry-pick → merge.** The original said every
+  v2 change must be "cherry-pick[ed] or re-appl[ied]" into the v3 branch. A cherry-pick copies content
+  *without recording that the sync happened*, so git's merge base never advances and the same conflicts
+  resurface on every subsequent sync, indefinitely. Sync is now one-way `git merge origin/main`.
+- **Filled a versioning gap the original directive left open** — what `package.json` does during
+  pre-release. It matters, because the bot's boot alert reads it. It now carries a `-pre` suffix matching
+  the changelog 1:1 (`Pre-Release v3.1.0` ↔ `3.1.0-pre`), and no git tags are minted until `v3.0.0`.
+- **🔴 Found a live-bot safety hole while verifying isolation:** `.env.dev`'s `CLOUDINARY_URL` is
+  **byte-identical to prod's**, so the dev bot reads *and writes* the live Cloudinary account in the same
+  flat `gun-builds` folder. Bot token, Mongo, and the alert webhook are all correctly separated; this one
+  isn't. Fix spec'd here, shipping separately before the branch cut.
+- **Also recorded a git-hygiene trap that cost real time this session:** this repo has GitHub's
+  auto-delete-on-merge enabled, and a plain `git fetch` does **not** prune remote-tracking refs — so
+  `git branch -a` kept listing three long-merged branches as though they were open work. `gh pr list
+  --state all` is the authoritative check, not `git branch -a`.
+- Decided against a `git worktree` for the v3 line: a worktree gets no `.claude/settings.local.json`
+  (gitignored), so every Claude session started there would silently lose both `SessionStart` hooks.
+
 ## v2.35.5 — 2026-07-27 11:10 EDT (`3e12737`) — Corrected a stale memory-store count; filed commit attribution as deferred
 **Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
 touched, so the VM is still running v2.35.4's code.
