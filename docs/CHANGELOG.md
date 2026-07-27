@@ -162,6 +162,26 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.10 — 2026-07-27 19:00 EDT (`2665db4`) — Synced the standing records to the v3 structure
+**Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
+- **The "document" step for v2.35.6's design** — a standing rule changed, so the written record had to
+  catch up even though no feature code shipped.
+- **`CLAUDE.md`'s git-workflow invariant now states that TWO bases exist** and that `gh pr create`
+  defaults to the wrong one for v3 work. That's the single most likely way to silently break the v3
+  structure: a v3 PR created without `--base v3-pre-release` targets `main` and, if merged, puts
+  unfinished v3 code on the branch that must stay live-safe. Also records merge-not-cherry-pick and the
+  `-pre` versioning shape.
+- **Recorded that `git branch -a` is not a reliable view of open work here.** Auto-delete-on-merge is
+  enabled and a plain `git fetch` does not prune remote-tracking refs, so three long-merged branches
+  listed as if they were live work — surfaced only when `git push --delete` failed with "remote ref does
+  not exist." `gh pr list --state all` is the authoritative check.
+- **`ROADMAP.md`** files the v3 development structure (v2.35.6) and the first CI (v2.35.8) as shipped
+  process/tooling entries; **`DEVLOG.md`** carries the narrative — why the 2026-07-14 directive had aged
+  out from under itself, and how testing an isolation assumption is what surfaced the Cloudinary hole.
+- Memory `project_git_workflow` and `project_dior_builds_changelog_system` updated in the same pass
+  (outside the repo, so not in the PR diff). The 2026-07-14 directive is marked **partly superseded**
+  rather than deleted, with the three concrete changes called out inline.
+
 ## v2.35.9 — 2026-07-27 18:45 EDT (`f1575d0`) — Stopped the dev bot from writing to the LIVE Cloudinary account
 **Dev-instance safety fix — prod behaviour is byte-identical, so this is not deployed.** The VM is still
 running v2.35.4's code and nothing here changes what it would do.

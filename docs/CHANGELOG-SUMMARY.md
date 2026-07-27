@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.10 — July 27, 2026
+- *Internal docs-only — developer notes brought in line with how the next big version will be built.
+  Nothing players see.*
+
 ## v2.35.9 — July 27, 2026
 - *Internal safety fix — Dior's test copy of the bot could accidentally change or delete the real
   bot's saved images. It can't anymore. Nothing changes for you, but your loadout and patch-note
