@@ -22,11 +22,33 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   separate ones. Deliberately chosen over per-command granularity — if you're asked
   to add a 6th seasonal command, wire it to `prefs.seasonalVisibility` too, don't add
   a new field.
-- **Admin dates are always UTC-0.** `adminParser.js`'s `parseAdminDate` forces
-  `chrono.parseDate(str, new Date(), { timezone: 0 })` specifically to avoid
-  depending on the host machine's local timezone/DST — a past bug (DMZ season-end
-  showing 1 hour off) was traced to exactly this kind of local-timezone dependency.
-  Don't reintroduce ambient-timezone parsing.
+- **Admin dates are always UTC-0 — except patch notes' release date/time, which is the one
+  deliberate exception.** `adminParser.js`'s `parseAdminDate` (draws/calendar/season-end deadlines)
+  forces `chrono.parseDate(str, new Date(), { timezone: 0 })` specifically to avoid depending on the
+  host machine's local timezone/DST — a past bug (DMZ season-end showing 1 hour off) was traced to
+  exactly this kind of local-timezone dependency. Don't reintroduce ambient-timezone parsing for
+  those fields.
+  - **Patch notes' release date (`adminParser.js`'s `parseReleaseDateTime`, used only by the 3
+    `modal_patch_*` handlers in index.js) is smarter, per Harkirat's explicit call (2026-07-27
+    08:02 EDT):** a
+    bare date with no time-of-day still means UTC-0 midnight (same convention as everywhere else,
+    falls straight through to `parseAdminDate`), but the moment a time is also typed
+    ("2026-07-22, 7:20 AM"), that time is treated as Harkirat's own local clock (his
+    `UserPreference.timezone`, same field `/settings`/`/timestamp` already use, default
+    `America/Toronto`) and converted to the real UTC instant — chrono's `isCertain('hour')` decides
+    which case applies, same check `timestampHelper.js`'s `generateTimestamps()` already uses. Root
+    cause this fixed: `parseAdminDate` used to unconditionally discard any typed time and normalize
+    to midnight UTC regardless — a real time typed alongside the date was silently thrown away, and
+    since `commands/patchnotes.js` displays the release date with a Discord `<t:X:f>` (date+time)
+    timestamp, that discarded-then-midnight-UTC value rendered as a confusing wrong-day/wrong-time
+    string in the viewer's own local timezone (e.g. midnight UTC showing as "8:00 PM the previous
+    day" for a UTC-4 viewer). `adminParser.js`'s `formatReleaseDateTime` is the reverse — it
+    pre-fills the "Date & Info" / "Edit Past Season" modals with the time included whenever the
+    stored instant isn't exact UTC midnight, so reopening either modal to tweak something unrelated
+    (e.g. the description) doesn't silently wipe a previously-set release time back to midnight on
+    the next submit. If you add a 4th patch-notes-date call site, use `parseReleaseDateTime`/
+    `formatReleaseDateTime`, not `parseAdminDate`/`formatAdminDate` — every other admin date field
+    (draws/calendar/season-end) is unaffected and keeps the plain UTC-0 functions.
 - **chrono-node defaults a bare date (no time-of-day given) to NOON, not midnight.**
   `timestampHelper.js`'s `generateTimestamps` (used by `/timestamp`) checks
   `parsedComponents.isCertain('hour')` and manually zeroes the time back to midnight

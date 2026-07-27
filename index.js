@@ -1196,7 +1196,9 @@ client.on('interactionCreate', async interaction => {
                 return;
             }
             const manageCommand = client.commands.get('manage');
-            return await interaction.showModal(manageCommand.buildPatchEditSeasonModal(entry));
+            const PatchEditUserPreference = require('./models/UserPreference');
+            const patchEditAdminPrefs = await PatchEditUserPreference.findOne({ discordId: interaction.user.id });
+            return await interaction.showModal(manageCommand.buildPatchEditSeasonModal(entry, patchEditAdminPrefs?.timezone));
         }
 
         // F. LOADOUT "BROWSE OTHER BUILDS" DROPDOWN (added 2026-07-12) -- lets a user jump
@@ -2057,7 +2059,11 @@ client.on('interactionCreate', async interaction => {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
                 const currentEntry = seasonalDoc?.patchNotes?.length ? seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1] : null;
-                if (action === 'dateinfo') return await interaction.showModal(manageCommand.buildPatchDateInfoModal(currentEntry));
+                if (action === 'dateinfo') {
+                    const PatchDateInfoUserPreference = require('./models/UserPreference');
+                    const patchDateInfoAdminPrefs = await PatchDateInfoUserPreference.findOne({ discordId: interaction.user.id });
+                    return await interaction.showModal(manageCommand.buildPatchDateInfoModal(currentEntry, patchDateInfoAdminPrefs?.timezone));
+                }
                 if (action === 'urls1') return await interaction.showModal(manageCommand.buildPatchUrlsModal(1, currentEntry));
                 if (action === 'urls2') return await interaction.showModal(manageCommand.buildPatchUrlsModal(2, currentEntry));
                 // "Add New Season" (2026-07-24) -- always opens blank, unlike dateinfo/urls1/urls2
@@ -2389,7 +2395,7 @@ client.on('interactionCreate', async interaction => {
         const Loadout = require('./models/Loadout');
         // Hoisted once here instead of being re-required with a different destructured subset in
         // nearly every branch below (all inside the same already-required module scope).
-        const { parseAdminDate, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
+        const { parseAdminDate, parseReleaseDateTime, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
         const { fuzzyMatch } = require('./utils/search');
         // checkImageExists() (2026-07-18, /manage loadout UX overhaul) -- real Cloudinary existence
         // check used by add_loadout_/edit_loadout_/modal_loadouts_bulk_add_ below.
@@ -2839,7 +2845,13 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'modal_patch_dateinfo') {
             await interaction.deferReply({ ephemeral: true });
             const current = getOrCreateCurrentPatch();
-            current.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
+            // parseReleaseDateTime (not the plain parseAdminDate every other admin date field uses)
+            // -- patch notes release times are typed in Harkirat's own local clock whenever a time is
+            // included at all; see the function's own comment in adminParser.js for why this field
+            // alone gets that treatment.
+            const UserPreference = require('./models/UserPreference');
+            const adminPrefs = await UserPreference.findOne({ discordId: interaction.user.id });
+            current.releaseDate = parseReleaseDateTime(interaction.fields.getTextInputValue('release_date'), adminPrefs?.timezone);
             current.description = interaction.fields.getTextInputValue('description')?.trim() || '';
             // Manual title override (2026-07-24) -- blank clears it, which reverts the effective
             // display title back to the auto-synced `title` (currentSeasonTitle) -- see the schema
@@ -2907,11 +2919,15 @@ client.on('interactionCreate', async interaction => {
             const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);
             const urlList = [...parseUrlLines(interaction.fields.getTextInputValue('urls1')), ...parseUrlLines(interaction.fields.getTextInputValue('urls2'))];
 
+            // See modal_patch_dateinfo above -- patch notes release times are local-clock, not UTC-0,
+            // whenever a time is actually typed alongside the date.
+            const AddSeasonUserPreference = require('./models/UserPreference');
+            const addSeasonAdminPrefs = await AddSeasonUserPreference.findOne({ discordId: interaction.user.id });
             seasonalDoc.patchNotes.push({
                 title: seasonalDoc.currentSeasonTitle || 'Untitled Season',
                 titleOverride: interaction.fields.getTextInputValue('season_title')?.trim() || '',
                 description: interaction.fields.getTextInputValue('description')?.trim() || '',
-                releaseDate: parseAdminDate(interaction.fields.getTextInputValue('release_date')),
+                releaseDate: parseReleaseDateTime(interaction.fields.getTextInputValue('release_date'), addSeasonAdminPrefs?.timezone),
                 images: []
             });
             const newEntry = seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1];
@@ -2944,7 +2960,10 @@ client.on('interactionCreate', async interaction => {
             if (!entry) return await interaction.followUp({ content: '❌ That season no longer exists -- it may have been changed or removed since this modal opened.' });
 
             entry.titleOverride = interaction.fields.getTextInputValue('season_title')?.trim() || '';
-            entry.releaseDate = parseAdminDate(interaction.fields.getTextInputValue('release_date'));
+            // See modal_patch_dateinfo above -- local-clock, not UTC-0, whenever a time is typed.
+            const EditSeasonUserPreference = require('./models/UserPreference');
+            const editSeasonAdminPrefs = await EditSeasonUserPreference.findOne({ discordId: interaction.user.id });
+            entry.releaseDate = parseReleaseDateTime(interaction.fields.getTextInputValue('release_date'), editSeasonAdminPrefs?.timezone);
             entry.description = interaction.fields.getTextInputValue('description')?.trim() || '';
 
             const parseUrlLines = text => (text || '').split('\n').map(u => u.trim()).filter(u => u && u.startsWith('http')).slice(0, 5);

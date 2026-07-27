@@ -2,7 +2,9 @@
 const chrono = require('chrono-node');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
+dayjs.extend(timezone);
 const { fuzzyMatch, normalizeForSearch } = require('./search');
 
 // NOTE (fixed during review): the old implementation did `str.toLowerCase()` on the WHOLE string
@@ -65,6 +67,41 @@ function parseAdminDate(dateStr) {
     // no specific time-of-day is collected from the admin. Use the UTC getters here (not the
     // local getters used previously) since parsedResult is already anchored in UTC.
     return new Date(Date.UTC(parsedResult.getUTCFullYear(), parsedResult.getUTCMonth(), parsedResult.getUTCDate(), 0, 0, 0, 0));
+}
+
+/**
+ * Patch notes' own release date/time parser -- unlike parseAdminDate above (draws/calendar/season
+ * end deadlines, always date-only, always UTC-0), Harkirat actually wants a real release TIME
+ * here, and per his own stated habit (2026-07-27 08:02 EDT) the two fields carry different implied timezones:
+ * a bare date ("July 22") is still typed in UTC-0 (same convention as everywhere else), but the
+ * MOMENT he also types a time ("2026-07-22, 7:20 AM") that time is his own local clock, not UTC --
+ * he's never in the habit of hand-converting to UTC before typing a patch-notes time (per his own
+ * stated habit, confirmed directly with him during this fix). Detecting
+ * which case applies uses the same `isCertain('hour')` chrono-components check
+ * timestampHelper.js's generateTimestamps() already relies on for the same "was a time actually
+ * typed, or just inferred" distinction.
+ *
+ * `userTimezone` should be the admin's own UserPreference.timezone (see commands/settings.js) --
+ * defaults to 'America/Toronto' to match every other timezone default in this codebase.
+ */
+function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto') {
+    const cleanStr = dateStr.trim();
+    const parseResults = chrono.parse(cleanStr, new Date());
+    if (!parseResults || parseResults.length === 0) return new Date();
+
+    const parsedComponents = parseResults[0].start;
+    if (!parsedComponents.isCertain('hour')) {
+        // No time typed -- same UTC-midnight, date-only convention as parseAdminDate.
+        return parseAdminDate(cleanStr);
+    }
+
+    // A time was typed -- treat the literal date/time numbers as Harkirat's own local clock
+    // (userTimezone), then convert that wall-clock moment to its real UTC instant. `.tz(tz, true)`
+    // (keepLocalTime) re-anchors the exact Y/M/D H:M chrono extracted into userTimezone rather than
+    // reinterpreting whatever offset the initial naive parse assumed -- same pattern
+    // timestampHelper.js's generateTimestamps() already uses for user-facing /timestamp input.
+    const localTarget = dayjs(parsedComponents.date()).tz(userTimezone, true);
+    return localTarget.toDate();
 }
 
 /**
@@ -202,6 +239,21 @@ function formatDrawsAsBulkText(draws) {
 // round-trips cleanly instead of showing an ISO timestamp the admin would have to reformat by hand.
 function formatAdminDate(date) {
     return date ? dayjs.utc(date).format('MMMM D, YYYY') : '';
+}
+
+// Reverse of parseReleaseDateTime -- pre-fills the patch-notes release_date field so reopening the
+// modal and resubmitting without touching this field round-trips cleanly. A plain formatAdminDate()
+// call would ALWAYS drop back to a date-only string, and since parseReleaseDateTime treats a
+// date-only resubmit as "no time given" (falls back to UTC midnight), that would silently erase a
+// previously-set release time the next time this modal was reopened for something unrelated (e.g.
+// just fixing a typo in the description). Only prints a time-of-day at all when the stored instant
+// isn't already exact UTC midnight -- a genuinely date-only entry still round-trips as a bare date.
+function formatReleaseDateTime(date, userTimezone = 'America/Toronto') {
+    if (!date) return '';
+    const d = dayjs(date);
+    const isExactUtcMidnight = d.utc().hour() === 0 && d.utc().minute() === 0 && d.utc().second() === 0 && d.utc().millisecond() === 0;
+    if (isExactUtcMidnight) return d.utc().format('MMMM D, YYYY');
+    return d.tz(userTimezone).format('MMMM D, YYYY h:mm A');
 }
 
 /**
@@ -521,4 +573,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot };
