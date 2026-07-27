@@ -135,7 +135,12 @@ two enhancements — all admin/back-end:
   handling (needs Harkirat to teach the DMZ slot layout — DMZ builds don't label slots unless empty).
   (The `/manage` attachment→per-slot-metadata gap that used to be listed here is FIXED — see below.)
 - **`/autobuild` follow-ups filed 2026-07-21 from the notes scratchpad (for the next `/autobuild` session):**
-  - **Ephemeral/`hidden` toggle for `/autobuild`** — the same visibility option every other command has.
+  - **Ephemeral/`hidden` toggle for `/autobuild` — BUILT 2026-07-25.** Added a `private` boolean
+    option (default `true`, matching the always-ephemeral behavior that existed before this option)
+    to `commands/autobuild.js`, applied to both the main `deferReply` and the `retry_token` path's
+    `deferReply`. Deliberately explicit-option-only, no saved-preference layer like the loadout
+    commands' `private` — this is a single-admin PoC command, not worth the extra `UserPreference`
+    state for how rarely it'd actually be toggled.
   - **Bulk `/autobuild` PoC** — `/autobuild amount:{single,multiple}`; `multiple` opens a modal taking one
     build per line (`<category> | <badge(s)> | URL`, category/badges optional), runs the vision pipeline over
     each, and shows a **paginated review panel** where per-page Edit/Confirm/Cancel act on that build, plus

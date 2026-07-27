@@ -52,10 +52,6 @@ Ideas, committed work, and known small gaps — nothing in this section has ship
 how committed we are. Items graduate into a numbered version entry below once they actually ship.
 
 ### 🛠️ Planned — intend to build
-- **Single-instance guard** — a startup lock so a stray local `node index.js` can't silently run
-  alongside the deployed Render bot. This is a single-token bot: two live instances race every
-  interaction (Discord routes each click to a random one) and cause the "different behavior each
-  click" + 10062/40060 errors seen behind v2.17.0. Refuse-to-start-if-already-connected is the fix.
 - **Real "search + multi-select" admin flow** — for "Delete Multiple" (all entities) and Loadouts'
   "Replace Multiple": search first, then tick which matches to act on. Today these are placeholder
   paste-a-list-of-names flows; this is the genuinely new interaction they're meant to become.
@@ -165,6 +161,384 @@ changelog until v3 actually launches.
   context is available to the bot.
 
 ---
+
+## v2.35.5 — 2026-07-27 11:10 EDT (`3e12737`) — Corrected a stale memory-store count; filed commit attribution as deferred
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
+touched, so the VM is still running v2.35.4's code.
+- **`CLAUDE.md`'s canonical-memory-path count was wrong** — it claimed 26 files; the store holds 55
+  plus `MEMORY.md`. That number isn't decoration: it's how a session confirms it landed at the right
+  path, and the whole reason the warning exists is that the harness points sessions at a *different*
+  slug (`-Applications-Claude-Code-Diors-Builds`) that has no `memory/` directory at all. A count
+  stale by more than double actively undermines the check. Now timestamped and worded as a sanity
+  signal ("if you land somewhere empty, you're at the wrong path") rather than a bare number that
+  rots silently.
+- **Filed the unclickable-commit-attribution issue** in `docs/db-deferred-list.md` (Someday/tech-debt,
+  `[P3 · S · Harkirat decision first]`). Every commit before 2026-07-27 11:10 EDT carries
+  `Dior <diorswrld@discord.com>`, which isn't a verified address on the GitHub account, so GitHub
+  renders the author as flat text with no profile link — verified via
+  `gh api repos/.../commits --jq '.[].author.login'` returning `null`. **Already fixed going forward**:
+  the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`, so new
+  commits link correctly. Only the back-catalogue is affected, and fixing that rewrites every pushed
+  SHA on a repo the GCP VM pulls from, plus re-pointing 37 backfilled version tags — filed as a
+  decision to make, not a queued build.
+- Context: this landed alongside the `dior` CLI moving out of `~/.zshrc` into its own private repo
+  (`~/.config/dior`, symlinked to `/Applications/Claude Code/dior-cli`) — that work lives in that
+  repo's own history, not this one. See memory `project_dior_cli_repo`.
+
+---
+
+## v2.35.4 — 2026-07-27 08:02 EDT (`f1d23da`) — Patch notes release date now supports a real local-clock time
+**Fixes a real display bug:** Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch
+note's release date field and saw `July 21, 2026 at 8:00 PM` after saving — not a parsing crash, a
+design mismatch. `parseAdminDate` (shared by every admin date field) unconditionally discards any
+typed time and normalizes to midnight UTC; `commands/patchnotes.js` then displays that value with a
+Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *viewer's* local timezone
+— for a UTC-4 viewer, that's the previous evening.
+- Added `utils/adminParser.js`'s `parseReleaseDateTime(dateStr, userTimezone)` — used only by patch
+  notes' 3 `modal_patch_*` handlers in `index.js` (Date & Info, Add New Season, Edit Past Season).
+  A bare date with no time still falls straight through to the existing `parseAdminDate` (UTC-0
+  midnight, unchanged for every other admin date field). The moment a time is also typed, it's now
+  treated as the admin's own local clock (`UserPreference.timezone`, same field `/settings`/
+  `/timestamp` already use) and converted to the real UTC instant — detected via chrono's
+  `isCertain('hour')`, the same check `utils/timestampHelper.js`'s `generateTimestamps()` already
+  relies on for the same distinction.
+- Added the reverse formatter, `formatReleaseDateTime`, so reopening either modal to tweak something
+  unrelated (e.g. the description) doesn't silently revert a previously-set release time back to
+  midnight on the next submit — it only omits the time when the stored instant is exact UTC midnight.
+- Draws/calendar/season-end deadlines are completely unaffected — they still use the plain
+  `parseAdminDate`/`formatAdminDate` UTC-0 functions.
+- See `.claude/rules/design-decisions.md` for the full before/after reasoning.
+
+---
+
+## v2.35.3 — 2026-07-26 21:52 EDT (`6d3f919`) — `scripts/devCommands.js`: take the dev bot's commands out of the `/` picker
+
+**New script + docs only — `index.js` untouched, so no deploy needed.** The VM stays current at v2.35.2.
+
+- **The problem:** killing the dev-bot process does **not** remove `Dio (Dev)`'s slash commands from the
+  `/` picker. Registration is stored on Discord's side against the **application**, not the process —
+  `index.js` writes it once per boot and Discord keeps it indefinitely. Since the bot is user-installed,
+  those 20 commands follow Harkirat into every server and DM, duplicating prod's identical list whenever
+  he isn't testing; picking one just yields "The application did not respond" after the 3s timeout.
+  Discord exposes **no UI for this anywhere**, including the Developer Portal — it is API-only.
+- **`node scripts/devCommands.js list | clear`.** `clear` registers an empty command list.
+  **No restore mode, deliberately** — the next dev-bot boot re-registers everything, because that PUT
+  runs on every startup. The loop is: `clear` when done testing, boot when you want them back.
+- **Two independent guards against ever hitting prod**, since clearing prod's commands would strip every
+  command from the real bot until someone noticed: the script parses `.env.dev` **directly off disk**
+  rather than reading `process.env` (a `dotenv`-based script could silently hold the *prod* token via
+  dotenv's documented backfill behavior — see `CLAUDE.md`), and it aborts outright if `.env.dev`'s
+  `BOT_TOKEN` matches `.env`'s. It prints the resolved application name + id before acting, and error
+  output is limited to `rawError.message` — never the token, never the raw error object.
+- **Verified live, not just `node --check`:** `list` → `Dio (Dev)` + 20 commands; `clear` → 20 cleared,
+  re-`list` → none; an independent read-only check on the prod token → `Dior's Builds` still reports all
+  20 registered.
+
+---
+
+## v2.35.2 — 2026-07-26 21:04 EDT (`b276e10`) — dotenv quieted, `xlsx` demoted, and a connect log that told the truth
+
+**Contains real bot code (`index.js`) — MERGED BUT NOT DEPLOYED.** Stacks onto v2.34.0–v2.35.0's still-pending
+VM deploy; the VM remains on v2.33.0's code.
+
+- **`dotenv` silenced everywhere, not just in `index.js`.** `require('dotenv').config({ quiet: true })`
+  suppresses dotenv's env-injection log line and the rotating promotional "tip" it carries (investigated
+  and cleared as genuine maintainer self-promotion, not a supply-chain compromise — see v2.35.0's entry).
+  The original pass covered `index.js` only, leaving four scripts noisy while four others were already
+  quiet; **all nine call sites now match.**
+- **`xlsx` moved to `devDependencies`** (+ lockfile). It has exactly one consumer in the repo,
+  `scripts/migrateBuildsToMongo.js`, a one-off migration — never bot runtime. `deploy.sh` never re-runs
+  `npm install`, so nothing changes on the VM today; this is correct categorization now and functional the
+  day a production-only install step exists. Documented in `CLAUDE.md`'s Stack section along with the one
+  consequence worth knowing: `npm install --omit=dev` correctly drops it, so that script needs a full install.
+- **🐞 The Mongo connect log claimed "Atlas Cluster" no matter what it connected to.** Hardcoded since
+  before a second database existed — so a **dev-bot** boot on the **local** database printed a line that
+  reads exactly like a **production** connection. Misread that way during this branch's own boot test,
+  which is the whole problem: it breaks nothing and misinforms you at the precise moment you're checking
+  whether you're about to touch prod. Now prints the connected `host/dbName`
+  (`MongoDB (localhost/diors-builds-dev)`), and deliberately **not** the URI — that string carries the
+  Atlas credentials.
+- **Docs corrections riding along:** `db-deferred-list.md` no longer claims PR
+  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11)'s `ci.yml` shipped (still open, unmerged —
+  there is no CI on `main`), and records **Vitest + Biome** as the decided tools for that CI-expansion
+  item; `diors-builds notes.md` flags **Sentry** (free tier) as a candidate for the `vmstatus.sh`-overhaul
+  session.
+- **Verified, not assumed:** `node --check` on every edited file; two dev-bot boots on `.env.dev`
+  (no promo line, correct host in the log, shard ready, 40 emoji ids re-pointed, gateway integrated);
+  `npm ls xlsx` still resolves. The prod VM was untouched — the v2.35.0 instance lock is token-scoped.
+
+---
+
+## v2.35.1 — 2026-07-26 20:52 EDT (`9288025`) — Tool-discovery session filed in the deferred list
+
+**Internal / docs only — no bot code touched. Does not change v2.34.0–v2.35.0's still-pending deploy.**
+
+- **`docs/db-deferred-list.md`** gains one `[P3 · S]` item under 🧹 Someday/tech-debt: a **tool-discovery
+  session** holding the CLI-tool candidates raised during a dotenvx-adjacent tooling discussion and
+  deferred on the spot rather than scoped — `procs`, `git-delta`, `zoxide`, `hyperfine`, Knip, `act`,
+  and a free-tier uptime/status-page service.
+- **Nothing is decided.** The item is deliberately a holding pen: several candidates already have a hook
+  into existing work (`procs` → the stray-`node`-process hunt in `[[feedback_multiple_bot_instances]]`,
+  `hyperfine` → the queued "Pagination perf hybrid" item, `act` → running `ci.yml` locally once PR #11
+  lands, an uptime service → the deferred `/status` command + `vmstatus.sh` overhaul), which is exactly
+  why the list was worth writing down instead of re-deriving it in three weeks.
+
+---
+
+## v2.35.0 — 2026-07-26 18:43 EDT (`3b978a5`) — Single-instance startup guard
+
+**Real bot code, MERGED BUT NOT DEPLOYED** — stacks on top of v2.34.0/v2.34.1's still-pending VM deploy.
+
+A stray leftover local `node index.js` racing the deployed instance on the same token has caused real
+incidents before (`[[feedback_multiple_bot_instances]]`, the original 2026-07-14 discovery). This closes
+it with a startup guard instead of a manual "remember to kill local processes" step.
+
+- **`utils/instanceLock.js` + `models/BotInstance.js`** — a Mongo heartbeat lock. `index.js` calls
+  `acquireInstanceLock()` right before `client.login()`; the lock writes a 10s heartbeat, and if another
+  instance's heartbeat is fresher than 30s (3 missed beats), the new process logs, alerts, and
+  `process.exit(1)`s instead of connecting. Best-effort lock release on `SIGINT`/`SIGTERM`.
+- **Scoped per-token, not a global singleton** — the lock `_id` is a hash of `BOT_TOKEN`, deliberately,
+  so the local dev bot (`Dio (Dev)`, its own token) can run alongside the VM's prod instance without
+  either refusing to start. Only two processes sharing the *same* token collide.
+- **Boot-tested locally against the dev bot** (`.env.dev`) before merge: a clean single boot succeeds; a
+  second instance on the same token is refused (`❌ Refusing to start...`) and exits 1; releasing the
+  first instance's lock via `SIGINT` clears the `BotInstance` doc and a fresh boot immediately succeeds;
+  the prod VM (different token) stayed healthy and unaffected throughout (`scripts/vmstatus.sh`).
+
+---
+
+## v2.34.1 — 2026-07-26 18:20 EDT (`6124024`) — Rule files re-pointed at the symbols v2.34.0 renamed
+
+**Internal / docs only — no bot code touched. Does not change v2.34.0's still-pending deploy.**
+
+- **`manage-panel.md`** called `commands/manage.js`'s `const PAGES` "the single source of truth"; v2.34.0
+  made it **`buildPagesTable()`**, called per render, with the module export as a **getter**.
+- **`design-decisions.md`** referenced `TIER_ICON`; it is now **`tierIcon()`**.
+- Both corrections state **why** the symbol changed, so a future session doesn't "simplify" them back
+  into module-level consts and silently reintroduce the stale-emoji-id bug. That matters more than the
+  rename itself: the *original* rule warned only against **destructuring** `emojiMap`, and all four
+  broken sites complied with that letter while violating its intent.
+- Left deliberately unchanged: `rendering-and-ui.md`'s description of the pre-fix code (accurate **as
+  history**), and `manage-panel.md`'s "no key in `PAGES`" lines (still true — `PAGES` remains the local
+  name inside `buildManagePage()`).
+
+---
+
+## v2.34.0 — 2026-07-26 18:24 EDT (`5d39e10`) — The local dev bot: a way to test before prod
+
+**⚠️ MERGED BUT NOT DEPLOYED.** First release since v2.33.0 that contains real bot code, so unlike the
+v2.33.x docs-only run this one needs a VM deploy (`./scripts/deploy.sh` + `scripts/vmstatus.sh`) to
+actually go live. Until that runs, prod is still on v2.33.0's code.
+
+The bot got its **first-ever local development instance** (2026-07-26 13:45 EDT). Until now there was no
+way to try a change before it reached prod — every visual check meant merging, deploying to the VM, and
+eyeballing the bot Harkirat's real users were using. A second, fully separate Discord application,
+**`Dio (Dev)` (`1529636846248919263`)**, now runs the same codebase against isolated local data.
+
+- **Setup** (all local/gitignored, no bot code involved): a dev Discord app (user-install `[1]`, no
+  privileged intents, matching prod's architecture); local MongoDB via the `mongodb/brew` tap seeded with
+  a **read-only `mongodump` of prod** (335/335 docs + indexes → `diors-builds-dev`); a gitignored
+  `.env.dev`; and `node --watch --env-file=.env.dev index.js`, which full-restarts on every save and
+  branch switch so any branch or PR is testable live in Discord in seconds.
+- **`feat: resolve application-emoji ids by name at boot`** — the one real code change. Application
+  emojis render only for the app that owns them, so `emojiMap.js`'s hardcoded prod ids showed as broken
+  text on the dev bot. All 72 emojis were cloned to the dev app under identical names, and
+  `refreshEmojiIds(client)` (called from `handleBotReady`) now re-points every mention string at the
+  booting app's own ids by **name**. One codebase serves both apps with no per-environment config, and it
+  self-heals if an emoji is deleted and re-uploaded. **Verified a true no-op on prod** (0 rewrites, 0
+  unmatched) and 39/39 re-pointed on dev. Fail-soft: any error keeps the hardcoded prod ids. An optional
+  gitignored `utils/emojiMap.dev.json` overlay (dev-only) allows per-key test emojis.
+- **`chore: widen .gitignore to .env.*`** — the existing `.env` entry is an exact match and never covered
+  `.env.dev`. Also added a `.git/info/exclude` entry so the dev secrets stay ignored even on branches that
+  predate the glob (which mattered immediately — checking out an older PR branch reverted the tracked
+  `.gitignore`).
+- **Two live findings worth remembering.** (1) `dotenv.config()` at `index.js:38` runs *after*
+  `--env-file` and **backfills** anything the env-file omits — so leaving `LOG_WEBHOOK_URL` out of
+  `.env.dev` silently inherited the real **prod alert webhook**; it must be set explicitly blank. (2)
+  Three animated emojis exceeded Discord's 256 KB cap at 128px and needed re-encoding at 96px — all three
+  are referenced by `emojiMap`, so silently skipping them would have left visible gaps in `/manage`.
+- **Docs:** the workflow gains a free **Test** step between Commit and Push, `--draft` PRs are now rarer
+  (most test gaps close locally), and the old blanket "stop any local run before deploying" rule is
+  corrected to **per-token** — the dev bot has its own token and never conflicts.
+- **`fix(emoji): resolve emoji ids at render time, not require time`** — the sync above reported 39/39
+  re-pointed and was still wrong on screen, because **four sites read emoji values at `require()` time**.
+  `refreshEmojiIds()` runs from `handleBotReady`, long after every command module is loaded, and JS
+  strings copy by value — so anything captured at load time froze the pre-sync PROD id permanently.
+  Found only by live-testing on the dev bot: **every `/manage` page** (`manage.js`'s module-level `PAGES`
+  table), **`/draw prices` pages 1–2** (`TIER_ICON` — page 3 read live and was fine, which is what gave
+  the pattern away), **`/season end`'s BP icon** (a hardcoded `<:BP_CODM1:…>` literal that bypassed the
+  map entirely, now `emojiMap`'s `bp1`), and **the "Show Everyone" button** (`SHARE_BUTTON_ROW`).
+  `PAGES` is now built per render and exported as a getter so callers can't capture a stale copy either.
+- **New `scripts/checkEmojiCaptures.js`** — proxies `emojiMap` and fails if any module reads an emoji
+  value during `require()`. It found the "Show Everyone" site that manual review missed, and caught a
+  regression mid-fix where converting the `PAGES` export broke `manage.js`/`alerts.js`/`autobuild.js` at
+  load. The rule doc's old claim that "every consumer reads `emojis.foo` at render time" was false and
+  is corrected: **a module-level object literal containing `${emojis.x}` is the same bug as
+  destructuring, and much easier to miss.** CI candidate, noted in `docs/db-deferred-list.md`.
+  - **Prod was never affected** — its hardcoded ids were already correct, which is exactly why this
+    class of bug was invisible until a second app existed to expose it.
+---
+
+## v2.33.6 — 2026-07-26 18:07 EDT (`6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+- **New `docs/reference/commit-and-branch-naming.md`** — the source of truth for commit subjects, branch
+  names, and PR titles. Format is **Conventional Commits v1.0.0 exactly as specified**:
+  `<type>(<optional scope>): <description>`, colon **and one space** (spec rule 1 makes both REQUIRED),
+  imperative, lowercase, no trailing period, `!` before the colon for breaking changes.
+- **A custom `<type>(<scope>)/<description>` separator was proposed and rejected** (Harkirat's call, both
+  directions, 2026-07-26 15:26 EDT). Recorded as a decision rather than left silent, so it isn't
+  re-proposed later: staying compliant keeps a future changelog generator or release automation able to
+  parse the history without a custom parser.
+- **Type vocabulary fixed to the 11 standard types** (`feat` `fix` `docs` `refactor` `perf` `style` `test`
+  `build` `ci` `chore` `revert`). Six commonly-cited types are **not** standard and
+  `@commitlint/config-conventional` rejects all of them — mapped to their real equivalents:
+  `deps`→`build(deps)`, `release`→`chore(release)`, `sec`/`security`→`fix(security)`; `wip` belongs on a
+  draft PR; `types`/`i18n` don't apply here.
+- **Branch naming documented as a SEPARATE convention** — the spec governs commit messages only and says
+  nothing about branch names. Conflating the two was the original source of confusion.
+- **The GitHub branch-rename trap is now written down** — renaming a *head* branch **auto-closes** its PR
+  and it cannot be reopened (rename only retargets PRs whose *base* moved). This cost PR #2 → #16 earlier
+  the same day. #9 and #11 were deliberately **left** on their `claude/*` branches rather than renamed;
+  re-creating them would discard their numbers and review history for a cosmetic gain.
+- **`commitlint` folded into the existing CI deferred item** rather than filed as a new one — verified
+  that no commit tooling is installed at all, so the convention is hand-enforced today. The note weighs a
+  CI job (unbypassable but late) against a `husky` `commit-msg` hook (instant but skippable with
+  `--no-verify`), and flags the `conventional-changelog` knock-on as a genuine tradeoff, since the
+  hand-written entries here are richer than a generator's.
+- Pointers added in `CLAUDE.md`'s git-workflow invariant, `docs/README.md`, and the workflow design spec.
+
+---
+
+## v2.33.5 — 2026-07-26 14:59 EDT (`ea08a31`) — `/draw prices`: the NOTE callout comes off the Advanced Double Legendary page
+
+**First change merged after the local dev bot existed, and the first one live-verified before merge
+rather than after deploy.**
+
+- **Removed the `> **NOTE:**` callout** from the Advanced Double Legendary Weapon Draw page — the one
+  claiming a Regular-only purchase is *cheaper than a Normal Draw*. Harkirat's call: the comparison
+  invited the wrong read, and `THE TRAP` callout already carries the actionable warning. `THE TRAP` is
+  unchanged. The page drops from **9 Text Displays to 8**, one callout instead of two.
+- **Dropped the now-orphaned `normalDrawTotal` derivation** — it existed solely to feed the removed
+  callout's `X vs Y` comparison. Every remaining number on the page is still derived from `DRAW_DATA`,
+  so the "a wrong number can only ever exist in one place" property holds.
+- **Comments and the rule file were updated in the same change**, not left to drift — the builder's
+  inline block-index comments (`4-5: the two callouts` → `4: THE TRAP callout`) and
+  `.claude/rules/draw-prices.md`'s layout description both now describe the 8-display shape, each noting
+  the removal was Harkirat's request on 2026-07-25.
+- **Branch-name housekeeping:** this shipped as #16, not the original #2. Renaming the head branch
+  `claude/remove-draw-prices-note-4aceoh` → `chore/remove-draw-prices-note` (to match the repo's
+  `feat/`·`chore/`·`docs/` convention) made GitHub **auto-close** the PR — its rename only retargets PRs
+  whose *base* moved, never the head. Same commits, new number. Worth knowing before renaming the head
+  branch of the other outstanding `claude/*` PRs (#9, #11): rename first, or expect to re-open a new PR.
+
+---
+
+## v2.33.4 — 2026-07-26 12:09 EDT (`95791b1`) — GitHub Projects roadmap board: build + re-sync after the deferred-list restructure
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+- **Built the GitHub Projects Roadmap board** (https://github.com/users/HarkiratMangat/projects/2) via
+  `gh api graphql`: `Status`/`Priority`/`Effort`/`Model suggestion`/`Flags` fields, 15 draft items sourced
+  from `ROADMAP.md`'s remaining v2 items + `db-deferred-list.md`'s Queued section, plus 4 placeholder
+  cards for v3/v4/v5/Someday-tech-debt. Documented the division of labor in `docs/README.md` and
+  `CLAUDE.md`: the docs stay the detailed source of truth, the board is a manually-refreshed visual view.
+- **Re-synced the board + `ROADMAP.md`** against PR #13's deferred-list rename/restructure, which landed
+  8 minutes after the board was first populated: 2 items' Model suggestion field `Opus4.8-H`→`Opus5-H`,
+  every item body's `deferred-items.md` source citation → `db-deferred-list.md`, and 2 leftover
+  `Opus4.8-H` tags in `ROADMAP.md` itself that PR #13's own model-tag refresh had missed.
+- **Fixed a third stale copy of the timestamp-discipline convention** in `docs/README.md`'s "Date/time
+  convention" section — added the proactive-fetch-once guidance already applied to the two memory copies.
+- **Backfilled a missing DEVLOG entry** (2026-07-24 16:18 EDT) for the enforcement-hooks creation batch
+  that was never logged at the time, plus a new entry documenting this session's multi-pass verification
+  of the timestamp/deferral-tell hooks.
+
+## v2.33.3 — 2026-07-26 11:18 EDT (`25b402c`) — Deferred-list restructure: finish the split, rename the files, split the archives out
+
+**Internal / docs only — no bot code touched, nothing to deploy.**
+
+The 2026-07-25 15:56 EDT split (v2.33.2) moved only Dior's Builds' tech-debt list out of the cross-project
+tracker and left everything else behind. This finishes it and reorganizes the result.
+
+- **Finished the split.** Moved into `docs/db-deferred-list.md`: all 4 `[Diors Builds]` 🔔 Reminders
+  (Render deletion, GCP watch, `/manage`+`/settings` live-test, CHANGELOG/DEVLOG archive split), a 🐞
+  Active Bugs section of its own, and the Priority·Effort legend the new file never got. The 6
+  `[Diors Builds]` Resolved entries moved to the new archive.
+- **Renamed** `/Applications/Claude Code/deferred-items.md` → **`meta-deferred-list.md`** and
+  `docs/deferred-items.md` → **`docs/db-deferred-list.md`** (`db` = Dior's Builds, a standing
+  abbreviation now). `docs/notes-archive/` → **`docs/archive/`**.
+- **Split the archives out of the active files.** New `docs/archive/graveyard.md` — the notes file's
+  `# Graveyard` section is gone from that file entirely, so the scratchpad no longer carries a dead
+  archive in every read. New `docs/archive/resolved-list.md` for closed `db-deferred-list.md` entries.
+  The cross-project file keeps its Resolved section inline (Harkirat's call — it's small and rarely read).
+- **Hook fix, same change:** the `SessionStart` notes-check in `.claude/settings.local.json` terminated
+  its scan at `/^# Graveyard/`, which the split removed. Re-anchored to the notes file's `## 📍` pointer
+  section and dry-run verified — still reports the same 4 open items.
+- **Stale ends swept** across `CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`,
+  `docs/reference/known-issues.md`, the notes file, and 10 memory files: dead
+  "see CLAUDE.md's *X* section" pointers (that content moved to `docs/reference/` or `.claude/rules/` on
+  2026-07-22), the retired "don't over-invest in this file's structure" caveat, and the old file names.
+- **Two items re-measured, not just re-filed:** the Render-deletion reminder's `~2026-07-24` trigger has
+  **fired** (now P0, gated on a live `scripts/vmstatus.sh` check); and the CHANGELOG/DEVLOG archive-split
+  reminder said "~730 lines each, not there yet" when the real counts are **1,366 and 1,792** — bumped
+  P3 → P2. `Opus4.8-*` model tags refreshed to `Opus5-*`.
+- **Flagged:** the GitHub Projects board's 15 draft items were sourced 21:35 EDT, 8 minutes before this
+  restructure, so they predate it and need a manual re-sync (tracked as a P1 reminder).
+
+**Second verification pass** (Harkirat's ask — "better to do it now than have stale ends later") caught
+five more, all fixed:
+- `reference_enforcement_hooks.md` (memory) still documented the notes-check hook as scanning to
+  `# Graveyard` — the very anchor this change removed. Re-anchored, with a warning that an unbounded
+  scan fails silently.
+- `reference_priority_tier_system.md` said the 🐞/🔔 sections live in the cross-project file; they're
+  Dior's own now. Split into two entries.
+- **Two cross-project pointers broken by this rename**, repaired path-only with a dated note (nothing
+  else in either file touched, per `feedback_defer_to_owning_project`): the Gif-Background-Remover
+  project's `user_working_agreement.md`, and `local/memory-architecture-design.md`.
+- The notes file's 🔑 Legend still described sweeping "to the Graveyard" as if it were a section; now
+  names the file. Also removed an orphan `-` bullet and a doubled `---`.
+- `CLAUDE.md` now warns, as an invariant, that **two `SessionStart` hooks parse these files** — and that
+  `settings.local.json` is gitignored, so hook fixes never ride in a PR.
+- Added the reusable lessons to `DEVLOG.md`'s Part B ledger, not just the Part A narrative.
+
+**Third pass — status refresh on the two cross-project/meta items** (Harkirat's call, 2026-07-26 11:11 EDT):
+- The **hierarchical cross-project memory redesign** is now **⏸️ INDEFINITELY PARKED**, not "paused."
+  What it was built to solve has largely been handled another way — the MCP memory/recall layer
+  (`linksee`, `perseus-vault`, `context-mode`, `codebase-memory`), the 2026-07-22 CLAUDE.md → rules/
+  reference split, the enforcement hooks, and ongoing memory work. Status corrected in six places that
+  still said "PAUSED": root `CLAUDE.md` (×2), `docs/SESSION-START.md`, `user_working_agreement.md`,
+  `feedback_defer_to_owning_project.md`, and the venture's own STATUS + pointer-memory files.
+  **The slug-path guard explicitly survives the parking** — stated in each place, so nobody reads
+  "parked" as "the path is free now."
+- The **"Long-file / memory navigability pass"** was `⛓️blocked-by` that redesign — which would have
+  frozen it forever. **Unblocked and re-scoped** to *"Memory content audit + tag vocabulary"* `[P2 · M]`:
+  its long-file half already shipped with the 2026-07-22 modularization; what remains is the memory-file
+  content audit, the tag/hook vocabulary, ToCs for the long files, and tagging extended to code comments.
+  🔗 Bundled with Diors' own `.claude/rules/` two-tier rework — same idea, different files.
+- Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our
+  own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
+
+## v2.33.2 — 2026-07-25 16:20 EDT (`6a64e37`) — Split Diors Builds deferred items into `docs/deferred-items.md`
+*Docs-only — no code/deploy impact.*
+- Moved the project-specific Queued/Someday maintenance-and-tech-debt list out of the cross-project
+  `/Applications/Claude Code/deferred-items.md` tracker into a new tracked `docs/deferred-items.md`, so it
+  gets real `git diff`/`git log` history like the rest of `docs/`. 🐞 Active Bugs, 🔔 Reminders, and
+  Cross-project/meta stay in the shared tracker; the shared file now carries a short pointer instead, plus
+  a flagged TODO that the Gif Background Remover skill project still needs the identical split later.
+- Updated every repo reference (`CLAUDE.md`, `docs/README.md`, `docs/ROADMAP.md`, `docs/diors-builds
+  notes.md`) that specifically routed Diors-Builds maintenance items to the old shared file, so they now
+  point at `docs/deferred-items.md` instead. Genuinely cross-project routing (bugs/reminders/meta) left as-is.
+- Corresponding memory-file updates (`MEMORY.md`, `reference_deferred_items_file.md`,
+  `user_working_agreement.md`, `project_central_notes_file.md`) at
+  `~/.claude/projects/-Applications-Diors-Builds/memory/` — outside this repo, not part of this diff.
+
+## v2.33.1 — 2026-07-25 18:35 EDT (`8c44f97`) — `/autobuild` private toggle
+- Added a `private` boolean option to `/autobuild` (default `true`, matching the always-ephemeral behavior
+  that existed before this option), applied to both the main flow and the `retry_token` retry flow's
+  `deferReply`. Explicit-option-only — no saved-preference layer like the loadout commands' `private`,
+  since this is a single-admin PoC command, not worth the extra `UserPreference` state. `/autobuild` stays
+  fully admin-gated (`ALLOWED_ADMIN_ID` check) regardless of this option — no exposure risk from the toggle.
 
 ## v2.33.0 — 2026-07-24 18:18 EDT (`904dec8`) — Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow
 *The inaugural dogfood of the workflow it describes — squash-merged via `gh pr merge --squash` from
@@ -1341,5 +1715,6 @@ first, at the TOP of the list above, with the real squash-commit hash + tag) and
 empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
-*(Empty — nothing currently on an open branch/PR awaiting merge. v2.33.0, the last entry to sit here,
-graduated to a real numbered entry above on 2026-07-24 18:18 EDT when PR #1 squash-merged as `904dec8`.)*
+*(Empty — nothing currently on an open branch/PR awaiting merge. v2.35.4, the last entry to sit here,
+graduated to a real numbered entry above on 2026-07-27 08:02 EDT when PR #23 squash-merged as
+`f1d23da`.)*

@@ -82,8 +82,6 @@ const DRAW_DATA = {
 //     the 2nd item afterward, costs the same as a Regular Purchase again -> two Regular Purchases).
 //   • Reg/Adv/Trap totals = the sum of each array.
 //   • The three Strategy costs = cumulative slices of Regular then Advanced (Reg 1-8 + Adv 9-10, etc).
-//   • The NOTE's "cheaper than a Normal Draw (X vs Y)" comparison Y = the Legendary Weapon
-//     (Non-Reactive) draw's own total for the same region, read straight from DRAW_DATA.
 // So a wrong number can only ever exist in one place, and nothing can silently drift from its source.
 const ADVANCED_DOUBLE_LEGENDARY = {
     region_10: {
@@ -149,7 +147,13 @@ function cumulativeSequence(entry) {
 
 // Single tier icon per drawPrices_ui.json (the old mythic/legendary headers combined their tier
 // emoji with the Epic emoji as a two-icon prefix; the new reference file uses just the one).
-const TIER_ICON = { mythic: emojis.mythic, legendary: emojis.legendary, epic: emojis.epic };
+// Resolved per-render, deliberately NOT a module-level const: refreshEmojiIds() rewrites emojiMap's
+// values at boot, long after this file is require()d, and JS strings copy by value -- so a const here
+// froze the pre-sync PROD ids and rendered as broken text on the dev bot (found 2026-07-26 15:52 EDT:
+// pages 1-2 broken, while page 3's heading -- which reads emojis.* at render time -- was fine).
+function tierIcon(tier) {
+    return { mythic: emojis.mythic, legendary: emojis.legendary, epic: emojis.epic }[tier];
+}
 
 // Returns one ARRAY of block strings per draw type (2 blocks normally, 3 if it has an Upgrade step)
 // -- NOT one joined string. Per example_reformat.json (2026-07-12), each entry splits into separate
@@ -164,7 +168,7 @@ function buildDrawEntries(regionKey, keys) {
     return keys.map(key => {
         const meta = DRAW_META[key];
         const entry = region[key];
-        const icon = TIER_ICON[meta.tier];
+        const icon = tierIcon(meta.tier);
         // Full-caps draw name in every entry heading (2026-07-21, Harkirat's request -- consistency
         // with the Advanced page's own full-caps heading). meta.name stays the canonical mixed-case
         // source of truth; only the rendered heading is uppercased.
@@ -234,10 +238,6 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
     const advTotal = sum(adv);
     const trapTotal = sum(trap);
 
-    // "Normal Draw" comparison total = the standard Legendary Weapon (Non-Reactive) draw for the same
-    // region, read from DRAW_DATA rather than hand-typed so the claim can't drift if that draw changes.
-    const normalDrawTotal = sum(DRAW_DATA[regionKey].legendaryGunNonReactive.draws);
-
     // Strategy costs, all derived: each strategy spins Regular for the early pulls then switches to
     // Advanced for the last one or two (which unlock the 2nd Legendary + the Epics), assuming no lucky
     // early pull. Reg 1-8 + Adv 9-10 / Reg 1-9 + Adv 10 / Reg 1-10.
@@ -249,8 +249,9 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
     const seqTotal = (arr, total) => `${boldDrawSequence({ draws: arr })} ⌇ **\`${formatCP(total)} CP\`**\n-# **CP Spent:** ${cumulativeSequence({ draws: arr })}`;
 
     // Layout matches Harkirat's own hand-drawn mockup (local/advanced leggy_format.json, 2026-07-21):
-    // FULL-CAPS heading, three quote-styled purchase modes, the NOTE + THE TRAP callouts, then the
-    // Strategy split into THREE separate Text Displays (its own `### ` heading on the first) so each
+    // FULL-CAPS heading, three quote-styled purchase modes, THE TRAP callout (the NOTE callout was
+    // removed 2026-07-25 per Harkirat's request), then the Strategy split into THREE separate Text
+    // Displays (its own `### ` heading on the first) so each
     // strategy option reads as its own line with an inline cp2 icon on its cost. Every number is still
     // DERIVED above -- only the wording/structure changed from the earlier version, not the math.
     const blocks = [
@@ -261,10 +262,9 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
         `**'Regular Purchase' Only**\n${seqTotal(reg, regTotal)}`,
         `**'Advanced Purchase' Only**\n${seqTotal(adv, advTotal)}`,
         `**'Regular Purchase' + Remaining Item Separately**\n${seqTotal(trap, trapTotal)}`,
-        // 4-5: the two callouts
-        `> **NOTE:** Buying 'Regular Purchase' only, in these Double Draws, to acquire 1 Leggy weapon is actually **CHEAPER** than Normal Draws (${formatCP(regTotal)} CP vs ${formatCP(normalDrawTotal)} CP). Tradeoff is you just can't pick *which* Leggy you'll receive.`,
+        // 4: THE TRAP callout (the NOTE callout was removed entirely per Harkirat's request 2026-07-25)
         `> **THE TRAP:** Buying 'Regular Purchase', then paying for the 2nd remaining item afterwards costs **25% MORE** than just buying 'Advanced Purchase' upfront. **Commit before spinning!** Otherwise you essentially just did 2 'Regular Purchases' and wasted money.`,
-        // 6-8: the Strategy, as three separate Text Displays (heading rides on the first block).
+        // 5-7: the Strategy, as three separate Text Displays (heading rides on the first block).
         // Heading is a PLAIN BOLD line (not a `### ` heading) with a period after "Strategy" -- exact
         // wording confirmed by Harkirat 2026-07-21 via a marked-up screenshot (the mockup's `### `+comma
         // was wrong).

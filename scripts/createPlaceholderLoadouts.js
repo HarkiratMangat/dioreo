@@ -8,7 +8,7 @@
 // truly empty content; a single clearly-labeled "Coming Soon" build is the least-special-cased way
 // to satisfy that while still rendering something honest). Safe to re-run: skips any weaponKey
 // that already has a doc for that mode instead of creating a duplicate.
-require('dotenv').config();
+require('dotenv').config({ quiet: true }); // quiet: true suppresses dotenv's log line + its rotating promotional "tip"
 const mongoose = require('mongoose');
 const Loadout = require('../models/Loadout');
 

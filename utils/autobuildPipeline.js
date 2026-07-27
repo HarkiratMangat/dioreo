@@ -140,7 +140,8 @@ async function resolveCategoryAndBadges(weaponName, explicitCategory, badgesOpti
 }
 
 // Runs extraction + post-processing + stashes a pending token, then sends the review card as this
-// interaction's own deferred reply. Caller must have already called interaction.deferReply({ephemeral:true}).
+// interaction's own deferred reply. Caller must have already called interaction.deferReply() (ephemeral
+// per the command's `private` option, default true).
 async function runExtraction(interaction, sourceImageUrl, explicitCategory, badgesOption) {
     let extracted;
     try {

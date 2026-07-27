@@ -34,8 +34,12 @@ mechanics, per-page accent colors, and the `/manage` admin-only lock. The per-us
     directly on a section, and an optional `hidden` boolean (default `true` — this is the one command
     that defaults ephemeral instead of public, since it's the admin panel; `hidden` itself is the same
     name/wording every other command's visibility option uses, see the slash-command wording overpass
-    section, see `docs/reference/design-history.md`). `commands/manage.js`'s `PAGES` object is the single source of truth for every page's
-    title icon, grouped sections, action button copy/styles, and dropdown options — it only builds
+    section, see `docs/reference/design-history.md`). `commands/manage.js`'s **`buildPagesTable()`** is the single source of truth for every page's
+    title icon, grouped sections, action button copy/styles, and dropdown options (it was a
+    module-level `const PAGES` until 2026-07-26 16:04 EDT — that froze pre-sync emoji ids and broke
+    every `/manage` emoji on the dev bot; `buildManagePage()` now calls it per render into a local
+    `PAGES`, and the module export is a **getter**. Don't turn it back into a value or a cached table —
+    see the emoji bullet in `.claude/rules/rendering-and-ui.md`) — it only builds
     layout and every modal's *shape* (field labels, placeholders, pre-filled values) as exported
     functions; `index.js` owns all the actual routing and DB-mutating submit logic.
   - **MP and DMZ Loadouts are two separate pages (`loadouts_mp`/`loadouts_dmz`), not one shared

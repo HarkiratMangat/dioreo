@@ -22,7 +22,7 @@ navigation map**. Subsystem detail lives in:
   X section" reference — the topic is findable here).
 
 Full design + the section→destination ledger: `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`.
-*(Breadcrumb: the separate, PAUSED cross-project memory-architecture redesign is unrelated to this repo-local
+*(Breadcrumb: the separate, INDEFINITELY PARKED cross-project memory-architecture redesign is unrelated to this repo-local
 split and does not gate it — see the canonical-memory-path note below.)*
 
 ---
@@ -33,7 +33,9 @@ split and does not gate it — see the canonical-memory-path note below.)*
 live solely in one.*
 
 ### Canonical memory path
-**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (26 files).**
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (55 memory files
++ `MEMORY.md`, counted 2026-07-27 11:10 EDT; the count is a sanity signal, not a spec — if you land
+somewhere empty or missing, you're at the wrong path).**
 Always read AND write memory there, regardless of what the session prompt suggests. Harkirat relocated
 the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
 project folder from the repo path — so it now points sessions at
@@ -43,7 +45,7 @@ project folder from the repo path — so it now points sessions at
   `-Applications-Diors-Builds` path above. Don't migrate Diors memory to match the repo slug: it would
   break on every future folder move, whereas a fixed store is move-proof (decided with Harkirat 2026-07-15).
 - **⚠️ Do NOT create, delete, or symlink `-Applications-Claude-Code-Diors-Builds/memory` from a Diors
-  session.** That path is claimed by the PAUSED cross-project **memory-architecture redesign** (a separate
+  session.** That path is claimed by the INDEFINITELY PARKED cross-project **memory-architecture redesign** (a separate
   project working out of `/Applications/Claude Code/`), whose plan is to make it a **symlink → the
   canonical store**. An earlier "that subdir must never exist, delete it if it appears" note is SUPERSEDED
   and caused real interference once (a Diors session deleted the empty slug dir 2026-07-17 — harmless,
@@ -83,9 +85,25 @@ worked in-memory but silently reverted on the next fresh fetch. **Whenever you a
 add it to the corresponding schema in `models/` in the same change.** Full data-model detail:
 `.claude/rules/models.md`.
 
-### Git workflow = Branch → Commit → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT)
-Never push, merge, or deploy without asking first — approval never carries over (branch commits are the
-one exception: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
+### There is a LOCAL DEV BOT — use it, and never point it at prod (built 2026-07-26 13:45 EDT)
+A **separate Discord application**, `Dio (Dev)` (`1529636846248919263`), exists purely to test changes
+locally before they reach prod. Run it from the repo root with **`node --watch --env-file=.env.dev index.js`**
+— it auto-restarts on every file save and branch switch, so any branch or PR can be tried live in Discord
+in seconds. **Default to testing on it** instead of shipping untested or asking Harkirat to eyeball prod.
+- **`.env.dev` is gitignored and is NOT prod's `.env`.** It carries the dev token, a LOCAL Mongo URI
+  (`mongodb://localhost:27017/diors-builds-dev`), `NODE_ENV=development`, and its own alert webhook.
+  **Never run a local instance with the PROD token** — prod is single-token, and a second connection on
+  the same token makes Discord route interactions randomly between them (see `feedback_multiple_bot_instances`).
+  Two instances on *different* tokens is fine and is the whole point. Prod's `.env` stays untouched and is
+  still what a bare `node index.js` picks up, so always pass `--env-file=.env.dev` explicitly.
+- **`dotenv.config()` at `index.js:38` runs AFTER `--env-file` and BACKFILLS anything the env-file omits.**
+  So omitting a key from `.env.dev` does NOT unset it — it silently inherits prod's value. To disable
+  something in dev you must set it **explicitly blank**, not leave it out. This bit the alert webhook once.
+Full setup, the emoji/DB cloning, and the caveats: `docs/reference/deployment-and-ops.md`.
+
+### Git workflow = Branch → Commit → Test (dev bot) → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT; Test step added 2026-07-26 13:45 EDT)
+Never push, merge, or deploy without asking first — approval never carries over (branch commits and
+**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
 the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
@@ -96,6 +114,13 @@ a merged version can sit undeployed indefinitely; say plainly which steps happen
 held"), never let "merged" imply "live." Full lifecycle, versioning, and doc-placement rules:
 `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`.
 Full VM/ops setup, alerting, monitoring, version-tagging: `docs/reference/deployment-and-ops.md`.
+**Commit subjects and PR titles follow Conventional Commits v1.0.0 as specified** —
+`<type>(<optional scope>): <description>`, colon **and one space** (REQUIRED by spec rule 1), imperative,
+lowercase, no trailing period; `!` before the colon for breaking. Only the 11 standard types
+(`feat` `fix` `docs` `refactor` `perf` `style` `test` `build` `ci` `chore` `revert`) — never `deps`,
+`release`, `sec`, `wip`, `types`, `i18n`. **Branch names** are separate (the spec doesn't govern them):
+`<type>/<kebab-description>`. **Never rename a branch that has an open PR** — GitHub auto-closes it and it
+cannot be reopened. Vocabulary, mappings, and rationale: `docs/reference/commit-and-branch-naming.md`.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it
@@ -152,8 +177,8 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 ### `docs/` — read on demand (planning / ops / history; not code-triggered)
 | File | Covers |
 |---|---|
-| `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. |
-| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging |
+| `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
+| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
 
@@ -162,9 +187,19 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
+  Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
 - **Memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` (start at `user_working_agreement.md`).
-- **`/Applications/Claude Code/deferred-items.md`** — cross-project deferral/bug tracker.
+- **`docs/db-deferred-list.md`** — **this project's own deferred work**: 🐞 Active Bugs · 🔔 Reminders ·
+  🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. If a session working only in
+  this repo would need it, it's here. (Split out of the cross-project tracker 2026-07-25 15:56 EDT;
+  renamed + completed 2026-07-25 21:43 EDT, when its bugs/reminders/resolved items finally moved in too.)
+- **`docs/archive/`** — dead archive, **don't read by default**: `graveyard.md` (swept intake from the
+  notes file — it is no longer a section inside that file) · `resolved-list.md` (closed items from
+  `db-deferred-list.md`) · the dated pre-tidy notes snapshot.
+- **`/Applications/Claude Code/meta-deferred-list.md`** — cross-project tracker ONLY: cross-project bugs
+  (the MarkEdit extensions), Claude/Anthropic product feedback, meta/architecture work, and the canonical
+  Priority·Effort legend. Anything Dior's-Builds-specific belongs in `docs/db-deferred-list.md` above.
 
 ---
 
@@ -175,15 +210,21 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
-  central `diors-builds notes.md` (+ `notes-archive/`). Un-gitignored at Harkirat's explicit request so a
-  real `git diff`/`git log` covers their history. The `SessionStart` hook (`.claude/settings.local.json`)
-  reads `docs/SESSION-START.md` directly — if that file's location ever moves, update the hook's path in the
-  SAME change.
+  central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
+  real `git diff`/`git log` covers their history. ⚠️ **Two `SessionStart` hooks in `.claude/settings.local.json` PARSE these
+  files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
+  by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
+  `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME
+  change and dry-run it** (the `# Graveyard` anchor it used before 2026-07-25 21:43 EDT was removed by the
+  archive split and would have silently un-bounded the scan). Note `settings.local.json` is **gitignored**
+  — hook fixes are local-only and do NOT ride in a PR.
 
 ## Stack (summary)
 discord.js v14 (`^14.26.4`) · Node.js (v24 on the VM) · MongoDB Atlas via Mongoose · `chrono-node`
 (admin date parsing) · `dayjs` (user-facing timestamps) · `jimp` (pure-JS accent-color extraction) ·
 `ffmpeg` (system binary on `PATH` — `utils/stillFrame.js` uses it for APNG/animated frames) ·
 `color-namer` (hex→name) · `cloudinary` (image caching/upload). `xlsx` is NOT used at runtime anymore
-(only `scripts/migrateBuildsToMongo.js`). Full stack notes + why-each + the retired Render/Railway
+(only `scripts/migrateBuildsToMongo.js`) and now sits in **`devDependencies`** (moved 2026-07-26 19:19 EDT) — a
+production-only `npm install --omit=dev` would drop it, which is correct, but that also means that one
+migration script needs a full install to run. Full stack notes + why-each + the retired Render/Railway
 history: `docs/reference/deployment-and-ops.md`.
