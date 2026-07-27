@@ -62,6 +62,20 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- `[P1 · XS · Harkirat action, not a build]` **Finish the GitHub Projects roadmap board's view setup.**
+  Added 2026-07-26 12:12 EDT. The board (https://github.com/users/HarkiratMangat/projects/2) has all 15
+  items and every custom field (`Status`/`Priority`/`Effort`/`Model suggestion`/`Flags`) populated via the
+  API, but GitHub's GraphQL API has NO view-creation/management mutations at all (confirmed via
+  introspection) — so it still only has the one default view GitHub creates automatically (`View 1`,
+  Table layout). Two manual steps in the GitHub UI finish the design agreed on earlier:
+  1. Open the board → click **View 1**'s dropdown (or the view tab itself) → **Edit layout** → change
+     layout from **Table** to **Board** → set **Group by: Status** → rename the view (double-click its
+     tab, or the "..." menu → Rename) to something like **"Status board."**
+  2. Click the **+** next to the view tabs → **New view** → keep layout **Table** → name it **"By
+     Priority"** → set **Group by: Priority**.
+
+  Both are a couple minutes total, no data changes, purely view/display config. Nothing else is pending
+  on the board itself.
 - `[P2 · XS · trigger = next deploy]` **The GCP VM's local git history is intentionally behind/diverged
   from `origin/main`, as of 2026-07-27 08:29 EDT.** `main` was force-pushed that session (rewriting a
   v2.36.0→v2.35.4 version-number correction out of history entirely, per Harkirat's explicit request —
