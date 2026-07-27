@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.4 — July 27, 2026
+- Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered
+  — it now correctly reflects the time you typed.
+
 ## v2.35.3 — July 26, 2026
 - *Internal tooling-only — a maintenance script for Dior's test copy of the bot. Nothing players see.*
 

@@ -2114,3 +2114,35 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
   (deploy + verify live + only one instance running), not just `git push`.
 - **Honest reporting builds trust** — recording the 0%-benefit convergence result, the misread Railway
   logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.
+
+## 2026-07-27 08:02 EDT — A "parsing bug" that was actually a display/design mismatch
+
+Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch note's release date field and
+got back `July 21, 2026 at 8:00 PM`. Looked like a parser bug at first glance, but tracing it showed
+`parseAdminDate` (shared by every admin date field — draws, calendar, season-end deadlines, patch
+notes) was working exactly as designed: it discards any typed time and normalizes to midnight UTC on
+purpose, per a past fix for a DMZ season-end timezone bug. The actual mismatch was one layer up —
+`commands/patchnotes.js` displays that value with a Discord `<t:X:f>` (date+time) timestamp, and
+Discord renders that client-side in the *viewer's* own timezone. Midnight UTC, shown to a UTC-4
+viewer, is 8:00 PM the previous day. The time typed into the field was never actually stored at all.
+
+Asked Harkirat directly rather than guessing at the "right" fix, since it was a real product
+decision with two very different shapes (hide the time entirely vs. actually support it). He wants
+real time-of-day support, and described his own actual habit: a bare date is still typed in UTC-0,
+but the moment he also types a time, that time is his own local clock, never hand-converted to UTC
+first. Built `parseReleaseDateTime`/`formatReleaseDateTime` in `utils/adminParser.js` around exactly
+that distinction, reusing the `isCertain('hour')` chrono-components check `timestampHelper.js`'s
+`generateTimestamps()` already relies on for the identical "was a time actually typed, or inferred"
+question — the same trick, applied to a second, independent bug the same session.
+
+### Lessons
+- **A wrong-looking value isn't always a parsing bug — check what stores the data AND what renders
+  it before assuming either one.** This one only existed because two separately-correct pieces of
+  code (a deliberately time-discarding parser, and a Discord timestamp style that includes time)
+  combined into a confusing result neither one would produce alone.
+- **When a fix has more than one legitimate shape, ask, don't guess** — "hide the time" and "support
+  the time" are both defensible; only Harkirat knew which one matched how he actually works.
+- **Forgot to branch before editing bot code** — went straight to editing `main`'s working tree on
+  the first pass of this fix. Caught by Harkirat, not by process. Branched before continuing (created
+  it on top of the already-uncommitted edits, which is safe — nothing had been committed to `main`
+  yet). Branch first, every time, even mid-diagnosis.
