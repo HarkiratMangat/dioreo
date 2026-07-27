@@ -172,11 +172,14 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
   subsystem detail: `.claude/rules/manage-panel.md`.
 - `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask).
-  **⚠️ Correction 2026-07-26 19:06 EDT: `.github/workflows/ci.yml` has NOT actually shipped yet** — PR
-  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) (`ci: add basic CI workflow`, branch
-  `claude/ci-setup-r4t8`) is still **open, unmerged**, sitting since 2026-07-25; this entry's original text
-  wrongly said it "first shipped in PR #11." Today there is genuinely no CI at all on `main` — no
-  `node --check`, no test framework, no lint config. **Tool choices decided 2026-07-26 19:06 EDT
+  **✅ Sequencing precondition MET 2026-07-27 18:25 EDT — PR
+  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) is MERGED, shipped as v2.35.8.**
+  `.github/workflows/ci.yml` now exists on `main` and runs `npm ci` → `npm run check` (`node --check`
+  across every non-`node_modules` `.js`) → advisory `npm audit`, triggering on **both `main` and
+  `v3-pre-release`**. So this entry is now purely the *expansion* work; the "merge #11 first" step below
+  is done. (This bullet previously carried a ⚠️ correction stating there was "genuinely no CI at all on
+  `main`" — true when written 2026-07-26 19:06 EDT, false as of the merge. Still true: no test framework
+  and no lint config.) **Tool choices decided 2026-07-26 19:06 EDT
   (dotenvx-adjacent tooling discussion): Vitest** for the test framework (fast, near-zero-config, ESM-friendly — a good fit
   given there's no build step) **and Biome** for lint+format (single Rust binary covering both, no
   ESLint+Prettier config sprawl to build from scratch since neither exists here yet). Real unit/integration
