@@ -5,11 +5,16 @@ name: CI
 # the one check that was already happening manually before every commit -- `node --check` across
 # every JS file -- plus basic install sanity and a non-blocking dependency audit. Expand this
 # workflow (real tests, linting) only once those tools actually exist in the project.
+# `v3-pre-release` is listed alongside `main` deliberately: under the v3 development structure
+# (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md) every v3 feature PR targets
+# `v3-pre-release`, not `main`. With `main` alone here, none of that work would run CI at all -- and the
+# failure is silent, since a repo with no runs looks the same as a repo whose runs all pass. Any future
+# long-lived integration branch needs adding to BOTH lists for the same reason.
 on:
   push:
-    branches: [main]
+    branches: [main, v3-pre-release]
   pull_request:
-    branches: [main]
+    branches: [main, v3-pre-release]
 
 jobs:
   syntax-check:
