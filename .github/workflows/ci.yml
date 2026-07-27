@@ -1,0 +1,33 @@
+name: CI
+
+# Deliberately minimal: this repo has no test framework (no Jest/Mocha, no ESLint config) as of
+# 2026-07-25, so inventing style/test infra here would be scope creep. What this DOES automate is
+# the one check that was already happening manually before every commit -- `node --check` across
+# every JS file -- plus basic install sanity and a non-blocking dependency audit. Expand this
+# workflow (real tests, linting) only once those tools actually exist in the project.
+# `v3-pre-release` is listed alongside `main` deliberately: under the v3 development structure
+# (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md) every v3 feature PR targets
+# `v3-pre-release`, not `main`. With `main` alone here, none of that work would run CI at all -- and the
+# failure is silent, since a repo with no runs looks the same as a repo whose runs all pass. Any future
+# long-lived integration branch needs adding to BOTH lists for the same reason.
+on:
+  push:
+    branches: [main, v3-pre-release]
+  pull_request:
+    branches: [main, v3-pre-release]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run check
+      # Advisory only -- known, already-tracked findings (discord.js/undici/xlsx, see
+      # docs/ROADMAP.md's housekeeping notes) shouldn't fail every build; this just keeps them
+      # visible in the CI log rather than silently ignored.
+      - run: npm audit --audit-level=high
+        continue-on-error: true

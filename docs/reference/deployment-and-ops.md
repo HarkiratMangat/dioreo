@@ -27,6 +27,12 @@ Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root 
 - `xlsx` — NOT used at bot runtime anymore (see `.claude/rules/loadouts.md`); only referenced by
   `scripts/migrateBuildsToMongo.js`, a one-time/re-runnable migration tool, not something the
   bot itself ever calls.
+- **CI (added 2026-07-25)** — `.github/workflows/ci.yml`, deliberately minimal since there's no test
+  framework or lint config in this repo yet: `npm ci` + `npm run check` (runs `node --check` across
+  every JS file, the same manual check that was already done before every commit) + a non-blocking
+  `npm audit --audit-level=high`. Runs on pushes to `main` and on any PR targeting `main`. Only
+  triggers for PRs whose head branch already contains this workflow file, so the 3 PRs open before
+  this shipped (#2, #9, #10) won't get CI until they merge `main` in or get rebased onto it.
 - **🟢 DEPLOYMENT: the bot runs on a GCP Compute Engine VM (cutover 2026-07-17). Render is RETIRED.**
   Full setup, deploy flow, and monitoring/alerting live in the **"## Deployment & Ops (GCP)"** section
   below — that's the authoritative reference. **⚠️ The GitHub repo went PRIVATE 2026-07-18** — the VM
