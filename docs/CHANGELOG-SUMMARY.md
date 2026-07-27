@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.13 — July 27, 2026
+- *Internal ops-only — checked the server hosting the bot is healthy and worked out exactly what a
+  pending bit of housekeeping needs. Nothing players see; the bot was not restarted.*
+
 ## v2.35.12 — July 27, 2026
 - *Internal docs-only — tidied Dior's own planning notes so the same to-do can't quietly exist in two
   places with two different answers. Nothing players see.*

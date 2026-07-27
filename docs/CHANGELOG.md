@@ -162,6 +162,28 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.13 — 2026-07-27 20:10 EDT (`1773605`) — Diagnosed the VM divergence and cleared Render's health gate
+**Docs/meta only — no runtime change, not deployed, and the VM was explicitly NOT restarted.**
+- **The VM git divergence is now fully diagnosed rather than merely flagged.** Verified live: the VM sits
+  **2 ahead / 16 behind** `origin/main`. The two VM-only commits are `f1dff2c` and `42f024e` — exactly
+  the v2.36.0→v2.35.4 correction pair this morning's force-push rewrote away — so discarding them loses
+  nothing. The VM's **working tree is clean**. Critically, the runtime delta from resetting is only
+  `utils/cloudinary*.js`, the new `utils/cloudinaryDevGuard.js`, and `package.json` — i.e. v2.35.9's dev
+  write guard, which is **inert in prod** (`NODE_ENV` is unset there, so `IS_DEV` is false). So the reset
+  changes **no production behaviour**, which is the fact that makes it safe to run unattended later.
+- The entry now carries the exact command (`git fetch origin && git reset --hard origin/main` in
+  `~/diors-builds`) and an explicit **"do not restart as part of this"** — restarting would be a deploy,
+  which is separately gated.
+- **Render's deletion precondition is met.** VM `RUNNING`, `diors-bot` **active with 0 restarts**, ~11h
+  uptime, RAM 564/969MB, load 0.10, disk 15%, gateway resumed cleanly. `journalctl -u diors-bot -p err
+  --since '1 hour ago'` returned **no entries**. Worth recording: `scripts/vmstatus.sh`'s own
+  `errors(1h): 1` counter reads a **different source** and corresponded to no error-priority journal
+  entry — so that counter and the journal disagree, and the journal is the one to trust for "is
+  something actually broken."
+- **Neither action was executed.** The VM reset was blocked by Claude Code's permission classifier
+  (correct — `git reset --hard` on a live host is destructive); the Render deletion was held on purpose,
+  being irreversible and on an external service.
+
 ## v2.35.12 — 2026-07-27 19:55 EDT (`d013a9a`) — Reconciled the two tracking files; refreshed stale model tags
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
 - **`ROADMAP.md` and `db-deferred-list.md` were duplicating each other while each claimed it didn't.**
