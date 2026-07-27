@@ -162,6 +162,35 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.9 — 2026-07-27 18:45 EDT (`f1575d0`) — Stopped the dev bot from writing to the LIVE Cloudinary account
+**Dev-instance safety fix — prod behaviour is byte-identical, so this is not deployed.** The VM is still
+running v2.35.4's code and nothing here changes what it would do.
+- **`.env.dev`'s `CLOUDINARY_URL` was byte-identical to prod's.** The local dev bot (`Dio (Dev)`) is not
+  on a separate Cloudinary account — it reads *and writes* the live one, same flat `gun-builds` folder.
+  Found while verifying dev/prod isolation for the v3 development structure; `BOT_TOKEN`, `MONGODB_URI`
+  and `LOG_WEBHOOK_URL` were all correctly separated, this one wasn't. Before this fix, testing `/manage`
+  image add/edit/delete or `/autobuild` on the dev bot **mutated live assets**, and the dev bot's own
+  boot + 24h cleanup sweep would **delete prod assets unprompted**, with nobody having asked for anything.
+- **Fails closed** (`utils/cloudinaryDevGuard.js`, new): with `NODE_ENV=development`, `upload`,
+  `update_metadata` and `delete_resources` become loud no-ops across all three caches
+  (`loadoutImageCache`, `cloudinaryCache`, `patchNotesCache`). **Reads are untouched on purpose** —
+  loadout image URLs in Mongo point at prod assets, so putting dev on a different account would render
+  every loadout broken locally and gut the dev bot for exactly the image features it exists to test.
+- **A `-dev` folder was the obvious fix and is insufficient — worth recording so it isn't re-proposed.**
+  `temp_draws` and `patch_notes` bake their folder into the `public_id`, so scoping the folder namespaces
+  them end-to-end. **`gun-builds` does not**: loadout `public_id` is the bare `imageKey`, with the folder
+  carried only in `asset_folder`, which is a decoupled dashboard label and not part of the asset's
+  identity. A dev upload of an existing key therefore overwrites the live image *regardless of folder*.
+  Only not-writing prevents it. A properly designed parallel dev namespace is filed as `[P2 · M]` in
+  `docs/db-deferred-list.md`, to be done when a v3 feature actually needs dev-side image writes.
+- **Prod is provably unaffected:** `NODE_ENV=development` is set by `.env.dev` and nothing else; prod's
+  `.env` doesn't define it, and `dotenv.config()`'s backfill can only fill keys that exist *somewhere* —
+  it can't invent one. Verified by executing both paths, not by reading: dev blocked all three uploads
+  (including `gun-builds/AK117-1`, a real live key) with no network call; prod evaluated `IS_DEV = false`.
+- Each guarded call site returns its own pre-existing "upload failed" shape, so nothing downstream had to
+  learn a new contract — dev now behaves exactly as it already did against a Cloudinary hiccup, which
+  every one of these sites was built to survive.
+
 ## v2.35.8 — 2026-07-27 18:25 EDT (`f3792b0`) — First CI: a syntax check on every push and PR
 **Repo tooling only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/`
 was touched, so the VM is still running v2.35.4's code.

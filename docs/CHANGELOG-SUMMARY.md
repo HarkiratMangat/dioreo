@@ -26,6 +26,11 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.9 — July 27, 2026
+- *Internal safety fix — Dior's test copy of the bot could accidentally change or delete the real
+  bot's saved images. It can't anymore. Nothing changes for you, but your loadout and patch-note
+  images are safer.*
+
 ## v2.35.8 — July 27, 2026
 - *Internal tooling-only — the bot's code now gets automatically checked for errors every time a change
   is proposed. Nothing players see, but it makes broken updates less likely to reach you.*
