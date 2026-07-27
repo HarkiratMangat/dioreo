@@ -268,6 +268,27 @@ same token make Discord route each interaction to one of them at random (see the
 prod-on-VM plus dev-on-Mac is — is safe and is the entire point. The old blanket "stop any local run
 before deploying" rule only ever applied to same-token runs.
 
+**Killing the dev process does NOT remove its commands from the `/` picker — use
+`scripts/devCommands.js` (added 2026-07-26 21:47 EDT).** Slash-command registration is stored on
+Discord's side against the **application**, not the process: `index.js` writes it once per boot with
+`rest.put(Routes.applicationCommands(client.user.id), …)` and Discord keeps it indefinitely. Because the
+bot is user-installed, `Dio (Dev)`'s 20 commands therefore follow Harkirat into every server and DM,
+duplicating prod's identical list, whether or not anything is running. Picking one just yields
+"The application did not respond" after the 3s interaction timeout.
+
+```bash
+node scripts/devCommands.js list     # what the dev app currently has registered
+node scripts/devCommands.js clear    # register an empty list -> gone from the picker
+```
+
+There is no "restore" mode on purpose — **the next dev-bot boot re-registers everything**, since that
+PUT runs on every startup. Two independent safeguards keep this off prod: the script reads `.env.dev`
+**directly off disk** rather than through `process.env` (a `dotenv`-based script could hold the prod
+token via the backfill behavior described above), and it aborts if `.env.dev`'s `BOT_TOKEN` matches
+`.env`'s. It also prints the resolved application name/id before acting — if that ever says
+`Dior's Builds` instead of `Dio (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
+`Dio (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
+
 **Secrets hygiene:** `.env.dev` is covered by `.gitignore`'s `.env.*` glob, by a `.git/info/exclude`
 entry (so it stays ignored even on branches that predate that glob), and by the `block-env-staging`
 hookify rule, whose pattern already matches `.env.dev`.
