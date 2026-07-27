@@ -162,6 +162,18 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.11 — 2026-07-27 19:30 EDT (`4d29f86`) — Corrected the CI deferred entry after its own precondition was met
+**Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
+- **"Expand CI beyond syntax-check" was asserting something that had just stopped being true.** Its ⚠️
+  correction block said there was *"genuinely no CI at all on `main`"* and that PR
+  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) was *"still open, unmerged"* — accurate
+  when written 2026-07-26 19:06 EDT, false from the moment #11 merged as v2.35.8 hours earlier the same
+  day. The entry's own stated precondition (*"Sequencing: merge PR #11 first"*) is now satisfied, so what
+  remains is purely the Vitest/Biome/commitlint expansion.
+- Left standing because it is still accurate: this repo has **no test framework and no lint config**.
+- Found by a staleness sweep over `docs/` + `.claude/` + the memory store rather than by reading — the
+  entry looked fine in isolation and only failed against the current state of `main`.
+
 ## v2.35.10 — 2026-07-27 19:00 EDT (`2665db4`) — Synced the standing records to the v3 structure
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
 - **The "document" step for v2.35.6's design** — a standing rule changed, so the written record had to

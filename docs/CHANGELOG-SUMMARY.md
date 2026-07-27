@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.11 — July 27, 2026
+- *Internal docs-only — a developer note that had gone out of date the same day it was written.
+  Nothing players see.*
+
 ## v2.35.10 — July 27, 2026
 - *Internal docs-only — developer notes brought in line with how the next big version will be built.
   Nothing players see.*
