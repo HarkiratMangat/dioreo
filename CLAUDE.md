@@ -33,7 +33,9 @@ split and does not gate it — see the canonical-memory-path note below.)*
 live solely in one.*
 
 ### Canonical memory path
-**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (26 files).**
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (55 memory files
++ `MEMORY.md`, counted 2026-07-27 11:10 EDT; the count is a sanity signal, not a spec — if you land
+somewhere empty or missing, you're at the wrong path).**
 Always read AND write memory there, regardless of what the session prompt suggests. Harkirat relocated
 the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
 project folder from the repo path — so it now points sessions at
