@@ -25,6 +25,29 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ~~[Diors Builds] Delete the suspended Render service~~ → **DONE 2026-07-27 20:20 EDT.** REST `DELETE`
+  on `srv-d850b2og4nts73fhpfog` returned `204`; a follow-up `GET` returned `404 not found`, so it is
+  confirmed gone rather than assumed. The P0 trigger ("~2026-07-24, once the GCP VM has proven reliable
+  for ~a week") was satisfied 10 days after the 2026-07-17 cutover, and the health precondition was
+  actually checked first rather than taken on the calendar's word: VM `RUNNING`, `diors-bot` active with
+  **0 restarts**, ~11h uptime, RAM 564/969MB, load 0.10, disk 15%, and `journalctl -p err` over the
+  previous hour returning no entries. **The GCP VM is now the only host — there is no fallback.**
+  Follow-up filed: `RENDER_API_KEY` is now a dead credential and wants revoking.
+  *Noted in passing:* `scripts/vmstatus.sh` reported `errors(1h): 1` while the journal showed no
+  error-priority entries — its counter reads a different source and shouldn't be trusted alone as a
+  health signal.
+
+- ~~[Diors Builds] GCP VM git history diverged from `origin/main`~~ → **DONE 2026-07-27 20:15 EDT.**
+  Caused by the 2026-07-27 08:29 EDT force-push landing after the VM had already pulled the pre-rewrite
+  commits, leaving the VM 2 ahead / 16 behind. The 2 VM-only commits (`f1dff2c`, `42f024e`) were exactly
+  the v2.36.0→v2.35.4 pair the rewrite erased, so nothing was lost. Fixed with
+  `git fetch origin && git reset --hard origin/main` in `~/diors-builds`; the VM's working tree was clean
+  beforehand, so there was nothing local to preserve. **The service was deliberately NOT restarted** —
+  that would be a deploy — so the VM's files are now at v2.35.13 while the running process stays on
+  v2.35.4's code until the next restart, the normal post-pull/pre-restart state. Verified after: HEAD
+  `771ea76`, no ahead/behind, and `ActiveEnterTimestamp` unchanged at `12:22:05 UTC`. The only runtime
+  delta the reset introduced is v2.35.9's Cloudinary dev guard, which is inert in prod.
+
 - ~~[Diors Builds] Single-instance guard (startup lock)~~ → **SHIPPED 2026-07-26 18:43 EDT (v2.35.0,
   `3b978a5`, PR #9)**. Token-scoped Mongo heartbeat lock (`models/BotInstance.js` +
   `utils/instanceLock.js`, 10s heartbeat / 30s staleness); `index.js` calls `acquireInstanceLock()`
