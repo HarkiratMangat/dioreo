@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.8 — July 27, 2026
+- *Internal tooling-only — the bot's code now gets automatically checked for errors every time a change
+  is proposed. Nothing players see, but it makes broken updates less likely to reach you.*
+
 ## v2.35.7 — July 27, 2026
 - *Internal docs-only — a note-to-self about finishing setup on Dior's private planning board.
   Nothing players see.*

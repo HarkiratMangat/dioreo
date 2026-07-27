@@ -162,6 +162,25 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.8 — 2026-07-27 18:25 EDT (`f3792b0`) — First CI: a syntax check on every push and PR
+**Repo tooling only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/`
+was touched, so the VM is still running v2.35.4's code.
+- **This repo had zero CI before now.** `.github/workflows/ci.yml` runs `npm ci` → `npm run check` →
+  `npm audit --audit-level=high` (advisory, non-blocking) on Node 24. Deliberately minimal: there's no
+  test framework or lint config here, and inventing them would have been scope creep beyond "add CI."
+- **`npm run check` is new and automates what was already happening by hand** — `node --check` across
+  every non-`node_modules` `.js` file, which had been run manually before commits. `package.json`'s
+  `test` script was a placeholder that always failed (`exit 1`); it now runs the same check. Added
+  `engines.node: ">=24"` to match the VM.
+- **The workflow triggers on `v3-pre-release` as well as `main`** — added while syncing this branch,
+  and load-bearing rather than cosmetic. Under the v3 development structure every v3 feature PR targets
+  `v3-pre-release`, so with `main` alone in the trigger lists **no v3 work would have run CI at all** —
+  and it fails silently, because a repo with no runs looks exactly like a repo whose runs all pass. Any
+  future long-lived integration branch needs adding to both lists for the same reason.
+- Drafted 2026-07-25, then sat 30 commits behind `main` until it was synced and merged here. Verified
+  green on its own PR before merge (`syntax-check` passed in 16s), which was the one open item on its
+  original test plan.
+
 ## v2.35.7 — 2026-07-27 18:15 EDT (`801902f`) — Filed the roadmap board's remaining manual view setup
 **Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
 touched, so the VM is still running v2.35.4's code.
