@@ -22,6 +22,22 @@ cross-project tracker 2026-07-25 15:56 EDT, renamed 2026-07-25 21:43 EDT), not d
 this project's confirmed bugs and reminders.*
 
 ### Process / tooling (not a version-numbered feature, tracked here for visibility)
+- ~~**v3 development structure**~~ — **SETTLED 2026-07-27 18:05 EDT, shipped as v2.35.6.** Design:
+  `docs/superpowers/specs/2026-07-27-v3-development-structure-design.md`. v3 is built on a long-lived
+  **`v3-pre-release`** integration branch cut off `main`; v3 features use the normal convention
+  (`feat/*` → squash-merged PR) but with **`--base v3-pre-release`**, and `main` stays live-safe at
+  every commit. v2 is *mostly frozen, case-by-case* — hotfixes still land on `main` and deploy
+  normally. **Sync is one-way `main` → `v3-pre-release` by MERGE, never cherry-pick** (this corrects
+  the 2026-07-14 directive; a cherry-pick never advances the merge base, so the same conflicts
+  resurface on every sync). During pre-release: `docs/CHANGELOG.md` only, entries titled
+  `Pre-Release v3.MAJOR.MINOR`, `package.json` carrying a matching `-pre` suffix, and **no git tags
+  until `v3.0.0`**. The squash-vs-merge-commit shape of the final launch merge is deliberately left
+  open until launch. Supersedes the branch/versioning half of memory
+  `project_dior_builds_changelog_system`'s 2026-07-14 directive.
+- ~~**First CI for the repo**~~ — **SHIPPED as v2.35.8** (2026-07-27 18:25 EDT). `.github/workflows/ci.yml`:
+  `npm ci` → `npm run check` (`node --check` across every non-`node_modules` `.js`) → advisory
+  `npm audit`. Triggers on **both `main` and `v3-pre-release`** — with `main` alone, no v3 PR would run
+  CI at all, and that failure is silent. Expand to real tests/linting only once those tools exist here.
 - ~~**Git branch/PR/merge workflow overhaul**~~ — **SHIPPED as v2.33.0** (the inaugural dogfood
   squash-merge on `feat/git-workflow`). Replaced the old "everything on `main`, push = version bump"
   model with Branch → Commit → Push → PR → Merge → Deploy; version now mints at merge (squash), not
