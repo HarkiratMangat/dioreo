@@ -122,6 +122,21 @@ lowercase, no trailing period; `!` before the colon for breaking. Only the 11 st
 `<type>/<kebab-description>`. **Never rename a branch that has an open PR** — GitHub auto-closes it and it
 cannot be reopened. Vocabulary, mappings, and rationale: `docs/reference/commit-and-branch-naming.md`.
 
+**⚠️ Two bases now exist — pick the right one, `gh pr create` will not (added 2026-07-27 18:05 EDT).**
+v3 work lives on the long-lived **`v3-pre-release`** integration branch, not `main`. So a v3 feature is
+`feat/x` off `v3-pre-release` → **`gh pr create --base v3-pre-release`**. `gh` defaults to `--base main`,
+and a v3 PR merged there puts unfinished v3 code on the branch that must stay live-safe — it fails
+silently, nothing warns. v2 hotfixes are unchanged: off `main`, into `main`. **Sync is one-way,
+`main` → `v3-pre-release`, by `git merge origin/main` — never cherry-pick** (a cherry-pick doesn't
+advance the merge base, so the same conflicts return on every later sync). During pre-release,
+`docs/CHANGELOG.md` only (`Pre-Release v3.MAJOR.MINOR`), `package.json` carries a matching `-pre`
+suffix, and **no tags are minted until `v3.0.0`**. Full design:
+`docs/superpowers/specs/2026-07-27-v3-development-structure-design.md`.
+
+**`git branch -a` is not a reliable view of open work.** This repo has GitHub's auto-delete-on-merge
+enabled and a plain `git fetch` does **not** prune remote-tracking refs, so long-merged branches keep
+listing locally as though they were live. Use `gh pr list --state all`, or `git fetch --prune` first.
+
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it
 does — especially around fixed bugs, Discord platform quirks, and non-obvious decisions. When you edit a

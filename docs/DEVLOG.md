@@ -2181,3 +2181,53 @@ the reminder in `docs/db-deferred-list.md`.
 - **git history CAN be un-shipped cleanly** when asked — reset --soft + one clean commit + a real,
   explicitly-authorized force-push, with a `git grep` sweep after to prove nothing survived, rather
   than layering more correction commits on top of a wrong number.
+
+## 2026-07-27 18:50 EDT — Planning v3 meant first proving what "isolated" actually meant
+
+Harkirat called v2 done and asked how to start v3 without conflicting with the live bot or `main`.
+The answer already existed on paper — a directive he filed 2026-07-14/15 — so the first instinct was
+to just execute it. That would have been wrong twice over.
+
+**The directive had aged out from underneath itself.** It predates two things that landed since: the
+git-workflow overhaul (2026-07-24 12:24 EDT), which replaced "everything on `main`" with
+Branch → PR → Merge, and the local dev bot (2026-07-26 13:45 EDT), which didn't exist when the
+directive's "test-bot strategy" was written. Its sync instruction — *"cherry-pick or re-apply every
+v2 change into the v3 branch"* — described exactly the hand-maintained divergent branch the PR
+workflow was adopted to avoid. The correction is small and load-bearing: **merge, never cherry-pick.**
+A cherry-pick copies content without recording that the sync happened, so git's merge base never
+advances and the same conflicts resurface on every subsequent sync, forever. A merge advances the
+base. Same content, a fraction of the friction — and it's the difference between "sync `main` in
+occasionally" being sustainable and being a slowly-worsening tax.
+
+**The bigger lesson was that "isolated" was an assumption nobody had tested.** Rather than accept
+that the dev bot was safely separated, we compared `.env` and `.env.dev` key by key (hashing the
+values so nothing secret entered the transcript). `BOT_TOKEN`, `MONGODB_URI`, `LOG_WEBHOOK_URL` —
+all correctly separate. `CLOUDINARY_URL` — **byte-identical to prod.** The dev bot had been reading
+*and writing* the live Cloudinary account the entire time it has existed. Testing `/manage` image
+add/edit/delete or `/autobuild` locally mutated live assets, and the dev bot's own boot + 24h cleanup
+sweep would delete prod assets unprompted, with nobody having asked for anything. Shipped as v2.35.9.
+
+The fix is worth recording because the *obvious* fix was wrong. Scoping uploads to a `-dev` folder
+works for `temp_draws` and `patch_notes`, which bake their folder into the `public_id`. It does
+nothing for `gun-builds`: loadout `public_id` is the bare `imageKey`, and the folder lives only in
+`asset_folder`, a decoupled dashboard label that is not part of the asset's identity. A dev upload of
+an existing key overwrites the live image *regardless of folder*. So the guard fails closed — no
+Cloudinary writes at all from a dev instance — with a properly-designed parallel namespace filed for
+whenever a v3 feature actually needs dev-side image writes. Reads stay open on purpose, or every
+loadout would render broken locally and the dev bot would be useless for the exact features it exists
+to test.
+
+**A third thing, small but expensive:** `git branch -a` reported three branches as open work that had
+been merged for days. This repo has GitHub's auto-delete-on-merge enabled, and a plain `git fetch`
+does **not** prune remote-tracking refs — so long-dead branches keep listing locally. A `git push
+--delete` against them failed with "remote ref does not exist," which is how it surfaced. The
+authoritative check is `gh pr list --state all`, not `git branch -a`. Worth internalizing: a stale
+local view of remote state looks exactly like real work, and the correction only came from trying to
+act on it.
+
+Also landed on the way through: the repo's **first CI** (v2.35.8) — a `node --check` sweep on every
+push and PR, drafted 2026-07-25 and left sitting 30 commits behind `main`. Its triggers listed `main`
+only, which under the new structure would have meant **no v3 PR ever ran CI** — and that failure is
+silent, because a repo with no runs looks identical to a repo whose runs all pass. Added
+`v3-pre-release` to both trigger lists before merging, so the branch inherits CI at birth rather than
+being retrofitted after something slips through.
