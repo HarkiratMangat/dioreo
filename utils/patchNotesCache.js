@@ -26,6 +26,8 @@ if (!process.env.CLOUDINARY_URL) {
     console.error('⚠️ CLOUDINARY_URL is not set -- patch notes image caching will fail on every attempt.');
 }
 
+const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+
 const FOLDER = 'patch_notes';
 
 // SECURITY: never log a raw Cloudinary error object -- see utils/cloudinaryCache.js's matching note
@@ -73,6 +75,8 @@ async function setPatchImageMetadata(patchId, imageIndex, { season, releaseDate 
     try {
         const md = buildPatchMetadata({ patchId, order: imageIndex, season, releaseDate });
         if (Object.keys(md).length === 0) return;
+        // Dev bot shares prod's Cloudinary credentials -- this would rewrite the LIVE asset's metadata.
+        if (isCloudinaryWriteBlocked('update_metadata', publicIdFor(patchId, imageIndex))) return;
         await cloudinary.uploader.update_metadata(md, [publicIdFor(patchId, imageIndex)]);
     } catch (err) {
         console.error(`Patch image metadata set failed for ${patchId}/${imageIndex} (best-effort, non-fatal): ${safeErrorMessage(err)}`);
@@ -109,6 +113,11 @@ function publicIdFor(patchId, imageIndex) {
 // (setPatchImageMetadata swallows its own errors), same decoupling as the loadout side: a metadata
 // hiccup must never turn a successful image cache into a fallback-to-raw-URL.
 async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
+    // Same shape as the catch block below, so a dev save falls back to the raw URL exactly as it does
+    // for a real Cloudinary hiccup -- the admin's save still succeeds, the image just isn't re-hosted.
+    if (isCloudinaryWriteBlocked('upload', publicIdFor(patchId, imageIndex))) {
+        return { url: null, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
+    }
     try {
         const result = await cloudinary.uploader.upload(sourceUrl, {
             public_id: publicIdFor(patchId, imageIndex),
@@ -169,6 +178,11 @@ async function pruneOrphanedPatchFolders(keepPatchIds) {
         if (toDelete.length === 0) return { deletedCount: 0, deleted: [] };
 
         const publicIds = toDelete.map(a => a.public_id);
+        // Irreversible against the live account -- and the dev bot's own boot/24h cleanup sweep would
+        // otherwise run this unprompted, deleting prod patch images with nobody having asked for anything.
+        if (isCloudinaryWriteBlocked('delete_resources', `${publicIds.length} asset(s) under ${FOLDER}/`)) {
+            return { deletedCount: 0, deleted: [] };
+        }
         await cloudinary.api.delete_resources(publicIds, { invalidate: true });
         return { deletedCount: publicIds.length, deleted: publicIds };
     } catch (err) {
