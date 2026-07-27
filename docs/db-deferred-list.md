@@ -158,6 +158,17 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're
   placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
   subsystem detail: `.claude/rules/manage-panel.md`.
+- `[P2 · S · Sonnet5-M · 🔗bundle-with the CI expansion above]` **Make the records-consistency sweep a
+  script (and then a CI job).** Filed 2026-07-27 20:40 EDT. A one-off script run this session caught two
+  real defects that reading had missed: 7 items duplicated across `ROADMAP.md` and `db-deferred-list.md`
+  while both headers claimed they didn't duplicate each other, and `docs/README.md`'s chore checklist
+  telling you to tag the squash commit when every real tag points at the finalize commit. Checks worth
+  keeping: newest `package.json` == newest `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every
+  changelog version has a tag and a summary line; every cited SHA resolves; no cross-file duplicate item
+  titles without a `⇄` marker; `CLAUDE.md`'s memory-file count matches the store; `MEMORY.md` indexes
+  every memory file. **These are exactly the "checkable rule → make it a hook/CI job, not more prose"
+  case** from the `reference_enforcement_hooks` memory — prose already failed at two of them. Natural fit
+  alongside the Vitest/Biome work below, since it needs the same `ci.yml` surface.
 - `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask).
   **✅ Sequencing precondition MET 2026-07-27 18:25 EDT — PR
   [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) is MERGED, shipped as v2.35.8.**
