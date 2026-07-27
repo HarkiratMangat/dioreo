@@ -162,6 +162,31 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.35.5 — 2026-07-27 11:10 EDT (`3e12737`) — Corrected a stale memory-store count; filed commit attribution as deferred
+**Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
+touched, so the VM is still running v2.35.4's code.
+- **`CLAUDE.md`'s canonical-memory-path count was wrong** — it claimed 26 files; the store holds 55
+  plus `MEMORY.md`. That number isn't decoration: it's how a session confirms it landed at the right
+  path, and the whole reason the warning exists is that the harness points sessions at a *different*
+  slug (`-Applications-Claude-Code-Diors-Builds`) that has no `memory/` directory at all. A count
+  stale by more than double actively undermines the check. Now timestamped and worded as a sanity
+  signal ("if you land somewhere empty, you're at the wrong path") rather than a bare number that
+  rots silently.
+- **Filed the unclickable-commit-attribution issue** in `docs/db-deferred-list.md` (Someday/tech-debt,
+  `[P3 · S · Harkirat decision first]`). Every commit before 2026-07-27 11:10 EDT carries
+  `Dior <diorswrld@discord.com>`, which isn't a verified address on the GitHub account, so GitHub
+  renders the author as flat text with no profile link — verified via
+  `gh api repos/.../commits --jq '.[].author.login'` returning `null`. **Already fixed going forward**:
+  the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`, so new
+  commits link correctly. Only the back-catalogue is affected, and fixing that rewrites every pushed
+  SHA on a repo the GCP VM pulls from, plus re-pointing 37 backfilled version tags — filed as a
+  decision to make, not a queued build.
+- Context: this landed alongside the `dior` CLI moving out of `~/.zshrc` into its own private repo
+  (`~/.config/dior`, symlinked to `/Applications/Claude Code/dior-cli`) — that work lives in that
+  repo's own history, not this one. See memory `project_dior_cli_repo`.
+
+---
+
 ## v2.35.4 — 2026-07-27 08:02 EDT (`f1d23da`) — Patch notes release date now supports a real local-clock time
 **Fixes a real display bug:** Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch
 note's release date field and saw `July 21, 2026 at 8:00 PM` after saving — not a parsing crash, a

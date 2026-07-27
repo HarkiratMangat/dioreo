@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.35.5 — July 27, 2026
+- *Internal docs-only — corrected a wrong file count in the developer notes and wrote down a
+  cosmetic GitHub issue to look at later. Nothing players see.*
+
 ## v2.35.4 — July 27, 2026
 - Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered
   — it now correctly reflects the time you typed.
