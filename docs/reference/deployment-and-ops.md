@@ -47,12 +47,14 @@ Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root 
   indefinitely. Render's free tier was
   proven unable to hold the Discord gateway (10-14 min connects → zombie sockets; identical code connects
   in seconds on the VM) — see memory [[project_deployment_migration_render_to_gcp]] + DEVLOG's 2026-07-17
-  entry. **Render service `srv-d850b2og4nts73fhpfog` is SUSPENDED — do NOT deploy to it or treat it as
-  live; delete ~2026-07-24 once GCP proves reliable.**
-- *(HISTORICAL — Render, retired 2026-07-17, kept for reference until the service is deleted.)* Was
+  entry. **Render service `srv-d850b2og4nts73fhpfog` was DELETED 2026-07-27 20:20 EDT** (REST `DELETE`
+  → `204`, confirmed gone by a follow-up `GET` returning `404 not found`). It had been suspended since
+  2026-07-17 and the "delete once GCP proves reliable" condition was satisfied 10 days later, with the
+  VM verified healthy first (`RUNNING`, service active, 0 restarts, no error-priority journal entries).
+  **There is no Render fallback any more — the GCP VM is the only host.**
+- *(HISTORICAL — Render, retired 2026-07-17, service deleted 2026-07-27 20:20 EDT.)* Was
   git-connected auto-deploy off `main` (turned off 2026-07-16 after the Gateway hang, then the host
-  abandoned 2026-07-17). Suspend/resume via REST (`POST /v1/services/{id}/suspend|resume`, `RENDER_API_KEY`
-  in `.env`). — **Railway is NOT connected to a git source at all**
+  abandoned 2026-07-17). — **Railway is NOT connected to a git source at all**
   (confirmed 2026-07-12 via `railway status --json`: the `diors-builds` service's `source` is
   `{ image: null, repo: null }` — it's deployed purely from local CLI snapshot uploads, there's no
   auto-deploy toggle to flip because there's nothing to auto-deploy from). Harkirat was explicitly
@@ -68,7 +70,11 @@ Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root 
   — if a deploy is needed during that window, it has to wait until after 8 PM ET or the plan needs
   upgrading; there's no workaround on the current tier. Keep the local instance running as the
   fallback until an off-peak deploy actually goes through and is verified live.
-- **Render suspend/resume: the `render` CLI (v2.21.0) has no `suspend` subcommand at all** —
+- *(HISTORICAL — the service is gone as of 2026-07-27 20:20 EDT, so none of the suspend/resume mechanics
+  below are actionable. Kept only for the credential-handling lesson in the middle of it, which is
+  general. ⚠️ `RENDER_API_KEY` in `.env` is now a **dead credential** — it authenticates against an
+  account with no services left. Filed for revocation in `docs/db-deferred-list.md`.)*
+- **Render suspend/resume: the `render` CLI (v2.21.0) had no `suspend` subcommand at all** —
   confirmed via `--help` on every relevant command (`render services`, `render services update`,
   etc.) and the `render-cli` skill's own docs; don't waste time guessing at CLI flag names for this,
   it isn't there. The only way to suspend/resume is Render's REST API directly:
