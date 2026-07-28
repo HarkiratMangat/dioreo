@@ -107,8 +107,13 @@ Carried over from the 2026-07-14 directive, with one gap filled:
 - **No git tags during pre-release.** Tags mark released versions on `main`; a merge into an integration
   branch is not one. Launch mints exactly one tag, `v3.0.0`.
 - Version still mints **at merge**, unchanged — just into `v3-pre-release`.
-- The existing per-release `chore(release): finalize … + version bump` commit lands on
-  `v3-pre-release` rather than `main`.
+- ~~The existing per-release `chore(release): finalize … + version bump` commit lands on
+  `v3-pre-release` rather than `main`.~~ **Superseded 2026-07-27 21:27 EDT — that commit is retired
+  entirely.** The changelog entry + `package.json` bump are now written on the feature branch as the
+  final pre-merge checkpoint, so each release is **one** squash commit on `v3-pre-release` too; the
+  commit-hash citation is backfilled one release later. The lifecycle is identical on both bases. This
+  matters more here than on `main`: with no tags until `v3.0.0`, the inline hash is the *only* pointer
+  a `v3-pre-release` entry has. See `2026-07-24-git-branch-pr-workflow-design.md` §3.
 
 ## §4 — Runtime isolation
 

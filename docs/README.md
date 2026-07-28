@@ -8,7 +8,8 @@ kind of content lives and who's responsible for keeping it current.
 > non-negotiables), that means updating **every relevant layer in the same turn** — not just one.
 > The changelog is the layer that historically keeps getting skipped. Under the Branch → Commit → Push →
 > PR → Merge → Deploy workflow (adopted 2026-07-24 12:24 EDT, see `project_git_workflow` memory), docs
-> ride IN the PR's diff — drafted on the branch as the change happens, finalized at merge. A merged PR
+> ride IN the PR's diff — drafted on the branch as the change happens, finalized on the branch in the
+> final pre-merge checkpoint (so they fold into the squash commit — see step 8). A merged PR
 > in this repo isn't finished until `CHANGELOG.md` was touched (the doc-check hook now fires on
 > `gh pr merge`, not on every branch checkpoint commit).
 
@@ -59,10 +60,11 @@ kind of content lives and who's responsible for keeping it current.
 
 ## Responsibilities / chores checklist (per merge — moved from per-push 2026-07-24 12:24 EDT)
 Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
-code) and finalized at merge:
+code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.
-2. `CHANGELOG.md`: a numbered entry (draft it in `Unreleased` on the branch; finalize with the real
-   number + squash-commit hash + tag at merge).
+2. `CHANGELOG.md`: a numbered entry (draft it in `Unreleased` on the branch; finalize it with the real
+   number + timestamp + **PR number, no hash** in the final pre-merge checkpoint — the hash is backfilled
+   one release later, per step 8).
 3. `CHANGELOG-SUMMARY.md`: a friendly line (user-facing) or a range/one-liner (ops/docs-only) — never skip the number.
 4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change
    affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md).
@@ -70,24 +72,29 @@ code) and finalized at merge:
 5. `DEVLOG.md`: a narrative entry if the work had real reasoning/discovery.
 6. Memory: update any rule the session established or corrected.
 7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**. Sweeps go to `archive/graveyard.md`, not to a section inside the notes file.
-8. At merge: `gh pr merge --squash`, then a **second** `chore(release): finalize …` commit on `main`
-   carrying steps 2–3 + the `package.json` bump, and tag **that** commit (`git tag -a vX.Y.Z`), then
-   `git push origin main --follow-tags`.
-   ⚠️ **Corrected 2026-07-27 20:40 EDT — this step used to say "tag the squash commit
-   (`git tag -a vX.Y.Z <squash-sha>`)", which is not what actually happens.** Verified against the real
-   tags: `v2.35.5` points at `a8b383e` (the finalize commit), not `3e12737` (its squash commit), and
-   every release since has followed the same shape. The cause is structural — the changelog entry cites
-   the squash commit's own hash inline, and a commit cannot contain its own hash — so the finalize
-   commit is unavoidable under the current convention. **This is the same discrepancy tracked as
-   `[P1 · S · Opus5-H · 🧩needs-design]` "Resolve the '1 commit + 1 tag per merge' promise vs. the
-   2-commit reality" in `docs/db-deferred-list.md`**, and as an open question in
-   `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §10. Until that session happens,
-   the 2-commit pattern above is the real, intended process — follow it rather than "fixing" it ad hoc.
+8. **One commit + one tag per release — the 4-step lifecycle** (adopted 2026-07-27 21:27 EDT):
+   1. On the branch, as the **final pre-merge checkpoint**: write the changelog entry with the PR
+      number and no hash — `## v2.36.0 — 2026-07-27 21:30 EDT (#33) — <title>` — bump `package.json`,
+      finalize `CHANGELOG-SUMMARY.md` + `DEVLOG.md`.
+   2. In that **same** checkpoint, backfill the *previous* entry's hash: `(#32)` → ``(#32 · `f913975`)``.
+      Additive-only — insert `` · `sha` `` and touch nothing else on the line; never edit the timestamp
+      afterwards; **never `--amend`, never force-push** (this is an ordinary edit in a later commit).
+   3. `gh pr merge --squash` → **one** commit on `main`. No `chore(release)` commit — it is retired.
+   4. `git pull`, then `git tag -a vX.Y.Z <that sha>`, then `git push origin main --follow-tags`. The
+      tagged commit's `package.json` already reads `X.Y.Z` because of step 1.
+   ⚠️ **Rewritten 2026-07-27 21:27 EDT.** This step previously prescribed a **second**
+   `chore(release): finalize …` commit on `main`, tagged instead of the squash commit — the real shape
+   of v2.33.0–v2.35.15, forced by citing the squash commit's own hash inline (a commit cannot contain
+   its own hash). Lagging the hash by one release removes the need for that commit, so the "one commit +
+   one tag per version" promise is now true rather than aspirational. Full design + the rejected
+   alternatives: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §3, §5, §10.
 9. **Sanity-check the records before calling the merge done.** Cheap, and it has caught real drift twice:
    newest `package.json` version == newest `CHANGELOG.md` entry == newest `CHANGELOG-SUMMARY.md` entry;
    every changelog version has a git tag and a summary line (no number skipped); every SHA cited in a
-   changelog entry actually resolves (`git cat-file -e <sha>^{commit}`); and `git fetch --prune` before
-   trusting `git branch -a`, which lists long-merged branches otherwise.
+   changelog entry actually resolves (`git cat-file -e <sha>^{commit}`) — **exempting the newest entry,
+   whose hash is backfilled by the next release**; every entry from **v2.33.0** on cites a PR number
+   (the 9 older entries, v2.26.0–v2.32.0, predate the PR workflow and are correctly hash-only); and
+   `git fetch --prune` before trusting `git branch -a`, which lists long-merged branches otherwise.
 
 ## Versioning
 `vMAJOR.MODERATE.MINOR` (3-part, uniform throughout as of 2026-07-21). Full rules in

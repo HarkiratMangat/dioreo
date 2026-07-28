@@ -33,6 +33,22 @@ Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
   commit — not per raw commit, not per push of a feature branch. Everything through v2.32.0 above was
   numbered under the old "one push, one number" rule; that history is left as-is, only the *going-forward*
   unit changed.
+- **Entry citation format + the lagged hash backfill (adopted 2026-07-27 21:27 EDT).** A heading reads
+  `## vX.Y.Z — YYYY-MM-DD HH:MM EDT (#PR · `sha`) — <title>`. Because a commit cannot contain its own
+  hash, the two halves are written at different times: the **PR number** is written on the branch as the
+  final pre-merge checkpoint (with the `package.json` bump, so it folds into the squash commit), and the
+  **hash is backfilled one release later**, on the *next* release's branch. So **the newest entry always
+  lacks a hash — that is correct, not drift.** The backfill is additive-only (insert `` · `sha` ``, touch
+  nothing else, never edit the timestamp) and is an ordinary edit in a later commit — **never an
+  `--amend`, never a force-push.**
+  ⚠️ **v2.33.0–v2.35.15 were tagged on a separate `chore(release): finalize …` commit, not on their
+  squash commit** — the old convention cited the squash hash inline, which forced that second commit.
+  Their tags are correct as they stand (the finalize commit is where `package.json` reads the tagged
+  version); don't "fix" them. **Entries from v2.36.0 on follow the new shape**: one commit, one tag, on
+  the squash commit. Full design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
+  §3, §5, §10.
+- **Entries before v2.33.0 (v2.26.0–v2.32.0) cite a hash only, with no `#PR`** — they predate the PR
+  workflow entirely (PR #1 *is* v2.33.0), so there is no PR to cite. Accurate history, not a gap.
 
 Only merged PRs get a permanent version number — see **Unreleased** at the bottom of this file for
 work still on an open branch/PR.
@@ -1929,9 +1945,10 @@ green copy button"
 **Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open
 branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on
 `feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version
-until the squash-merge mints one. On merge, graduate this content up into a real numbered entry (newest-
-first, at the TOP of the list above, with the real squash-commit hash + tag) and reset this section to
-empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
+until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at
+the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and
+no hash** — the hash is backfilled one release later (see the citation-format note in the versioning
+header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead;
 that model is retired now that all work flows through a branch first.)
 
 *(Empty — nothing currently on an open branch/PR awaiting merge. v2.35.4, the last entry to sit here,

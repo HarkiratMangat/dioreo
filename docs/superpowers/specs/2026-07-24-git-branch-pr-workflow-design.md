@@ -81,9 +81,49 @@ and sweep every file/doc/hook/memory that encodes the old model so the whole sys
   checkpoint commits (an explicit Harkirat complaint). Branch checkpoints stay visible on the PR page +
   in DEVLOG narrative, just not in `main`.
 - **Tag on the squash commit**, on `main`: `git tag -a vX.Y.Z <squash-sha> -m "…"` then push the tag.
+  ⚠️ This is only correct **because** the bump is finalized on the branch (next bullet) — the tagged
+  commit's `package.json` must already read `X.Y.Z`. Never restore "tag the squash commit" without
+  that; for v2.33.0–v2.35.15 the tag deliberately sat on the separate finalize commit, because the
+  squash commit there still carried the *previous* version.
 - **`package.json` version is now bumped as part of the merge.** The bump is written on the branch as
   the final pre-merge checkpoint (alongside the finalized changelog), so it folds into the squash
   commit and the tag points at it. Node doesn't read the field at runtime — bumping is free/safe.
+
+### Changelog citation format + the lagged backfill (adopted 2026-07-27 21:27 EDT)
+
+A changelog heading cites **both** the PR number and the squash commit's hash:
+
+```
+## vX.Y.Z — YYYY-MM-DD HH:MM EDT (#PR · `sha`) — <title>
+```
+
+A commit cannot contain its own hash, so the two halves are written at different times:
+
+1. **At the final pre-merge checkpoint on the branch:** write the entry with the PR number only —
+   `## v2.36.0 — 2026-07-27 21:30 EDT (#33) — <title>` — bump `package.json`, finalize
+   `CHANGELOG-SUMMARY.md` + `DEVLOG.md`.
+2. **In that same checkpoint, backfill the *previous* release's hash**: `(#32)` → ``(#32 · `f913975`)``.
+3. `gh pr merge --squash` → **one** commit on `main`.
+4. `git pull`, then `git tag -a vX.Y.Z <that sha>` → **one** tag, on a commit whose `package.json`
+   already reads `X.Y.Z`. Then `git push origin main --follow-tags`.
+
+Rules that keep this safe:
+
+- **The backfill is additive-only.** It inserts `` · `sha` `` and touches nothing else on the line.
+- **The timestamp is written once**, at the final pre-merge checkpoint, and is **never edited
+  afterwards** — an additive-only edit can't corrupt the line it touches, and the cited commit's own
+  author date is authoritative anyway. Drift is minutes.
+- **No history is ever rewritten.** The backfill is an ordinary edit inside a later commit — **not**
+  `git commit --amend`, not a force-push. `main` stays append-only.
+- **The one-release lag is cosmetic on `main`** — `git rev-parse vX.Y.Z` answers the hash immediately.
+  On `v3-pre-release` there are no tags until `v3.0.0`, so the inline hash is the *only* pointer, which
+  is exactly why the design that keeps the hash is the one that survives the v3 constraint.
+- **When mapping merged PRs to hashes, map by merge-commit hash, never by parsing subjects.** A squash
+  subject can contain two `#N` references (`v2.35.11`'s is `… PR #11 has merged (#28)` — the real PR is
+  the **trailing** one), and PRs #1, #9, #10 carry no `(#N)` suffix at all:
+  `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'`
+- Entries **before v2.33.0** (v2.26.0–v2.32.0) stay hash-only. They predate the PR workflow entirely —
+  PR #1 *is* v2.33.0 — so there is no PR to cite. That is accurate history, not a gap.
 - **Unreleased redefined:** an open branch/PR *is* the new "Unreleased." Its **proposed** number sits
   in the changelog's Unreleased section and graduates to a real numbered entry + tag at squash-merge.
 - **Branch-work reference notation:** unreleased branch commits carry **no** assigned version; they're
@@ -110,7 +150,14 @@ Docs stop being a separate "at push time" ritual (the step that kept getting ski
 **part of the PR's diff**, reviewed alongside the code.
 
 - **CHANGELOG / CHANGELOG-SUMMARY:** drafted on the branch (Unreleased, proposed number), **finalized
-  at merge** — real number + squash-commit hash + tag. The number only exists at merge.
+  on the branch as the final pre-merge checkpoint** — real number + date/time + PR number, written
+  alongside the `package.json` bump so the whole release record folds into the squash commit. The
+  **commit hash is backfilled one release later** (§3's lagged-backfill rule).
+  ⚠️ **Corrected 2026-07-27 21:27 EDT — this bullet used to say "finalized at merge — real number +
+  squash-commit hash + tag."** That clause was the root cause of the 2-commit reality: a commit cannot
+  contain its own hash, so "cite the squash hash" forced a second `chore(release): finalize …` commit
+  on `main` after every merge (13 of them, v2.33.0–v2.35.15), contradicting §3 and §10's "one commit +
+  one tag per version." §3 already described the working design; only this clause blocked it.
 - **CLAUDE.md / `.claude/rules` / memory / working agreement / ROADMAP / notes file:** updated on the
   branch as the relevant change happens; they ride in the PR. No separate timing.
 - **DEVLOG:** a merged PR is a natural narrative unit → entry written at merge.
@@ -186,3 +233,16 @@ Docs stop being a separate "at push time" ritual (the step that kept getting ski
 - Squash merge; one commit + one tag per version on `main`.
 - Branch commits are free (no approval); approval-gated set = push · merge · deploy.
 - `package.json` gets bumped at merge and the boot alert reports it (running-version signal).
+- **2026-07-27 21:27 EDT — the changelog hash citation is backfilled one release late, and the
+  `chore(release): finalize …` commit is retired.** This closes the "one commit + one tag" promise
+  above, which had been false in practice for 13 releases (v2.33.0–v2.35.15). The full format and
+  lifecycle live in §3; the clause that caused it is corrected in §5. Rejected alternatives, recorded
+  so they are never re-proposed:
+
+  | Approach | Why it fails |
+  |---|---|
+  | Local `git merge --squash` + `--amend` the hash in | Amending changes the hash again. Circular under every ordering — genuinely unfixable by mechanism. |
+  | `(pending)` placeholder amended on `main` post-merge | Requires force-pushing `main` — exactly what produced the 2026-07-27 VM divergence. |
+  | `git notes` | Invisible to anyone reading the file; not pushed by default. |
+  | Drop the citation entirely (tag only) | Works on `main`, but loses the pointer, and `v3-pre-release` has no tag to fall back on until `v3.0.0`. |
+  | Accept + document the 2-commit reality | Retires the "one commit" promise for a problem that turned out to be solvable. |
