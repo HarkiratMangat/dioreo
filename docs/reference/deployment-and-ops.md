@@ -310,6 +310,23 @@ The `vMAJOR.MODERATE.MINOR` convention itself is defined in `docs/SESSION-START.
 canonical source — don't duplicate the full rules here). **Under the Branch → Commit → Push → PR → Merge
 → Deploy workflow (adopted 2026-07-24 12:24 EDT), the version-earning unit is the MERGED PR, not the push** — a
 squash-merge collapses a branch to one commit on `main`, and that squash commit is what gets tagged.
+⚠️ **Corrected 2026-07-27 21:27 EDT — that was aspirational, not reliably true, across v2.33.0–v2.35.15.**
+**16 of those 25 releases** (v2.33.5, v2.33.6, v2.34.0, v2.34.1, v2.35.4–v2.35.15) were tagged on a
+**separate `chore(release): finalize …` commit** that followed the squash, because the changelog entry
+cited the squash commit's own hash inline and a commit cannot contain its own hash. Their tags are right
+where they are — the finalize commit is the one whose `package.json` reads the tagged version, so
+`git show vX.Y.Z:package.json` only answers correctly there.
+⚠️ **The other 9 (v2.33.0–v2.33.4, v2.35.0–v2.35.3) were tagged on the squash commit — and 6 of them are
+wrong as a result.** `git show vX.Y.Z:package.json` reports the *previous* version for **v2.33.3, v2.33.4,
+v2.35.0, v2.35.1, v2.35.2, v2.35.3** (e.g. `v2.35.3` → `2.35.2`), because the tag landed on a commit
+predating that release's bump. Verified 2026-07-27 21:27 EDT. Pre-existing and **not fixed here** — moving
+6 published tags is its own decision; tracked in `docs/db-deferred-list.md`. Don't trust
+`git show <tag>:package.json` for those 6. (`v2.30.0`–`v2.32.0` reporting `1.0.0` is *not* this bug —
+`package.json` genuinely sat at the stale `1.0.0` until the workflow overhaul first bumped it.) **From v2.36.0 on the
+sentence above is literally true**: the `package.json` bump and the finalized changelog are written on the
+branch as the final pre-merge checkpoint (so they fold into the squash commit), the hash citation is
+backfilled one release later, and the finalize commit is retired. Full design:
+`docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` §3, §5, §10.
 `docs/CHANGELOG.md`'s "Unreleased" section holds the proposed number for whatever's on the open branch/PR
 awaiting merge. **Each merged PR's version gets an actual git tag** on the squash commit (e.g. `v2.18.1`),
 complementing (not replacing) the CHANGELOG entry — the CHANGELOG's proposed number is the human-readable
