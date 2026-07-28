@@ -76,6 +76,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 (later) — The sweep that searched for its own wording
 - 2026-07-28 (afternoon) — Why the DEVLOG kept getting skipped, measured rather than guessed
 - 2026-07-28 (late afternoon) — The error counter that could never have been right
+- 2026-07-28 (evening) — "Why do I always have to ask you to check?"
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -2697,3 +2698,64 @@ at v2.40.0. Eighteen commits, five releases, undeployed, for days. Nobody had li
 of those releases was correctly reported as *merged*. It's just that merged and live are different
 claims, and nothing in the workflow had ever displayed the gap between them. Now the DEPLOY block does,
 on every run.
+
+---
+
+## 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
+
+The v2.41.0 work was finished, tested, and staged to push. Harkirat's response was not about the code:
+
+> *"Why weren't these bugs and gaps caught in your own pass of the files/code? Why is it that EVERY
+> session I have to ask to double check and verify things, and it ALWAYS catches errors?"*
+
+The tempting reply is "I'll be more careful," which is worth nothing, and the second-most tempting is a
+new memory file saying *remember to check references*, which is worth slightly less than nothing because
+three variants of that already exist and demonstrably don't fire.
+
+So the useful thing was to figure out what the failure actually **is**, because it isn't laziness — the
+session immediately before this one was, by any normal measure, thorough. The rewritten script was tested
+from the Mac, tested on the VM, tested against both log sources, tested with four kinds of malformed
+argument, and the bot was boot-tested on the dev app. Two bugs were found and fixed *by me* in that pass.
+That is not a session that skipped verification.
+
+It's that all of it points one direction. **Every check answered "does the thing I built work?" and none
+answered "what did building it make untrue?"** Forward verification and backward verification are
+different activities, and only the first one has ever been automatic. The second has, apparently for as
+long as Harkirat has been keeping score, happened exclusively when he asked for it — which is why it
+always finds something. It's not that asking summons errors. It's that asking is the only thing that ever
+runs the check.
+
+The evidence was sitting right there: the sweep he prompted found a memory file still documenting the
+*retired* direct-push deploy flow four days after the PR workflow replaced it, two `.claude/rules/` files
+describing the old script's behaviour, a stale ROADMAP note, a stale SESSION-START line, and a real
+pre-existing bug in `deploy.sh`'s use of the very script I'd spent the session rewriting. Every single one
+of those files contains the string `vmstatus`. I never opened any of them, because none of them were
+things I had *built*.
+
+Which makes it mechanically checkable, and this repo has a settled answer for mechanically checkable
+rules: it becomes a hook, not more prose. The measured argument for that is already on record —
+`grep` used 788 times against `rg`'s 4, under a standing rule preferring `rg`. Prose loses.
+
+So: `stale-reference-sweep`, firing before `gh pr create`. Diff the branch, take the basenames of the
+code files you changed, search the docs and rules and CLAUDE.md and the memory store for anything that
+*names* them and wasn't touched, and refuse to sail past silently if the list is non-empty. It's the
+repo's first hook that lives in a script file instead of an inline command string, which felt like a
+threshold worth crossing — the logic has real branching in it, and cramming that into a JSON string is
+how you get a hook nobody can safely edit later.
+
+Two design details that decide whether it survives contact with daily use. It is **silent on a clean
+branch**, so the interruption is exactly proportional to the miss — a gate that fires when you *did* do
+the work is a gate that gets dismissed reflexively within a week. And memory files can never show up in a
+git diff, since they live outside the repo, so it falls back to comparing their mtime against the branch
+start rather than listing the same five files on every PR forever.
+
+The first dry-run flagged the files I'd already fixed — correct — plus two nobody had looked at. One was
+another stale `vmstatus` description. The other was better: the 2026-07-24 git-workflow spec had proposed,
+as an *optional extra*, that `vmstatus.sh` print `VM at <sha> · main at vX.Y.Z`. v2.41.0 built exactly
+that, as the DEPLOY block, and nobody connected the two. The hook found a **completed** item that had
+never been marked done — a direction of staleness I hadn't even been looking for.
+
+What I'd want a future session to take from this: when Harkirat says a correction is recurring, the fix is
+never to resolve to do better. Find the shape of the gap, confirm it's checkable, and hand the checking to
+something that doesn't get tired or optimistic. And if it turns out not to be checkable, say so plainly
+rather than writing a fourth memory file that will also not fire.

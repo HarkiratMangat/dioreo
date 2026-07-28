@@ -181,7 +181,37 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.41.0 — 2026-07-28 15:52 EDT (#47) — The error counter was never capable of being right
+## v2.41.1 — 2026-07-28 17:05 EDT (#48) — Verifying forward but never backward
+**Enforcement + docs only — no bot runtime change, no deploy needed.**
+- **Harkirat's complaint, verbatim:** *"EVERY session I have to ask to double check and verify things,
+  and it ALWAYS catches errors. I'd rather you do this on your own."* He is right, and the answer was not
+  another prose rule.
+- **Root cause, named rather than apologised for:** verification runs **forward** (does the thing I built
+  work?) and never **backward** (what did building it make untrue?). v2.41.0 is the clean illustration —
+  the forward pass was genuinely thorough (script tested on the Mac, on the VM, in both log sources, with
+  malformed args, plus a bot boot-test, all passing) and the backward pass, once *asked for*, still found
+  a memory file documenting the **retired** deploy workflow, two `.claude/rules/` files describing the old
+  behaviour, a stale ROADMAP note, a stale SESSION-START note, and a real pre-existing bug in `deploy.sh`.
+  Every one of those files contained the string `vmstatus`; none had been opened.
+- **New `stale-reference-sweep` hook** (PreToolUse/Bash on `gh pr create`). Diffs the branch, takes the
+  basenames of changed `.js`/`.sh`/`.ya?ml` files, and searches `docs/`, `.claude/`, `CLAUDE.md`, and the
+  memory store for anything that names them but wasn't itself touched. Asks **before the PR exists**, so
+  fixes still land on the branch where they belong. Silent on a clean branch — the interruption is
+  proportional to the miss, which is what stops it becoming noise that gets dismissed unread.
+- **First hook SCRIPT file in the repo** — `.claude/hooks/stale-reference-sweep.sh`, tracked, referenced
+  from tracked `.claude/settings.json`. Every prior hook is an inline command string; right for
+  one-liners, wrong for this. Recoverability is unchanged: both halves are in version control.
+- **It found two more on its first dry-run**, neither of which anyone had checked: a stale `vmstatus`
+  description in the `project_deployment_migration_render_to_gcp` memory, and — the good one — an
+  *"optional extra"* proposed in the 2026-07-24 git-workflow spec (`have vmstatus.sh print VM at <sha> ·
+  main at vX.Y.Z`) that **v2.41.0 had silently implemented** as the DEPLOY block without anyone marking it
+  done. Both corrected.
+- **Cross-session notice filed** in `docs/db-deferred-list.md` for the parallel session that was paused
+  mid-work on hooks and the DEVLOG backfill: `settings.json` gained a hook, `.claude/hooks/` is new, and
+  the **DEVLOG table of contents was rebuilt** (it had drifted 15 entries behind), which is the likely
+  merge conflict for a backfill branch cut before today.
+
+## v2.41.0 — 2026-07-28 15:52 EDT (#47 · `c73024b`) — The error counter was never capable of being right
 **Bot runtime change (`utils/logger.js`, `index.js`) + ops tooling. Needs a deploy AND a one-time VM
 config install — see `docs/reference/deployment-and-ops.md`.**
 - **The bug under the feature request.** The filed ask was cosmetic-sounding (timestamps, a commit hash,
