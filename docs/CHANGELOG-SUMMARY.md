@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.38.1 — July 28, 2026
+- *Internal only — removed a stray empty file. Nothing players see.*
+
 ## v2.38.0 — July 28, 2026
 - *Internal only — Dior's project notes were being kept in a folder the tools had stopped looking in,
   and were found only because a reminder pointed the way each time. They've been moved to the folder
