@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.41.2 — July 28, 2026
+- *Internal only — tidied up how Dior's own development journal is indexed so entries can actually be found. Nothing players see.*
+
 ## v2.41.1 — July 28, 2026
 - *Internal only — added an automatic check so Dior's own notes and documentation can't quietly fall out of date when the bot's code changes. Nothing players see.*
 

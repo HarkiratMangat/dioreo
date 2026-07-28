@@ -67,6 +67,10 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/stale-reference-sweep.sh' \"${base:-main}\"; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/devlog-toc-check.sh' \"${base:-main}\"; fi"
           }
         ]
       }

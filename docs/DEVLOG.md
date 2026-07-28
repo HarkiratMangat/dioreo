@@ -21,62 +21,72 @@ was local-only/gitignored before that); still candid, written for us, just now w
 
 # 🗺️ Table of contents
 *Greppable heading map (added 2026-07-21) — jump by searching the entry text, not a line number (numbers
-rot on every edit). **Keep in sync** when you add an entry. Part A is strictly chronological; Part B is
+rot on every edit). **Every dated Part A line is its body heading VERBATIM, `## ` stripped** — that exact
+mirroring is what makes "search the entry text" actually land on the heading, and it is why the old vague
+qualifiers ("later", "afternoon", "late afternoon") were retired 2026-07-28 17:35 EDT: they were ambiguous
+AND they rotted, since inserting one entry silently shifted the meaning of every "later" below it. Older
+entries whose body heading carries no clock time keep the bare date — mirror what the heading says, never
+invent a time. ⚠️ The block also holds a non-dated pointer line with no body heading; **don't blind-
+regenerate the TOC**, it deletes that. Sync is now checked by `.claude/hooks/devlog-toc-check.sh` at
+`gh pr create` (it was found 15 entries behind the body on 2026-07-28 16:20 EDT under the old
+keep-it-in-sync-by-hand rule). Part A is strictly chronological; Part B is
 purely thematic — a dated narrative entry goes in Part A, a reusable takeaway goes in a Part B bullet.
 (2026-07-21: seven dated entries that had drifted into Part B were moved back into their chronological
 Part A slots — don't re-file dated deep-dives under Part B.)*
 
 **Part A — The Journey (chronological)**
 - 2026-07-13 — The color-panel saga: one report, five root causes
-- *Earlier milestones* `[backfill — expand later from transcripts]`
-- 2026-07-14 — Access locks, a scope-correction, and a perf finding that was architecture not a bug
+- 2026-07-14 — Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug
 - 2026-07-14/15 — Planning sessions: a roadmap out to v5, and two landmines found while filing notes
 - 2026-07-16 — A silent 14-minute Gateway hang, and a documentation gap it exposed
 - 2026-07-17 — The Render outage that became a migration to GCP
-- 2026-07-17 (later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, a disabled API
+- 2026-07-17 (later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API
 - 2026-07-18 — A tidy session: turning the scratchpad into a conveyor, not a landfill
 - 2026-07-18 (new session) — Solving a mystery Harkirat couldn't solve about his own bot
 - 2026-07-18 — The v2 quick-wins polish batch: 8 filed items, shipped in one pass
 - 2026-07-18 (later) — Going private broke the deploy, and a documentation lapse right after fixing it
 - 2026-07-18 (later still) — A 15-note dump, and two real findings worth keeping
 - 2026-07-18 (yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly
-- 2026-07-18 (new session) — Building the passive auto-disable, and confirming it matches the spec
+- 2026-07-18 (new session) — Building the passive auto-disable, and confirming it actually matches the spec
 - 2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session
 - 2026-07-19 — A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga
 - 2026-07-20 — A "still active" link that was actually dead, and designing an automation idea properly
 - 2026-07-20 | Antigravity — The Vertex AI Keyless ADC Migration
-- 2026-07-20 | Claude — Reviewing the Antigravity handoff: what held up, what didn't
+- 2026-07-20 | Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process
 - 2026-07-20 | Claude — Queued housekeeping while `/autobuild` awaits its live test
 - 2026-07-20 (later) — The alert log, and three process misses caught before the build even started
-- 2026-07-20 (later still) — "wtf are these reconnect alerts?" → answer with evidence, then act
-- 2026-07-21 — `/autobuild`'s first live test: six findings, one shared root, a metadata question
+- 2026-07-20 (later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it
+- 2026-07-21 — `/autobuild`'s first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives
 - 2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no
 - 2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at
 - 2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction
-- 2026-07-24 — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
-- 2026-07-24 (later) — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
-- 2026-07-25 — Second dogfood of the branch workflow: splitting deferred-items.md
-- 2026-07-25 (later) — "You did such a half-ass job of it": finishing a split that was never finished
-- 2026-07-26 — Caught deferring, again, on the very hook built to stop it
-- 2026-07-26 (later) — Finally building a place to test, and the leak it sprang on the first boot
-- 2026-07-26 (later still) — Reversed twice on a convention, and both reversals were the system working
-- 2026-07-26 (evening) — The emoji sync reported 39/39 and was still wrong: four require-time captures
-- 2026-07-26 (night) — PR #9 finally gets a real boot test, not just `node --check`
-- 2026-07-26 (late) — A cleanup branch found a log line that lies about which database you're on
-- 2026-07-27 — A "parsing bug" that was actually a display/design mismatch
-- 2026-07-27 (later) — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer
-- 2026-07-27 (evening) — Planning v3 meant first proving what "isolated" actually meant
-- 2026-07-27 (later still) — Closing out the old host, and what a scripted sweep found that reading hadn't
-- 2026-07-27 (night) — The two-commit knot was one sentence disagreeing with itself
-- 2026-07-27 (night, later) — Ten merged branches nobody could see
-- 2026-07-27 (night, last) — Three ways to document a rule and still not have one
-- 2026-07-28 — The memory was in a folder nothing was looking at
-- 2026-07-28 (morning) — Two small releases that were both my own mess
-- 2026-07-28 (midday) — The rules that enforce the rules were never backed up
-- 2026-07-28 (later) — The sweep that searched for its own wording
-- 2026-07-28 (afternoon) — Why the DEVLOG kept getting skipped, measured rather than guessed
-- 2026-07-28 (late afternoon) — The error counter that could never have been right
-- 2026-07-28 (evening) — "Why do I always have to ask you to check?"
+- 2026-07-24 12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged
+- 2026-07-24 16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)
+- 2026-07-24 18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0
+- 2026-07-25 16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md
+- 2026-07-25 21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished
+- 2026-07-26 11:52 EDT — Caught deferring, again, on the very hook built to stop it
+- 2026-07-26 13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot
+- 2026-07-26 15:26 EDT — Reversed twice on a convention, and both reversals were the system working
+- 2026-07-26 16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures
+- 2026-07-26 18:43 EDT — PR #9 finally gets a real boot test, not just `node --check`
+- 2026-07-26 21:04 EDT — A cleanup branch found a log line that lies about which database you're on
+- 2026-07-27 08:02 EDT — A "parsing bug" that was actually a display/design mismatch
+- 2026-07-27 08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer
+- 2026-07-27 18:50 EDT — Planning v3 meant first proving what "isolated" actually meant
+- 2026-07-27 20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't
+- 2026-07-27 21:35 EDT — The two-commit knot was one sentence disagreeing with itself
+- 2026-07-27 21:50 EDT — Ten merged branches nobody could see
+- 2026-07-27 22:35 EDT — Three ways to document a rule and still not have one
+- 2026-07-28 01:41 EDT — The memory was in a folder nothing was looking at
+- 2026-07-28 11:20 EDT — Two small releases that were both my own mess
+- 2026-07-28 13:20 EDT — The rules that enforce the rules were never backed up
+- 2026-07-28 13:45 EDT — The sweep that searched for its own wording
+- 2026-07-28 14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed
+- 2026-07-28 15:52 EDT — The error counter that could never have been right
+- 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
+- 2026-07-28 17:35 EDT — A table of contents you can't actually search
+- *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -2759,3 +2769,49 @@ What I'd want a future session to take from this: when Harkirat says a correctio
 never to resolve to do better. Find the shape of the gap, confirm it's checkable, and hand the checking to
 something that doesn't get tired or optimistic. And if it turns out not to be checkable, say so plainly
 rather than writing a fourth memory file that will also not fire.
+
+---
+
+## 2026-07-28 17:35 EDT — A table of contents you can't actually search
+
+Harkirat, reading the DEVLOG changes:
+
+> *"Confused why DEVLOG uses 'later', 'afternoon', 'late afternoon', etc instead of just utilizing the
+> timestamp system already used throughout docs? Genuinely asking here because I'm unaware."*
+
+There was nothing to be unaware of. There was no reason. I'd written those qualifiers because the
+existing TOC lines used them, and matching a local convention felt like the careful thing to do. I never
+asked whether the convention was any good, which is a different failure from the one an hour earlier and
+worth separating: that one was *not looking* at neighbouring files, this one was looking and then
+deferring to what I found.
+
+The convention is bad in three distinct ways. "Later" than what — ambiguous on its face. It *rots*:
+insert one entry in the middle and every "later" and "later still" beneath it silently changes meaning,
+with nothing to detect the drift. And the fatal one — the TOC's own header instructs you to jump by
+**searching the entry text** rather than by line number, because line numbers rot. But if the TOC says
+`2026-07-26 (later)` and the heading says `2026-07-26 13:45 EDT — Finally building a place to test`,
+searching the TOC text finds nothing. The index was built around a lookup method it made impossible.
+
+So: every dated Part A line is now its body heading verbatim with `## ` stripped. Half the headings (25
+of 50) genuinely have no clock time — older backfilled entries — and those keep their bare date, because
+mirroring what the heading actually says matters more than uniformity, and inventing a timestamp to fill
+the column would be fabricating a record.
+
+Two near-misses in the building, both of which I'd rather write down than quietly fix.
+
+The first: I made two throwaway commits to test the new hook's fire-and-silent paths, then ran
+`git reset --hard HEAD~2` to clean them up — and took the real work with them, because it was sitting in
+the same commit range. Recoverable here, since everything was still in context. It would not always be.
+Test scaffolding and real work should never share a commit range you intend to discard.
+
+The second is more interesting. The TOC holds one line that isn't an entry at all:
+`- *Earlier milestones* [backfill — expand later from transcripts]`, a pointer with no body heading. My
+first regeneration script deleted it, silently, because it wasn't a heading. And the first version of the
+checker would then have reported it as a stale TOC line and had me delete it again on purpose. An
+automated consistency check and an automated regenerator, agreeing with each other and both wrong, is a
+worse failure mode than the manual drift they replaced — they'd have quietly agreed that a real piece of
+content shouldn't exist. Both now only touch dated lines, and the hook's own message says so, because
+the next person to write a regenerator will hit exactly this.
+
+The general lesson, which is really the same one as the entry above it: when you automate a check, the
+thing to design hardest is not what it catches. It's what it must leave alone.
