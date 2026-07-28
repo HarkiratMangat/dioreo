@@ -209,14 +209,24 @@ changelog until v3 actually launches.
   and were rewritten as content, not path-swapped — a find-replace would have produced a
   self-contradicting store that still passed every checksum. Also fixed a long-dangling `ROADMAP.md`
   reference to a "canonical-memory-path note at the top of this file" that has never existed there.
-- **A wider audit after the first pass found 8 further stale assertions**, none of which contained the
-  literal old-slug string in an obvious place: the parked-redesign memory still declaring "the slug-path
-  guard still stands" (in its frontmatter *and* body *and* `MEMORY.md` index line), a **second**
-  claim-statement in `meta-deferred-list.md`, a "don't re-derive" section in `memory-architecture-STATUS.md`
-  asserting the current slug had no memory folder, the design doc's stale premise, the now-completed
-  migration handoff, and — the only one that would have actively broken — **`dior-cli/CLAUDE.md`, a
-  separate repo pointing its sessions at the dead path.** The lesson: grepping one string finds phrasings,
-  not claims. The audit had to search for the *idea* ("move-proof", "guard stands", "fixed store").
+- **Three audit passes were needed, and each found things the previous one missed.** Pass 1 swept the
+  literal old-slug string. Pass 2 swept the *idea* ("move-proof", "guard stands", "fixed store") and found
+  8 more — the parked-redesign memory declaring "the slug-path guard still stands" in its frontmatter
+  *and* body *and* index line, a **second** claim block in `meta-deferred-list.md`, a *"don't re-derive"*
+  section in `memory-architecture-STATUS.md` asserting the slug had no memory folder, the design doc's
+  stale premise, the unmarked handoff, and **`dior-cli/CLAUDE.md` — a separate repo aiming its sessions
+  at the dead path.** Pass 3 went machine-wide, beyond the repo, and found more still:
+  - **19 cross-store links across 11 files in the Gif-Background-Remover memory store**, all pointing
+    into Diors' old path. All 19 targets verified present in the new store before rewriting.
+  - **The parked project's own resume-point memory** (shared-root store) telling a future session the
+    slug path was *"ABSENT — the clean precondition for the planned symlink."* It is not absent; it holds
+    a live store. That one would have sent a resumed redesign straight into a failed `ln -s`.
+  - Two `~/.claude/plans/` files instructing a resuming session to **write** memory to the old path.
+  - `local/claude md backup/` — an **unmarked** snapshot of a whole `.claude` tree (including a
+    two-generations-stale copy of the memory store) with nothing saying it was a backup. Now marked.
+- **The lesson: grep finds phrasings, not claims** — and a store that has been the canonical one for
+  weeks is referenced from places that never name it. Searching by *concept*, and searching *outside*
+  the repo, is what actually closed this out.
 - ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
   that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
 - **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.**
