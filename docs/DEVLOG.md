@@ -62,6 +62,20 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-26 (later still) — Reversed twice on a convention, and both reversals were the system working
 - 2026-07-26 (evening) — The emoji sync reported 39/39 and was still wrong: four require-time captures
 - 2026-07-26 (night) — PR #9 finally gets a real boot test, not just `node --check`
+- 2026-07-26 (late) — A cleanup branch found a log line that lies about which database you're on
+- 2026-07-27 — A "parsing bug" that was actually a display/design mismatch
+- 2026-07-27 (later) — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer
+- 2026-07-27 (evening) — Planning v3 meant first proving what "isolated" actually meant
+- 2026-07-27 (later still) — Closing out the old host, and what a scripted sweep found that reading hadn't
+- 2026-07-27 (night) — The two-commit knot was one sentence disagreeing with itself
+- 2026-07-27 (night, later) — Ten merged branches nobody could see
+- 2026-07-27 (night, last) — Three ways to document a rule and still not have one
+- 2026-07-28 — The memory was in a folder nothing was looking at
+- 2026-07-28 (morning) — Two small releases that were both my own mess
+- 2026-07-28 (midday) — The rules that enforce the rules were never backed up
+- 2026-07-28 (later) — The sweep that searched for its own wording
+- 2026-07-28 (afternoon) — Why the DEVLOG kept getting skipped, measured rather than guessed
+- 2026-07-28 (late afternoon) — The error counter that could never have been right
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
 root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process
@@ -2601,3 +2615,85 @@ The new consolidated check covers those, nudges the CLAUDE.md/rules note when co
 and — the part that matters most — **explicitly names the two items it cannot check** (memory updates
 and the notes file). Writing "this check does not cover X" into the check itself is the direct antidote
 to the false-completion failure that started the whole thread.
+
+---
+
+## 2026-07-28 15:52 EDT — The error counter that could never have been right
+
+The ticket read like polish. Put timestamps on log lines, say which commit produced them, add time-window
+arguments, bump a default, make the standalone output less barebones, "expand the error tracker." Five
+items, all cosmetic-adjacent, filed `[P2 · M]`.
+
+Four of the five were real. The fifth turned out to be the only one that mattered, and it wasn't a
+display problem at all.
+
+**The counter had two modes and both were incapable of being right.** `vmstatus.sh` counted errors by
+grepping every log line's *text* for `error|10062|unhandled|disconnect|reconnecting`. Run live, it said
+`errors(1h): 2` — and both matches were `🔌 Shard 0 reconnecting...`, ordinary gateway churn that happens
+eight times a day. A previous session had noticed this counter disagreeing with `journalctl -p err` and
+moved on without explaining it. So I checked the other side too, expecting it to be the trustworthy one.
+
+It wasn't. `journalctl -p err` reported zero, correctly, and would have reported zero during a total
+crash. The bot wrote everything to stdout, and systemd assigns one priority to a service's whole output
+stream. Twenty-four hours of journal: **p0 through p5 empty, p6 holding all thirty entries.** There was
+no severity information anywhere in the system. One method over-counted noise, the other could only ever
+return zero, and the "expand the error tracker" request would have made a wrong number bigger and
+prettier.
+
+**The thing I nearly missed by taking the scope at face value.** Two of the five filed items dissolved on
+contact with the actual machine. "Raise captured history from 1,000 to 3,000 lines" — there was no
+1,000-line cap on logs. That number is `HARD_CAP` in `alertStore.js`, the *Mongo* alert store, and it had
+migrated into a note about logs at some point and hardened into a fact. journald had no retention
+configuration whatsoever and was holding every line since install: 620 of them, 35.7MB, eleven days, at
+fifty-six lines a day. The `25` everyone thought was a retention limit was a display limit. Nothing
+needed raising; what needed doing was pinning the thirty-day window everything *assumed* but nothing
+enforced.
+
+And the Cloud Logging idea, carried in from the Firestore review as "maybe worth considering, decoupled
+from the DB migration" — the Ops Agent was already installed. Already running. Already costing 127MB of
+a 969MB box. Already shipping `/var/log/syslog` to Google Cloud, as an unparsed text blob with empty
+severity, where it had sat unqueried for however long. The evaluation question dissolved: we had been
+paying full price for structured logging and taking delivery of none of it.
+
+That same measurement answered a question Harkirat asked four days earlier and I had hedged on — "RAM
+536/969MB, isn't that high?" I'd said it was probably fine and probably just Node's heap, which was a
+guess dressed as reassurance. The real answer is that the bot is 121MB and the agents are most of the
+remainder. One `ps` would have settled it then.
+
+**The fix had to go in the bot, not the script.** systemd's `SyslogLevelPrefix` reads a `<N>` marker on
+each line and records that priority. I did not want to design around that from memory, so I ran a
+throwaway `systemd-run` unit on the VM that echoed three lines and read back their priorities: `<3>` → 3,
+`<4>` → 4, unprefixed → 6. Confirmed before it drove anything.
+
+The interesting call was *where* to apply it. There are around sixty `console.error` sites across
+`index.js` and `utils/`. Routing each through a new logger is the tidy-looking answer and I think it's
+the wrong one: it produces a sprawling diff whose entire content is an import change, which is exactly
+the kind of diff a real regression hides in, and it silently fails for every call site added afterwards.
+Patching `console` itself is thirty lines, cannot miss a site, and covers code I didn't write. The cost
+is that it's implicit — so it's documented at length at the top of the module, because the next person
+to read `console.error` in this codebase deserves to know it isn't the one Node gave them.
+
+One detail that would have quietly broken it: journald applies the prefix per *line*, so an Error stack
+tagged only on its first line lands with the message at priority 3 and every frame at 6 — a headless
+error. Prefix every line.
+
+**Two bugs I built and caught, both the same shape as the one I was fixing.** The first draft of the
+rewritten script used `declare -A`. `bash -n` accepted it. The stock macOS `/bin/bash` is 3.2 and has no
+associative arrays, and there's no homebrew bash on the machine — it would have failed at runtime, on the
+one computer that runs it, having passed its syntax check. The second: the journald fallback reported
+"0 lines" for a five-day window that held 137 of them, because `journalctl` doesn't accept ISO-8601's `T`
+separator and, rather than erroring, matches nothing.
+
+Both are the same failure as the original bug. A check that cannot fail is not a check, and a zero that
+means "I couldn't look" renders identically to a zero that means "nothing there."
+
+Which is why the panel now says, when the structured sink isn't deployed, **"NOT LIVE — these zeros mean
+NO DATA, not no errors."** It also reports errors, alerts, and gateway noise as three separate tiers
+rather than one reassuring number, because when those three disagree the disagreement is the finding. If
+a future session tidies them into a single figure, this entry is the argument against it.
+
+**And the thing the new panel found on its first real run:** the VM was running v2.35.13 while `main` sat
+at v2.40.0. Eighteen commits, five releases, undeployed, for days. Nobody had lied about it — every one
+of those releases was correctly reported as *merged*. It's just that merged and live are different
+claims, and nothing in the workflow had ever displayed the gap between them. Now the DEPLOY block does,
+on every run.

@@ -25,6 +25,32 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **📟 `scripts/vmstatus.sh logs` overhaul — SHIPPED 2026-07-28 15:52 EDT as v2.41.0.**
+  *Was `[P2 · M · Sonnet5-H]`, filed 2026-07-28 01:41 EDT from notes L120.* Original ask: per-line
+  date/time + running commit hash, retention 1,000 → ~3,000, default 25 → 40 lines, m/h/d time-window
+  args including `<newer>-<older>` ranges, a "more lines available" notice, a richer/stylized standalone
+  panel, and an expanded error tracker. **All delivered except one item that turned out not to exist**,
+  and the investigation found a defect larger than the whole filed scope:
+  - **The error counter was broken at the source, not in the display.** It grepped log-line *text* for
+    `error|…|reconnecting`, counting routine gateway reconnects as errors (measured: reported 2, both
+    were reconnects). `journalctl -p err` was no better — the bot logged everything to stdout so journald
+    tagged **every** line priority 6 (24h: p0–p5 = 0, p6 = 30), meaning `-p err` would have read 0 during
+    a crash. Fixed at the source by the new `utils/logger.js`.
+  - **The retention bump was a misunderstanding — nothing to raise.** The "1,000 cap" is the AlertLog
+    *Mongo* store (`alertStore.js` `HARD_CAP`). journald had **no** retention config and held every line
+    since install (620 lines / 35.7MB / since 2026-07-17, ~56 lines/day). Pinned to `MaxRetentionSec=30d`
+    + `SystemMaxUse=200M` instead, so the assumed 30-day window is enforced rather than incidental.
+    Disk headroom question answered: 4.0G/30G (13%), never the constraint.
+  - **The Google Cloud Ops Agent was already installed and running** (~127MB RSS) shipping unparsed
+    syslog nobody queried — so the Cloud Logging option carved out of the 2026-07-24 Firestore review
+    was already paid for. Now wired to a structured JSON sink carrying severity + version + commit per
+    entry (`scripts/ops-agent-config.yaml`, `scripts/logrotate-diors-bot`).
+  - **Also answered the long-standing "RAM 536/969MB looks high" worry:** the bot is ~121MB; the agents
+    are most of the remainder. The panel now breaks RAM out so it can't misread again.
+  Full story: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`, CHANGELOG v2.41.0, and
+  the DEVLOG entry for 2026-07-28. **Sentry was deliberately NOT built** — re-filed in
+  `db-deferred-list.md` as `[P3 · S]` with the reason its case is now weaker.
+
 - **🔑 Two dead host credentials removed from `.env` — RESOLVED 2026-07-28 11:20 EDT.**
   *Found during the memory-migration audit, entirely unrelated to what was being swept — a reminder that
   a focused sweep is a good way to surface unrelated rot.* `.env` still held **`RENDER_API_KEY`** and
