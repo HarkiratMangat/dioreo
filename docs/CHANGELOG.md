@@ -181,7 +181,18 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.39.0 — 2026-07-28 13:20 EDT (#43) — The enforcement layer is finally in version control
+## v2.39.1 — 2026-07-28 13:45 EDT (#44) — Two stale claims the v2.39.0 sweep walked past
+**Docs only — no bot runtime change, not deployed.**
+- **`docs/README.md`'s chore checklist and the `project_git_workflow` memory still said the enforcement
+  hooks were "gitignored, so local-only and not part of any PR."** False since v2.39.0 moved them to
+  tracked `.claude/settings.json`.
+- **Why they survived the v2.39.0 sweep:** that pass searched for the phrasings it expected — `must be
+  re-added by hand`, `stays gitignored`, `hooks are local-only`. These two said it a third way. The
+  lesson is narrow and reusable: **when a change invalidates a claim, sweep for the CLAIM, not for the
+  sentence you remember writing** — widen the pattern until it returns known-good hits too, so you can
+  see the search is actually reaching.
+
+## v2.39.0 — 2026-07-28 13:20 EDT (#43 · `a61ead8`) — The enforcement layer is finally in version control
 **Config/docs only — no bot runtime change, not deployed.**
 - **The 12 enforcement hooks moved from gitignored `.claude/settings.local.json` to tracked
   `.claude/settings.json`.** They are what mechanically hold this repo's conventions — changelog at

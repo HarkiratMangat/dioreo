@@ -90,7 +90,8 @@ code) and finalized on the branch in the final pre-merge checkpoint:
       (`gh pr list --head <branch> --state all --json number,state`); don't trust `git branch --merged`,
       which never reports a squash-merged branch as merged. Enforced by two hooks in
       `.claude/settings.json` (a `SessionStart` stale-branch report + a `PostToolUse` nudge when a
-      merge omits `--delete-branch`) — **gitignored, so local-only and not part of any PR.**
+      merge omits `--delete-branch`) — **tracked in `.claude/settings.json` since v2.39.0, so they ride in
+      PRs and survive a fresh clone.**
    ⚠️ **Rewritten 2026-07-27 21:27 EDT.** This step previously prescribed a **second**
    `chore(release): finalize …` commit on `main`, tagged instead of the squash commit — the real shape
    of v2.33.0–v2.35.15, forced by citing the squash commit's own hash inline (a commit cannot contain
