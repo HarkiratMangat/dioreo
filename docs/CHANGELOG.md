@@ -181,7 +181,23 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.36.0 — 2026-07-27 21:35 EDT (#33) — One commit, one tag: the finalize commit is retired
+## v2.36.1 — 2026-07-27 21:50 EDT (#34) — Merged branches stop rotting
+**Docs/meta only — no runtime change, not deployed.**
+- **Found 10 merged branches sitting unpruned**, the oldest from PR #11. GitHub's auto-delete-on-merge
+  removes only the *remote* branch, and a plain `git fetch` does **not** prune remote-tracking refs, so
+  they kept listing locally as though they were live work. All 10 confirmed `MERGED` via `gh pr list`
+  before deletion, and their SHAs recorded in the session log first.
+- **Verification note worth keeping:** `git branch --merged` is useless here — it never reports a
+  squash-merged branch as merged. `git diff main..<branch>` is also inconclusive, since `main` moving on
+  produces large diffs in both directions. The authoritative check is the PR's own `MERGED` state.
+- **The fix is `--delete-branch`**, which also removes the local branch. Documented in `CLAUDE.md`,
+  `docs/README.md` (new lifecycle step 5), and memory.
+- **Enforced by two new hooks** in `.claude/settings.local.json`: a `SessionStart` check that fetches
+  with `--prune` and reports any `[gone]` branch, and a `PostToolUse` check that fires when a
+  `gh pr merge` runs without `--delete-branch`. Both dry-run before shipping. ⚠️ That file is
+  **gitignored** — the hooks are local-only and are *not* in this PR; only the prose convention is.
+
+## v2.36.0 — 2026-07-27 21:35 EDT (#33 · `30da23e`) — One commit, one tag: the finalize commit is retired
 **Docs/meta only — no runtime change, not deployed.** First release under the new citation convention,
 so this entry deliberately carries **no hash** — it gets backfilled by v2.36.1's branch. That is the
 convention working, not a missing field.

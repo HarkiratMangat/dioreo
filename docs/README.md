@@ -82,6 +82,15 @@ code) and finalized on the branch in the final pre-merge checkpoint:
    3. `gh pr merge --squash` → **one** commit on `main`. No `chore(release)` commit — it is retired.
    4. `git pull`, then `git tag -a vX.Y.Z <that sha>`, then `git push origin main --follow-tags`. The
       tagged commit's `package.json` already reads `X.Y.Z` because of step 1.
+   5. **Prune the branch — it dies with its PR.** Use `--delete-branch` on the merge (step 3) so this is
+      automatic; otherwise `git branch -D <branch>` + `git fetch --prune` now, not later. GitHub's
+      auto-delete-on-merge only removes the *remote*, and a plain `git fetch` doesn't prune
+      remote-tracking refs, so merged branches accumulate invisibly — **10 were found rotting
+      2026-07-27 21:50 EDT.** Before deleting, confirm the PR really merged
+      (`gh pr list --head <branch> --state all --json number,state`); don't trust `git branch --merged`,
+      which never reports a squash-merged branch as merged. Enforced by two hooks in
+      `.claude/settings.local.json` (a `SessionStart` stale-branch report + a `PostToolUse` nudge when a
+      merge omits `--delete-branch`) — **gitignored, so local-only and not part of any PR.**
    ⚠️ **Rewritten 2026-07-27 21:27 EDT.** This step previously prescribed a **second**
    `chore(release): finalize …` commit on `main`, tagged instead of the squash commit — the real shape
    of v2.33.0–v2.35.15, forced by citing the squash commit's own hash inline (a commit cannot contain
