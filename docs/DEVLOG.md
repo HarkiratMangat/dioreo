@@ -2632,6 +2632,7 @@ to the false-completion failure that started the whole thread.
 ---
 
 ## 2026-07-28 15:52 EDT — The error counter that could never have been right
+*Released as `v2.41.0`.*
 
 The ticket read like polish. Put timestamps on log lines, say which commit produced them, add time-window
 arguments, bump a default, make the standalone output less barebones, "expand the error tracker." Five
@@ -2714,6 +2715,7 @@ on every run.
 ---
 
 ## 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
+*Released as `v2.41.1`.*
 
 The v2.41.0 work was finished, tested, and staged to push. Harkirat's response was not about the code:
 
@@ -2775,6 +2777,7 @@ rather than writing a fourth memory file that will also not fire.
 ---
 
 ## 2026-07-28 17:35 EDT — A table of contents you can't actually search
+*Released as `v2.41.2`.*
 
 Harkirat, reading the DEVLOG changes:
 
@@ -2822,6 +2825,7 @@ thing to design hardest is not what it catches. It's what it must leave alone.
 ---
 
 ## 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
+*Released as `v2.41.3`.*
 
 Harkirat asked me to check whether `dior-cli` had broken, since it shells out to `scripts/vmstatus.sh`.
 Checking that meant actually timing the rewritten panel, which nobody had done. **10.4 seconds.**
@@ -2851,6 +2855,7 @@ say you are guessing. Writing "~" in front of a number you made up is not hedgin
 ---
 
 ## 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+*Released as `v2.41.4`.*
 
 Harkirat asked whether I'd checked the *rest* of `dior-cli`, not just the files mentioning `vmstatus`.
 Fair — I'd grepped for references to the thing I changed rather than for the whole surface where the CLI

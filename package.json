@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "check": "find . -name \"*.js\" -not -path \"./node_modules/*\" -print0 | xargs -0 -n1 node --check",
-    "test": "npm run check"
+    "docs:audit": "node scripts/docs-audit.mjs",
+    "docs:audit:test": "node scripts/docs-audit.test.mjs",
+    "test": "npm run check && npm run docs:audit:test"
   },
   "engines": {
     "node": ">=24"
