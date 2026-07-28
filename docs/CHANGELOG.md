@@ -210,25 +210,18 @@ changelog until v3 actually launches.
   "canonical-memory-path note at the top of this file" that has never existed in that file.
 - ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
   that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
-
-## ⚪ Unversioned merge — 2026-07-28 01:06 EDT (#38 · `8eb8f2e`) — Deferred-list triage
-**Docs only — no bot runtime change, not deployed. Deliberately carries NO version number.**
-- Resolved the stale-tag backfill item and triaged deferred-list entries across `ROADMAP.md`,
-  `db-deferred-list.md`, `archive/resolved-list.md`, the notes file, and `reference/deployment-and-ops.md`.
-- **Recorded here 2026-07-28 01:41 EDT during the v2.38.0 release**, because it was missing entirely.
-  PR #38 merged with no changelog entry, no `package.json` bump, and no tag — `package.json` stayed at
-  `2.37.0`, and `v2.37.0` stayed tagged on #37's commit (`231a93e`).
-- **⚠️ Why this is NOT retro-numbered `v2.37.1` — please don't "fix" it later.** Under the one-commit /
-  one-tag convention (v2.36.0), a version's tag must land on a commit whose `package.json` already
-  reads that version. **No commit in this repo's history reads `2.37.1`**, so a `v2.37.1` tag could
-  never validly point anywhere: `git tag -a v2.37.1 8eb8f2e` would tag a commit reading `2.37.0` —
-  the exact defect that convention was written to stop, and the `PreToolUse` tag-gate hook refuses it.
-  Minting the number would manufacture a changelog version that can never satisfy "every version has a
-  tag," permanently failing that audit check. An honest unversioned entry closes the record hole
-  without inventing an untaggable release.
-- **The lesson, for next time:** a docs-only merge either earns a version (bump on the branch, before
-  the squash) or it doesn't — but the decision has to be made *at merge time*. It cannot be added
-  afterwards, because the bump has to be inside the commit the tag will point at.
+- **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.**
+  It changed `ROADMAP.md`, `db-deferred-list.md`, `archive/resolved-list.md`, the notes file, and
+  `reference/deployment-and-ops.md`, but shipped with **no changelog entry, no `package.json` bump, and
+  no tag** — `package.json` stayed at `2.37.0`. It is recorded here as a note rather than given a
+  retroactive `v2.37.1`, because **no commit in this repo's history reads `2.37.1`**: such a tag could
+  only land on `8eb8f2e`, which reads `2.37.0`, and the `PreToolUse` tag-gate hook would refuse it —
+  the exact defect the one-commit/one-tag convention (v2.36.0) exists to prevent. Inventing the number
+  would create a changelog version that can never satisfy "every version has a tag." Keeping it a note
+  means **every `##` heading in this file remains a real, taggable version.** *The rule it illustrates:*
+  a docs-only merge either earns a version — bumped on the branch, before the squash — or it doesn't,
+  and that call must be made **at merge time**, because the bump has to live inside the commit the tag
+  will point at. It cannot be added afterwards.
 
 ## v2.37.0 — 2026-07-27 22:35 EDT (#37 · `231a93e`) — The v3 sync gets a trigger, not just a mechanism
 **Docs + CI — no bot runtime change, not deployed.**
