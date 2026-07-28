@@ -138,6 +138,14 @@ suffix, and **no tags are minted until `v3.0.0`**. Full design:
 **`git branch -a` is not a reliable view of open work.** This repo has GitHub's auto-delete-on-merge
 enabled and a plain `git fetch` does **not** prune remote-tracking refs, so long-merged branches keep
 listing locally as though they were live. Use `gh pr list --state all`, or `git fetch --prune` first.
+**Merge with `gh pr merge --squash --delete-branch`** so the branch dies with its PR — the flag removes
+the local branch too, which auto-delete-on-merge does not. Without it they silently pile up: **10 merged
+branches were found rotting on 2026-07-27 21:50 EDT**, the oldest from PR #11, all long since merged.
+A merged branch must never outlive its PR. Two hooks in `.claude/settings.local.json` now enforce this —
+a `SessionStart` check that fetches with `--prune` and lists any `[gone]` branch, and a `PostToolUse`
+check that fires when a `gh pr merge` runs without `--delete-branch`. ⚠️ That file is **gitignored**, so
+those hooks are local-only and do NOT ride in a PR — on a fresh clone the convention above is all there
+is, and the hooks must be re-added by hand.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it

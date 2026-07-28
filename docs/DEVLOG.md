@@ -2323,3 +2323,39 @@ into a docs PR.
 - **Invariants find bugs that reading doesn't.** The six stale tags had survived every manual read of
   this history. One mechanical check over 30 tags found them in a second — and the same run disproved a
   claim I'd already written into five files.
+
+## 2026-07-27 21:50 EDT — Ten merged branches nobody could see
+
+Right after the v2.36.0 merge, a look at the branch list turned up ten local branches whose remotes were
+long gone — the oldest from PR #11. Every one merged, every one still sitting there.
+
+The interesting part is *why they were invisible*. `CLAUDE.md` already warned that `git branch -a` lies
+here, because GitHub's auto-delete-on-merge removes the remote while a plain `git fetch` never prunes
+remote-tracking refs. That warning was aimed at reading the list wrong. The actual failure was upstream
+of it: nothing ever *deleted* them. `--delete-branch` wasn't being passed at merge, so each merge quietly
+left a local branch behind, and the documented advice ("run `git fetch --prune` before trusting the
+list") only made the rot easier to see, never less likely.
+
+Verifying them was less obvious than expected. `git branch --merged` reports none of them as merged —
+under squash-merge the branch's commits never appear on `main` by hash, so the branch always looks
+unmerged. `git diff main..<branch>` was no better: `main` had moved on, so every branch showed hundreds
+of changed lines in both directions, which reads like unmerged work and isn't. The only authoritative
+answer was the PR's own state, `gh pr list --head <branch> --state all` — ten for ten `MERGED`. SHAs got
+recorded before deleting anything, so a wrong call would have been one `git branch <name> <sha>` away.
+
+Then the same move this project keeps reaching for: the rule is checkable, so it became a hook rather
+than more prose. One fires at `SessionStart`, fetching with `--prune` and reporting anything `[gone]`;
+one fires on a `gh pr merge` that omits `--delete-branch`, at the exact moment the branch would be
+orphaned. Both dry-run across their silent and firing paths before shipping.
+
+### Lessons
+- **A warning about how to *read* a symptom isn't a fix for the cause.** The "`git branch -a` lies" note
+  had been in `CLAUDE.md` for days while branches piled up behind it. It taught the workaround and left
+  the leak open.
+- **Under squash-merge, the local repo cannot tell you if a branch merged.** Both obvious checks give a
+  confidently wrong answer. Ask the forge, not git.
+- **Catch it where it happens.** A session-start report finds rot after the fact; the merge-time hook
+  stops it being created. Worth having both, but only one of them prevents anything.
+- **Local-only enforcement needs the prose anyway.** `.claude/settings.local.json` is gitignored, so
+  these hooks don't exist on a fresh clone — which makes the `CLAUDE.md`/README wording the real
+  convention and the hooks a local backstop, not the other way round.
