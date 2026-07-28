@@ -19,7 +19,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -64,7 +64,13 @@ const write = (root, rel, body) => {
  * assertion would prove nothing.
  */
 const makeFixture = () => {
-  const root = mkdtempSync(join(tmpdir(), "docs-audit-fixture-"));
+  // ⚠️ The SPACE in this prefix is deliberate and load-bearing. The real repo lives at
+  // "/Applications/Claude Code/Diors-Builds", and TWO checks shipped broken by paths with spaces:
+  // `nested-worktree` was completely dead (`split(" ")[0]` gave "/Applications/Claude"), and
+  // `hook-integrity`'s regex stopped at the space and only worked by accident. Neither could ever
+  // surface in a space-free tmpdir. A fixture that doesn't reproduce production's hazards is a
+  // fixture that certifies the wrong thing. Do not "tidy" this into a hyphen.
+  const root = mkdtempSync(join(tmpdir(), "docs audit fixture "));
   execFileSync("git", ["init", "-q"], { cwd: root });
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
@@ -76,7 +82,7 @@ const makeFixture = () => {
     "docs/README.md",
     "# Map\n\n| File | What |\n|---|---|\n| `CHANGELOG.md` | log |\n| `CHANGELOG-SUMMARY.md` | summary |\n" +
       "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `diors-builds notes.md` | intake |\n" +
-      "| `archive/` | dead |\n"
+      "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n"
   );
   // Placeholder hashes are filled in below with a REAL sha. Invented hashes fail `hash-chain`'s
   // resolution half — which is the check working correctly, and was caught by this very self-test.
@@ -97,6 +103,33 @@ const makeFixture = () => {
   );
   write(root, "docs/archive/graveyard.md", "# Graveyard\n");
   write(root, "docs/archive/resolved-list.md", "# Resolved\n");
+  // records-present requires the full set of core records.
+  write(root, "docs/ROADMAP.md", "# Roadmap\n");
+  write(root, "docs/SESSION-START.md", "# Session start\n");
+  // secrets-hygiene: .env must be ignored and untracked; both settings files must be tracked.
+  // The "!" negation is REQUIRED, and reproduces a real trap: the GLOBAL ~/.config/git/ignore carries
+  // **/.claude/settings.local.json, so it is ignored in EVERY repo on this machine including this
+  // fixture. Without the negation the file is silently untracked -- which is precisely the bug the real
+  // .gitignore documents, and the baseline meta-test caught it here first.
+  write(root, ".gitignore", ".env\n.env.*\n!.claude/settings.local.json\n");
+  write(root, ".env", "BOT_TOKEN=fake-value-for-fixture\n");
+  write(root, ".claude/settings.local.json", JSON.stringify({ permissions: { allow: [] } }, null, 2));
+  // ci-wiring: the audit must guard its own CI wiring.
+  write(
+    root,
+    ".github/workflows/ci.yml",
+    "name: CI\non:\n  push:\n    branches: [main, v3-pre-release]\n  pull_request:\n    branches: [main, v3-pre-release]\njobs:\n  x:\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - run: npm run docs:audit:test\n      - run: npm run docs:audit\n"
+  );
+  // rule-globs: a path-scoped rule whose glob matches a real tracked file.
+  write(root, ".claude/rules/example.md", "---\npaths:\n  - docs/*.md\n---\n\nA rule.\n");
+  // hook-integrity reads this; the referenced script must exist AND be executable.
+  write(root, ".claude/hooks/example-gate.sh", "#!/usr/bin/env bash\nexit 0\n");
+  chmodSync(join(root, ".claude/hooks/example-gate.sh"), 0o755);
+  write(
+    root,
+    ".claude/settings.json",
+    JSON.stringify({ hooks: { PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: `bash '${root}/.claude/hooks/example-gate.sh'` }] }] } }, null, 2)
+  );
 
   execFileSync("git", ["add", "-A"], { cwd: root });
   execFileSync("git", ["commit", "-qm", "fixture"], { cwd: root });
@@ -108,7 +141,10 @@ const makeFixture = () => {
   execFileSync("git", ["add", "-A"], { cwd: root });
   execFileSync("git", ["commit", "-qm", "real hashes"], { cwd: root });
 
-  // A tag whose package.json matches, so tag-integrity has something valid to pass on.
+  // Tags for BOTH changelog versions. tag-integrity needs one that matches; tag-coverage needs every
+  // version except the newest to be tagged — tagging only v2.33.0 made the baseline fail, which the
+  // "baseline must be clean" assertion caught immediately.
+  execFileSync("git", ["tag", "-a", "v2.32.0", "-m", "v2.32.0"], { cwd: root });
   execFileSync("git", ["tag", "-a", "v2.33.0", "-m", "v2.33.0"], { cwd: root });
   return root;
 };
@@ -163,7 +199,39 @@ const provesSilent = (name, checkId, setup) => {
   }
 };
 
+/**
+ * The meta-test, and the one that would have caught the most. Every `proves` case only asserts that
+ * ITS OWN check is quiet on the baseline, so a check that fires on valid input for an unrelated
+ * reason hides in plain sight — and an entire check silently reporting nothing hides even better.
+ * This asserts the untouched fixture is completely clean AND that every registered check actually ran.
+ */
+const provesBaselineClean = () => {
+  const root = makeFixture();
+  try {
+    const { out } = runAudit(root, []);
+    let parsed;
+    try {
+      parsed = JSON.parse(out);
+    } catch {
+      failures.push(`baseline: audit produced unparseable output — ${out.slice(0, 200)}`);
+      return;
+    }
+    if (parsed.results.length) {
+      for (const r of parsed.results) {
+        failures.push(`baseline: [${r.id}] fired on the VALID fixture — ${r.msg.slice(0, 140)}`);
+      }
+      return;
+    }
+    passed++;
+    console.log(`  ✓ ${"(baseline)".padEnd(22)} a valid fixture tree reports nothing at all`);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+};
+
 console.log("\ndocs-audit self-test — each check must fail on a broken tree and pass on a valid one\n");
+
+provesBaselineClean();
 
 proves("a tracked docs/ file nothing in the README names", "readme-map", (root) => {
   write(root, "docs/orphan-record.md", "# Nobody maps me\n");
@@ -179,9 +247,12 @@ proves("a version in the CHANGELOG but not the SUMMARY", "summary-coverage", (ro
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.32.0 — June 1, 2026\n");
 });
 
-provesSilent("a SUMMARY range heading covering several versions", "summary-coverage", (root) => {
-  // The documented convention for ops/docs-only releases. v2.32.0 is covered only by the range.
-  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.32.0–v2.33.0 — July 2026\n");
+provesSilent("a LEGACY range heading (pre-v2.19.0), still allowed", "summary-coverage", (root) => {
+  // Ranges are retired but not retroactive: 7 survive in the real SUMMARY, all v2.18.3-and-older, and
+  // rewriting history to satisfy a new rule would be worse than the rule. Only modern versions must
+  // have their own heading -- the sibling `proves` case above covers that direction.
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.18.3 — 2026-07-16 (#2) — b\n\n## v2.18.0 — 2026-07-14 (#1) — a\n");
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
 });
 
 proves("a non-newest changelog entry with no commit hash", "hash-chain", (root) => {
@@ -222,6 +293,117 @@ proves("a tag whose commit's package.json disagrees", "tag-integrity", (root) =>
 proves("a release since the cutoff never named in the DEVLOG", "devlog-version-cite", (root) => {
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.40.0 — 2026-07-28 (#3) — new\n\n## v2.33.0 — 2026-07-01 (#2 · `abc1234`) — two\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.40.0 — July 28, 2026\n\n## v2.33.0 — July 1, 2026\n");
+});
+
+// ---- the checks added in the 2026-07-28 22:20 EDT re-audit -------------------------------------
+
+proves("a modern version hiding inside a retired RANGE heading", "summary-coverage", (root) => {
+  // Ranges are legacy-only (retired after v2.18.3). v2.33.0 is modern, so a range must not cover it.
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.32.0–v2.33.0 — July 2026\n");
+});
+
+proves("a confirmed notes item using ✴︎ rather than ℋ", "notes-sweep", (root) => {
+  // The confirmation mark is switchable in MarkEdit (✴︎ ✦ ◆ ℋ). Matching only ℋ -- the first pass --
+  // meant an item confirmed with any other symbol was invisible and sat unswept forever.
+  write(
+    root,
+    "docs/diors-builds notes.md",
+    "# Notes\n\n## Questions/Notes for Claude\n\n- [x] ✴︎ ✓ (2026-07-01) ~~a confirmed, closed item~~\n\n## 📍 Where everything else lives\n"
+  );
+});
+
+proves("a DONE item still in the deferred list", "deferred-sweep", (root) => {
+  // DONE is the single most common marker in the real archive and the first pass matched neither it
+  // nor DROPPED.
+  write(root, "docs/db-deferred-list.md", "# Deferred\n\n## 🗂️ Queued\n\n- ~~A thing~~ → **DONE 2026-07-01 20:20 EDT.** Details.\n");
+});
+
+provesSilent("\"NOT DONE\" describing remaining scope", "deferred-sweep", (root) => {
+  // Real text from db-deferred-list.md L214. A negation must never read as completion.
+  write(root, "docs/db-deferred-list.md", "# Deferred\n\n## 🗂️ Queued\n\n- **❌ NOT DONE 2026-07-01 — the real remaining scope**, in priority order.\n");
+});
+
+proves("package.json out of step with the newest changelog entry", "version-sync", (root) => {
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: "2.33.1" }, null, 2));
+});
+
+provesSilent("v3 pre-release: \"Pre-Release v3.1.0\" with a -pre package.json", "version-sync", (root) => {
+  // CI runs this audit on v3-pre-release PRs. Failing there would be a gap created by gap-closing work.
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: "3.1.0-pre" }, null, 2));
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## Pre-Release v3.1.0 — 2026-08-01 — v3 work\n\n## v2.33.0 — 2026-07-01 (#2) — two\n");
+});
+
+proves("a released version with no git tag", "tag-coverage", (root) => {
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2) — two\n\n## v2.32.5 — 2026-06-15 (#1) — untagged\n");
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — July 1, 2026\n\n## v2.32.5 — June 15, 2026\n");
+});
+
+proves("a hook registered against a script that does not exist", "hook-integrity", (root) => {
+  const s = JSON.parse(readFileSync(join(root, ".claude/settings.json"), "utf8"));
+  s.hooks.PreToolUse[0].hooks[0].command = `bash '${root}/.claude/hooks/deleted-gate.sh'`;
+  write(root, ".claude/settings.json", JSON.stringify(s, null, 2));
+});
+
+proves("a hook script that exists but is not executable", "hook-integrity", (root) => {
+  chmodSync(join(root, ".claude/hooks/example-gate.sh"), 0o644);
+});
+
+proves("a hook delegating to docs-audit with an unknown check id", "hook-integrity", (root) => {
+  const s = JSON.parse(readFileSync(join(root, ".claude/settings.json"), "utf8"));
+  s.hooks.PreToolUse[0].hooks[0].command = "node scripts/docs-audit.mjs --only devlog-tocs --json";
+  write(root, ".claude/settings.json", JSON.stringify(s, null, 2));
+});
+
+// ---- anchor integrity: a renamed heading must NEVER silently disable a check ---------------------
+// Demonstrated on the real tree 2026-07-28 22:40 EDT: renaming these two anchors made both checks
+// print "passed" while doing nothing. Two guards written to stop silently-dead guards were themselves
+// silently dead. These are the most important assertions in this file.
+
+proves("the DEVLOG Part A/B markers being renamed", "devlog-toc", (root) => {
+  write(root, "docs/DEVLOG.md", "# DEVLOG\n\n**Part A - The Journey**\n- 2026-07-01 — a thing\n\n**Part B - Lessons**\n\n## 2026-07-01 — a thing\n\nbody\n");
+});
+
+proves("the notes-file \"## Questions\" heading being renamed", "notes-sweep", (root) => {
+  write(root, "docs/diors-builds notes.md", "# Notes\n\n## Intake for Claude\n\n- [x] ℋ ✓ ~~a confirmed item nobody will ever notice~~\n\n## 📍 Where everything else lives\n");
+});
+
+// ---- the records/config/CI/rule checks -----------------------------------------------------------
+
+proves("a core record file going missing", "records-present", (root) => {
+  rmSync(join(root, "docs/ROADMAP.md"));
+});
+
+proves(".env no longer gitignored", "secrets-hygiene", (root) => {
+  write(root, ".gitignore", "!.claude/settings.local.json\n");
+});
+
+proves(".env committed to git", "secrets-hygiene", (root) => {
+  execFileSync("git", ["add", "-f", ".env"], { cwd: root });
+  execFileSync("git", ["commit", "-qm", "oops"], { cwd: root });
+});
+
+proves("CI no longer running the audit", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace("      - run: npm run docs:audit\n", "");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
+proves("a CI trigger list that omits v3-pre-release", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace(/branches: \[main, v3-pre-release\]/, "branches: [main]");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
+proves("CI losing fetch-depth: 0", "ci-wiring", (root) => {
+  const ci = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8").replace(/\n *with:\n *fetch-depth: 0/, "");
+  write(root, ".github/workflows/ci.yml", ci);
+});
+
+proves("a path-scoped rule whose glob matches nothing", "rule-globs", (root) => {
+  write(root, ".claude/rules/example.md", "---\npaths:\n  - utils/deleted-subsystem/*.js\n---\n\nA rule nobody will ever load.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a git worktree nested inside the repo", "nested-worktree", (root) => {
+  execFileSync("git", ["worktree", "add", "-q", "-b", "scratch", join(root, ".claude/worktrees/nested")], { cwd: root });
 });
 
 // The conservation check is a fact about a CHANGE, so it needs a second commit to diff against.

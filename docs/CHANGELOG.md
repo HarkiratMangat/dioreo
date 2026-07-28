@@ -181,38 +181,56 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.42.0 — 2026-07-28 21:00 EDT (#52) — "Not checkable" was never true
+## v2.42.0 — 2026-07-28 23:10 EDT (#52) — "Not checkable" was never true
 **Tooling + docs — no bot behaviour change.**
 - **`scripts/docs-audit.mjs`** — the documentation invariants as a **program**, not another hook.
-  10 checks: `readme-map` · `xref` · `summary-coverage` · `hash-chain` · `devlog-toc` ·
-  `devlog-version-cite` · `notes-sweep` · `deferred-sweep` · `tag-integrity` · `archive-conservation`.
-  Two severities — `ERROR` fails, `WARN` reports — so a hotfix is never blocked by prose.
-- **Wired into CI** (`.github/workflows/ci.yml`), which is the whole point: a Claude Code hook only
-  fires inside a Claude session on one Mac, so any PR opened another way was completely unchecked.
-  Needed `fetch-depth: 0` — verified, not assumed: a depth-1 checkout produced **42 spurious
-  `hash-chain` errors and saw 1 tag instead of 100+**. The audit now also *detects* a shallow clone
-  and downgrades those two checks to a warning rather than reporting a conclusion it can't support.
-- **`scripts/docs-audit.test.mjs`** — proves all 11 cases can actually **fail**, on fixture trees, and
-  that valid input stays silent. It found three real bugs in its first run, including a check firing
-  on the baseline and one that was **completely dead** because the fixture happened to pick a tag in
-  the known-bad allowlist. A guard nobody has watched fail is not a guard.
+  Run `node scripts/docs-audit.mjs --list` for the roster (deliberately not counted here). Two
+  severities: `ERROR` fails, `WARN` reports. **Wired into CI**, which is the point — a Claude Code
+  hook fires only inside a Claude session on one Mac, so any PR opened another way was unchecked.
+- **`scripts/docs-audit.test.mjs`** — proves every case can actually **fail**, plus the inverse
+  (valid input stays silent) and a baseline meta-test asserting a clean fixture reports *nothing*.
 - **`.claude/hooks/records-close-check.sh`** — gates chore items **6 (memory)** and **7 (notes file)**
-  at `gh pr create`, both derived: the notes file has open items this branch never touched; or the
-  branch changed a rule/enforcement file with no memory file written since the branch point.
-- **`devlog-toc-check.sh` now delegates** to the audit's `devlog-toc` check — one implementation, and
-  the TOC rule gains CI coverage it never had.
+  at `gh pr create`. `devlog-toc-check.sh` now delegates to the audit, so there is one implementation.
 - **Corrected a false claim in `docs/README.md` and in the RELEASE DOC CHECK hook's own message**,
-  which both stated items 6 and 7 were "NOT checkable". A `SessionStart` hook had been counting the
-  notes file's open items the entire time. The defect was **timing**, not absence — the check ran at
-  *discovery* (session start, nothing filed yet) and never at *closure*. Identical shape to the DEVLOG
+  which both said items 6 and 7 were "NOT checkable". A `SessionStart` hook had been counting the
+  notes file's open items all along. The defect was **timing**, not absence: the check ran at
+  *discovery* (session start, nothing filed yet) and never at *closure* — the same shape as the DEVLOG
   failure measured at 8/22.
-- **`summary-coverage` initially reported `v2.17.1` and `v2.11.0` as missing. The records were right
-  and the check was wrong** — the SUMMARY folds ops-only releases into range headings
-  (`## v2.17.0–v2.17.3`), which a literal substring match can't see. Fixed the check rather than
-  "repairing" correct documentation, and added an inverse self-test so a matcher that fires on
-  everything gets caught.
-- DEVLOG Part A entries now carry a `*Released as vX.Y.Z.*` line, making the narrative record
-  greppable by release for the first time.
+
+**The second pass — Harkirat called the first one rushed, and it was.** Everything below was found by
+re-auditing work already declared done:
+- **Range headings in `CHANGELOG-SUMMARY.md` are RETIRED**, and the first pass had taught the checker
+  to *accept* them — entrenching a convention Harkirat had already dropped. Verified: the 7 surviving
+  ranges are all v2.18.3-and-older; every release from v2.19.0 has its own heading. Now legacy-only,
+  and `docs/README.md` (which still documented ranges as current practice, in two places) is fixed.
+- **`notes-sweep` only matched `ℋ`.** The confirmation mark is switchable in MarkEdit (`✴︎ ✦ ◆ ℋ`),
+  so an item confirmed with any other symbol was invisible and would have sat unswept forever.
+- **A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker or the
+  notes file's `## Questions` heading made both print **"passed"** while doing nothing. Two guards
+  written to stop silently-dead guards were themselves silently dead. They now report loudly, and the
+  notes case also warns that the SessionStart hook scanning the same anchors is broken too.
+- **`--only <typo>` printed "passed" and exited 0** — one wrong character in a hook registration
+  silently disabled that gate. Now exits 2. `hook-integrity` additionally verifies every registered
+  hook script exists, is executable, and cites a real check id.
+- **Two bugs from the space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead
+  (`split(" ")[0]` → `/Applications/Claude`) and `hook-integrity`'s regex stopped at the space,
+  working only by accident. Neither could surface in a space-free tmpdir, so **the test fixtures now
+  deliberately contain a space** — a fixture that doesn't reproduce production's hazards certifies the
+  wrong thing.
+- **New checks:** `records-present` · `secrets-hygiene` (the `.env`-stays-ignored invariant was
+  prose-only until now, so nothing would have noticed it being undone) · `ci-wiring` (the audit
+  guards its own CI wiring, including `fetch-depth: 0` and the `v3-pre-release` trigger) ·
+  `rule-globs` (a `paths:` glob matching nothing means that rule never loads again) ·
+  `memory-index` · `nested-worktree` · `tag-coverage` · `version-sync`.
+- **v3 pre-release compatibility**, verified by test: `Pre-Release v3.1.0` headings with a
+  `3.1.0-pre` `package.json` must not fail CI on the v3 branch.
+- **`archive-conservation` now traces removed items into the archive by content**, not just "did the
+  archive grow" — removing ten items and adding one line used to pass.
+- **Fixed a real stale path the audit had been masking:** `CLAUDE.md` and the notes file both pointed
+  at `local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `local/` ignore
+  rule hid it, so gitignored-and-missing paths now WARN instead of being skipped.
+- Removed the rotting "10 checks" count from three living docs per
+  `feedback_no_duplicated_state_in_prose` — it was wrong within the hour.
 
 ## v2.41.4 — 2026-07-28 18:40 EDT (#51 · `925aa0a`) — A hard reset that ate another session's work
 **Docs only — no behaviour change.**

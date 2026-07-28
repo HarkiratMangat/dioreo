@@ -255,7 +255,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 ### Records & workflow (outside the rules system)
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
 - **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
-  gate.** 10 checks over the records: doc map · cross-references · version coverage across all three
+  gate.** `--list` prints the current roster; it covers the records: doc map · cross-references · version coverage across all three
   changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · and the **conservation rule** (an
   item leaves an active list ONLY by appearing in its archive — a shrink with no matching grow means
   it was *deleted*, not swept). `ERROR` fails, `WARN` never blocks. `npm run docs:audit:test` proves
@@ -283,7 +283,10 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 
 ## Local-only files & the `local/` folder vs. `docs/` (tracked)
 - **`local/`** (repo root, **gitignored**) — Harkirat's personal scratch folder: the `project plan notes.txt`
-  future-planning dump, reference screenshots/PDFs, `local/Harkirats-Space.md` (private — off-limits unless
+  future-planning dump, reference screenshots/PDFs, and anything else he drops in. **`Harkirats-Space.md`
+  actually lives at `docs/Harkirats-Space.md`** (gitignored there by name — corrected 2026-07-28 22:55 EDT;
+  this file and the notes file had both said `local/` since the v2.35.3-era move, while `.gitignore` was
+  updated and they were not) (private — off-limits unless
   he grants permission that session), and anything else he drops in. Never pushed, never deployed. When he
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,

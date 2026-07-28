@@ -2972,3 +2972,56 @@ self-test asserting that valid input stays *silent*, not just that broken input 
 Two assertions per check, always: the broken tree fails **and** the valid tree passes. The second is
 the one everyone skips, and it is the one that catches a matcher firing on everything. And when a
 guard and a record disagree, check the record before you edit it.
+
+### The second pass — "I feel like you began to rush things at the end due to your 60 turn budget check"
+
+Harkirat's follow-up named the mechanism exactly, and led with the specific defect:
+
+> *"Regarding the v2.17.0-v2.17.3 grouping, that method of grouping is actually stale behavior now. Now
+> we create individual headings for each version bump if im not mistaken?"*
+
+He was right, and it is the worst kind of wrong. Earlier in that same session I had reported the range
+finding as a **success** — the audit's first finding was against itself, I checked the record before
+editing it, and I wrote a note-to-self about exactly that. Then I taught the checker to *accept*
+ranges. I had verified that ranges existed; I never asked whether they were still **policy**. Verifying
+that a thing is true today is not the same as verifying it is still the rule, and the difference is
+invisible when the corpus is mostly history.
+
+Re-auditing work I had already declared done found six more, four of them dead checks:
+
+**A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker, or the notes
+file's `## Questions` heading, made both `devlog-toc` and `notes-sweep` print **"passed"** while doing
+nothing. My own comment said *"markers moved: stay silent rather than cry wolf"* — exactly backwards.
+Crying wolf is recoverable; a green tick over a check that isn't running is not. Two guards written to
+stop silently-dead guards were themselves silently dead.
+
+**`--only <typo>` printed "passed" and exited 0.** One wrong character in a hook registration would
+have disabled that gate while still reporting success — the dead-guard failure reproduced *inside* the
+tool built to prevent it.
+
+**The space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead, because
+`line.split(" ")[0]` yields `/Applications/Claude`. `hook-integrity`'s regex stopped at the same space
+and worked only because a later `.slice()` happened to rescue it — correct by accident, which is one
+refactor away from correct by nothing. Neither bug could ever have surfaced, because the test fixtures
+were built in a space-free tmpdir. **A fixture that doesn't reproduce production's hazards certifies
+the wrong thing.** The fixture directory name now contains a deliberate space.
+
+**The baseline meta-test I should have written first.** Every per-check test only asserted that *its
+own* check was quiet on valid input, so a check firing for unrelated reasons — or not running at all —
+hid in plain sight. Asserting that an untouched fixture reports *nothing* immediately surfaced three
+more defects, including a perfect reproduction of a trap this repo had already documented: the global
+`~/.config/git/ignore` silently un-tracks `settings.local.json` in every repo, fixtures included.
+
+**And one real bug the audit had been masking.** `CLAUDE.md` and the notes file both pointed at
+`local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `.gitignore` had been
+updated when it moved and the two prose references had not — precisely the "no half-measures on
+reorgs" failure `xref` exists to catch. It was hidden because I had told `xref` to skip gitignored
+paths entirely. Ambiguity should be *reported*, not silently resolved in favour of passing.
+
+### Note to future self
+
+Verify that a convention is still **current**, not merely that it is **present** — a corpus is mostly
+history, and history is not policy. When a check cannot find its anchor, that is a finding, never a
+pass. And the honest read on the turn budget: it measures cost, never correctness, and I let it end a
+unit of work that wasn't finished. The budget is not a reason to stop verifying; stopping to *report*
+is fine, declaring done is not.

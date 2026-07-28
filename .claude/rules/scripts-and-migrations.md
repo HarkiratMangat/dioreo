@@ -28,7 +28,10 @@ hosts; the on-VM path was quietly half-broken from 2026-07-18 until this rewrite
 
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script
-here wired into CI (`.github/workflows/ci.yml`) as a merge gate. 10 named checks with two severities:
+here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list`
+for the current check roster -- no count is written down here, because a number in prose is a copy of
+state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said
+"10" within an hour of the roster reaching 19). Two severities:
 `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 
 If you touch it:
