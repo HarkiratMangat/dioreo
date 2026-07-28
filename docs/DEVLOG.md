@@ -2276,3 +2276,50 @@ The through-line: every one of these looked correct in isolation and only failed
 reality. Prose can't check itself, so the sweep is now filed as a script-then-CI-job item rather than
 a thing to remember to do — the same "checkable rule becomes a hook, not more prose" move this project
 already applies elsewhere.
+
+## 2026-07-27 21:35 EDT — The two-commit knot was one sentence disagreeing with itself
+
+Yesterday's sweep logged "every tag points at the finalize commit, not the squash" as a structural fact
+we'd have to live with. It framed the problem as *spec versus reality*: the spec promised one commit per
+version, git showed two, and the honest move looked like retiring the promise.
+
+That framing was the thing standing in the way. The spec didn't disagree with reality — it disagreed
+with **itself**. §3 already spelled out a complete working design: bump `package.json` on the branch as
+the final pre-merge checkpoint, so it folds into the squash commit and the tag can point at it. Only §5
+said the changelog is *"finalized at merge — real number + squash-commit hash + tag."* One clause,
+load-bearing, and everything downstream had been rewritten to match it — `docs/README.md`'s step 8 had
+been "corrected" hours earlier to *document the two-commit pattern as intended process*. The wrong
+sentence had started propagating as the truth.
+
+The knot is real: a commit cannot contain its own hash, and `gh pr merge --squash` writes straight to
+GitHub's remote, so there's no local staging step to fold the two together. Every mechanism that tries
+to put the hash in the commit fails the same way — amending changes the hash again, circular under
+every ordering. The way out was to stop requiring them to be simultaneous. **Lag the hash by one
+release**: cite `(#PR)` at branch time, and insert the hash on the *next* release's branch, where it
+rides into that release's own squash commit for free. The hash never costs a commit of its own.
+
+It cost one deliberate trade — the newest changelog entry has no hash for one release — and it was worth
+naming that in the docs, because a future sweep would otherwise "fix" it as drift. The rejected options
+went into the spec's decisions log for the same reason.
+
+Two things then fell out of *checking* rather than asserting. The claim that all 13 releases since
+v2.33.0 were two-commit was wrong: of the 25 hash-citing entries, 16 cite the tag's parent and **9 cite
+the tag itself**. And running the new "tag's `package.json` == entry's version" invariant surfaced a
+latent defect nobody had looked for — six tags (`v2.33.3`, `v2.33.4`, `v2.35.0`–`v2.35.3`) sit on a
+commit predating their own bump, so `git show <tag>:package.json` quietly answers with the previous
+release. Harmless at runtime, but it makes the tag a liar to anyone auditing it. Left unfixed on
+purpose: moving six published tags means force-pushing refs, which is a decision, not a cleanup to slip
+into a docs PR.
+
+### Lessons
+- **"Spec vs. reality" is sometimes "spec vs. spec."** Before documenting reality as the new intent,
+  check whether another section already describes the design you want. Here the fix was in the file the
+  whole time, and a day had been spent making the *other* docs agree with the broken clause instead.
+- **Documenting a workaround propagates it.** Step 8's earlier "correction" made the two-commit pattern
+  authoritative and pointed future sessions at it. A workaround written down as process stops looking
+  like a problem — which is exactly when it stops getting fixed.
+- **Requirements that can't be simultaneous can often be sequenced.** The impossibility was only
+  impossible because both halves had to land in one commit. Relaxing *when*, not *what*, dissolved it.
+- **Invariants find bugs that reading doesn't.** The six stale tags had survived every manual read of
+  this history. One mechanical check over 30 tags found them in a second — and the same run disproved a
+  claim I'd already written into five files.

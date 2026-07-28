@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.36.0 — July 27, 2026
+- *Internal docs-only — tidied up how Dior's own release history is recorded, so each update is now a
+  single clean entry in the project's history instead of two. Nothing players see.*
+
 ## v2.35.15 — July 27, 2026
 - *Internal docs-only — automated a check over Dior's own project records and fixed an instruction that
   had never matched what actually happens. Nothing players see.*

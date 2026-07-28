@@ -181,6 +181,36 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.36.0 — 2026-07-27 21:35 EDT (#33) — One commit, one tag: the finalize commit is retired
+**Docs/meta only — no runtime change, not deployed.** First release under the new citation convention,
+so this entry deliberately carries **no hash** — it gets backfilled by v2.36.1's branch. That is the
+convention working, not a missing field.
+- **Root cause was one self-contradictory clause, not "spec vs. reality."** The workflow spec's §3
+  already described a working 1-commit design (bump on the branch as the final pre-merge checkpoint, so
+  it folds into the squash commit). Only §5's *"finalized at merge — real number + squash-commit hash +
+  tag"* blocked it: a commit cannot contain its own hash, so citing the squash hash inline forced a
+  second `chore(release): finalize …` commit after the merge.
+- **The fix — lagged-backfill citation.** An entry cites `(#PR)` at branch time; the hash is inserted
+  **one release later**, on the next release's branch, where it rides into *that* release's squash
+  commit. The hash never costs a commit of its own, so the `chore(release)` commit is **retired** and
+  "one commit + one tag per version" is finally true. The backfill is additive-only, the timestamp is
+  written once and never edited, and it is an ordinary edit in a later commit — **never an `--amend`,
+  never a force-push.** `main` stays append-only.
+- **Why the hash was kept at all** (rather than the simpler "tag only"): `v3-pre-release` mints no tags
+  until `v3.0.0`, so there the inline hash is the *only* pointer an entry has. Rejected alternatives are
+  recorded in spec §10 so they aren't re-proposed.
+- **Corrects v2.35.15's claim below that "every release since the workflow launched has the same
+  shape."** Measured, not assumed: of the 25 hash-citing entries, **16 cite the tag's parent** (the
+  2-commit shape) and **9 cite the tag itself**. The pattern was the majority, never universal.
+- **Found a pre-existing latent defect** while checking the new invariants: `v2.33.3`, `v2.33.4` and
+  `v2.35.0`–`v2.35.3` are tagged on a commit predating their own version bump, so
+  `git show <tag>:package.json` reports the *previous* release. Documented in
+  `docs/reference/deployment-and-ops.md` and filed as its own item — moving six published tags needs
+  force-pushed refs and doesn't belong in this PR.
+- Closed the `[P1 · 🧩needs-design]` deferred item to `archive/resolved-list.md`; extended the queued
+  sweep-script entry with three machine-checkable invariants (newest entry exempt from the SHA check,
+  PR-number coverage from v2.33.0 on, tag's `package.json` == entry's version).
+
 ## v2.35.15 — 2026-07-27 20:45 EDT (#32 · `f913975`) — A scripted records sweep, and the chore checklist that was wrong
 **Docs/meta only — no runtime change, not deployed.** The VM's files are at v2.35.13; its running
 process is still on v2.35.4's code (never restarted).
