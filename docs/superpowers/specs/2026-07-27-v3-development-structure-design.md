@@ -100,7 +100,10 @@ Carried over from the 2026-07-14 directive, with one gap filled:
   semantics as v2 (middle field = moderate, last = minor). **Nothing enters `CHANGELOG-SUMMARY.md`**
   during pre-release.
 - **`package.json` on `v3-pre-release` carries the matching number with a `-pre` suffix** — changelog
-  `Pre-Release v3.1.0` ↔ `package.json` `3.1.0-pre`. *(New — the original directive didn't say what
+  `Pre-Release v3.1.0` ↔ `package.json` `3.1.0-pre`. **This starts with the first `Pre-Release` entry, not
+  before.** Until then `v3-pre-release` is only tracking `main` and its `package.json` legitimately carries
+  `main`'s plain version with no suffix (it read `2.36.1` after the 2026-07-27 22:00 EDT sync). A bare
+  version there is not drift while no v3 number has been minted. *(New — the original directive didn't say what
   `package.json` does during pre-release, and it matters: the bot's boot alert reads it.)* Valid semver,
   1:1 with the changelog, and the suffix makes a dev-bot boot alert impossible to mistake for a real
   release.

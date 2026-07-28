@@ -109,11 +109,21 @@ Never push, merge, or deploy without asking first — approval never carries ove
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
 the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
-`gh pr merge --squash` + `package.json` bump + version tag (asked — the merge-yes IS the version-number-yes;
-MAJOR always asked separately) → **deploy**, a separate optional step: on the VM, `./scripts/deploy.sh`
+**final pre-merge checkpoint ON THE BRANCH** (changelog entry citing `(#PR)` with **no hash** + the
+`package.json` bump + backfill the *previous* entry's hash — free, no approval) →
+`gh pr merge --squash --delete-branch` → `git tag -a vX.Y.Z <squash-sha>` (asked — the merge-yes IS the
+version-number-yes; MAJOR always asked separately) → **deploy**, a separate optional step: on the VM, `./scripts/deploy.sh`
 (`git pull` → restart) → verify `scripts/vmstatus.sh` (asked). **A merge alone does NOT update the VM** —
 a merged version can sit undeployed indefinitely; say plainly which steps happened ("merged v2.x, deploy
-held"), never let "merged" imply "live." Full lifecycle, versioning, and doc-placement rules:
+held"), never let "merged" imply "live."
+**⚠️ ONE commit + ONE tag per release — never a follow-up `chore(release): finalize …` commit
+(retired 2026-07-27 21:27 EDT, v2.36.0).** The bump and changelog entry go on the BRANCH, before the
+merge, so they fold into the squash commit and the tag lands on a commit whose `package.json` already
+reads the tagged version. **Bumping after the merge is the exact bug that produced 16 two-commit releases
+(v2.33.0–v2.35.15)** — if you find yourself about to commit on `main` after merging, stop. The commit hash
+cannot go in its own entry, so it is backfilled one release later, additively, on the next release's
+branch — **never by `--amend`, never by force-push.** The newest changelog entry having no hash is correct.
+Full lifecycle, versioning, and doc-placement rules:
 `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`.
 Full VM/ops setup, alerting, monitoring, version-tagging: `docs/reference/deployment-and-ops.md`.
 **Commit subjects and PR titles follow Conventional Commits v1.0.0 as specified** —

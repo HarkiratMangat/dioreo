@@ -178,6 +178,11 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
      is correct there);
   3. the tag's `package.json` version equals the entry's version (`git show vX.Y.Z:package.json`) — this is
      what catches a tag landing on the wrong commit.
+  ⚠️ **The "every version has a summary line" check must not demand a `## vX.Y.Z` heading.** Learned
+  2026-07-27 22:05 EDT: a naive exact-heading check reported **23 false gaps**, because `CHANGELOG-SUMMARY.md`
+  deliberately folds trivial/docs-only releases into a **range heading** (`## v2.18.0–v2.18.3`) or an inline
+  one-line mention. Every one of the 23 was in fact represented. The check must accept heading, range, or
+  mention — otherwise it cries wolf on two dozen entries and gets ignored, which is worse than no check.
   ⚠️ When mapping PRs, map by **merge-commit hash**, never by parsing squash subjects: a subject can carry
   two `#N` refs (v2.35.11's real PR is the trailing `#28`) and PRs #1/#9/#10 carry none.
   `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'` **These are exactly the "checkable rule → make it a hook/CI job, not more prose"

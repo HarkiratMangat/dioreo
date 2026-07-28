@@ -181,7 +181,27 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.36.1 — 2026-07-27 21:50 EDT (#34) — Merged branches stop rotting
+## v2.36.2 — 2026-07-27 22:05 EDT (#35) — Audit follow-ups: two checks that would have cried wolf
+**Docs/meta only — no runtime change, not deployed.** Found by a wide verification pass over v2.36.0–v2.36.1.
+- **Synced `main` → `v3-pre-release`.** It had been sitting two releases behind at v2.35.15, so it lacked
+  the very convention it is supposed to follow. Fast-forward (no divergence), by `git merge origin/main`
+  as the one-way sync rule requires — never a cherry-pick.
+- **Corrected a planned consistency check before it shipped.** The "every changelog version has a summary
+  line" rule, implemented as an exact `## vX.Y.Z` heading match, reported **23 false gaps** — every one of
+  them actually represented via a range heading (`## v2.18.0–v2.18.3`) or an inline mention, which is the
+  documented convention for trivial/docs-only releases. Noted on the sweep-script item so it isn't written
+  that way. A check that cries wolf 23 times gets ignored, which is worse than no check.
+- **Fixed the always-loaded lifecycle wording that would have recreated the two-commit bug.** Root
+  `CLAUDE.md` — the only file re-injected after `/compact`, and so the most likely thing a future session
+  follows — read `` `gh pr merge --squash` + `package.json` bump + version tag ``. As a sequence that says
+  *merge first, then bump*, which is precisely the pattern v2.36.0 retired. The final pre-merge checkpoint
+  is now its own lifecycle step, with the one-commit-one-tag invariant and the failure mode named outright:
+  if you're about to commit on `main` after merging, stop.
+- **Closed a `-pre` suffix ambiguity in the v3 spec.** It read as though `v3-pre-release`'s `package.json`
+  must *always* carry `-pre`; it starts with the first `Pre-Release` entry. Until then the branch just
+  tracks `main`'s plain version, so today's `2.36.1` there is correct, not drift.
+
+## v2.36.1 — 2026-07-27 21:50 EDT (#34 · `bd51350`) — Merged branches stop rotting
 **Docs/meta only — no runtime change, not deployed.**
 - **Found 10 merged branches sitting unpruned**, the oldest from PR #11. GitHub's auto-delete-on-merge
   removes only the *remote* branch, and a plain `git fetch` does **not** prune remote-tracking refs, so
