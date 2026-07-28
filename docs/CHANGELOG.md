@@ -181,7 +181,30 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.41.1 — 2026-07-28 17:05 EDT (#48) — Verifying forward but never backward
+## v2.41.2 — 2026-07-28 17:35 EDT (#49) — A table of contents you can't actually search
+**Docs + enforcement only — no bot runtime change, no deploy needed.**
+- **Harkirat's question:** *"Confused why DEVLOG uses 'later', 'afternoon', 'late afternoon' etc instead
+  of just utilizing the timestamp system already used throughout docs?"* There was no reason — those
+  qualifiers were copied from the existing TOC lines without asking whether the convention was any good.
+  It isn't.
+- **Three things were wrong with it.** It's *ambiguous* ("later" than what?). It *rots* — insert one entry
+  and every "later"/"later still" below it silently shifts meaning. And it defeats the TOC's own stated
+  purpose: the header says to jump by **searching the entry text**, which cannot work when the TOC text
+  doesn't match the heading text it's supposed to find.
+- **New rule: every dated Part A line is its body heading verbatim, `## ` stripped.** Unique, sortable,
+  and greppable straight to the heading. Older entries whose heading carries no clock time keep the bare
+  date — mirror what the heading says, never invent a time. 25 of the 50 headings genuinely have no time.
+- **`.claude/hooks/devlog-toc-check.sh`** enforces it at `gh pr create`, printing the exact
+  in-body-not-in-TOC / in-TOC-not-in-body diff. The old rule was a "**Keep in sync**" note, and it had
+  gone **15 entries behind** — the same asymmetry already measured for the DEVLOG itself (machine-checked
+  22/22 vs attention-dependent 8/22).
+- **Two near-misses caught while building it, both worth recording.** A `git reset --hard` cleaning up
+  test-scaffold commits also destroyed the real work in the same range. And the TOC holds a deliberate
+  non-dated pointer line (`*Earlier milestones*`) with no body heading — a naive regeneration deleted it,
+  and the first version of the checker would have flagged it as stale. Both now handled: only dated lines
+  are compared, non-dated lines are preserved, and the hook says so in its own message.
+
+## v2.41.1 — 2026-07-28 17:05 EDT (#48 · `9ef9215`) — Verifying forward but never backward
 **Enforcement + docs only — no bot runtime change, no deploy needed.**
 - **Harkirat's complaint, verbatim:** *"EVERY session I have to ask to double check and verify things,
   and it ALWAYS catches errors. I'd rather you do this on your own."* He is right, and the answer was not
