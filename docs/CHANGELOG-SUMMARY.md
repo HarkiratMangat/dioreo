@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.42.0 — July 28, 2026
+- *Internal only — added an automatic checker that catches Dior's own documentation going out of date, and fixed a place where the notes claimed something couldn't be checked when it could. Nothing players see.*
+
 ## v2.41.4 — July 28, 2026
 - *Internal only — recovered some configuration work that was accidentally discarded, and wrote down how to avoid repeating it. Nothing players see.*
 

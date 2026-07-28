@@ -88,6 +88,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 17:35 EDT — A table of contents you can't actually search
 - 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
 - 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+- 2026-07-28 21:00 EDT — "Not checkable" was never true
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -2895,3 +2896,79 @@ That gap is worth naming plainly rather than papering over: one class of miss is
 broader habit — asserting without checking — is not, and won't be until each specific instance of it gets
 its own check. The cross-session notice now tells that other session to verify its own work rather than
 take my word for it, which is the only honest thing to put there.
+---
+
+## 2026-07-28 21:00 EDT — "Not checkable" was never true
+*Released as `v2.42.0`.*
+
+Harkirat's objection was aimed at a single sentence I'd written:
+
+> *"As for the memory and notes file, im not satisfied because we currently have a hook or something
+> which checks the notes file at session start and was designed to actively keep it updated and not
+> stale. Not to mention, you didn't say anything about the deferred items files or the
+> graveyard/resolved items, or the readme."*
+
+He was right on both counts, and the second one is the more embarrassing. I had shipped a hook whose
+own message declared items 6 (memory) and 7 (notes file) **"NOT CHECKED BY ANY HOOK"**, and written
+the same claim into `docs/README.md` — while a `SessionStart` hook had been counting the notes file's
+open items the whole time. I'd looked at the merge-time hooks, not found a notes check there, and
+concluded none existed anywhere.
+
+### The diagnosis, which turned out to generalize
+
+The gaps weren't one problem. They were three shapes, and I'd mislabelled all of them "not checkable":
+
+**Right check, wrong moment.** The notes file *is* checked — at session start. That is the moment of
+**discovery**, when nothing has been filed yet and there is nothing to compare against. It is never
+re-checked at the moment of **closure**. This is the exact shape of the DEVLOG failure measured at
+8/22 two releases earlier: a condition evaluated precisely when it cannot be acted on. I had fixed
+that one and walked straight past its twin next door.
+
+**Invariant never stated.** The deferred lists, graveyard, and resolved-list had a perfectly
+mechanical rule nobody had written down: **an item leaves an active list only by appearing in an
+archive.** Conservation. A shrink in one file with no matching growth in the other is either an
+unswept item or a *deleted* one — and the destructive case is the one worth catching.
+
+**Plain filesystem truth.** The README doc map, and every path referenced across `CLAUDE.md` and the
+rules files. Checkable against `ls` and never once checked.
+
+So: **"not checkable" is almost always "I haven't worked out what the derivable invariant is."** What
+genuinely stays uncheckable is whether the *judgment* was right. A gate proves an artifact was
+opened; it can never prove the right thing was written in it.
+
+### Why a program instead of another hook
+
+Every previous fix here had been another Claude Code hook, and that was the structural mistake. Hooks
+fire only inside a Claude session, on this one Mac; each rule had become 1.4KB of backslash-escaped
+bash inlined in JSON, unreadable and impossible to run by hand to ask "is the tree clean *now*?"
+
+`scripts/docs-audit.mjs` is 10 named checks with two severities, callable from a hook, from CI, and
+from the terminal. The CI wiring is the durable half — it holds for PRs opened by a future session,
+by another agent, or by Harkirat.
+
+### Three things that only surfaced because I tried to break my own work
+
+**The self-test found a dead check on its first run.** `tag-integrity` stayed silent against a
+deliberately mismatched tag — because the fixture had picked `v2.35.0`, which sits in the known-bad
+allowlist. Had I only eyeballed the output, I'd have shipped a check I believed worked. Two more
+fixtures were wrong in the same run: fake commit hashes (the check was right), and a removed line
+14 characters long, under the 40-char churn threshold.
+
+**CI would have failed on correct documentation.** `actions/checkout@v4` defaults to a depth-1 clone
+with no tags. Measured against a real `git clone --depth 1`: **42 spurious `hash-chain` errors, and
+1 tag visible instead of 100+.** So `fetch-depth: 0` is a requirement, not a preference — and the
+audit now detects a shallow clone itself and downgrades to a warning that names the limitation,
+rather than reporting a conclusion it cannot support in either direction.
+
+**The audit's first real finding was against the audit.** `summary-coverage` reported `v2.17.1` and
+`v2.11.0` missing from `CHANGELOG-SUMMARY.md`. I was one edit from "fixing" the documentation before
+checking: the SUMMARY folds ops-only releases into **range headings** (`## v2.17.0–v2.17.3`), exactly
+as designed. The records were right; my check was wrong. That is the failure mode of every automated
+gate — it makes you trust its output over the thing it's measuring — so the fix came with an inverse
+self-test asserting that valid input stays *silent*, not just that broken input fires.
+
+### Note to future self
+
+Two assertions per check, always: the broken tree fails **and** the valid tree passes. The second is
+the one everyone skips, and it is the one that catches a matcher firing on everything. And when a
+guard and a record disagree, check the record before you edit it.

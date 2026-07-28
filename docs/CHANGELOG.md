@@ -181,7 +181,40 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.41.4 — 2026-07-28 18:40 EDT (#51) — A hard reset that ate another session's work
+## v2.42.0 — 2026-07-28 21:00 EDT (#52) — "Not checkable" was never true
+**Tooling + docs — no bot behaviour change.**
+- **`scripts/docs-audit.mjs`** — the documentation invariants as a **program**, not another hook.
+  10 checks: `readme-map` · `xref` · `summary-coverage` · `hash-chain` · `devlog-toc` ·
+  `devlog-version-cite` · `notes-sweep` · `deferred-sweep` · `tag-integrity` · `archive-conservation`.
+  Two severities — `ERROR` fails, `WARN` reports — so a hotfix is never blocked by prose.
+- **Wired into CI** (`.github/workflows/ci.yml`), which is the whole point: a Claude Code hook only
+  fires inside a Claude session on one Mac, so any PR opened another way was completely unchecked.
+  Needed `fetch-depth: 0` — verified, not assumed: a depth-1 checkout produced **42 spurious
+  `hash-chain` errors and saw 1 tag instead of 100+**. The audit now also *detects* a shallow clone
+  and downgrades those two checks to a warning rather than reporting a conclusion it can't support.
+- **`scripts/docs-audit.test.mjs`** — proves all 11 cases can actually **fail**, on fixture trees, and
+  that valid input stays silent. It found three real bugs in its first run, including a check firing
+  on the baseline and one that was **completely dead** because the fixture happened to pick a tag in
+  the known-bad allowlist. A guard nobody has watched fail is not a guard.
+- **`.claude/hooks/records-close-check.sh`** — gates chore items **6 (memory)** and **7 (notes file)**
+  at `gh pr create`, both derived: the notes file has open items this branch never touched; or the
+  branch changed a rule/enforcement file with no memory file written since the branch point.
+- **`devlog-toc-check.sh` now delegates** to the audit's `devlog-toc` check — one implementation, and
+  the TOC rule gains CI coverage it never had.
+- **Corrected a false claim in `docs/README.md` and in the RELEASE DOC CHECK hook's own message**,
+  which both stated items 6 and 7 were "NOT checkable". A `SessionStart` hook had been counting the
+  notes file's open items the entire time. The defect was **timing**, not absence — the check ran at
+  *discovery* (session start, nothing filed yet) and never at *closure*. Identical shape to the DEVLOG
+  failure measured at 8/22.
+- **`summary-coverage` initially reported `v2.17.1` and `v2.11.0` as missing. The records were right
+  and the check was wrong** — the SUMMARY folds ops-only releases into range headings
+  (`## v2.17.0–v2.17.3`), which a literal substring match can't see. Fixed the check rather than
+  "repairing" correct documentation, and added an inverse self-test so a matcher that fires on
+  everything gets caught.
+- DEVLOG Part A entries now carry a `*Released as vX.Y.Z.*` line, making the narrative record
+  greppable by release for the first time.
+
+## v2.41.4 — 2026-07-28 18:40 EDT (#51 · `925aa0a`) — A hard reset that ate another session's work
 **Docs only — no behaviour change.**
 - **A `git reset --hard HEAD~2`** at 2026-07-28 16:35 EDT, cleaning up two throwaway commits made to test
   the new TOC hook, also discarded the **unstaged** modification in `.claude/settings.local.json` —

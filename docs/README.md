@@ -60,12 +60,30 @@ kind of content lives and who's responsible for keeping it current.
 
 ## Responsibilities / chores checklist (per merge — moved from per-push 2026-07-24 12:24 EDT)
 
-**Which of these are machine-checked (audited 2026-07-28 14:30 EDT):** items **1, 2, 3, 5, 8.2,
-8.4, 8.5** now fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
+**Which of these are machine-checked (re-audited 2026-07-28 20:50 EDT):** items **1, 2, 3, 5, 8.2,
+8.4, 8.5** fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
 `commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6
-(memory)** and **7 (notes file)** are **NOT checkable** — memory lives outside the repo and "did the
-session handle this note" is a judgment call. They are named explicitly in the hook message, because
-a partial check that feels total is how DEVLOG coverage sat at 8/22 while the changelog hook passed.
+(memory)** and **7 (notes file)** are gated at `gh pr create` by
+`.claude/hooks/records-close-check.sh`.
+
+> ⚠️ **This paragraph used to say items 6 and 7 were "NOT checkable". That was wrong** (corrected
+> 2026-07-28 20:50 EDT, Harkirat's catch). A `SessionStart` hook had been counting the notes file's
+> open items the entire time. The real defect was never absence, it was **timing**: that check fires
+> at the moment of *discovery*, when nothing is filed yet and there is nothing to compare against,
+> and never at the moment of *closure* — the identical shape to the DEVLOG failure measured at 8/22.
+> **The general lesson, worth more than the fix:** "not checkable" is almost always "I haven't worked
+> out what the derivable invariant is." For the records it turned out to be **conservation** — an
+> item leaves an active list only by appearing in an archive, so a shrink with no matching grow is
+> either unswept or silently *deleted*. What genuinely stays uncheckable is whether the **judgment**
+> was right; a gate proves an artifact was opened, never that the right thing was written in it.
+
+**The tree-level invariants live in `../scripts/docs-audit.mjs`** (`npm run docs:audit`) — 10 checks
+covering the doc map, cross-references, version coverage across all three records, the changelog
+hash-chain, the DEVLOG TOC, tag integrity, and the sweep/conservation rules above. It is a **program,
+not a hook**, deliberately: a hook only fires inside a Claude session on one Mac, so it runs as a **CI
+gate on every PR** too. `ERROR` findings fail the build; `WARN` findings never block, so a hotfix is
+never held up by prose. `npm run docs:audit:test` proves every check can actually *fail* — a guard
+nobody has watched fail is not a guard, and this repo has already shipped one that was silently dead.
 Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
 code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.

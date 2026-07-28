@@ -254,6 +254,14 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 
 ### Records & workflow (outside the rules system)
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
+- **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
+  gate.** 10 checks over the records: doc map · cross-references · version coverage across all three
+  changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · and the **conservation rule** (an
+  item leaves an active list ONLY by appearing in its archive — a shrink with no matching grow means
+  it was *deleted*, not swept). `ERROR` fails, `WARN` never blocks. `npm run docs:audit:test` proves
+  each check can actually fail. Added 2026-07-28 21:00 EDT because "not checkable" had twice been
+  written down about records that were perfectly checkable — see memory
+  `feedback_not_checkable_is_usually_unexamined`.
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
