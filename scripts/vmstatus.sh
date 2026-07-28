@@ -176,7 +176,8 @@ now=$(date +%s)
 
 # ── argument parsing ─────────────────────────────────────────────────────────
 # Deliberately BEFORE the panel renders. The panel costs an SSH round-trip plus several Cloud Logging
-# queries (~40s), and validating afterwards meant a typo'd window made you wait the full 40s to be told
+# queries — measured ~10s on 2026-07-28 18:05 EDT), and validating afterwards meant a typo'd window made
+you wait out the whole probe to be told
 # you'd mistyped it. Parse first, fail fast, then do the slow work.
 WANT_LOGS=0; LINES=$DEFAULT_LINES; SINCE=""; UNTIL=""; WINDOW_LABEL="last 30d"; WINDOW_ARG=""
 if [ "${1:-}" = "logs" ]; then
@@ -219,7 +220,7 @@ get() { printf '%s\n' "$PROBE" | sed -n "s/^$1=//p" | head -1; }
 # to parse a timestamp back into epoch (BSD awk has no mktime()).
 cl_read() {  # cl_read <extra-filter> <since-epoch> [until-epoch] [format]
   # Skipped entirely on the VM: the instance's service account is provisioned to WRITE logs, not read
-  # them back, and deploy.sh calls this script as its post-restart check — paying ~40s of API round-trips
+  # them back, and deploy.sh calls this script as its post-restart check — paying those API round-trips
   # there (for counters that would come back empty) would turn every deploy into a coffee break.
   [ "$HAVE_GCLOUD" -eq 1 ] && [ "$ON_VM" -eq 0 ] || return 0
   local extra=$1 since=$2 until=${3:-} fmt=${4:-value(timestamp)}

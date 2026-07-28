@@ -19,7 +19,7 @@ v2.41.0 — design: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.
 **from the Mac** and reaches the VM over SSH. But `deploy.sh` runs it **on the VM** as its post-restart
 check, so the script detects its own host (`ON_VM`) and reads locally instead of trying to SSH into
 itself. On the VM it also **skips the Cloud Logging queries** — the instance service account writes logs
-but can't read them back, and paying ~40s of API calls for empty counters would slow every deploy. Both
+but can't read them back, and paying those API round-trips for empty counters would slow every deploy. Both
 paths print an explicit `NOT LIVE` banner rather than a bare `0`. If you touch this script, test **both**
 hosts; the on-VM path was quietly half-broken from 2026-07-18 until this rewrite.
 
