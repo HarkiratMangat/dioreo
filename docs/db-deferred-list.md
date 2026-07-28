@@ -118,7 +118,7 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   week — the v2.36.x release-convention overhaul alone touched 8 repo docs, 4 memories, and 3 hooks — so
   they are due a proper inspection rather than another incremental patch.
   **Scope — read every file, line by line, not just grep:** `CLAUDE.md` · all `.claude/rules/*.md` ·
-  every `docs/` file incl. `reference/`, `superpowers/specs/`, and the archives · all 60 memory files +
+  every `docs/` file incl. `reference/`, `superpowers/specs/`, and the archives · every memory file +
   `MEMORY.md` · `docs/SESSION-START.md` · the hooks and nudges in `.claude/settings.local.json` ·
   `.github/workflows/` · the working agreement and every feedback/reference/preference memory.
   **Check for:** stale content (claims that were true once) · gaps and missing pieces · outright
