@@ -43,3 +43,6 @@ builds.xlsx
 
 # Harkirats-Space note file
 docs/Harkirats-Space.md
+# Structured log sink written by utils/logger.js on the VM (tailed by the Ops Agent, rotated by
+# logrotate). Never committed — it is machine-local runtime output.
+logs/

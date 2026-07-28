@@ -1,0 +1,55 @@
+# Google Cloud Ops Agent — Dior's Builds logging config
+# Install on the VM at /etc/google-cloud-ops-agent/config.yaml, then:
+#     sudo systemctl restart google-cloud-ops-agent
+#
+# WHY (2026-07-28 15:34 EDT): the Ops Agent was ALREADY installed and running on this VM (~127MB RSS
+# of a 969MB box) and was shipping /var/log/syslog as an unparsed text blob with EMPTY severity that
+# nothing ever queried. So we were paying the full cost of structured logging and getting none of the
+# benefit. This config points it at the bot's own newline-delimited JSON sink (written by
+# utils/logger.js) so Cloud Logging gets real severity plus the running version and commit on every
+# entry -- which is what lets `scripts/vmstatus.sh logs <window>` answer "when did this happen, and
+# what code produced it" without correlating against restart boundaries.
+#
+# Kept in the repo (rather than only on the VM) so the config is reviewable, diffable, and survives a
+# VM rebuild. The VM copy is the live one -- if you edit this file, re-install it.
+
+logging:
+  receivers:
+    # The bot's structured sink. Path must match utils/logger.js's LOG_FILE default
+    # (<repo>/logs/app.log) or whatever DIORS_LOG_FILE is set to in the systemd unit.
+    diors_bot:
+      type: files
+      include_paths:
+        - /home/harkirat/diors-builds/logs/app.log
+      # logrotate renames the file; this makes the agent pick the new inode up promptly instead of
+      # holding the rotated-away handle and silently logging nothing until restart.
+      wildcard_refresh_interval: 30s
+
+  processors:
+    diors_bot_json:
+      type: parse_json
+      # The bot emits an ISO-8601 UTC timestamp. Parsing it here means Cloud Logging orders entries by
+      # when the BOT emitted them, not when the agent happened to read the file — the two diverge
+      # during a backlog, which is exactly when accurate ordering matters most.
+      time_key: timestamp
+      time_format: "%Y-%m-%dT%H:%M:%S.%L%z"
+
+    diors_bot_severity:
+      type: modify_fields
+      fields:
+        # Lift severity out of the JSON payload into the real LogEntry.severity field, so
+        # `gcloud logging read 'severity>=ERROR'` works and the Logs Explorer colour-codes correctly.
+        # Without this the value sits inert in jsonPayload and every entry shows as DEFAULT.
+        severity:
+          move_from: jsonPayload.severity
+
+  service:
+    pipelines:
+      diors_bot:
+        receivers: [diors_bot]
+        processors: [diors_bot_json, diors_bot_severity]
+
+# NOTE: the built-in `syslog` pipeline stays enabled and untouched. It is the fallback path — if the
+# JSON sink ever breaks (disk full, permissions, a logger.js regression), the human-readable journald
+# copy still reaches Cloud Logging, and vmstatus.sh can still read it. Losing structure is survivable;
+# losing the logs entirely is not.

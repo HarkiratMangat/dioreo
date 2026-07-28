@@ -126,21 +126,25 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap,
   and the fix has to address the cap (batching or a second pass), not just the prompt wording.
   Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
-- `[P2 · M · Sonnet5-H]` **`scripts/vmstatus.sh logs` overhaul — timestamps, commit hash, time-range args.**
-  *Filed 2026-07-28 01:41 EDT from notes L120 — also **never filed anywhere** before now.* Today's output
-  is unreadable as history: no date/time on a log line and no indication of **which commit the bot was
-  running** when it emitted one, so you cannot tell when anything happened. Spec as Harkirat gave it:
-  1. Stamp each line with **date/time + the running commit hash**.
-  2. Raise retention well past the current 1,000 lines (~3,000) — **first confirm the VM actually has the
-     disk headroom**, which is an open question in the original note, not an established fact.
-  3. Default line count **25 → 40**.
-  4. A **time-range argument** stacking with the line count: `vmstatus.sh logs <time> <lines>` —
-     `logs 2h 60`, `logs 20h-5d`, `logs 30m-260h 200`. Units **m/h/d only** (30-day history, so no
-     weeks/months). A range like `2h-7d` means *from 7 days ago up to 2 hours ago*, **excluding** the last
-     2 hours. No time arg → live trail at the default line count.
-  5. If both args are given and more lines exist than were shown, **print the total and tell the user to
-     re-run** to see the rest.
-  🔗 Bundle-with: the deferred `/status` command + the tool-discovery item's uptime/status-page idea.
+- `[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried
+  over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did
+  not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error
+  grouping on top of the Discord webhook. **That gap is materially smaller now:** structured Cloud
+  Logging carries real severity plus the running version and commit on every entry, and `vmstatus.sh`
+  surfaces error/alert/noise tiers. So the question is no longer "webhook vs Sentry" but "what does
+  Sentry add over structured Cloud Logging" — answer that before adopting. 🔗 Bundle-with: the deferred
+  admin `/status` command (`getAlertSummary()` can feed it either way).
+- `[P3 · XS · any model]` **GitHub achievement badges — Pull Shark + Pair Extraordinaire.** Added
+  2026-07-28 15:52 EDT (Harkirat's ask). **Pull Shark is not showing despite 42 merged PRs because all
+  three of his repos are PRIVATE** (`diors-builds`, `dior-cli`, `gif-background-remover`) — verified via
+  `gh repo list`. Two things to try, cheapest first: (1) enable **Settings → Profile → "Include private
+  contributions on my profile"**, which some report backfills it; (2) failing that, it needs merged PRs
+  on a **public** repo — a small public repo of his own reaches bronze (2 PRs) quickly. **Pair
+  Extraordinaire needs a co-author who is a DIFFERENT GitHub account than the commit author** — his own
+  noreply address self-co-authoring does not count, and `noreply@anthropic.com` maps to no account. The
+  workaround he wants to try: co-author with a bot account (Copilot-style, e.g.
+  `Co-authored-by: Copilot <ID+Copilot@users.noreply.github.com>`) on a real merged PR. ⚠️ Confirm the
+  exact bot account id before relying on it — unverified as of filing.
 - `[P1 · L · Opus5-H · 🧩needs-design]` **Line-by-line audit + restructure of the entire documentation,
   memory, and enforcement surface.** Added 2026-07-27 22:35 EDT (Harkirat's ask). **Goal: everything
   *correct and current*.** These files have grown substantially and a great deal changed in the last

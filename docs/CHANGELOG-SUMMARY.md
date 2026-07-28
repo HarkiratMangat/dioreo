@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.41.0 — July 28, 2026
+- *Internal only — Dior can now see exactly when something went wrong and which version of the bot was running at the time, and the health check finally counts real errors instead of routine reconnects. Nothing players see.*
+
 ## v2.40.0 — July 28, 2026
 - *Internal only — Dior's project notes now get written up automatically-checked, so the behind-the-scenes record stops falling behind. Nothing players see.*
 

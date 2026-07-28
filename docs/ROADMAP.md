@@ -144,6 +144,14 @@ architecture section's `/manage` note. Still open from this batch:
   peaks needs the keyless-ADC + Cloud Monitoring path (see `utils/visionExtract.js`'s token fetch); live VM
   state (systemctl/gateway/RAM) needs no such thing and no journal permission (gateway state comes straight
   off `client.ws`). Revisit as its own session if/when Harkirat wants it.
+  **↻ Materially easier since v2.41.0 (2026-07-28 15:52 EDT).** The `vmstatus.sh` overhaul added
+  structured Cloud Logging (`utils/logger.js` → the Ops Agent) carrying real severity plus the running
+  version and commit per entry, and settled the three-tier error model (errors / alerts / noise) that a
+  `/status` panel would want to display. ⚠️ **But note the permission asymmetry it also surfaced:** the VM's
+  service account can WRITE logs and not read them back, so a `/status` command running *in the bot*
+  cannot query Cloud Logging the way `vmstatus.sh` does from the Mac — it would need either a broadened
+  service-account role or to stay on `getAlertSummary()` + live `client.ws`/`process` state. Decide that
+  before scoping the session, not during it.
 - ~~**`/manage` accent colors**~~ — **SHIPPED 2026-07-20.** See "`/manage` per-page accent colors" under
   `.claude/rules/manage-panel.md` for what actually landed — it ended up as real sampled colors
   off the Legendary-rank and DMZ emoji assets (via the bot's own `getDominantColor()` pipeline), not

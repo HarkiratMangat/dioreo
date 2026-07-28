@@ -141,8 +141,45 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   on the VM ever fails with an auth error again: check this key/config before assuming something else broke.
   Rotate/revoke via the repo's GitHub Settings → Deploy keys.
 - **Monitoring ("never blind again"):**
-  - `scripts/vmstatus.sh` — one-shot health: VM state, systemd status, restart count, gateway state, 1h
-    error count, RAM/load/disk. `scripts/vmstatus.sh logs [N]` tails N log lines.
+  - `scripts/vmstatus.sh` — **overhauled 2026-07-28 15:34 EDT (v2.41.0)**; full design +
+    the measurements behind it: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`.
+    A one-shot **instrument panel**: VM · SERVICE · DEPLOY · HEALTH · ERRORS · ALERTS · ACTIVITY.
+    - `scripts/vmstatus.sh logs [<time>] [<lines>]` — `logs 2h 60`, `logs 20h-5d`, `logs 30m-260h 200`.
+      Units **m/h/d only** (30-day retention, so weeks/months are meaningless). A range is
+      `<newer>-<older>`: `20h-5d` means *from 5 days ago up to 20 hours ago*, **excluding** the last 20h.
+      No time arg → newest N across the 30-day window. Default **40** lines (was 25). If the window holds
+      more lines than shown, it prints the total and the exact re-run command. Args are validated
+      **before** the panel renders, so a typo fails instantly instead of after the ~40s probe.
+    - **Source: Cloud Logging first, journald over SSH as fallback.** Each line carries its timestamp and
+      the **version + commit that produced it**.
+    - ⚠️ **The `errors(1h)` counter in the old script was never trustworthy** — it grepped line text for
+      `error|…|reconnecting`, counting routine gateway churn as errors, while `journalctl -p err` was
+      structurally incapable of being non-zero (the bot logged everything at priority 6; measured 24h:
+      p0–p5 = 0, p6 = 30). Fixed at the source by `utils/logger.js`. The panel now reports **three
+      separate tiers — errors / alerts / noise — and they must NOT be collapsed into one number**; when
+      they disagree, the disagreement is the signal.
+    - **RAM is broken out** (bot vs agents vs available). The long-standing "536/969MB looks high" worry
+      resolves here: the bot is ~121MB; the Ops Agent + guest agents are ~127MB of the rest.
+    - **If the structured sink isn't deployed, the error counts render as `NOT LIVE … these zeros mean NO
+      DATA, not no errors`.** Don't "clean up" that warning — a zero meaning "no source" reading as
+      reassurance is exactly the bug this replaced.
+    - ⚠️ **Targets bash 3.2** (the stock macOS `/bin/bash`, and the only bash on Harkirat's Mac). No
+      `declare -A`, no `${var^^}`, no `mapfile`. `bash -n` does **not** catch these — they fail at runtime.
+  - **Structured logging → Cloud Logging (added 2026-07-28 15:34 EDT).** `utils/logger.js` tags
+    error/warn output with a systemd severity prefix (`<3>`/`<4>`, stripped by journald — verified live)
+    and appends newline-delimited JSON to `logs/app.log` carrying `severity`, `version`, and `commit` on
+    every entry. The **Ops Agent was already installed and running** (~127MB) shipping unparsed syslog
+    nobody queried; `scripts/ops-agent-config.yaml` now points it at that sink. Install on the VM:
+    ```bash
+    sudo cp ~/diors-builds/scripts/ops-agent-config.yaml /etc/google-cloud-ops-agent/config.yaml
+    sudo cp ~/diors-builds/scripts/logrotate-diors-bot /etc/logrotate.d/diors-bot
+    sudo systemctl restart google-cloud-ops-agent
+    ```
+    `logger.js` reads `DIORS_COMMIT`/`DIORS_LOG_FILE` at **require time, before `dotenv.config()`** — they
+    must be real environment variables; putting either in `.env` silently does nothing.
+  - **journald retention is pinned** (`MaxRetentionSec=30d`, `SystemMaxUse=200M`) as of 2026-07-28 15:34 EDT. It
+    previously had **no** retention config — the 30-day window everything assumed was incidental, not
+    enforced. Volume is tiny (~56 lines/day; 35.7MB after 11 days), so this is a guarantee, not a reclaim.
   - `scripts/vmpeaks.sh` — historical **CPU peaks** (12h/24h/72h/7d/30d) via Cloud Monitoring (CPU is
     hypervisor-level, no agent needed). On e2-micro, >100% = bursting above the 0.25-vCPU baseline
     (normal). **RAM peaks** were added 2026-07-17 (`rampeak()`, `agent.googleapis.com/memory/percent_used`

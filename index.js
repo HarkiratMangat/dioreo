@@ -5,6 +5,20 @@
 // process continuously and doesn't idle/spin down, so the keep-alive ping had nothing left to do.
 // Left as a breadcrumb, same convention as the PHASE 5 removal note further down, so Phase numbering
 // starting at 2 doesn't read like something's missing.
+// FIRST, before anything else can log. patchConsole() tags error/warn output with a systemd severity
+// prefix (so `journalctl -p err` and Cloud Logging severity stop being permanently zero) and tees a
+// structured copy to the Ops Agent's JSON sink. It must run ahead of the crash handlers below, or the
+// two most important lines the bot can ever emit -- an unhandled rejection and an uncaught exception --
+// would be the only ones still logged as plain `info`. See utils/logger.js for the full why.
+// ⚠️ logger.js reads DIORS_COMMIT / DIORS_LOG_FILE at require time, which is BEFORE dotenv.config()
+// runs further down. Both are set by systemd/deploy.sh as real environment variables on purpose --
+// putting either in `.env` would silently do nothing (same ordering trap as the .env.dev backfill).
+const { patchConsole, logBootBanner } = require('./utils/logger');
+patchConsole();
+// Emitted before any other output so vmstatus.sh can attribute every subsequent journal line to this
+// version/commit -- including lines from a startup that never reaches ClientReady.
+logBootBanner();
+
 const { sendAlert } = require('./utils/alertWebhook'); // Discord webhook alerting; reads LOG_WEBHOOK_URL lazily, no-op if unset
 
 // SAFETY NET: Node crashes the whole process on an unhandled promise rejection by default

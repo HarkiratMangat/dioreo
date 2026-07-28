@@ -181,7 +181,66 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.40.0 — 2026-07-28 14:15 EDT (#46) — The DEVLOG is now enforced like the changelog
+## v2.41.0 — 2026-07-28 15:52 EDT (#47) — The error counter was never capable of being right
+**Bot runtime change (`utils/logger.js`, `index.js`) + ops tooling. Needs a deploy AND a one-time VM
+config install — see `docs/reference/deployment-and-ops.md`.**
+- **The bug under the feature request.** The filed ask was cosmetic-sounding (timestamps, a commit hash,
+  time-window args, a prettier panel). Investigating it found `vmstatus.sh`'s error counter could not
+  have been correct in either of its two modes. The text grep (`error|10062|unhandled|disconnect|
+  reconnecting`) counted routine `🔌 Shard 0 reconnecting...` churn as errors — measured live, it
+  reported `errors(1h): 2` and **both matches were gateway reconnects**. And `journalctl -p err` was
+  structurally incapable of ever being non-zero: the bot wrote everything to stdout, so journald tagged
+  **every** entry priority 6. Measured across 24h: **p0–p5 = 0, p6 = 30.** It would have read 0 during a
+  total crash. Expanding the display around either number would only have made a wrong one bigger.
+- **Fixed at the source — `utils/logger.js` (new).** systemd's `SyslogLevelPrefix` (already `yes` on the
+  unit) reads a leading `<N>` per line and records that priority. **Verified live on the VM** with a
+  throwaway `systemd-run` unit: `<3>` → PRIORITY 3, `<4>` → PRIORITY 4, unprefixed → 6. `patchConsole()`
+  prepends the marker and tees a structured JSON copy. It patches `console` rather than rewiring ~60
+  call sites — that cannot *miss* a site, and one 30-line module is far easier to review for a real
+  regression than a 60-file mechanical diff. Multi-line stacks are prefixed **per line**, or `-p err`
+  would show a headless error. Inert locally (gates on `JOURNAL_STREAM`), so the dev bot is untouched.
+- **The Ops Agent was already running and doing nothing useful.** It was installed, active, costing
+  ~127MB RSS of a 969MB box (`otelopscol` 77MB + `core_plugin` 27MB + `guest_telemetry` 23MB), and
+  shipping `/var/log/syslog` as an unparsed text blob with **empty severity** that had never once been
+  queried. The Cloud Logging option carved out of the 2026-07-24 Firestore review was therefore already
+  paid for. `scripts/ops-agent-config.yaml` now points it at the structured sink, so every entry carries
+  real severity plus **the version and commit that produced it**.
+- **`scripts/vmstatus.sh` rewritten.** Full instrument panel (VM · SERVICE · DEPLOY · HEALTH · ERRORS ·
+  ALERTS · ACTIVITY). Cloud Logging primary, journald fallback. `logs [<time>] [<lines>]` with m/h/d
+  units, single windows and `<newer>-<older>` ranges (`20h-5d` = from 5d ago up to 20h ago, excluding
+  the last 20h), default **25 → 40** lines, and a re-run hint printing the exact command when a window
+  holds more than was shown. Args validate **before** the ~40s probe, so a typo fails instantly.
+- **Errors, alerts, and noise are three separate tiers and must not be collapsed.** When they disagree,
+  the disagreement is the signal.
+- **Two honesty rules in the panel, both the same class of bug this replaced.** RAM is broken out (bot
+  ~121MB vs agents ~127MB) so the raw `556/969MB` can't read as alarming again — that answers a worry
+  Harkirat raised 2026-07-24. And when the sink isn't deployed, the zero counts render as **"NOT LIVE —
+  these zeros mean NO DATA, not no errors."**
+- **The retention bump in the spec was a misunderstanding; nothing needed raising.** The "1,000 cap" is
+  the AlertLog **Mongo** store. journald had *no* retention config and held every line since install
+  (620 lines / 35.7MB / since 2026-07-17, ~56 lines/day). Pinned to `MaxRetentionSec=30d` +
+  `SystemMaxUse=200M` so the assumed 30-day window is enforced rather than incidental.
+- **Found while verifying: the VM was 18 commits / 5 releases behind** (running v2.35.13, `771ea76`,
+  against `main` at v2.40.0). Merged never meant deployed. The DEPLOY panel now flags drift every run.
+- **Fixed a pre-existing break the rewrite would have made much worse.** `scripts/deploy.sh` runs
+  `vmstatus.sh` **on the VM** as its post-restart check, and that path had been quietly half-broken since
+  2026-07-18 (the outward-facing `instances describe` needs the Mac's auth context and just reported
+  "could not reach VM"). The SSH-based rewrite would have escalated that to the VM trying to SSH into
+  itself. The script now detects its own host: on the VM it reads locally and skips Cloud Logging — the
+  instance service account can write logs but not read them back, so those calls would have cost ~40s per
+  deploy for empty counters. Verified by piping the script to the VM and running it there.
+- **Cross-reference sweep.** `.claude/rules/scripts-and-migrations.md` (both run-locations + the bash 3.2
+  constraint), `.claude/rules/interaction-router.md` (`console` is patched in `index.js` — don't move the
+  require, don't split it into per-call-site imports), `docs/SESSION-START.md` (a `NOT LIVE` zero isn't a
+  clean bill of health), `docs/ROADMAP.md`'s `/status` item (easier now, but the bot itself can't read
+  Cloud Logging — decide that before scoping it), and the `reference_vm_bot_commands` memory, which was
+  **still documenting the retired direct-push deploy flow and "one version per PUSH"** four days after the
+  branch/PR workflow replaced it.
+- Bash 3.2 target documented in-file — the first draft used `declare -A`, which `bash -n` accepts and
+  the stock macOS shell rejects at runtime.
+- Design + every measurement: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`.
+
+## v2.40.0 — 2026-07-28 14:15 EDT (#46 · `0cc4017`) — The DEVLOG is now enforced like the changelog
 **Config/docs only — no bot runtime change, not deployed.**
 - **Measured the problem instead of apologising for it.** Across the last 22 releases: `CHANGELOG.md`
   **22/22**, `CHANGELOG-SUMMARY.md` **22/22**, `DEVLOG.md` **8/22 (36%)**. The 14 misses were not

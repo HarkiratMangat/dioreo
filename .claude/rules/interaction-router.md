@@ -5,6 +5,19 @@ paths:
 
 # `index.js` — the interaction router (crash-safety, synthetic interactions, routing)
 
+> ⚠️ **`console` is PATCHED in this file, at the very top** (added 2026-07-28 15:34 EDT, v2.41.0).
+> `require('./utils/logger')` + `patchConsole()` runs **before the crash handlers** so that an unhandled
+> rejection and an uncaught exception — the two most important lines the bot can emit — are tagged with a
+> real systemd severity instead of `info`. `console.error`/`.warn` therefore are **not** the ones Node
+> gave you: they prepend a `<3>`/`<4>` marker (journald strips it) and tee a structured JSON copy
+> carrying the running version + commit. Keep writing plain `console.error(...)` — that is the point, it
+> works everywhere and cannot be forgotten. **Do not move the require below the crash handlers**, and do
+> not "clean up" the patch into per-call-site imports: ~60 sites across `index.js` and `utils/` would
+> have to be rewired and every future one remembered. Full reasoning: `utils/logger.js`'s header and
+> `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`.
+> `logBootBanner()` fires immediately after, before anything else can log, so `vmstatus.sh` can attribute
+> every later journal line to a version/commit — including a startup that never reaches `ClientReady`.
+
 *Loads when you touch `index.js` (the ~2,700-line `interactionCreate` handler + boot/registration).
 The survival rules you need whenever editing the router. Per-subsystem handler DETAIL lives in the
 matching subsystem rule (`manage-panel.md`, `settings-and-expiry.md`, `loadouts.md`,
