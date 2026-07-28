@@ -181,7 +181,20 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.38.0 — 2026-07-28 01:41 EDT (#39) — Memory moves to the path the platform actually reads
+## v2.38.1 — 2026-07-28 11:20 EDT (#40) — Remove a stray empty file that rode in with v2.38.0
+**Repo hygiene — no bot runtime change, not deployed.**
+- **Deleted `saved`**, a 0-byte file at the repo root that was committed by mistake in v2.38.0. It was
+  never referenced by anything (the `rg` hits for "saved" are the ordinary English word inside
+  `commands/*.js`, e.g. "saved preference" — not a path).
+- **How it happened, since the mechanism matters more than the file:** the release work used
+  `git add -A` repeatedly to sweep multi-file doc edits. That stages *everything* untracked, including
+  a stray artifact from an earlier shell redirect. `git add -A` cannot distinguish "my edits" from
+  "whatever else is lying around" — **prefer explicit paths, or read `git status` before staging**, on
+  any commit that isn't a tightly-scoped change.
+- Caught in the merge output (`create mode 100644 saved`) rather than by review, which is luck, not
+  process.
+
+## v2.38.0 — 2026-07-28 01:41 EDT (#39 · `61c70d8`) — Memory moves to the path the platform actually reads
 **Docs + memory store — no bot runtime change, not deployed.**
 - **The memory store migrated** from `~/.claude/projects/-Applications-Diors-Builds/memory/` to
   `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — the slug the harness actually
