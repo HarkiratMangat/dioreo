@@ -138,7 +138,14 @@ v3 work lives on the long-lived **`v3-pre-release`** integration branch, not `ma
 `feat/x` off `v3-pre-release` → **`gh pr create --base v3-pre-release`**. `gh` defaults to `--base main`,
 and a v3 PR merged there puts unfinished v3 code on the branch that must stay live-safe — it fails
 silently, nothing warns. v2 hotfixes are unchanged: off `main`, into `main`. **Sync is one-way,
-`main` → `v3-pre-release`, by `git merge origin/main` — never cherry-pick** (a cherry-pick doesn't
+`main` → `v3-pre-release`, by `git merge origin/main` — never cherry-pick**
+**⚠️ Cadence: after EVERY merge to `main`** — this is now automated by
+`.github/workflows/sync-v3-pre-release.yml`, which merges and pushes on each push to `main` and **fails
+loudly on conflict** (resolve by hand from the branch; never cherry-pick your way out). The rule used to
+document only the *mechanism* and never the *trigger*, in four separate places — so it happened only when
+someone noticed, and the branch was found **two releases behind at v2.35.15 on 2026-07-27 22:00 EDT**,
+missing the very release conventions it must follow. If that workflow is ever removed, the manual step
+returns and belongs in the merge checklist. (a cherry-pick doesn't
 advance the merge base, so the same conflicts return on every later sync). During pre-release,
 `docs/CHANGELOG.md` only (`Pre-Release v3.MAJOR.MINOR`), `package.json` carries a matching `-pre`
 suffix, and **no tags are minted until `v3.0.0`**. Full design:

@@ -112,6 +112,33 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Two are P1 now** —
 the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items added since.*
 
+- `[P1 · L · Opus5-H · 🧩needs-design]` **Line-by-line audit + restructure of the entire documentation,
+  memory, and enforcement surface.** Added 2026-07-27 22:35 EDT (Harkirat's ask). **Goal: everything
+  *correct and current*.** These files have grown substantially and a great deal changed in the last
+  week — the v2.36.x release-convention overhaul alone touched 8 repo docs, 4 memories, and 3 hooks — so
+  they are due a proper inspection rather than another incremental patch.
+  **Scope — read every file, line by line, not just grep:** `CLAUDE.md` · all `.claude/rules/*.md` ·
+  every `docs/` file incl. `reference/`, `superpowers/specs/`, and the archives · all 58 memory files +
+  `MEMORY.md` · `docs/SESSION-START.md` · the hooks and nudges in `.claude/settings.local.json` ·
+  `.github/workflows/` · the working agreement and every feedback/reference/preference memory.
+  **Check for:** stale content (claims that were true once) · gaps and missing pieces · outright
+  mistakes/errors · things not caught up with recent changes · broken or missing cross-links and
+  `[[wikilinks]]` · duplicated content that has drifted apart between copies · contradictions *between*
+  files and *within* a single file · counts/numbers that rot (the `CLAUDE.md` memory-file count has been
+  wrong at least 3 times) · rules stated as prose that should be hooks · and anything else worth flagging
+  that isn't listed here.
+  **Then restructure/reorganize/reword** where the file has outgrown its shape.
+  **Why P1/L:** the same week produced three separate instances of exactly this failure — a self-
+  contradictory clause inside one spec that had propagated into five files (v2.36.0), a source-of-truth
+  memory still teaching a retired convention while the repo docs were correct (v2.36.3), and a rule
+  documented in four places whose *trigger* existed in none (the v3 sync). Each was found by accident.
+  **Method note, learned the hard way this week:** grep alone will not find these — the v2.36.3 miss
+  survived two grep sweeps because it phrased the same idea differently. Read the files. And **verify
+  every check itself before trusting it**: a "every version has a summary line" check reported 23 false
+  gaps because it demanded an exact heading the convention doesn't use.
+  **Bundle with:** the `[P2 · S]` sweep-script item below — anything mechanically checkable that this
+  audit finds should leave as a script/CI check, not as more prose.
+
 - `[P2 · M · Opus5-H · ⚠️touches-prod]` **Rename the production database off Mongoose's `test` default.**
   Added 2026-07-26 13:24 EDT; Harkirat explicitly deferred this to its own session mid-bring-up. The prod
   Atlas `MONGODB_URI` carries no database path, so Mongoose silently defaulted to a db literally named

@@ -1,0 +1,75 @@
+name: Sync v3-pre-release
+
+# Keeps the long-lived `v3-pre-release` integration branch current with `main`, automatically, on every
+# push to `main`.
+#
+# Why this exists: the v3 structure (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md)
+# documented the sync MECHANISM in four separate places -- one-way, `main` -> `v3-pre-release`, by merge,
+# never cherry-pick -- but never documented the CADENCE. Nothing said *when*, so it only happened when
+# somebody noticed, and on 2026-07-27 22:00 EDT the branch was found sitting two releases behind at
+# v2.35.15, missing the very release conventions it is required to follow. Prose describing how to do a
+# thing is not a trigger for doing it; this workflow is the trigger.
+#
+# Deliberately a MERGE, never a cherry-pick or a rebase: a cherry-pick copies content without advancing
+# the merge base, so every later sync re-presents the same conflicts forever. A merge advances the base,
+# so each sync only handles what is genuinely new.
+#
+# Conflicts are intended to FAIL this workflow loudly rather than be auto-resolved. While no v3 work
+# exists the merge is always a clean fast-forward and this runs silently; once real v3 work diverges, a
+# conflict is exactly the moment a human needs to decide, and a red workflow run is the notification.
+# Resolve manually from `v3-pre-release`: `git merge origin/main`, fix, commit, push.
+#
+# Note: pushes made with GITHUB_TOKEN do not trigger further workflow runs, so this cannot recurse.
+on:
+  push:
+    branches: [main]
+  # Manual escape hatch: lets a sync be re-run after a conflict is resolved, without needing a new
+  # push to `main` to retrigger it.
+  workflow_dispatch:
+
+# Needs write access to push the merge commit to `v3-pre-release`.
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: a shallow clone has no merge base, so the merge below would fail or produce
+      # a bogus result.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The branch is created manually when a pre-release line opens. If it doesn't exist yet (or has
+      # been retired after the v3.0.0 launch merge), skip cleanly rather than failing every push to main.
+      - name: Check whether v3-pre-release exists
+        id: check
+        run: |
+          if git ls-remote --exit-code --heads origin v3-pre-release >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::v3-pre-release does not exist on origin -- nothing to sync."
+          fi
+
+      - name: Merge main into v3-pre-release
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout v3-pre-release
+          # Already current (the common case while v3 work hasn't started) -- exit quietly rather
+          # than creating an empty commit or a confusing "Everything up-to-date" push.
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "::notice::v3-pre-release already contains origin/main -- nothing to do."
+            exit 0
+          fi
+          if ! git merge origin/main --no-edit; then
+            git merge --abort || true
+            echo "::error::Merge conflict syncing main into v3-pre-release. Resolve it by hand from the branch: git checkout v3-pre-release && git merge origin/main. Do NOT cherry-pick -- that leaves the merge base behind and the same conflict returns on every later sync."
+            exit 1
+          fi
+          git push origin v3-pre-release
+          echo "::notice::Synced main into v3-pre-release."

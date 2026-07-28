@@ -181,7 +181,25 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.36.3 — 2026-07-27 22:25 EDT (#36) — The tag invariant becomes a gate, after it caught nobody
+## v2.37.0 — 2026-07-27 22:35 EDT (#37) — The v3 sync gets a trigger, not just a mechanism
+**Docs + CI — no bot runtime change, not deployed.**
+- **`.github/workflows/sync-v3-pre-release.yml`** — merges `main` into `v3-pre-release` and pushes on
+  every push to `main`. Skips cleanly when the branch doesn't exist (so it won't fail every push after
+  the v3.0.0 launch merge retires it), exits quietly when already current, and **fails loudly on
+  conflict** rather than auto-resolving — a red run is the notification, and conflicts are exactly when
+  a human must decide. `workflow_dispatch` lets it be re-run after a manual resolution. Pushes use
+  `GITHUB_TOKEN`, which does not retrigger workflows, so it cannot recurse.
+- **The rule that was missing.** The sync *mechanism* — one-way, by merge, never cherry-pick — was
+  documented in **four** places (`CLAUDE.md`, the v3 spec, `ROADMAP.md`, memory). The *cadence* was
+  documented in **zero**. Nothing said when, so it happened only when someone noticed, and
+  `v3-pre-release` was found two releases behind at v2.35.15, missing the very release conventions it
+  must follow. **A documented mechanism is not a trigger** — now stated in all four, and automated.
+- **Filed the `[P1 · L]` full documentation/memory/hook audit.** Line-by-line, not grep — this week alone
+  produced three instances of the same failure shape (a self-contradictory spec clause propagated into
+  five files, a source-of-truth memory still teaching a retired convention, and this missing trigger),
+  each found by accident. Includes restructuring the files that have outgrown their shape.
+
+## v2.36.3 — 2026-07-27 22:25 EDT (#36 · `fe79d87`) — The tag invariant becomes a gate, after it caught nobody
 **Docs/meta only — no runtime change, not deployed.**
 - **Reproduced the stale-tag defect within minutes of documenting it.** Tagging v2.36.2 was chained onto
   the merge as one `&&` sequence. `gh pr merge` failed (checks still `UNSTABLE`) but was piped to

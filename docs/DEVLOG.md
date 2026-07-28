@@ -2359,3 +2359,46 @@ orphaned. Both dry-run across their silent and firing paths before shipping.
 - **Local-only enforcement needs the prose anyway.** `.claude/settings.local.json` is gitignored, so
   these hooks don't exist on a fresh clone — which makes the `CLAUDE.md`/README wording the real
   convention and the hooks a local backstop, not the other way round.
+
+## 2026-07-27 22:35 EDT — Three ways to document a rule and still not have one
+
+Three failures this evening, and they turned out to be the same failure wearing different clothes.
+
+**One: I reproduced a bug I had just documented.** v2.36.1 filed six historical tags whose `package.json`
+was stale, with a note that `git show <tag>:package.json` lies for them. Twenty minutes later I created
+`v2.36.2` on the wrong commit and pushed it — a seventh instance. The cause wasn't forgetting the rule; it
+was `gh pr merge ... | tail -1 && git tag ...`. **A pipeline exits with its last command's status**, so
+when the merge failed on pending checks, `tail` returned 0, the `&&` chain ran on, `main` never advanced,
+and `$(git rev-parse HEAD)` resolved to the previous release. The invariant existed only as a line in a
+deferred script item, so nothing was watching. It's a `PreToolUse` gate now, and it fires on exactly the
+command I ran.
+
+**Two: a source-of-truth file was the last to know.** A deep sweep found
+`project_dior_builds_changelog_system` — the file `docs/README.md` names as the source of truth for the
+versioning scheme — still teaching *"graduates to a real entry (+ squash hash + tag) at merge,"* the
+retired clause, hours after every repo doc had been corrected. Two earlier grep sweeps missed it because
+it phrases the idea differently. Greping for a *phrasing* only finds the copies that share it.
+
+**Three: four documents described a rule nobody was following.** The `main` → `v3-pre-release` sync is
+specified in `CLAUDE.md`, the v3 spec, `ROADMAP.md`, and memory — one-way, by merge, never cherry-pick.
+All four describe the *mechanism*. Not one says *when*. So it happened only when somebody noticed, and the
+branch sat two releases behind, missing the release conventions it exists to follow. Four copies of a
+rule, zero triggers. It's a GitHub Action now, on every push to `main`, failing loudly on conflict.
+
+The common shape: **each of these was written down correctly and still didn't work.** A rule in prose is a
+description; what makes it happen is a trigger attached to the moment it applies. Documentation told you
+the tag must match `package.json` but nothing sat between me and `git tag`. Documentation told you how to
+sync but nothing fired when `main` moved.
+
+### Lessons
+- **Distinguish the mechanism from the trigger.** "How to do X" documented in four places is not "X
+  happens." Ask what event causes the rule to run, and if the answer is "somebody remembers," it will
+  fail — the only question is when.
+- **Never pipe a fallible command and lean on `&&`.** And never derive a value from state in the same
+  chain as the command meant to produce that state.
+- **Split state-changing sequences at every fallible boundary.** Merge → *verify it landed* → tag. The
+  chain is what turned a failed merge into a wrong published tag.
+- **Grep finds phrasings, not ideas.** The miss survived two sweeps by wording the same rule differently.
+  A real audit has to read.
+- **Documenting a defect is not fixing it.** Writing up the six stale tags produced a seventh. The write-up
+  should have been accompanied by the gate, in the same pass.
