@@ -181,7 +181,23 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.38.2 — 2026-07-28 11:20 EDT (#41) — Two dead host credentials revoked and removed
+## v2.38.3 — 2026-07-28 11:20 EDT (#42) — The DEVLOG entries v2.38.1/.2 should have shipped with
+**Docs only — no bot runtime change, not deployed.**
+- **Backfills the missing DEVLOG narrative for v2.38.1 and v2.38.2.** The per-merge chore checklist
+  asks for a DEVLOG entry "if the work had real reasoning/discovery," and both qualified — the
+  `git add -A` scope leak that committed a stray file, and the revoke-vs-comment distinction on dead
+  credentials. Both shipped with a changelog entry and a summary line but no narrative, which is the
+  step most easily dropped because nothing mechanically checks for it.
+- **Turn-budget hook retuned** (`~/.claude/hooks/usage-guard.mjs` — global and gitignored, so it does
+  *not* ride in this PR; recorded here and in the `reference_tool_capability_tests` memory so the change
+  is not invisible). Thresholds `25` and `60` are now **advisory**; `120+` keeps the hard
+  checkpoint-and-report wording. The hard message was firing during ordinary multi-file doc work and
+  pushing toward wrapping up mid-task — which is exactly how a version bump, tag, or verification step
+  gets skipped to save turns. Both tiers now carry a shared quality floor: **the counter measures cost,
+  never correctness**, so the response is always "work more efficiently," never "work less completely."
+  Re-tested end-to-end (25 → advisory, 60 → advisory, 120 → hard, silent below 25).
+
+## v2.38.2 — 2026-07-28 11:20 EDT (#41 · `3d80e13`) — Two dead host credentials revoked and removed
 **Docs + local `.env` hygiene — no bot runtime change, not deployed.**
 - **`RENDER_API_KEY` and `RAILWAY_TOKEN` are gone from `.env`**, revoked at their providers first.
   Render's service was deleted 2026-07-27 and Railway abandoned 2026-07-17; the GCP VM is the only host

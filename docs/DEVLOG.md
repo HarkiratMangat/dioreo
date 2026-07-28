@@ -2458,3 +2458,45 @@ clause and kept the general lesson intact.
 - **`rg` respects `.gitignore`.** The inherited "full repo-wide sweep" had never covered
   `.claude/settings.local.json` or `local/`. It reached the right conclusion and could not have known
   it. Re-run with `--no-ignore --hidden` when a sweep is load-bearing.
+
+## 2026-07-28 11:20 EDT — Two small releases that were both my own mess
+
+The memory migration shipped as v2.38.0. The two releases that followed it the same morning exist
+because of mistakes made *while* shipping it, and both are worth writing down for the mechanism rather
+than the fix.
+
+**v2.38.1 — a file called `saved`.** The merge output for v2.38.0 contained a line I nearly scrolled
+past: `create mode 100644 saved`. A zero-byte file at the repo root, referenced by nothing, committed
+into a release. It got there because the release work leaned on `git add -A` — repeatedly, across a
+dozen multi-file doc edits, because typing out paths felt like friction. `git add -A` cannot tell "the
+eleven files I just edited" from "whatever else happens to be lying around," and an empty artifact from
+some earlier shell redirect was lying around. The fix was trivial. The part worth keeping is that it
+was caught by *reading the merge output*, not by review — which is luck, and luck is not a process.
+
+**v2.38.2 — commenting out a credential is not revoking it.** The audit found `RENDER_API_KEY` and
+`RAILWAY_TOKEN` still sitting in `.env` for two hosts that no longer exist: Render's service was deleted
+2026-07-27, Railway abandoned 2026-07-17, and no code read either variable. Harkirat's first instinct
+was to comment the lines out rather than delete them — keep them recoverable, in case. That is a good
+instinct for configuration and a bad one for secrets, and the distinction is easy to miss because they
+live in the same file and look the same. A `#` stops the *bot* from loading a key. It does nothing to
+the key. The string remains valid at the provider, and an API key generally authenticates against the
+whole account rather than the one deleted resource, so a commented-out Render key could still create and
+bill resources. He revoked both at their dashboards, and only then were the lines deleted. `PORT` was
+commented out in the same pass and deliberately kept: not a secret, read by nothing — verified there is
+no `process.env.PORT` anywhere, no HTTP server, and no web framework in the dependency tree. It was only
+ever an artifact of Render and Railway requiring a bound port for web services.
+
+Neither release changed a line of bot code. Both came out of sweeping for something else entirely — the
+memory path — which is the same pattern as the rest of that session: the defects you find are rarely the
+ones you went looking for.
+
+### Lessons
+- **`git add -A` is a scope leak.** It stages intent you didn't have. On anything broader than a
+  tightly-scoped change, name the paths or read `git status` first. v2.38.2 was staged explicitly.
+- **A `#` in front of a secret changes nothing about the secret.** Revoke at the provider, *then*
+  delete the line. Deleting alone is worse than commenting — it removes the record that the key ever
+  existed while leaving it live.
+- **Config instincts don't transfer to credentials.** "Keep it around in case we need it" is right for
+  a port number and wrong for an API key, and they sit three lines apart in the same file.
+- **Read the merge output.** It is the last place a stray file announces itself before it becomes
+  history.
