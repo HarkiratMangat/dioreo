@@ -2591,3 +2591,13 @@ time a guard is written to cover "most of" something.
 **The fix rides in this PR rather than sitting on one machine** — which is the whole point of v2.39.0
 tracking `.claude/settings.json` a few hours earlier. The first change to the enforcement layer since
 it became recoverable is one that would previously have existed only in a gitignored file.
+
+**Follow-up the same hour — audit the whole phase, not the one that broke.** Harkirat's next question was
+the right one: if the DEVLOG silently fell behind, what else in the merge flow is only *believed* to be
+checked? Auditing all ten chore-checklist obligations against real hook coverage found three more with
+nothing behind them — the plain-language summary (22/22 purely by habit), the `package.json` bump, and
+the previous entry's hash backfill. Habit is not enforcement; it is a streak, and streaks end silently.
+The new consolidated check covers those, nudges the CLAUDE.md/rules note when code changes without one,
+and — the part that matters most — **explicitly names the two items it cannot check** (memory updates
+and the notes file). Writing "this check does not cover X" into the check itself is the direct antidote
+to the false-completion failure that started the whole thread.

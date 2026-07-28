@@ -59,6 +59,13 @@ kind of content lives and who's responsible for keeping it current.
 - **`ROADMAP.md` / `db-deferred-list.md` are the record; the [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) is a view.** ⚠️ **The board's 15 draft items were sourced 2026-07-25 21:35 EDT, minutes before the 21:43 EDT deferred-list restructure** — so its items predate the rename, the bugs/reminders moving in-repo, and the resolved items moving to `archive/`. Re-sync it manually before trusting it. The board (Status/Priority/Effort/Model/Flags fields) exists for an at-a-glance visual snapshot — a Status kanban + a Priority table. It is refreshed manually and periodically from the docs, never the other way around: if the board and the docs ever disagree, the docs win. Don't let it silently drift into a second source of truth the way the notes-file/CLAUDE.md roadmap once did.
 
 ## Responsibilities / chores checklist (per merge — moved from per-push 2026-07-24 12:24 EDT)
+
+**Which of these are machine-checked (audited 2026-07-28 14:30 EDT):** items **1, 2, 3, 5, 8.2,
+8.4, 8.5** now fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
+`commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6
+(memory)** and **7 (notes file)** are **NOT checkable** — memory lives outside the repo and "did the
+session handle this note" is a judgment call. They are named explicitly in the hook message, because
+a partial check that feels total is how DEVLOG coverage sat at 8/22 while the changelog hook passed.
 Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
 code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.
