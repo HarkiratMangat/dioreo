@@ -124,18 +124,6 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   soak period. Do it in a low-traffic window; the bot is briefly down across the restart. Note the same URI
   is read by `scripts/` one-off tools, so check those too before dropping `test`.
 
-- `[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the 2-commit
-  reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
-  §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow
-  launched (`904dec8`→`acc1d8d` for v2.33.0, `8c44f97`→`e5c93d8` for v2.33.1, `6a64e37`→`4b91218` for
-  v2.33.2 — verified via `git log`) has actually produced 2 commits: the squash-merge, then a follow-up
-  "finalize changelog/DEVLOG with the real hash" commit. Root cause: the changelog convention cites the
-  squash commit's own hash inline, but a commit can't contain its own hash, and `gh pr merge --squash`
-  merges straight to GitHub's remote — there's no local staging step to fold the two together. Harkirat's
-  ask (2026-07-25 16:20 EDT): keep doing the 2-commit pattern for now (don't change process ad hoc), but
-  give this to a dedicated Opus session with room to actually reason about a better design (e.g. dropping
-  the inline hash citation, a different finalize mechanism, or accepting/documenting the 2-commit reality)
-  rather than deciding it inline. See `project_git_workflow` memory for the same open question.
 - `[P1 · M · Opus5-H · 🧩needs-design]` **`.claude/rules/` two-tier rework (card + detail).** Added
   2026-07-24 23:02 EDT. The 13 rule files total **51.3k tokens — MORE than the 3,272-line CLAUDE.md
   monolith they replaced** (`accent-and-colors.md` alone is 11.9k). Path-scoping only pays off on narrow
@@ -166,7 +154,19 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   keeping: newest `package.json` == newest `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every
   changelog version has a tag and a summary line; every cited SHA resolves; no cross-file duplicate item
   titles without a `⇄` marker; `CLAUDE.md`'s memory-file count matches the store; `MEMORY.md` indexes
-  every memory file. **These are exactly the "checkable rule → make it a hook/CI job, not more prose"
+  every memory file.
+  **Extended 2026-07-27 21:27 EDT** by the lagged-backfill convention (see the resolved "1 commit + 1 tag"
+  item in `archive/resolved-list.md`) — three more machine-checkable invariants, and note the script should
+  **perform** the backfill, not merely flag it, since it is a mechanical additive edit:
+  1. every entry **except the newest** cites a SHA that resolves *and* equals the commit its tag points at
+     (the newest legitimately has no hash yet — exempt it, don't fail on it);
+  2. every entry from **v2.33.0** on cites a PR number (v2.26.0–v2.32.0 predate the PR workflow — hash-only
+     is correct there);
+  3. the tag's `package.json` version equals the entry's version (`git show vX.Y.Z:package.json`) — this is
+     what catches a tag landing on the wrong commit.
+  ⚠️ When mapping PRs, map by **merge-commit hash**, never by parsing squash subjects: a subject can carry
+  two `#N` refs (v2.35.11's real PR is the trailing `#28`) and PRs #1/#9/#10 carry none.
+  `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'` **These are exactly the "checkable rule → make it a hook/CI job, not more prose"
   case** from the `reference_enforcement_hooks` memory — prose already failed at two of them. Natural fit
   alongside the Vitest/Biome work below, since it needs the same `ci.yml` surface.
 - `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask).

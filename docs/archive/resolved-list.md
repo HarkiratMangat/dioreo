@@ -25,6 +25,35 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ~~`[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the
+  2-commit reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
+  §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow
+  launched (`904dec8`→`acc1d8d` for v2.33.0, `8c44f97`→`e5c93d8` for v2.33.1, `6a64e37`→`4b91218` for
+  v2.33.2 — verified via `git log`) has actually produced 2 commits: the squash-merge, then a follow-up
+  "finalize changelog/DEVLOG with the real hash" commit. Root cause: the changelog convention cites the
+  squash commit's own hash inline, but a commit can't contain its own hash, and `gh pr merge --squash`
+  merges straight to GitHub's remote — there's no local staging step to fold the two together. Harkirat's
+  ask (2026-07-25 16:20 EDT): keep doing the 2-commit pattern for now (don't change process ad hoc), but
+  give this to a dedicated Opus session with room to actually reason about a better design (e.g. dropping
+  the inline hash citation, a different finalize mechanism, or accepting/documenting the 2-commit reality)
+  rather than deciding it inline.~~
+  → **RESOLVED 2026-07-27 21:27 EDT, shipped as v2.36.0.** The dedicated session happened. Two findings
+  reframed it: it was never "spec vs. reality" but **one self-contradictory clause inside the spec** (§3
+  already described a working 1-commit design; only §5's *"finalized at merge — real number +
+  squash-commit hash + tag"* blocked it), and the existing tags were verified to be on the **correct**
+  commit (`v2.35.15`→`a5563df` has `package.json` `2.35.15`; its parent squash has `2.35.14`), so "tag
+  the squash commit" could only be restored *together with* moving the bump onto the branch.
+  **Chosen design — lagged-backfill citation:** the entry cites `(#PR)` at branch time and the hash is
+  inserted **one release later**, on the next release's branch, where it rides into that release's own
+  squash commit. The hash therefore never costs a commit of its own, and the `chore(release): finalize …`
+  commit is retired. The backfill is additive-only, never an `--amend`, never a force-push.
+  Rejected (recorded in spec §10 so they aren't re-proposed): local `merge --squash` + `--amend` (circular
+  — amending changes the hash again), a `(pending)` placeholder amended on `main` (needs a force-push —
+  what caused the 2026-07-27 VM divergence), `git notes` (invisible, not pushed by default), dropping the
+  citation (loses the only pointer `v3-pre-release` has, since it has no tags until `v3.0.0`), and
+  accepting the 2-commit reality (retires a promise for a solvable problem).
+  Full story: spec §3/§5/§10, `docs/README.md` step 8, memory `project_git_workflow`, DEVLOG v2.36.0.
+
 - ~~[Diors Builds] Delete the suspended Render service~~ → **DONE 2026-07-27 20:20 EDT.** REST `DELETE`
   on `srv-d850b2og4nts73fhpfog` returned `204`; a follow-up `GET` returned `404 not found`, so it is
   confirmed gone rather than assumed. The P0 trigger ("~2026-07-24, once the GCP VM has proven reliable
