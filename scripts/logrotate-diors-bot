@@ -1,0 +1,25 @@
+# logrotate config for the bot's structured JSON log sink.
+# Install on the VM at /etc/logrotate.d/diors-bot (root-owned, mode 644).
+#
+# Added 2026-07-28 15:34 EDT with the Cloud Logging overhaul. The sink is a plain append-only file, so
+# without rotation it grows forever. Volume is genuinely small (the bot emits ~56 lines/day, and the
+# whole journal was 35.7MB after 11 days), so this is about never having to think about it again
+# rather than about reclaiming meaningful disk.
+#
+# `copytruncate` is deliberate: the bot holds an open write stream to this file and does NOT reopen on
+# SIGHUP. A plain rename would leave it writing into the rotated-away inode forever — logs would just
+# stop appearing, silently, which is the worst possible failure mode for the thing we built to make
+# failures visible. copytruncate costs a brief copy and a tiny window where a line can be lost; that
+# is the right trade here.
+
+/home/harkirat/diors-builds/logs/app.log {
+    daily
+    rotate 14
+    maxsize 50M
+    copytruncate
+    compress
+    delaycompress
+    missingok
+    notifempty
+    su harkirat harkirat
+}
