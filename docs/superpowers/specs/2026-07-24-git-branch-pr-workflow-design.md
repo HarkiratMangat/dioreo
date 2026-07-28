@@ -177,7 +177,11 @@ Docs stop being a separate "at push time" ritual (the step that kept getting ski
   deliberate-vs-crash restart-reason labeling. Deploy stays a separable step; a merged version may sit
   undeployed indefinitely (docs-only being the obvious case) and that's fine.
 - **`main` version vs deployed version can now diverge** — answered by §4 (`package.json` + boot
-  alert). *Optional* extra: have `deploy.sh`/`vmstatus.sh` print `VM at <sha> · main at vX.Y.Z`. Add
+  alert). *Optional* extra: have `deploy.sh`/`vmstatus.sh` print `VM at <sha> · main at vX.Y.Z`.
+  ✅ **BUILT 2026-07-28 15:34 EDT (v2.41.0)** — this is the `vmstatus.sh` **DEPLOY** block. It compares the
+  VM's running version/commit against `origin/main` and flags the gap. On its first real run it found the
+  VM **18 commits / 5 releases behind**, which is precisely the "merged ≠ deployed" blind spot this
+  optional extra was proposed to close. Add
   only if wanted.
 
 ## 7 · Commit-message handling under squash

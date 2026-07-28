@@ -69,6 +69,26 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- `[P0 · XS · read before resuming]` **⚠️ CROSS-SESSION NOTICE — a parallel session was mid-flight on
+  hooks + the DEVLOG backfill when v2.41.0 landed. Read this before continuing that work.** Written
+  2026-07-28 16:45 EDT. A second Claude Code session (paused on a usage limit) was working on: improving
+  the turn-budget hook, edits to other hooks, and **backfilling `docs/DEVLOG.md`**. Meanwhile this session
+  merged **v2.41.0 (#47)** and **v2.41.1 (#48)**, which touched overlapping ground. What changed under it:
+  - **`.claude/settings.json` gained a PreToolUse/Bash hook** (`stale-reference-sweep`), and there is now
+    a **new `.claude/hooks/` directory** — the first tracked hook *script* in this repo; every prior hook
+    is an inline command string. If that session also edited `settings.json`, **merge, don't overwrite** —
+    check `git log -- .claude/settings.json` before assuming your copy is current.
+  - **⚠️ `docs/DEVLOG.md` is the likely conflict.** A new entry was appended ("The error counter that could
+    never have been right"), and the **table of contents was rebuilt — it had drifted 15 entries behind
+    the body**, so TOC lines for every 2026-07-27 and 2026-07-28 entry were added at once. A backfill
+    branch cut before that will conflict in the TOC block. Take *both* sides; the TOC is additive.
+  - **New runtime file `utils/logger.js`, and `index.js` now patches `console` at the top** (before the
+    crash handlers, deliberately — see `.claude/rules/interaction-router.md`). Any hook or doc that
+    assumes `console.error` is Node's is out of date.
+  - **Memory files edited:** `reference_vm_bot_commands` (rewritten; it had been documenting the retired
+    direct-push deploy flow), `project_deployment_migration_render_to_gcp`, `MEMORY.md`,
+    `reference_enforcement_hooks`.
+  Remove this entry once that session has resumed and reconciled.
 - `[P1 · XS · Harkirat action, not a build]` **Finish the GitHub Projects roadmap board's view setup.**
   Added 2026-07-26 12:12 EDT. The board (https://github.com/users/HarkiratMangat/projects/2) has all 15
   items and every custom field (`Status`/`Priority`/`Effort`/`Model suggestion`/`Flags`) populated via the
