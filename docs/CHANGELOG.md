@@ -227,6 +227,21 @@ changelog until v3 actually launches.
 - **The lesson: grep finds phrasings, not claims** — and a store that has been the canonical one for
   weeks is referenced from places that never name it. Searching by *concept*, and searching *outside*
   the repo, is what actually closed this out.
+- **Unrelated defects the sweeps kept surfacing, all fixed here.** Sweeping for one thing is a good way
+  to find everything else: `known-issues.md` warned that `ffmpeg` was "not guaranteed on Render/Railway's
+  production containers" (both hosts retired; the VM has it installed) and pointed at "the roadmap item
+  below" in a file that ends there; `deployment-and-ops.md`'s `HISTORICAL` marker named only Render, so
+  the Railway paragraphs after it read as live operating instructions for a dead host; and **`.env` still
+  carried `RENDER_API_KEY` and `RAILWAY_TOKEN`** for services deleted 2026-07-27 and abandoned
+  2026-07-17, read by no code. Harkirat commented all three (plus `PORT`, verified unused — no HTTP
+  server or web framework exists here) out the same session; **revocation at the providers is still
+  open, because commenting out a key does not invalidate it.**
+- **What could NOT be finished is recorded, not assumed.** Three surfaces were swept for memory
+  references (all clean, including **zero** in any `.js`/`.sh`) but never read for content accuracy:
+  **code context comments, the `.claude/rules/` bodies, and the archive/CHANGELOG/DEVLOG prose.** Those,
+  plus the `local/` folder cleanup, are folded into the standing line-by-line audit item in
+  `docs/db-deferred-list.md` — with an explicit "already done, don't redo" list so the audit starts where
+  this session stopped instead of repeating five passes of work.
 - ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
   that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
 - **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.**

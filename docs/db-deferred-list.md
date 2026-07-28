@@ -56,16 +56,22 @@ scratchpad for 2 days.*
 v2.20.0 — see `docs/archive/resolved-list.md`.
 
 **🔑 One security-hygiene item (not a bot bug, so it sits here rather than as a 🐞):**
-- `[P2 · XS · Harkirat action — revocation can't be done from a session]` **Revoke and remove the two
-  dead host credentials still in `.env`.** *Found 2026-07-28 01:41 EDT during a docs audit, unrelated to
-  what was being swept.* `.env` still carries **`RENDER_API_KEY`** and **`RAILWAY_TOKEN`**, but Render's
-  service was **deleted 2026-07-27 20:20 EDT** and Railway was **abandoned 2026-07-17**; the GCP VM is
-  the only host. **No code reads either variable** (verified: no `.js`/`.sh` reference). They are
-  therefore pure standing exposure — note an API key usually authenticates against the whole *account*,
-  not just the deleted service, so it may still be able to create or manage resources and bill them.
-  **Steps (yours, not a session's — a session must never handle credential values):** revoke the Render
-  API key in Render's dashboard and the Railway token in Railway's, *then* delete both lines from `.env`.
-  Nothing will break. `.env` stays gitignored throughout — the keys were never committed.
+- `[P2 · XS · Harkirat action — revocation cannot be done from a session]` **Revoke the two dead host
+  credentials now commented out in `.env`.** *Found 2026-07-28 01:41 EDT during a docs audit, unrelated
+  to what was being swept.* Render's service was **deleted 2026-07-27 20:20 EDT** and Railway
+  **abandoned 2026-07-17**; the GCP VM is the only host, and **no code reads either variable** (verified:
+  zero `.js`/`.sh`/`.yml` references).
+  **✅ Done by Harkirat same session:** `RENDER_API_KEY`, `RAILWAY_TOKEN`, and `PORT` commented out in
+  `.env` rather than deleted, to keep them recoverable. `PORT` was separately verified safe — nothing
+  reads `process.env.PORT`, there is no HTTP server and no web framework in the dependency tree; it was
+  a Render/Railway artifact (those platforms require a bound port for web services).
+  **⚠️ STILL OPEN — commenting out is NOT revoking.** The secret values remain in plaintext in the file
+  and, more importantly, **remain valid at the providers**. An API key generally authenticates against
+  the whole *account*, not the one deleted service, so it can still create, manage, and bill resources.
+  Anyone holding the string can use it regardless of a `#`. The value also entered a session transcript
+  when the file was read during the audit. **Do this in the provider dashboards:** revoke the Render API
+  key and the Railway token; only then are the commented lines harmless. `.env` is gitignored and these
+  were never committed, so there is no git-history exposure to clean up.
 
 *Not bot bugs, so they live in `meta-deferred-list.md` instead: the MarkEdit-extension cluster
 (Return-key blank line, confirm-mark space glitch). They're editor tooling outside every repo, even
@@ -166,6 +172,48 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   wrong at least 3 times) · rules stated as prose that should be hooks · and anything else worth flagging
   that isn't listed here.
   **Then restructure/reorganize/reword** where the file has outgrown its shape.
+
+  ---
+  **📌 FOLDED IN 2026-07-28 01:41 EDT — from the memory-migration session's five audit passes.**
+  That session swept for one thing (memory-path references) and kept finding unrelated defects, so what
+  it could NOT finish is recorded here instead of being lost. **Read this before starting: it tells you
+  what is already done, so you don't redo it, and what is genuinely untouched.**
+
+  **✅ ALREADY DONE — do not repeat (verified, with evidence, that session):**
+  - **Memory/slug pointers are CLEAN everywhere.** Every surface below was swept for the old slug, for
+    memory-store pointers, and for the retired "fixed store is move-proof" rule: repo docs, `CLAUDE.md`,
+    `.claude/rules/`, `docs/` incl. `archive/` + `superpowers/`, **all `*.js`/`*.sh` code (zero hits)**,
+    `.claude/settings.local.json`, `~/.claude` (skills/hooks/agents/commands/plans), `.remember`, the
+    Gif + shared-root memory stores, `dior-cli`, both cross-project docs, and the MCP stores
+    (perseus-vault, linksee, codebase-memory). Remaining old-slug mentions are **historical
+    changelog/DEVLOG entries, deliberately preserved**. **This dimension does not need re-auditing.**
+  - Store integrity (index ↔ disk, frontmatter, `[[wikilinks]]`) for all three memory stores.
+  - Every `.claude/rules/` `paths:` glob verified to match real files (a dead glob = a rule that silently
+    never loads).
+  - Tag ↔ `package.json` correctness for the newest 25 tags; all cited CHANGELOG SHAs resolve.
+  - Both `SessionStart` hooks dry-run after their parsed files were edited.
+
+  **❌ NOT DONE — the real remaining scope, in priority order:**
+  1. **Code context comments — ZERO coverage.** `index.js` (~3.3k lines) and every `commands/`,
+     `utils/`, `models/`, `scripts/` file were **never read** for comment accuracy. This repo
+     deliberately carries "why" comments next to fixed bugs and platform workarounds, so a comment that
+     outlived its code is exactly the silent rot this audit exists for. **Highest-value target.**
+  2. **`.claude/rules/*.md` bodies** — structure verified, **content never read** (~51k tokens across
+     13 files).
+  3. **`docs/archive/`, and the CHANGELOG/DEVLOG bodies** — only headers, versions, and SHAs were
+     checked; the prose was never read.
+  4. **Folder cleanup (Harkirat's ask).** `local/` holds ageing artifacts: `crash report.txt`,
+     `session-report-*.html` (364K), `claude-code-receipts-*` (both formats), `sessionhandoff*.md`,
+     the now-complete `memory-migration-handoff.md`, and `Screenshots/` (~13M, the bulk). **`local/` is
+     Harkirat's personal scratch folder — never delete from it unprompted; propose a list and let him
+     choose.** Also sweep `/Applications/Claude Code/local/`, `docs/archive/`, and
+     `local/claude md backup/` (a full stale `.claude` snapshot, now carrying a `_README` marker).
+  5. **A general defect class worth a dedicated pass:** *present-tense claims that duplicate
+     machine-checkable state.* Four were found already wrong by 37–59% (see
+     `feedback_no_duplicated_state_in_prose` memory). Also **retired-infrastructure guidance written in
+     the present tense** — Render/Railway instructions read as live until corrected, and dead
+     credentials for both sat in `.env`. Hunt both patterns deliberately; grep for the *idea*, not a
+     string.
   **Why P1/L:** the same week produced three separate instances of exactly this failure — a self-
   contradictory clause inside one spec that had propagated into five files (v2.36.0), a source-of-truth
   memory still teaching a retired convention while the repo docs were correct (v2.36.3), and a rule

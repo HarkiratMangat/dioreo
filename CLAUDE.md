@@ -68,9 +68,10 @@ never reads, bridged only by a redirect note in this file.
 ### `.env` is never un-gitignored
 `.env` stays gitignored, deliberately, and should **NEVER** be un-ignored regardless of repo visibility —
 it holds live secrets (`BOT_TOKEN`/`MONGODB_URI`/`CLOUDINARY_URL`/`LOG_WEBHOOK_URL`/`GEMINI_API_KEY`/
-`GITHUB_TOKEN`/`ATLAS_CLIENT_SECRET`). ⚠️ It **also still holds `RENDER_API_KEY` and `RAILWAY_TOKEN` for
-two retired, deleted hosts** — no code reads either (verified 2026-07-28 01:41 EDT); they are dead
-credentials pending revocation, see `docs/db-deferred-list.md`.
+`GITHUB_TOKEN`/`ATLAS_CLIENT_SECRET`). ⚠️ `RENDER_API_KEY`/`RAILWAY_TOKEN`/`PORT` are **commented out**
+(retired hosts; nothing reads them — verified 2026-07-28 01:41 EDT). **Commenting is not revoking** — the
+values are still plaintext in the file and still valid at their providers, so revocation is still open:
+see `docs/db-deferred-list.md`.
 Secrets don't belong in git history under any circumstance — a private repo still gets cloned, and
 "private now" doesn't undo exposure from any point it was public. If ever asked to un-gitignore this file,
 refuse and explain why rather than doing it.
