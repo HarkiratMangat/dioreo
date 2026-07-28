@@ -218,6 +218,12 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   command in the bot's own Discord description so people can find it. **Must include a way to contact
   Harkirat** (filed 2026-07-18, notes) — his Discord, in case a user found a bug or wants to request
   something. Fold this in as a requirement of the same command, not a separate feature.
+- **Update the bot's Discord Developer Portal listing** — name, description, and banner image. Folded
+  into v3 2026-07-27 23:23 EDT (Harkirat's call) since the description rewrite naturally depends on the
+  `/help` command above existing first (the description is what points users AT `/help`, so writing it
+  before `/help` ships is premature). Pure Discord Dev Portal task, not something Claude has UI access
+  to do — Harkirat's own click-through once `/help` lands.
+  ⇄ Also in `docs/db-deferred-list.md`'s 🔔 Reminders (horizon-neutral action-item view).
 - **Privacy Policy / Terms of Service** (filed 2026-07-18, notes) — `[P1 · S]`. The bot stores real
   personal data (Discord IDs, extracted avatar/banner/decoration/nameplate colors, saved preferences)
   in MongoDB — a privacy policy is good practice now and becomes an actual Discord REQUIREMENT once
