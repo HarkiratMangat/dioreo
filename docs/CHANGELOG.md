@@ -181,7 +181,41 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.39.2 — 2026-07-28 14:00 EDT (#45) — The DEVLOG entry v2.39.1 should have shipped with
+## v2.40.0 — 2026-07-28 14:15 EDT (#46) — The DEVLOG is now enforced like the changelog
+**Config/docs only — no bot runtime change, not deployed.**
+- **Measured the problem instead of apologising for it.** Across the last 22 releases: `CHANGELOG.md`
+  **22/22**, `CHANGELOG-SUMMARY.md` **22/22**, `DEVLOG.md` **8/22 (36%)**. The 14 misses were not
+  trivial releases — they include *"Designed the v3 development structure"*, *"Stopped the dev bot from
+  writing to the LIVE Cloudinary account"*, and *"A scripted records sweep, and the chore checklist that
+  was wrong."*
+- **Root cause: asymmetric enforcement.** The changelog has had a `PostToolUse` hook on `gh pr merge`
+  since 2026-07-24; the DEVLOG had a line in a checklist. Machine-checked sits at 100%, attention-
+  dependent sits at 36% — the same result as the `grep`-vs-`rg` 788:4 measurement, in a different form.
+- **New `PostToolUse` hook:** on `gh pr merge`, if the resulting `main` touched `docs/CHANGELOG.md` but
+  NOT `docs/DEVLOG.md`, it says so and requires the skip to be stated out loud. Verified both
+  directions against real commits — fires on v2.39.1 (a genuine historical miss), silent on v2.39.2
+  (compliant) and on non-merge commands.
+- **The checklist default is inverted.** Item 5 read "a narrative entry *if* the work had real
+  reasoning/discovery" — a subjective test evaluated exactly when you are trying to finish, which
+  resolves to "no". It now reads: write it by default; skip only for purely mechanical changes, and
+  **say so if you skip**.
+- **Also recorded: a partial check that feels total is worse than no check.** The changelog hook passing
+  read as "docs handled" while the DEVLOG sat untouched.
+- **This is the first change to the enforcement layer since v2.39.0 made it trackable** — so it rides in
+  the PR instead of living in one gitignored file on one machine.
+- **Then audited the WHOLE documentation phase, not just the DEVLOG** (Harkirat's follow-up: *"when I
+  say the full merge flow, it's supposed to check both changelogs, dev log, my notes file, CLAUDE, any
+  other memory files, any references"*). Found **three more unenforced items** and added a consolidated
+  `RELEASE DOC CHECK`: (3) `CHANGELOG-SUMMARY.md` — 22/22 by habit with **nothing** enforcing it;
+  (1) the `package.json` bump; (8.2) the previous entry's hash backfill (historically 100% compliant, so
+  preventative); plus a nudge for (4) when code under `commands|utils|models|scripts` changes with no
+  `CLAUDE.md`/`.claude/rules/*.md` note. Verified in four directions: fires listing every missing item,
+  silent on a compliant release, silent on a non-release merge, silent on a non-merge command.
+- **The hook names what it CANNOT check** — (6) memory updates and (7) the notes file are judgment calls
+  outside its reach, so it says so in the message rather than implying full coverage. Applying the
+  lesson from the failure it was written for.
+
+## v2.39.2 — 2026-07-28 14:00 EDT (#45 · `209472f`) — The DEVLOG entry v2.39.1 should have shipped with
 **Docs only — no bot runtime change, not deployed.**
 - **Backfills the missing DEVLOG narrative for v2.39.1.** The chore checklist asks for one where the
   work had real reasoning, and it did. This is the checklist step nothing mechanically enforces, which

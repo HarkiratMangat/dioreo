@@ -59,6 +59,13 @@ kind of content lives and who's responsible for keeping it current.
 - **`ROADMAP.md` / `db-deferred-list.md` are the record; the [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) is a view.** ⚠️ **The board's 15 draft items were sourced 2026-07-25 21:35 EDT, minutes before the 21:43 EDT deferred-list restructure** — so its items predate the rename, the bugs/reminders moving in-repo, and the resolved items moving to `archive/`. Re-sync it manually before trusting it. The board (Status/Priority/Effort/Model/Flags fields) exists for an at-a-glance visual snapshot — a Status kanban + a Priority table. It is refreshed manually and periodically from the docs, never the other way around: if the board and the docs ever disagree, the docs win. Don't let it silently drift into a second source of truth the way the notes-file/CLAUDE.md roadmap once did.
 
 ## Responsibilities / chores checklist (per merge — moved from per-push 2026-07-24 12:24 EDT)
+
+**Which of these are machine-checked (audited 2026-07-28 14:30 EDT):** items **1, 2, 3, 5, 8.2,
+8.4, 8.5** now fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
+`commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6
+(memory)** and **7 (notes file)** are **NOT checkable** — memory lives outside the repo and "did the
+session handle this note" is a judgment call. They are named explicitly in the hook message, because
+a partial check that feels total is how DEVLOG coverage sat at 8/22 while the changelog hook passed.
 Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
 code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.
@@ -69,7 +76,12 @@ code) and finalized on the branch in the final pre-merge checkpoint:
 4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change
    affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md).
    Keep the root nav-map table current if you add/remove a rule file.
-5. `DEVLOG.md`: a narrative entry if the work had real reasoning/discovery.
+5. `DEVLOG.md`: **a narrative entry by DEFAULT.** Skip it only when the change is purely mechanical
+   (a typo, a version bump, a lockfile) — and if you skip it, **say so and say why**. This used to read
+   "if the work had real reasoning/discovery," and that conditional is exactly why DEVLOG coverage was
+   **8/22 releases (36%)** while the hook-checked CHANGELOG and its summary were 22/22 (measured
+   2026-07-28 14:15 EDT). A judgment call made at the moment you are trying to finish defaults to "no."
+   Now hook-checked at `gh pr merge` like the changelog.
 6. Memory: update any rule the session established or corrected.
 7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**. Sweeps go to `archive/graveyard.md`, not to a section inside the notes file.
 8. **One commit + one tag per release — the 4-step lifecycle** (adopted 2026-07-27 21:27 EDT):
