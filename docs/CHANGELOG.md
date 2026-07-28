@@ -181,7 +181,20 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.39.1 — 2026-07-28 13:45 EDT (#44) — Two stale claims the v2.39.0 sweep walked past
+## v2.39.2 — 2026-07-28 14:00 EDT (#45) — The DEVLOG entry v2.39.1 should have shipped with
+**Docs only — no bot runtime change, not deployed.**
+- **Backfills the missing DEVLOG narrative for v2.39.1.** The chore checklist asks for one where the
+  work had real reasoning, and it did. This is the checklist step nothing mechanically enforces, which
+  is exactly why it goes missing twice in one day — v2.38.3 closed the same gap for v2.38.1/.2.
+- **The lesson recorded:** the v2.39.0 sweep grepped for the phrasings it remembered writing rather
+  than for the *claim* that had gone stale, so it found the sentences already in mind and missed the
+  two that said the same thing differently. Plus the tell that generalises — **a sweep returning
+  nothing is not evidence of cleanliness until you have seen it return something**, doubly so when
+  `rg` skips hidden and gitignored paths by default.
+- Also recorded in the `feedback_no_half_measures_on_reorgs` memory, where the "finish the whole
+  rename" rule lives.
+
+## v2.39.1 — 2026-07-28 13:45 EDT (#44 · `5ab6242`) — Two stale claims the v2.39.0 sweep walked past
 **Docs only — no bot runtime change, not deployed.**
 - **`docs/README.md`'s chore checklist and the `project_git_workflow` memory still said the enforcement
   hooks were "gitignored, so local-only and not part of any PR."** False since v2.39.0 moved them to
