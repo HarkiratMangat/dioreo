@@ -316,12 +316,13 @@ squash-merge collapses a branch to one commit on `main`, and that squash commit 
 cited the squash commit's own hash inline and a commit cannot contain its own hash. Their tags are right
 where they are — the finalize commit is the one whose `package.json` reads the tagged version, so
 `git show vX.Y.Z:package.json` only answers correctly there.
-⚠️ **The other 9 (v2.33.0–v2.33.4, v2.35.0–v2.35.3) were tagged on the squash commit — and 6 of them are
-wrong as a result.** `git show vX.Y.Z:package.json` reports the *previous* version for **v2.33.3, v2.33.4,
-v2.35.0, v2.35.1, v2.35.2, v2.35.3** (e.g. `v2.35.3` → `2.35.2`), because the tag landed on a commit
-predating that release's bump. Verified 2026-07-27 21:27 EDT. Pre-existing and **not fixed here** — moving
-6 published tags is its own decision; tracked in `docs/db-deferred-list.md`. Don't trust
-`git show <tag>:package.json` for those 6. (`v2.30.0`–`v2.32.0` reporting `1.0.0` is *not* this bug —
+⚠️ **The other 9 (v2.33.0–v2.33.4, v2.35.0–v2.35.3) were originally tagged on the squash commit — 6 of
+them were wrong as a result, now fixed.** `git show vX.Y.Z:package.json` used to report the *previous*
+version for **v2.33.3, v2.33.4, v2.35.0, v2.35.1, v2.35.2, v2.35.3** (e.g. `v2.35.3` → `2.35.2`), because
+the tag landed on a commit predating that release's bump. **Fixed 2026-07-27 23:23 EDT** (Harkirat's
+call): all 6 force-moved via `git tag -f` + `git push --force origin <tag>` to their corresponding
+`finalize …` commit, verified to match before and after. Full record in
+`docs/archive/resolved-list.md`. (`v2.30.0`–`v2.32.0` reporting `1.0.0` is *not* this bug —
 `package.json` genuinely sat at the stale `1.0.0` until the workflow overhaul first bumped it.) **From v2.36.0 on the
 sentence above is literally true**: the `package.json` bump and the finalized changelog are written on the
 branch as the final pre-merge checkpoint (so they fold into the squash commit), the hash citation is

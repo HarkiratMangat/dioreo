@@ -25,6 +25,16 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ~~`[P2 · S · Sonnet5-M]` **Decide what to do about 6 tags whose `package.json` is one release stale.**~~
+  Resolved 2026-07-27 23:23 EDT (Claude, Harkirat's call: "go with option 1, I'd rather have that consistency
+  taken care of right now"). `v2.33.3`, `v2.33.4`, `v2.35.0`, `v2.35.1`, `v2.35.2`, `v2.35.3` force-moved
+  from their squash commit to their corresponding `chore(release)/docs: finalize …` commit via
+  `git tag -f` + `git push --force origin <tag>`. Verified before and after: each of the 6 finalize
+  commits' `package.json` exactly matched its tag version pre-move, and `git show vX.Y.Z:package.json`
+  now reports the correct version for all 6, same as every other tag. No redeploy needed (nothing at
+  runtime reads a tag's `package.json`) and no one else references these tags (solo repo). See
+  `docs/reference/deployment-and-ops.md` § Version tagging for the corrected tag list.
+
 - ~~`[P1 · S · Opus5-H · 🧩needs-design]` **Resolve the "1 commit + 1 tag per merge" promise vs. the
   2-commit reality.** Added 2026-07-25 16:20 EDT. `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
   §10 states "Squash merge; one commit + one tag per version on `main`," but every merge since the workflow

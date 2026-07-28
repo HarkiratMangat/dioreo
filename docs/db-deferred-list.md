@@ -173,17 +173,6 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're
   placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
   subsystem detail: `.claude/rules/manage-panel.md`.
-- `[P2 · S · Sonnet5-M]` **Decide what to do about 6 tags whose `package.json` is one release stale.**
-  Found 2026-07-27 21:27 EDT by running the new invariant-3 check (tag's `package.json` == entry's
-  version) while shipping the lagged-backfill convention. **`v2.33.3`, `v2.33.4`, `v2.35.0`, `v2.35.1`,
-  `v2.35.2`, `v2.35.3`** were tagged on their squash commit, which predates that release's version bump —
-  so `git show v2.35.3:package.json` answers `2.35.2`. Pre-existing, harmless at runtime (nothing reads a
-  tag's `package.json`), but it makes the tag a liar for anyone auditing which version a tag marks.
-  Options: move the 6 tags to the corresponding finalize commit (published tags — needs
-  `git tag -f` + `git push --force origin <tag>`, so it's a deliberate call, not a cleanup), or leave them
-  and rely on the documented exception. **Not fixed while shipping v2.36.0** — moving published tags
-  wasn't in scope and shouldn't ride in unasked. Documented meanwhile in
-  `docs/reference/deployment-and-ops.md` § Version tagging.
 - `[P2 · S · Sonnet5-M · 🔗bundle-with the CI expansion above]` **Make the records-consistency sweep a
   script (and then a CI job).** Filed 2026-07-27 20:40 EDT. A one-off script run this session caught two
   real defects that reading had missed: 7 items duplicated across `ROADMAP.md` and `db-deferred-list.md`
@@ -271,16 +260,19 @@ well-specified execution/polish, not novel design.*
   Do this when a v3 feature actually needs dev-side image writes, not preemptively. Alternative worth
   pricing at the same time: a separate free Cloudinary account for `.env.dev`, which is cleaner but makes
   every existing loadout render broken in dev (their URLs live in Mongo pointing at prod).
-- `[P1 · XS · Harkirat action, not a build]` **Revoke the now-dead `RENDER_API_KEY`.** Filed
-  2026-07-27 20:20 EDT. With Render service `srv-d850b2og4nts73fhpfog` deleted, this key authenticates
-  against an account with no services left — it grants nothing useful and is one more live secret sitting
-  in prod's `.env` and on the VM for no reason. Revoke it in Render's dashboard (Account Settings → API
-  Keys), then drop the line from `.env` locally and on the VM. Not urgent, but a credential with zero
-  remaining purpose is pure downside. *(Related: `RAILWAY_TOKEN` is likely in the same position —
-  Railway was abandoned before Render was; worth checking in the same pass.)*
-- `[P1 · XS · Harkirat action, not a build]` **Update the bot's Discord Developer Portal listing** (filed
-  2026-07-18, notes) — description, name, and banner image. Pure Discord Dev Portal task, not something
-  Claude can do (no tool access to that UI); flagging so it doesn't get lost.
+- `[P3 · XS · Harkirat action, not a build]` **Revoke the now-dead `RENDER_API_KEY`** (and `RAILWAY_TOKEN`,
+  confirmed same dead-credential status). Filed 2026-07-27 20:20 EDT, downgraded P1→P3 2026-07-27 23:23 EDT
+  (Harkirat: "not concerned about the render/railway keys"). Confirmed 2026-07-27 23:23 EDT: **zero code
+  references** to either var anywhere in `commands/`, `utils/`, `models/`, or `index.js` — only `.env`
+  itself and historical docs mention them, so revoking carries no code risk whenever it happens. Revoke
+  in each dashboard (Render: Account Settings → API Keys; Railway: Account Settings → Tokens), then drop
+  both lines from `.env` locally and on the VM. No longer time-sensitive.
+- `[P3 · XS · Harkirat action, not a build · ⛓️blocked-by:/help command]` **Update the bot's Discord
+  Developer Portal listing** (filed 2026-07-18, notes) — description, name, and banner image. Folded
+  into v3 2026-07-27 23:23 EDT (Harkirat's call) — downgraded from a standalone P1 since the description
+  rewrite depends on `/help` shipping first. Pure Discord Dev Portal task, not something Claude has UI
+  access to do.
+  ⇄ Also on `docs/ROADMAP.md`'s v3 list (canonical scope/dependency detail).
 - `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable**
   *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries
   `Dior <diorswrld@discord.com>`, which is not a verified address on the GitHub account, so GitHub renders
