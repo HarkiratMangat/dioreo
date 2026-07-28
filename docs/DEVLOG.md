@@ -2554,3 +2554,40 @@ sweep for a claim that lives in `.claude/` can come back empty and *look* like s
 completeness trap that produced the new `--hidden`/`--no-ignore` guard in the usage-guard hook earlier
 in the same session. Two different failures, one root cause: trusting a search whose blind spots you
 have not checked.
+
+## 2026-07-28 14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed
+
+Harkirat caught the DEVLOG missing an entry for the third time in one day and asked for the cause, not
+another apology. The measurement settles it. Across the last 22 releases: **`CHANGELOG.md` 22/22,
+`CHANGELOG-SUMMARY.md` 22/22, `DEVLOG.md` 8/22 — 36%.**
+
+The obvious defence would be that the missed releases did not warrant a narrative. The record says
+otherwise: the 14 misses include **"Designed the v3 development structure,"** **"Stopped the dev bot
+from writing to the LIVE Cloudinary account,"** and — with a symmetry too neat to invent — **"A
+scripted records sweep, and the chore checklist that was wrong."** A release about the chore checklist
+being wrong skipped a chore-checklist item. These were not judged and declined; the judgment never
+happened.
+
+**Three causes, and the first one explains the other two.**
+
+*Asymmetric enforcement.* The changelog has had a `PostToolUse` hook on `gh pr merge` since
+2026-07-24 that flags a merge which did not touch it. The DEVLOG had a line in a checklist. One is
+machine-checked and sits at 100%; the other is attention-dependent and sits at 36%. That is the same
+788-to-4 `grep`-versus-`rg` result from the token investigation, in a different costume: **prose rules
+do not survive contact with a session that is trying to finish.**
+
+*The rule was phrased as a conditional.* Checklist item 5 read "a narrative entry **if** the work had
+real reasoning/discovery" — while items 1 through 4 were unconditional. A subjective test, evaluated
+at the exact moment you want to be done, resolves to "not this one" almost every time. The fix is to
+invert the default: write it unless the change is purely mechanical, and if you skip it, say so out
+loud. A skip that has to be *spoken* is a decision; a skip that happens in silence is an omission.
+
+*A false completion signal.* This is the subtle one. The changelog hook fires on every merge and is
+satisfied by the changelog alone, so "the docs hook ran and passed" reads as *the docs are handled* —
+while the DEVLOG sits untouched. A partial check that feels like a total check is worse than no check,
+because it actively suppresses the doubt that would have caught the gap. Worth remembering the next
+time a guard is written to cover "most of" something.
+
+**The fix rides in this PR rather than sitting on one machine** — which is the whole point of v2.39.0
+tracking `.claude/settings.json` a few hours earlier. The first change to the enforcement layer since
+it became recoverable is one that would previously have existed only in a gitignored file.

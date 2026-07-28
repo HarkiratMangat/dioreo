@@ -69,7 +69,12 @@ code) and finalized on the branch in the final pre-merge checkpoint:
 4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change
    affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md).
    Keep the root nav-map table current if you add/remove a rule file.
-5. `DEVLOG.md`: a narrative entry if the work had real reasoning/discovery.
+5. `DEVLOG.md`: **a narrative entry by DEFAULT.** Skip it only when the change is purely mechanical
+   (a typo, a version bump, a lockfile) — and if you skip it, **say so and say why**. This used to read
+   "if the work had real reasoning/discovery," and that conditional is exactly why DEVLOG coverage was
+   **8/22 releases (36%)** while the hook-checked CHANGELOG and its summary were 22/22 (measured
+   2026-07-28 14:15 EDT). A judgment call made at the moment you are trying to finish defaults to "no."
+   Now hook-checked at `gh pr merge` like the changelog.
 6. Memory: update any rule the session established or corrected.
 7. `diors-builds notes.md`: mark/file/sweep anything the session handled — **in-file, same session**. Sweeps go to `archive/graveyard.md`, not to a section inside the notes file.
 8. **One commit + one tag per release — the 4-step lifecycle** (adopted 2026-07-27 21:27 EDT):

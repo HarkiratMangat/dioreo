@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.40.0 — July 28, 2026
+- *Internal only — Dior's project notes now get written up automatically-checked, so the behind-the-scenes record stops falling behind. Nothing players see.*
+
 ## v2.39.2 — July 28, 2026
 - *Internal only — wrote up the behind-the-scenes notes for the previous update. Nothing players see.*
 
