@@ -90,7 +90,9 @@ New session on Dior's Builds. Before anything else:
        explicit ask. Each merged PR collapses to ONE commit on `main` = one version = one tag.
      - **Deploy** = making a merged commit go live on the VM: `./scripts/deploy.sh` (or the raw
        `gcloud compute ssh diors-builds-bot --zone=us-east1-b --command="cd ~/diors-builds && ./scripts/deploy.sh"`)
-       → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, errors ~0; `🔌 Shard 0
+       → verify `scripts/vmstatus.sh` (gateway line green, restarts sane, DEPLOY block showing
+       up-to-date, errors ~0 — but read the ERRORS block's `NOT LIVE` banner if present, since a zero
+       there can mean "no source" rather than "no errors"; `🔌 Shard 0
        ready`/handleBotReady are the real "connected" proof, not just "process up") → confirm exactly
        ONE instance is running **on the PROD token** (the VM is it — stop any local run that uses prod's
        `.env`). ⚠️ Corrected 2026-07-26 13:45 EDT: this rule is **per-token**, not per-machine. The local

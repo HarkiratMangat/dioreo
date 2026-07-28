@@ -222,6 +222,20 @@ config install — see `docs/reference/deployment-and-ops.md`.**
   `SystemMaxUse=200M` so the assumed 30-day window is enforced rather than incidental.
 - **Found while verifying: the VM was 18 commits / 5 releases behind** (running v2.35.13, `771ea76`,
   against `main` at v2.40.0). Merged never meant deployed. The DEPLOY panel now flags drift every run.
+- **Fixed a pre-existing break the rewrite would have made much worse.** `scripts/deploy.sh` runs
+  `vmstatus.sh` **on the VM** as its post-restart check, and that path had been quietly half-broken since
+  2026-07-18 (the outward-facing `instances describe` needs the Mac's auth context and just reported
+  "could not reach VM"). The SSH-based rewrite would have escalated that to the VM trying to SSH into
+  itself. The script now detects its own host: on the VM it reads locally and skips Cloud Logging — the
+  instance service account can write logs but not read them back, so those calls would have cost ~40s per
+  deploy for empty counters. Verified by piping the script to the VM and running it there.
+- **Cross-reference sweep.** `.claude/rules/scripts-and-migrations.md` (both run-locations + the bash 3.2
+  constraint), `.claude/rules/interaction-router.md` (`console` is patched in `index.js` — don't move the
+  require, don't split it into per-call-site imports), `docs/SESSION-START.md` (a `NOT LIVE` zero isn't a
+  clean bill of health), `docs/ROADMAP.md`'s `/status` item (easier now, but the bot itself can't read
+  Cloud Logging — decide that before scoping it), and the `reference_vm_bot_commands` memory, which was
+  **still documenting the retired direct-push deploy flow and "one version per PUSH"** four days after the
+  branch/PR workflow replaced it.
 - Bash 3.2 target documented in-file — the first draft used `declare -A`, which `bash -n` accepts and
   the stock macOS shell rejects at runtime.
 - Design + every measurement: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`.

@@ -32,6 +32,17 @@ FETCH_CAP=2000                 # upper bound on lines pulled per query; the bot 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 command -v gcloud >/dev/null 2>&1 || export PATH="/opt/homebrew/bin:$PATH"
 
+# ── Mac vs VM ────────────────────────────────────────────────────────────────
+# This script is normally run FROM THE MAC and reaches the VM over SSH. But `scripts/deploy.sh` runs it
+# ON the VM as its final post-restart check — which had been quietly half-broken since 2026-07-18 (the
+# outward-facing `gcloud compute instances describe` needs the Mac's auth context and just reported
+# "could not reach VM"), and the SSH-based rewrite would have made it far worse by trying to SSH into
+# the VM from inside itself. Detect where we are and read everything locally when we're already there.
+ON_VM=0
+[ "$(hostname -s 2>/dev/null)" = "$VM" ] && ON_VM=1
+HAVE_GCLOUD=0
+command -v gcloud >/dev/null 2>&1 && HAVE_GCLOUD=1
+
 # ── ERROR ACCOUNTING (read this before "fixing" the counter) ─────────────────────────────────────
 # The old script grepped every log line's TEXT for /error|10062|unhandled|disconnect|reconnecting/.
 # That counted routine `🔌 Shard 0 reconnecting...` gateway churn as errors — the long-standing
@@ -103,7 +114,12 @@ human_secs() {
 # old script paid it twice. Results are KEY=VALUE lines held in $PROBE; get() reads them.
 # (bash 3.2 has no associative arrays — see the header warning.)
 probe_vm() {
-  gcloud compute ssh "$VM" --zone="$ZONE" --quiet --command='bash -s' 2>/dev/null <<REMOTE
+  # On the VM, feed the same script to a local shell instead of an SSH one. Identical body either way —
+  # duplicating it into a "local version" is how the two drift apart and one silently stops being tested.
+  if [ "$ON_VM" -eq 1 ]; then probe_runner() { bash -s; }; else
+    probe_runner() { gcloud compute ssh "$VM" --zone="$ZONE" --quiet --command='bash -s' 2>/dev/null; }
+  fi
+  probe_runner <<REMOTE
 U="$UNIT"
 echo "ACTIVE=\$(systemctl is-active \$U 2>/dev/null)"
 echo "RESTARTS=\$(systemctl show \$U -p NRestarts --value 2>/dev/null)"
@@ -202,6 +218,10 @@ get() { printf '%s\n' "$PROBE" | sed -n "s/^$1=//p" | head -1; }
 # ISO-8601 UTC sorts lexicographically, so a string compare is a valid time compare and we never have
 # to parse a timestamp back into epoch (BSD awk has no mktime()).
 cl_read() {  # cl_read <extra-filter> <since-epoch> [until-epoch] [format]
+  # Skipped entirely on the VM: the instance's service account is provisioned to WRITE logs, not read
+  # them back, and deploy.sh calls this script as its post-restart check — paying ~40s of API round-trips
+  # there (for counters that would come back empty) would turn every deploy into a coffee break.
+  [ "$HAVE_GCLOUD" -eq 1 ] && [ "$ON_VM" -eq 0 ] || return 0
   local extra=$1 since=$2 until=${3:-} fmt=${4:-value(timestamp)}
   local f="logName:\"logs/$CLOUD_LOG\" AND timestamp>=\"$(iso_at "$since")\""
   [ -n "$until" ] && f="$f AND timestamp<=\"$(iso_at "$until")\""
@@ -223,17 +243,23 @@ fi
 printf '%s│%s  %s   v%s · %s\n' "$CYN" "$R" "$verdict" "$(get RUN_VERSION)" "$(get RUN_COMMIT)"
 printf '%s╰%s╯%s\n' "$CYN" "$(bar $(( BOXW - 2 )))" "$R"
 
-vm_line=$(gcloud compute instances describe "$VM" --zone="$ZONE" \
-  --format="value(status,networkInterfaces[0].accessConfigs[0].natIP,machineType.basename())" 2>/dev/null)
-vm_status=$(printf '%s' "$vm_line" | awk '{print $1}')
-vm_ip=$(printf '%s' "$vm_line" | awk '{print $2}')
-vm_type=$(printf '%s' "$vm_line" | awk '{print $3}')
-
 section "VM"
-if [ "$vm_status" = "RUNNING" ]; then vs="${GRN}● RUNNING${R}"; else vs="${RED}● ${vm_status:-UNREACHABLE}${R}"; fi
-head_row "$vs  $VM · $ZONE · ${vm_type:-?}"
 boot="$(get BOOT)"
-row "${vm_ip:-?}      booted $([ -n "$boot" ] && human_secs "$boot" || echo '?') ago"
+if [ "$ON_VM" -eq 1 ]; then
+  # `instances describe` queries the VM from OUTSIDE and needs the Mac's gcloud context; from inside it
+  # only ever returned "could not reach VM", which read like a fault rather than a wrong vantage point.
+  head_row "${D}(running ON the VM — hypervisor-level state needs the Mac's gcloud context)${R}"
+  row "$(hostname -s)      booted $([ -n "$boot" ] && human_secs "$boot" || echo '?') ago"
+else
+  vm_line=$(gcloud compute instances describe "$VM" --zone="$ZONE" \
+    --format="value(status,networkInterfaces[0].accessConfigs[0].natIP,machineType.basename())" 2>/dev/null)
+  vm_status=$(printf '%s' "$vm_line" | awk '{print $1}')
+  vm_ip=$(printf '%s' "$vm_line" | awk '{print $2}')
+  vm_type=$(printf '%s' "$vm_line" | awk '{print $3}')
+  if [ "$vm_status" = "RUNNING" ]; then vs="${GRN}● RUNNING${R}"; else vs="${RED}● ${vm_status:-UNREACHABLE}${R}"; fi
+  head_row "$vs  $VM · $ZONE · ${vm_type:-?}"
+  row "${vm_ip:-?}      booted $([ -n "$boot" ] && human_secs "$boot" || echo '?') ago"
+fi
 
 section "SERVICE"
 head_row "$verdict   restarts $(get RESTARTS)   up since $(get SINCE_H)"
@@ -284,6 +310,10 @@ row "warnings (7d)  ${w7d}"
 # A zero that means "no data" must never be displayed as if it meant "no errors" — that conflation is
 # the exact failure this whole overhaul exists to fix. If the structured sink isn't reporting, say so
 # loudly instead of showing a reassuring row of zeros.
+if [ "$ON_VM" -eq 1 ] || [ "$HAVE_GCLOUD" -eq 0 ]; then
+  row "${YEL}⚠ NOT LIVE — Cloud Logging is only queried from the Mac. Re-run there for real${R}"
+  row "${YEL}  counts; the ALERTS block below is accurate from anywhere.${R}"
+fi
 case "$(get SINK)" in
   absent*)
     row "${YEL}⚠ NOT LIVE — the structured log sink is not deployed on this VM, so Cloud${R}"
