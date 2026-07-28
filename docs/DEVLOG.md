@@ -87,6 +87,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
 - 2026-07-28 17:35 EDT — A table of contents you can't actually search
 - 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
+- 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -2846,3 +2847,46 @@ The wider point, and the reason this is its own entry rather than a quiet fix: t
 flagged as an estimate. It went into a code comment reading like a measured fact, and a code comment is
 exactly where a future session goes looking for facts. If you have not measured it, either measure it or
 say you are guessing. Writing "~" in front of a number you made up is not hedging, it is decoration.
+
+---
+
+## 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+
+Harkirat asked whether I'd checked the *rest* of `dior-cli`, not just the files mentioning `vmstatus`.
+Fair — I'd grepped for references to the thing I changed rather than for the whole surface where the CLI
+couples to this repo, which are different sets. So I went back and enumerated all five commands properly.
+
+`bot dev` boots clean. `devCommands.js` is standalone. `bot commit` runs `git -C <repo> add .`, so I
+checked what it would sweep — and `git status` came back **empty**.
+
+It shouldn't have been. All session there had been one modified file in that tree:
+`.claude/settings.local.json`, four uncommitted lines belonging to the *other* Claude session, the one
+paused on a usage limit that Harkirat had told me about in his very first message. I'd been careful with
+it. I never staged it. I said so explicitly in my summary — *"deliberately never touched or committed."*
+
+That was true of my commits and false of my `git reset --hard HEAD~2`, three hours earlier, cleaning up
+two throwaway commits I'd made to test the TOC hook's fire and silent paths. A hard reset does not
+distinguish between the commits you meant to drop and the working-tree changes you never looked at. I'd
+even written that reset up in an earlier entry today, as a near-miss that cost me *my own* work — and
+recorded only the half I'd noticed. The other half had been sitting there the whole time.
+
+It was recoverable, and only by luck: the scaffold commit had incidentally staged the file, so it was
+still reachable through the reflog. Restored to unstaged-modified, byte-identical, three permission
+entries intact. If I'd used `git stash` for the scaffolding — the correct tool — there'd have been no
+commit to recover from and the work would simply be gone.
+
+The part worth keeping isn't the git lesson, though that one's real: never `reset --hard` a range whose
+working tree you haven't looked at, and keep test scaffolding out of any commit range you plan to
+discard.
+
+The part worth keeping is that I made a confident claim about state without checking state. "Deliberately
+never touched" described my *intent*, and I reported intent as if it were an observation. The same shape
+as the `~40s` figure two entries up: something I believed, asserted in the voice of something I'd
+verified. Twice in one session, on a day whose whole theme was building machinery to stop exactly that.
+
+And the machinery didn't catch either one. The stale-reference sweep checks whether documentation still
+matches code. It has nothing to say about whether a sentence I wrote about the working tree was true.
+That gap is worth naming plainly rather than papering over: one class of miss is now mechanical, and the
+broader habit — asserting without checking — is not, and won't be until each specific instance of it gets
+its own check. The cross-session notice now tells that other session to verify its own work rather than
+take my word for it, which is the only honest thing to put there.

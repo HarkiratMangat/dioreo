@@ -88,6 +88,14 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   - **Memory files edited:** `reference_vm_bot_commands` (rewritten; it had been documenting the retired
     direct-push deploy flow), `project_deployment_migration_render_to_gcp`, `MEMORY.md`,
     `reference_enforcement_hooks`.
+  - ⚠️ **YOUR UNCOMMITTED WORK WAS BRIEFLY LOST AND RESTORED — verify it before continuing.** At
+    2026-07-28 16:35 EDT a `git reset --hard HEAD~2` (cleaning up two throwaway commits made to test a
+    new hook) also discarded the **unstaged** modification sitting in `.claude/settings.local.json`.
+    Recovered 2026-07-28 18:40 EDT from the reflog — the scaffold commit had incidentally captured the
+    file — and restored to unstaged-modified, byte-identical to how it was found. The three permission
+    entries are back: `Bash(rtk git *)`, a `node -p` package.json version read, and `Bash(gh api *)`.
+    **Nothing else of that session's was in the working tree at the time**, but confirm against your own
+    notes rather than trusting this line. Consider committing them so they can't be lost again.
   Remove this entry once that session has resumed and reconciled.
 - `[P1 · XS · Harkirat action, not a build]` **Finish the GitHub Projects roadmap board's view setup.**
   Added 2026-07-26 12:12 EDT. The board (https://github.com/users/HarkiratMangat/projects/2) has all 15
