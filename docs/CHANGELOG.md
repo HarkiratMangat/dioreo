@@ -181,7 +181,38 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.38.3 — 2026-07-28 11:20 EDT (#42) — The DEVLOG entries v2.38.1/.2 should have shipped with
+## v2.39.0 — 2026-07-28 13:20 EDT (#43) — The enforcement layer is finally in version control
+**Config/docs only — no bot runtime change, not deployed.**
+- **The 12 enforcement hooks moved from gitignored `.claude/settings.local.json` to tracked
+  `.claude/settings.json`.** They are what mechanically hold this repo's conventions — changelog at
+  merge, timestamps on every edit, the notes-file surfacing, the deferral-tell and effort-range `Stop`
+  hooks, completion-claim verification, the stale-branch report, the tag-version gate, the
+  delete-branch check and the Artifact force gate. Because their home was gitignored, **none of it
+  rode in a PR and all of it had to be re-added by hand on a fresh clone** — this file's own v2.33.0
+  entry said so out loud. A rule enforced by an unrecoverable file is one disk failure away from being
+  prose again.
+- **`.claude/settings.local.json` is now tracked too** (Harkirat's call). It keeps only the 30
+  machine-specific permission entries. Verified before tracking: no secret-shaped strings, and the
+  repo is private. `.env` remains the hard invariant and is untouched.
+- **The un-ignore needed a negation, not a deletion.** Removing the repo-level `.gitignore` pattern
+  left the file *still ignored* — `git check-ignore -v` traced it to the **global**
+  `~/.config/git/ignore`, which carries `**/.claude/settings.local.json` for every repo on the machine.
+  Editing that would have silently changed behaviour for every other project, so the fix is an explicit
+  `!.claude/settings.local.json` in this repo's `.gitignore`, which outranks the global file. Backups
+  (`*.bak`, `*.bak-*`) stay ignored.
+- **Verified rather than assumed:** all 12 hooks parse as valid shell after the JSON round-trip (the
+  real risk in moving hook bodies between files), and the timestamp hook still fires on a bare date and
+  stays silent on a full `YYYY-MM-DD HH:MM TZ`. ⚠️ Hooks load at session start, so the promoted file
+  only takes effect next session — content is verified, loading is not.
+- **~20 now-false statements corrected** across `CLAUDE.md`, `docs/README.md`, `docs/SESSION-START.md`,
+  the v3 structure spec and 9 memory files. Historical CHANGELOG/DEVLOG entries were left as written —
+  they describe what was true then. The v3 worktree rejection's "a worktree loses the `SessionStart`
+  hooks" rationale is now **obsolete** and is annotated in place.
+- **Housekeeping:** the `~/.claude` version-control gap (global hooks, global `CLAUDE.md`, and all four
+  projects' memory stores — still unversioned) moved to `/Applications/Claude Code/meta-deferred-list.md`,
+  since its scope is cross-project, not Diors-specific.
+
+## v2.38.3 — 2026-07-28 11:20 EDT (#42 · `52aac5f`) — The DEVLOG entries v2.38.1/.2 should have shipped with
 **Docs only — no bot runtime change, not deployed.**
 - **Backfills the missing DEVLOG narrative for v2.38.1 and v2.38.2.** The per-merge chore checklist
   asks for a DEVLOG entry "if the work had real reasoning/discovery," and both qualified — the
