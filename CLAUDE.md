@@ -33,11 +33,10 @@ split and does not gate it — see the canonical-memory-path note below.)*
 live solely in one.*
 
 ### Canonical memory path
-**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (57 memory files
-+ `MEMORY.md`, re-counted 2026-07-27 19:45 EDT — was 55 at 11:10 EDT; the two additions are
-`project_dior_cli_repo.md` and `reference_dior_cli_terminal_palette.md`, filed 20:47 EDT by the `dior`
-CLI work; the count is a sanity signal, not a spec — if you land
-somewhere empty or missing, you're at the wrong path).**
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (58 memory files
++ `MEMORY.md`, re-counted 2026-07-27 22:25 EDT — was 57 at 19:45 EDT; the addition is
+`feedback_pipe_masks_exit_status.md`, filed by the v2.36.x release work; the count is a sanity signal,
+not a spec — if you land somewhere empty or missing, you're at the wrong path).**
 Always read AND write memory there, regardless of what the session prompt suggests. Harkirat relocated
 the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
 project folder from the repo path — so it now points sessions at
@@ -153,9 +152,18 @@ the local branch too, which auto-delete-on-merge does not. Without it they silen
 branches were found rotting on 2026-07-27 21:50 EDT**, the oldest from PR #11, all long since merged.
 A merged branch must never outlive its PR. Two hooks in `.claude/settings.local.json` now enforce this —
 a `SessionStart` check that fetches with `--prune` and lists any `[gone]` branch, and a `PostToolUse`
-check that fires when a `gh pr merge` runs without `--delete-branch`. ⚠️ That file is **gitignored**, so
-those hooks are local-only and do NOT ride in a PR — on a fresh clone the convention above is all there
-is, and the hooks must be re-added by hand.
+check that fires when a `gh pr merge` runs without `--delete-branch`.
+
+**⚠️ Never chain `git tag` onto `gh pr merge` in one `&&` sequence.** `gh pr merge` fails when checks are
+`UNSTABLE`, and piping it to `tail`/`head` masks the failure (a pipeline exits with the *last* command's
+status), so the chain runs on, `main` never advanced, and the tag lands on the **previous** release —
+exactly what happened 2026-07-27 22:10 EDT, producing a pushed `v2.36.2` on a commit reading `2.36.1`.
+Merge, **verify `git log -1` shows this release**, then tag. A third `PreToolUse` hook gates
+`git tag -a vX.Y.Z <sha>` when the target's `package.json` ≠ the tag. See memory
+`feedback_pipe_masks_exit_status`.
+
+⚠️ `.claude/settings.local.json` is **gitignored**, so all three hooks are local-only and do NOT ride in
+a PR — on a fresh clone the conventions above are all there is, and the hooks must be re-added by hand.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it
