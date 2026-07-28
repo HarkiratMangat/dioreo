@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.36.3 — July 27, 2026
+- *Internal docs-only — added an automatic safety check to Dior's own release tooling. Nothing players see.*
+
 ## v2.36.2 — July 27, 2026
 - *Internal docs-only — a verification pass over Dior's own project records. Nothing players see.*
 

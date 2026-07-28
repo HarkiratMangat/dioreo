@@ -181,7 +181,29 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.36.2 — 2026-07-27 22:05 EDT (#35) — Audit follow-ups: two checks that would have cried wolf
+## v2.36.3 — 2026-07-27 22:25 EDT (#36) — The tag invariant becomes a gate, after it caught nobody
+**Docs/meta only — no runtime change, not deployed.**
+- **Reproduced the stale-tag defect within minutes of documenting it.** Tagging v2.36.2 was chained onto
+  the merge as one `&&` sequence. `gh pr merge` failed (checks still `UNSTABLE`) but was piped to
+  `tail -1`, and **a pipeline exits with the last command's status**, so the failure was masked and the
+  chain continued. `main` never advanced, so `v2.36.2` was created *and pushed* onto `bd51350`, whose
+  `package.json` read `2.36.1` — the exact defect logged for six historical tags one release earlier.
+  Deleted from local and remote, re-created correctly on `c5f28b6`.
+- **Root cause was the pipe, not the invariant.** Recorded as memory `feedback_pipe_masks_exit_status`:
+  never pipe a fallible command and rely on `&&`, and never derive a value (`$(git rev-parse HEAD)`) in
+  the same chain as the command meant to produce that state.
+- **The invariant is now a gate, not a wish.** A third hook (`PreToolUse` on Bash) intercepts
+  `git tag -a vX.Y.Z <sha>` and asks for confirmation when the target commit's `package.json` ≠ the tag.
+  Dry-run against the real mistake (asks), the correct tag (silent), a historical stale tag (asks), and
+  unrelated commands (silent). It had existed only as a deferred sweep-script item — which is why nothing
+  caught this.
+- **Deep sweep of memory, rules, and hooks.** Found `project_dior_builds_changelog_system` — the file
+  `docs/README.md` names as the source of truth for the versioning scheme — still teaching *"graduates to
+  a real entry (+ squash hash + tag) at merge,"* the retired clause. Corrected, with the entry format
+  added. `.claude/rules/*` are workflow-free (correct); every path and memory name referenced inside a
+  hook resolves.
+
+## v2.36.2 — 2026-07-27 22:05 EDT (#35 · `c5f28b6`) — Audit follow-ups: two checks that would have cried wolf
 **Docs/meta only — no runtime change, not deployed.** Found by a wide verification pass over v2.36.0–v2.36.1.
 - **Synced `main` → `v3-pre-release`.** It had been sitting two releases behind at v2.35.15, so it lacked
   the very convention it is supposed to follow. Fast-forward (no divergence), by `git merge origin/main`
