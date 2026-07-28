@@ -147,6 +147,27 @@ lowercase, no trailing period; `!` before the colon for breaking. Only the 11 st
 `<type>/<kebab-description>`. **Never rename a branch that has an open PR** — GitHub auto-closes it and it
 cannot be reopened. Vocabulary, mappings, and rationale: `docs/reference/commit-and-branch-naming.md`.
 
+**Every commit trailer includes a real second-account co-author (adopted 2026-07-28 18:30 EDT).**
+Harkirat's primary account (`dior`, author on every commit) has a second, genuinely separate GitHub
+account, `diorswrld` (id `310361322`), created specifically to co-author commits for real. Every
+commit should end with:
+```
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
+```
+(swap the Claude line's model name/id for whichever model is actually running that session; the
+Claude line is cosmetic for badge purposes — `noreply@anthropic.com` DOES link to a real account
+(`github.com/claude`, Anthropic's shared bot, verified via `gh api users/claude`) but empirically
+never grants Pair Extraordinaire to the human co-author: dozens of merged Diors-Builds PRs already
+carry that exact trailer and `HarkiratMangat`'s profile still shows zero (checked 2026-07-28 18:30
+EDT), almost certainly an anti-gaming filter on shared/platform-bot accounts, same principle as Pull
+Shark excluding your own repo). **The `diorswrld` line is the one that matters**: it's a real,
+distinct *personal* account (verified — different numeric id than `dior`/`HarkiratMangat`), so it satisfies
+GitHub's Pair Extraordinaire requirement for real, unlike the earlier same-account attempt (see
+`feedback_git_commit_identity` memory for that history — this supersedes it). Badge tiers need
+volume (default 1 / bronze 10 / silver 24 / gold 48 co-authored commits merged), so keep this on
+every commit going forward, not just one.
+
 **⚠️ Two bases now exist — pick the right one, `gh pr create` will not (added 2026-07-27 18:05 EDT).**
 v3 work lives on the long-lived **`v3-pre-release`** integration branch, not `main`. So a v3 feature is
 `feat/x` off `v3-pre-release` → **`gh pr create --base v3-pre-release`**. `gh` defaults to `--base main`,
