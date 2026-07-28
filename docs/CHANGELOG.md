@@ -208,6 +208,11 @@ changelog until v3 actually launches.
   the v3 structure spec and 9 memory files. Historical CHANGELOG/DEVLOG entries were left as written —
   they describe what was true then. The v3 worktree rejection's "a worktree loses the `SessionStart`
   hooks" rationale is now **obsolete** and is annotated in place.
+- **Global hook improved in the same session** (`~/.claude/hooks/usage-guard.mjs` — global, so it does
+  *not* ride in this PR; recorded here and in `reference_tool_capability_tests`). Its search-completeness
+  guard now models `--hidden` and `--no-ignore` as **separate** exclusions, per tool and per `-u` level,
+  and names the missing half. Prompted by a live miss: `fd -H . .remember -e md` returned 0 files from a
+  directory that had several, because `-H` un-hides but `.remember/` is gitignored and needs `-I`.
 - **Housekeeping:** the `~/.claude` version-control gap (global hooks, global `CLAUDE.md`, and all four
   projects' memory stores — still unversioned) moved to `/Applications/Claude Code/meta-deferred-list.md`,
   since its scope is cross-project, not Diors-specific.
