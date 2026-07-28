@@ -2500,3 +2500,33 @@ ones you went looking for.
   a port number and wrong for an API key, and they sit three lines apart in the same file.
 - **Read the merge output.** It is the last place a stray file announces itself before it becomes
   history.
+
+## 2026-07-28 13:20 EDT — The rules that enforce the rules were never backed up
+
+v2.39.0 is small in diff and large in what it fixes: the hooks that mechanically enforce this repo's
+conventions lived in `.claude/settings.local.json`, which is gitignored. Every one of them — the
+changelog check, the timestamp check, the deferral-tell blocker, the completion-claim gate — existed
+only on one machine, in one file, that no clone would ever see. The root `CLAUDE.md` even documented
+this as a known limitation ("on a fresh clone the conventions above are all there is, and the hooks
+must be re-added by hand"), which is the tell: a limitation you have written down and stopped
+questioning is just a bug with tenure.
+
+**The lesson that generalises:** enforcement infrastructure needs the same durability guarantees as the
+thing it enforces. We were careful to track `docs/` precisely so changes get real history — and then
+put the mechanism that guards those docs somewhere `git` was told to ignore.
+
+**The part worth remembering technically.** Un-ignoring the file did not work. Removing the pattern
+from `.gitignore` left it *still ignored*, and the reason was invisible from inside the repo:
+`~/.config/git/ignore`, the global excludes file, carries `**/.claude/settings.local.json` and applies
+to every repository on the machine. Two things came out of that. First, `git check-ignore -v` answers
+"why is this ignored" in one command and should be the first move whenever a gitignore edit does not
+take. Second, the fix had to be *scoped* — editing the global file would have quietly changed
+behaviour for every other project, so the repo-level negation (`!.claude/settings.local.json`, which
+outranks the global file) was the correct blast radius. Reaching for the global config because it is
+the file that happens to be in the way is how one repo's convenience becomes another repo's surprise.
+
+**On verification.** Moving hook bodies between JSON files is exactly the kind of change that looks
+fine and silently mangles shell escaping, so every one of the 12 was extracted and syntax-checked, and
+the timestamp hook was run against both a bare date and a full timestamp to confirm it still
+discriminates. What could *not* be verified is stated plainly in the PR and changelog: hooks load at
+session start, so the new file only proves itself next session.

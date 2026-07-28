@@ -15,13 +15,13 @@
 > exceptions for "this session felt too urgent to pause for it." Full spec below + in memory.
 
 **This file is auto-loaded into every session by the `SessionStart` hook** in
-`.claude/settings.local.json` — it does not need pasting. `user_working_agreement.md` points here as
+`.claude/settings.json` — it does not need pasting. `user_working_agreement.md` points here as
 the single source; it is NOT mirrored there, so edit this file directly.
 
 **Moved to `docs/SESSION-START.md` (2026-07-18)** — this file, `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`,
 `DEVLOG.md`, and the central notes scratchpad now live tracked in git under `docs/`, no longer
 gitignored/local-only (Harkirat's request, for real `git diff` history instead of manual snapshots).
-The hook path in `.claude/settings.local.json` was updated to match — if you ever see the "NOT FOUND"
+The hook path in `.claude/settings.json` was updated to match — if you ever see the "NOT FOUND"
 warning below, check that path first.
 
 > **Hook health (2026-07-15):** the hook pointed at `/Applications/Diors-Builds/SESSION-START.md` for

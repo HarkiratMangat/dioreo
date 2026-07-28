@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.39.0 — July 28, 2026
+- *Internal only — the safety checks that keep Dior's build process honest are now saved with the
+  project itself, so they can't get lost. Nothing players see.*
+
 ## v2.38.3 — July 28, 2026
 - *Internal only — wrote up the behind-the-scenes notes for the two previous updates. Nothing players see.*
 

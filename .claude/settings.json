@@ -3,5 +3,125 @@
     "allow": [
       "Bash(node -c *)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/SESSION-START.md\"; if [ -f \"$F\" ]; then cat \"$F\"; else echo \"\u26a0\ufe0f SESSION-START.md NOT FOUND at $F \u2014 session-start guidance did NOT load. Tell Harkirat, and fix the SessionStart hook path in .claude/settings.local.json.\"; fi | jq -Rs '{hookSpecificOutput: {hookEventName: \"SessionStart\", additionalContext: .}}'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/diors-builds notes.md\"; if [ -f \"$F\" ]; then base=$(awk '/^## Questions/{f=1} /^## \ud83d\udccd/{exit} f{print}' \"$F\"); n=$(printf '%s' \"$base\" | grep -cE '^- [^<[]'); open=$(printf '%s' \"$base\" | grep -E '^- [^<[]' | cut -c1-120 | head -15); if [ \"$n\" -gt 0 ]; then printf 'NOTES-FILE CHECK: docs/diors-builds notes.md has %s open (unmarked) item(s) in its working sections (above the \ud83d\udccd pointer section). Do NOT skip the notes file this session -- review, answer, mark, and file them per the notes workflow (project_central_notes_file memory). Truncated previews:\\n%s' \"$n\" \"$open\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { git fetch --prune --quiet 2>/dev/null; gone=$(git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads | grep '\\[gone\\]' | cut -d' ' -f1); n=$(printf '%s' \"$gone\" | grep -c .); if [ \"$n\" -gt 0 ]; then printf 'STALE-BRANCH CHECK: %s local branch(es) whose remote is already deleted (GitHub auto-deletes on merge) are sitting unpruned:\\n%s\\nThey rot because a plain git fetch does NOT prune remote-tracking refs, so git branch -a keeps listing merged work as if it were live. Prune now: confirm each PR is MERGED (gh pr list --head <branch> --state all --json number,state), then git branch -D <branch>; git fetch --prune. A merged branch should never outlive its PR -- see docs/README.md chore checklist step 8.' \"$n\" \"$gone\"; fi; } | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"[self-check] (1) FIRST ACTION: if you have NOT yet this session output the ready-to-paste /rename string + a one-line model+effort recommendation, do it now before any task content -- this is a hard gate (feedback_suggest_model_switch memory), not optional. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming).\"}}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "force=$(jq -r '.tool_input.force // false'); if [ \"$force\" = \"true\" ]; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"FORCE-OVERWRITE GATE: this Artifact call sets force:true, which discards another session/author'\"'\"'s published version. 2026-07-25 17:03 EDT incident: force-published over an artifact whose current content was never actually viewed (WebFetch blocked, browser unauthenticated), destroying Harkirat'\"'\"'s prior-session work on an assumption. Confirm you have EXPLICIT go-ahead from Harkirat in this exact conversation for THIS specific overwrite -- not inferred from a complaint about a different artifact -- before proceeding.\"}}'; fi",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE 'git tag +-a +v[0-9]'; then tag=$(echo \"$cmd\" | grep -oE 'v[0-9]+\\.[0-9]+\\.[0-9]+' | head -1); target=$(echo \"$cmd\" | grep -oE \"v[0-9]+\\.[0-9]+\\.[0-9]+ +[0-9a-f]{7,40}\" | head -1 | awk '{print $2}'); [ -z \"$target\" ] && target=HEAD; cd \"/Applications/Claude Code/Diors-Builds\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { pj=$(git show \"$target:package.json\" 2>/dev/null | grep -o '\"version\": \"[^\"]*\"' | cut -d'\"' -f4); if [ -n \"$pj\" ] && [ \"v$pj\" != \"$tag\" ]; then jq -n --arg t \"$tag\" --arg p \"$pj\" --arg c \"$target\" '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:(\"TAG-INVARIANT GATE: you are about to create tag \" + $t + \" on commit \" + $c + \", whose package.json reads \" + $p + \" -- they must match. A tag whose package.json is stale makes git show <tag>:package.json a liar; six such tags already exist (v2.33.3, v2.33.4, v2.35.0-v2.35.3) and are tracked in docs/db-deferred-list.md. Most likely cause: the merge did not actually land (gh pr merge can fail on UNSTABLE checks) and main never advanced, so you are tagging the PREVIOUS release commit -- this exact mistake happened 2026-07-27 22:10 EDT. Verify git log -1 on main shows THIS release before tagging.\")}}'; fi; }; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr merge'; then cd \"/Applications/Claude Code/Diors-Builds\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { git fetch origin main --quiet 2>/dev/null; changed=$(git show --name-only --pretty=format: origin/main 2>/dev/null); if ! echo \"$changed\" | grep -qx 'docs/CHANGELOG.md'; then jq -n '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:\"DOC CHECK: This gh pr merge did not touch docs/CHANGELOG.md on the resulting main HEAD (checked via origin/main after fetch). Project convention (feedback_docs_at_push_time + project_git_workflow memory) says every merged PR should update the changelog unless there is a stated reason not to -- moved here from commit-time 2026-07-24 12:24 EDT since branch checkpoint commits are now free/unversioned. Confirm this was deliberate, or add the entry now, before moving on.\"}}'; fi; }; fi",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr merge'; then if ! echo \"$cmd\" | grep -q '\\-\\-delete-branch'; then jq -n '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:\"BRANCH-PRUNE CHECK: this gh pr merge ran WITHOUT --delete-branch, so the merged branch survives locally (and its remote survives unless GitHub auto-delete removed it). This is exactly how 10 merged branches accumulated unpruned by 2026-07-27 21:50 EDT. Clean up before moving on: git checkout main; git branch -D <the merged branch>; git fetch --prune. Prefer gh pr merge --squash --delete-branch next time -- it does both in one step.\"}}'; fi; fi",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "today=$(date +%Y-%m-%d); content=$(jq -r '.tool_input.new_string // .tool_input.content // empty'); hits=$(printf '%s' \"$content\" | grep -F \"$today\"); if [ -n \"$hits\" ]; then bad=$(printf '%s' \"$hits\" | grep -vE \"$today [0-9]{2}:[0-9]{2}\"); if [ -n \"$bad\" ]; then jq -n --arg d \"$today\" '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:(\"TIMESTAMP CHECK: this edit wrote the date \" + $d + \" without an HH:MM TZ time next to it. Working-agreement checklist rule 10 (feedback_docs_at_push_time): every date you write in docs, memory, DEVLOG, changelogs, notes marks, or code comments needs YYYY-MM-DD HH:MM TZ. Add the time now, or -- only if it is a deliberate bare date such as a historical reference or the player-facing summary -- confirm that before moving on.\")}}'; fi; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; last=$(grep '\"type\":\"assistant\"' \"$tp\" | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null | sed -E 's/\"[^\"]*\"//g'); if printf '%s' \"$last\" | grep -qiE 'rather than (restructur|the fix|fixing|a proper fix|expand(ing)? scope|scope.?creep)|left [a-z ]{0,15}as-is|leav(e|ing) [a-z ]{0,15}as-is|noting (it|this) (rather than|instead of) (fix|address)|flag(ging|ged)? [a-z -]{0,20}(rather than|instead of) [a-z -]{0,20}(fix|address|scope.?creep)|instead of (the fix|fixing|restructur|properly|address)|defer(ring)? [a-z ]{0,15}(rather than|instead of) [a-z -]{0,15}fix'; then jq -n '{decision:\"block\",reason:\"DEFERRAL-TELL in your last message -- you used language matching the working-agreement rule-9 failure mode (rather-than-fixing / left-as-is / instead-of-restructuring / noting-rather-than-fixing). FIX the gap you just noticed THIS turn instead of merely flagging or deferring it, UNLESS fixing genuinely needs info only Harkirat has or is truly out of scope -- in which case say so explicitly. Do not stop on a mere mention.\"}'; fi",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; last=$(grep '\"type\":\"assistant\"' \"$tp\" | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null | sed -E 's/`[^`]*`//g'); if printf '%s' \"$last\" | grep -qiE 'medium-high|medium to high|low-medium|low to medium|high-max|medium-max|low-high|med-high|medium/high|low/medium|high/max|medium/max' ; then jq -n '{decision:\"block\",reason:\"EFFORT-RANGE TELL in your last message -- feedback_suggest_model_switch memory explicitly says recommend ONE effort level, never a range (medium-high, low-to-medium, etc). This has lapsed 3 times now (2026-07-14, 2026-07-24, 2026-07-25 17:03 EDT). Restate as a single committed level -- if genuinely torn between two, pick the LOWER one and say why in one clause -- before stopping.\"}'; fi",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; ln=$(grep -n '\"role\":\"user\",\"content\":\"' \"$tp\" | tail -1 | cut -d: -f1); ln=${ln:-1}; vcalls=$(tail -n +\"$ln\" \"$tp\" | grep -cE '\"name\":\"(Bash|Grep|Glob)\"'); last=$(tail -n +\"$ln\" \"$tp\" | grep '\"type\":\"assistant\"' | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null); if printf '%s' \"$last\" | grep -qiE '\\ball done\\b|everything.?s (done|clean|correct|working|in sync)|fully (done|documented|verified|working|synced)|properly (documented|verified|configured)|(is|are|it.?s) (verified|confirmed|clean|in sync|up to date|all set)|no (gaps|issues|residue|mistakes|problems) (found|left|remain|remains)|nothing (missed|left|forgotten|broken)|\\ball (set|good|clear|clean)\\b|session.?s (actually )?done|task is complete|matches (exactly|cleanly)|zero (residue|issues|matches)'; then if [ \"${vcalls:-0}\" -eq 0 ]; then jq -n '{decision:\"block\",reason:\"COMPLETION-CLAIM WITHOUT EVIDENCE: your last message asserts something is done/verified/clean/in-sync/matches, but this turn shows ZERO Bash/Grep/Glob tool calls -- no actual check backs the claim. Harkirat has flagged this exact recurring pattern (having to send you to double-check and catch your own gaps every session). Before restating this claim: run the real verification (git status/diff, grep for residue, node -c, tests, etc.), look at its actual output, and only then assert completion.\"}'; fi; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

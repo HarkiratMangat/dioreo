@@ -148,7 +148,7 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   they are due a proper inspection rather than another incremental patch.
   **Scope — read every file, line by line, not just grep:** `CLAUDE.md` · all `.claude/rules/*.md` ·
   every `docs/` file incl. `reference/`, `superpowers/specs/`, and the archives · every memory file +
-  `MEMORY.md` · `docs/SESSION-START.md` · the hooks and nudges in `.claude/settings.local.json` ·
+  `MEMORY.md` · `docs/SESSION-START.md` · the hooks and nudges in `.claude/settings.json` ·
   `.github/workflows/` · the working agreement and every feedback/reference/preference memory.
   **Check for:** stale content (claims that were true once) · gaps and missing pieces · outright
   mistakes/errors · things not caught up with recent changes · broken or missing cross-links and
@@ -168,7 +168,8 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   - **Memory/slug pointers are CLEAN everywhere.** Every surface below was swept for the old slug, for
     memory-store pointers, and for the retired "fixed store is move-proof" rule: repo docs, `CLAUDE.md`,
     `.claude/rules/`, `docs/` incl. `archive/` + `superpowers/`, **all `*.js`/`*.sh` code (zero hits)**,
-    `.claude/settings.local.json`, `~/.claude` (skills/hooks/agents/commands/plans), `.remember`, the
+    `.claude/settings.json` + `settings.local.json` (both tracked since v2.39.0), `~/.claude`
+    (skills/hooks/agents/commands/plans — still unversioned), `.remember`, the
     Gif + shared-root memory stores, `dior-cli`, both cross-project docs, and the MCP stores
     (perseus-vault, linksee, codebase-memory). Remaining old-slug mentions are **historical
     changelog/DEVLOG entries, deliberately preserved**. **This dimension does not need re-auditing.**
