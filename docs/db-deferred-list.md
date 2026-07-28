@@ -55,23 +55,8 @@ scratchpad for 2 days.*
 **None open right now.** The last confirmed bot bug (the `/manage` Edit-loadout timeout) was fixed in
 v2.20.0 — see `docs/archive/resolved-list.md`.
 
-**🔑 One security-hygiene item (not a bot bug, so it sits here rather than as a 🐞):**
-- `[P2 · XS · Harkirat action — revocation cannot be done from a session]` **Revoke the two dead host
-  credentials now commented out in `.env`.** *Found 2026-07-28 01:41 EDT during a docs audit, unrelated
-  to what was being swept.* Render's service was **deleted 2026-07-27 20:20 EDT** and Railway
-  **abandoned 2026-07-17**; the GCP VM is the only host, and **no code reads either variable** (verified:
-  zero `.js`/`.sh`/`.yml` references).
-  **✅ Done by Harkirat same session:** `RENDER_API_KEY`, `RAILWAY_TOKEN`, and `PORT` commented out in
-  `.env` rather than deleted, to keep them recoverable. `PORT` was separately verified safe — nothing
-  reads `process.env.PORT`, there is no HTTP server and no web framework in the dependency tree; it was
-  a Render/Railway artifact (those platforms require a bound port for web services).
-  **⚠️ STILL OPEN — commenting out is NOT revoking.** The secret values remain in plaintext in the file
-  and, more importantly, **remain valid at the providers**. An API key generally authenticates against
-  the whole *account*, not the one deleted service, so it can still create, manage, and bill resources.
-  Anyone holding the string can use it regardless of a `#`. The value also entered a session transcript
-  when the file was read during the audit. **Do this in the provider dashboards:** revoke the Render API
-  key and the Railway token; only then are the commented lines harmless. `.env` is gitignored and these
-  were never committed, so there is no git-history exposure to clean up.
+*(A security-hygiene item — two dead host credentials sitting in `.env` — was found and **fully resolved**
+2026-07-28 11:20 EDT. See `docs/archive/resolved-list.md`.)*
 
 *Not bot bugs, so they live in `meta-deferred-list.md` instead: the MarkEdit-extension cluster
 (Return-key blank line, confirm-mark space glitch). They're editor tooling outside every repo, even

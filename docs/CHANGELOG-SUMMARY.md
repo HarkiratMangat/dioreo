@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.38.2 — July 28, 2026
+- *Internal only — removed two unused access keys for old hosting services Dior no longer uses. Nothing players see.*
+
 ## v2.38.1 — July 28, 2026
 - *Internal only — removed a stray empty file. Nothing players see.*
 
