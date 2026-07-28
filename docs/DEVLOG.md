@@ -2402,3 +2402,59 @@ sync but nothing fired when `main` moved.
   A real audit has to read.
 - **Documenting a defect is not fixing it.** Writing up the six stale tags produced a seventh. The write-up
   should have been accompanied by the gate, in the same pass.
+
+## 2026-07-28 01:41 EDT — The memory was in a folder nothing was looking at
+
+For two weeks, Dior's memory store sat at `~/.claude/projects/-Applications-Diors-Builds/memory/`.
+The repo had moved on 2026-07-14, so the harness stopped deriving that slug — it derives
+`-Applications-Claude-Code-Diors-Builds` now, and that folder's `memory/` directory existed, was real,
+and was **empty**. The platform was diligently reading the right path and finding nothing, while 59
+memory files sat in a folder it no longer had any reason to open.
+
+What kept it working was a note in `CLAUDE.md` telling every session to go read the other path. On
+2026-07-15 that was a reasonable call, made for a good reason: a fixed store is move-proof, and the
+repo had just proven it could move. The flaw wasn't in the reasoning, it was in what the reasoning
+*cost*. The bridge it left behind was **instruction-following** — and instruction-following fails
+silently. A session that skipped the note didn't get degraded memory, it got none, and nothing
+anywhere raised a hand. The mechanism could only be observed working; it could never be observed
+failing.
+
+That is the same shape as the bug three days ago where a documented sync mechanism had no trigger, and
+the same shape as the hook that pointed at a stale path with `2>/dev/null` swallowing the error. A rule
+that depends on someone remembering is not a rule, it's a hope with good documentation.
+
+The reason it stayed unfixed wasn't inertia. The correct path was **claimed** by the cross-project
+memory-architecture redesign, which planned to make it a symlink into a central store, and whose own
+status file said in as many words that parking the design did not release the path. So Diors kept
+paying for the workaround to hold a placeholder. Harkirat looked at a project that had been
+indefinitely parked since 2026-07-26 with no realistic resume date, weighed it against a fragile
+mechanism he was living with every session, and released the claim for Diors specifically.
+
+The migration itself was almost boring, which is what you want. Copy, then verify three ways before
+touching anything else — `diff -r`, file counts, aggregate checksum — then re-run the `MEMORY.md` index
+check on the new copy. The old store was left completely intact, tombstoned but unmodified, so the
+whole thing reverses by deleting a directory.
+
+The genuinely interesting part was that **the store contradicted its own migration**. Four files inside
+it — the working agreement, the defer-to-owning-project lesson, and two index lines — asserted the old
+path as canonical and explicitly forbade writing to the new one. Copy those verbatim and you get a
+memory store that, on being read from its new home, tells the reader it doesn't live there. Those had
+to be rewritten as *content*, not path-swapped. The subtle one was `feedback_defer_to_owning_project`:
+the temptation is to delete a lesson that now looks wrong. But it wasn't wrong — it was right for
+exactly as long as the claim stood, and what changed is that the claim's owner released it, which is
+the precise resolution that memory tells you to wait for. It got a superseded-marker on the specific
+clause and kept the general lesson intact.
+
+### Lessons
+- **A mechanism that can only be observed succeeding is not verified.** The pointer note "worked" every
+  time anyone checked, because checking meant reading it. Its failure mode was invisible by construction.
+- **Ask what a correct-looking decision costs, not just whether it's right.** "A fixed store is
+  move-proof" was true. It just quietly traded a path problem for a compliance problem, and compliance
+  problems don't announce themselves.
+- **When migrating content that describes its own location, the content is part of the migration.** A
+  find-and-replace would have produced a self-contradicting store that still passed every checksum.
+- **Superseding beats deleting.** A rule that was correct under conditions that have changed should be
+  marked, not erased — the reasoning is what stops it being re-litigated from scratch.
+- **`rg` respects `.gitignore`.** The inherited "full repo-wide sweep" had never covered
+  `.claude/settings.local.json` or `local/`. It reached the right conclusion and could not have known
+  it. Re-run with `--no-ignore --hidden` when a sweep is load-bearing.

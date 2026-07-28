@@ -181,7 +181,46 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.37.0 — 2026-07-27 22:35 EDT (#37) — The v3 sync gets a trigger, not just a mechanism
+## v2.38.0 — 2026-07-28 01:41 EDT (#39) — Memory moves to the path the platform actually reads
+**Docs + memory store — no bot runtime change, not deployed.**
+- **The memory store migrated** from `~/.claude/projects/-Applications-Diors-Builds/memory/` to
+  `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — the slug the harness actually
+  derives from the repo path, and therefore the one Claude Code's own native memory feature reads.
+- **What was actually broken.** The repo moved to `/Applications/Claude Code/Diors-Builds` on
+  2026-07-14. A 2026-07-15 session decided to pin the store to a *fixed* slug because "a fixed store is
+  move-proof," and bridged the gap with a redirect note in `CLAUDE.md`. The reasoning was sound; the
+  cost was hidden. **The bridge was instruction-following** — a session that didn't read or obey the
+  note loaded no memory at all, and nothing anywhere reported the failure. Meanwhile the path the
+  platform *does* read sat empty. Harkirat reversed the call: a correct path beats a fixed path plus a
+  note that has to be obeyed every single session.
+- **The reservation was released, not overridden.** The parked cross-project memory-architecture
+  redesign had claimed this exact path for a planned symlink. Harkirat released it *for Diors
+  specifically*; `memory-architecture-STATUS.md` and `meta-deferred-list.md` were annotated in the same
+  pass so it's visible from the cross-project side. The general defer-to-owning-project rule is intact —
+  the distinction is that the claim's stakeholder released it, which is precisely the resolution that
+  rule says to wait for.
+- **Verified, not assumed.** All 60 files copied and checked three ways (`diff -r`, matching file
+  counts, matching aggregate `shasum`), plus a `MEMORY.md` index check on the new copy (60 linked = 60
+  on disk, zero broken, zero orphaned). Confirmed beforehand that **nothing mechanically depended on the
+  path** — no hook, setting, or script referenced either slug — so this was data + prose only.
+- **The old store is kept as a frozen backup** carrying a `_MIGRATED.md` tombstone, so the move stays
+  reversible. Deleting it is a separate, later decision.
+- **Four files inside the store contradicted the migration** (they asserted the old path and forbade the
+  new one) and were rewritten, not path-swapped. Also fixed a long-dangling `ROADMAP.md` reference to a
+  "canonical-memory-path note at the top of this file" that has never existed in that file.
+- ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
+  that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
+
+## v2.37.1 — 2026-07-28 01:06 EDT (#38 · `8eb8f2e`) — Deferred-list triage (entry backfilled)
+**Docs only — no bot runtime change, not deployed.**
+- Resolved the stale-tag backfill item and triaged deferred-list entries across `ROADMAP.md`,
+  `db-deferred-list.md`, `archive/resolved-list.md`, the notes file, and `reference/deployment-and-ops.md`.
+- **This entry was backfilled 2026-07-28 01:41 EDT during the v2.38.0 release.** PR #38 merged without a
+  changelog entry, a `package.json` bump, or a tag — `package.json` stayed at `2.37.0` and `v2.37.0`
+  remained tagged on #37's commit. Reconstructed here so the version record has no hole; the version
+  number is assigned retroactively and its tag is minted alongside v2.38.0.
+
+## v2.37.0 — 2026-07-27 22:35 EDT (#37 · `231a93e`) — The v3 sync gets a trigger, not just a mechanism
 **Docs + CI — no bot runtime change, not deployed.**
 - **`.github/workflows/sync-v3-pre-release.yml`** — merges `main` into `v3-pre-release` and pushes on
   every push to `main`. Skips cleanly when the branch doesn't exist (so it won't fail every push after
