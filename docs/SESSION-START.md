@@ -128,8 +128,10 @@ New session on Dior's Builds. Before anything else:
      the branch as the final pre-merge checkpoint** (adopted 2026-07-27 21:27 EDT), so the squash commit
      already reads the tagged version. The entry cites `(#PR)` with **no hash**; the hash is backfilled
      one release later, on the next release's branch — additively, never by `--amend` or force-push. The
-     newest entry lacking a hash is correct, not drift. *(v2.33.0–v2.35.15 predate this: they were tagged
-     on a separate `chore(release)` commit, now retired. Don't re-tag them.)* `git describe --tags` on any later commit shows exactly how many commits deep past
+     newest entry lacking a hash is correct, not drift. *(v2.33.0–v2.35.15 predate this: 16 of the 25
+     were tagged on a separate `chore(release)` commit, now retired — don't re-tag those. Six others
+     (v2.33.3, v2.33.4, v2.35.0–v2.35.3) have a genuinely stale `package.json` at the tag; tracked, not
+     fixed. Details: `docs/reference/deployment-and-ops.md` § Version tagging.)* `git describe --tags` on any later commit shows exactly how many commits deep past
      the last merged version you are, for free. **When backfilling a historical tag, cross-check
      CHANGELOG.md directly — don't trust commit messages alone**: a first pass once missed `v2.18.1`
      entirely because none of its 3 bundled commits (`f7b4575`/`c4b1c19`/`1600b8e`) mention "v2.18.1" in

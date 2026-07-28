@@ -41,9 +41,12 @@ Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
   lacks a hash — that is correct, not drift.** The backfill is additive-only (insert `` · `sha` ``, touch
   nothing else, never edit the timestamp) and is an ordinary edit in a later commit — **never an
   `--amend`, never a force-push.**
-  ⚠️ **v2.33.0–v2.35.15 were tagged on a separate `chore(release): finalize …` commit, not on their
-  squash commit** — the old convention cited the squash hash inline, which forced that second commit.
-  Their tags are correct as they stand (the finalize commit is where `package.json` reads the tagged
+  ⚠️ **Most of v2.33.0–v2.35.15 were tagged on a separate `chore(release): finalize …` commit, not on
+  their squash commit** — the old convention cited the squash hash inline, which forced that second
+  commit. Measured 2026-07-27 21:27 EDT across the 25 hash-citing entries: **16 cite the tag's parent**
+  (the 2-commit shape — v2.33.5, v2.33.6, v2.34.0, v2.34.1, v2.35.4–v2.35.15) and **9 cite the tag
+  itself** (v2.33.0–v2.33.4, v2.35.0–v2.35.3), so the old pattern was the majority but never universal.
+  Those 16 tags are correct as they stand (the finalize commit is where `package.json` reads the tagged
   version); don't "fix" them. **Entries from v2.36.0 on follow the new shape**: one commit, one tag, on
   the squash commit. Full design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
   §3, §5, §10.

@@ -156,8 +156,10 @@ Docs stop being a separate "at push time" ritual (the step that kept getting ski
   ⚠️ **Corrected 2026-07-27 21:27 EDT — this bullet used to say "finalized at merge — real number +
   squash-commit hash + tag."** That clause was the root cause of the 2-commit reality: a commit cannot
   contain its own hash, so "cite the squash hash" forced a second `chore(release): finalize …` commit
-  on `main` after every merge (13 of them, v2.33.0–v2.35.15), contradicting §3 and §10's "one commit +
-  one tag per version." §3 already described the working design; only this clause blocked it.
+  on `main` after most merges — **16 of the 25 releases v2.33.0–v2.35.15** (measured 2026-07-27 21:27
+  EDT; the other 9 were tagged on the squash commit, 6 of them with a stale `package.json` as a result
+  — see `docs/reference/deployment-and-ops.md` § Version tagging). That contradicted §3 and §10's "one
+  commit + one tag per version." §3 already described the working design; only this clause blocked it.
 - **CLAUDE.md / `.claude/rules` / memory / working agreement / ROADMAP / notes file:** updated on the
   branch as the relevant change happens; they ride in the PR. No separate timing.
 - **DEVLOG:** a merged PR is a natural narrative unit → entry written at merge.
