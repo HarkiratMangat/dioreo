@@ -181,7 +181,20 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.41.2 — 2026-07-28 17:35 EDT (#49) — A table of contents you can't actually search
+## v2.41.3 — 2026-07-28 18:05 EDT (#50) — A number I invented, in three files, wrong by 4x
+**Docs + comments only — no behaviour change.**
+- While checking whether `dior-cli` still worked against the rewritten script, I measured the panel's
+  actual runtime for the first time: **~10s**. I had written **"~40s"** into three files — two comments in
+  `scripts/vmstatus.sh`, `.claude/rules/scripts-and-migrations.md`, and the design spec — and it was
+  load-bearing, because it justified two design decisions (parse args before the probe; skip Cloud Logging
+  on the VM). Both decisions remain right at 10s; the number supporting them was fabricated.
+- **This is [[feedback_no_duplicated_state_in_prose]] violated inside the same session that quotes it.**
+  A figure nobody measured, copied to three places, wrong by 4x within three hours. Replaced with either
+  a date-bound measurement ("measured ~10s on 2026-07-28 18:05 EDT") or no number at all where the
+  argument doesn't need one.
+- Corrected alongside the `dior-cli` fixes, since measuring it is what exposed it.
+
+## v2.41.2 — 2026-07-28 17:35 EDT (#49 · `550517b`) — A table of contents you can't actually search
 **Docs + enforcement only — no bot runtime change, no deploy needed.**
 - **Harkirat's question:** *"Confused why DEVLOG uses 'later', 'afternoon', 'late afternoon' etc instead
   of just utilizing the timestamp system already used throughout docs?"* There was no reason — those

@@ -86,6 +86,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 15:52 EDT — The error counter that could never have been right
 - 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
 - 2026-07-28 17:35 EDT — A table of contents you can't actually search
+- 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -2815,3 +2816,33 @@ the next person to write a regenerator will hit exactly this.
 
 The general lesson, which is really the same one as the entry above it: when you automate a check, the
 thing to design hardest is not what it catches. It's what it must leave alone.
+
+
+---
+
+## 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
+
+Harkirat asked me to check whether `dior-cli` had broken, since it shells out to `scripts/vmstatus.sh`.
+Checking that meant actually timing the rewritten panel, which nobody had done. **10.4 seconds.**
+
+I had been writing **"~40s"** all afternoon. Twice in the script's own comments, once in the path-scoped
+rules file, once in the design spec. Wrong by a factor of four, and not idle decoration — it was the
+stated justification for two real design decisions: parse arguments before the probe runs, and skip Cloud
+Logging entirely when running on the VM. Both decisions survive at 10 seconds. But I argued for them with
+a figure I had never measured, and then repeated it until it looked established.
+
+The uncomfortable part is that this repo has a memory file named
+`feedback_no_duplicated_state_in_prose` whose entire thesis is that a present-tense number in prose is a
+copy of state that nothing updates, and which cites four figures found already wrong by 37-59%. I quoted
+that principle in this same session, in the spec, while explaining why the CLAUDE.md file deliberately
+refuses to state how many memory files exist. Then I fabricated a number and copied it to three places
+inside three hours.
+
+Where the number genuinely helps, it now carries the measurement date. Where the argument doesn't need it
+— "paying those API round-trips for empty counters would slow every deploy" is just as convincing without
+a quantity — the number is gone entirely.
+
+The wider point, and the reason this is its own entry rather than a quiet fix: the estimate was never
+flagged as an estimate. It went into a code comment reading like a measured fact, and a code comment is
+exactly where a future session goes looking for facts. If you have not measured it, either measure it or
+say you are guessing. Writing "~" in front of a number you made up is not hedging, it is decoration.

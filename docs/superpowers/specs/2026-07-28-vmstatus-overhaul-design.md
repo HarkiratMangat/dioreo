@@ -113,8 +113,9 @@ days ago up to 20 hours ago, **excluding** the last 20h); order-independent with
 arg → newest N over the 30-day window. When a window holds more lines than were shown, the total is
 printed with the exact re-run command.
 
-Parsing happens **before** the panel renders. The panel costs ~40s (an SSH round-trip plus Cloud Logging
-queries), and validating afterwards meant a typo cost the full 40s before reporting itself.
+Parsing happens **before** the panel renders. The panel costs an SSH round-trip plus Cloud Logging
+queries — **measured ~10s on 2026-07-28 18:05 EDT** — and validating afterwards meant a typo cost the
+whole probe before reporting itself.
 
 ### 2.6 Panel
 
