@@ -25,6 +25,24 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🔑 Two dead host credentials removed from `.env` — RESOLVED 2026-07-28 11:20 EDT.**
+  *Found during the memory-migration audit, entirely unrelated to what was being swept — a reminder that
+  a focused sweep is a good way to surface unrelated rot.* `.env` still held **`RENDER_API_KEY`** and
+  **`RAILWAY_TOKEN`** for hosts long gone (Render's service deleted 2026-07-27 20:20 EDT, Railway
+  abandoned 2026-07-17; the GCP VM is the only host). **No code read either** — zero `.js`/`.sh`/`.yml`
+  references.
+  **The point worth keeping:** Harkirat first commented the lines out rather than deleting them, which is
+  a reasonable instinct for "might need this later" — but **commenting out a credential does not revoke
+  it.** The string stays valid at the provider, and an API key generally authenticates against the whole
+  *account*, not the single deleted service, so it can still create and bill resources. He then revoked
+  both at Render and Railway directly, and only after that were the lines deleted. **Revoke first, then
+  delete — deleting alone would have left live keys floating with no record they existed.**
+  `PORT` was also commented out and deliberately kept: not a secret, read by nothing (`process.env.PORT`
+  appears nowhere, and there is no HTTP server or web framework in the dependency tree) — it was a
+  Render/Railway artifact, since those platforms require a bound port for web services.
+  `.env` was gitignored throughout and the keys were never committed, so there was no git-history
+  exposure to clean up.
+
 - ~~`[P2 · S · Sonnet5-M]` **Decide what to do about 6 tags whose `package.json` is one release stale.**~~
   Resolved 2026-07-27 23:23 EDT (Claude, Harkirat's call: "go with option 1, I'd rather have that consistency
   taken care of right now"). `v2.33.3`, `v2.33.4`, `v2.35.0`, `v2.35.1`, `v2.35.2`, `v2.35.3` force-moved

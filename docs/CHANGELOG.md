@@ -181,7 +181,23 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.38.1 — 2026-07-28 11:20 EDT (#40) — Remove a stray empty file that rode in with v2.38.0
+## v2.38.2 — 2026-07-28 11:20 EDT (#41) — Two dead host credentials revoked and removed
+**Docs + local `.env` hygiene — no bot runtime change, not deployed.**
+- **`RENDER_API_KEY` and `RAILWAY_TOKEN` are gone from `.env`**, revoked at their providers first.
+  Render's service was deleted 2026-07-27 and Railway abandoned 2026-07-17; the GCP VM is the only host
+  and **no code read either variable**. Surfaced by the v2.38.0 memory audit, which was looking for
+  something else entirely.
+- **The lesson, recorded in `docs/archive/resolved-list.md`: commenting out a credential is not
+  revoking it.** The first instinct was to `#` the lines out to keep them recoverable — reasonable for
+  config, wrong for secrets. The string stays valid at the provider, and an API key generally
+  authenticates against the whole *account*, not just the deleted service. **Revoke at the provider,
+  then delete the line** — deleting alone would have left live keys floating with no record they existed.
+- `PORT` stays commented rather than removed: not a secret, read by nothing (`process.env.PORT` appears
+  nowhere; there is no HTTP server or web framework here), and only ever a Render/Railway artifact.
+- `.env` was gitignored throughout and neither key was ever committed, so there is no git history to
+  scrub.
+
+## v2.38.1 — 2026-07-28 11:20 EDT (#40 · `467c843`) — Remove a stray empty file that rode in with v2.38.0
 **Repo hygiene — no bot runtime change, not deployed.**
 - **Deleted `saved`**, a 0-byte file at the repo root that was committed by mistake in v2.38.0. It was
   never referenced by anything (the `rg` hits for "saved" are the ordinary English word inside
