@@ -5,7 +5,7 @@ A Discord bot for Call of Duty Mobile (CODM) content: lucky draw info, patch not
 calendars, CP pricing, weapon loadouts, and countdown timers. Built and maintained by Harkirat
 (Discord ID `1139845545754632283`), the sole admin.
 
-**Before doing anything else this session, read `~/.claude/projects/-Applications-Diors-Builds/memory/user_working_agreement.md`**
+**Before doing anything else this session, read `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/user_working_agreement.md`**
 (start of `MEMORY.md`'s index) — it's the living summary of how Harkirat works and what this project
 expects, with links to every other memory file. This CLAUDE.md **plus the `.claude/rules/*.md` files it
 maps to** is the deepest source of truth for architecture/design decisions; the working agreement is the
@@ -33,26 +33,33 @@ split and does not gate it — see the canonical-memory-path note below.)*
 live solely in one.*
 
 ### Canonical memory path
-**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Diors-Builds/memory/` (58 memory files
-+ `MEMORY.md`, re-counted 2026-07-27 22:25 EDT — was 57 at 19:45 EDT; the addition is
-`feedback_pipe_masks_exit_status.md`, filed by the v2.36.x release work; the count is a sanity signal,
-not a spec — if you land somewhere empty or missing, you're at the wrong path).**
-Always read AND write memory there, regardless of what the session prompt suggests. Harkirat relocated
-the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14, and the harness derives a session's
-project folder from the repo path — so it now points sessions at
-`~/.claude/projects/-Applications-Claude-Code-Diors-Builds/`.
-- The `-Applications-Claude-Code-Diors-Builds` project folder DOES exist (the harness writes this repo's
-  transcripts there), but the Diors memory store is NOT there — always read/write memory at the
-  `-Applications-Diors-Builds` path above. Don't migrate Diors memory to match the repo slug: it would
-  break on every future folder move, whereas a fixed store is move-proof (decided with Harkirat 2026-07-15).
-- **⚠️ Do NOT create, delete, or symlink `-Applications-Claude-Code-Diors-Builds/memory` from a Diors
-  session.** That path is claimed by the INDEFINITELY PARKED cross-project **memory-architecture redesign** (a separate
-  project working out of `/Applications/Claude Code/`), whose plan is to make it a **symlink → the
-  canonical store**. An earlier "that subdir must never exist, delete it if it appears" note is SUPERSEDED
-  and caused real interference once (a Diors session deleted the empty slug dir 2026-07-17 — harmless,
-  guarded `rmdir`, no memory lost, but exactly the cross-project interference to avoid). Leave that path
-  alone and defer to the memory-redesign project. Status/design: `/Applications/Claude Code/local/memory-architecture-STATUS.md`
-  (+ core-memory `project_memory_architecture_continuation`). See [[feedback_defer_to_owning_project]].
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/`
+(60 memory files + `MEMORY.md`, counted 2026-07-28 01:41 EDT at migration; the count is a sanity
+signal, not a spec — if you land somewhere empty or missing, you're at the wrong path).**
+Always read AND write memory there. This is the repo's **current** harness slug, so it is also where
+Claude Code's native memory feature already looks — the path is correct *by default* now, not because
+a session remembered to follow a pointer note.
+
+**Migrated 2026-07-28 01:41 EDT from the old `-Applications-Diors-Builds` slug** (shipped v2.38.0).
+Harkirat relocated the repo to `/Applications/Claude Code/Diors-Builds` on 2026-07-14 and the harness
+derives the project folder from the repo path, so the store had been stranded at a slug the platform
+never reads, bridged only by a redirect note in this file.
+- **The old `-Applications-Diors-Builds/memory/` directory still exists as a frozen, unmaintained
+  backup** carrying a `_MIGRATED.md` tombstone. **Never read or write there** — it will drift stale.
+  It is kept only so the move stays reversible; deleting it is a separate, later decision.
+- **The reversed decision.** A 2026-07-15 session pinned the store to a fixed slug on "a fixed store is
+  move-proof" reasoning. The hidden cost was that the bridge became *instruction-following*, which
+  fails silently — a session that skips the note loads no memory and nothing reports it. Harkirat
+  reversed this 2026-07-28 (~01:30 EDT): a correct path beats a fixed path plus a note.
+- **The path reservation was released, not overridden.** The INDEFINITELY PARKED cross-project
+  **memory-architecture redesign** had claimed this path for a planned symlink → central store.
+  Harkirat released that claim *for Diors specifically*; the redesign's own docs
+  (`/Applications/Claude Code/local/memory-architecture-STATUS.md` + `meta-deferred-list.md`) were
+  annotated in the same pass. **The general defer-to-owning-project rule is NOT retired** — see
+  [[feedback_defer_to_owning_project]]. Full record: memory `project_memory_slug_migration.md`.
+- ⚠️ **Native auto-load is still UNVERIFIED.** The correct path means the platform *can* see the store;
+  it does not prove it loads it. The `SessionStart` hook + this file remain the depended-upon
+  mechanism — do not remove either on the assumption that native loading now covers it.
 
 ### `.env` is never un-gitignored
 `.env` stays gitignored, deliberately, and should **NEVER** be un-ignored regardless of repo visibility —
@@ -239,7 +246,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
   Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
-- **Memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` (start at `user_working_agreement.md`).
+- **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (start at `user_working_agreement.md`).
 - **`docs/db-deferred-list.md`** — **this project's own deferred work**: 🐞 Active Bugs · 🔔 Reminders ·
   🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. If a session working only in
   this repo would need it, it's here. (Split out of the cross-project tracker 2026-07-25 15:56 EDT;

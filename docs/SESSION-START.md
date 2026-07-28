@@ -42,7 +42,7 @@ paste the full block after any session where something slipped.
 ```
 New session on Dior's Builds. Before anything else:
 
-1. Read ~/.claude/projects/-Applications-Diors-Builds/memory/user_working_agreement.md
+1. Read ~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/user_working_agreement.md
    in full (it links every other memory). CLAUDE.md (root) holds the invariants + a 🗺️
    navigation map; deep subsystem detail lives in path-scoped `.claude/rules/*.md` (loads
    ONLY when you touch matching code) and `docs/` (ROADMAP, reference/ ops+history) —
@@ -51,13 +51,14 @@ New session on Dior's Builds. Before anything else:
    Also read `docs/diors-builds notes.md` — my central scratchpad for thoughts/plans.
    It's raw intake, NOT source of truth (CLAUDE.md + the rules are); keep it tidy, and mark
    items [x] implemented / [-] abandoned per its own header. See the central-notes memory.
-   ⚠️ Canonical Diors memory = the -Applications-Diors-Builds path (read/write ONLY there).
-   The harness may point you at -Applications-Claude-Code-Diors-Builds (repo-slug): its folder
-   exists (transcripts) but Diors memory is NOT there — don't migrate it (fixed store =
-   move-proof). And do NOT create/delete/symlink that slug's memory/ path — it's claimed by the
-   INDEFINITELY PARKED cross-project memory-architecture redesign (symlink → canonical planned); leave it,
-   defer to that project (a Diors session wrongly deleted it 2026-07-17 on a superseded note).
-   See feedback_defer_to_owning_project.
+   ⚠️ Canonical Diors memory = the -Applications-Claude-Code-Diors-Builds path (the repo's
+   CURRENT slug — read/write ONLY there). MIGRATED there 2026-07-28 01:41 EDT from the old
+   -Applications-Diors-Builds slug, which is now a frozen backup with a _MIGRATED.md tombstone
+   in it — never write to the old path. The old "fixed store is move-proof, don't migrate" rule
+   is RETIRED: its bridge was a pointer note, i.e. instruction-following, which fails silently.
+   The parked memory-architecture redesign's claim on this path was RELEASED by Harkirat for
+   Diors specifically — the general defer-to-owning-project rule still stands.
+   See project_memory_slug_migration + feedback_defer_to_owning_project.
 
 2. NON-NEGOTIABLES — I've had to re-flag these before, so self-check them without
    waiting to be reminded:

@@ -33,8 +33,8 @@ kind of content lives and who's responsible for keeping it current.
 | **`archive/`** | **Dead archive — don't read by default.** `graveyard.md` (resolved + ℋ-confirmed intake swept out of the notes file), `resolved-list.md` (closed entries from `db-deferred-list.md`), and the dated pre-tidy notes snapshot (pre-2026-07-18, largely superseded by git history). Renamed from `notes-archive/` and given its two archive files 2026-07-25 21:43 EDT. | Only when running a sweep, or looking something specific up. | reference |
 
 **Two authoritative records that live OUTSIDE this folder:**
-- **Memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` (NOT the repo-slug path; see CLAUDE.md's
-  canonical-memory-path note). Standing rules for how to work. **Start at `user_working_agreement.md`** — its
+- **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (the repo-slug path; it
+  MOVED here 2026-07-28 01:41 EDT — see CLAUDE.md's canonical-memory-path note). Standing rules for how to work. **Start at `user_working_agreement.md`** — its
   top "🔴 THE RULES THAT GET SKIPPED" checklist is the fastest way to load the non-negotiables. `MEMORY.md`
   is the index.
 - **`/Applications/Claude Code/meta-deferred-list.md`** (outside this repo) — the **cross-project** tracker,

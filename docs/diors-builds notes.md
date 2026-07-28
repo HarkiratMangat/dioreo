@@ -183,7 +183,7 @@ items above this heading.)*
 | Confirmed **bug** in the bot, or a Dior's-Builds reminder / watch-for | **`docs/db-deferred-list.md`** → its 🐞 Active Bugs / 🔔 Reminders sections (moved in-repo 2026-07-25 21:43 EDT — these used to live in the cross-project file) |
 | Genuinely cross-project item, MarkEdit-extension work, or Claude/Anthropic product feedback | **`/Applications/Claude Code/meta-deferred-list.md`** |
 | Architecture / design "why" | **`CLAUDE.md`** (invariants + nav map) + the matching **`.claude/rules/*.md`** |
-| Workflow lesson or standing rule | **memory** — `~/.claude/projects/-Applications-Diors-Builds/memory/` |
+| Workflow lesson or standing rule | **memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` |
 | Resolved **and** ℋ-confirmed item from this file | **`docs/archive/graveyard.md`** (swept, never deleted) |
 
 **This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless.
