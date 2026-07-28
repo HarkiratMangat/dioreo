@@ -45,7 +45,9 @@ genuinely open). This document settles both.
   largely remove those: v2 hotfixes are rare by design, and syncing is `git fetch && git merge
   origin/main` performed *from* `v3-pre-release` without ever leaving it. Against that: a worktree gets
   no `.claude/settings.local.json` (gitignored), so **every Claude session started there loses both
-  `SessionStart` hooks** — the `docs/SESSION-START.md` injection and the notes-file open-item count. It
+  `SessionStart` hooks**  ⚠️ *[OBSOLETE as of 2026-07-28 13:10 EDT — the hooks moved to tracked
+  `.claude/settings.json` and `settings.local.json` is tracked too, so a worktree now inherits both.
+  The deferral may still be right on the other grounds listed; this reason no longer applies.]* — the `docs/SESSION-START.md` injection and the notes-file open-item count. It
   also needs its own `node_modules` and a symlinked `.env.dev`. Deferring costs nothing and is a
   one-command change later.
 

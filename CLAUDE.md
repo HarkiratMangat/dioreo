@@ -186,8 +186,10 @@ Merge, **verify `git log -1` shows this release**, then tag. A third `PreToolUse
 ✅ **These hooks live in `.claude/settings.json`, which is TRACKED** — they ride in PRs and survive a
 fresh clone or a worktree. *(Promoted 2026-07-28 12:45 EDT. They previously sat in the gitignored
 `.claude/settings.local.json`, which meant the enforcement layer was unrecoverable and had to be
-re-added by hand; that is no longer true.)* `settings.local.json` still exists and stays gitignored —
-it now holds **only machine-specific permissions**, which is what it is for. **Put any new hook in
+re-added by hand; that is no longer true.)* `settings.local.json` is now **tracked too** (un-ignored
+2026-07-28 13:10 EDT) and holds **only machine-specific permissions**. Note it needed an explicit
+`!.claude/settings.local.json` negation in `.gitignore`, because the GLOBAL `~/.config/git/ignore`
+ignores that filename in every repo on this machine — removing the repo-level pattern alone did nothing. **Put any new hook in
 `settings.json`, never in the local file**, or it silently becomes unrecoverable again.
 
 ### Maintaining context comments — please keep doing this

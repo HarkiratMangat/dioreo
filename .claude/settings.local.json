@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(Object.keys\\(process.env\\).filter\\(k=>/DISCORD|MONGO|CLIENT|PORT/i.test\\(k\\)\\)\\)\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\(Object.keys\\(process.env\\).filter\\(k=>!/^\\(npm_|PATH|HOME|SHELL|USER|TERM|LANG|PWD|SHLVL|LOGNAME|TMPDIR|XPC|SSH|COMMAND_MODE|OLDPWD|_|EDITOR|LC_\\)/i.test\\(k\\)\\)\\)\")",
+      "Bash(node index.js)",
+      "Bash(node -c index.js)",
+      "WebFetch(domain:docs.discord.com)",
+      "Bash(node -c commands/timestamp.js)",
+      "mcp__plugin_mongodb_mongodb__connect",
+      "mcp__plugin_mongodb_mongodb__find",
+      "mcp__plugin_mongodb_mongodb__aggregate",
+      "mcp__plugin_mongodb_mongodb__aggregate-db",
+      "mcp__plugin_mongodb_mongodb__count",
+      "mcp__plugin_mongodb_mongodb__list-databases",
+      "mcp__plugin_mongodb_mongodb__list-collections",
+      "mcp__plugin_mongodb_mongodb__collection-indexes",
+      "mcp__plugin_mongodb_mongodb__collection-schema",
+      "mcp__plugin_mongodb_mongodb__collection-storage-size",
+      "mcp__plugin_mongodb_mongodb__db-stats",
+      "mcp__plugin_mongodb_mongodb__explain",
+      "mcp__plugin_mongodb_mongodb__export",
+      "mcp__plugin_mongodb_mongodb__mongodb-logs",
+      "mcp__plugin_mongodb_mongodb__list-knowledge-sources",
+      "mcp__plugin_mongodb_mongodb__search-knowledge",
+      "Bash(claude mcp *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk grep *)",
+      "Bash(rtk find *)",
+      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+      "Bash(ls -la ~/.claude/hooks/ | head -40; echo ---; ls ~/.claude/projects/ | head)"
+    ]
+  }
+}

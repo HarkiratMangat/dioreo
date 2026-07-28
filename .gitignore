@@ -18,11 +18,25 @@ local/
 builds.xlsx
 
 # AI CLI & Memory Folders
-# NOTE: ignore ONLY the local settings, NOT all of .claude/ -- .claude/rules/*.md (13 path-scoped rule
-# files) and .claude/settings.json are deliberately TRACKED (see the CLAUDE.md modularization, v2.31.0).
-# A blanket `.claude/` would silently stop new rule files from being committed. `.remember/` and
-# `.superpowers/` are local skill scratch (never were tracked) -- fine to ignore (confirmed 2026-07-24).
-.claude/settings.local.json*
+# NOTE: NOTHING under .claude/ is ignored any more except throwaway backups. The rule files
+# (.claude/rules/*.md, path-scoped), .claude/settings.json (the enforcement hooks) and
+# .claude/settings.local.json (permissions) are all deliberately TRACKED. A blanket `.claude/` would
+# silently stop new rule files from being committed. `.remember/` and `.superpowers/` are local skill
+# scratch (never were tracked) -- fine to ignore (confirmed 2026-07-24).
+# settings.local.json was un-ignored 2026-07-28 13:10 EDT (Harkirat's call): it is the last piece of
+# the Claude-Code config that was unrecoverable, it holds only permission strings (verified: no
+# secrets, and the repo is private), and tracking it means a fresh clone gets the whole working setup.
+# Expect churn -- Claude Code rewrites this file whenever a permission is granted.
+# ⚠️ Secrets still NEVER go in .claude/ -- `.env` remains the hard invariant (see CLAUDE.md).
+# ⚠️ The repo-level entry alone was NOT enough: `~/.config/git/ignore` (the GLOBAL excludes file)
+# carries `**/.claude/settings.local.json`, which ignores it in EVERY repo on this machine. Editing
+# that global file would silently change behaviour for every other project, so the un-ignore is scoped
+# here with an explicit negation — a repo `.gitignore` outranks the global excludes file. Found with
+# `git check-ignore -v` 2026-07-28 13:10 EDT, after removing the local pattern left it still ignored.
+!.claude/settings.local.json
+.claude/settings.local.json.bak*
+.claude/*.bak
+.claude/*.bak-*
 .remember/
 .superpowers/
 
