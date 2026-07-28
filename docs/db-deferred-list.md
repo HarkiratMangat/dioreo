@@ -321,6 +321,34 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
+- `[P2 · S · Sonnet5-H]` **Put `~/.claude` under local git — NO ignore file (Harkirat's call,
+  2026-07-28 12:45 EDT).** The global layer — `hooks/usage-guard.mjs`, global `CLAUDE.md`, `RTK.md`,
+  `settings.json`, `statusline.sh`, and all **4 memory stores** under `projects/*/memory/` — has **no
+  version control at all**. The 2026-07-28 12:05 EDT hook audit rewrote all of it with no way to diff or roll back;
+  the only record a change happened is the memory files themselves.
+  - **Decided shape: a LOCAL repo with no remote and NO `.gitignore`.** Harkirat rejected the
+    allowlist-`.gitignore` design outright, and the reason is measured, not stylistic: **a `.gitignore`
+    makes those paths invisible to `rg` unless a session remembers `--no-ignore`, and a session may not.**
+    Tested 2026-07-28 12:40 EDT on a scratch repo — `rg` found 2/2 files with no repo, **2/2 in a repo
+    with no ignore file**, and only 1/2 once a `.gitignore` existed. **`.git/info/exclude` does NOT dodge
+    it** — ripgrep honours that too (also tested, 1/2). So: no ignore file anywhere.
+  - **The problem that must be solved for this to be safe, since nothing is ignored:** `~/.claude` is
+    ~1.3 GB — `plugins/` 613M, `projects/` 301M (346 session transcripts), `security/` 295M,
+    `context-mode/` 57M. The authored part is only **~1.1 MB**. So **`git add -A` must never be run
+    there**; a stray one would commit every transcript (which contain whatever was pasted into a session)
+    and 1.3 GB of cache. Intended guard: commit only via explicit `git add <path>`, plus a **pre-commit
+    hook that rejects any staged path outside an allowlist** — same "checkable rule becomes a hook"
+    strategy as [[reference_enforcement_hooks]], and it gives the safety a `.gitignore` would have
+    without the search blindness. `git status` will be permanently noisy with untracked files; that is
+    the accepted cost of keeping `rg` honest.
+  - Also confirmed while scoping: `settings.json` contains **no secret-shaped strings**, and a secret
+    scan over the candidate set is clean apart from one false positive in a vendor skill doc
+    (`skills/mongodb-mcp-setup/SKILL.md`, a `mongodb+srv://user:pass@` template) — so the pre-commit
+    scan needs a review step, not blind trust. `~/.claude.json` (60K, outside the dir, holds MCP/project
+    state) stays untracked.
+  - *Not urgent — no data is at risk today, it is a recoverability gap.* Related, and NOT a substitute:
+    the project's own hooks were promoted to tracked `.claude/settings.json` in v2.39.0.
+
 - `[P2 · M · 🧩needs-design · ⛓️blocked-by nothing, just deferred]` **Give the dev bot a real Cloudinary
   write namespace instead of the fail-closed block.** Filed 2026-07-27 18:40 EDT alongside the guard in
   `utils/cloudinaryDevGuard.js` (v2.35.9). The guard currently refuses **every** Cloudinary write when

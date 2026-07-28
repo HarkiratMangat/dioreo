@@ -89,7 +89,7 @@ code) and finalized on the branch in the final pre-merge checkpoint:
       2026-07-27 21:50 EDT.** Before deleting, confirm the PR really merged
       (`gh pr list --head <branch> --state all --json number,state`); don't trust `git branch --merged`,
       which never reports a squash-merged branch as merged. Enforced by two hooks in
-      `.claude/settings.local.json` (a `SessionStart` stale-branch report + a `PostToolUse` nudge when a
+      `.claude/settings.json` (a `SessionStart` stale-branch report + a `PostToolUse` nudge when a
       merge omits `--delete-branch`) — **gitignored, so local-only and not part of any PR.**
    ⚠️ **Rewritten 2026-07-27 21:27 EDT.** This step previously prescribed a **second**
    `chore(release): finalize …` commit on `main`, tagged instead of the squash commit — the real shape

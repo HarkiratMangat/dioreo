@@ -171,7 +171,7 @@ listing locally as though they were live. Use `gh pr list --state all`, or `git 
 **Merge with `gh pr merge --squash --delete-branch`** so the branch dies with its PR — the flag removes
 the local branch too, which auto-delete-on-merge does not. Without it they silently pile up: **10 merged
 branches were found rotting on 2026-07-27 21:50 EDT**, the oldest from PR #11, all long since merged.
-A merged branch must never outlive its PR. Two hooks in `.claude/settings.local.json` now enforce this —
+A merged branch must never outlive its PR. Two hooks in `.claude/settings.json` (tracked, so they survive a fresh clone) now enforce this —
 a `SessionStart` check that fetches with `--prune` and lists any `[gone]` branch, and a `PostToolUse`
 check that fires when a `gh pr merge` runs without `--delete-branch`.
 
@@ -183,8 +183,12 @@ Merge, **verify `git log -1` shows this release**, then tag. A third `PreToolUse
 `git tag -a vX.Y.Z <sha>` when the target's `package.json` ≠ the tag. See memory
 `feedback_pipe_masks_exit_status`.
 
-⚠️ `.claude/settings.local.json` is **gitignored**, so all three hooks are local-only and do NOT ride in
-a PR — on a fresh clone the conventions above are all there is, and the hooks must be re-added by hand.
+✅ **These hooks live in `.claude/settings.json`, which is TRACKED** — they ride in PRs and survive a
+fresh clone or a worktree. *(Promoted 2026-07-28 12:45 EDT. They previously sat in the gitignored
+`.claude/settings.local.json`, which meant the enforcement layer was unrecoverable and had to be
+re-added by hand; that is no longer true.)* `settings.local.json` still exists and stays gitignored —
+it now holds **only machine-specific permissions**, which is what it is for. **Put any new hook in
+`settings.json`, never in the local file**, or it silently becomes unrecoverable again.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it
@@ -275,13 +279,13 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
   central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
-  real `git diff`/`git log` covers their history. ⚠️ **Two `SessionStart` hooks in `.claude/settings.local.json` PARSE these
+  real `git diff`/`git log` covers their history. ⚠️ **Two `SessionStart` hooks in `.claude/settings.json` PARSE these
   files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
   by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
   `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME
   change and dry-run it** (the `# Graveyard` anchor it used before 2026-07-25 21:43 EDT was removed by the
-  archive split and would have silently un-bounded the scan). Note `settings.local.json` is **gitignored**
-  — hook fixes are local-only and do NOT ride in a PR.
+  archive split and would have silently un-bounded the scan). Since 2026-07-28 12:45 EDT these hooks live
+  in **tracked** `.claude/settings.json`, so a hook fix DOES ride in the PR — fix it in the same change.
 
 ## Stack (summary)
 discord.js v14 (`^14.26.4`) · Node.js (v24 on the VM) · MongoDB Atlas via Mongoose · `chrono-node`
