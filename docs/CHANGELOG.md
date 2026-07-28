@@ -191,6 +191,12 @@ changelog until v3 actually launches.
   them actually represented via a range heading (`## v2.18.0–v2.18.3`) or an inline mention, which is the
   documented convention for trivial/docs-only releases. Noted on the sweep-script item so it isn't written
   that way. A check that cries wolf 23 times gets ignored, which is worse than no check.
+- **Fixed the always-loaded lifecycle wording that would have recreated the two-commit bug.** Root
+  `CLAUDE.md` — the only file re-injected after `/compact`, and so the most likely thing a future session
+  follows — read `` `gh pr merge --squash` + `package.json` bump + version tag ``. As a sequence that says
+  *merge first, then bump*, which is precisely the pattern v2.36.0 retired. The final pre-merge checkpoint
+  is now its own lifecycle step, with the one-commit-one-tag invariant and the failure mode named outright:
+  if you're about to commit on `main` after merging, stop.
 - **Closed a `-pre` suffix ambiguity in the v3 spec.** It read as though `v3-pre-release`'s `package.json`
   must *always* carry `-pre`; it starts with the first `Pre-Release` entry. Until then the branch just
   tracks `main`'s plain version, so today's `2.36.1` there is correct, not drift.
