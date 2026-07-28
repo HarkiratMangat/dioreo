@@ -181,7 +181,24 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.41.3 — 2026-07-28 18:05 EDT (#50) — A number I invented, in three files, wrong by 4x
+## v2.41.4 — 2026-07-28 18:40 EDT (#51) — A hard reset that ate another session's work
+**Docs only — no behaviour change.**
+- **A `git reset --hard HEAD~2`** at 2026-07-28 16:35 EDT, cleaning up two throwaway commits made to test
+  the new TOC hook, also discarded the **unstaged** modification in `.claude/settings.local.json` —
+  in-flight work belonging to a **different, paused session**. `reset --hard` does not distinguish
+  between the commits you meant to drop and the working-tree changes you never looked at.
+- **Recovered from the reflog**, because the scaffold commit had incidentally captured the file. Restored
+  to unstaged-modified, byte-identical. Three permission entries were involved.
+- **I had reported the opposite.** The prior summary said that file was *"deliberately never touched or
+  committed"* — true of my commits, false of my reset. I only caught it because a follow-up question made
+  `git status` read differently than expected. It was a claim about state that was never checked against
+  state, which is the same failure mode as the `~40s` figure two releases earlier.
+- The cross-session notice in `docs/db-deferred-list.md` now tells that session to **verify its own work**
+  rather than trust this account.
+- **Rules going in:** never `reset --hard` a range whose working tree you haven't inspected, and never put
+  test scaffolding in a commit range you intend to discard — use `git stash` or a scratch worktree.
+
+## v2.41.3 — 2026-07-28 18:05 EDT (#50 · `f144e35`) — A number I invented, in three files, wrong by 4x
 **Docs + comments only — no behaviour change.**
 - While checking whether `dior-cli` still worked against the rewritten script, I measured the panel's
   actual runtime for the first time: **~10s**. I had written **"~40s"** into three files — two comments in
