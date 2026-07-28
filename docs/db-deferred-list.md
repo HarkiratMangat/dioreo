@@ -96,9 +96,11 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   actually run through both. **Bundle candidate:** the `/manage` per-slot-metadata fix shipped
   2026-07-24 18:07 EDT is also awaiting one real click-through, so test them in the same sitting.
 - `[P2 · passive watch · Claude's own call, not Harkirat's ask]` **Revisit splitting `docs/CHANGELOG.md`
-  / `docs/DEVLOG.md` into an active + archive file.** ⚠️ **Re-measured 2026-07-25 21:43 EDT: CHANGELOG
-  is 1,366 lines and DEVLOG 1,792** — the original note said "~730 lines each as of 2026-07-18, not
-  there yet," so both have roughly doubled and the "not there yet" judgement is stale. Bumped P3 → P2
+  / `docs/DEVLOG.md` into an active + archive file.** ⚠️ **Both files grow every release, so any figure
+  written here is stale on arrival — measure at decision time: `wc -l docs/CHANGELOG.md docs/DEVLOG.md`.**
+  For the trend only: ~730 lines each on 2026-07-18, roughly doubled by 2026-07-25, and still climbing
+  (both were materially larger again by 2026-07-28 — the numbers previously pinned here had drifted
+  ~40-55% low without anyone noticing, which is itself the argument for the split). Bumped P3 → P2
   on that basis; still Claude's own call, not something Harkirat asked for. Harkirat explicitly said
   **not** to add a maintained ToC to these (their `## vX.Y.Z` / `## YYYY-MM-DD` headers are already
   uniform and grep-able, so a ToC would duplicate that for no gain — unlike CLAUDE.md's ToC, which
@@ -112,6 +114,30 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Two are P1 now** —
 the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items added since.*
 
+- `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
+  from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
+  sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a
+  DMZ build is silently treated as MP and loses its DMZ-mode metadata. Needed: teach the prompt to
+  **detect** a DMZ build, **record its full attachment set**, and **differentiate** it from MP so it gets
+  the DMZ metadata. **Known constraint:** "DMZ partials are the 5-attachment prompt cap" — DMZ builds
+  exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap,
+  and the fix has to address the cap (batching or a second pass), not just the prompt wording.
+  Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
+- `[P2 · M · Sonnet5-H]` **`scripts/vmstatus.sh logs` overhaul — timestamps, commit hash, time-range args.**
+  *Filed 2026-07-28 01:41 EDT from notes L120 — also **never filed anywhere** before now.* Today's output
+  is unreadable as history: no date/time on a log line and no indication of **which commit the bot was
+  running** when it emitted one, so you cannot tell when anything happened. Spec as Harkirat gave it:
+  1. Stamp each line with **date/time + the running commit hash**.
+  2. Raise retention well past the current 1,000 lines (~3,000) — **first confirm the VM actually has the
+     disk headroom**, which is an open question in the original note, not an established fact.
+  3. Default line count **25 → 40**.
+  4. A **time-range argument** stacking with the line count: `vmstatus.sh logs <time> <lines>` —
+     `logs 2h 60`, `logs 20h-5d`, `logs 30m-260h 200`. Units **m/h/d only** (30-day history, so no
+     weeks/months). A range like `2h-7d` means *from 7 days ago up to 2 hours ago*, **excluding** the last
+     2 hours. No time arg → live trail at the default line count.
+  5. If both args are given and more lines exist than were shown, **print the total and tell the user to
+     re-run** to see the rest.
+  🔗 Bundle-with: the deferred `/status` command + the tool-discovery item's uptime/status-page idea.
 - `[P1 · L · Opus5-H · 🧩needs-design]` **Line-by-line audit + restructure of the entire documentation,
   memory, and enforcement surface.** Added 2026-07-27 22:35 EDT (Harkirat's ask). **Goal: everything
   *correct and current*.** These files have grown substantially and a great deal changed in the last
@@ -180,8 +206,15 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   telling you to tag the squash commit when every real tag points at the finalize commit. Checks worth
   keeping: newest `package.json` == newest `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every
   changelog version has a tag and a summary line; every cited SHA resolves; no cross-file duplicate item
-  titles without a `⇄` marker; `CLAUDE.md`'s memory-file count matches the store; `MEMORY.md` indexes
-  every memory file.
+  titles without a `⇄` marker; `MEMORY.md` indexes every memory file (and every indexed file exists);
+  the canonical memory dir exists and contains `MEMORY.md`.
+  **⚠️ Note (2026-07-28 01:41 EDT): the old "`CLAUDE.md`'s memory-file count matches the store" check is
+  retired — that count was deleted rather than maintained.** A number in prose is a copy of state nothing
+  updates; it rots and becomes the misinformation it was meant to catch. **Generalize the check instead:
+  the real class of bug is any present-tense count/size claim in a doc.** A sweep on 2026-07-28 found
+  four already wrong by 37–59% (`CLAUDE.md` "~180 lines" at 287, CHANGELOG "1,366" at 2,126, DEVLOG
+  "1,792" at 2,460). Prefer a structural test ("does it exist / contain X") or a dated measurement
+  ("was N on DATE") over a bare present-tense number, and have the script flag new ones.
   **Extended 2026-07-27 21:27 EDT** by the lagged-backfill convention (see the resolved "1 commit + 1 tag"
   item in `archive/resolved-list.md`) — three more machine-checkable invariants, and note the script should
   **perform** the backfill, not merely flag it, since it is a mechanical additive edit:

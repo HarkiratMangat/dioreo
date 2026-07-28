@@ -33,9 +33,13 @@ split and does not gate it — see the canonical-memory-path note below.)*
 live solely in one.*
 
 ### Canonical memory path
-**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/`
-(60 memory files + `MEMORY.md`, counted 2026-07-28 01:41 EDT at migration; the count is a sanity
-signal, not a spec — if you land somewhere empty or missing, you're at the wrong path).**
+**⚠️ Canonical memory path — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/`.**
+**Sanity test:** that directory must exist, contain `MEMORY.md`, and hold many `*.md` memory files.
+Missing, empty, or no `MEMORY.md` → **you are at the wrong path.** Run `ls` and believe it.
+> *No file count is quoted here on purpose.* A count in prose is a copy of state that nothing updates:
+> it rots silently and then *becomes* the misinformation it was meant to catch — this file claimed "58"
+> while the store held 59, and `docs/README.md` still called this file "~180 lines" at 287. The
+> structural test above needs no maintenance and can't go stale. **Don't "helpfully" add a number back.**
 Always read AND write memory there. This is the repo's **current** harness slug, so it is also where
 Claude Code's native memory feature already looks — the path is correct *by default* now, not because
 a session remembered to follow a pointer note.
