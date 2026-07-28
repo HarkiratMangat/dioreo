@@ -205,9 +205,18 @@ changelog until v3 actually launches.
   path** — no hook, setting, or script referenced either slug — so this was data + prose only.
 - **The old store is kept as a frozen backup** carrying a `_MIGRATED.md` tombstone, so the move stays
   reversible. Deleting it is a separate, later decision.
-- **Four files inside the store contradicted the migration** (they asserted the old path and forbade the
-  new one) and were rewritten, not path-swapped. Also fixed a long-dangling `ROADMAP.md` reference to a
-  "canonical-memory-path note at the top of this file" that has never existed in that file.
+- **Files inside the store contradicted the migration** (asserting the old path, forbidding the new one)
+  and were rewritten as content, not path-swapped — a find-replace would have produced a
+  self-contradicting store that still passed every checksum. Also fixed a long-dangling `ROADMAP.md`
+  reference to a "canonical-memory-path note at the top of this file" that has never existed there.
+- **A wider audit after the first pass found 8 further stale assertions**, none of which contained the
+  literal old-slug string in an obvious place: the parked-redesign memory still declaring "the slug-path
+  guard still stands" (in its frontmatter *and* body *and* `MEMORY.md` index line), a **second**
+  claim-statement in `meta-deferred-list.md`, a "don't re-derive" section in `memory-architecture-STATUS.md`
+  asserting the current slug had no memory folder, the design doc's stale premise, the now-completed
+  migration handoff, and — the only one that would have actively broken — **`dior-cli/CLAUDE.md`, a
+  separate repo pointing its sessions at the dead path.** The lesson: grepping one string finds phrasings,
+  not claims. The audit had to search for the *idea* ("move-proof", "guard stands", "fixed store").
 - ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
   that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
 - **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.**
