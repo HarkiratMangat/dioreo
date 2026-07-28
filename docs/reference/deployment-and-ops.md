@@ -54,7 +54,14 @@ Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root 
   **There is no Render fallback any more — the GCP VM is the only host.**
 - *(HISTORICAL — Render, retired 2026-07-17, service deleted 2026-07-27 20:20 EDT.)* Was
   git-connected auto-deploy off `main` (turned off 2026-07-16 after the Gateway hang, then the host
-  abandoned 2026-07-17). — **Railway is NOT connected to a git source at all**
+  abandoned 2026-07-17).
+  **⚠️ Everything about Railway below is ALSO historical — Railway is retired too and is NOT a deploy
+  target (clarified 2026-07-28 01:41 EDT).** It is written in the present tense because it was recorded
+  while Railway was live, and the "HISTORICAL" marker above only ever named Render, so the Railway
+  paragraphs read as current operating instructions. They are not: **the GCP VM is the only host.** Do
+  not run `railway up`, and do not act on any Railway guidance here. (Its now-dead `RAILWAY_TOKEN` is
+  still in `.env` pending revocation — see `docs/db-deferred-list.md`.) Kept for the record because the
+  git-source decision below was a deliberate call, not an oversight. — **Railway is NOT connected to a git source at all**
   (confirmed 2026-07-12 via `railway status --json`: the `diors-builds` service's `source` is
   `{ image: null, repo: null }` — it's deployed purely from local CLI snapshot uploads, there's no
   auto-deploy toggle to flip because there's nothing to auto-deploy from). Harkirat was explicitly
@@ -284,7 +291,7 @@ before deploying" rule only ever applied to same-token runs.
 `scripts/devCommands.js` (added 2026-07-26 21:47 EDT).** Slash-command registration is stored on
 Discord's side against the **application**, not the process: `index.js` writes it once per boot with
 `rest.put(Routes.applicationCommands(client.user.id), …)` and Discord keeps it indefinitely. Because the
-bot is user-installed, `Dio (Dev)`'s 20 commands therefore follow Harkirat into every server and DM,
+bot is user-installed, `Dio (Dev)`'s full command list therefore follows Harkirat into every server and DM,
 duplicating prod's identical list, whether or not anything is running. Picking one just yields
 "The application did not respond" after the 3s interaction timeout.
 
@@ -298,6 +305,13 @@ PUT runs on every startup. Two independent safeguards keep this off prod: the sc
 **directly off disk** rather than through `process.env` (a `dotenv`-based script could hold the prod
 token via the backfill behavior described above), and it aborts if `.env.dev`'s `BOT_TOKEN` matches
 `.env`'s. It also prints the resolved application name/id before acting — if that ever says
+> **⚠️ The registered command count is DB-derived, not a constant — don't hardcode it in docs.**
+> `index.js` registers: the 12 files in `commands/`, plus `/all`, plus **one command per MP category**
+> generated in a loop from `await Loadout.distinct('category', { mode: 'MP' })` merged with
+> `SECONDARIES`. **Adding a weapon category to Mongo silently changes the total** — no code or doc
+> change involved. It happened to be 20 on 2026-07-26; treat any figure written down as a snapshot and
+> re-derive from the running app. (This is why "20 commands" used to appear as a standing fact here.)
+
 `Dior's Builds` instead of `Dio (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
 `Dio (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
 

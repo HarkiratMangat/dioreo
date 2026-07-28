@@ -321,9 +321,11 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   - ~~Audit for other stale absolute paths~~ — DONE, came back clean: no live config/code references
     the pre-relocation path anymore. The only remaining `/Applications/Diors-Builds` mentions are
     historical incident narrative in `docs/SESSION-START.md`/`CHANGELOG.md`/`DEVLOG.md`, correctly
-    describing the past hook bug, not stale active paths. **Note: the memory store staying at the
-    `-Applications-Diors-Builds` slug is NOT part of this — it's deliberate and move-proof, see the
-    canonical-memory-path note at the top of this file.**
+    describing the past hook bug, not stale active paths. **Note (updated 2026-07-28 01:41 EDT): the
+    memory store no longer sits at the `-Applications-Diors-Builds` slug — it was MIGRATED to the
+    repo-slug path `-Applications-Claude-Code-Diors-Builds`, retiring the "deliberate and move-proof"
+    rationale this line used to state. See the canonical-memory-path invariant in `CLAUDE.md` (this
+    line previously pointed at "the top of this file," where no such note has ever existed).**
   - ~~General dead-code / stale-comment / unused-dependency review~~ — DONE. Found and fixed 2 real
     items: (1) the unused top-level `mongodb` npm dependency (declared in `package.json` but never
     directly `require()`'d anywhere — only `mongoose`, which bundles its own driver, is actually used)

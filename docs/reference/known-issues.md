@@ -20,11 +20,15 @@ now only holds cross-project ones).*
   per-render latency for a cosmetic nicety Harkirat said he's fine leaving static. Nameplate's own
   animated `.webm` was tried in its place for the same reason and reverted for the same tap-to-play
   limitation; that plumbing (`nameplateAnimatedUrl`) was removed rather than left dead.
-- **`ffmpeg` is a real, unverified-elsewhere system dependency** now that `utils/stillFrame.js`
-  exists (View Colors' decoration extraction, `'dynamicProfile'`'s decoration source) — confirmed
-  present on this Mac, not guaranteed on Render/Railway's production containers. If decoration color
-  extraction ever silently stops working in production specifically (works locally, not live), check
-  for `ffmpeg` on the deployed image before assuming it's a code bug.
+- **`ffmpeg` is a real system dependency** (not an npm package — must be on `PATH`) for
+  `utils/stillFrame.js`: View Colors' decoration extraction and `'dynamicProfile'`'s decoration source.
+  **Largely RESOLVED — updated 2026-07-28 01:41 EDT.** This entry used to warn it was "not guaranteed on
+  Render/Railway's production containers." **Both hosts are retired** — the bot has run on the GCP VM
+  since the 2026-07-17 cutover, and Render was deleted in v2.35.14. Unlike an opaque container, the VM
+  is provisioned explicitly and **`ffmpeg` is listed among its installed packages** (see
+  `docs/reference/deployment-and-ops.md`). Kept as a flagged dependency only because it is still a
+  *system* binary that a VM rebuild could omit: if decoration color extraction ever works locally but
+  not live, check `ffmpeg` on the VM before assuming a code bug.
 - **Pagination/toggle clicks (draws' New/Returning switch, calendar/draw-prices sub-page nav, etc.)
   have a structural double network round-trip, not a CPU/DB bug** (investigated 2026-07-14, Harkirat
   flagged it "feels slow"). Traced every `await` on the hot path for both `/draws`' view-switch and
@@ -66,6 +70,9 @@ now only holds cross-project ones).*
   ceiling. No click, no channel-edit permission, no scheduled job outside the bot process needed —
   this is now BUILT for `/settings` (2026-07-18): see "Passive idle-timeout auto-disable" in the
   "Panel interaction locks" (see `.claude/rules/settings-and-expiry.md`) for the shipped mechanism (`utils/passiveExpiry.js`), which
-  does exactly this. Still open: extending the same pattern to draws/calendar/drawprices/loadouts (see
-  the roadmap item below).
+  does exactly this. Still open: extending the same pattern to draws/calendar/drawprices/loadouts —
+  tracked in **`docs/ROADMAP.md`** (the "Extending `utils/passiveExpiry.js`'s `schedulePanelExpiry` to
+  their own render/re-render sites" item). *(Corrected 2026-07-28 01:41 EDT: this used to say "the
+  roadmap item below," but nothing follows it — this is the last entry in the file, and the roadmap
+  moved out to its own file on 2026-07-22.)*
 

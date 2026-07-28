@@ -199,6 +199,9 @@ Docs stop being a separate "at push time" ritual (the step that kept getting ski
 2. `docs/SESSION-START.md` — NON-NEGOTIABLES glossary: add branch/PR/merge steps; commit no longer
    gated; version = merge not went-live.
 3. `~/.claude/projects/-Applications-Diors-Builds/memory/user_working_agreement.md` — rule #1
+   *[Path note added 2026-07-28 01:41 EDT: the memory store has since MIGRATED to
+   `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/`. The path above is left as
+   written because this is a dated historical spec — but act on the new path, not this one.]*
    ("ask before every commit AND push") → "ask before push, merge, deploy"; non-negotiables glossary;
    docs land in the PR.
 4. `.claude/settings.local.json` — `PostToolUse` commit-hook → merge-hook (fire on `gh pr merge`,

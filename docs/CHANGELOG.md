@@ -181,7 +181,83 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.37.0 — 2026-07-27 22:35 EDT (#37) — The v3 sync gets a trigger, not just a mechanism
+## v2.38.0 — 2026-07-28 01:41 EDT (#39) — Memory moves to the path the platform actually reads
+**Docs + memory store — no bot runtime change, not deployed.**
+- **The memory store migrated** from `~/.claude/projects/-Applications-Diors-Builds/memory/` to
+  `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` — the slug the harness actually
+  derives from the repo path, and therefore the one Claude Code's own native memory feature reads.
+- **What was actually broken.** The repo moved to `/Applications/Claude Code/Diors-Builds` on
+  2026-07-14. A 2026-07-15 session decided to pin the store to a *fixed* slug because "a fixed store is
+  move-proof," and bridged the gap with a redirect note in `CLAUDE.md`. The reasoning was sound; the
+  cost was hidden. **The bridge was instruction-following** — a session that didn't read or obey the
+  note loaded no memory at all, and nothing anywhere reported the failure. Meanwhile the path the
+  platform *does* read sat empty. Harkirat reversed the call: a correct path beats a fixed path plus a
+  note that has to be obeyed every single session.
+- **The reservation was released, not overridden.** The parked cross-project memory-architecture
+  redesign had claimed this exact path for a planned symlink. Harkirat released it *for Diors
+  specifically*; `memory-architecture-STATUS.md` and `meta-deferred-list.md` were annotated in the same
+  pass so it's visible from the cross-project side. The general defer-to-owning-project rule is intact —
+  the distinction is that the claim's stakeholder released it, which is precisely the resolution that
+  rule says to wait for.
+- **Verified, not assumed.** All 60 files copied and checked three ways (`diff -r`, matching file
+  counts, matching aggregate `shasum`), plus a `MEMORY.md` index check on the new copy (60 linked = 60
+  on disk, zero broken, zero orphaned). Confirmed beforehand that **nothing mechanically depended on the
+  path** — no hook, setting, or script referenced either slug — so this was data + prose only.
+- **The old store is kept as a frozen backup** carrying a `_MIGRATED.md` tombstone, so the move stays
+  reversible. Deleting it is a separate, later decision.
+- **Files inside the store contradicted the migration** (asserting the old path, forbidding the new one)
+  and were rewritten as content, not path-swapped — a find-replace would have produced a
+  self-contradicting store that still passed every checksum. Also fixed a long-dangling `ROADMAP.md`
+  reference to a "canonical-memory-path note at the top of this file" that has never existed there.
+- **Three audit passes were needed, and each found things the previous one missed.** Pass 1 swept the
+  literal old-slug string. Pass 2 swept the *idea* ("move-proof", "guard stands", "fixed store") and found
+  8 more — the parked-redesign memory declaring "the slug-path guard still stands" in its frontmatter
+  *and* body *and* index line, a **second** claim block in `meta-deferred-list.md`, a *"don't re-derive"*
+  section in `memory-architecture-STATUS.md` asserting the slug had no memory folder, the design doc's
+  stale premise, the unmarked handoff, and **`dior-cli/CLAUDE.md` — a separate repo aiming its sessions
+  at the dead path.** Pass 3 went machine-wide, beyond the repo, and found more still:
+  - **19 cross-store links across 11 files in the Gif-Background-Remover memory store**, all pointing
+    into Diors' old path. All 19 targets verified present in the new store before rewriting.
+  - **The parked project's own resume-point memory** (shared-root store) telling a future session the
+    slug path was *"ABSENT — the clean precondition for the planned symlink."* It is not absent; it holds
+    a live store. That one would have sent a resumed redesign straight into a failed `ln -s`.
+  - Two `~/.claude/plans/` files instructing a resuming session to **write** memory to the old path.
+  - `local/claude md backup/` — an **unmarked** snapshot of a whole `.claude` tree (including a
+    two-generations-stale copy of the memory store) with nothing saying it was a backup. Now marked.
+- **The lesson: grep finds phrasings, not claims** — and a store that has been the canonical one for
+  weeks is referenced from places that never name it. Searching by *concept*, and searching *outside*
+  the repo, is what actually closed this out.
+- **Unrelated defects the sweeps kept surfacing, all fixed here.** Sweeping for one thing is a good way
+  to find everything else: `known-issues.md` warned that `ffmpeg` was "not guaranteed on Render/Railway's
+  production containers" (both hosts retired; the VM has it installed) and pointed at "the roadmap item
+  below" in a file that ends there; `deployment-and-ops.md`'s `HISTORICAL` marker named only Render, so
+  the Railway paragraphs after it read as live operating instructions for a dead host; and **`.env` still
+  carried `RENDER_API_KEY` and `RAILWAY_TOKEN`** for services deleted 2026-07-27 and abandoned
+  2026-07-17, read by no code. Harkirat commented all three (plus `PORT`, verified unused — no HTTP
+  server or web framework exists here) out the same session; **revocation at the providers is still
+  open, because commenting out a key does not invalidate it.**
+- **What could NOT be finished is recorded, not assumed.** Three surfaces were swept for memory
+  references (all clean, including **zero** in any `.js`/`.sh`) but never read for content accuracy:
+  **code context comments, the `.claude/rules/` bodies, and the archive/CHANGELOG/DEVLOG prose.** Those,
+  plus the `local/` folder cleanup, are folded into the standing line-by-line audit item in
+  `docs/db-deferred-list.md` — with an explicit "already done, don't redo" list so the audit starts where
+  this session stopped instead of repeating five passes of work.
+- ⚠️ **Native auto-load remains UNVERIFIED.** A correct path means the platform *can* see the store, not
+  that it loads it. The `SessionStart` hook stays the depended-upon mechanism.
+- **📌 Record note — PR #38 merged unversioned (`8eb8f2e`, 2026-07-28 01:06 EDT), and stays that way.**
+  It changed `ROADMAP.md`, `db-deferred-list.md`, `archive/resolved-list.md`, the notes file, and
+  `reference/deployment-and-ops.md`, but shipped with **no changelog entry, no `package.json` bump, and
+  no tag** — `package.json` stayed at `2.37.0`. It is recorded here as a note rather than given a
+  retroactive `v2.37.1`, because **no commit in this repo's history reads `2.37.1`**: such a tag could
+  only land on `8eb8f2e`, which reads `2.37.0`, and the `PreToolUse` tag-gate hook would refuse it —
+  the exact defect the one-commit/one-tag convention (v2.36.0) exists to prevent. Inventing the number
+  would create a changelog version that can never satisfy "every version has a tag." Keeping it a note
+  means **every `##` heading in this file remains a real, taggable version.** *The rule it illustrates:*
+  a docs-only merge either earns a version — bumped on the branch, before the squash — or it doesn't,
+  and that call must be made **at merge time**, because the bump has to live inside the commit the tag
+  will point at. It cannot be added afterwards.
+
+## v2.37.0 — 2026-07-27 22:35 EDT (#37 · `231a93e`) — The v3 sync gets a trigger, not just a mechanism
 **Docs + CI — no bot runtime change, not deployed.**
 - **`.github/workflows/sync-v3-pre-release.yml`** — merges `main` into `v3-pre-release` and pushes on
   every push to `main`. Skips cleanly when the branch doesn't exist (so it won't fail every push after
