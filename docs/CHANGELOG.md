@@ -162,7 +162,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.35.15 — 2026-07-27 20:45 EDT (`f913975`) — A scripted records sweep, and the chore checklist that was wrong
+## v2.35.15 — 2026-07-27 20:45 EDT (#32 · `f913975`) — A scripted records sweep, and the chore checklist that was wrong
 **Docs/meta only — no runtime change, not deployed.** The VM's files are at v2.35.13; its running
 process is still on v2.35.4's code (never restarted).
 - **`docs/README.md`'s chore checklist told you to tag the squash commit.** It doesn't happen and never
@@ -187,7 +187,7 @@ process is still on v2.35.4's code (never restarted).
   the "no CI on `main`" lines in CHANGELOG/DEVLOG are historical records of what was true when written.
 - Memory `feedback_push_means_full_cycle` corrected — it still described Render as "suspended/retired".
 
-## v2.35.14 — 2026-07-27 20:25 EDT (`5a41a91`) — Render deleted, VM divergence fixed: GCP is now the only host
+## v2.35.14 — 2026-07-27 20:25 EDT (#31 · `5a41a91`) — Render deleted, VM divergence fixed: GCP is now the only host
 **Real infrastructure change, but no runtime change and no deploy.** The bot process was never
 restarted and is still running v2.35.4's code.
 - **Render service `srv-d850b2og4nts73fhpfog` is DELETED.** REST `DELETE` → `204`, and a follow-up `GET`
@@ -212,7 +212,7 @@ restarted and is still running v2.35.4's code.
 - Both reminders moved to `docs/archive/resolved-list.md` recording what was verified, not just that
   they were done. Memory `project_deployment_migration_render_to_gcp` updated to match.
 
-## v2.35.13 — 2026-07-27 20:10 EDT (`1773605`) — Diagnosed the VM divergence and cleared Render's health gate
+## v2.35.13 — 2026-07-27 20:10 EDT (#30 · `1773605`) — Diagnosed the VM divergence and cleared Render's health gate
 **Docs/meta only — no runtime change, not deployed, and the VM was explicitly NOT restarted.**
 - **The VM git divergence is now fully diagnosed rather than merely flagged.** Verified live: the VM sits
   **2 ahead / 16 behind** `origin/main`. The two VM-only commits are `f1dff2c` and `42f024e` — exactly
@@ -234,7 +234,7 @@ restarted and is still running v2.35.4's code.
   (correct — `git reset --hard` on a live host is destructive); the Render deletion was held on purpose,
   being irreversible and on an external service.
 
-## v2.35.12 — 2026-07-27 19:55 EDT (`d013a9a`) — Reconciled the two tracking files; refreshed stale model tags
+## v2.35.12 — 2026-07-27 19:55 EDT (#29 · `d013a9a`) — Reconciled the two tracking files; refreshed stale model tags
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
 - **`ROADMAP.md` and `db-deferred-list.md` were duplicating each other while each claimed it didn't.**
   A token-overlap cross-check (not eyeballing) found **7 items in both files**, several with identical
@@ -260,7 +260,7 @@ restarted and is still running v2.35.4's code.
   Noted, not acted on unilaterally.
 - `MEMORY.md`'s index verified complete against the store: 0 files unlisted, 0 broken links.
 
-## v2.35.11 — 2026-07-27 19:30 EDT (`4d29f86`) — Corrected the CI deferred entry after its own precondition was met
+## v2.35.11 — 2026-07-27 19:30 EDT (#28 · `4d29f86`) — Corrected the CI deferred entry after its own precondition was met
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
 - **"Expand CI beyond syntax-check" was asserting something that had just stopped being true.** Its ⚠️
   correction block said there was *"genuinely no CI at all on `main`"* and that PR
@@ -272,7 +272,7 @@ restarted and is still running v2.35.4's code.
 - Found by a staleness sweep over `docs/` + `.claude/` + the memory store rather than by reading — the
   entry looked fine in isolation and only failed against the current state of `main`.
 
-## v2.35.10 — 2026-07-27 19:00 EDT (`2665db4`) — Synced the standing records to the v3 structure
+## v2.35.10 — 2026-07-27 19:00 EDT (#27 · `2665db4`) — Synced the standing records to the v3 structure
 **Docs/meta only — no runtime change, not deployed.** The VM is still running v2.35.4's code.
 - **The "document" step for v2.35.6's design** — a standing rule changed, so the written record had to
   catch up even though no feature code shipped.
@@ -292,7 +292,7 @@ restarted and is still running v2.35.4's code.
   (outside the repo, so not in the PR diff). The 2026-07-14 directive is marked **partly superseded**
   rather than deleted, with the three concrete changes called out inline.
 
-## v2.35.9 — 2026-07-27 18:45 EDT (`f1575d0`) — Stopped the dev bot from writing to the LIVE Cloudinary account
+## v2.35.9 — 2026-07-27 18:45 EDT (#26 · `f1575d0`) — Stopped the dev bot from writing to the LIVE Cloudinary account
 **Dev-instance safety fix — prod behaviour is byte-identical, so this is not deployed.** The VM is still
 running v2.35.4's code and nothing here changes what it would do.
 - **`.env.dev`'s `CLOUDINARY_URL` was byte-identical to prod's.** The local dev bot (`Dio (Dev)`) is not
@@ -321,7 +321,7 @@ running v2.35.4's code and nothing here changes what it would do.
   learn a new contract — dev now behaves exactly as it already did against a Cloudinary hiccup, which
   every one of these sites was built to survive.
 
-## v2.35.8 — 2026-07-27 18:25 EDT (`f3792b0`) — First CI: a syntax check on every push and PR
+## v2.35.8 — 2026-07-27 18:25 EDT (#11 · `f3792b0`) — First CI: a syntax check on every push and PR
 **Repo tooling only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/`
 was touched, so the VM is still running v2.35.4's code.
 - **This repo had zero CI before now.** `.github/workflows/ci.yml` runs `npm ci` → `npm run check` →
@@ -340,7 +340,7 @@ was touched, so the VM is still running v2.35.4's code.
   green on its own PR before merge (`syntax-check` passed in 16s), which was the one open item on its
   original test plan.
 
-## v2.35.7 — 2026-07-27 18:15 EDT (`801902f`) — Filed the roadmap board's remaining manual view setup
+## v2.35.7 — 2026-07-27 18:15 EDT (#15 · `801902f`) — Filed the roadmap board's remaining manual view setup
 **Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
 touched, so the VM is still running v2.35.4's code.
 - **Filed a `[P1 · XS]` reminder in `docs/db-deferred-list.md`** for the two manual GitHub UI steps that
@@ -352,7 +352,7 @@ touched, so the VM is still running v2.35.4's code.
 - Drafted 2026-07-26 12:12 EDT, merged now as part of clearing the branch backlog ahead of cutting
   `v3-pre-release`.
 
-## v2.35.6 — 2026-07-27 18:05 EDT (`a3bf9a9`) — Designed the v3 development structure
+## v2.35.6 — 2026-07-27 18:05 EDT (#25 · `a3bf9a9`) — Designed the v3 development structure
 **Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
 touched, so the VM is still running v2.35.4's code.
 - **Settled how v3 gets built without conflicting with the live bot or `main`**, ahead of any v3 feature
@@ -381,7 +381,7 @@ touched, so the VM is still running v2.35.4's code.
 - Decided against a `git worktree` for the v3 line: a worktree gets no `.claude/settings.local.json`
   (gitignored), so every Claude session started there would silently lose both `SessionStart` hooks.
 
-## v2.35.5 — 2026-07-27 11:10 EDT (`3e12737`) — Corrected a stale memory-store count; filed commit attribution as deferred
+## v2.35.5 — 2026-07-27 11:10 EDT (#24 · `3e12737`) — Corrected a stale memory-store count; filed commit attribution as deferred
 **Docs/meta only — no runtime change, not deployed.** Nothing in `commands/`, `utils/` or `models/` was
 touched, so the VM is still running v2.35.4's code.
 - **`CLAUDE.md`'s canonical-memory-path count was wrong** — it claimed 26 files; the store holds 55
@@ -406,7 +406,7 @@ touched, so the VM is still running v2.35.4's code.
 
 ---
 
-## v2.35.4 — 2026-07-27 08:02 EDT (`f1d23da`) — Patch notes release date now supports a real local-clock time
+## v2.35.4 — 2026-07-27 08:02 EDT (#23 · `f1d23da`) — Patch notes release date now supports a real local-clock time
 **Fixes a real display bug:** Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch
 note's release date field and saw `July 21, 2026 at 8:00 PM` after saving — not a parsing crash, a
 design mismatch. `parseAdminDate` (shared by every admin date field) unconditionally discards any
@@ -430,7 +430,7 @@ Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *view
 
 ---
 
-## v2.35.3 — 2026-07-26 21:52 EDT (`6d3f919`) — `scripts/devCommands.js`: take the dev bot's commands out of the `/` picker
+## v2.35.3 — 2026-07-26 21:52 EDT (#22 · `6d3f919`) — `scripts/devCommands.js`: take the dev bot's commands out of the `/` picker
 
 **New script + docs only — `index.js` untouched, so no deploy needed.** The VM stays current at v2.35.2.
 
@@ -455,7 +455,7 @@ Discord `<t:X:f>` (date+time) timestamp, which renders midnight UTC in the *view
 
 ---
 
-## v2.35.2 — 2026-07-26 21:04 EDT (`b276e10`) — dotenv quieted, `xlsx` demoted, and a connect log that told the truth
+## v2.35.2 — 2026-07-26 21:04 EDT (#21 · `b276e10`) — dotenv quieted, `xlsx` demoted, and a connect log that told the truth
 
 **Contains real bot code (`index.js`) — MERGED BUT NOT DEPLOYED.** Stacks onto v2.34.0–v2.35.0's still-pending
 VM deploy; the VM remains on v2.33.0's code.
@@ -488,7 +488,7 @@ VM deploy; the VM remains on v2.33.0's code.
 
 ---
 
-## v2.35.1 — 2026-07-26 20:52 EDT (`9288025`) — Tool-discovery session filed in the deferred list
+## v2.35.1 — 2026-07-26 20:52 EDT (#20 · `9288025`) — Tool-discovery session filed in the deferred list
 
 **Internal / docs only — no bot code touched. Does not change v2.34.0–v2.35.0's still-pending deploy.**
 
@@ -504,7 +504,7 @@ VM deploy; the VM remains on v2.33.0's code.
 
 ---
 
-## v2.35.0 — 2026-07-26 18:43 EDT (`3b978a5`) — Single-instance startup guard
+## v2.35.0 — 2026-07-26 18:43 EDT (#9 · `3b978a5`) — Single-instance startup guard
 
 **Real bot code, MERGED BUT NOT DEPLOYED** — stacks on top of v2.34.0/v2.34.1's still-pending VM deploy.
 
@@ -526,7 +526,7 @@ it with a startup guard instead of a manual "remember to kill local processes" s
 
 ---
 
-## v2.34.1 — 2026-07-26 18:20 EDT (`6124024`) — Rule files re-pointed at the symbols v2.34.0 renamed
+## v2.34.1 — 2026-07-26 18:20 EDT (#19 · `6124024`) — Rule files re-pointed at the symbols v2.34.0 renamed
 
 **Internal / docs only — no bot code touched. Does not change v2.34.0's still-pending deploy.**
 
@@ -543,7 +543,7 @@ it with a startup guard instead of a manual "remember to kill local processes" s
 
 ---
 
-## v2.34.0 — 2026-07-26 18:24 EDT (`5d39e10`) — The local dev bot: a way to test before prod
+## v2.34.0 — 2026-07-26 18:24 EDT (#17 · `5d39e10`) — The local dev bot: a way to test before prod
 
 **⚠️ MERGED BUT NOT DEPLOYED.** First release since v2.33.0 that contains real bot code, so unlike the
 v2.33.x docs-only run this one needs a VM deploy (`./scripts/deploy.sh` + `scripts/vmstatus.sh`) to
@@ -598,7 +598,7 @@ eyeballing the bot Harkirat's real users were using. A second, fully separate Di
     class of bug was invisible until a second app existed to expose it.
 ---
 
-## v2.33.6 — 2026-07-26 18:07 EDT (`6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed
+## v2.33.6 — 2026-07-26 18:07 EDT (#18 · `6bbe0ad`) — Commit & branch naming, verified against the spec instead of assumed
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
 
@@ -630,7 +630,7 @@ eyeballing the bot Harkirat's real users were using. A second, fully separate Di
 
 ---
 
-## v2.33.5 — 2026-07-26 14:59 EDT (`ea08a31`) — `/draw prices`: the NOTE callout comes off the Advanced Double Legendary page
+## v2.33.5 — 2026-07-26 14:59 EDT (#16 · `ea08a31`) — `/draw prices`: the NOTE callout comes off the Advanced Double Legendary page
 
 **First change merged after the local dev bot existed, and the first one live-verified before merge
 rather than after deploy.**
@@ -654,7 +654,7 @@ rather than after deploy.**
 
 ---
 
-## v2.33.4 — 2026-07-26 12:09 EDT (`95791b1`) — GitHub Projects roadmap board: build + re-sync after the deferred-list restructure
+## v2.33.4 — 2026-07-26 12:09 EDT (#14 · `95791b1`) — GitHub Projects roadmap board: build + re-sync after the deferred-list restructure
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
 
@@ -673,7 +673,7 @@ rather than after deploy.**
   that was never logged at the time, plus a new entry documenting this session's multi-pass verification
   of the timestamp/deferral-tell hooks.
 
-## v2.33.3 — 2026-07-26 11:18 EDT (`25b402c`) — Deferred-list restructure: finish the split, rename the files, split the archives out
+## v2.33.3 — 2026-07-26 11:18 EDT (#13 · `25b402c`) — Deferred-list restructure: finish the split, rename the files, split the archives out
 
 **Internal / docs only — no bot code touched, nothing to deploy.**
 
@@ -738,7 +738,7 @@ five more, all fixed:
 - Knock-on: the **Anthropic feature-feedback** item borrowed its urgency from the parked design and our
   own need is now largely met, so it drops P2 → P3 (still Harkirat's to file).
 
-## v2.33.2 — 2026-07-25 16:20 EDT (`6a64e37`) — Split Diors Builds deferred items into `docs/deferred-items.md`
+## v2.33.2 — 2026-07-25 16:20 EDT (#12 · `6a64e37`) — Split Diors Builds deferred items into `docs/deferred-items.md`
 *Docs-only — no code/deploy impact.*
 - Moved the project-specific Queued/Someday maintenance-and-tech-debt list out of the cross-project
   `/Applications/Claude Code/deferred-items.md` tracker into a new tracked `docs/deferred-items.md`, so it
@@ -752,14 +752,14 @@ five more, all fixed:
   `user_working_agreement.md`, `project_central_notes_file.md`) at
   `~/.claude/projects/-Applications-Diors-Builds/memory/` — outside this repo, not part of this diff.
 
-## v2.33.1 — 2026-07-25 18:35 EDT (`8c44f97`) — `/autobuild` private toggle
+## v2.33.1 — 2026-07-25 18:35 EDT (#10 · `8c44f97`) — `/autobuild` private toggle
 - Added a `private` boolean option to `/autobuild` (default `true`, matching the always-ephemeral behavior
   that existed before this option), applied to both the main flow and the `retry_token` retry flow's
   `deferReply`. Explicit-option-only — no saved-preference layer like the loadout commands' `private`,
   since this is a single-admin PoC command, not worth the extra `UserPreference` state. `/autobuild` stays
   fully admin-gated (`ALLOWED_ADMIN_ID` check) regardless of this option — no exposure risk from the toggle.
 
-## v2.33.0 — 2026-07-24 18:18 EDT (`904dec8`) — Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow
+## v2.33.0 — 2026-07-24 18:18 EDT (#1 · `904dec8`) — Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow
 *The inaugural dogfood of the workflow it describes — squash-merged via `gh pr merge --squash` from
 `feat/git-workflow` (PR #1), the first version ever minted at MERGE rather than at push.*
 - **Adopted the Branch → Commit → Push → PR → Merge → Deploy git workflow**, replacing the old
