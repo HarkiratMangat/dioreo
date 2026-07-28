@@ -77,6 +77,15 @@ After anything merges to `main`, from `v3-pre-release`:
 git fetch origin && git merge origin/main
 ```
 
+**Cadence — after EVERY merge to `main`, automated 2026-07-27 22:35 EDT.**
+`.github/workflows/sync-v3-pre-release.yml` merges `main` into `v3-pre-release` and pushes on each push
+to `main`, skipping cleanly when the branch doesn't exist and **failing loudly on conflict** (a red run
+is the notification; resolve by hand from the branch). *This section originally specified the mechanism
+below in full detail and never said when to run it* — the trigger was missing here, in `CLAUDE.md`, in
+`ROADMAP.md`, and in memory, all four describing only *how*. The result: the branch sat **two releases
+behind at v2.35.15 until 2026-07-27 22:00 EDT**, lacking the release conventions it is required to
+follow. A documented mechanism is not a trigger.
+
 **Never cherry-pick.** A cherry-pick copies a commit's *content* without recording that the sync
 happened, so git's merge base never advances; every subsequent sync re-presents the same conflicts,
 indefinitely. A merge advances the base, so each sync only ever handles what is genuinely new. This is

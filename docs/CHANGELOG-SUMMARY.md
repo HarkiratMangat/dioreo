@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.37.0 — July 27, 2026
+- *Internal tooling-only — the groundwork branch for the bot's next big version now keeps itself up to
+  date automatically. Nothing players see.*
+
 ## v2.36.3 — July 27, 2026
 - *Internal docs-only — added an automatic safety check to Dior's own release tooling. Nothing players see.*
 
