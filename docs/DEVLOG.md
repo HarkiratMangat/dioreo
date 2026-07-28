@@ -2530,3 +2530,27 @@ fine and silently mangles shell escaping, so every one of the 12 was extracted a
 the timestamp hook was run against both a bare date and a full timestamp to confirm it still
 discriminates. What could *not* be verified is stated plainly in the PR and changelog: hooks load at
 session start, so the new file only proves itself next session.
+
+## 2026-07-28 13:45 EDT — The sweep that searched for its own wording
+
+v2.39.1 exists because v2.39.0's cleanup missed two files, and the miss is more interesting than the
+fix. Moving the enforcement hooks into a tracked file invalidated one claim — *"these hooks are
+gitignored, so they never ride in a PR"* — which had been written into roughly twenty places over
+several months. I swept for it and corrected fourteen. Two survived: `docs/README.md`'s chore
+checklist and the `project_git_workflow` memory, both saying the same thing in words I had not
+searched for.
+
+The failure was in how the search was aimed. I grepped for the phrasings I remembered writing —
+`must be re-added by hand`, `stays gitignored`, `hooks are local-only`. That finds the sentences you
+already have in your head, which are exactly the ones you do not need help finding. The claim is the
+thing that went stale, not any particular sentence, so the search should have been for its *subject*
+(`settings.local`) with every hit read. That version of the sweep is what caught them — after the
+merge, which is why this needed its own release.
+
+**A useful tell:** a sweep that returns nothing is not evidence of cleanliness until you have seen it
+return something. Widening the pattern until known-good hits appear proves the search is reaching the
+files at all. This matters doubly here because `rg` skips hidden and gitignored paths by default, so a
+sweep for a claim that lives in `.claude/` can come back empty and *look* like success — the same
+completeness trap that produced the new `--hidden`/`--no-ignore` guard in the usage-guard hook earlier
+in the same session. Two different failures, one root cause: trusting a search whose blind spots you
+have not checked.
