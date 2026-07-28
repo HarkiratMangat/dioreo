@@ -55,6 +55,18 @@ scratchpad for 2 days.*
 **None open right now.** The last confirmed bot bug (the `/manage` Edit-loadout timeout) was fixed in
 v2.20.0 — see `docs/archive/resolved-list.md`.
 
+**🔑 One security-hygiene item (not a bot bug, so it sits here rather than as a 🐞):**
+- `[P2 · XS · Harkirat action — revocation can't be done from a session]` **Revoke and remove the two
+  dead host credentials still in `.env`.** *Found 2026-07-28 01:41 EDT during a docs audit, unrelated to
+  what was being swept.* `.env` still carries **`RENDER_API_KEY`** and **`RAILWAY_TOKEN`**, but Render's
+  service was **deleted 2026-07-27 20:20 EDT** and Railway was **abandoned 2026-07-17**; the GCP VM is
+  the only host. **No code reads either variable** (verified: no `.js`/`.sh` reference). They are
+  therefore pure standing exposure — note an API key usually authenticates against the whole *account*,
+  not just the deleted service, so it may still be able to create or manage resources and bill them.
+  **Steps (yours, not a session's — a session must never handle credential values):** revoke the Render
+  API key in Render's dashboard and the Railway token in Railway's, *then* delete both lines from `.env`.
+  Nothing will break. `.env` stays gitignored throughout — the keys were never committed.
+
 *Not bot bugs, so they live in `meta-deferred-list.md` instead: the MarkEdit-extension cluster
 (Return-key blank line, confirm-mark space glitch). They're editor tooling outside every repo, even
 though the Return-key one only reproduces in this repo's notes file.*

@@ -54,7 +54,14 @@ Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root 
   **There is no Render fallback any more — the GCP VM is the only host.**
 - *(HISTORICAL — Render, retired 2026-07-17, service deleted 2026-07-27 20:20 EDT.)* Was
   git-connected auto-deploy off `main` (turned off 2026-07-16 after the Gateway hang, then the host
-  abandoned 2026-07-17). — **Railway is NOT connected to a git source at all**
+  abandoned 2026-07-17).
+  **⚠️ Everything about Railway below is ALSO historical — Railway is retired too and is NOT a deploy
+  target (clarified 2026-07-28 01:41 EDT).** It is written in the present tense because it was recorded
+  while Railway was live, and the "HISTORICAL" marker above only ever named Render, so the Railway
+  paragraphs read as current operating instructions. They are not: **the GCP VM is the only host.** Do
+  not run `railway up`, and do not act on any Railway guidance here. (Its now-dead `RAILWAY_TOKEN` is
+  still in `.env` pending revocation — see `docs/db-deferred-list.md`.) Kept for the record because the
+  git-source decision below was a deliberate call, not an oversight. — **Railway is NOT connected to a git source at all**
   (confirmed 2026-07-12 via `railway status --json`: the `diors-builds` service's `source` is
   `{ image: null, repo: null }` — it's deployed purely from local CLI snapshot uploads, there's no
   auto-deploy toggle to flip because there's nothing to auto-deploy from). Harkirat was explicitly
