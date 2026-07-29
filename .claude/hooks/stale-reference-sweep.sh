@@ -23,7 +23,12 @@
 # is exactly proportional to the miss, and doing the job properly costs nothing.
 
 set -uo pipefail
-REPO="/Applications/Claude Code/Diors-Builds"
+# ⚠️ CLAUDE_PROJECT_DIR, not a hardcoded path. Fixed 2026-07-29 00:45 EDT after discovering it
+# while using a worktree to avoid disturbing a parallel session: superpowers' using-git-worktrees skill
+# actively encourages worktrees, and with the path pinned to the main tree this gate silently inspected
+# the WRONG branch -- reporting clean about work that isn't there, or dirty about work you can't see.
+# A gate that answers confidently about the wrong tree is worse than no gate.
+REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
 MEM="$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory"
 
 cd "$REPO" 2>/dev/null || exit 0

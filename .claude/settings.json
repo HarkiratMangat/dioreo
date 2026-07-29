@@ -73,6 +73,24 @@
             "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/devlog-toc-check.sh' \"${base:-main}\"; fi"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/records-close-check.sh' \"${base:-main}\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/docs-audit-gate.sh\" \"${base:-main}\"; fi"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -95,7 +113,7 @@
           },
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr merge'; then cd \"/Applications/Claude Code/Diors-Builds\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { git fetch origin main --quiet 2>/dev/null; changed=$(git show --name-only --pretty=format: origin/main 2>/dev/null); if echo \"$changed\" | grep -qx 'docs/CHANGELOG.md'; then miss=''; echo \"$changed\" | grep -qx 'docs/CHANGELOG-SUMMARY.md' || miss=\"$miss (3) CHANGELOG-SUMMARY.md has no entry -- every version number needs a line, even ops/docs-only.\"; echo \"$changed\" | grep -qx 'package.json' || miss=\"$miss (1) package.json was not bumped -- one version per merged PR.\"; second=$(git show origin/main:docs/CHANGELOG.md 2>/dev/null | grep '^## v[0-9]' | sed -n 2p); echo \"$second\" | grep -q '`' || miss=\"$miss (8.2) the PREVIOUS changelog entry still has no commit hash -- backfill it additively: (#NN) -> (#NN . hash).\"; if echo \"$changed\" | grep -qE '^(commands|utils|models|scripts)/' && ! echo \"$changed\" | grep -qE '^(CLAUDE[.]md|[.]claude/rules/)'; then miss=\"$miss (4) code changed under commands/utils/models/scripts but no CLAUDE.md or .claude/rules/*.md note -- update the design/why note in the SAME change.\"; fi; if [ -n \"$miss\" ]; then jq -n --arg m \"$miss\" '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:(\"RELEASE DOC CHECK -- this merge is missing chore-checklist items:\" + $m + \"  || NOT CHECKED BY ANY HOOK, still on you: (6) memory updates (the files live outside this repo) and (7) marking/filing/sweeping docs/diors-builds notes.md. Naming them here on purpose -- a partial check that FEELS total is worse than no check, which is exactly how DEVLOG coverage sat at 8/22 while the changelog hook kept passing.\")}}'; fi; fi; }; fi"
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr merge'; then cd \"/Applications/Claude Code/Diors-Builds\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { git fetch origin main --quiet 2>/dev/null; changed=$(git show --name-only --pretty=format: origin/main 2>/dev/null); if echo \"$changed\" | grep -qx 'docs/CHANGELOG.md'; then miss=''; echo \"$changed\" | grep -qx 'docs/CHANGELOG-SUMMARY.md' || miss=\"$miss (3) CHANGELOG-SUMMARY.md has no entry -- every version number needs a line, even ops/docs-only.\"; echo \"$changed\" | grep -qx 'package.json' || miss=\"$miss (1) package.json was not bumped -- one version per merged PR.\"; second=$(git show origin/main:docs/CHANGELOG.md 2>/dev/null | grep '^## v[0-9]' | sed -n 2p); echo \"$second\" | grep -q '`' || miss=\"$miss (8.2) the PREVIOUS changelog entry still has no commit hash -- backfill it additively: (#NN) -> (#NN . hash).\"; if echo \"$changed\" | grep -qE '^(commands|utils|models|scripts)/' && ! echo \"$changed\" | grep -qE '^(CLAUDE[.]md|[.]claude/rules/)'; then miss=\"$miss (4) code changed under commands/utils/models/scripts but no CLAUDE.md or .claude/rules/*.md note -- update the design/why note in the SAME change.\"; fi; if [ -n \"$miss\" ]; then jq -n --arg m \"$miss\" '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:(\"RELEASE DOC CHECK -- this merge is missing chore-checklist items:\" + $m + \"  || ALSO CHECKED ELSEWHERE, do not assume this message is the whole picture: items (6) memory and (7) the notes file are gated at `gh pr create` by .claude/hooks/records-close-check.sh, and the tree-level doc invariants by `npm run docs:audit` (also a CI gate). Still on you alone: whether the JUDGMENT was right -- a hook proves an artifact was opened, never that the right thing was written in it.\")}}'; fi; fi; }; fi"
           }
         ]
       },

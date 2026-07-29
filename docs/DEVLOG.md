@@ -88,6 +88,9 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 17:35 EDT — A table of contents you can't actually search
 - 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
 - 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+- 2026-07-28 21:00 EDT — "Not checkable" was never true
+- 2026-07-29 11:44 EDT — The refs I left behind
+- 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -1995,153 +1998,6 @@ deploy — the VM is still on v2.33.0. Merge did not deploy.
 
 ---
 
-
-# Part B — Lessons Ledger (thematic)
-
-Durable, reusable takeaways. Each is a compressed version of a story in Part A.
-
-### War stories / root causes
-- **Multiple instances of a single-token bot collide invisibly.** Discord routes each interaction to a
-  random connected instance; they race `deferReply` (→ 10062/40060) and can render different code
-  versions per click. Erratic *inconsistency* is the tell. A `git push` doesn't stop local processes.
-- **Tab is an IFS *whitespace* char, so bash `read` silently collapses empty fields.** Parsing
-  tab-separated `jq` output with `IFS=$'\t' read -r A B C` shifts every field left when any earlier one
-  is empty — no error, just wrong data in the wrong variable. Use a non-whitespace delimiter (`\x1f`)
-  when empties are possible. Found in the status line (2026-07-15); the happy-path tests all passed.
-- **Synchronous CPU work starves the event loop on a 0.1-CPU tier.** k-means with no `await` blocked
-  ACKs for *unrelated* commands. Fix by doing *less* work (lazy extraction) and *yielding* (`setImmediate`).
-- **Hash-keyed caches don't invalidate on an algorithm change** — only when the source asset changes.
-  Any logic/shape change to a cached computation needs a manual, **scoped** cache clear (never unscoped).
-- **discord.js: a `ModalSubmitInteraction` can't `showModal()`** (Discord disallows modal-from-modal) —
-  route single-match Edit through an intermediate button instead.
-- **`Object.assign` drops non-enumerable props** — discord.js sets `client`/`token` non-enumerably, so
-  hand-rolled synthetic interactions silently lost them and crashed. Use the shared builder.
-- **`client.on('error')` must be registered** — discord.js constructs with `captureRejections: true`, so
-  a rejected async listener becomes an `error` event on the client that crashes the process *past* the
-  try/catch if unhandled.
-- **A bare `return interaction.reply(...)` in a catch escapes the enclosing try** — the try has already
-  exited by the time that promise rejects. Always `await` reply/editReply/followUp in error branches.
-- **Alpha-transparency in pixel sampling** — transparent padding (0,0,0) was counted as real black on
-  nameplate/decoration until the sampling loops skipped `alpha === 0`.
-- **A handler placed in the wrong interaction-type branch is dead code, silently** — the loadout
-  "Browse other builds" select handler sat inside `isButton()` and never fired; only a trace log
-  revealed it. Verify a handler is even *reached* before theorizing about its logic.
-- **`sendV2Payload` must send `attachments: []` when uploading new files** — else Discord keeps the old
-  attachments and swaps only text/components (stale swatches).
-- **Never log a raw Cloudinary error object** — its rejected-promise shape carries the account's live
-  API key+secret. Sanitize via dedicated helpers.
-
-### Walk-backs & reversals (things tried, then reverted — and why)
-- **Blank-emoji vertical centering** of a Section heading — Components V2 has no vertical-align; looked
-  wrong on mobile, reverted. Still unsolved, accepted as cosmetic.
-- **Nameplate `.webm` / animated decoration** — Discord requires a manual tap to play inline; reverted to
-  static. The real fix (APNG→GIF per render) was rejected as not worth per-render latency.
-- **Accent extraction: flat average → saturation-weighted → vivid hue-cluster.** Each revision was found
-  wrong by testing against Harkirat's *real* avatar, not a hypothetical.
-- **Palette: synthetic 6-swatch model → real k-means** — the categories were "mostly useless" vs real
-  palette tools; and the naive "top-N by population" alternative was tested first and found *worse*
-  (4 near-identical off-whites), which justified the k-means rebuild with evidence.
-- **`?size=512` on the collectibles CDN** — assumed it would resize the nameplate; verified it's ignored.
-  Fell back to fetch+resize ourselves.
-- **Heading size H2 → H3 → H2** and **`private` → `hidden`** option rename, **`CATEGORY_SORT_ORDER`**
-  added then dropped for plain alphabetical — small reversals, all driven by Harkirat's direct feedback.
-
-### Design decisions & the "why"
-- **Option A — one shared visibility toggle** for all seasonal commands, not five.
-- **Admin dates forced to UTC-0** (`chrono` with `timezone: 0`) — a past DMZ "1 hour off" bug traced to
-  ambient-timezone parsing.
-- **`chrono` defaults a bare date to NOON** — `/timestamp` manually zeroes it to midnight.
-- **Bulk imports REPLACE, not append** — a paste is the complete current list; re-running fixes typos
-  without duplicating.
-- **Single-token, user-installed-only** — the bot has zero standing guild permissions; it can only
-  answer via the interaction-response webhook. Any raw channel POST fails `50001` (this bit "Share
-  Publicly").
-- **Draw-price totals computed from raw pull arrays**, never hand-typed — repeated arithmetic typos
-  forced this; a total can no longer drift from its own draws.
-- **Three-part `vMAJOR.MODERATE.MINOR` versioning** — the old flat-decimal scheme broke once MODERATE hit
-  double digits.
-
-### Platform / library gotchas
-- **Components V2:** selects/buttons still need an Action Row even inside a Container; **40 components
-  max, counted recursively** (a real production crash); buttons can't have hex colors (only Container
-  `accent_color` can); a button `label` won't render an emoji mention — use the `emoji` field.
-- **Media Gallery has no width control**; the **collectibles CDN ignores `?size=`** (but the avatar/
-  banner CDN honors it).
-- **Jimp can't decode APNG** — animated decorations need an `ffmpeg` still-frame first.
-- **Slash-command registration belongs to the APPLICATION, not the process, and there is no UI for it.**
-  Killing a bot leaves its commands in the `/` picker forever (they just time out with "did not
-  respond"); only another API call removes them. The Developer Portal has no page for this at all —
-  hence `scripts/devCommands.js`. Same reason a *user-installed* app's stale commands are extra annoying:
-  they follow the user into every server and DM, not one guild.
-- **Cloudinary has no native per-asset TTL** — expiry is something the bot does on a schedule.
-- **Render free tier = 0.1 shared CPU**, no `suspend` in the CLI (REST API only); **Railway free tier
-  blocks CLI deploys 8am–8pm ET** and isn't git-connected.
-
-### Process lessons / tips (for us and anyone after us)
-- **When the environment and the project docs disagree about a path, trust the project docs and verify
-  both.** The harness pointed at a memory directory that didn't exist while the real 26-file store sat
-  at the path CLAUDE.md named. Following the environment blindly would have forked memory into two
-  half-empty stores, failing silently and only showing up much later as inexplicable amnesia.
-- **A convention documented but never implemented is worse than no convention.** CHANGELOG.md promised
-  an `Unreleased` section at the bottom for months; it didn't exist, so committed-but-unpushed work had
-  nowhere to go. Check that a rule you're citing is actually *real* in the file before relying on it.
-- **Never `2>/dev/null` the loading of your own safety rails.** The SessionStart hook silently injected
-  an empty string for an unknown number of sessions after the repo moved — every non-negotiable it
-  enforces was simply never delivered, and nothing errored. If a mechanism's job is to *deliver rules*,
-  its failure mode must be loud, and it should resolve paths dynamically (`$CLAUDE_PROJECT_DIR`) rather
-  than hardcoding a location that can move underneath it.
-- **"Is it documented?" and "will it actually fire?" are different questions.** A rule written into a
-  linked memory file only works if something reads it. The auto-loaded file is the only guaranteed
-  delivery path — verify what a *fresh* session actually receives, don't infer it from where you wrote it.
-- **Test the degenerate input, not just the populated one.** Absent/null/zero fields are where parsing
-  bugs live. A status line whose happy path is perfect but which misreports the model when one field is
-  missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.
-- **Verify the fix actually *works*** — boot-test, and for a live interaction get a real repro or add a
-  cheap trace point before theorizing.
-- **Check sibling/reference code before guessing** from prose or screenshots — the pattern is usually
-  already in the codebase.
-- **Test the naive alternative first** — a bad result there justifies a bigger rebuild with evidence.
-- **When behavior is erratic, suspect multiple instances FIRST** (`ps aux`, Railway, Render) before
-  code/cache theories.
-- **"Document" includes the CHANGELOG** — and the changelog is the one that keeps getting skipped.
-  Update all three record layers at push time.
-- **Kill stray local instances as part of every push** — only the deployed instance should be live.
-- **A project's own `.env` is in-scope for a credential; a personal `~/.` config file is not.**
-- **Be usage-conscious** — batch tool calls, don't re-read what's already in context.
-- **Mark chat chapters at phase shifts** — can't be hook-automated, has to be done deliberately.
-- **A split/move/rename is done when nothing is LEFT BEHIND, not when the obvious block has moved.**
-  Four checks before calling it: nothing project-specific still in the source, every cross-reference
-  updated, the new file stands alone (its legend came with it), and prose describing the old layout
-  rewritten. (2026-07-25 21:43 EDT, `feedback_no_half_measures_on_reorgs`.)
-- **A file rename IS a code change when something parses the file.** The grep surface is docs + rules +
-  **`.claude/settings*.json` hooks** + scripts + memory + *other projects'* memory dirs. A `SessionStart`
-  hook here was anchored to a `# Graveyard` heading an archive split removed — it would have failed
-  silently, never loudly. Dry-run the hook after touching what it reads.
-- **Deferred items containing a measurement rot; re-measure before you re-file.** Two examples the same
-  day: a reminder still claiming CHANGELOG/DEVLOG were "~730 lines each, not there yet" when they were
-  1,366 and 1,792, and a `[P2 now → P0 ~2026-07-24]` self-escalating tag whose trigger date had quietly
-  passed. The note freezes; the world doesn't.
-
-### Concerns / open risks
-- **`ffmpeg` is unverified on Render's container** — decoration extraction works locally; if it breaks in
-  prod *only*, check for ffmpeg first.
-- **Render free-tier CPU ceiling** — the color feature is right at the edge of it; the lazy-extraction
-  work bought headroom, but the last-resort levers (worker threads, plan bump) are documented.
-- **Deferred dependabot vulnerabilities** — undici/discord.js chain + xlsx (dead at runtime); tracked,
-  decided not worth acting on yet.
-- **Changelog-drift habit** — recurred across multiple sessions; now guarded by a self-check callout, but
-  worth staying honest about.
-
-### Collaboration insights
-- **Systematic debugging beat guess-and-check repeatedly** — the session above is the clearest case:
-  four wrong "the bug is X" answers before the real one, each discarded by *evidence*, not vibes.
-- **Screenshot/real-device review caught what logs didn't** — the "different version per click" report,
-  and most of the walk-backs, came from Harkirat actually *looking* on mobile.
-- **Confirm before push, every time** — approval doesn't carry over; and "push" means the whole cycle
-  (deploy + verify live + only one instance running), not just `git push`.
-- **Honest reporting builds trust** — recording the 0%-benefit convergence result, the misread Railway
-  logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.
-
 ## 2026-07-27 08:02 EDT — A "parsing bug" that was actually a display/design mismatch
 
 Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch note's release date field and
@@ -2632,6 +2488,7 @@ to the false-completion failure that started the whole thread.
 ---
 
 ## 2026-07-28 15:52 EDT — The error counter that could never have been right
+*Released as `v2.41.0`.*
 
 The ticket read like polish. Put timestamps on log lines, say which commit produced them, add time-window
 arguments, bump a default, make the standalone output less barebones, "expand the error tracker." Five
@@ -2714,6 +2571,7 @@ on every run.
 ---
 
 ## 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
+*Released as `v2.41.1`.*
 
 The v2.41.0 work was finished, tested, and staged to push. Harkirat's response was not about the code:
 
@@ -2775,6 +2633,7 @@ rather than writing a fourth memory file that will also not fire.
 ---
 
 ## 2026-07-28 17:35 EDT — A table of contents you can't actually search
+*Released as `v2.41.2`.*
 
 Harkirat, reading the DEVLOG changes:
 
@@ -2822,6 +2681,7 @@ thing to design hardest is not what it catches. It's what it must leave alone.
 ---
 
 ## 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
+*Released as `v2.41.3`.*
 
 Harkirat asked me to check whether `dior-cli` had broken, since it shells out to `scripts/vmstatus.sh`.
 Checking that meant actually timing the rewritten panel, which nobody had done. **10.4 seconds.**
@@ -2851,6 +2711,7 @@ say you are guessing. Writing "~" in front of a number you made up is not hedgin
 ---
 
 ## 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+*Released as `v2.41.4`.*
 
 Harkirat asked whether I'd checked the *rest* of `dior-cli`, not just the files mentioning `vmstatus`.
 Fair — I'd grepped for references to the thing I changed rather than for the whole surface where the CLI
@@ -2890,3 +2751,487 @@ That gap is worth naming plainly rather than papering over: one class of miss is
 broader habit — asserting without checking — is not, and won't be until each specific instance of it gets
 its own check. The cross-session notice now tells that other session to verify its own work rather than
 take my word for it, which is the only honest thing to put there.
+---
+
+## 2026-07-28 21:00 EDT — "Not checkable" was never true
+*Released as `v2.42.0`.*
+
+Harkirat's objection was aimed at a single sentence I'd written:
+
+> *"As for the memory and notes file, im not satisfied because we currently have a hook or something
+> which checks the notes file at session start and was designed to actively keep it updated and not
+> stale. Not to mention, you didn't say anything about the deferred items files or the
+> graveyard/resolved items, or the readme."*
+
+He was right on both counts, and the second one is the more embarrassing. I had shipped a hook whose
+own message declared items 6 (memory) and 7 (notes file) **"NOT CHECKED BY ANY HOOK"**, and written
+the same claim into `docs/README.md` — while a `SessionStart` hook had been counting the notes file's
+open items the whole time. I'd looked at the merge-time hooks, not found a notes check there, and
+concluded none existed anywhere.
+
+### The diagnosis, which turned out to generalize
+
+The gaps weren't one problem. They were three shapes, and I'd mislabelled all of them "not checkable":
+
+**Right check, wrong moment.** The notes file *is* checked — at session start. That is the moment of
+**discovery**, when nothing has been filed yet and there is nothing to compare against. It is never
+re-checked at the moment of **closure**. This is the exact shape of the DEVLOG failure measured at
+8/22 two releases earlier: a condition evaluated precisely when it cannot be acted on. I had fixed
+that one and walked straight past its twin next door.
+
+**Invariant never stated.** The deferred lists, graveyard, and resolved-list had a perfectly
+mechanical rule nobody had written down: **an item leaves an active list only by appearing in an
+archive.** Conservation. A shrink in one file with no matching growth in the other is either an
+unswept item or a *deleted* one — and the destructive case is the one worth catching.
+
+**Plain filesystem truth.** The README doc map, and every path referenced across `CLAUDE.md` and the
+rules files. Checkable against `ls` and never once checked.
+
+So: **"not checkable" is almost always "I haven't worked out what the derivable invariant is."** What
+genuinely stays uncheckable is whether the *judgment* was right. A gate proves an artifact was
+opened; it can never prove the right thing was written in it.
+
+### Why a program instead of another hook
+
+Every previous fix here had been another Claude Code hook, and that was the structural mistake. Hooks
+fire only inside a Claude session, on this one Mac; each rule had become 1.4KB of backslash-escaped
+bash inlined in JSON, unreadable and impossible to run by hand to ask "is the tree clean *now*?"
+
+`scripts/docs-audit.mjs` is 10 named checks with two severities, callable from a hook, from CI, and
+from the terminal. The CI wiring is the durable half — it holds for PRs opened by a future session,
+by another agent, or by Harkirat.
+
+### Three things that only surfaced because I tried to break my own work
+
+**The self-test found a dead check on its first run.** `tag-integrity` stayed silent against a
+deliberately mismatched tag — because the fixture had picked `v2.35.0`, which sits in the known-bad
+allowlist. Had I only eyeballed the output, I'd have shipped a check I believed worked. Two more
+fixtures were wrong in the same run: fake commit hashes (the check was right), and a removed line
+14 characters long, under the 40-char churn threshold.
+
+**CI would have failed on correct documentation.** `actions/checkout@v4` defaults to a depth-1 clone
+with no tags. Measured against a real `git clone --depth 1`: **42 spurious `hash-chain` errors, and
+1 tag visible instead of 100+.** So `fetch-depth: 0` is a requirement, not a preference — and the
+audit now detects a shallow clone itself and downgrades to a warning that names the limitation,
+rather than reporting a conclusion it cannot support in either direction.
+
+**The audit's first real finding was against the audit.** `summary-coverage` reported `v2.17.1` and
+`v2.11.0` missing from `CHANGELOG-SUMMARY.md`. I was one edit from "fixing" the documentation before
+checking: the SUMMARY folds ops-only releases into **range headings** (`## v2.17.0–v2.17.3`), exactly
+as designed. The records were right; my check was wrong. That is the failure mode of every automated
+gate — it makes you trust its output over the thing it's measuring — so the fix came with an inverse
+self-test asserting that valid input stays *silent*, not just that broken input fires.
+
+### Note to future self
+
+Two assertions per check, always: the broken tree fails **and** the valid tree passes. The second is
+the one everyone skips, and it is the one that catches a matcher firing on everything. And when a
+guard and a record disagree, check the record before you edit it.
+
+### The second pass — "I feel like you began to rush things at the end due to your 60 turn budget check"
+
+Harkirat's follow-up named the mechanism exactly, and led with the specific defect:
+
+> *"Regarding the v2.17.0-v2.17.3 grouping, that method of grouping is actually stale behavior now. Now
+> we create individual headings for each version bump if im not mistaken?"*
+
+He was right, and it is the worst kind of wrong. Earlier in that same session I had reported the range
+finding as a **success** — the audit's first finding was against itself, I checked the record before
+editing it, and I wrote a note-to-self about exactly that. Then I taught the checker to *accept*
+ranges. I had verified that ranges existed; I never asked whether they were still **policy**. Verifying
+that a thing is true today is not the same as verifying it is still the rule, and the difference is
+invisible when the corpus is mostly history.
+
+Re-auditing work I had already declared done found six more, four of them dead checks:
+
+**A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker, or the notes
+file's `## Questions` heading, made both `devlog-toc` and `notes-sweep` print **"passed"** while doing
+nothing. My own comment said *"markers moved: stay silent rather than cry wolf"* — exactly backwards.
+Crying wolf is recoverable; a green tick over a check that isn't running is not. Two guards written to
+stop silently-dead guards were themselves silently dead.
+
+**`--only <typo>` printed "passed" and exited 0.** One wrong character in a hook registration would
+have disabled that gate while still reporting success — the dead-guard failure reproduced *inside* the
+tool built to prevent it.
+
+**The space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead, because
+`line.split(" ")[0]` yields `/Applications/Claude`. `hook-integrity`'s regex stopped at the same space
+and worked only because a later `.slice()` happened to rescue it — correct by accident, which is one
+refactor away from correct by nothing. Neither bug could ever have surfaced, because the test fixtures
+were built in a space-free tmpdir. **A fixture that doesn't reproduce production's hazards certifies
+the wrong thing.** The fixture directory name now contains a deliberate space.
+
+**The baseline meta-test I should have written first.** Every per-check test only asserted that *its
+own* check was quiet on valid input, so a check firing for unrelated reasons — or not running at all —
+hid in plain sight. Asserting that an untouched fixture reports *nothing* immediately surfaced three
+more defects, including a perfect reproduction of a trap this repo had already documented: the global
+`~/.config/git/ignore` silently un-tracks `settings.local.json` in every repo, fixtures included.
+
+**And one real bug the audit had been masking.** `CLAUDE.md` and the notes file both pointed at
+`local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `.gitignore` had been
+updated when it moved and the two prose references had not — precisely the "no half-measures on
+reorgs" failure `xref` exists to catch. It was hidden because I had told `xref` to skip gitignored
+paths entirely. Ambiguity should be *reported*, not silently resolved in favour of passing.
+
+### Note to future self
+
+Verify that a convention is still **current**, not merely that it is **present** — a corpus is mostly
+history, and history is not policy. When a check cannot find its anchor, that is a finding, never a
+pass. And the honest read on the turn budget: it measures cost, never correctness, and I let it end a
+unit of work that wasn't finished. The budget is not a reason to stop verifying; stopping to *report*
+is fine, declaring done is not.
+
+### The third pass — "how does it handle the future, and its growth and change?"
+
+Harkirat's questions were the ones I had not asked myself: what happens when a file or folder is
+added, deleted, or silently moved? What about directories this project may one day rely on, or that
+rely on it? **How does a future session tell a true pass from a false one?** And: what did you
+sideline?
+
+The honest answer to most of them was "badly", and the repo supplied its own test case. While I was
+working, a **parallel session** on another branch added `LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`, a `docs/legal/` folder and an entire `public/` tree. Pointing the audit at that
+branch was the most useful thing I did all session: it correctly passed `readme-map` (they *had*
+updated the map) and correctly passed `version-sync` — and it was completely blind to four new
+root-level records and a whole new top-level directory, because it had only ever looked under `docs/`.
+
+### The false-pass problem, which was the real question
+
+`19 checks passed` was hiding three different outcomes: **verified**, **skipped**, and **vacuous** —
+the check ran, matched zero things, and passed because there was nothing to disagree with. The third
+is the dangerous one, and it is invisible: reformat the docs so `xref` finds no path-shaped tokens and
+it passes forever, having verified nothing.
+
+Every check now declares what it examined, or why it did not run. The summary reports all three
+states, and a zero-item pass warns unless an empty corpus is legitimate for that check. It earned its
+place on the first run by catching `root-docs` passing vacuously.
+
+### Three things I could only have found by going looking
+
+**The audit had made itself unsearchable.** `docs-audit.mjs` contained two NUL bytes — a placeholder
+in a regex translation. ripgrep classifies any file with a NUL as **binary and shows no matches**. In
+a project whose CLAUDE.md mandates `rg` as the primary search tool, the enforcement script was
+invisible to the only tool anyone would use to read it. Nothing could ever have surfaced that, because
+the search you would run to find it is the search that fails. There is now a `binary-in-text` check.
+
+**Every hook was auditing the wrong tree.** All three `gh pr create` gates hardcoded
+`/Applications/Claude Code/Diors-Builds`. The superpowers workflow actively encourages git worktrees,
+and inside one, every gate silently inspected the main working tree instead — reporting confidently
+about a branch you are not on. I only found it because a parallel session's uncommitted work forced me
+into a worktree to avoid repeating the v2.41.4 incident. The safety measure found the bug.
+
+**Two fingerprint matchers were broken in exactly the same way**, and neither had ever run. Both built
+their search window from filtered words while searching an unfiltered haystack, so a window reading
+`open intake item long enough count` could never match a haystack still reading `long enough to
+count`. One of them, `traceable()`, only executes when the archive actually grew — and the
+zero-growth branch had fired first every single time, so its bug was never once exercised. A test that
+forced the branch found it immediately.
+
+### The one I got wrong twice in the same file
+
+I restored bare-filename `xref` checking, measured the false-positive rate with a probe, wrote
+"0 false positives" into the code comment, and shipped a check that scanned a **wider set of file
+types than the probe had**. It immediately flagged discord.js internals. Measuring one thing and
+shipping another — inside the very file written to catch that class of error.
+
+### Note to future self
+
+Ask what a green tick is actually asserting. "All checks passed" is not a claim about the records; it
+is a claim about the checks, and only if they ran, and only if they looked at something. Report the
+evidence, not just the verdict. And when a safety measure forces you into an unfamiliar setup — a
+worktree, a fresh clone, a shallow checkout — pay attention to what breaks there, because that is
+where the assumptions you never wrote down are keeping score.
+
+### The failsafe I removed without noticing
+
+Harkirat, approving the merge: *"keep any fallbacks/failsafes so even if this program doesn't work, the
+prior detection methods can still catch claude slacking."*
+
+That landed on a regression I had shipped proudly. `devlog-toc-check.sh` used to carry its own TOC
+comparison. I replaced it with a call to `docs-audit.mjs` and wrote a satisfied comment about "one
+implementation" — which is true, and which also converted a standalone gate into a dependent one. If
+the audit is deleted, renamed, or throws, the delegating call returns nothing and a bare `exit 0`
+reads that as a clean pass. I had spent the whole session hunting checks that pass while doing
+nothing, and then built one.
+
+The fix is not a duplicated fallback. Two copies of a rule drift, and the drift is silent too — that
+is precisely why the delegation happened. Instead, **"the audit could not run" is now a finding in its
+own right**: missing file and crashed-with-invalid-JSON are separate messages, and both were verified
+by actually deleting and then breaking the script rather than reasoning about it. Missing and
+found-nothing must never look the same.
+
+The independent layer is genuinely still there, which is the part worth stating plainly: the
+`gh pr merge` hooks (changelog, DEVLOG, release-doc), the `git tag` invariant gate, the Edit/Write
+TIMESTAMP check and the `Stop` completion-claim hooks all run without `docs-audit.mjs` and catch
+different failures. The audit is a layer on top, not a replacement.
+
+And the limits I had been listing in chat are now filed in `docs/db-deferred-list.md` with directions
+attached. A known limitation that lives only in a conversation is indistinguishable from one nobody
+noticed, three sessions later.
+
+## 2026-07-29 11:44 EDT — The refs I left behind
+*Released as `v2.42.1`.*
+
+Harkirat, reading the close-out of the release above: *"why wouldn't you check out local main and
+v3-pre-release? isn't v3 supposed to be kept sync'd to main?"*
+
+I had ended v2.42.0 with `main [origin/main: behind 1]` and `v3-pre-release [behind 16]` sitting in
+`git branch -vv`, and said nothing about it. My reasoning went as far as it went and then stopped: the
+working tree was on another session's branch holding their uncommitted work, and switching branches
+under a live session is the v2.41.4 incident. What I never questioned was the premise underneath —
+that updating a local branch requires checking it out.
+
+It doesn't.
+
+```bash
+git fetch origin main:main v3-pre-release:v3-pre-release
+```
+
+That writes the local refs directly and cannot disturb the working tree; git rejects the refspec
+outright if the target branch is checked out. It is precisely the tool for "make the pointer current,
+leave the tree alone", and I went a whole release without reaching for it.
+
+Which is this release's lesson pointed back at me from a slightly different angle. *"Can't be done
+safely"* and *"I only know one way to do it"* produce identical output — nothing — and I reported the
+first while meaning the second. Same shape as **"not checkable"** one entry above: a constraint
+asserted rather than tested.
+
+### A stale pointer is not stale state
+
+Two different things were getting conflated in how I reported it, and the alarming reading was the
+wrong one. A local ref being behind is a fact about *my clone*. It says nothing whatsoever about the
+remote. The check that actually answered his question was never run:
+
+```
+git rev-list --left-right --count origin/main...origin/v3-pre-release
+0	0
+```
+
+Zero divergence in both directions — `origin/v3-pre-release` identical to `origin/main` at the merge
+commit. `sync-v3-pre-release.yml` had done its job within seconds of the merge. The remote was never
+out of sync; only my view of it was, and I let the weaker fact stand in for the stronger one because I
+hadn't separated them.
+
+### The warning I'd have kept scrolling past
+
+He also asked about something on the CI run I had marked green and moved on from:
+
+> `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
+> run on Node.js 24: actions/checkout@v4, actions/setup-node@v4.`
+
+Worth understanding rather than dismissing, because the instinct — *"our Node version is fine, the VM
+runs 24"* — is wrong in an interesting way. The runtime being deprecated isn't ours. A JavaScript
+action carries its own `action.yml` declaring `using: node20`, and GitHub is retiring that runtime
+from the runners, force-running those actions on Node 24 as a temporary shim. It is a dependency's
+runtime, warned about in our logs, and nothing we pin controls it.
+
+Filed as its own session in `docs/db-deferred-list.md` rather than bolted onto a docs release — three
+`@v4` → `@v5` bumps across two workflows, with the one real trap written down: `checkout@v5` keeps
+the depth-1 default, so `fetch-depth: 0` has to survive the bump or the audit regresses to 42 false
+hash-chain errors. `ci-wiring` already guards that, which is the first time this audit has protected
+work that hadn't been done yet.
+
+### Note to future self
+
+A "behind" marker in `git branch -vv` is about your clone, not about the project — check the remotes
+against *each other* before reporting drift. And when a safety constraint blocks the obvious command,
+ask whether it blocks the **goal** or just that one command. Plumbing usually has a way through, and
+"I'd have to do the unsafe thing" is a claim worth testing before it becomes a reason.
+
+---
+
+## 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
+*Released as `v2.42.2`.*
+
+The line at the top of Part B reads "no dated entries" — an invariant nobody was checking. 19 dated
+journal entries (2026-07-27 08:02 EDT through 2026-07-29 11:44 EDT) were sitting below that header,
+another append-to-EOF habit, the same one this file's own `## 2026-07-29 11:44 EDT` entry had just
+named. The table of contents had listed all 19 under Part A the whole time, in the right order — the
+existing `devlog-toc` check compares the TOC against every dated heading in the file, full stop, with
+no awareness of which physical Part a heading sits in. A misplaced entry that keeps its TOC ordering
+passes that check clean.
+
+Re-deriving the boundary was the actual work. A first pass (filed in `docs/db-deferred-list.md`) had
+already gotten it wrong once, by nine entries — each dated entry carries its own `### Lessons` /
+`### Note to future self` subsections, and skimming for "the first thing that looks like a Part B
+section" finds one of those long before the real boundary. The fix was mechanical instead: grep every
+`^## 20\d\d-` heading with its line number, find the `# Part B` marker's line number, and take the
+first dated heading after it. That put the true first misplaced entry nine entries later than the
+original guess.
+
+The move itself was a single contiguous block, chronology already correct end-to-end — no
+resequencing needed, just relocation. Verified three ways beyond the audit: the exact set and order of
+every dated heading identical before and after (hashed the list), no dated heading anywhere after the
+`# Part B` marker post-move, and the file still ending in exactly one trailing newline.
+
+Added `devlog-parts` (ERROR) to `scripts/docs-audit.mjs` so this stops being a thing a session has to
+notice by reading — it asserts no `## 20\d\d-` heading appears after `# Part B`, using the same
+`anchorMissing()` pattern `devlog-toc` uses so a renamed marker fails loudly rather than quietly
+turning the check off. Gave it both required self-test assertions (broken fixture fails, valid fixture
+stays silent) plus an anchor-missing case, and had to add a real `# Part B` heading to the test
+fixture's `docs/DEVLOG.md` — without it, the new check reported "anchor missing" against the *baseline*
+fixture, which is exactly the vacuous-pass failure mode this whole audit exists to catch.
+
+Re-checked the three warnings standing since v2.42.1 while here. Two close clean: `root-docs`'s
+VACUOUS PASS is still the documented, correct behavior (self-corrects once `LICENSE`/`NOTICE` land on
+`main`). The `xref` warning for `memory-migration-handoff.md` turned out to be exactly what it looked
+like it might be — the file is real (`docs/db-deferred-list.md` calls it "now-complete"), it just lives
+in gitignored `local/`, which this working tree doesn't carry. Not a stale pointer, just the audit's
+own documented gitignored-file blind spot. The third, `memory-index` on Harkirat's WIP licensing doc,
+stays open — it's his file mid-edit, not something to paper over with an invented pointer line.
+
+### Note to future self
+
+"No dated entries" and "no dated heading appears after the `# Part B` marker" read like the same claim
+until one of them is actually machine-checked and the other is prose sitting at the top of a file
+nobody re-reads. A structural invariant that's only ever verified by eyeballing degrades exactly the
+way this one did — silently, then compounding, for two release cycles running.
+
+---
+
+
+# Part B — Lessons Ledger (thematic)
+
+Durable, reusable takeaways. Each is a compressed version of a story in Part A.
+
+### War stories / root causes
+- **Multiple instances of a single-token bot collide invisibly.** Discord routes each interaction to a
+  random connected instance; they race `deferReply` (→ 10062/40060) and can render different code
+  versions per click. Erratic *inconsistency* is the tell. A `git push` doesn't stop local processes.
+- **Tab is an IFS *whitespace* char, so bash `read` silently collapses empty fields.** Parsing
+  tab-separated `jq` output with `IFS=$'\t' read -r A B C` shifts every field left when any earlier one
+  is empty — no error, just wrong data in the wrong variable. Use a non-whitespace delimiter (`\x1f`)
+  when empties are possible. Found in the status line (2026-07-15); the happy-path tests all passed.
+- **Synchronous CPU work starves the event loop on a 0.1-CPU tier.** k-means with no `await` blocked
+  ACKs for *unrelated* commands. Fix by doing *less* work (lazy extraction) and *yielding* (`setImmediate`).
+- **Hash-keyed caches don't invalidate on an algorithm change** — only when the source asset changes.
+  Any logic/shape change to a cached computation needs a manual, **scoped** cache clear (never unscoped).
+- **discord.js: a `ModalSubmitInteraction` can't `showModal()`** (Discord disallows modal-from-modal) —
+  route single-match Edit through an intermediate button instead.
+- **`Object.assign` drops non-enumerable props** — discord.js sets `client`/`token` non-enumerably, so
+  hand-rolled synthetic interactions silently lost them and crashed. Use the shared builder.
+- **`client.on('error')` must be registered** — discord.js constructs with `captureRejections: true`, so
+  a rejected async listener becomes an `error` event on the client that crashes the process *past* the
+  try/catch if unhandled.
+- **A bare `return interaction.reply(...)` in a catch escapes the enclosing try** — the try has already
+  exited by the time that promise rejects. Always `await` reply/editReply/followUp in error branches.
+- **Alpha-transparency in pixel sampling** — transparent padding (0,0,0) was counted as real black on
+  nameplate/decoration until the sampling loops skipped `alpha === 0`.
+- **A handler placed in the wrong interaction-type branch is dead code, silently** — the loadout
+  "Browse other builds" select handler sat inside `isButton()` and never fired; only a trace log
+  revealed it. Verify a handler is even *reached* before theorizing about its logic.
+- **`sendV2Payload` must send `attachments: []` when uploading new files** — else Discord keeps the old
+  attachments and swaps only text/components (stale swatches).
+- **Never log a raw Cloudinary error object** — its rejected-promise shape carries the account's live
+  API key+secret. Sanitize via dedicated helpers.
+
+### Walk-backs & reversals (things tried, then reverted — and why)
+- **Blank-emoji vertical centering** of a Section heading — Components V2 has no vertical-align; looked
+  wrong on mobile, reverted. Still unsolved, accepted as cosmetic.
+- **Nameplate `.webm` / animated decoration** — Discord requires a manual tap to play inline; reverted to
+  static. The real fix (APNG→GIF per render) was rejected as not worth per-render latency.
+- **Accent extraction: flat average → saturation-weighted → vivid hue-cluster.** Each revision was found
+  wrong by testing against Harkirat's *real* avatar, not a hypothetical.
+- **Palette: synthetic 6-swatch model → real k-means** — the categories were "mostly useless" vs real
+  palette tools; and the naive "top-N by population" alternative was tested first and found *worse*
+  (4 near-identical off-whites), which justified the k-means rebuild with evidence.
+- **`?size=512` on the collectibles CDN** — assumed it would resize the nameplate; verified it's ignored.
+  Fell back to fetch+resize ourselves.
+- **Heading size H2 → H3 → H2** and **`private` → `hidden`** option rename, **`CATEGORY_SORT_ORDER`**
+  added then dropped for plain alphabetical — small reversals, all driven by Harkirat's direct feedback.
+
+### Design decisions & the "why"
+- **Option A — one shared visibility toggle** for all seasonal commands, not five.
+- **Admin dates forced to UTC-0** (`chrono` with `timezone: 0`) — a past DMZ "1 hour off" bug traced to
+  ambient-timezone parsing.
+- **`chrono` defaults a bare date to NOON** — `/timestamp` manually zeroes it to midnight.
+- **Bulk imports REPLACE, not append** — a paste is the complete current list; re-running fixes typos
+  without duplicating.
+- **Single-token, user-installed-only** — the bot has zero standing guild permissions; it can only
+  answer via the interaction-response webhook. Any raw channel POST fails `50001` (this bit "Share
+  Publicly").
+- **Draw-price totals computed from raw pull arrays**, never hand-typed — repeated arithmetic typos
+  forced this; a total can no longer drift from its own draws.
+- **Three-part `vMAJOR.MODERATE.MINOR` versioning** — the old flat-decimal scheme broke once MODERATE hit
+  double digits.
+
+### Platform / library gotchas
+- **Components V2:** selects/buttons still need an Action Row even inside a Container; **40 components
+  max, counted recursively** (a real production crash); buttons can't have hex colors (only Container
+  `accent_color` can); a button `label` won't render an emoji mention — use the `emoji` field.
+- **Media Gallery has no width control**; the **collectibles CDN ignores `?size=`** (but the avatar/
+  banner CDN honors it).
+- **Jimp can't decode APNG** — animated decorations need an `ffmpeg` still-frame first.
+- **Slash-command registration belongs to the APPLICATION, not the process, and there is no UI for it.**
+  Killing a bot leaves its commands in the `/` picker forever (they just time out with "did not
+  respond"); only another API call removes them. The Developer Portal has no page for this at all —
+  hence `scripts/devCommands.js`. Same reason a *user-installed* app's stale commands are extra annoying:
+  they follow the user into every server and DM, not one guild.
+- **Cloudinary has no native per-asset TTL** — expiry is something the bot does on a schedule.
+- **Render free tier = 0.1 shared CPU**, no `suspend` in the CLI (REST API only); **Railway free tier
+  blocks CLI deploys 8am–8pm ET** and isn't git-connected.
+
+### Process lessons / tips (for us and anyone after us)
+- **When the environment and the project docs disagree about a path, trust the project docs and verify
+  both.** The harness pointed at a memory directory that didn't exist while the real 26-file store sat
+  at the path CLAUDE.md named. Following the environment blindly would have forked memory into two
+  half-empty stores, failing silently and only showing up much later as inexplicable amnesia.
+- **A convention documented but never implemented is worse than no convention.** CHANGELOG.md promised
+  an `Unreleased` section at the bottom for months; it didn't exist, so committed-but-unpushed work had
+  nowhere to go. Check that a rule you're citing is actually *real* in the file before relying on it.
+- **Never `2>/dev/null` the loading of your own safety rails.** The SessionStart hook silently injected
+  an empty string for an unknown number of sessions after the repo moved — every non-negotiable it
+  enforces was simply never delivered, and nothing errored. If a mechanism's job is to *deliver rules*,
+  its failure mode must be loud, and it should resolve paths dynamically (`$CLAUDE_PROJECT_DIR`) rather
+  than hardcoding a location that can move underneath it.
+- **"Is it documented?" and "will it actually fire?" are different questions.** A rule written into a
+  linked memory file only works if something reads it. The auto-loaded file is the only guaranteed
+  delivery path — verify what a *fresh* session actually receives, don't infer it from where you wrote it.
+- **Test the degenerate input, not just the populated one.** Absent/null/zero fields are where parsing
+  bugs live. A status line whose happy path is perfect but which misreports the model when one field is
+  missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.
+- **Verify the fix actually *works*** — boot-test, and for a live interaction get a real repro or add a
+  cheap trace point before theorizing.
+- **Check sibling/reference code before guessing** from prose or screenshots — the pattern is usually
+  already in the codebase.
+- **Test the naive alternative first** — a bad result there justifies a bigger rebuild with evidence.
+- **When behavior is erratic, suspect multiple instances FIRST** (`ps aux`, Railway, Render) before
+  code/cache theories.
+- **"Document" includes the CHANGELOG** — and the changelog is the one that keeps getting skipped.
+  Update all three record layers at push time.
+- **Kill stray local instances as part of every push** — only the deployed instance should be live.
+- **A project's own `.env` is in-scope for a credential; a personal `~/.` config file is not.**
+- **Be usage-conscious** — batch tool calls, don't re-read what's already in context.
+- **Mark chat chapters at phase shifts** — can't be hook-automated, has to be done deliberately.
+- **A split/move/rename is done when nothing is LEFT BEHIND, not when the obvious block has moved.**
+  Four checks before calling it: nothing project-specific still in the source, every cross-reference
+  updated, the new file stands alone (its legend came with it), and prose describing the old layout
+  rewritten. (2026-07-25 21:43 EDT, `feedback_no_half_measures_on_reorgs`.)
+- **A file rename IS a code change when something parses the file.** The grep surface is docs + rules +
+  **`.claude/settings*.json` hooks** + scripts + memory + *other projects'* memory dirs. A `SessionStart`
+  hook here was anchored to a `# Graveyard` heading an archive split removed — it would have failed
+  silently, never loudly. Dry-run the hook after touching what it reads.
+- **Deferred items containing a measurement rot; re-measure before you re-file.** Two examples the same
+  day: a reminder still claiming CHANGELOG/DEVLOG were "~730 lines each, not there yet" when they were
+  1,366 and 1,792, and a `[P2 now → P0 ~2026-07-24]` self-escalating tag whose trigger date had quietly
+  passed. The note freezes; the world doesn't.
+
+### Concerns / open risks
+- **`ffmpeg` is unverified on Render's container** — decoration extraction works locally; if it breaks in
+  prod *only*, check for ffmpeg first.
+- **Render free-tier CPU ceiling** — the color feature is right at the edge of it; the lazy-extraction
+  work bought headroom, but the last-resort levers (worker threads, plan bump) are documented.
+- **Deferred dependabot vulnerabilities** — undici/discord.js chain + xlsx (dead at runtime); tracked,
+  decided not worth acting on yet.
+- **Changelog-drift habit** — recurred across multiple sessions; now guarded by a self-check callout, but
+  worth staying honest about.
+
+### Collaboration insights
+- **Systematic debugging beat guess-and-check repeatedly** — the session above is the clearest case:
+  four wrong "the bug is X" answers before the real one, each discarded by *evidence*, not vibes.
+- **Screenshot/real-device review caught what logs didn't** — the "different version per click" report,
+  and most of the walk-backs, came from Harkirat actually *looking* on mobile.
+- **Confirm before push, every time** — approval doesn't carry over; and "push" means the whole cycle
+  (deploy + verify live + only one instance running), not just `git push`.
+- **Honest reporting builds trust** — recording the 0%-benefit convergence result, the misread Railway
+  logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.

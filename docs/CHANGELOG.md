@@ -181,7 +181,164 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.41.4 — 2026-07-28 18:40 EDT (#51) — A hard reset that ate another session's work
+## v2.42.2 — 2026-07-29 12:30 EDT (#54) — Nineteen entries the table of contents never lied about
+**Docs + tooling — no bot behaviour change.**
+- **Moved 19 misplaced DEVLOG journal entries back into Part A.** An append-to-EOF habit had landed
+  them physically below the `# Part B — Lessons Ledger` header — whose own text claims "no dated
+  entries" — even though the table of contents already listed all 19 under Part A, in the right order.
+  The existing `devlog-toc` check couldn't see this: it compares the TOC against every dated heading in
+  the file regardless of which Part physically holds it, so a misplaced entry passed as long as the TOC
+  ordering agreed. Re-derived the true boundary from scratch after an earlier attempt (in a prior
+  session) mistook a dated entry's own `### Lessons` subsection for a real Part B section header and
+  put the cut nine entries too late. The block move is contiguous and needed no resequencing — the
+  chronology already lined up exactly at the seam.
+- **Added `devlog-parts` (ERROR) to `scripts/docs-audit.mjs`**, closing the gap `devlog-toc` had: no
+  dated `## 20YY-` heading may ever appear after the `# Part B` marker. Uses the shared `anchorMissing()`
+  helper so a renamed marker fails loudly instead of silently no-op'ing, same as `devlog-toc`'s own
+  anchors. `scripts/docs-audit.test.mjs` gained the required broken/valid pair plus an anchor-missing
+  case (41 → 43 assertions); the baseline fixture's `docs/DEVLOG.md` needed a real `# Part B` heading
+  added so the new check wasn't reporting a vacuous pass against it.
+- **Closed out the three standing `docs-audit` warnings from v2.42.1.** `root-docs`'s VACUOUS PASS is
+  confirmed still correct — it self-corrects once `LICENSE`/`NOTICE` land on `main` — and stays tracked
+  in `docs/db-deferred-list.md`. The `xref` warning for `memory-migration-handoff.md` is confirmed real
+  but expected: that file lives in gitignored `local/` (per `docs/db-deferred-list.md`, "now-complete"),
+  which a fresh working tree doesn't carry — the same gitignored-file caveat the audit already documents
+  for itself, not a stale pointer. `memory-index`'s warning about `project_licensing_and_legal_docs.md`
+  is left for Harkirat — it's his in-flight legal/licensing work, not something this session should
+  resolve on his behalf.
+
+---
+
+## v2.42.1 — 2026-07-29 11:44 EDT (#53 · `e2d74ac`) — A local ref is not a remote state
+**Docs only — no code change, no bot behaviour change.**
+- **Brought the stale local `main` / `v3-pre-release` refs current without a checkout.** They had been
+  left behind after the v2.42.0 merge because the working tree was on another session's branch and
+  switching under it is the v2.41.4 incident. `git fetch origin main:main v3-pre-release:v3-pre-release`
+  writes the refs directly and git *refuses* the refspec if the branch is checked out, so it cannot
+  disturb a working tree. **This is now the merge close-out step**, recorded in `CLAUDE.md` and
+  [[project_git_workflow]].
+- **Separated "stale local pointer" from "stale remote state"** in how branch sync gets reported. A
+  `behind` marker in `git branch -vv` is a fact about the local clone only. The question Harkirat
+  actually asked is answered by `git rev-list --left-right --count origin/main...origin/v3-pre-release`,
+  which returned `0 0` — `origin/v3-pre-release` identical to `origin/main` at `fb43874`, the sync
+  workflow having run within seconds of the merge. The remote was never out of sync.
+- **Filed the GitHub Actions Node 20 deprecation as its own session** in `docs/db-deferred-list.md`
+  (`[P2 · XS]`). `actions/checkout@v4` and `actions/setup-node@v4` declare `using: node20` in their own
+  `action.yml`; GitHub is retiring that runtime and force-running them on Node 24 as a shim. Three call
+  sites across `ci.yml` and `sync-v3-pre-release.yml` need `@v5`. **Not our Node version** — the VM is on
+  24 and `ci.yml` pins `node-version` separately. The trap is written down with it: `checkout@v5` keeps
+  the depth-1 default, and a depth-1 clone costs the audit 42 false hash-chain errors, so `fetch-depth: 0`
+  must survive the bump. `ci-wiring` already asserts it.
+
+---
+
+## v2.42.0 — 2026-07-28 23:10 EDT (#52 · `fb43874`) — "Not checkable" was never true
+**Tooling + docs — no bot behaviour change.**
+- **`scripts/docs-audit.mjs`** — the documentation invariants as a **program**, not another hook.
+  Run `node scripts/docs-audit.mjs --list` for the roster (deliberately not counted here). Two
+  severities: `ERROR` fails, `WARN` reports. **Wired into CI**, which is the point — a Claude Code
+  hook fires only inside a Claude session on one Mac, so any PR opened another way was unchecked.
+- **`scripts/docs-audit.test.mjs`** — proves every case can actually **fail**, plus the inverse
+  (valid input stays silent) and a baseline meta-test asserting a clean fixture reports *nothing*.
+- **`.claude/hooks/records-close-check.sh`** — gates chore items **6 (memory)** and **7 (notes file)**
+  at `gh pr create`. `devlog-toc-check.sh` now delegates to the audit, so there is one implementation.
+- **Corrected a false claim in `docs/README.md` and in the RELEASE DOC CHECK hook's own message**,
+  which both said items 6 and 7 were "NOT checkable". A `SessionStart` hook had been counting the
+  notes file's open items all along. The defect was **timing**, not absence: the check ran at
+  *discovery* (session start, nothing filed yet) and never at *closure* — the same shape as the DEVLOG
+  failure measured at 8/22.
+
+**The second pass — Harkirat called the first one rushed, and it was.** Everything below was found by
+re-auditing work already declared done:
+- **Range headings in `CHANGELOG-SUMMARY.md` are RETIRED**, and the first pass had taught the checker
+  to *accept* them — entrenching a convention Harkirat had already dropped. Verified: the 7 surviving
+  ranges are all v2.18.3-and-older; every release from v2.19.0 has its own heading. Now legacy-only,
+  and `docs/README.md` (which still documented ranges as current practice, in two places) is fixed.
+- **`notes-sweep` only matched `ℋ`.** The confirmation mark is switchable in MarkEdit (`✴︎ ✦ ◆ ℋ`),
+  so an item confirmed with any other symbol was invisible and would have sat unswept forever.
+- **A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker or the
+  notes file's `## Questions` heading made both print **"passed"** while doing nothing. Two guards
+  written to stop silently-dead guards were themselves silently dead. They now report loudly, and the
+  notes case also warns that the SessionStart hook scanning the same anchors is broken too.
+- **`--only <typo>` printed "passed" and exited 0** — one wrong character in a hook registration
+  silently disabled that gate. Now exits 2. `hook-integrity` additionally verifies every registered
+  hook script exists, is executable, and cites a real check id.
+- **Two bugs from the space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead
+  (`split(" ")[0]` → `/Applications/Claude`) and `hook-integrity`'s regex stopped at the space,
+  working only by accident. Neither could surface in a space-free tmpdir, so **the test fixtures now
+  deliberately contain a space** — a fixture that doesn't reproduce production's hazards certifies the
+  wrong thing.
+- **New checks:** `records-present` · `secrets-hygiene` (the `.env`-stays-ignored invariant was
+  prose-only until now, so nothing would have noticed it being undone) · `ci-wiring` (the audit
+  guards its own CI wiring, including `fetch-depth: 0` and the `v3-pre-release` trigger) ·
+  `rule-globs` (a `paths:` glob matching nothing means that rule never loads again) ·
+  `memory-index` · `nested-worktree` · `tag-coverage` · `version-sync`.
+- **v3 pre-release compatibility**, verified by test: `Pre-Release v3.1.0` headings with a
+  `3.1.0-pre` `package.json` must not fail CI on the v3 branch.
+- **`archive-conservation` now traces removed items into the archive by content**, not just "did the
+  archive grow" — removing ten items and adding one line used to pass.
+- **Fixed a real stale path the audit had been masking:** `CLAUDE.md` and the notes file both pointed
+  at `local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `local/` ignore
+  rule hid it, so gitignored-and-missing paths now WARN instead of being skipped.
+- Removed the rotting "10 checks" count from three living docs per
+  `feedback_no_duplicated_state_in_prose` — it was wrong within the hour.
+
+**The third pass — "how does it handle the future, and its growth and change?"** Harkirat asked what
+happens when files appear, move or vanish, how a future session tells a true pass from a false one,
+and what was still being sidelined. Almost every answer was "badly", and a **live parallel session**
+supplied the test case by adding `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` and an
+entire `public/` tree while this was being written — none of which the audit could see.
+- **Evidence accounting.** `19 checks passed` conflated *verified*, *skipped* and **vacuous** (ran,
+  matched zero things, passed having verified nothing). Every check now declares what it examined or
+  why it skipped; the summary reports all three; a 0-item pass WARNS unless an empty corpus is
+  legitimate. It caught `root-docs` passing vacuously on its very first run.
+- **Growth checks:** `root-docs` · `top-level-dirs` · `scripts-documented` · `nav-map-sync`
+  (rules ↔ CLAUDE.md ↔ README, including the hardcoded "13 files" count) · `records-present`.
+- **Outside the repo:** `external-anchors` (`meta-deferred-list.md` and the global Claude config are
+  referenced by name from four places and sat at absolute paths `xref` deliberately skipped) and
+  `memory-slug`, which catches the repo-moved-and-orphaned-the-memory-store failure that **already
+  happened once** and went unnoticed for two weeks.
+- **`binary-in-text` — the unfindable one.** `docs-audit.mjs` itself contained NUL bytes (a regex
+  placeholder), which made ripgrep classify it as **binary and refuse to show matches**. In a project
+  whose CLAUDE.md mandates `rg`, the enforcement script had made itself unsearchable — invisible to
+  the very tool you would look with. Fixed, and now impossible to reintroduce.
+- **Hooks silently audited the WRONG TREE.** All three `gh pr create` gates hardcoded
+  `/Applications/Claude Code/Diors-Builds`, so inside a git worktree — which the superpowers workflow
+  actively encourages — they reported confidently about a branch you were not on. Now
+  `CLAUDE_PROJECT_DIR`. Found only because a parallel session forced the use of a worktree.
+- **New `docs-audit-gate.sh`** runs the full audit at `gh pr create`; it caught a false positive in
+  `archive-conservation` immediately (a unified diff renders an in-place EDIT as a removal, so a
+  one-line fix demanded a graveyard entry — left in, it would have trained everyone to bypass the gate).
+- **Two fingerprint matchers were broken identically**, building the search window from filtered words
+  while searching an unfiltered haystack, so they could almost never match. Neither had ever been
+  exercised. Both fixed and both branches now tested.
+- **Recovered the gap the second pass created:** bare-filename `xref` is back, resolving against
+  tracked names + gitignored-but-present + both memory stores + external anchors, skipping historical
+  "renamed from" phrasing. Scoped to `.md` and WARN — because I measured the false-positive rate with
+  a probe that scanned only `.md` and then shipped a check that also scanned `.js`/`.json`.
+- The audit now states **what a pass does not mean** on every run, and reports when it is running in a
+  linked worktree (where gitignored files are legitimately absent).
+- **Both delegating gates now fail LOUD instead of silent.** Pointing `devlog-toc-check.sh` at the
+  audit removed a working standalone implementation and replaced it with a single point of failure —
+  delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired that gate and the
+  new PR gate with it. "The audit could not run" is now reported as its own finding, for both the
+  missing-file and crashed-with-invalid-JSON cases, and both were verified by actually removing and
+  then breaking the script. Not a duplicated fallback: two copies drift, and the drift is silent too.
+  The independent layer still stands beside it — the `gh pr merge` hooks, the `git tag` invariant gate,
+  the TIMESTAMP check and the `Stop` completion-claim hooks all run without this script.
+- **Filed what the audit does NOT cover** to `docs/db-deferred-list.md` rather than leaving it in a
+  chat message: content accuracy, the whitelist limitation, the unguarded web-UI PR path, and three
+  smaller ones — each with a direction, so the next session improves the program instead of
+  rediscovering its edges.
+- **Folded in the second-account co-author trailer convention** (`docs: adopt a real second-account
+  co-author trailer for commits`, authored 2026-07-28 18:31 EDT) that had been stranded on a branch in
+  a nested worktree. Every commit now carries `Co-Authored-By: diorswrld
+  <310361322+diorswrld@users.noreply.github.com>` alongside the Claude trailer — a genuinely separate
+  personal account, which is what actually earns Pair Extraordinaire. It shipped here rather than as
+  its own release because it carried no changelog entry or version bump of its own, and one merged PR
+  is one version.
+
+## v2.41.4 — 2026-07-28 18:40 EDT (#51 · `925aa0a`) — A hard reset that ate another session's work
 **Docs only — no behaviour change.**
 - **A `git reset --hard HEAD~2`** at 2026-07-28 16:35 EDT, cleaning up two throwaway commits made to test
   the new TOC hook, also discarded the **unstaged** modification in `.claude/settings.local.json` —

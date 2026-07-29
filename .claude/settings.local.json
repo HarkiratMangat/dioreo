@@ -30,7 +30,10 @@
       "Bash(rtk grep *)",
       "Bash(rtk find *)",
       "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
-      "Bash(ls -la ~/.claude/hooks/ | head -40; echo ---; ls ~/.claude/projects/ | head)"
+      "Bash(ls -la ~/.claude/hooks/ | head -40; echo ---; ls ~/.claude/projects/ | head)",
+      "Bash(rtk git *)",
+      "Bash(node -p \"require\\('./package.json'\\).version\")",
+      "Bash(gh api *)"
     ]
   }
 }

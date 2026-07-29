@@ -129,6 +129,12 @@ version-number-yes; MAJOR always asked separately) → **deploy**, a separate op
 (`git pull` → restart) → verify `scripts/vmstatus.sh` (asked). **A merge alone does NOT update the VM** —
 a merged version can sit undeployed indefinitely; say plainly which steps happened ("merged v2.x, deploy
 held"), never let "merged" imply "live."
+**Close out the merge by refreshing the local refs — no checkout required:**
+`git fetch origin main:main v3-pre-release:v3-pre-release` writes them directly, and git *refuses* the
+refspec if that branch is checked out, so it can never disturb a working tree another session is using.
+Leaving them behind was mistaken for real drift once (v2.42.1). **A `behind` marker in `git branch -vv`
+is a fact about the local clone, never about the remote** — report actual branch sync from
+`git rev-list --left-right --count origin/main...origin/v3-pre-release` (`0 0` = identical).
 **⚠️ ONE commit + ONE tag per release — never a follow-up `chore(release): finalize …` commit
 (retired 2026-07-27 21:27 EDT, v2.36.0).** The bump and changelog entry go on the BRANCH, before the
 merge, so they fold into the squash commit and the tag lands on a commit whose `package.json` already
@@ -146,6 +152,27 @@ lowercase, no trailing period; `!` before the colon for breaking. Only the 11 st
 `release`, `sec`, `wip`, `types`, `i18n`. **Branch names** are separate (the spec doesn't govern them):
 `<type>/<kebab-description>`. **Never rename a branch that has an open PR** — GitHub auto-closes it and it
 cannot be reopened. Vocabulary, mappings, and rationale: `docs/reference/commit-and-branch-naming.md`.
+
+**Every commit trailer includes a real second-account co-author (adopted 2026-07-28 18:30 EDT).**
+Harkirat's primary account (`dior`, author on every commit) has a second, genuinely separate GitHub
+account, `diorswrld` (id `310361322`), created specifically to co-author commits for real. Every
+commit should end with:
+```
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
+```
+(swap the Claude line's model name/id for whichever model is actually running that session; the
+Claude line is cosmetic for badge purposes — `noreply@anthropic.com` DOES link to a real account
+(`github.com/claude`, Anthropic's shared bot, verified via `gh api users/claude`) but empirically
+never grants Pair Extraordinaire to the human co-author: dozens of merged Diors-Builds PRs already
+carry that exact trailer and `HarkiratMangat`'s profile still shows zero (checked 2026-07-28 18:30
+EDT), almost certainly an anti-gaming filter on shared/platform-bot accounts, same principle as Pull
+Shark excluding your own repo). **The `diorswrld` line is the one that matters**: it's a real,
+distinct *personal* account (verified — different numeric id than `dior`/`HarkiratMangat`), so it satisfies
+GitHub's Pair Extraordinaire requirement for real, unlike the earlier same-account attempt (see
+`feedback_git_commit_identity` memory for that history — this supersedes it). Badge tiers need
+volume (default 1 / bronze 10 / silver 24 / gold 48 co-authored commits merged), so keep this on
+every commit going forward, not just one.
 
 **⚠️ Two bases now exist — pick the right one, `gh pr create` will not (added 2026-07-27 18:05 EDT).**
 v3 work lives on the long-lived **`v3-pre-release`** integration branch, not `main`. So a v3 feature is
@@ -285,6 +312,14 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 - **`LICENSE` / `CONTRIBUTING.md` / `CONTRIBUTORS.md`** (repo root) — licence terms + CLA, the
   contributor guide, and the credit ledger. See the licensing block above.
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
+- **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
+  gate.** `--list` prints the current roster; it covers the records: doc map · cross-references · version coverage across all three
+  changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · and the **conservation rule** (an
+  item leaves an active list ONLY by appearing in its archive — a shrink with no matching grow means
+  it was *deleted*, not swept). `ERROR` fails, `WARN` never blocks. `npm run docs:audit:test` proves
+  each check can actually fail. Added 2026-07-28 21:00 EDT because "not checkable" had twice been
+  written down about records that were perfectly checkable — see memory
+  `feedback_not_checkable_is_usually_unexamined`.
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
 - **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
@@ -306,7 +341,9 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 
 ## Local-only files & the `local/` folder vs. `docs/` (tracked)
 - **`local/`** (repo root, **gitignored**) — Harkirat's personal scratch folder: the `project plan notes.txt`
-  future-planning dump, reference screenshots/PDFs, `local/Harkirats-Space.md` (private — off-limits unless
+  future-planning dump, reference screenshots/PDFs, and anything else he drops in. **his private space file actually lives at `docs/Harkirats-Space.md`** (gitignored there by name — corrected 2026-07-28 22:55 EDT;
+  this file and the notes file had both said `local/` since the v2.35.3-era move, while `.gitignore` was
+  updated and they were not) (private — off-limits unless
   he grants permission that session), and anything else he drops in. Never pushed, never deployed. When he
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
