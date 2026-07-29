@@ -41,7 +41,7 @@ Useful reports include:
 
 **Do not open a public issue for a security problem.**
 
-Email **info@harkiratmangat.com** with the details. Please read §4.11 of the
+Email **harkirat117@gmail.com** with the details. Please read §4.11 of the
 LICENSE first — the short version:
 
 - ✅ Test against **your own local instance**
@@ -195,6 +195,6 @@ require it.
 
 ## Questions
 
-Open an issue, or email **info@harkiratmangat.com**.
+Open an issue, or email **harkirat117@gmail.com**.
 
 Thanks for being here. 🖤

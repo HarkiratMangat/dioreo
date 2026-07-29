@@ -35,7 +35,7 @@ can't be signed away.
 Dior's Builds is operated by **Harkirat Mangat**, also known as **"dior"**, an
 individual based in Ontario, Canada ("we", "us", "our").
 
-**Contact:** info@harkiratmangat.com
+**Contact:** harkirat117@gmail.com
 
 There is no company behind this. It's one person, and support is best-effort.
 
@@ -65,9 +65,9 @@ These Terms and the [Privacy Policy](PRIVACY.md) are:
 
 - linked from the Bot's Discord Developer Portal listing, where Discord displays
   them on the Bot's profile;
-- published at a permanent public URL in our GitHub repository;
+- published at a permanent public URL (see §20);
 - referenced in the Bot's own help output; and
-- available on request at info@harkiratmangat.com.
+- available on request at harkirat117@gmail.com.
 
 **You are responsible for reading them.** Choosing not to read terms you were
 given the opportunity to read does not stop them applying to you.
@@ -240,7 +240,7 @@ the [contributing guide](../../CONTRIBUTING.md).
 ### 6.1 Reporting abuse
 
 To report misuse of the Bot, a security issue, or content that shouldn't be there,
-email **info@harkiratmangat.com**. Security issues should never go in a public
+email **harkirat117@gmail.com**. Security issues should never go in a public
 GitHub issue.
 
 ---
@@ -255,6 +255,13 @@ copyright and other laws. Using the Bot grants you **no ownership or licence** i
 any of it, beyond viewing its output for personal, non-commercial use.
 
 Source code licensing is governed separately by the [LICENSE](../../LICENSE).
+
+**The source repository's visibility may change at any time, without notice** — it
+may be public or private at any given moment, at our sole discretion, and we are
+under no obligation to publish the source at all or to keep publishing it. **These
+Terms, the Privacy Policy, and the Bot itself are unaffected either way**, and
+these documents stay published at their permanent public URLs regardless. Nothing
+in these Terms grants you any right of access to the source code.
 
 ### 7.2 Not ours — game content
 
@@ -274,6 +281,17 @@ no rights in them. They are displayed for identification, commentary, and refere
 in a manner we believe constitutes fair dealing under the *Copyright Act* (Canada)
 and fair use under 17 U.S.C. § 107.
 
+We take that position seriously rather than assuming it: the Bot is **free and
+non-commercial**, its purpose is **informational and referential** rather than a
+substitute for the game, it uses **no official logos or branding**, it does not
+reproduce game code, assets in bulk, or anything playable, it makes clear on its
+face that it is unofficial, and it operates a **prompt takedown process** (§7.4).
+Those are the factors that matter, and they are deliberate choices.
+
+We nonetheless acknowledge plainly that fan projects operate at the rights
+holder's sufferance. **If Activision or any other rights holder asks us to change
+or remove something, we will comply promptly** rather than argue.
+
 ### 7.3 Other trademarks
 
 Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and
@@ -283,7 +301,7 @@ list is in [NOTICE](../../NOTICE) §5.
 ### 7.4 Copyright complaints and takedowns
 
 If you own rights in material displayed by the Bot and want it removed, email
-**info@harkiratmangat.com** with:
+**harkirat117@gmail.com** with:
 
 - identification of the work;
 - where it appears in the Bot;
@@ -342,6 +360,28 @@ change at any of them can break the Bot without notice.
 **Discord Inc. is not a party to these Terms**, has no obligation or liability to
 you in connection with the Bot, and does not sponsor or endorse it. Any dispute
 about the Bot is between you and us.
+
+### 9.1 If a provider acts outside its terms
+
+We select providers on the basis of their published terms and data processing
+agreements, and we do not authorise any of them to use your data for their own
+purposes. **We cannot audit, inspect, or control what any of them does inside its
+own systems.**
+
+**To the fullest extent permitted by law, we are not liable for any act or
+omission of a third-party provider that falls outside the terms it publishes** —
+including any unauthorised use, disclosure, retention, or loss of data by that
+provider. Your remedy in that situation lies against them, not us.
+
+Discord in particular is an **independent controller** of the data it collects
+about you through Discord itself. That is Discord's responsibility under
+[Discord's Privacy Policy](https://discord.com/privacy), not ours.
+
+If we learn that a provider has mishandled data, we will investigate, notify you
+and any relevant regulator where required, and change provider where that's the
+right answer. See §5.2 of the [Privacy Policy](PRIVACY.md), which also explains
+the limits of this allocation — a controller's obligations under data protection
+law cannot be disclaimed by contract, and we don't claim otherwise.
 
 Data details: [Privacy Policy](PRIVACY.md) §5.
 
@@ -477,7 +517,7 @@ prohibits it.
 
 ### 17.1 Informal resolution first
 
-**Before starting formal proceedings, please email info@harkiratmangat.com.** Most
+**Before starting formal proceedings, please email harkirat117@gmail.com.** Most
 problems are solvable in one message, and we ask for 30 days to try.
 
 ### 17.2 Governing law and venue
@@ -542,7 +582,7 @@ one but you and us has rights under these Terms.
 
 **Notices.** We may contact you through the Bot, the project's Discord presence, the
 GitHub repository, or any address you've used to contact us. Notices to us go to
-info@harkiratmangat.com.
+harkirat117@gmail.com.
 
 **Relationship.** These Terms create no employment, agency, partnership, or joint
 venture between us.
@@ -559,7 +599,7 @@ exigé que la présente convention soit rédigée en anglais.*
 We may update these Terms. When we do:
 
 - The **effective date and version** at the top change.
-- The change is recorded in the repository's public git history.
+- The change is recorded in the repository's git history.
 - For **material** changes we will make reasonable efforts to give notice —
   typically through the project's Discord presence, a repository release note, or a
   notice in the Bot itself.
@@ -573,8 +613,11 @@ don't accept them, remove the Bot.
 
 **Harkirat Mangat ("dior")**
 Ontario, Canada
-📧 info@harkiratmangat.com
-🔗 https://github.com/HarkiratMangat/diors-builds
+📧 **harkirat117@gmail.com**
+
+Email is the canonical contact and always reaches us. We deliberately don't list a
+repository link here, because the repository's visibility can change (§7.1) and a
+contact point in binding terms must not be able to go dead.
 
 For security reports, email — don't open a public issue. See §4.11 of the
 [LICENSE](../../LICENSE).

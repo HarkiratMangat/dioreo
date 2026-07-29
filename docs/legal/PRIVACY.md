@@ -18,7 +18,7 @@ unused.
 **Your data is stored in Canada.** No advertising, no analytics, no tracking, no
 cookies, no profiling, and nothing is sold or shared for marketing.
 
-You can have everything deleted by emailing **info@harkiratmangat.com** — see §9.
+You can have everything deleted by emailing **harkirat117@gmail.com** — see §9.
 
 *This summary is for convenience. The sections below are the actual policy.*
 
@@ -30,7 +30,7 @@ The **data controller** is:
 
 **Harkirat Mangat**, also known as **"dior"**, an individual based in Ontario,
 Canada.
-📧 **info@harkiratmangat.com**
+📧 **harkirat117@gmail.com**
 
 This is a hobby project run by one person. There is no company, no data
 protection officer (none is required — we do not carry out large-scale or
@@ -112,12 +112,32 @@ logs are never used to analyse users.
 
 **Alert logs are automatically deleted after 30 days.**
 
+### 2.4a Server logs (Google Cloud Logging)
+
+The server the Bot runs on ships its console output to **Google Cloud Logging**,
+where it is retained for **30 days** and then automatically deleted. These are
+operational logs — startup and shutdown events, command routing, errors and stack
+traces, database connection state, and the running version and commit.
+
+As with alert logs, **an error or stack trace could incidentally contain a Discord
+user ID** if the failure occurred while processing that person's command. We
+verified that no log statement in the Bot deliberately writes a user ID, but an
+error object can carry one. These logs are not indexed by user, are never used to
+analyse or profile users, and are readable only by the administrator.
+
 ### 2.5 If you use GitHub
 
-Filing an issue or pull request on our public repository means GitHub processes
-your data under [GitHub's Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement),
-and your contribution is public. That's GitHub's processing, not ours, and it is
-entirely separate from using the Bot.
+Filing an issue or pull request on our GitHub repository means GitHub processes
+your data under [GitHub's Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+That's GitHub's processing, not ours, and it is entirely separate from using the
+Bot.
+
+**The repository's visibility may change at any time, without notice.** It may be
+public or private at any given moment, at the maintainer's discretion. If it is
+public, anything you post there is visible to anyone. **This policy, the Terms of
+Service, and the Bot's behaviour do not depend on that setting** — they apply
+identically either way, and these documents remain published at their permanent
+public URLs regardless.
 
 ---
 
@@ -176,7 +196,17 @@ We have never done so, and we have no plans to.
 | **Discord Inc.** | The platform itself — your ID, your interactions | Per [Discord's Privacy Policy](https://discord.com/privacy) |
 | **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record** | **🇨🇦 Azure Canada Central (Toronto)** |
 | **Google Cloud Platform** (Google LLC) | Hosts the server the Bot runs on | 🇺🇸 `us-east1` (South Carolina) |
+| **Google Cloud Logging** (Google LLC) | Server logs, 30-day retention | 🇺🇸 United States |
+| **Google Cloud Vertex AI** (Google LLC) | Admin-only image extraction — **no end-user data** | 🇺🇸 United States |
 | **Cloudinary Ltd.** | Hosts cached **game images** only | 🇺🇸 United States |
+| **Cloudflare, Inc.** | Serves these legal documents as a public web page | Global edge network |
+
+**About Cloudflare:** it hosts *this policy and the Terms of Service* so they are
+publicly readable, as Discord requires. It has no role in the Bot itself and never
+sees your Discord data. Like any web host, it processes standard request data —
+including your IP address — when you load these pages, under
+[Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/). Reading
+this page is the only thing that involves them.
 
 ### 5.1 Three clarifications worth making
 
@@ -189,13 +219,53 @@ cluster's DNS records.
 weapon artwork supplied by the administrator. Your avatar is never uploaded.
 
 **No AI system processes your data.** The `/autobuild` command sends screenshots
-to Google's Gemini model for text extraction, but it is **restricted to the
-administrator's own Discord account**. No end-user data, image, or message is
-ever sent to any AI service. (Separately, AI tools were used to help *write* this
-project's code — see [NOTICE](../../NOTICE) §6. That's development, not runtime
-processing of your data.)
+to a Gemini model for text extraction, but it is **restricted to the
+administrator's own Discord account**. No end-user data, image, or message is ever
+sent to any AI service.
 
-### 5.2 Other disclosure
+Two details that matter here:
+
+- We call **Google Cloud Vertex AI** (`aiplatform.googleapis.com`, project-scoped,
+  service-account authenticated) — **not** the consumer Gemini API
+  (`generativelanguage.googleapis.com`). The distinction is important: under the
+  Google Cloud terms that govern Vertex AI, **Google does not use customer data
+  submitted to Vertex AI to train its models.** The consumer Gemini API's free
+  tier has materially weaker terms in this respect. We use the enterprise path.
+- Separately, AI tools were used to help *write* this project's code and
+  documentation — see [NOTICE](../../NOTICE) §6. That is development-time
+  assistance, not runtime processing of your data.
+
+### 5.2 If a provider mishandles your data
+
+We choose our providers carefully and rely on their published privacy terms and
+data processing agreements. But we are one person, and **we have no ability to
+audit, inspect, or control what Discord, Google, MongoDB, or Cloudinary actually
+do inside their own systems.**
+
+So, plainly:
+
+- **Discord is an independent controller of its own data**, not our processor. What
+  Discord collects about you through using Discord — far more than we ever see — is
+  governed by [Discord's Privacy Policy](https://discord.com/privacy) and is
+  Discord's responsibility, not ours.
+- **Our other providers act as processors** on our instructions, under their own
+  data processing agreements. We do not authorise any of them to use your data for
+  their own purposes, and we have not agreed to any such use.
+- **If a provider acts outside those terms**, that is their breach. To the fullest
+  extent the law allows, we are not liable to you for it. Our liability to you in
+  any event is limited by §15 of the [Terms of Service](TERMS.md).
+- **What we will do:** if we learn a provider has mishandled your data, we will
+  investigate, tell you where §8.1 requires it, notify the relevant regulator where
+  required, and change provider where that's the right answer.
+
+> **Being honest about a limit of this section.** If data protection law applies to
+> us, we are the **controller**, and a controller carries responsibility for
+> choosing and overseeing its processors that it cannot simply disclaim in a
+> privacy notice. This section allocates *contractual* risk between you and us and
+> tells you the truth about what we can and can't control. It does not, and cannot,
+> override any obligation the law places on us, and we don't pretend otherwise.
+
+### 5.3 Other disclosure
 
 We may disclose information where legally required — a valid court order,
 subpoena, or law-enforcement request under Canadian law — or where necessary to
@@ -234,7 +304,8 @@ of these transfers is low.
 | Data | Retention |
 |---|---|
 | **Your preference record** | **Kept until you ask us to delete it** — see §9 |
-| **Alert / operational logs** | **30 days**, then automatically deleted |
+| **Alert logs** | **30 days**, then automatically deleted |
+| **Server logs (Google Cloud Logging)** | **30 days**, then automatically deleted |
 | **In-memory caches** | Until the next restart or deploy — hours to days |
 | **Cloudinary game images** | Until the underlying content rolls out of the Bot's history |
 
@@ -310,7 +381,7 @@ jurisdiction.
 
 ### 9.1 How to make a request
 
-**Email info@harkiratmangat.com** with the subject line **"Privacy Request"**,
+**Email harkirat117@gmail.com** with the subject line **"Privacy Request"**,
 and include:
 
 1. **Your Discord user ID** — the numeric one. In Discord: Settings → Advanced →
@@ -350,9 +421,9 @@ in a shadow copy.
 
 Two honest caveats:
 
-- **Alert logs** may briefly contain an incidental user ID (§2.4). These purge
-  automatically within 30 days and are not indexed by user, so we do not
-  routinely search them. Ask and we will.
+- **Alert logs and server logs** may briefly contain an incidental user ID (§2.4,
+  §2.4a). Both purge automatically within 30 days and neither is indexed by user,
+  so we do not routinely search them. Ask and we will.
 - **Database backups** maintained by MongoDB Atlas may retain a copy until they
   age out on Atlas's own schedule. We cannot selectively edit a backup, which is a
   normal and accepted limitation.
@@ -393,7 +464,7 @@ We do not knowingly collect data from anyone below that age, and we have no
 mechanism to verify age beyond Discord's own — we rely on Discord's enforcement of
 its minimum age.
 
-If you believe a child's data is stored, email **info@harkiratmangat.com** and we
+If you believe a child's data is stored, email **harkirat117@gmail.com** and we
 will delete it promptly and without requiring the verification steps in §9.2.
 
 Because we never collect names, emails, photographs, or message content, the data
@@ -417,7 +488,7 @@ it covers far more data than we ever see.
 We may update this policy. When we do:
 
 - The **effective date and version** at the top change.
-- The full change history is public in the repository's git log.
+- The full change history is kept in the repository's git log.
 - For **material** changes — new data collected, a new recipient, a new purpose —
   we will make reasonable efforts to give notice before they take effect, and will
   seek fresh consent where the law requires it.
@@ -432,8 +503,11 @@ without your consent.
 
 **Harkirat Mangat ("dior")** — Data Controller
 Ontario, Canada
-📧 **info@harkiratmangat.com**
-🔗 https://github.com/HarkiratMangat/diors-builds
+📧 **harkirat117@gmail.com**
+
+Email is the canonical contact and always reaches us. We deliberately don't list a
+repository link here, because the repository's visibility can change (§2.5) and a
+contact point in a privacy policy must not be able to go dead.
 
 For privacy requests, use the subject line **"Privacy Request"** and include your
 Discord user ID.
@@ -462,8 +536,10 @@ you can read yourself at [`models/UserPreference.js`](../../models/UserPreferenc
 - `decorationColorSource`, `nameplateColorSource`
 - `avatarPalette`, `bannerPalette`, `decorationPalette`, `nameplatePalette` (+ source hashes)
 
-**That's the whole list.** The source code is public — verify it yourself rather
-than taking our word for it.
+**That's the whole list.** It mirrors the schema in the source code rather than
+paraphrasing it, so it can be checked line-by-line against the software itself. If
+you have access to the repository you can verify it directly; if you don't, ask and
+we will show you the relevant file.
 
 ---
 
@@ -473,8 +549,38 @@ than taking our word for it.
 |---|---|---|
 | **1.0** | 28 July 2026 | Initial policy. |
 
-Future revisions will be listed here. The complete drafting history is public in
-the repository's git log.
+Future revisions will be listed here. The complete drafting history is kept in the
+repository's git log.
+
+---
+
+## Appendix C — How each claim was verified
+
+A privacy policy is a set of **enforceable representations**. Saying more than is
+true is worse than saying nothing. Every factual claim in this policy was checked
+against the running software rather than asserted, and this table records how.
+
+| Claim | How it was verified |
+|---|---|
+| We cannot read your messages | The Discord client is constructed with `GatewayIntentBits.Guilds` only — no Message Content intent. Verified in `index.js`. |
+| No analytics, telemetry, or tracking | Searched the codebase for analytics and error-reporting SDKs (Sentry, PostHog, Mixpanel, Google Analytics). **None present.** |
+| The exact fields we store | Read directly from the `UserPreference` Mongoose schema. Appendix A is a transcription of it, not a summary. |
+| Alert logs deleted after 30 days | `RETENTION_DAYS = 30` in `utils/alertStore.js`, with a matching `deleteMany` on `createdAt`. |
+| Server logs deleted after 30 days | Google Cloud Logging default retention, as relied on by `scripts/vmstatus.sh`. |
+| Your data is stored in Canada | Resolved the Atlas cluster's DNS records to `mtm-azure-**canatral**-…` — Azure Canada Central, Toronto. |
+| Cloudinary stores in the US | Cloudinary's published documentation: standard accounts default to US storage; EU residency is an Enterprise option. |
+| We use Vertex AI, not the consumer Gemini API | The request endpoint in `utils/visionExtract.js` is `aiplatform.googleapis.com`, project- and location-scoped — not `generativelanguage.googleapis.com`. |
+| No AI receives end-user data | `/autobuild` is the only AI call site and is gated on the administrator's Discord ID. |
+| Admin commands are locked to one account | `ALLOWED_ADMIN_ID` guards in `commands/manage.js`, `commands/autobuild.js`, and the central interaction router. |
+| **There is no automated deletion** | Searched for every `deleteOne` / `deleteMany` / `findOneAndDelete` in the codebase. **None operates on `UserPreference`.** This is why §7.1 discloses a shortcoming instead of claiming a capability. |
+| `/settings` has no reset or delete | Searched `commands/settings.js` for reset/restore-default handling. None exists — it only overwrites individual values. |
+| No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. |
+
+**Where we could not verify something, we said so rather than guessing** — see the
+backup-retention caveat in §9.4 and the honest limits stated in §5.2, §7.1, and §8.
+
+You are welcome to check any of this yourself, or to ask us to show you the
+relevant code.
 
 ---
 

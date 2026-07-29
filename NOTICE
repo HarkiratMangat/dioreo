@@ -134,11 +134,57 @@ parties. Their terms govern their services, not this LICENSE.
   MongoDB Atlas          MongoDB, Inc.           https://www.mongodb.com/legal
   Cloudinary             Cloudinary Ltd.         https://cloudinary.com/tou
   Google Cloud Platform  Google LLC              https://cloud.google.com/terms
-  Vertex AI / Gemini     Google LLC              https://cloud.google.com/terms
+  Google Cloud Logging   Google LLC              https://cloud.google.com/terms
+                         (server logs, 30-day retention)
+  Google Cloud Vertex AI Google LLC              https://cloud.google.com/terms
+                         (aiplatform.googleapis.com — the ENTERPRISE path, not
+                         the consumer Gemini API at generativelanguage.
+                         googleapis.com. Google does not train on data submitted
+                         to Vertex AI. Admin-only; no end-user data is sent.)
   Node.js                OpenJS Foundation       https://nodejs.org
   FFmpeg                 FFmpeg team             https://ffmpeg.org
                          (system binary; LGPL/GPL depending on build — invoked
                          as a separate process, never linked or redistributed)
+
+
+================================================================================
+4A. THIRD-PARTY CREATIVE ASSETS
+================================================================================
+
+4A.1  EMOJI
+
+Some custom emoji used in the Bot's interface were created by third-party artists
+and obtained through emoji.gg. With thanks:
+
+    tofooo                      https://emoji.gg/user/tofooo
+
+emoji.gg does not apply a single blanket license. Each uploader selects a license
+for their submission, and the common tiers are:
+
+    - use permitted WITH credit and attribution; no redistribution, no claim of
+      ownership, no commercial use;
+    - use permitted WITHOUT credit; no redistribution, no claim of ownership, no
+      commercial use; and
+    - Creative Commons terms permitting remixing and commercial use where the
+      original author is credited.
+
+The Licensor therefore credits the creator regardless of which tier applies, does
+not claim ownership of any such emoji, does not redistribute them as standalone
+assets, and operates the Bot non-commercially. See emoji.gg's terms
+(https://emoji.gg/terms) and license reference (https://emoji.gg/licenses).
+
+  >> ACTION FOR THE MAINTAINER: confirm the specific license tier attached to
+  >> each emoji actually in use, and record it here. Attribution is given above
+  >> on the assumption that the strictest plausible tier applies. If any emoji
+  >> turns out to be licensed on terms this project cannot satisfy, replace it.
+
+Creators whose work appears here and who want different attribution, or removal,
+should email harkirat117@gmail.com. Requests are actioned promptly.
+
+4A.2  OTHER VISUAL MATERIAL
+
+Game imagery, weapon renders, and screenshots displayed by the Bot are covered by
+Section 5 below and remain the property of their respective owners.
 
 
 ================================================================================
@@ -185,7 +231,7 @@ in a manner believed to constitute fair dealing under the Copyright Act
 (Canada) and fair use under 17 U.S.C. § 107.
 
 Rights holders: to request removal of any material, email
-info@harkiratmangat.com. Requests are actioned promptly.
+harkirat117@gmail.com. Requests are actioned promptly.
 
 
 ================================================================================
@@ -254,7 +300,7 @@ of the Licensor under LICENSE §5.6, not a courtesy.
 ================================================================================
 
   Harkirat Mangat ("dior")
-  info@harkiratmangat.com
+  harkirat117@gmail.com
   https://github.com/HarkiratMangat/diors-builds
 
 Attribution errors, omissions, licensing questions, and takedown requests are
