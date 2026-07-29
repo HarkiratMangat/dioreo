@@ -283,8 +283,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 
 ## Local-only files & the `local/` folder vs. `docs/` (tracked)
 - **`local/`** (repo root, **gitignored**) — Harkirat's personal scratch folder: the `project plan notes.txt`
-  future-planning dump, reference screenshots/PDFs, and anything else he drops in. **`Harkirats-Space.md`
-  actually lives at `docs/Harkirats-Space.md`** (gitignored there by name — corrected 2026-07-28 22:55 EDT;
+  future-planning dump, reference screenshots/PDFs, and anything else he drops in. **his private space file actually lives at `docs/Harkirats-Space.md`** (gitignored there by name — corrected 2026-07-28 22:55 EDT;
   this file and the notes file had both said `local/` since the v2.35.3-era move, while `.gitignore` was
   updated and they were not) (private — off-limits unless
   he grants permission that session), and anything else he drops in. Never pushed, never deployed. When he

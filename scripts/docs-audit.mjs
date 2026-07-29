@@ -26,14 +26,23 @@
  *   PRs opened outside a Claude session. (`summary-coverage`, `hash-chain`, `devlog-toc`,
  *   `devlog-version-cite`, `tag-integrity`)
  *
- * WHAT THIS DELIBERATELY DOES NOT CHECK — and why naming it matters
- * -----------------------------------------------------------------
- * Memory (`~/.claude/projects/.../memory/`) lives outside the repo, and "did this session record the
- * rule it established?" is a fact about a SESSION, not about the tree — CI cannot see it. Same for
- * "did this session act on the notes file". Those two are covered by session-boundary hooks instead
- * (see `.claude/settings.json`: NOTES-CLOSE and MEMORY-WRITE). They are named here on purpose: a
- * partial check that FEELS total is exactly how DEVLOG coverage sat at 8/22 while the changelog hook
- * kept passing every single time.
+ * WHAT THIS CANNOT DO — read this before trusting a green run
+ * ------------------------------------------------------------
+ * This is a WHITELIST of failure modes that have already happened. It cannot detect a category nobody
+ * has hit yet, cannot judge whether a doc is any GOOD, and cannot verify a judgement call. A pass
+ * means "no known failure mode tripped" — never "the records are correct". Every run prints that.
+ *
+ * Specifically outside its reach:
+ *   - Whether a doc's CONTENT is accurate. `version-sync` proves the number matches; nothing proves
+ *     the entry describes what actually shipped.
+ *   - Whether a session RECORDED what it learned. The memory store's shape is checked (`memory-index`,
+ *     `memory-xref`, `memory-slug`); "did you write down the rule you just established" is a fact
+ *     about a session, and lives in `.claude/hooks/records-close-check.sh` at `gh pr create`.
+ *   - Anything on a path that bypasses both gates: a PR opened in the GitHub web UI runs CI (so the
+ *     tree checks hold) but fires NO local hook, so the notes/memory closure check never happens.
+ *
+ * The failure mode to fear is a partial check that FEELS total — that is exactly how DEVLOG coverage
+ * sat at 8/22 while the changelog hook passed every single time.
  *
  * SEVERITY CONTRACT
  *   ERROR — an invariant that is never legitimately violated. Fails CI. Blocks the merge.
@@ -82,6 +91,27 @@ const tracked = () => git("ls-files").split("\n").filter(Boolean);
 // DOWNGRADE to a warning that names the limitation rather than reporting a conclusion they can't
 // support. CI sets fetch-depth: 0 so this path is not taken there.
 const isShallow = () => git("rev-parse", "--is-shallow-repository").trim() === "true";
+
+// The MAIN working tree, per git — not the one we happen to be running in. Used to derive the harness
+// memory slug (which must come from the repo's real home, not a temp worktree) and to tell the user
+// when gitignored files are legitimately absent because this is a linked worktree.
+const mainWorktree = () =>
+  (git("worktree", "list", "--porcelain").split("\n").find((l) => l.startsWith("worktree ")) || "")
+    .slice("worktree ".length)
+    .trim();
+const isLinkedWorktree = () => {
+  const main = mainWorktree();
+  if (!main) return false;
+  let here = REPO;
+  try {
+    here = realpathSync(REPO);
+  } catch {}
+  let there = main;
+  try {
+    there = realpathSync(main);
+  } catch {}
+  return here !== there;
+};
 
 /* ------------------------------------------------------------------ *
  * Exemptions. Every one carries a reason and, where it applies, the
@@ -147,6 +177,30 @@ const MEMORY_DIR = join(
   ".claude/projects/-Applications-Claude-Code-Diors-Builds/memory"
 );
 
+// The FROZEN pre-migration store. CLAUDE.md still references it by name (`_MIGRATED.md` tombstone),
+// so its filenames must resolve — but nothing may ever be written there. See project_memory_slug_migration.
+const OLD_MEMORY_DIR = join(process.env.HOME || "", ".claude/projects/-Applications-Diors-Builds/memory");
+
+/**
+ * Files OUTSIDE this repo that this repo's documentation depends on by name.
+ *
+ * This is the blind spot nobody had looked at: `meta-deferred-list.md` is referenced from CLAUDE.md,
+ * docs/README.md, docs/db-deferred-list.md AND the memory store, and it lives at an absolute path
+ * that `xref` deliberately skips. If it is ever renamed or moved, every one of those pointers breaks
+ * and NOTHING would report it. Same for the global Claude Code config this project's whole workflow
+ * assumes. Verified present 2026-07-29 00:20 EDT.
+ *
+ * Checked locally only — in CI these paths genuinely do not exist, so `external-anchors` SKIPS rather
+ * than failing, and says so in the ledger.
+ */
+const EXTERNAL_ANCHORS = [
+  { path: "/Applications/Claude Code/meta-deferred-list.md", why: "the cross-project tracker; referenced from CLAUDE.md, docs/README.md, docs/db-deferred-list.md and memory" },
+  { path: join(process.env.HOME || "", ".claude/hooks/usage-guard.mjs"), why: "the turn-budget / tool-routing guard the working agreement depends on" },
+  { path: join(process.env.HOME || "", ".claude/CLAUDE.md"), why: "global instructions (tool-preference chains, the four efficiency practices)" },
+  { path: join(process.env.HOME || "", ".claude/RTK.md"), why: "the rtk command reference that global CLAUDE.md points at" },
+  { path: MEMORY_DIR, why: "the canonical memory store for this repo" },
+];
+
 /* ------------------------------------------------------------------ */
 
 /**
@@ -170,7 +224,11 @@ const cmpVer = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
 const parseVer = (v) => v.replace(/^v/, "").split(".").map(Number);
 
 const checks = [];
-const check = (id, severity, title, run) => checks.push({ id, severity, title, run });
+// vacuousOk: an empty corpus is LEGITIMATE for this check, so examining 0 items is not suspicious.
+// It is still reported in the ledger — visible, just not a warning. Default is to warn, because for
+// most checks "matched nothing" means the matcher broke, not that the corpus vanished.
+const check = (id, severity, title, run, opts = {}) =>
+  checks.push({ id, severity, title, run, vacuousOk: !!opts.vacuousOk });
 
 /* ---------------------------- readme-map ---------------------------- */
 check(
@@ -200,6 +258,7 @@ check(
         });
       }
     }
+    return { findings: out, examined: units.size };
     // NOTE: the reverse direction (a name the README mentions must exist) is deliberately NOT checked
     // here. The README names most docs by bare filename, and legitimately mentions old names in prose
     // ("renamed from `deferred-items.md`") — a basename matcher cannot tell that apart from staleness,
@@ -242,27 +301,74 @@ check(
   "ERROR",
   "every repo path named in a LIVE doc actually exists",
   () => {
-    // Only PATH-shaped tokens (containing a "/"). A bare basename in prose is usually descriptive
-    // ("see MEMORY.md", "discord.js's BaseInteraction.js") or historical, and flagging those produced
-    // 30+ false positives on the first run. A rename — the thing this check exists to catch — leaves
-    // path-shaped references behind, which is exactly what is still covered.
+    // TWO token shapes, deliberately handled differently.
+    //
+    // PATH-shaped (contains "/") — a rename leaves these behind, so they are ERRORs.
+    //
+    // BARE filename — the first pass dropped these ENTIRELY to kill 30+ false positives, and that
+    // trade was never stated out loud. It was a self-inflicted blind spot: docs/README.md refers to
+    // most records by bare name, so renaming `deployment-and-ops.md` would have broken the map
+    // silently. Recovered here by resolving against a WIDE universe instead of just tracked files —
+    // tracked basenames + files git is merely ignoring + both memory stores + the external anchors —
+    // and by skipping mentions that are explicitly HISTORICAL ("renamed from `x`", "`x` → `y`").
+    //
+    // ⚠️ Scoped to `.md` ONLY, and WARN not ERROR. Both limits were learned the hard way at
+    // 2026-07-29 00:30 EDT: I measured the false-positive rate with a probe that scanned only `.md`,
+    // wrote "0 false positives" in this comment, then shipped a check that also scanned .js/.json —
+    // which immediately flagged discord.js internals (`BaseInteraction.js`, `CachedManager.js`,
+    // `User.js`) and `local/` scratch. Measuring one thing and shipping another is the same error
+    // class as the rest of this file exists to catch, committed while writing the fix for it.
+    //
+    // WARN, because a bare name genuinely cannot be resolved with certainty: gitignored files are
+    // WORKING-TREE-LOCAL, so `docs/Harkirats-Space.md` resolves in the main tree and does not in a
+    // fresh worktree or clone. That ambiguity is real and must be reported, not decided.
+    let scanned = 0;
+    const ignoredFiles = git("ls-files", "--others", "--ignored", "--exclude-standard")
+      .split("\n")
+      .filter((p) => p && !p.startsWith("node_modules/"));
+    const universe = new Set([
+      ...tracked().map((p) => p.split("/").pop()),
+      ...ignoredFiles.map((p) => p.split("/").pop()),
+      ...(existsSync(MEMORY_DIR) ? readdirSync(MEMORY_DIR) : []),
+      ...(existsSync(OLD_MEMORY_DIR) ? readdirSync(OLD_MEMORY_DIR) : []),
+      ...EXTERNAL_ANCHORS.map((a) => a.path.split("/").pop()),
+    ]);
+    // Historical phrasing. A doc explaining that something USED to be called X is correct prose, and
+    // must never be reported as a stale pointer.
+    const HISTORICAL = /renamed from|renamed to|formerly|used to be|was called|old name|superseded|→|->/i;
+
     const hits = [];
+    const bareHits = [];
     for (const src of liveDocSources()) {
       const text = read(src);
       if (text === null) continue;
       const seen = new Set();
-      for (const m of text.matchAll(/`([A-Za-z0-9_][A-Za-z0-9_.-]*(?:\/[A-Za-z0-9_.*-]+)+\.(?:md|js|mjs|json|sh|ya?ml))`/g)) {
+      for (const m of text.matchAll(/`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|js|mjs|json|sh|ya?ml))`/g)) {
         const rel = m[1].trim();
         if (seen.has(rel)) continue;
         seen.add(rel);
+        scanned++;
         if (rel.includes("node_modules") || rel.includes("*")) continue;
         const bare = rel.replace(/^\.\//, "").replace(/^\.\.\//, "");
-        if (existsSync(join(REPO, bare)) || existsSync(join(REPO, dirname(src), rel))) continue;
-        hits.push({ src, rel, bare });
+
+        if (rel.includes("/")) {
+          if (existsSync(join(REPO, bare)) || existsSync(join(REPO, dirname(src), rel))) continue;
+          hits.push({ src, rel, bare });
+          continue;
+        }
+        // .md only — project records. A bare .js/.json name in prose is almost always a third-party
+        // file or local scratch, never something a rename in THIS repo can break.
+        if (!rel.endsWith(".md")) continue;
+        if (universe.has(rel)) continue;
+        const lineStart = text.lastIndexOf("\n", m.index) + 1;
+        let lineEnd = text.indexOf("\n", m.index);
+        if (lineEnd === -1) lineEnd = text.length;
+        if (HISTORICAL.test(text.slice(lineStart, lineEnd))) continue;
+        bareHits.push({ src, rel });
       }
     }
     const ignored = ignoredSet(hits.map((h) => h.bare));
-    return hits.map((h) =>
+    const findings = hits.map((h) =>
       ignored.has(h.bare)
         ? {
             // Gitignored-and-absent is genuinely ambiguous: it may be a dev-only file that simply
@@ -280,6 +386,17 @@ check(
               `behind is the "no half-measures on reorgs" failure — fix the pointer, don't delete the mention.`,
           }
     );
+    for (const b of bareHits) {
+      findings.push({
+        severity: "WARN",
+        msg: `${b.src} references the record \`${b.rel}\`, and no file by that name resolves — not tracked, ` +
+          `not gitignored-but-present IN THIS WORKING TREE, not in either memory store, not a known ` +
+          `external anchor, and the sentence carries no "renamed from" phrasing. Either a rename left ` +
+          `this pointer behind, or it is a gitignored file that exists only in the main working tree ` +
+          `(worktrees and fresh clones do not carry those). Confirm which.`,
+      });
+    }
+    return { findings, examined: scanned };
   }
 );
 
@@ -294,8 +411,14 @@ check(
     // verify that a session RECORDED what it learned (that is a fact about a session, not a tree —
     // see the MEMORY-WRITE hook); it does catch a memory file that was renamed or deleted while the
     // docs kept pointing at it.
-    if (!existsSync(MEMORY_DIR)) return []; // CI, or a fresh clone: skip, never fail
+    if (process.env.DOCS_AUDIT_ROOT) {
+      return { findings: [], skipped: "auditing a foreign tree (DOCS_AUDIT_ROOT); the memory store is machine-global, not part of it" };
+    }
+    if (!existsSync(MEMORY_DIR)) {
+      return { findings: [], skipped: "memory store not present (CI or a fresh clone) — references to it were NOT verified" };
+    }
     const out = [];
+    let seenTotal = 0;
     for (const src of liveDocSources()) {
       const text = read(src);
       if (text === null) continue;
@@ -305,13 +428,15 @@ check(
         const name = m[1];
         if (seen.has(name)) continue;
         seen.add(name);
+        seenTotal++;
         if (existsSync(join(MEMORY_DIR, name))) continue;
         if (existsSync(join(REPO, name))) continue; // an in-repo file that happens to look snake_case
         out.push({ msg: `${src} references memory \`${name}\`, which is not in the memory store.` });
       }
     }
-    return out;
-  }
+    return { findings: out, examined: seenTotal };
+  },
+  { vacuousOk: true } // docs need not cite any memory file
 );
 
 /* -------------------------- summary-coverage ------------------------ */
@@ -364,7 +489,7 @@ check(
           `Give it one rather than widening the range.`,
       });
     }
-    return out;
+    return { findings: out, examined: versions.length };
   }
 );
 
@@ -403,7 +528,7 @@ check(
         out.push({ msg: `${e.version} cites commit \`${hash}\`, which does not resolve in this repository.` });
       }
     });
-    return out;
+    return { findings: out, examined: entries.length };
   }
 );
 
@@ -435,7 +560,7 @@ check(
     if (!out.length && heads.join("|") !== toc.join("|")) {
       out.push({ msg: "DEVLOG TOC holds the same entries as the body, but not in the same order." });
     }
-    return out;
+    return { findings: out, examined: heads.length };
   }
 );
 
@@ -448,15 +573,21 @@ check(
     const ch = read("docs/CHANGELOG.md");
     const dv = read("docs/DEVLOG.md");
     if (ch === null || dv === null) return [];
-    return [...ch.matchAll(/^## (v\d+\.\d+\.\d+)/gm)]
+    const inScope = [...ch.matchAll(/^## (v\d+\.\d+\.\d+)/gm)]
       .map((m) => m[1])
-      .filter((v) => cmpVer(parseVer(v), DEVLOG_RULE_FROM) >= 0 && !dv.includes(v))
+      .filter((v) => cmpVer(parseVer(v), DEVLOG_RULE_FROM) >= 0);
+    return {
+      examined: inScope.length,
+      findings: inScope
+      .filter((v) => !dv.includes(v))
       .map((v) => ({
         msg: `${v} is not mentioned by number anywhere in DEVLOG.md. Its entry may well exist under a ` +
           `date heading — but the DEVLOG is then un-greppable by release, which is the same searchability ` +
           `problem that retired the TOC's vague "(later)" qualifiers. Cite the version in the entry.`,
-      }));
-  }
+      })),
+    };
+  },
+  { vacuousOk: true } // legitimate when no release since the cutoff exists yet
 );
 
 /* ---------------------------- notes-sweep --------------------------- */
@@ -481,7 +612,8 @@ check(
       );
     }
     const body = lines.slice(s, e < 0 ? lines.length : e);
-    return body
+    const itemCount = body.filter((l) => /^- /.test(l)).length;
+    const found = body
       .map((l, i) => ({ l, n: s + i + 1 }))
       .filter(({ l }) => /^- \[x\]/.test(l) && CONFIRM_MARKS.some((c) => l.includes(c)))
       .map(({ l, n }) => {
@@ -492,6 +624,7 @@ check(
             `A confirmation mark is Harkirat's explicit go-ahead to file it out.`,
         };
       });
+    return { findings: found, examined: itemCount };
   }
 );
 
@@ -505,9 +638,11 @@ check(
     if (text === null) return [];
     const out = [];
     let section = "";
+    let items = 0;
     text.split("\n").forEach((l, i) => {
       if (/^## /.test(l)) section = l;
       if (!/^- /.test(l)) return;
+      items++;
       // 🚫 Decided-no legitimately records things that were resolved by deciding NOT to do them.
       if (/Decided-no/.test(section)) return;
       // The real archive vocabulary, counted 2026-07-28 22:10 EDT in docs/archive/resolved-list.md:
@@ -528,7 +663,7 @@ check(
         });
       }
     });
-    return out;
+    return { findings: out, examined: items };
   }
 );
 
@@ -540,11 +675,7 @@ check(
   () => {
     const tags = git("tag", "--list", "v*").split("\n").filter(Boolean);
     if (isShallow()) {
-      return [{
-        severity: "WARN",
-        msg: `shallow clone — only ${tags.length} tag(s) visible, so tag integrity was NOT verified. ` +
-          `Re-run in a full clone (CI uses fetch-depth: 0). Reporting this instead of a silent pass.`,
-      }];
+      return { findings: [], skipped: `shallow clone — only ${tags.length} tag(s) visible; tag integrity NOT verified. CI uses fetch-depth: 0` };
     }
     const out = [];
     for (const tag of tags) {
@@ -566,7 +697,7 @@ check(
         });
       }
     }
-    return out;
+    return { findings: out, examined: tags.length };
   }
 );
 
@@ -593,12 +724,15 @@ check(
       "docs/archive/resolved-list.md",
       "CLAUDE.md",
     ];
-    return required
+    return {
+      examined: required.length,
+      findings: required
       .filter((f) => !existsSync(join(REPO, f)))
       .map((f) => ({
         msg: `${f} is missing. Two SessionStart hooks read docs/SESSION-START.md and the notes file BY ` +
           `PATH, so a move here is a code change — update .claude/settings.json in the same commit.`,
-      }));
+      })),
+    };
   }
 );
 
@@ -627,7 +761,8 @@ check(
         out.push({ msg: `${f} is NOT tracked. It was deliberately un-ignored 2026-07-28 13:10 EDT so the hooks survive a fresh clone; untracked, the enforcement layer becomes unrecoverable again. NOTE the global ~/.config/git/ignore matches settings.local.json in every repo, so this needs the explicit "!" negation in .gitignore.` });
       }
     }
-    return out;
+    // 4 invariants: .env ignored, .env/.env.dev untracked, both settings files tracked.
+    return { findings: out, examined: 4 };
   }
 );
 
@@ -654,7 +789,8 @@ check(
     if (triggers.length && !triggers.every((t) => t.includes("v3-pre-release"))) {
       out.push({ msg: "a CI trigger branch list omits `v3-pre-release`. Every v3 feature PR targets that branch, so it would run no CI at all — and the failure is silent." });
     }
-    return out;
+    // 4 assertions over ci.yml: audit step, self-test step, fetch-depth, branch triggers.
+    return { findings: out, examined: 4 };
   }
 );
 
@@ -668,9 +804,19 @@ check(
     // the code it described was renamed or deleted — the rule silently never loads again, and the
     // subsystem's "why" notes quietly stop reaching anyone. Same dead-guard shape, applied to docs.
     const files = tracked();
+    // ONE pass, no placeholder character. The previous version used a NUL byte as a sentinel between
+    // the `**` and `*` substitutions — functionally fine, but it made this source file BINARY to
+    // ripgrep ("binary file matches", no results shown). In a project whose CLAUDE.md mandates `rg`
+    // as the primary search tool, the enforcement script had quietly made itself unsearchable. See
+    // the `binary-in-text` check below, which now makes that impossible to reintroduce anywhere.
     const toRe = (g) =>
-      new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, " ").replace(/\*/g, "[^/]*").replace(/ /g, ".*") + "$");
+      new RegExp(
+        "^" +
+          g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*|\*/g, (m) => (m === "**" ? ".*" : "[^/]*")) +
+          "$"
+      );
     const out = [];
+    let globCount = 0;
     for (const rule of files.filter((f) => f.startsWith(".claude/rules/") && f.endsWith(".md"))) {
       const text = read(rule);
       if (text === null) continue;
@@ -682,6 +828,7 @@ check(
         out.push({ msg: `${rule} declares no \`paths:\` globs, so it never auto-loads for any file.` });
         continue;
       }
+      globCount += globs.length;
       for (const g of globs) {
         let re;
         try {
@@ -694,7 +841,7 @@ check(
         }
       }
     }
-    return out;
+    return { findings: out, examined: globCount };
   }
 );
 
@@ -707,7 +854,12 @@ check(
     // Skipped where the store is absent (CI, fresh clone) — see MEMORY_DIR. Locally it is a real
     // check: MEMORY.md is what gets loaded into context each session, so a memory file missing from
     // it is a memory that effectively does not exist, and a dangling link is a pointer into nothing.
-    if (!existsSync(MEMORY_DIR)) return [];
+    if (process.env.DOCS_AUDIT_ROOT) {
+      return { findings: [], skipped: "auditing a foreign tree (DOCS_AUDIT_ROOT); the memory store is machine-global, not part of it" };
+    }
+    if (!existsSync(MEMORY_DIR)) {
+      return { findings: [], skipped: "memory store not present — the index was NOT verified" };
+    }
     const idxPath = join(MEMORY_DIR, "MEMORY.md");
     if (!existsSync(idxPath)) {
       return [{ msg: `the memory store has no MEMORY.md index — CLAUDE.md's canonical-memory-path sanity test treats that as being at the WRONG PATH.` }];
@@ -722,7 +874,7 @@ check(
     for (const l of linked) {
       if (!existsSync(join(MEMORY_DIR, l))) out.push({ msg: `MEMORY.md links to ${l}, which no longer exists in the store.` });
     }
-    return out;
+    return { findings: out, examined: linked.size };
   }
 );
 
@@ -747,17 +899,21 @@ check(
     // nothing and this check reported clean against a fixture that literally had a nested worktree.
     let base;
     try { base = realpathSync(REPO); } catch { base = REPO; }
-    return git("worktree", "list", "--porcelain")
+    const allWt = git("worktree", "list", "--porcelain")
       .split("\n")
       .filter((l) => l.startsWith("worktree "))
-      .map((l) => l.slice("worktree ".length).trim())
+      .map((l) => l.slice("worktree ".length).trim());
+    return {
+      examined: allWt.length,
+      findings: allWt
       .filter((p) => p !== base && p.startsWith(base + "/"))
       .map((p) => ({
         msg: `a git worktree is nested inside this repo at ${p.slice(REPO.length + 1)}. It holds a ` +
           `second copy of tracked files (CLAUDE.md, .gitignore, docs/) that an \`rg --hidden ` +
           `--no-ignore\` sweep will surface as if it were live. Remove it with \`git worktree remove\` ` +
           `once its branch is merged, or move it outside the repo.`,
-      }));
+      })),
+    };
   }
 );
 
@@ -795,7 +951,7 @@ check(
           `entry (or an entry without a bump) is how the 16 two-commit releases v2.33.0–v2.35.15 happened.`,
       }];
     }
-    return [];
+    return { findings: [], examined: 1 };
   }
 );
 
@@ -808,21 +964,24 @@ check(
     const ch = read("docs/CHANGELOG.md");
     if (ch === null) return [];
     if (isShallow()) {
-      return [{ severity: "WARN", msg: "shallow clone — tag coverage was NOT verified (no tags fetched)." }];
+      return { findings: [], skipped: "shallow clone — no tags fetched; tag coverage NOT verified" };
     }
     // Pre-Release entries are deliberately excluded: no tags are minted until v3.0.0 ships.
     const versions = [...ch.matchAll(/^## (v\d+\.\d+\.\d+)/gm)].map((m) => m[1]);
     const tags = new Set(git("tag", "--list", "v*").split("\n").filter(Boolean));
     // The newest entry is legitimately untagged between writing the entry and merging: the tag goes
     // on the squash commit, which does not exist yet. Everything older must be tagged.
-    return versions
+    return {
+      examined: Math.max(0, versions.length - 1),
+      findings: versions
       .slice(1)
       .filter((v) => !tags.has(v))
       .map((v) => ({
         msg: `${v} has a changelog entry but NO git tag. Only the newest entry may be untagged ` +
           `(its squash commit does not exist until the merge). Tag it, or the release is unreachable ` +
           `by \`git show ${v}\`.`,
-      }));
+      })),
+    };
   }
 );
 
@@ -869,12 +1028,210 @@ check(
         out.push({ msg: `a hook calls docs-audit with --only ${m[1]}, which is not a known check id — that gate is dead.` });
       }
     }
-    return out;
+    return { findings: out, examined: seen.size };
+  }
+);
+
+/* --------------------------- binary-in-text ------------------------- */
+check(
+  "binary-in-text",
+  "ERROR",
+  "no tracked text file contains a NUL byte (which makes it invisible to ripgrep)",
+  () => {
+    // Found 2026-07-29 00:05 EDT, in THIS script. `rule-globs` used a NUL as a placeholder between two
+    // regex substitutions — functionally fine, and it made docs-audit.mjs BINARY to ripgrep, which
+    // reports "binary file matches" and shows nothing. In a project whose CLAUDE.md mandates `rg` as
+    // the primary search tool, the enforcement script had silently made ITSELF unsearchable. Nothing
+    // would ever have surfaced that; it is invisible to the very tool you would look with.
+    const exts = /\.(md|js|mjs|cjs|json|sh|ya?ml|txt|html|css)$/i;
+    const files = tracked().filter((f) => exts.test(f));
+    const out = [];
+    for (const f of files) {
+      const p = join(REPO, f);
+      if (!existsSync(p)) continue;
+      const buf = readFileSync(p);
+      const at = buf.indexOf(0);
+      if (at !== -1) {
+        out.push({
+          msg: `${f} contains a NUL byte at offset ${at}. ripgrep treats it as BINARY and will not show ` +
+            `matches, so this file is effectively unsearchable — use a printable sentinel, or restructure ` +
+            `to need none.`,
+        });
+      }
+    }
+    return { findings: out, examined: files.length };
+  }
+);
+
+/* ----------------------------- root-docs ---------------------------- */
+check(
+  "root-docs",
+  "ERROR",
+  "every authoritative root-level document is named in CLAUDE.md or docs/README.md",
+  () => {
+    // The gap a LIVE parallel session exposed 2026-07-29 00:10 EDT: another branch added LICENSE,
+    // NOTICE, CONTRIBUTING.md and CONTRIBUTORS.md at the repo root, and this audit — which only ever
+    // looked under docs/ — saw none of them. Root-level records are the most authoritative documents
+    // in the repo and were the least watched.
+    const claude = read("CLAUDE.md");
+    const readme = read("docs/README.md");
+    if (claude === null || readme === null) return { findings: [], examined: 0 };
+    const roots = tracked().filter(
+      (f) => !f.includes("/") && (/\.(md|txt)$/i.test(f) || /^(LICENSE|NOTICE|COPYING)$/i.test(f)) && f !== "CLAUDE.md"
+    );
+    const out = roots
+      .filter((f) => !claude.includes(f) && !readme.includes(f))
+      .map((f) => ({
+        msg: `${f} sits at the repo root but is named in neither CLAUDE.md nor docs/README.md. A ` +
+          `top-level record nobody maps is a record nobody is told to maintain.`,
+      }));
+    return { findings: out, examined: roots.length };
+  }
+);
+
+/* -------------------------- top-level-dirs -------------------------- */
+check(
+  "top-level-dirs",
+  "ERROR",
+  "every tracked top-level directory is described somewhere",
+  () => {
+    // Same live lesson: the parallel branch also added an entire `public/` tree. A new top-level
+    // directory is the single largest unit of growth a repo has, and nothing was watching for one.
+    const claude = read("CLAUDE.md");
+    const readme = read("docs/README.md");
+    if (claude === null || readme === null) return { findings: [], examined: 0 };
+    const dirs = [...new Set(tracked().filter((f) => f.includes("/")).map((f) => f.split("/")[0]))].sort();
+    const out = dirs
+      .filter((d) => !claude.includes(d + "/") && !readme.includes(d + "/"))
+      .map((d) => ({
+        msg: `top-level directory \`${d}/\` is tracked but described in neither CLAUDE.md nor ` +
+          `docs/README.md. Add it to the navigation map, or a future session has no idea what it is for.`,
+      }));
+    return { findings: out, examined: dirs.length };
+  }
+);
+
+/* ------------------------ scripts-documented ------------------------ */
+check(
+  "scripts-documented",
+  "WARN",
+  "every script is mentioned in some rule file or doc",
+  () => {
+    // `.claude/rules/scripts-and-migrations.md` is explicitly a POINTER MAP — "which subsystem rule
+    // documents each script". So the correct test is "named SOMEWHERE", not "named in that file":
+    // `checkEmojiCaptures.js` is documented in rendering-and-ui.md, and a narrower check would have
+    // reported it falsely. WARN, because a brand-new script legitimately lands before its docs do.
+    const scripts = tracked().filter((f) => f.startsWith("scripts/") && /\.(js|mjs|sh)$/.test(f));
+    const corpus = tracked()
+      .filter((f) => f === "CLAUDE.md" || f.startsWith(".claude/rules/") || f.startsWith("docs/"))
+      .map((f) => read(f) || "")
+      .join("\n");
+    const out = scripts
+      .filter((s) => !corpus.includes(s.split("/").pop()))
+      .map((s) => ({
+        msg: `${s} is tracked but named in no rule file or doc. Add it to the pointer map in ` +
+          `.claude/rules/scripts-and-migrations.md, or to whichever subsystem rule owns it.`,
+      }));
+    return { findings: out, examined: scripts.length };
+  }
+);
+
+/* --------------------------- nav-map-sync --------------------------- */
+check(
+  "nav-map-sync",
+  "ERROR",
+  "CLAUDE.md's nav map and docs/README.md both list every path-scoped rule file",
+  () => {
+    // Path-scoped rules only load when you touch a matching file, so a rule missing from the nav map
+    // is invisible until someone happens to open the right file. Adding a 14th rule would have left
+    // both indexes stale with nothing reporting it.
+    const claude = read("CLAUDE.md");
+    const readme = read("docs/README.md");
+    if (claude === null || readme === null) return { findings: [], examined: 0 };
+    const rules = tracked()
+      .filter((f) => f.startsWith(".claude/rules/") && f.endsWith(".md"))
+      .map((f) => f.split("/").pop());
+    const out = [];
+    for (const r of rules) {
+      if (!claude.includes(r)) out.push({ msg: `.claude/rules/${r} is missing from CLAUDE.md's 🗺️ navigation map.` });
+      if (!readme.includes(r.replace(/\.md$/, ""))) out.push({ msg: `.claude/rules/${r} is missing from docs/README.md's rules list.` });
+    }
+    // A hardcoded count in that README row is duplicated state and rots the moment a rule is added.
+    const claimed = (readme.match(/(\d+) files \(commands-overview/) || [])[1];
+    if (claimed && Number(claimed) !== rules.length) {
+      out.push({
+        msg: `docs/README.md hardcodes "${claimed} files" for .claude/rules/ but there are ${rules.length}. ` +
+          `Delete the number rather than correcting it — see feedback_no_duplicated_state_in_prose.`,
+      });
+    }
+    return { findings: out, examined: rules.length };
+  }
+);
+
+/* ------------------------- external-anchors ------------------------- */
+check(
+  "external-anchors",
+  "ERROR",
+  "files outside this repo that its docs depend on still exist",
+  () => {
+    // These are referenced BY NAME from CLAUDE.md, docs/README.md, db-deferred-list.md and memory, and
+    // they all live at absolute paths that `xref` deliberately skips — so a rename or move would break
+    // every pointer with nothing reporting it. In CI none of them exist, so the whole check SKIPS and
+    // says so, rather than failing loudly for a reason that has nothing to do with the PR.
+    if (!existsSync(join(process.env.HOME || "", ".claude"))) {
+      return { findings: [], skipped: "no ~/.claude on this machine (CI) — external anchors NOT verified" };
+    }
+    const out = EXTERNAL_ANCHORS.filter((a) => !existsSync(a.path)).map((a) => ({
+      msg: `${a.path} is missing — ${a.why}. Every doc pointing at it is now a dead reference.`,
+    }));
+    return { findings: out, examined: EXTERNAL_ANCHORS.length };
+  }
+);
+
+/* ---------------------------- memory-slug --------------------------- */
+check(
+  "memory-slug",
+  "ERROR",
+  "the memory store path still matches the slug derived from this repo's location",
+  () => {
+    // THIS EXACT FAILURE ALREADY HAPPENED. The repo moved to /Applications/Claude Code/ on 2026-07-14,
+    // the harness derives the project folder from the repo path, and the memory store was left
+    // stranded at the old slug — read by nothing, bridged only by a note in CLAUDE.md that a session
+    // had to remember to follow. It went unnoticed for two weeks. If the repo ever moves again, this
+    // fails immediately instead.
+    if (!existsSync(join(process.env.HOME || "", ".claude/projects"))) {
+      return { findings: [], skipped: "no ~/.claude/projects on this machine (CI) — slug NOT verified" };
+    }
+    // Derive from the MAIN worktree, never the current one: in a worktree REPO is a temp path and the
+    // derived slug would be meaninglessly different.
+    // Deliberately the SCRIPT's own repo, not REPO/DOCS_AUDIT_ROOT: this check asks whether THIS
+    // checkout's memory store is correctly located, which is meaningless for a fixture or for another
+    // tree being audited. Using REPO made every temp-dir fixture look like a relocated repo.
+    const scriptRepo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+    let wtOut = "";
+    try {
+      wtOut = execFileSync("git", ["worktree", "list", "--porcelain"], { cwd: scriptRepo, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    } catch {}
+    const mainWt = (wtOut.split("\n").find((l) => l.startsWith("worktree ")) || "").slice("worktree ".length).trim();
+    if (!mainWt) return { findings: [], skipped: "could not determine the main worktree path" };
+    const expected = join(process.env.HOME || "", ".claude/projects", mainWt.replace(/[^a-zA-Z0-9]+/g, "-"), "memory");
+    if (expected === MEMORY_DIR) return { findings: [], examined: 1 };
+    return {
+      examined: 1,
+      findings: [{
+        msg: `the repo is at ${mainWt}, whose harness slug implies the memory store should be ` +
+          `${expected} — but this audit and CLAUDE.md point at ${MEMORY_DIR}. Claude Code derives the ` +
+          `project folder from the repo path, so the store is now orphaned: the platform will read a ` +
+          `DIFFERENT directory than the one being written. Migrate the store and update CLAUDE.md, ` +
+          `MEMORY_DIR here, and the SessionStart hooks together.`,
+      }],
+    };
   }
 );
 
 /* ------------------------ archive-conservation ---------------------- */
 /* --diff only: this is a fact about a CHANGE, not about the tree. */
+const CONSERVATION_PAIRS = 2; // notes -> graveyard, deferred-list -> resolved-list
 const conservation = (base) => {
   const pairs = [
     { active: "docs/diors-builds notes.md", archive: "docs/archive/graveyard.md", verb: "swept" },
@@ -884,11 +1241,34 @@ const conservation = (base) => {
   for (const { active, archive, verb } of pairs) {
     const diff = git("diff", "--unified=0", `${base}...HEAD`, "--", active);
     if (!diff) continue;
-    const removed = diff
-      .split("\n")
-      .filter((l) => l.startsWith("-") && !l.startsWith("---"))
-      .map((l) => l.slice(1).trim())
-      .filter((l) => l.length > 40); // ignore whitespace/rewrap churn; real items are long
+    // ⚠️ Both the window AND the haystack must be built the SAME way. The first version filtered
+    // short words out of the window but not out of the haystack, so a window like
+    // "open intake item long enough count" could never match a haystack still reading
+    // "... long enough to count ...". Both fingerprint matchers here had that bug and neither was
+    // ever exercised — `traceable()` only runs when the archive DID grow, and the zero-growth branch
+    // fired first every time. Caught 2026-07-29 01:10 EDT by the in-place-edit self-test.
+    const words = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter((w) => w.length > 2);
+    const norm0 = (s) => words(s).join(" ");
+    const lines = diff.split("\n");
+    const minus = lines.filter((l) => l.startsWith("-") && !l.startsWith("---")).map((l) => l.slice(1).trim());
+    const plus = lines.filter((l) => l.startsWith("+") && !l.startsWith("+++")).map((l) => l.slice(1).trim());
+
+    // ⚠️ A unified diff renders an EDITED line as a removal plus an addition. Counting bare "-" lines
+    // therefore treats every in-place correction as a deleted item — caught 2026-07-29 00:55 EDT when
+    // this gate demanded a graveyard entry for a one-line path fix in the notes file. Left in, it
+    // would have taught everyone to bypass the gate, which is worse than not having it. So: a removed
+    // line that has a similar ADDED line in the same file is an edit, not a removal.
+    const editedInPlace = (line) => {
+      const w = words(line);
+      if (w.length < 6) return false;
+      const hay = plus.map(norm0).join(" ");
+      for (let i = 0; i + 6 <= w.length; i++) if (hay.includes(w.slice(i, i + 6).join(" "))) return true;
+      return false;
+    };
+
+    const removed = minus
+      .filter((l) => l.length > 40) // ignore whitespace/rewrap churn; real items are long
+      .filter((l) => !editedInPlace(l));
     if (!removed.length) continue;
 
     const archiveDiff = git("diff", "--unified=0", `${base}...HEAD`, "--", archive);
@@ -907,13 +1287,13 @@ const conservation = (base) => {
     // So trace each removed item into the archive by CONTENT. Compared on a normalised word stream,
     // because a swept item is routinely rewrapped, re-bulleted, struck through, or given a mark, and
     // an exact string match would report every genuine sweep as a deletion.
-    const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-    const haystack = norm(addedLines.join(" "));
+    // Same normalisation on both sides — see the note above editedInPlace.
+    const haystack = norm0(addedLines.join(" "));
     const traceable = (line) => {
-      const words = norm(line).split(" ").filter((w) => w.length > 2);
-      if (words.length < 6) return true; // too short to fingerprint; don't guess
-      for (let i = 0; i + 6 <= words.length; i++) {
-        if (haystack.includes(words.slice(i, i + 6).join(" "))) return true;
+      const w = words(line);
+      if (w.length < 6) return true; // too short to fingerprint; don't guess
+      for (let i = 0; i + 6 <= w.length; i++) {
+        if (haystack.includes(w.slice(i, i + 6).join(" "))) return true;
       }
       return false;
     };
@@ -967,32 +1347,108 @@ if (only === "archive-conservation" && !base) {
   process.exit(2);
 }
 
+/**
+ * EVIDENCE ACCOUNTING — the answer to "how does a future session know a pass was real?"
+ *
+ * Until now this printed `19 checks passed`, which conflates three completely different outcomes:
+ *   - VERIFIED  — the check ran and inspected N real things.
+ *   - SKIPPED   — the check could not run (no memory store, shallow clone) and said nothing.
+ *   - VACUOUS   — the check ran, matched ZERO things, and "passed" because there was nothing to
+ *                 disagree with. This is the dangerous one: reformat the docs so `xref` finds no
+ *                 path-shaped tokens and it passes forever, having verified nothing.
+ *
+ * A check may now return either a findings array (legacy) or {findings, examined, skipped}. The
+ * summary reports all three states, and a check that examined 0 items WARNS rather than passing
+ * quietly. Green is only meaningful when you can see what it looked at.
+ */
+const ledger = [];
 const results = [];
 for (const c of checks) {
   if (only && c.id !== only) continue;
-  let findings;
+  let out;
   try {
-    findings = c.run() || [];
+    out = c.run() || [];
   } catch (err) {
     // A crashing check must be loud. A silent pass is the failure mode this whole file exists to stop.
-    findings = [{ msg: `check crashed: ${err && err.message}` }];
+    out = [{ msg: `check crashed: ${err && err.message}` }];
   }
+  const findings = Array.isArray(out) ? out : out.findings || [];
+  const examined = Array.isArray(out) ? null : out.examined ?? null;
+  const skipped = Array.isArray(out) ? null : out.skipped ?? null;
+  ledger.push({ id: c.id, examined, skipped });
   for (const f of findings) results.push({ id: c.id, severity: c.severity, title: c.title, ...f });
+  if (examined === 0 && !skipped && !findings.length && !c.vacuousOk) {
+    results.push({
+      id: c.id,
+      severity: "WARN",
+      title: c.title,
+      msg: `VACUOUS PASS — this check ran but examined 0 items, so its "pass" verified nothing. ` +
+        `Either the corpus genuinely is empty, or its matcher has stopped matching (a reformat, a ` +
+        `renamed convention). Confirm which before trusting the green.`,
+    });
+  }
 }
+// archive-conservation lives outside the `checks` array because it needs a base ref, and that meant it
+// was invisible to the evidence ledger — `--only archive-conservation` reported "0/0 checks verified",
+// i.e. the accounting silently excluded the very check being run. Any check absent from the ledger is
+// a check whose pass cannot be audited, which is the whole problem this ledger exists to solve.
 if (base && (!only || only === "archive-conservation")) {
-  for (const f of conservation(base)) {
+  const found = conservation(base);
+  ledger.push({ id: "archive-conservation", examined: CONSERVATION_PAIRS, skipped: null });
+  for (const f of found) {
     results.push({ id: "archive-conservation", severity: "ERROR", title: "items leave an active list only via its archive", ...f });
   }
+} else if (!only) {
+  ledger.push({
+    id: "archive-conservation",
+    examined: null,
+    skipped: "no --diff <base> given; conservation is a fact about a CHANGE and cannot be read from the tree",
+  });
 }
 
 const errors = results.filter((r) => r.severity === "ERROR");
 const warns = results.filter((r) => r.severity === "WARN");
 
+// The accounting line. Printed on PASS and on FAIL, because a run with findings can still be hiding
+// skipped or vacuous checks, and those change what the findings mean.
+const verified = ledger.filter((l) => !l.skipped && l.examined !== 0);
+const skippedChecks = ledger.filter((l) => l.skipped);
+const totalExamined = ledger.reduce((n, l) => n + (l.examined || 0), 0);
+const accounting = () => {
+  console.log(
+    `\ndocs-audit: ${verified.length}/${ledger.length} checks verified` +
+      (totalExamined ? ` (${totalExamined} items examined)` : "") +
+      (skippedChecks.length ? `, ${skippedChecks.length} SKIPPED` : "") +
+      "."
+  );
+  for (const s of skippedChecks) console.log(`  · skipped [${s.id}]: ${s.skipped}`);
+  const empty = ledger.filter((l) => l.examined === 0 && !l.skipped);
+  if (empty.length) console.log(`  · examined nothing (empty corpus is legitimate here): ${empty.map((e) => e.id).join(", ")}`);
+  // Gitignored files are WORKING-TREE-LOCAL. In a linked worktree or a fresh clone they simply are
+  // not there, so xref reports them as unresolved — accurate, but baffling unless you know where you
+  // are running. Say it, rather than let a future session re-derive it from confusing output.
+  if (isLinkedWorktree()) {
+    console.log(
+      `  · running in a LINKED WORKTREE — gitignored files that exist only in the main working tree ` +
+        `(docs/Harkirats-Space.md, local/*) are absent here, so xref may flag them. Not staleness.`
+    );
+  }
+  // Stated on every run, deliberately. This audit is a WHITELIST of failures that have already
+  // happened; it cannot detect a category nobody has hit yet, cannot judge whether a doc is any
+  // good, and cannot verify a judgement call. "Green" means "no known failure mode tripped" — never
+  // "the records are correct". Treating it as the latter is how a gate starts causing harm.
+  console.log(
+    `  · a pass means no KNOWN failure mode tripped — not that the records are correct. ` +
+      `Novel drift, prose quality and judgement are outside what any of this can see.`
+  );
+};
+
 if (asJson) {
-  console.log(JSON.stringify({ errors: errors.length, warnings: warns.length, results }, null, 2));
+  console.log(JSON.stringify({ errors: errors.length, warnings: warns.length, ledger, results }, null, 2));
 } else if (!results.length) {
-  const scope = only ? `check "${only}"` : `${checks.length} checks`;
+  const scope = only ? `check "${only}"` : "all checks";
   console.log(`docs-audit: ${scope} passed.`);
+  accounting();
 } else {
   const render = (list, label) => {
     if (!list.length) return;
@@ -1008,6 +1464,7 @@ if (asJson) {
   };
   render(errors, "❌ ERRORS — these fail CI");
   render(warns, "⚠️  WARNINGS — advisory, never blocking");
+  accounting();
   console.log();
 }
 

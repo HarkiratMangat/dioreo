@@ -232,6 +232,42 @@ re-auditing work already declared done:
 - Removed the rotting "10 checks" count from three living docs per
   `feedback_no_duplicated_state_in_prose` — it was wrong within the hour.
 
+**The third pass — "how does it handle the future, and its growth and change?"** Harkirat asked what
+happens when files appear, move or vanish, how a future session tells a true pass from a false one,
+and what was still being sidelined. Almost every answer was "badly", and a **live parallel session**
+supplied the test case by adding `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` and an
+entire `public/` tree while this was being written — none of which the audit could see.
+- **Evidence accounting.** `19 checks passed` conflated *verified*, *skipped* and **vacuous** (ran,
+  matched zero things, passed having verified nothing). Every check now declares what it examined or
+  why it skipped; the summary reports all three; a 0-item pass WARNS unless an empty corpus is
+  legitimate. It caught `root-docs` passing vacuously on its very first run.
+- **Growth checks:** `root-docs` · `top-level-dirs` · `scripts-documented` · `nav-map-sync`
+  (rules ↔ CLAUDE.md ↔ README, including the hardcoded "13 files" count) · `records-present`.
+- **Outside the repo:** `external-anchors` (`meta-deferred-list.md` and the global Claude config are
+  referenced by name from four places and sat at absolute paths `xref` deliberately skipped) and
+  `memory-slug`, which catches the repo-moved-and-orphaned-the-memory-store failure that **already
+  happened once** and went unnoticed for two weeks.
+- **`binary-in-text` — the unfindable one.** `docs-audit.mjs` itself contained NUL bytes (a regex
+  placeholder), which made ripgrep classify it as **binary and refuse to show matches**. In a project
+  whose CLAUDE.md mandates `rg`, the enforcement script had made itself unsearchable — invisible to
+  the very tool you would look with. Fixed, and now impossible to reintroduce.
+- **Hooks silently audited the WRONG TREE.** All three `gh pr create` gates hardcoded
+  `/Applications/Claude Code/Diors-Builds`, so inside a git worktree — which the superpowers workflow
+  actively encourages — they reported confidently about a branch you were not on. Now
+  `CLAUDE_PROJECT_DIR`. Found only because a parallel session forced the use of a worktree.
+- **New `docs-audit-gate.sh`** runs the full audit at `gh pr create`; it caught a false positive in
+  `archive-conservation` immediately (a unified diff renders an in-place EDIT as a removal, so a
+  one-line fix demanded a graveyard entry — left in, it would have trained everyone to bypass the gate).
+- **Two fingerprint matchers were broken identically**, building the search window from filtered words
+  while searching an unfiltered haystack, so they could almost never match. Neither had ever been
+  exercised. Both fixed and both branches now tested.
+- **Recovered the gap the second pass created:** bare-filename `xref` is back, resolving against
+  tracked names + gitignored-but-present + both memory stores + external anchors, skipping historical
+  "renamed from" phrasing. Scoped to `.md` and WARN — because I measured the false-positive rate with
+  a probe that scanned only `.md` and then shipped a check that also scanned `.js`/`.json`.
+- The audit now states **what a pass does not mean** on every run, and reports when it is running in a
+  linked worktree (where gitignored files are legitimately absent).
+
 ## v2.41.4 — 2026-07-28 18:40 EDT (#51 · `925aa0a`) — A hard reset that ate another session's work
 **Docs only — no behaviour change.**
 - **A `git reset --hard HEAD~2`** at 2026-07-28 16:35 EDT, cleaning up two throwaway commits made to test

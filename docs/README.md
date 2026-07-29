@@ -85,6 +85,19 @@ not a hook**, deliberately: a hook only fires inside a Claude session on one Mac
 gate on every PR** too. `ERROR` findings fail the build; `WARN` findings never block, so a hotfix is
 never held up by prose. `npm run docs:audit:test` proves every check can actually *fail* — a guard
 nobody has watched fail is not a guard, and this repo has already shipped one that was silently dead.
+
+**Read the accounting line, not just the verdict.** Every run reports `N/M checks verified (K items
+examined)`, plus anything **SKIPPED** (it could not run — no memory store, a shallow clone) and
+anything that examined **nothing**. `N checks passed` used to hide all three: a check that matched
+zero items "passes" while verifying nothing, which is how a broken matcher survives indefinitely.
+A pass means *no known failure mode tripped* — never *the records are correct*. Novel drift, prose
+quality and judgement calls are outside what any of this can see, and it says so on every run.
+
+**It also runs at `gh pr create`** via `../.claude/hooks/docs-audit-gate.sh`, so failures surface
+while fixing them is still free. ⚠️ That local gate fires only on the literal `gh pr create` command
+inside a Claude Code session on this machine — a PR opened through the GitHub web UI bypasses it, and
+every other local hook with it, including the notes/memory closure check. **CI is the guarantee; the
+hook is the convenience.**
 Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
 code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.

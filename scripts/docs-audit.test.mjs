@@ -76,13 +76,24 @@ const makeFixture = () => {
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
   write(root, "package.json", JSON.stringify({ name: "fixture", version: "2.33.0" }, null, 2));
-  write(root, "CLAUDE.md", "# Fixture\n\nSee `docs/README.md`.\n");
+  // Names every unit the new structural checks look for: the root docs, every top-level directory,
+  // each path-scoped rule, and each script. A fixture that doesn't satisfy them reports VACUOUS PASS.
+  write(
+    root,
+    "CLAUDE.md",
+    "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`.\n\n" +
+      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/`.\n" +
+      "Scripts: `scripts/dofix.js`.\n"
+  );
+  write(root, "LICENSE", "Fixture licence.\n");
+  write(root, "scripts/dofix.js", "// fixture script\n");
   write(
     root,
     "docs/README.md",
     "# Map\n\n| File | What |\n|---|---|\n| `CHANGELOG.md` | log |\n| `CHANGELOG-SUMMARY.md` | summary |\n" +
       "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `diors-builds notes.md` | intake |\n" +
-      "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n"
+      "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n" +
+      "\nPath-scoped rules: example (1 file).\n"
   );
   // Placeholder hashes are filled in below with a REAL sha. Invented hashes fail `hash-chain`'s
   // resolution half — which is the check working correctly, and was caught by this very self-test.
@@ -405,6 +416,96 @@ proves("a path-scoped rule whose glob matches nothing", "rule-globs", (root) => 
 proves("a git worktree nested inside the repo", "nested-worktree", (root) => {
   execFileSync("git", ["worktree", "add", "-q", "-b", "scratch", join(root, ".claude/worktrees/nested")], { cwd: root });
 });
+
+// ---- structural growth: new files, folders, scripts and rules ---------------------------------
+// All five were invisible before 2026-07-29 00:40 EDT. A LIVE parallel session added LICENSE, NOTICE,
+// CONTRIBUTING.md, CONTRIBUTORS.md and an entire public/ tree while this audit was being written, and
+// the audit — which only looked under docs/ — saw none of it.
+
+proves("a NUL byte making a text file invisible to ripgrep", "binary-in-text", (root) => {
+  write(root, "docs/ROADMAP.md", "# Roadmap\u0000\n");
+});
+
+proves("a root-level document nothing maps", "root-docs", (root) => {
+  write(root, "NOTICE", "Third-party notices.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a brand-new top-level directory", "top-level-dirs", (root) => {
+  write(root, "public/index.html", "<p>hi</p>\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a script mentioned in no rule or doc", "scripts-documented", (root) => {
+  write(root, "scripts/undocumented.js", "// nobody describes me\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a rule file missing from the nav map", "nav-map-sync", (root) => {
+  write(root, ".claude/rules/orphan.md", "---\npaths:\n  - docs/*.md\n---\n\nUnmapped.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a hardcoded rule-file count going stale", "nav-map-sync", (root) => {
+  const r = readFileSync(join(root, "docs/README.md"), "utf8") + "\n99 files (commands-overview, ...).\n";
+  write(root, "docs/README.md", r);
+});
+
+// ---- the evidence ledger: a pass you cannot audit is not a pass -------------------------------
+
+proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-documented", (root) => {
+  // Remove every script. scripts-documented then examines 0 items and would historically have
+  // "passed" — verifying nothing. The ledger now turns that into a warning instead.
+  rmSync(join(root, "scripts/dofix.js"));
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+// The CONTENT-TRACING branch: the archive grew, but not with the item that was removed. This branch
+// hid a real bug for its whole life because the zero-growth branch always fired first, so it is
+// exercised explicitly here.
+{
+  const root = makeFixture();
+  try {
+    write(root, "docs/diors-builds notes.md",
+      "# Notes\n\n## Questions/Notes for Claude\n\n## 📍 Where everything else lives\n");
+    write(root, "docs/archive/graveyard.md", "# Graveyard\n\n- something completely unrelated was swept here instead today\n");
+    execFileSync("git", ["add", "-A"], { cwd: root });
+    execFileSync("git", ["commit", "-qm", "sweep the wrong thing"], { cwd: root });
+    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    if (!ids.has("archive-conservation")) {
+      failures.push("a deletion whose text never reached the archive: [archive-conservation] stayed SILENT — the content-tracing branch is dead.");
+    } else {
+      passed++;
+      console.log(`  ✓ ${"archive-conservation".padEnd(22)} the archive grew, but not with the removed item`);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+// An in-place EDIT must not read as a deletion. A unified diff renders a changed line as "-" plus
+// "+", so counting bare "-" lines demanded a graveyard entry for a one-line path correction. That
+// would have trained everyone to bypass the gate — worse than not having it.
+{
+  const root = makeFixture();
+  try {
+    const p = join(root, "docs/diors-builds notes.md");
+    write(root, "docs/diors-builds notes.md",
+      readFileSync(p, "utf8").replace("an open intake item long enough to count as substance, not reflow churn",
+        "an open intake item long enough to count as substance, not reflow churn (edited in place)"));
+    execFileSync("git", ["add", "-A"], { cwd: root });
+    execFileSync("git", ["commit", "-qm", "edit in place"], { cwd: root });
+    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    if (ids.has("archive-conservation")) {
+      failures.push('an in-place edit of the notes file: [archive-conservation] fired on an EDIT, not a deletion.');
+    } else {
+      passed++;
+      console.log(`  ✓ ${"archive-conservation".padEnd(22)} an in-place edit is not a deletion`);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
 
 // The conservation check is a fact about a CHANGE, so it needs a second commit to diff against.
 proves(

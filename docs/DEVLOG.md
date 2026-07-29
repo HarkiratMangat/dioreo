@@ -3025,3 +3025,64 @@ history, and history is not policy. When a check cannot find its anchor, that is
 pass. And the honest read on the turn budget: it measures cost, never correctness, and I let it end a
 unit of work that wasn't finished. The budget is not a reason to stop verifying; stopping to *report*
 is fine, declaring done is not.
+
+### The third pass — "how does it handle the future, and its growth and change?"
+
+Harkirat's questions were the ones I had not asked myself: what happens when a file or folder is
+added, deleted, or silently moved? What about directories this project may one day rely on, or that
+rely on it? **How does a future session tell a true pass from a false one?** And: what did you
+sideline?
+
+The honest answer to most of them was "badly", and the repo supplied its own test case. While I was
+working, a **parallel session** on another branch added `LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`, a `docs/legal/` folder and an entire `public/` tree. Pointing the audit at that
+branch was the most useful thing I did all session: it correctly passed `readme-map` (they *had*
+updated the map) and correctly passed `version-sync` — and it was completely blind to four new
+root-level records and a whole new top-level directory, because it had only ever looked under `docs/`.
+
+### The false-pass problem, which was the real question
+
+`19 checks passed` was hiding three different outcomes: **verified**, **skipped**, and **vacuous** —
+the check ran, matched zero things, and passed because there was nothing to disagree with. The third
+is the dangerous one, and it is invisible: reformat the docs so `xref` finds no path-shaped tokens and
+it passes forever, having verified nothing.
+
+Every check now declares what it examined, or why it did not run. The summary reports all three
+states, and a zero-item pass warns unless an empty corpus is legitimate for that check. It earned its
+place on the first run by catching `root-docs` passing vacuously.
+
+### Three things I could only have found by going looking
+
+**The audit had made itself unsearchable.** `docs-audit.mjs` contained two NUL bytes — a placeholder
+in a regex translation. ripgrep classifies any file with a NUL as **binary and shows no matches**. In
+a project whose CLAUDE.md mandates `rg` as the primary search tool, the enforcement script was
+invisible to the only tool anyone would use to read it. Nothing could ever have surfaced that, because
+the search you would run to find it is the search that fails. There is now a `binary-in-text` check.
+
+**Every hook was auditing the wrong tree.** All three `gh pr create` gates hardcoded
+`/Applications/Claude Code/Diors-Builds`. The superpowers workflow actively encourages git worktrees,
+and inside one, every gate silently inspected the main working tree instead — reporting confidently
+about a branch you are not on. I only found it because a parallel session's uncommitted work forced me
+into a worktree to avoid repeating the v2.41.4 incident. The safety measure found the bug.
+
+**Two fingerprint matchers were broken in exactly the same way**, and neither had ever run. Both built
+their search window from filtered words while searching an unfiltered haystack, so a window reading
+`open intake item long enough count` could never match a haystack still reading `long enough to
+count`. One of them, `traceable()`, only executes when the archive actually grew — and the
+zero-growth branch had fired first every single time, so its bug was never once exercised. A test that
+forced the branch found it immediately.
+
+### The one I got wrong twice in the same file
+
+I restored bare-filename `xref` checking, measured the false-positive rate with a probe, wrote
+"0 false positives" into the code comment, and shipped a check that scanned a **wider set of file
+types than the probe had**. It immediately flagged discord.js internals. Measuring one thing and
+shipping another — inside the very file written to catch that class of error.
+
+### Note to future self
+
+Ask what a green tick is actually asserting. "All checks passed" is not a claim about the records; it
+is a claim about the checks, and only if they ran, and only if they looked at something. Report the
+evidence, not just the verdict. And when a safety measure forces you into an unfamiliar setup — a
+worktree, a fresh clone, a shallow checkout — pay attention to what breaks there, because that is
+where the assumptions you never wrote down are keeping score.
