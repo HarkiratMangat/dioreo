@@ -269,6 +269,17 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 - Contributions are governed by the CLA in `LICENSE` §5 + `CONTRIBUTING.md`; credit is a **binding
   obligation** (§5.6) discharged via `CONTRIBUTORS.md` **and** the changelog entry for the shipping
   release. Crediting a merged external contribution is not optional.
+- **`NOTICE` is incorporated into `LICENSE` by reference** (§7.1) and carries the dependency
+  attributions, trademark acknowledgements, and the **AI-assistance disclosure**. **discord.js and
+  xlsx are Apache-2.0**, which obliges anyone redistributing them to reproduce their notices — that
+  duty attaches upstream and survives regardless of what `LICENSE` permits. **Re-generate NOTICE §1/§3
+  whenever dependencies change**, and re-check that no GPL/AGPL/LGPL/MPL/SSPL package has entered the
+  tree — a reciprocal licence anywhere in it could force source publication on terms incompatible with
+  the source-available model. (Verified clean 2026-07-28 21:36 EDT: 127 packages, 0 copyleft.)
+- **`NOTICE` §6 asserts human authorship**, which matters more than it looks: the licence's force
+  depends on copyright subsisting, and purely AI-generated material is not copyrightable (US Copyright
+  Office; cert denied 2026-03-02). Never edit that section to downplay the human creative control —
+  it is the stated basis for the copyright claim the whole licence rests on.
 
 ### Records & workflow (outside the rules system)
 - **`LICENSE` / `CONTRIBUTING.md` / `CONTRIBUTORS.md`** (repo root) — licence terms + CLA, the

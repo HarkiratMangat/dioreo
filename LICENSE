@@ -239,6 +239,13 @@ free of charge, and whether or not You attribute the Licensor:
      consulting or hosting around it, or using it in the internal operations of
      a business.
 
+     Carve-out: reading or studying the Software to learn from it is not
+     commercial use, even if You happen to be employed, and even if what You
+     learn later informs Your paid work. This Section is directed at
+     exploitation of the Software, not at the education of the person reading
+     it. The line is whether the Software, a Modification, or the Curated Data
+     is itself put to commercial use -- not whether the reader has a job.
+
 4.5  Competing Services. Use the Software, any Modification, the Curated Data,
      or knowledge of the Software's internal structure to create, develop,
      operate, market, or assist any other person in creating, developing,
@@ -382,9 +389,21 @@ free of charge, and whether or not You attribute the Licensor:
      owned by the Licensor and are licensed to You by their own respective
      licensors under their own terms, not under this License. Those terms
      govern those packages, and nothing in this License purports to restrict,
-     enlarge, or otherwise vary any right You have in them. The applicable
-     licenses are identified in package.json, package-lock.json, and the
-     packages' own distributions.
+     enlarge, or otherwise vary any right You have in them.
+
+     **The NOTICE file at the repository root is incorporated into this License
+     by reference** and identifies each direct dependency, its version, its
+     license, and its copyright holder, together with the trademark
+     acknowledgements in Section 7.2 and the authorship disclosure referenced
+     in Section 8A. Read it. Authoritative per-package license text lives in
+     each package's own distribution under node_modules/.
+
+     Certain components -- currently discord.js and xlsx -- are licensed under
+     the Apache License 2.0, which imposes attribution and NOTICE-reproduction
+     obligations on anyone who redistributes them. Those obligations attach to
+     those components independently of this License and are not waived,
+     narrowed, or satisfied by anything the Licensor permits or prohibits here.
+     See NOTICE Section 2.
 
 7.2  Game content. Call of Duty and Call of Duty: Mobile are trademarks of
      Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi
@@ -428,6 +447,49 @@ free of charge, and whether or not You attribute the Licensor:
 
 
 ===============================================================================
+8A. AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS
+===============================================================================
+
+8A.1 AI assistance disclosed. Portions of the Software, its documentation, and
+     this License were authored with the assistance of AI tools, principally
+     Claude (Anthropic PBC), used as a drafting and implementation instrument
+     under the continuous direction of the human author. Full disclosure:
+     NOTICE Section 6.
+
+8A.2 Human authorship asserted. The Licensor states affirmatively that a human
+     author conceived the Software and its features; specified its requirements
+     and behavior; directed, reviewed, selected, rejected, corrected, and
+     revised all generated output; determined the architecture, structure,
+     sequence, and organization of the codebase; and personally researched,
+     selected, verified, arranged, and curated the Curated Data. The creative
+     choices giving the Software its expressive character are human choices,
+     and copyright subsists in the Software accordingly.
+
+8A.3 No admission or waiver. Section 8A.1 is made in the interest of candor. It
+     is not an admission that any part of the Software lacks copyright
+     protection, not a waiver of any right, and not to be construed against the
+     Licensor. No inference adverse to the subsistence, ownership, scope, or
+     enforceability of the Licensor's rights may be drawn from it.
+
+8A.4 Database and compilation rights. Independently of copyright in the code,
+     the Licensor asserts rights in the Curated Data as a compilation arising
+     from the selection, verification, arrangement, and presentation of its
+     contents -- including, where applicable, the sui generis database right
+     under Directive 96/9/EC and its national implementations, and equivalent
+     protection under the Copyright Act (Canada) and 17 U.S.C. Section 101.
+     Section 4.6 applies to the Curated Data whether or not copyright subsists
+     in any individual fact within it. Facts themselves are not owned; their
+     selection and arrangement are.
+
+8A.5 Independent development. The Licensor may develop, acquire, commission, or
+     operate software, features, data, or services similar or identical to
+     anything You suggest, contribute, or build, without obligation to You.
+     Nothing in this License restricts the Licensor's own activities, and
+     submitting a Contribution or an idea grants You no rights in what the
+     Licensor later creates.
+
+
+===============================================================================
 9. TERM AND TERMINATION
 ===============================================================================
 
@@ -453,8 +515,8 @@ free of charge, and whether or not You attribute the Licensor:
      possession or control, delete any GitHub fork of the repository, and
      confirm in writing on request that You have done so.
 
-9.6  Survival. Sections 1, 3.1, 3.2, 4.4, 4.5, 4.6, 4.7, 4.10, 5, 6, 7, 8, 9.5,
-     9.6, 10, 11, 12, 13, and 14 survive termination.
+9.6  Survival. Sections 1, 3.1, 3.2, 4.4, 4.5, 4.6, 4.7, 4.10, 5, 6, 7, 8, 8A,
+     9.5, 9.6, 10, 11, 12, 13, and 14 survive termination.
 
 9.7  Remedies. You acknowledge that a breach of Sections 4.1, 4.2, 4.5, 4.6,
      4.7, or 4.10 would cause the Licensor harm that monetary damages alone
@@ -610,9 +672,74 @@ any claim that it infringes a third party's rights.
      only to that extent, and the remainder of this License continues to apply.
      Section 4.2's forking exception reflects this principle.
 
-14.10 Acceptance. You accept this License by accessing, downloading, copying,
-     forking, or using the Software. If You do not accept it, You have no
-     rights in the Software and must not do any of those things.
+14.10 Acceptance. You accept this License, and it becomes a binding agreement
+     between You and the Licensor, upon ANY of the following, each of which is
+     a separate and independent act of acceptance:
+       (a) accessing, viewing, or reading the Software's source code;
+       (b) downloading, cloning, forking, or copying the Software, in whole or
+           in part, by any means;
+       (c) compiling, installing, executing, or running the Software or any
+           Modification;
+       (d) creating a Modification;
+       (e) submitting a Contribution; or
+       (f) continuing any of the above after a new version of this License
+           applies to a version of the Software You obtain.
+     Accepting once binds You for all subsequent use. If You do not accept this
+     License, You have no rights whatsoever in the Software and must not do any
+     of the things listed above.
+
+14.11 Notice and opportunity to read. This License is published in full at the
+     root of the repository, under the filename LICENSE, which is the
+     conventional and expected location; GitHub additionally surfaces it in the
+     repository interface. You acknowledge that You have been given a
+     reasonable opportunity to read it before acting, and that choosing not to
+     read terms You were able to read does not prevent them binding You.
+
+14.12 Electronic agreement. You consent to contract electronically. This
+     License satisfies any requirement that an agreement be in writing, and
+     Your acceptance under Section 14.10 has the same legal effect as a
+     handwritten signature under Ontario's Electronic Commerce Act, 2000 and
+     equivalent legislation elsewhere.
+
+14.13 Interpretation. "Including" and "such as" mean "including without
+     limitation" and are never words of limitation. The singular includes the
+     plural and vice versa. "Or" is inclusive. A reference to a statute
+     includes its amendments and successors. Examples illustrate and do not
+     confine the general words they follow. Where a prohibition could be read
+     narrowly or broadly, and the narrow reading would defeat the evident
+     purpose of Section 4, the broader reading applies.
+
+14.14 No third-party beneficiaries. This License confers no right or remedy on
+     any person other than You and the Licensor, except that Section 7's
+     third-party licensors and rights holders may enforce their own rights
+     under their own terms.
+
+14.15 Assignment by the Licensor. The Licensor may assign, novate, or transfer
+     this License and any right under it, in whole or in part, freely and
+     without Your consent, including to a successor in connection with a
+     transfer of the Software. Section 4.3 restricts only You.
+
+14.16 No support obligation. The Licensor has no obligation to provide support,
+     maintenance, updates, bug fixes, security patches, or any assistance
+     whatsoever, and no obligation to continue publishing, developing, or
+     operating the Software. Providing any of these on any occasion creates no
+     obligation to continue, and no course of dealing or course of performance
+     may be construed as creating one.
+
+14.17 Force majeure. The Licensor is not liable for any failure or delay caused
+     by events beyond his reasonable control, including acts of God, natural
+     disaster, war, terrorism, civil unrest, epidemic or pandemic, strike,
+     government action, change of law, power or network failure, or any act,
+     omission, outage, policy change, suspension, or termination by Discord,
+     GitHub, Google, MongoDB, Cloudinary, Activision, or any other third party.
+
+14.18 Not a sale. This License is a grant of limited permission, not a sale.
+     No exhaustion, first-sale, or equivalent doctrine applies to it, and no
+     right is transferred to You beyond the express permissions in Section 2.
+
+14.19 Cumulative remedies. The Licensor's rights and remedies under this
+     License are cumulative and in addition to, and not in substitution for,
+     any right or remedy available at law or in equity.
 
 
 ===============================================================================

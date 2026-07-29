@@ -6,16 +6,27 @@
 
 ---
 
+> ## ⚠️ PLEASE READ BEFORE USING THE BOT
+>
+> **By installing the Bot or issuing any command to it, you agree to these
+> Terms.** They include an **age requirement (§3)**, **disclaimers of warranty
+> (§14)**, a **limitation of our liability (§15)**, an **indemnity you give us
+> (§16)**, a **class-action waiver (§17.3)**, and **Ontario, Canada governing law
+> and venue (§17)**.
+>
+> **If you do not agree, do not install or use the Bot.**
+
+---
+
 ## 0. The short version
 
 This is a free, unofficial Call of Duty: Mobile info bot run by one person as a
-hobby. Use it, enjoy it, don't abuse it. The game data in it is best-effort and
-often changes — don't treat it as authoritative. It comes with no warranty, and
-liability is limited. Nothing here takes away rights your local law gives you
-that can't be signed away.
+hobby. Use it, enjoy it, don't abuse it. The game data is best-effort and often
+changes — don't spend money based on it. It comes with no warranty, and our
+liability is limited. Nothing here removes rights your local law gives you that
+can't be signed away.
 
-*This summary is for convenience only. The numbered sections below are the
-actual terms.*
+*This summary is for convenience only. The numbered sections are the actual terms.*
 
 ---
 
@@ -30,16 +41,61 @@ There is no company behind this. It's one person, and support is best-effort.
 
 ---
 
-## 2. Agreement to these terms
+## 2. Agreement to these Terms
 
-By installing, invoking, or otherwise using the Bot, you agree to these Terms of
-Service ("Terms") and to our [Privacy Policy](PRIVACY.md), which is incorporated
-into these Terms by reference.
+### 2.1 How you accept
 
-**If you don't agree, don't use the Bot.** Remove it from your account and stop
-issuing commands to it.
+**You accept these Terms by doing any of the following:**
 
-These Terms are a binding agreement between you and us.
+1. **Installing** the Bot to your Discord account, or authorising it via Discord's
+   OAuth flow;
+2. **Invoking any command** — every slash command, at every invocation;
+3. **Interacting with any component** the Bot presents — any button, dropdown,
+   modal, or menu;
+4. **Receiving output** from the Bot in response to something you did; or
+5. **Continuing to use** the Bot after a change to these Terms takes effect.
+
+**Each of those is a separate and independent act of acceptance.** You do not need
+to accept more than once, and accepting once binds you to these Terms for all
+subsequent use.
+
+### 2.2 Notice
+
+These Terms and the [Privacy Policy](PRIVACY.md) are:
+
+- linked from the Bot's Discord Developer Portal listing, where Discord displays
+  them on the Bot's profile;
+- published at a permanent public URL in our GitHub repository;
+- referenced in the Bot's own help output; and
+- available on request at info@harkiratmangat.com.
+
+**You are responsible for reading them.** Choosing not to read terms you were
+given the opportunity to read does not stop them applying to you.
+
+### 2.3 Acknowledgement
+
+By using the Bot you acknowledge that you have had a reasonable opportunity to
+read these Terms and the Privacy Policy, that you understand them, that you agree
+to be bound by them, and that you accept them as a binding agreement between you
+and us with the same effect as a signed written contract.
+
+### 2.4 Electronic agreement
+
+You consent to contract electronically. These Terms satisfy any requirement that
+an agreement be in writing, and your acceptance under §2.1 has the same legal
+effect as a handwritten signature under Ontario's *Electronic Commerce Act, 2000*
+and equivalent legislation elsewhere.
+
+### 2.5 Incorporated documents
+
+The [Privacy Policy](PRIVACY.md) forms part of these Terms. The
+[LICENSE](../../LICENSE) governs the Bot's **source code** and is a separate
+agreement — using the Bot does not license you its code.
+
+### 2.6 If you don't agree
+
+**Don't install or use the Bot.** If you've already installed it, remove it via
+Discord's "Authorized Apps" settings and stop issuing commands. See §13.1.
 
 ---
 
@@ -47,29 +103,33 @@ These Terms are a binding agreement between you and us.
 
 To use the Bot you must:
 
-1. Be at least **13 years old**, or the higher minimum age required by Discord in
-   your country — in parts of the EU and elsewhere this is **14, 15, or 16**. Discord's
-   own [Terms of Service](https://discord.com/terms) set the controlling minimum,
-   and you must meet it.
+1. Be at least **13 years old**, or the higher minimum age Discord requires in
+   your country — in parts of the EU and elsewhere this is **14, 15, or 16**.
+   Discord's [Terms of Service](https://discord.com/terms) set the controlling
+   minimum, and you must meet it.
 2. Have the legal capacity to enter into these Terms, or have your parent or
-   guardian's consent.
-3. Not be barred from using Discord under Discord's terms, and not be located in
-   a country subject to a comprehensive Canadian or applicable trade embargo.
+   guardian's consent, in which case they accept these Terms on your behalf and
+   are responsible for your use.
+3. Not be barred from using Discord under Discord's terms.
+4. Not be located in, or ordinarily resident in, a country subject to a
+   comprehensive Canadian trade embargo, and not be listed on any applicable
+   sanctions or restricted-party list.
 
-**We do not knowingly permit use by anyone under Discord's minimum age.** If we
-learn that a user is under that age, we will delete their stored preferences. See
-§9 of the [Privacy Policy](PRIVACY.md).
+**We do not knowingly permit use below Discord's minimum age.** We have no
+independent age-verification mechanism and rely on Discord's enforcement. If we
+learn a user is under that age, we will delete their stored preferences — see §10
+of the [Privacy Policy](PRIVACY.md).
 
 ---
 
 ## 4. What the Bot does
 
-The Bot is a **user-installed Discord application**. It provides Call of Duty:
-Mobile reference information, including:
+The Bot is a **user-installed Discord application** providing Call of Duty:
+Mobile reference information:
 
 | Feature | What it gives you |
 |---|---|
-| Weapon loadouts | Curated multiplayer and DMZ builds, attachments, and rankings |
+| Weapon loadouts | Curated multiplayer and DMZ builds, attachments, rankings |
 | Lucky draw info | Draw contents, items, and CP pricing |
 | Patch notes | Season balance changes and patch history |
 | Seasonal calendar | Events, start and end dates |
@@ -78,24 +138,34 @@ Mobile reference information, including:
 | `/settings` | Your display preferences |
 | Accent colours | Message colours matched to your Discord profile |
 
-### 4.1 What "user-installed" means for you
+### 4.1 What "user-installed" means
 
-The Bot is installed **to your Discord account**, not to a server. This has real
-consequences you should understand:
+The Bot installs **to your Discord account**, not to a server:
 
 - It travels with you across servers and DMs.
 - **It has no permissions in any server.** It is not a member, holds no role, and
   cannot read your messages, see your channels, moderate, or act on its own.
-- It can only respond to interactions **you** initiate, using Discord's
-  interaction-response system.
-- Whether it works in a given server is controlled by that server's settings and
-  by Discord — not by us.
+- It only responds to interactions **you** initiate.
+- Whether it works in a given server is controlled by that server and by Discord —
+  not by us.
 
 ### 4.2 It's free
 
-The Bot is provided free of charge. There is no paid tier, no subscription, no
-advertising, and no in-app purchase. We are not obliged to keep it that way, but
-we will not start charging for access you already have without notice.
+No paid tier, no subscription, no advertising, no in-app purchase. We are not
+obliged to keep it that way, but we will not start charging for access you already
+have without notice.
+
+### 4.3 Experimental features
+
+Some features are experimental and may be changed, broken, or removed without
+notice. Where a feature is marked beta or experimental, expect it to be less
+reliable — and know that §14 and §15 apply to it with full force.
+
+### 4.4 No support obligation
+
+We have no obligation to provide support, respond to reports, fix bugs, maintain
+the Bot, or keep any feature working. We generally try. That is a courtesy, not a
+commitment, and no course of dealing creates one.
 
 ---
 
@@ -105,17 +175,35 @@ we will not start charging for access you already have without notice.
 
 - Loadouts, rankings, and "meta" designations reflect **opinion and community
   consensus**, not objective fact.
-- Call of Duty: Mobile is patched frequently. Data can become stale immediately
-  after an update, and there may be a lag before it is corrected.
-- Draw contents, prices, and odds are **as observed**, may vary by region and
-  account, and are not a representation of what you will actually receive.
+- Call of Duty: Mobile is patched frequently. Data can go stale immediately after
+  an update, and there may be a lag before it's corrected.
+- Draw contents, prices, and odds are **as observed**, may vary by region, account,
+  and over time, and are **not a representation of what you will receive**.
 - Dates, countdowns, and calendar entries depend on information published by
   others and on your timezone setting being correct.
 
-**Do not make purchasing decisions in reliance on the Bot.** Lucky draws are
-games of chance operated by third parties, and we have no involvement in, control
-over, or responsibility for them or their outcomes. Nothing in the Bot is a
-recommendation to spend money.
+### 5.1 Spending money — the important part
+
+**Do not make purchasing decisions in reliance on the Bot.**
+
+Lucky draws and similar mechanics are **games of chance operated entirely by third
+parties**. We do not operate, host, facilitate, promote, or take any part in them.
+We receive no commission, referral fee, or benefit of any kind from your spending.
+We have no control over odds, contents, pricing, or outcomes, and no ability to
+influence or predict them.
+
+**Nothing in the Bot is a recommendation, inducement, or encouragement to spend
+money.** Information about draw contents and pricing is descriptive reference
+material only.
+
+If you're concerned about spending on in-game purchases, please seek support
+appropriate to your situation. Some jurisdictions regulate loot boxes and similar
+mechanics; where yours does, comply with your local law — that's your
+responsibility, not ours.
+
+### 5.2 No professional advice
+
+Nothing in the Bot is financial, legal, medical, or other professional advice.
 
 ---
 
@@ -124,31 +212,36 @@ recommendation to spend money.
 You must not:
 
 1. **Abuse or overload it** — no spamming commands, no automated or scripted
-   invocation, no scraping, no deliberate attempt to exhaust rate limits or
-   resources.
-2. **Attack it** — no attempting to gain unauthorised access to the Bot, its
-   database, its media storage, or its infrastructure; no exploiting a
-   vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.
+   invocation, no scraping, no deliberately exhausting rate limits or resources.
+2. **Attack it** — no attempting unauthorised access to the Bot, its database, its
+   media storage, or its infrastructure; no exploiting a vulnerability beyond the
+   minimum needed to demonstrate it; no denial-of-service.
 3. **Circumvent controls** — no bypassing cooldowns, permission checks, or
    admin-only gates.
-4. **Impersonate** — no presenting the Bot's output as your own or someone
-   else's, and no pretending to be affiliated with, or authorised by, us.
-5. **Break the law or Discord's rules** — no using the Bot in connection with
-   harassment, fraud, hate speech, or any illegal activity, and no use that
-   violates [Discord's Terms of Service](https://discord.com/terms) or
+4. **Impersonate** — no presenting the Bot's output as your own or someone else's,
+   and no claiming affiliation with or authorisation from us.
+5. **Break the law or Discord's rules** — no use in connection with harassment,
+   fraud, hate speech, or illegal activity, and no use violating
+   [Discord's Terms](https://discord.com/terms) or
    [Community Guidelines](https://discord.com/guidelines).
 6. **Extract the data** — no bulk collection, mirroring, re-hosting, or
-   republishing of the Bot's curated datasets or output. See §7.
+   republishing of the Bot's curated datasets or output.
 7. **Train models on it** — no using the Bot's output or data as training,
    fine-tuning, evaluation, or retrieval input for any AI or machine-learning
    system.
-8. **Redistribute the software** — the Bot's source code is governed by the
-   [LICENSE](../../LICENSE), which is separate from these Terms. Reading it is
-   allowed; deploying or redistributing it is not.
+8. **Redistribute the software** — the source code is governed by the
+   [LICENSE](../../LICENSE), separate from these Terms. Reading it is allowed;
+   deploying or redistributing it is not.
 
-**Security researchers:** good-faith research is welcome, but test against your
-own local instance, not the live Bot. See §4.11 of the [LICENSE](../../LICENSE)
-and the [contributing guide](../../CONTRIBUTING.md).
+**Security researchers:** good-faith research is welcome, but test against your own
+local instance, not the live Bot. See §4.11 of the [LICENSE](../../LICENSE) and
+the [contributing guide](../../CONTRIBUTING.md).
+
+### 6.1 Reporting abuse
+
+To report misuse of the Bot, a security issue, or content that shouldn't be there,
+email **info@harkiratmangat.com**. Security issues should never go in a public
+GitHub issue.
 
 ---
 
@@ -156,66 +249,108 @@ and the [contributing guide](../../CONTRIBUTING.md).
 
 ### 7.1 Ours
 
-The Bot's source code, its curated datasets, its descriptive text, its layouts,
-and the "Dior's Builds" name and visual identity are owned by us and protected by
+The Bot's source code, curated datasets, descriptive text, layouts, and the
+"Dior's Builds" name and visual identity are owned by us and protected by
 copyright and other laws. Using the Bot grants you **no ownership or licence** in
-any of it, beyond the right to view its output for your personal, non-commercial
-use.
+any of it, beyond viewing its output for personal, non-commercial use.
 
-Source code licensing is governed separately by the [LICENSE](../../LICENSE) file.
+Source code licensing is governed separately by the [LICENSE](../../LICENSE).
 
-### 7.2 Not ours
+### 7.2 Not ours — game content
 
-**Call of Duty** and **Call of Duty: Mobile** are trademarks of **Activision
-Publishing, Inc.** Call of Duty: Mobile is developed by TiMi Studio Group and
-published by Activision.
+**Call of Duty®** and **Call of Duty®: Mobile** are trademarks of **Activision
+Publishing, Inc.** Call of Duty: Mobile is developed by TiMi Studio Group (a
+Tencent subsidiary) and published by Activision, with regional publishing by
+Garena and VNG Games in some territories.
 
 > **Dior's Builds is an unofficial, non-commercial fan project. It is not
-> developed, published, endorsed, sponsored by, or affiliated with Activision
-> Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, or any of their
-> affiliates.**
+> developed, published, licensed, endorsed, sponsored by, or affiliated with
+> Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games,
+> Discord Inc., or any of their affiliates.**
 
-Weapon names, item names, in-game imagery, and other game content shown by the
-Bot remain the property of their respective owners. We claim no ownership of them
-and grant you no rights in them. We display them for identification and reference
-in a manner we believe to be fair use / fair dealing.
+Weapon names, item names, in-game imagery, and other game content shown by the Bot
+remain the property of their respective owners. We claim no ownership and grant you
+no rights in them. They are displayed for identification, commentary, and reference
+in a manner we believe constitutes fair dealing under the *Copyright Act* (Canada)
+and fair use under 17 U.S.C. § 107.
 
-If you own rights in material shown by the Bot and want it removed, email
-info@harkiratmangat.com and we will act promptly.
+### 7.3 Other trademarks
 
-### 7.3 Yours
+Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and
+all other marks are the property of their respective owners. A full acknowledgement
+list is in [NOTICE](../../NOTICE) §5.
 
-You retain ownership of anything you send us. By sending us feedback, ideas, bug
+### 7.4 Copyright complaints and takedowns
+
+If you own rights in material displayed by the Bot and want it removed, email
+**info@harkiratmangat.com** with:
+
+- identification of the work;
+- where it appears in the Bot;
+- your contact details;
+- a statement that you believe the use is unauthorised; and
+- a statement that your notice is accurate and that you are the rights holder or
+  authorised to act for them.
+
+**We action valid requests promptly** — usually within a few days — and we don't
+require a formal legal process to do so. We will also consider counter-notices.
+
+### 7.5 Yours
+
+You retain ownership of anything you send us. By sending feedback, ideas, bug
 reports, or suggestions, you grant us a perpetual, worldwide, royalty-free,
-irrevocable licence to use them without restriction, obligation, or compensation.
-Code contributions are governed by §5 of the [LICENSE](../../LICENSE) and the
-[contributing guide](../../CONTRIBUTING.md) instead.
+irrevocable licence to use them without restriction, obligation, or compensation,
+and you agree we owe you nothing for them. Code contributions are governed instead
+by §5 of the [LICENSE](../../LICENSE) and the
+[contributing guide](../../CONTRIBUTING.md).
+
+### 7.6 Independent development
+
+We may develop, acquire, or operate features, products, or services similar to
+anything you suggest. Nothing in these Terms restricts that, and submitting an idea
+gives you no rights in what we later build.
 
 ---
 
-## 8. Third-party services
+## 8. AI disclosure
+
+Portions of this project — its source code, documentation, and these legal
+documents — were **written with the assistance of AI tools**, principally Claude
+(Anthropic PBC), under human direction. Full disclosure: [NOTICE](../../NOTICE) §6.
+
+**No AI system processes your data.** The only AI in the running Bot is an
+administrator-only image-extraction command that never receives end-user data. See
+§5.1 of the [Privacy Policy](PRIVACY.md).
+
+---
+
+## 9. Third-party services
 
 The Bot runs on and interoperates with services we don't control:
 
 | Service | Role |
 |---|---|
 | **Discord Inc.** | The platform the Bot runs on |
-| **MongoDB Atlas** | Stores preferences and content data |
-| **Cloudinary** | Hosts and serves cached images |
-| **Google Cloud Platform** | Hosts the server; Vertex AI is used for admin-only image extraction |
+| **MongoDB Atlas** | Stores preferences and content data (Canada) |
+| **Cloudinary** | Hosts and serves cached game images |
+| **Google Cloud Platform** | Hosts the server; Vertex AI for admin-only image extraction |
 
 Your use of Discord is governed by Discord's own terms and privacy policy. We are
 not responsible for these services' availability, security, or acts. An outage or
 change at any of them can break the Bot without notice.
 
-Details of what data goes where: [Privacy Policy](PRIVACY.md) §5.
+**Discord Inc. is not a party to these Terms**, has no obligation or liability to
+you in connection with the Bot, and does not sponsor or endorse it. Any dispute
+about the Bot is between you and us.
+
+Data details: [Privacy Policy](PRIVACY.md) §5.
 
 ---
 
-## 9. Availability and changes
+## 10. Availability and changes
 
-**The Bot is provided on an "as is" and "as available" basis.** We make no
-promise about uptime.
+**The Bot is provided on an "as is" and "as available" basis.** We make no promise
+about uptime.
 
 We may, at any time and without notice or liability:
 
@@ -229,61 +364,84 @@ restarts, and deploys will happen.
 
 ---
 
-## 10. Suspension and termination
+## 11. Force majeure
 
-### 10.1 By you
-
-Remove the Bot from your Discord account at any time, through Discord's
-"Authorized Apps" settings. That stops all future interaction immediately.
-
-Removing it does **not** automatically delete your stored preferences — see §9 of
-the [Privacy Policy](PRIVACY.md) for how to request deletion.
-
-### 10.2 By us
-
-We may restrict, suspend, or permanently block your access, with or without
-notice, if we reasonably believe you have breached these Terms — particularly §6 —
-or if we need to in order to protect the Bot, its users, or ourselves. We may
-also do so if we discontinue the Bot.
-
-We have no obligation to give reasons, though we generally will if you ask in
-good faith.
-
-### 10.3 Survival
-
-Sections 5, 6, 7, 8, 11, 12, 13, 14, 15, and 16 survive termination.
+We are not liable for any failure or delay caused by events beyond our reasonable
+control — including acts of God, natural disaster, fire, flood, epidemic or
+pandemic, war, terrorism, civil unrest, strike, government action, change of law,
+power or internet failure, hosting or cloud-provider outage, denial-of-service
+attack, or **any act, omission, outage, policy change, suspension, or termination
+by Discord, GitHub, Google, MongoDB, Cloudinary, or Activision**.
 
 ---
 
-## 11. Disclaimer of warranties
+## 12. Export control and sanctions
+
+You must not use the Bot in violation of Canadian, US, EU, UK, or other applicable
+export-control or sanctions laws, and you represent that you are not a restricted
+party under any of them.
+
+---
+
+## 13. Suspension and termination
+
+### 13.1 By you
+
+Remove the Bot from your Discord account at any time via Discord's "Authorized
+Apps" settings. That stops all future interaction immediately.
+
+Removing it does **not** automatically delete your stored preferences — see §7.1
+and §9 of the [Privacy Policy](PRIVACY.md) for how to request deletion.
+
+### 13.2 By us
+
+We may restrict, suspend, or permanently block your access, with or without notice,
+if we reasonably believe you have breached these Terms — particularly §6 — or where
+necessary to protect the Bot, its users, or ourselves. We may also do so if we
+discontinue the Bot.
+
+We have no obligation to give reasons, though we generally will if you ask in good
+faith.
+
+### 13.3 Survival
+
+Sections 5, 6, 7, 8, 11, 12, 13.3, 14, 15, 16, 17, and 18 survive termination.
+
+---
+
+## 14. Disclaimer of warranties
 
 **TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE BOT IS PROVIDED "AS IS"
 AND "AS AVAILABLE" WITHOUT WARRANTY, CONDITION, OR REPRESENTATION OF ANY KIND,
-WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE.**
+WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE.**
 
 **WE EXPRESSLY DISCLAIM ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY,
 MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE,
 NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.**
 
-**WE DO NOT WARRANT THAT THE BOT WILL BE AVAILABLE, UNINTERRUPTED, TIMELY,
-SECURE, OR ERROR-FREE; THAT DEFECTS WILL BE CORRECTED; OR THAT ANY INFORMATION IT
-PROVIDES IS ACCURATE, CURRENT, OR COMPLETE.**
+**WE DO NOT WARRANT THAT THE BOT WILL BE AVAILABLE, UNINTERRUPTED, TIMELY, SECURE,
+OR ERROR-FREE; THAT DEFECTS WILL BE CORRECTED; THAT IT IS FREE OF HARMFUL
+COMPONENTS; OR THAT ANY INFORMATION IT PROVIDES IS ACCURATE, CURRENT, OR
+COMPLETE.**
 
-Some jurisdictions do not allow the exclusion of certain warranties. Where an
-exclusion above is not permitted, it applies to the minimum extent the law allows,
-and the rest of this section stands.
+**NO ADVICE OR INFORMATION OBTAINED FROM US CREATES ANY WARRANTY NOT EXPRESSLY
+STATED HERE.**
+
+Some jurisdictions don't allow the exclusion of certain warranties. Where an
+exclusion isn't permitted, it applies to the minimum extent the law allows and the
+rest of this section stands.
 
 ---
 
-## 12. Limitation of liability
+## 15. Limitation of liability
 
 **TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, WE WILL NOT BE LIABLE —
 WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF
 STATUTORY DUTY, OR ANY OTHER THEORY — FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT,
-REVENUE, DATA, GOODWILL, OPPORTUNITY, IN-GAME CURRENCY, IN-GAME ITEMS, ACCOUNT
-STANDING, OR ANTICIPATED SAVINGS, ARISING OUT OF OR RELATING TO THE BOT — EVEN IF
-WE HAVE BEEN ADVISED OF THE POSSIBILITY.**
+EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE,
+DATA, GOODWILL, OPPORTUNITY, IN-GAME CURRENCY, IN-GAME ITEMS, ACCOUNT STANDING, OR
+ANTICIPATED SAVINGS, ARISING OUT OF OR RELATING TO THE BOT — EVEN IF ADVISED OF THE
+POSSIBILITY AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.**
 
 **OUR TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THE BOT AND THESE
 TERMS WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE TWELVE
@@ -295,99 +453,142 @@ Since the Bot is free, (A) will normally be nil.
 **Nothing in these Terms excludes or limits our liability for death or personal
 injury caused by our negligence, for fraud or fraudulent misrepresentation, or for
 any other liability that cannot lawfully be excluded or limited.** If you are a
-consumer, this section does not affect your statutory rights.
+consumer, nothing here affects your statutory rights.
+
+**This allocation of risk is a fundamental basis of the bargain.** The Bot is
+provided free of charge, and we could not offer it at all on terms of unlimited
+liability.
 
 ---
 
-## 13. Indemnity
+## 16. Indemnity
 
 You will indemnify and hold us harmless from any claim, loss, liability, damage,
 cost, or expense (including reasonable legal fees) arising out of your use of the
-Bot, your breach of these Terms, or your violation of any law or third-party
-right.
+Bot, your breach of these Terms, or your violation of any law or third-party right.
 
-This does not apply to the extent the claim arises from our own breach,
-negligence, or wilful misconduct, and it does not apply where you are a consumer
-and the law prohibits it.
-
----
-
-## 14. Privacy
-
-Our handling of personal information is described in the
-[Privacy Policy](PRIVACY.md), which forms part of these Terms.
-
-In summary: we store your Discord user ID and your display preferences. **We
-cannot read your messages** — the Bot does not hold Discord's Message Content
-intent. We do not sell your data, and we run no advertising or analytics.
+This does not apply to the extent the claim arises from our own breach, negligence,
+or wilful misconduct, and it does not apply where you are a consumer and the law
+prohibits it.
 
 ---
 
-## 15. Governing law and disputes
+## 17. Governing law and disputes
 
-These Terms are governed by the laws of the **Province of Ontario** and the
-federal laws of Canada applicable in it, without regard to conflict-of-laws rules.
+### 17.1 Informal resolution first
 
-The courts of Ontario, sitting in Toronto, have exclusive jurisdiction over any
-dispute, and you attorn to that jurisdiction.
+**Before starting formal proceedings, please email info@harkiratmangat.com.** Most
+problems are solvable in one message, and we ask for 30 days to try.
+
+### 17.2 Governing law and venue
+
+These Terms are governed by the laws of the **Province of Ontario** and the federal
+laws of Canada applicable in it, without regard to conflict-of-laws rules. The
+United Nations Convention on Contracts for the International Sale of Goods does not
+apply.
+
+The courts of Ontario, sitting in Toronto, have exclusive jurisdiction, and you
+attorn to that jurisdiction and waive any objection based on venue or forum non
+conveniens.
 
 **If you are a consumer resident elsewhere**, this section does not deprive you of
-the protection of mandatory consumer-protection rules of your country of
-residence, or of the right to bring proceedings in your local courts where that
-right cannot lawfully be excluded.
+the protection of mandatory consumer-protection rules of your country of residence,
+or of the right to bring proceedings in your local courts where that right cannot
+lawfully be excluded.
 
-Before starting formal proceedings, please email info@harkiratmangat.com — most
-problems are solvable in one message.
+### 17.3 Class-action waiver
 
-Any claim must be brought within **one year** after it arose, except where a
+**To the maximum extent permitted by applicable law, you and we agree that each may
+bring claims against the other only in an individual capacity, and not as a
+plaintiff or class member in any purported class, collective, consolidated, or
+representative proceeding.**
+
+**This waiver does not apply where it is prohibited or unenforceable by law** —
+which includes claims by consumers under Ontario's *Consumer Protection Act, 2002*,
+under Quebec law, and under equivalent consumer-protection statutes elsewhere. In
+those cases the waiver has no effect on your rights, and the rest of this section
+continues to apply.
+
+We have deliberately **not** included a mandatory arbitration clause. Requiring an
+individual to arbitrate a small claim can be unconscionable and unenforceable, and
+we would rather have terms that work than terms that look strong and fail.
+
+### 17.4 Limitation period
+
+Any claim must be commenced within **one year** after it arose, except where a
 longer period is required by law.
 
 ---
 
-## 16. General
+## 18. General
 
-**Entire agreement.** These Terms, the Privacy Policy, and the LICENSE are the
-entire agreement between you and us regarding the Bot.
+**Entire agreement.** These Terms, the Privacy Policy, and (for source code) the
+LICENSE are the entire agreement between you and us regarding the Bot, superseding
+all prior understandings. Nothing here limits liability for fraudulent
+misrepresentation.
 
 **Severability.** If a provision is held unenforceable, it is modified to the
-minimum extent needed to make it enforceable, or severed, and the rest continues.
+minimum extent needed to make it enforceable, or severed, and the rest continues in
+full force. This applies with particular force to §§14, 15, and 17.3, each of which
+is intended to be given the maximum effect the law permits.
 
-**No waiver.** Not enforcing a right on one occasion does not waive it.
+**No waiver.** Not enforcing a right on one occasion doesn't waive it.
 
 **Assignment.** You may not assign these Terms. We may assign them to a successor
 in connection with a transfer of the Bot, on notice.
 
-**No third-party beneficiaries.** No one other than you and us has rights under
-these Terms.
+**No third-party beneficiaries.** Other than as stated in §9 regarding Discord, no
+one but you and us has rights under these Terms.
 
-**Language.** These Terms are drafted in English; the English version governs.
+**Notices.** We may contact you through the Bot, the project's Discord presence, the
+GitHub repository, or any address you've used to contact us. Notices to us go to
+info@harkiratmangat.com.
+
+**Relationship.** These Terms create no employment, agency, partnership, or joint
+venture between us.
+
+**Headings and summaries.** For convenience only; they have no legal effect.
+
+**Language.** Drafted in English; the English version governs. *Les parties ont
+exigé que la présente convention soit rédigée en anglais.*
 
 ---
 
-## 17. Changes to these Terms
+## 19. Changes to these Terms
 
 We may update these Terms. When we do:
 
 - The **effective date and version** at the top change.
-- The change is recorded in the repository's git history, which is public.
-- For **material** changes, we will make reasonable efforts to give notice —
-  typically through the project's Discord presence, a repository release note, or
-  a notice in the Bot itself.
+- The change is recorded in the repository's public git history.
+- For **material** changes we will make reasonable efforts to give notice —
+  typically through the project's Discord presence, a repository release note, or a
+  notice in the Bot itself.
 
-Continued use after a change takes effect means you accept the updated Terms. If
-you don't accept them, remove the Bot.
+Continued use after a change takes effect means you accept the updated Terms. If you
+don't accept them, remove the Bot.
 
 ---
 
-## 18. Contact
+## 20. Contact
 
 **Harkirat Mangat ("dior")**
 Ontario, Canada
 📧 info@harkiratmangat.com
 🔗 https://github.com/HarkiratMangat/diors-builds
 
-For security reports, see §4.11 of the [LICENSE](../../LICENSE) — email, don't
-open a public issue.
+For security reports, email — don't open a public issue. See §4.11 of the
+[LICENSE](../../LICENSE).
+
+---
+
+## Appendix — Change history
+
+| Version | Date | Change |
+|---|---|---|
+| **1.0** | 28 July 2026 | Initial terms. |
+
+Future revisions will be listed here. The complete drafting history is public in
+the repository's git log.
 
 ---
 
