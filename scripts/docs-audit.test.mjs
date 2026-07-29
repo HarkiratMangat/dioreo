@@ -102,7 +102,8 @@ const makeFixture = () => {
   write(
     root,
     "docs/DEVLOG.md",
-    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing\n\n**Part B — Lessons Ledger**\n\n## 2026-07-01 — a thing\n\nbody\n"
+    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing\n\n**Part B — Lessons Ledger**\n\n## 2026-07-01 — a thing\n\nbody\n\n" +
+      "# Part B\n\nthematic takeaways, no dated entries\n"
   );
   write(root, "docs/db-deferred-list.md", "# Deferred\n\n## 🗂️ Queued\n\n- `[P2 · S]` **A queued item** that is still open.\n");
   // Long enough to clear archive-conservation's 40-char churn threshold, which exists so a rewrap or
@@ -279,6 +280,25 @@ proves("a DEVLOG body heading missing from its TOC", "devlog-toc", (root) => {
   );
 });
 
+proves("a dated entry sitting after the Part B marker", "devlog-parts", (root) => {
+  write(
+    root,
+    "docs/DEVLOG.md",
+    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing\n\n**Part B — Lessons Ledger**\n\n" +
+      "## 2026-07-01 — a thing\n\nbody\n\n# Part B\n\nthematic takeaways\n\n" +
+      "## 2026-07-02 — an append-to-EOF straggler\n\nbody\n"
+  );
+});
+
+provesSilent("a dated entry that sits before the Part B marker", "devlog-parts", (root) => {
+  write(
+    root,
+    "docs/DEVLOG.md",
+    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing\n\n**Part B — Lessons Ledger**\n\n" +
+      "## 2026-07-01 — a thing\n\nbody\n\n# Part B\n\nthematic takeaways, no dated entries\n"
+  );
+});
+
 proves("closed + ℋ-confirmed intake left in the notes scratchpad", "notes-sweep", (root) => {
   write(
     root,
@@ -372,6 +392,14 @@ proves("a hook delegating to docs-audit with an unknown check id", "hook-integri
 
 proves("the DEVLOG Part A/B markers being renamed", "devlog-toc", (root) => {
   write(root, "docs/DEVLOG.md", "# DEVLOG\n\n**Part A - The Journey**\n- 2026-07-01 — a thing\n\n**Part B - Lessons**\n\n## 2026-07-01 — a thing\n\nbody\n");
+});
+
+proves("the DEVLOG's real \"# Part B\" heading going missing", "devlog-parts", (root) => {
+  write(
+    root,
+    "docs/DEVLOG.md",
+    "# DEVLOG\n\n**Part A — The Journey**\n- 2026-07-01 — a thing\n\n**Part B — Lessons Ledger**\n\n## 2026-07-01 — a thing\n\nbody\n"
+  );
 });
 
 proves("the notes-file \"## Questions\" heading being renamed", "notes-sweep", (root) => {

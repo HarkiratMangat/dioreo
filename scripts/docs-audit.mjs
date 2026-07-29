@@ -564,6 +564,37 @@ check(
   }
 );
 
+/* ---------------------------- devlog-parts --------------------------- */
+check(
+  "devlog-parts",
+  "ERROR",
+  "no dated DEVLOG entry sits inside Part B (the thematic ledger claims to hold none)",
+  () => {
+    const text = read("docs/DEVLOG.md");
+    if (text === null) return [];
+    const lines = text.split("\n");
+    const partB = lines.findIndex((l) => l.startsWith("# Part B"));
+    if (partB < 0) {
+      return anchorMissing(
+        "docs/DEVLOG.md",
+        'a "# Part B" heading marking the start of the thematic ledger',
+        "A dated entry appended after Part B (the append-to-EOF habit that caused this check to exist) " +
+          "would no longer be caught."
+      );
+    }
+    const after = lines.slice(partB + 1);
+    const out = after
+      .map((l, i) => ({ l, n: partB + 1 + i + 1 }))
+      .filter(({ l }) => /^## 20\d{2}-/.test(l))
+      .map(({ l, n }) => ({
+        msg: `docs/DEVLOG.md:${n} is a dated entry ("${l.replace(/^## /, "")}") sitting after the ` +
+          `"# Part B" marker. Part B is thematic only — a dated entry belongs in Part A, in chronological ` +
+          `order, not appended after the ledger.`,
+      }));
+    return { findings: out, examined: after.length };
+  }
+);
+
 /* ------------------------ devlog-version-cite ----------------------- */
 check(
   "devlog-version-cite",

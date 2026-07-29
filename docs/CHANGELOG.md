@@ -181,7 +181,35 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.42.1 — 2026-07-29 11:44 EDT (#53) — A local ref is not a remote state
+## v2.42.2 — 2026-07-29 12:30 EDT (#54) — Nineteen entries the table of contents never lied about
+**Docs + tooling — no bot behaviour change.**
+- **Moved 19 misplaced DEVLOG journal entries back into Part A.** An append-to-EOF habit had landed
+  them physically below the `# Part B — Lessons Ledger` header — whose own text claims "no dated
+  entries" — even though the table of contents already listed all 19 under Part A, in the right order.
+  The existing `devlog-toc` check couldn't see this: it compares the TOC against every dated heading in
+  the file regardless of which Part physically holds it, so a misplaced entry passed as long as the TOC
+  ordering agreed. Re-derived the true boundary from scratch after an earlier attempt (in a prior
+  session) mistook a dated entry's own `### Lessons` subsection for a real Part B section header and
+  put the cut nine entries too late. The block move is contiguous and needed no resequencing — the
+  chronology already lined up exactly at the seam.
+- **Added `devlog-parts` (ERROR) to `scripts/docs-audit.mjs`**, closing the gap `devlog-toc` had: no
+  dated `## 20YY-` heading may ever appear after the `# Part B` marker. Uses the shared `anchorMissing()`
+  helper so a renamed marker fails loudly instead of silently no-op'ing, same as `devlog-toc`'s own
+  anchors. `scripts/docs-audit.test.mjs` gained the required broken/valid pair plus an anchor-missing
+  case (41 → 43 assertions); the baseline fixture's `docs/DEVLOG.md` needed a real `# Part B` heading
+  added so the new check wasn't reporting a vacuous pass against it.
+- **Closed out the three standing `docs-audit` warnings from v2.42.1.** `root-docs`'s VACUOUS PASS is
+  confirmed still correct — it self-corrects once `LICENSE`/`NOTICE` land on `main` — and stays tracked
+  in `docs/db-deferred-list.md`. The `xref` warning for `memory-migration-handoff.md` is confirmed real
+  but expected: that file lives in gitignored `local/` (per `docs/db-deferred-list.md`, "now-complete"),
+  which a fresh working tree doesn't carry — the same gitignored-file caveat the audit already documents
+  for itself, not a stale pointer. `memory-index`'s warning about `project_licensing_and_legal_docs.md`
+  is left for Harkirat — it's his in-flight legal/licensing work, not something this session should
+  resolve on his behalf.
+
+---
+
+## v2.42.1 — 2026-07-29 11:44 EDT (#53 · `e2d74ac`) — A local ref is not a remote state
 **Docs only — no code change, no bot behaviour change.**
 - **Brought the stale local `main` / `v3-pre-release` refs current without a checkout.** They had been
   left behind after the v2.42.0 merge because the working tree was on another session's branch and
