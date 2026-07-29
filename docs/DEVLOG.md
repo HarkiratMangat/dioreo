@@ -1997,153 +1997,6 @@ deploy — the VM is still on v2.33.0. Merge did not deploy.
 
 ---
 
-
-# Part B — Lessons Ledger (thematic)
-
-Durable, reusable takeaways. Each is a compressed version of a story in Part A.
-
-### War stories / root causes
-- **Multiple instances of a single-token bot collide invisibly.** Discord routes each interaction to a
-  random connected instance; they race `deferReply` (→ 10062/40060) and can render different code
-  versions per click. Erratic *inconsistency* is the tell. A `git push` doesn't stop local processes.
-- **Tab is an IFS *whitespace* char, so bash `read` silently collapses empty fields.** Parsing
-  tab-separated `jq` output with `IFS=$'\t' read -r A B C` shifts every field left when any earlier one
-  is empty — no error, just wrong data in the wrong variable. Use a non-whitespace delimiter (`\x1f`)
-  when empties are possible. Found in the status line (2026-07-15); the happy-path tests all passed.
-- **Synchronous CPU work starves the event loop on a 0.1-CPU tier.** k-means with no `await` blocked
-  ACKs for *unrelated* commands. Fix by doing *less* work (lazy extraction) and *yielding* (`setImmediate`).
-- **Hash-keyed caches don't invalidate on an algorithm change** — only when the source asset changes.
-  Any logic/shape change to a cached computation needs a manual, **scoped** cache clear (never unscoped).
-- **discord.js: a `ModalSubmitInteraction` can't `showModal()`** (Discord disallows modal-from-modal) —
-  route single-match Edit through an intermediate button instead.
-- **`Object.assign` drops non-enumerable props** — discord.js sets `client`/`token` non-enumerably, so
-  hand-rolled synthetic interactions silently lost them and crashed. Use the shared builder.
-- **`client.on('error')` must be registered** — discord.js constructs with `captureRejections: true`, so
-  a rejected async listener becomes an `error` event on the client that crashes the process *past* the
-  try/catch if unhandled.
-- **A bare `return interaction.reply(...)` in a catch escapes the enclosing try** — the try has already
-  exited by the time that promise rejects. Always `await` reply/editReply/followUp in error branches.
-- **Alpha-transparency in pixel sampling** — transparent padding (0,0,0) was counted as real black on
-  nameplate/decoration until the sampling loops skipped `alpha === 0`.
-- **A handler placed in the wrong interaction-type branch is dead code, silently** — the loadout
-  "Browse other builds" select handler sat inside `isButton()` and never fired; only a trace log
-  revealed it. Verify a handler is even *reached* before theorizing about its logic.
-- **`sendV2Payload` must send `attachments: []` when uploading new files** — else Discord keeps the old
-  attachments and swaps only text/components (stale swatches).
-- **Never log a raw Cloudinary error object** — its rejected-promise shape carries the account's live
-  API key+secret. Sanitize via dedicated helpers.
-
-### Walk-backs & reversals (things tried, then reverted — and why)
-- **Blank-emoji vertical centering** of a Section heading — Components V2 has no vertical-align; looked
-  wrong on mobile, reverted. Still unsolved, accepted as cosmetic.
-- **Nameplate `.webm` / animated decoration** — Discord requires a manual tap to play inline; reverted to
-  static. The real fix (APNG→GIF per render) was rejected as not worth per-render latency.
-- **Accent extraction: flat average → saturation-weighted → vivid hue-cluster.** Each revision was found
-  wrong by testing against Harkirat's *real* avatar, not a hypothetical.
-- **Palette: synthetic 6-swatch model → real k-means** — the categories were "mostly useless" vs real
-  palette tools; and the naive "top-N by population" alternative was tested first and found *worse*
-  (4 near-identical off-whites), which justified the k-means rebuild with evidence.
-- **`?size=512` on the collectibles CDN** — assumed it would resize the nameplate; verified it's ignored.
-  Fell back to fetch+resize ourselves.
-- **Heading size H2 → H3 → H2** and **`private` → `hidden`** option rename, **`CATEGORY_SORT_ORDER`**
-  added then dropped for plain alphabetical — small reversals, all driven by Harkirat's direct feedback.
-
-### Design decisions & the "why"
-- **Option A — one shared visibility toggle** for all seasonal commands, not five.
-- **Admin dates forced to UTC-0** (`chrono` with `timezone: 0`) — a past DMZ "1 hour off" bug traced to
-  ambient-timezone parsing.
-- **`chrono` defaults a bare date to NOON** — `/timestamp` manually zeroes it to midnight.
-- **Bulk imports REPLACE, not append** — a paste is the complete current list; re-running fixes typos
-  without duplicating.
-- **Single-token, user-installed-only** — the bot has zero standing guild permissions; it can only
-  answer via the interaction-response webhook. Any raw channel POST fails `50001` (this bit "Share
-  Publicly").
-- **Draw-price totals computed from raw pull arrays**, never hand-typed — repeated arithmetic typos
-  forced this; a total can no longer drift from its own draws.
-- **Three-part `vMAJOR.MODERATE.MINOR` versioning** — the old flat-decimal scheme broke once MODERATE hit
-  double digits.
-
-### Platform / library gotchas
-- **Components V2:** selects/buttons still need an Action Row even inside a Container; **40 components
-  max, counted recursively** (a real production crash); buttons can't have hex colors (only Container
-  `accent_color` can); a button `label` won't render an emoji mention — use the `emoji` field.
-- **Media Gallery has no width control**; the **collectibles CDN ignores `?size=`** (but the avatar/
-  banner CDN honors it).
-- **Jimp can't decode APNG** — animated decorations need an `ffmpeg` still-frame first.
-- **Slash-command registration belongs to the APPLICATION, not the process, and there is no UI for it.**
-  Killing a bot leaves its commands in the `/` picker forever (they just time out with "did not
-  respond"); only another API call removes them. The Developer Portal has no page for this at all —
-  hence `scripts/devCommands.js`. Same reason a *user-installed* app's stale commands are extra annoying:
-  they follow the user into every server and DM, not one guild.
-- **Cloudinary has no native per-asset TTL** — expiry is something the bot does on a schedule.
-- **Render free tier = 0.1 shared CPU**, no `suspend` in the CLI (REST API only); **Railway free tier
-  blocks CLI deploys 8am–8pm ET** and isn't git-connected.
-
-### Process lessons / tips (for us and anyone after us)
-- **When the environment and the project docs disagree about a path, trust the project docs and verify
-  both.** The harness pointed at a memory directory that didn't exist while the real 26-file store sat
-  at the path CLAUDE.md named. Following the environment blindly would have forked memory into two
-  half-empty stores, failing silently and only showing up much later as inexplicable amnesia.
-- **A convention documented but never implemented is worse than no convention.** CHANGELOG.md promised
-  an `Unreleased` section at the bottom for months; it didn't exist, so committed-but-unpushed work had
-  nowhere to go. Check that a rule you're citing is actually *real* in the file before relying on it.
-- **Never `2>/dev/null` the loading of your own safety rails.** The SessionStart hook silently injected
-  an empty string for an unknown number of sessions after the repo moved — every non-negotiable it
-  enforces was simply never delivered, and nothing errored. If a mechanism's job is to *deliver rules*,
-  its failure mode must be loud, and it should resolve paths dynamically (`$CLAUDE_PROJECT_DIR`) rather
-  than hardcoding a location that can move underneath it.
-- **"Is it documented?" and "will it actually fire?" are different questions.** A rule written into a
-  linked memory file only works if something reads it. The auto-loaded file is the only guaranteed
-  delivery path — verify what a *fresh* session actually receives, don't infer it from where you wrote it.
-- **Test the degenerate input, not just the populated one.** Absent/null/zero fields are where parsing
-  bugs live. A status line whose happy path is perfect but which misreports the model when one field is
-  missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.
-- **Verify the fix actually *works*** — boot-test, and for a live interaction get a real repro or add a
-  cheap trace point before theorizing.
-- **Check sibling/reference code before guessing** from prose or screenshots — the pattern is usually
-  already in the codebase.
-- **Test the naive alternative first** — a bad result there justifies a bigger rebuild with evidence.
-- **When behavior is erratic, suspect multiple instances FIRST** (`ps aux`, Railway, Render) before
-  code/cache theories.
-- **"Document" includes the CHANGELOG** — and the changelog is the one that keeps getting skipped.
-  Update all three record layers at push time.
-- **Kill stray local instances as part of every push** — only the deployed instance should be live.
-- **A project's own `.env` is in-scope for a credential; a personal `~/.` config file is not.**
-- **Be usage-conscious** — batch tool calls, don't re-read what's already in context.
-- **Mark chat chapters at phase shifts** — can't be hook-automated, has to be done deliberately.
-- **A split/move/rename is done when nothing is LEFT BEHIND, not when the obvious block has moved.**
-  Four checks before calling it: nothing project-specific still in the source, every cross-reference
-  updated, the new file stands alone (its legend came with it), and prose describing the old layout
-  rewritten. (2026-07-25 21:43 EDT, `feedback_no_half_measures_on_reorgs`.)
-- **A file rename IS a code change when something parses the file.** The grep surface is docs + rules +
-  **`.claude/settings*.json` hooks** + scripts + memory + *other projects'* memory dirs. A `SessionStart`
-  hook here was anchored to a `# Graveyard` heading an archive split removed — it would have failed
-  silently, never loudly. Dry-run the hook after touching what it reads.
-- **Deferred items containing a measurement rot; re-measure before you re-file.** Two examples the same
-  day: a reminder still claiming CHANGELOG/DEVLOG were "~730 lines each, not there yet" when they were
-  1,366 and 1,792, and a `[P2 now → P0 ~2026-07-24]` self-escalating tag whose trigger date had quietly
-  passed. The note freezes; the world doesn't.
-
-### Concerns / open risks
-- **`ffmpeg` is unverified on Render's container** — decoration extraction works locally; if it breaks in
-  prod *only*, check for ffmpeg first.
-- **Render free-tier CPU ceiling** — the color feature is right at the edge of it; the lazy-extraction
-  work bought headroom, but the last-resort levers (worker threads, plan bump) are documented.
-- **Deferred dependabot vulnerabilities** — undici/discord.js chain + xlsx (dead at runtime); tracked,
-  decided not worth acting on yet.
-- **Changelog-drift habit** — recurred across multiple sessions; now guarded by a self-check callout, but
-  worth staying honest about.
-
-### Collaboration insights
-- **Systematic debugging beat guess-and-check repeatedly** — the session above is the clearest case:
-  four wrong "the bug is X" answers before the real one, each discarded by *evidence*, not vibes.
-- **Screenshot/real-device review caught what logs didn't** — the "different version per click" report,
-  and most of the walk-backs, came from Harkirat actually *looking* on mobile.
-- **Confirm before push, every time** — approval doesn't carry over; and "push" means the whole cycle
-  (deploy + verify live + only one instance running), not just `git push`.
-- **Honest reporting builds trust** — recording the 0%-benefit convergence result, the misread Railway
-  logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.
-
 ## 2026-07-27 08:02 EDT — A "parsing bug" that was actually a display/design mismatch
 
 Harkirat typed `2026-07-22, 7:20 AM` (his own local time) into a patch note's release date field and
@@ -3183,3 +3036,152 @@ A "behind" marker in `git branch -vv` is about your clone, not about the project
 against *each other* before reporting drift. And when a safety constraint blocks the obvious command,
 ask whether it blocks the **goal** or just that one command. Plumbing usually has a way through, and
 "I'd have to do the unsafe thing" is a claim worth testing before it becomes a reason.
+
+---
+
+
+# Part B — Lessons Ledger (thematic)
+
+Durable, reusable takeaways. Each is a compressed version of a story in Part A.
+
+### War stories / root causes
+- **Multiple instances of a single-token bot collide invisibly.** Discord routes each interaction to a
+  random connected instance; they race `deferReply` (→ 10062/40060) and can render different code
+  versions per click. Erratic *inconsistency* is the tell. A `git push` doesn't stop local processes.
+- **Tab is an IFS *whitespace* char, so bash `read` silently collapses empty fields.** Parsing
+  tab-separated `jq` output with `IFS=$'\t' read -r A B C` shifts every field left when any earlier one
+  is empty — no error, just wrong data in the wrong variable. Use a non-whitespace delimiter (`\x1f`)
+  when empties are possible. Found in the status line (2026-07-15); the happy-path tests all passed.
+- **Synchronous CPU work starves the event loop on a 0.1-CPU tier.** k-means with no `await` blocked
+  ACKs for *unrelated* commands. Fix by doing *less* work (lazy extraction) and *yielding* (`setImmediate`).
+- **Hash-keyed caches don't invalidate on an algorithm change** — only when the source asset changes.
+  Any logic/shape change to a cached computation needs a manual, **scoped** cache clear (never unscoped).
+- **discord.js: a `ModalSubmitInteraction` can't `showModal()`** (Discord disallows modal-from-modal) —
+  route single-match Edit through an intermediate button instead.
+- **`Object.assign` drops non-enumerable props** — discord.js sets `client`/`token` non-enumerably, so
+  hand-rolled synthetic interactions silently lost them and crashed. Use the shared builder.
+- **`client.on('error')` must be registered** — discord.js constructs with `captureRejections: true`, so
+  a rejected async listener becomes an `error` event on the client that crashes the process *past* the
+  try/catch if unhandled.
+- **A bare `return interaction.reply(...)` in a catch escapes the enclosing try** — the try has already
+  exited by the time that promise rejects. Always `await` reply/editReply/followUp in error branches.
+- **Alpha-transparency in pixel sampling** — transparent padding (0,0,0) was counted as real black on
+  nameplate/decoration until the sampling loops skipped `alpha === 0`.
+- **A handler placed in the wrong interaction-type branch is dead code, silently** — the loadout
+  "Browse other builds" select handler sat inside `isButton()` and never fired; only a trace log
+  revealed it. Verify a handler is even *reached* before theorizing about its logic.
+- **`sendV2Payload` must send `attachments: []` when uploading new files** — else Discord keeps the old
+  attachments and swaps only text/components (stale swatches).
+- **Never log a raw Cloudinary error object** — its rejected-promise shape carries the account's live
+  API key+secret. Sanitize via dedicated helpers.
+
+### Walk-backs & reversals (things tried, then reverted — and why)
+- **Blank-emoji vertical centering** of a Section heading — Components V2 has no vertical-align; looked
+  wrong on mobile, reverted. Still unsolved, accepted as cosmetic.
+- **Nameplate `.webm` / animated decoration** — Discord requires a manual tap to play inline; reverted to
+  static. The real fix (APNG→GIF per render) was rejected as not worth per-render latency.
+- **Accent extraction: flat average → saturation-weighted → vivid hue-cluster.** Each revision was found
+  wrong by testing against Harkirat's *real* avatar, not a hypothetical.
+- **Palette: synthetic 6-swatch model → real k-means** — the categories were "mostly useless" vs real
+  palette tools; and the naive "top-N by population" alternative was tested first and found *worse*
+  (4 near-identical off-whites), which justified the k-means rebuild with evidence.
+- **`?size=512` on the collectibles CDN** — assumed it would resize the nameplate; verified it's ignored.
+  Fell back to fetch+resize ourselves.
+- **Heading size H2 → H3 → H2** and **`private` → `hidden`** option rename, **`CATEGORY_SORT_ORDER`**
+  added then dropped for plain alphabetical — small reversals, all driven by Harkirat's direct feedback.
+
+### Design decisions & the "why"
+- **Option A — one shared visibility toggle** for all seasonal commands, not five.
+- **Admin dates forced to UTC-0** (`chrono` with `timezone: 0`) — a past DMZ "1 hour off" bug traced to
+  ambient-timezone parsing.
+- **`chrono` defaults a bare date to NOON** — `/timestamp` manually zeroes it to midnight.
+- **Bulk imports REPLACE, not append** — a paste is the complete current list; re-running fixes typos
+  without duplicating.
+- **Single-token, user-installed-only** — the bot has zero standing guild permissions; it can only
+  answer via the interaction-response webhook. Any raw channel POST fails `50001` (this bit "Share
+  Publicly").
+- **Draw-price totals computed from raw pull arrays**, never hand-typed — repeated arithmetic typos
+  forced this; a total can no longer drift from its own draws.
+- **Three-part `vMAJOR.MODERATE.MINOR` versioning** — the old flat-decimal scheme broke once MODERATE hit
+  double digits.
+
+### Platform / library gotchas
+- **Components V2:** selects/buttons still need an Action Row even inside a Container; **40 components
+  max, counted recursively** (a real production crash); buttons can't have hex colors (only Container
+  `accent_color` can); a button `label` won't render an emoji mention — use the `emoji` field.
+- **Media Gallery has no width control**; the **collectibles CDN ignores `?size=`** (but the avatar/
+  banner CDN honors it).
+- **Jimp can't decode APNG** — animated decorations need an `ffmpeg` still-frame first.
+- **Slash-command registration belongs to the APPLICATION, not the process, and there is no UI for it.**
+  Killing a bot leaves its commands in the `/` picker forever (they just time out with "did not
+  respond"); only another API call removes them. The Developer Portal has no page for this at all —
+  hence `scripts/devCommands.js`. Same reason a *user-installed* app's stale commands are extra annoying:
+  they follow the user into every server and DM, not one guild.
+- **Cloudinary has no native per-asset TTL** — expiry is something the bot does on a schedule.
+- **Render free tier = 0.1 shared CPU**, no `suspend` in the CLI (REST API only); **Railway free tier
+  blocks CLI deploys 8am–8pm ET** and isn't git-connected.
+
+### Process lessons / tips (for us and anyone after us)
+- **When the environment and the project docs disagree about a path, trust the project docs and verify
+  both.** The harness pointed at a memory directory that didn't exist while the real 26-file store sat
+  at the path CLAUDE.md named. Following the environment blindly would have forked memory into two
+  half-empty stores, failing silently and only showing up much later as inexplicable amnesia.
+- **A convention documented but never implemented is worse than no convention.** CHANGELOG.md promised
+  an `Unreleased` section at the bottom for months; it didn't exist, so committed-but-unpushed work had
+  nowhere to go. Check that a rule you're citing is actually *real* in the file before relying on it.
+- **Never `2>/dev/null` the loading of your own safety rails.** The SessionStart hook silently injected
+  an empty string for an unknown number of sessions after the repo moved — every non-negotiable it
+  enforces was simply never delivered, and nothing errored. If a mechanism's job is to *deliver rules*,
+  its failure mode must be loud, and it should resolve paths dynamically (`$CLAUDE_PROJECT_DIR`) rather
+  than hardcoding a location that can move underneath it.
+- **"Is it documented?" and "will it actually fire?" are different questions.** A rule written into a
+  linked memory file only works if something reads it. The auto-loaded file is the only guaranteed
+  delivery path — verify what a *fresh* session actually receives, don't infer it from where you wrote it.
+- **Test the degenerate input, not just the populated one.** Absent/null/zero fields are where parsing
+  bugs live. A status line whose happy path is perfect but which misreports the model when one field is
+  missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.
+- **Verify the fix actually *works*** — boot-test, and for a live interaction get a real repro or add a
+  cheap trace point before theorizing.
+- **Check sibling/reference code before guessing** from prose or screenshots — the pattern is usually
+  already in the codebase.
+- **Test the naive alternative first** — a bad result there justifies a bigger rebuild with evidence.
+- **When behavior is erratic, suspect multiple instances FIRST** (`ps aux`, Railway, Render) before
+  code/cache theories.
+- **"Document" includes the CHANGELOG** — and the changelog is the one that keeps getting skipped.
+  Update all three record layers at push time.
+- **Kill stray local instances as part of every push** — only the deployed instance should be live.
+- **A project's own `.env` is in-scope for a credential; a personal `~/.` config file is not.**
+- **Be usage-conscious** — batch tool calls, don't re-read what's already in context.
+- **Mark chat chapters at phase shifts** — can't be hook-automated, has to be done deliberately.
+- **A split/move/rename is done when nothing is LEFT BEHIND, not when the obvious block has moved.**
+  Four checks before calling it: nothing project-specific still in the source, every cross-reference
+  updated, the new file stands alone (its legend came with it), and prose describing the old layout
+  rewritten. (2026-07-25 21:43 EDT, `feedback_no_half_measures_on_reorgs`.)
+- **A file rename IS a code change when something parses the file.** The grep surface is docs + rules +
+  **`.claude/settings*.json` hooks** + scripts + memory + *other projects'* memory dirs. A `SessionStart`
+  hook here was anchored to a `# Graveyard` heading an archive split removed — it would have failed
+  silently, never loudly. Dry-run the hook after touching what it reads.
+- **Deferred items containing a measurement rot; re-measure before you re-file.** Two examples the same
+  day: a reminder still claiming CHANGELOG/DEVLOG were "~730 lines each, not there yet" when they were
+  1,366 and 1,792, and a `[P2 now → P0 ~2026-07-24]` self-escalating tag whose trigger date had quietly
+  passed. The note freezes; the world doesn't.
+
+### Concerns / open risks
+- **`ffmpeg` is unverified on Render's container** — decoration extraction works locally; if it breaks in
+  prod *only*, check for ffmpeg first.
+- **Render free-tier CPU ceiling** — the color feature is right at the edge of it; the lazy-extraction
+  work bought headroom, but the last-resort levers (worker threads, plan bump) are documented.
+- **Deferred dependabot vulnerabilities** — undici/discord.js chain + xlsx (dead at runtime); tracked,
+  decided not worth acting on yet.
+- **Changelog-drift habit** — recurred across multiple sessions; now guarded by a self-check callout, but
+  worth staying honest about.
+
+### Collaboration insights
+- **Systematic debugging beat guess-and-check repeatedly** — the session above is the clearest case:
+  four wrong "the bug is X" answers before the real one, each discarded by *evidence*, not vibes.
+- **Screenshot/real-device review caught what logs didn't** — the "different version per click" report,
+  and most of the walk-backs, came from Harkirat actually *looking* on mobile.
+- **Confirm before push, every time** — approval doesn't carry over; and "push" means the whole cycle
+  (deploy + verify live + only one instance running), not just `git push`.
+- **Honest reporting builds trust** — recording the 0%-benefit convergence result, the misread Railway
+  logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.
