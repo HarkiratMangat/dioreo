@@ -88,6 +88,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 17:35 EDT — A table of contents you can't actually search
 - 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
 - 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+- 2026-07-28 21:00 EDT — "Not checkable" was never true
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -2632,6 +2633,7 @@ to the false-completion failure that started the whole thread.
 ---
 
 ## 2026-07-28 15:52 EDT — The error counter that could never have been right
+*Released as `v2.41.0`.*
 
 The ticket read like polish. Put timestamps on log lines, say which commit produced them, add time-window
 arguments, bump a default, make the standalone output less barebones, "expand the error tracker." Five
@@ -2714,6 +2716,7 @@ on every run.
 ---
 
 ## 2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"
+*Released as `v2.41.1`.*
 
 The v2.41.0 work was finished, tested, and staged to push. Harkirat's response was not about the code:
 
@@ -2775,6 +2778,7 @@ rather than writing a fourth memory file that will also not fire.
 ---
 
 ## 2026-07-28 17:35 EDT — A table of contents you can't actually search
+*Released as `v2.41.2`.*
 
 Harkirat, reading the DEVLOG changes:
 
@@ -2822,6 +2826,7 @@ thing to design hardest is not what it catches. It's what it must leave alone.
 ---
 
 ## 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
+*Released as `v2.41.3`.*
 
 Harkirat asked me to check whether `dior-cli` had broken, since it shells out to `scripts/vmstatus.sh`.
 Checking that meant actually timing the rewritten panel, which nobody had done. **10.4 seconds.**
@@ -2851,6 +2856,7 @@ say you are guessing. Writing "~" in front of a number you made up is not hedgin
 ---
 
 ## 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
+*Released as `v2.41.4`.*
 
 Harkirat asked whether I'd checked the *rest* of `dior-cli`, not just the files mentioning `vmstatus`.
 Fair — I'd grepped for references to the thing I changed rather than for the whole surface where the CLI
@@ -2890,3 +2896,220 @@ That gap is worth naming plainly rather than papering over: one class of miss is
 broader habit — asserting without checking — is not, and won't be until each specific instance of it gets
 its own check. The cross-session notice now tells that other session to verify its own work rather than
 take my word for it, which is the only honest thing to put there.
+---
+
+## 2026-07-28 21:00 EDT — "Not checkable" was never true
+*Released as `v2.42.0`.*
+
+Harkirat's objection was aimed at a single sentence I'd written:
+
+> *"As for the memory and notes file, im not satisfied because we currently have a hook or something
+> which checks the notes file at session start and was designed to actively keep it updated and not
+> stale. Not to mention, you didn't say anything about the deferred items files or the
+> graveyard/resolved items, or the readme."*
+
+He was right on both counts, and the second one is the more embarrassing. I had shipped a hook whose
+own message declared items 6 (memory) and 7 (notes file) **"NOT CHECKED BY ANY HOOK"**, and written
+the same claim into `docs/README.md` — while a `SessionStart` hook had been counting the notes file's
+open items the whole time. I'd looked at the merge-time hooks, not found a notes check there, and
+concluded none existed anywhere.
+
+### The diagnosis, which turned out to generalize
+
+The gaps weren't one problem. They were three shapes, and I'd mislabelled all of them "not checkable":
+
+**Right check, wrong moment.** The notes file *is* checked — at session start. That is the moment of
+**discovery**, when nothing has been filed yet and there is nothing to compare against. It is never
+re-checked at the moment of **closure**. This is the exact shape of the DEVLOG failure measured at
+8/22 two releases earlier: a condition evaluated precisely when it cannot be acted on. I had fixed
+that one and walked straight past its twin next door.
+
+**Invariant never stated.** The deferred lists, graveyard, and resolved-list had a perfectly
+mechanical rule nobody had written down: **an item leaves an active list only by appearing in an
+archive.** Conservation. A shrink in one file with no matching growth in the other is either an
+unswept item or a *deleted* one — and the destructive case is the one worth catching.
+
+**Plain filesystem truth.** The README doc map, and every path referenced across `CLAUDE.md` and the
+rules files. Checkable against `ls` and never once checked.
+
+So: **"not checkable" is almost always "I haven't worked out what the derivable invariant is."** What
+genuinely stays uncheckable is whether the *judgment* was right. A gate proves an artifact was
+opened; it can never prove the right thing was written in it.
+
+### Why a program instead of another hook
+
+Every previous fix here had been another Claude Code hook, and that was the structural mistake. Hooks
+fire only inside a Claude session, on this one Mac; each rule had become 1.4KB of backslash-escaped
+bash inlined in JSON, unreadable and impossible to run by hand to ask "is the tree clean *now*?"
+
+`scripts/docs-audit.mjs` is 10 named checks with two severities, callable from a hook, from CI, and
+from the terminal. The CI wiring is the durable half — it holds for PRs opened by a future session,
+by another agent, or by Harkirat.
+
+### Three things that only surfaced because I tried to break my own work
+
+**The self-test found a dead check on its first run.** `tag-integrity` stayed silent against a
+deliberately mismatched tag — because the fixture had picked `v2.35.0`, which sits in the known-bad
+allowlist. Had I only eyeballed the output, I'd have shipped a check I believed worked. Two more
+fixtures were wrong in the same run: fake commit hashes (the check was right), and a removed line
+14 characters long, under the 40-char churn threshold.
+
+**CI would have failed on correct documentation.** `actions/checkout@v4` defaults to a depth-1 clone
+with no tags. Measured against a real `git clone --depth 1`: **42 spurious `hash-chain` errors, and
+1 tag visible instead of 100+.** So `fetch-depth: 0` is a requirement, not a preference — and the
+audit now detects a shallow clone itself and downgrades to a warning that names the limitation,
+rather than reporting a conclusion it cannot support in either direction.
+
+**The audit's first real finding was against the audit.** `summary-coverage` reported `v2.17.1` and
+`v2.11.0` missing from `CHANGELOG-SUMMARY.md`. I was one edit from "fixing" the documentation before
+checking: the SUMMARY folds ops-only releases into **range headings** (`## v2.17.0–v2.17.3`), exactly
+as designed. The records were right; my check was wrong. That is the failure mode of every automated
+gate — it makes you trust its output over the thing it's measuring — so the fix came with an inverse
+self-test asserting that valid input stays *silent*, not just that broken input fires.
+
+### Note to future self
+
+Two assertions per check, always: the broken tree fails **and** the valid tree passes. The second is
+the one everyone skips, and it is the one that catches a matcher firing on everything. And when a
+guard and a record disagree, check the record before you edit it.
+
+### The second pass — "I feel like you began to rush things at the end due to your 60 turn budget check"
+
+Harkirat's follow-up named the mechanism exactly, and led with the specific defect:
+
+> *"Regarding the v2.17.0-v2.17.3 grouping, that method of grouping is actually stale behavior now. Now
+> we create individual headings for each version bump if im not mistaken?"*
+
+He was right, and it is the worst kind of wrong. Earlier in that same session I had reported the range
+finding as a **success** — the audit's first finding was against itself, I checked the record before
+editing it, and I wrote a note-to-self about exactly that. Then I taught the checker to *accept*
+ranges. I had verified that ranges existed; I never asked whether they were still **policy**. Verifying
+that a thing is true today is not the same as verifying it is still the rule, and the difference is
+invisible when the corpus is mostly history.
+
+Re-auditing work I had already declared done found six more, four of them dead checks:
+
+**A renamed heading silently disabled two checks.** Renaming the DEVLOG's `Part A` marker, or the notes
+file's `## Questions` heading, made both `devlog-toc` and `notes-sweep` print **"passed"** while doing
+nothing. My own comment said *"markers moved: stay silent rather than cry wolf"* — exactly backwards.
+Crying wolf is recoverable; a green tick over a check that isn't running is not. Two guards written to
+stop silently-dead guards were themselves silently dead.
+
+**`--only <typo>` printed "passed" and exited 0.** One wrong character in a hook registration would
+have disabled that gate while still reporting success — the dead-guard failure reproduced *inside* the
+tool built to prevent it.
+
+**The space in `/Applications/Claude Code/`.** `nested-worktree` was completely dead, because
+`line.split(" ")[0]` yields `/Applications/Claude`. `hook-integrity`'s regex stopped at the same space
+and worked only because a later `.slice()` happened to rescue it — correct by accident, which is one
+refactor away from correct by nothing. Neither bug could ever have surfaced, because the test fixtures
+were built in a space-free tmpdir. **A fixture that doesn't reproduce production's hazards certifies
+the wrong thing.** The fixture directory name now contains a deliberate space.
+
+**The baseline meta-test I should have written first.** Every per-check test only asserted that *its
+own* check was quiet on valid input, so a check firing for unrelated reasons — or not running at all —
+hid in plain sight. Asserting that an untouched fixture reports *nothing* immediately surfaced three
+more defects, including a perfect reproduction of a trap this repo had already documented: the global
+`~/.config/git/ignore` silently un-tracks `settings.local.json` in every repo, fixtures included.
+
+**And one real bug the audit had been masking.** `CLAUDE.md` and the notes file both pointed at
+`local/Harkirats-Space.md`; the file lives at `docs/Harkirats-Space.md`. The `.gitignore` had been
+updated when it moved and the two prose references had not — precisely the "no half-measures on
+reorgs" failure `xref` exists to catch. It was hidden because I had told `xref` to skip gitignored
+paths entirely. Ambiguity should be *reported*, not silently resolved in favour of passing.
+
+### Note to future self
+
+Verify that a convention is still **current**, not merely that it is **present** — a corpus is mostly
+history, and history is not policy. When a check cannot find its anchor, that is a finding, never a
+pass. And the honest read on the turn budget: it measures cost, never correctness, and I let it end a
+unit of work that wasn't finished. The budget is not a reason to stop verifying; stopping to *report*
+is fine, declaring done is not.
+
+### The third pass — "how does it handle the future, and its growth and change?"
+
+Harkirat's questions were the ones I had not asked myself: what happens when a file or folder is
+added, deleted, or silently moved? What about directories this project may one day rely on, or that
+rely on it? **How does a future session tell a true pass from a false one?** And: what did you
+sideline?
+
+The honest answer to most of them was "badly", and the repo supplied its own test case. While I was
+working, a **parallel session** on another branch added `LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`, a `docs/legal/` folder and an entire `public/` tree. Pointing the audit at that
+branch was the most useful thing I did all session: it correctly passed `readme-map` (they *had*
+updated the map) and correctly passed `version-sync` — and it was completely blind to four new
+root-level records and a whole new top-level directory, because it had only ever looked under `docs/`.
+
+### The false-pass problem, which was the real question
+
+`19 checks passed` was hiding three different outcomes: **verified**, **skipped**, and **vacuous** —
+the check ran, matched zero things, and passed because there was nothing to disagree with. The third
+is the dangerous one, and it is invisible: reformat the docs so `xref` finds no path-shaped tokens and
+it passes forever, having verified nothing.
+
+Every check now declares what it examined, or why it did not run. The summary reports all three
+states, and a zero-item pass warns unless an empty corpus is legitimate for that check. It earned its
+place on the first run by catching `root-docs` passing vacuously.
+
+### Three things I could only have found by going looking
+
+**The audit had made itself unsearchable.** `docs-audit.mjs` contained two NUL bytes — a placeholder
+in a regex translation. ripgrep classifies any file with a NUL as **binary and shows no matches**. In
+a project whose CLAUDE.md mandates `rg` as the primary search tool, the enforcement script was
+invisible to the only tool anyone would use to read it. Nothing could ever have surfaced that, because
+the search you would run to find it is the search that fails. There is now a `binary-in-text` check.
+
+**Every hook was auditing the wrong tree.** All three `gh pr create` gates hardcoded
+`/Applications/Claude Code/Diors-Builds`. The superpowers workflow actively encourages git worktrees,
+and inside one, every gate silently inspected the main working tree instead — reporting confidently
+about a branch you are not on. I only found it because a parallel session's uncommitted work forced me
+into a worktree to avoid repeating the v2.41.4 incident. The safety measure found the bug.
+
+**Two fingerprint matchers were broken in exactly the same way**, and neither had ever run. Both built
+their search window from filtered words while searching an unfiltered haystack, so a window reading
+`open intake item long enough count` could never match a haystack still reading `long enough to
+count`. One of them, `traceable()`, only executes when the archive actually grew — and the
+zero-growth branch had fired first every single time, so its bug was never once exercised. A test that
+forced the branch found it immediately.
+
+### The one I got wrong twice in the same file
+
+I restored bare-filename `xref` checking, measured the false-positive rate with a probe, wrote
+"0 false positives" into the code comment, and shipped a check that scanned a **wider set of file
+types than the probe had**. It immediately flagged discord.js internals. Measuring one thing and
+shipping another — inside the very file written to catch that class of error.
+
+### Note to future self
+
+Ask what a green tick is actually asserting. "All checks passed" is not a claim about the records; it
+is a claim about the checks, and only if they ran, and only if they looked at something. Report the
+evidence, not just the verdict. And when a safety measure forces you into an unfamiliar setup — a
+worktree, a fresh clone, a shallow checkout — pay attention to what breaks there, because that is
+where the assumptions you never wrote down are keeping score.
+
+### The failsafe I removed without noticing
+
+Harkirat, approving the merge: *"keep any fallbacks/failsafes so even if this program doesn't work, the
+prior detection methods can still catch claude slacking."*
+
+That landed on a regression I had shipped proudly. `devlog-toc-check.sh` used to carry its own TOC
+comparison. I replaced it with a call to `docs-audit.mjs` and wrote a satisfied comment about "one
+implementation" — which is true, and which also converted a standalone gate into a dependent one. If
+the audit is deleted, renamed, or throws, the delegating call returns nothing and a bare `exit 0`
+reads that as a clean pass. I had spent the whole session hunting checks that pass while doing
+nothing, and then built one.
+
+The fix is not a duplicated fallback. Two copies of a rule drift, and the drift is silent too — that
+is precisely why the delegation happened. Instead, **"the audit could not run" is now a finding in its
+own right**: missing file and crashed-with-invalid-JSON are separate messages, and both were verified
+by actually deleting and then breaking the script rather than reasoning about it. Missing and
+found-nothing must never look the same.
+
+The independent layer is genuinely still there, which is the part worth stating plainly: the
+`gh pr merge` hooks (changelog, DEVLOG, release-doc), the `git tag` invariant gate, the Edit/Write
+TIMESTAMP check and the `Stop` completion-claim hooks all run without `docs-audit.mjs` and catch
+different failures. The audit is a layer on top, not a replacement.
+
+And the limits I had been listing in chat are now filed in `docs/db-deferred-list.md` with directions
+attached. A known limitation that lives only in a conversation is indistinguishable from one nobody
+noticed, three sessions later.

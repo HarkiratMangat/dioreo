@@ -430,6 +430,39 @@ well-specified execution/polish, not novel design.*
   — small add mirroring the new `rampeak()` now that the Ops Agent (2026-07-17) provides the metric.
   🔗 Natural bundle with the Render-deletion reminder above, which is also a VM/ops touch.
 
+### 🧮 `scripts/docs-audit.mjs` — the limits it does NOT cover (filed 2026-07-29 02:10 EDT, v2.42.0)
+*These are the honest edges of the documentation audit, filed so a future session improves the program
+rather than rediscovering them. **None is a bug** — each is a known boundary that the audit states in
+its own output on every run. Read `.claude/rules/scripts-and-migrations.md` first; run
+`node scripts/docs-audit.mjs --list` for the live check roster.*
+
+- `[P3 · L · 🧩needs-design]` **Nothing verifies a changelog entry DESCRIBES what shipped.**
+  `version-sync` proves the number matches `package.json` and `hash-chain` proves the commit resolves,
+  but an entry saying "fixed the parser" for a change that broke it passes every check. Content
+  accuracy is the largest uncovered surface. Plausible direction: compare an entry's claimed scope
+  against the diff's touched paths and flag entries that mention subsystems the diff never touched —
+  cheap, coarse, and would have caught real cases. Anything stronger needs a model in the loop.
+- `[P3 · L · 🧩needs-design]` **The audit is a WHITELIST of failures that already happened.** Every
+  check encodes a past mistake, so a genuinely new *category* of drift has no check by construction.
+  Nothing currently notices "this doc has not been touched in N releases while its subsystem changed
+  every one of them". A staleness-by-correlation check (doc mtime vs. the code it documents) is the
+  most promising generic detector and does not exist.
+- `[P2 · M]` **A PR opened in the GitHub web UI fires NO local hook.** CI still runs the tree checks,
+  so those hold — but `records-close-check.sh` (notes file + memory closure) is session-scoped by
+  nature and never runs. That path is genuinely unguarded today. Fix direction: a GitHub Action that
+  posts a PR comment listing the open notes items and whether memory was written since the branch
+  point. It cannot *block* on judgement, but it can put the question in front of a human.
+- `[P3 · S]` **`xref`'s bare-filename half is WARN-only, and must stay that way until gitignored files
+  are resolvable.** Gitignored files are working-tree-LOCAL: `docs/Harkirats-Space.md` resolves in the
+  main tree and not in a worktree or fresh clone, so "missing" and "not here right now" are genuinely
+  indistinguishable. A tracked manifest of expected-but-ignored paths would let this become an ERROR.
+- `[P3 · S]` **`archive-conservation` traces items by a 6-word fingerprint**, so an item reworded
+  heavily during a sweep reports as untraceable (WARN, by design). Fine in practice; worth revisiting
+  if the false-positive rate ever becomes annoying enough to be ignored.
+- `[P3 · XS]` **`root-docs` reports a VACUOUS PASS on `main` until `LICENSE`/`NOTICE` land** from the
+  `docs/license-terms-privacy` branch. Expected and self-correcting — noted so nobody "fixes" it by
+  deleting the check.
+
 ---
 
 ## 🚫 Decided-no — don't re-raise

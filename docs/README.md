@@ -25,7 +25,7 @@ kind of content lives and who's responsible for keeping it current.
 | **`db-deferred-list.md`** | **This project's own deferred work** — 🐞 Active Bugs · 🔔 Reminders · 🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. NOT a copy of `ROADMAP.md`. Split out of the cross-project tracker 2026-07-25 15:56 EDT so it's tracked in-repo; renamed from `deferred-items.md` + completed 2026-07-25 21:43 EDT (that first pass left this project's bugs/reminders/resolved items behind in the cross-project file). | When something's deferred, found broken, or ships/drops. | Claude, Harkirat |
 | **`reference/`** | On-demand reference docs: `deployment-and-ops.md` (stack, GCP VM/systemd/alerting, version tagging, **the local dev bot** — `Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning; added 2026-07-26 13:45 EDT), `known-issues.md`, `design-history.md`, `commit-and-branch-naming.md` (the Conventional Commits subject format + branch/PR-title convention). Read when ops/history detail is needed, or before writing any commit subject or branch name. | When ops setup or a flagged issue changes. | Claude |
 | **`CHANGELOG.md`** | **Detailed release log** — one entry per merged PR, newest-first, incl. internal/housekeeping. Also holds the `🔮 Planned & Upcoming` roadmap (synced from CLAUDE.md) and, at the very bottom, `📋 Unreleased` for the open branch/PR awaiting merge. | Every merge (draft the entry on the branch as work happens, finalize — real number + squash hash + tag — at merge). Graduate Unreleased → a numbered entry when it merges. | Claude, Harkirat |
-| **`CHANGELOG-SUMMARY.md`** | **Plain-language "What's New"** — player-facing. Represents **every version number** (ops/docs-only ones folded into a version range or a one-line note, so none is ever skipped), but only real user-facing changes get a full bullet. Holds the `🔜 Coming soon` roadmap view. | Same merge as CHANGELOG.md; add a friendly line for user-facing changes, a range/one-liner otherwise. | Harkirat / end-users |
+| **`CHANGELOG-SUMMARY.md`** | **Plain-language "What's New"** — player-facing. Represents **every version number** (ops/docs-only ones get a one-line note, so none is ever skipped). ⚠️ **Range headings like `## v2.17.0–v2.17.3` are RETIRED** — every release from v2.19.0 onward gets its OWN heading; the 7 surviving ranges are all v2.18.3-and-older and are left alone. `summary-coverage` in the docs audit enforces this (corrected 2026-07-28 22:10 EDT), but only real user-facing changes get a full bullet. Holds the `🔜 Coming soon` roadmap view. | Same merge as CHANGELOG.md; add a friendly line for user-facing changes, a range/one-liner otherwise. | Harkirat / end-users |
 | **`DEVLOG.md`** | **The narrative journey & lessons** — the reasoning, dead-ends, root causes, and "note to future self." Part A = chronological story; Part B = thematic lessons ledger. Has its own ToC. | When a session produces real reasoning, a discovery, a walk-back, or a notable bug hunt. Not every commit. | Claude + Harkirat (us) |
 | **`diors-builds notes.md`** | **Harkirat's intake scratchpad** — where he jots thoughts between sessions. Has its own 🔑 Legend + `HOW THIS FILE WORKS` header. It's a SCRATCHPAD, not a store: items get FILED into their real homes and marked/swept, so it shrinks. Its Graveyard is no longer a section inside it — resolved + ℋ-confirmed items sweep out to `archive/graveyard.md` (split 2026-07-25 21:43 EDT). | Read at session start / when prompted / during a Document pass. Mark handled items IN-FILE the same session (see below). It is tracked in git and fully tidyable — no private section lives inside it anymore. | Harkirat (author), Claude (tidies) |
 | **`SESSION-START.md`** | **The canonical session-start prompt** — auto-loaded every session via a `SessionStart` hook. Holds the NON-NEGOTIABLES glossary (commit/push/deploy/document). | When the session-start expectations change. Edit here directly; it's the single source (not duplicated in memory). | Claude |
@@ -60,19 +60,51 @@ kind of content lives and who's responsible for keeping it current.
 
 ## Responsibilities / chores checklist (per merge — moved from per-push 2026-07-24 12:24 EDT)
 
-**Which of these are machine-checked (audited 2026-07-28 14:30 EDT):** items **1, 2, 3, 5, 8.2,
-8.4, 8.5** now fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
+**Which of these are machine-checked (re-audited 2026-07-28 20:50 EDT):** items **1, 2, 3, 5, 8.2,
+8.4, 8.5** fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
 `commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6
-(memory)** and **7 (notes file)** are **NOT checkable** — memory lives outside the repo and "did the
-session handle this note" is a judgment call. They are named explicitly in the hook message, because
-a partial check that feels total is how DEVLOG coverage sat at 8/22 while the changelog hook passed.
+(memory)** and **7 (notes file)** are gated at `gh pr create` by
+`.claude/hooks/records-close-check.sh`.
+
+> ⚠️ **This paragraph used to say items 6 and 7 were "NOT checkable". That was wrong** (corrected
+> 2026-07-28 20:50 EDT, Harkirat's catch). A `SessionStart` hook had been counting the notes file's
+> open items the entire time. The real defect was never absence, it was **timing**: that check fires
+> at the moment of *discovery*, when nothing is filed yet and there is nothing to compare against,
+> and never at the moment of *closure* — the identical shape to the DEVLOG failure measured at 8/22.
+> **The general lesson, worth more than the fix:** "not checkable" is almost always "I haven't worked
+> out what the derivable invariant is." For the records it turned out to be **conservation** — an
+> item leaves an active list only by appearing in an archive, so a shrink with no matching grow is
+> either unswept or silently *deleted*. What genuinely stays uncheckable is whether the **judgment**
+> was right; a gate proves an artifact was opened, never that the right thing was written in it.
+
+**The tree-level invariants live in `../scripts/docs-audit.mjs`** (`npm run docs:audit`; `--list` prints
+the current roster, deliberately not counted here) — checks
+covering the doc map, cross-references, version coverage across all three records, the changelog
+hash-chain, the DEVLOG TOC, tag integrity, and the sweep/conservation rules above. It is a **program,
+not a hook**, deliberately: a hook only fires inside a Claude session on one Mac, so it runs as a **CI
+gate on every PR** too. `ERROR` findings fail the build; `WARN` findings never block, so a hotfix is
+never held up by prose. `npm run docs:audit:test` proves every check can actually *fail* — a guard
+nobody has watched fail is not a guard, and this repo has already shipped one that was silently dead.
+
+**Read the accounting line, not just the verdict.** Every run reports `N/M checks verified (K items
+examined)`, plus anything **SKIPPED** (it could not run — no memory store, a shallow clone) and
+anything that examined **nothing**. `N checks passed` used to hide all three: a check that matched
+zero items "passes" while verifying nothing, which is how a broken matcher survives indefinitely.
+A pass means *no known failure mode tripped* — never *the records are correct*. Novel drift, prose
+quality and judgement calls are outside what any of this can see, and it says so on every run.
+
+**It also runs at `gh pr create`** via `../.claude/hooks/docs-audit-gate.sh`, so failures surface
+while fixing them is still free. ⚠️ That local gate fires only on the literal `gh pr create` command
+inside a Claude Code session on this machine — a PR opened through the GitHub web UI bypasses it, and
+every other local hook with it, including the notes/memory closure check. **CI is the guarantee; the
+hook is the convenience.**
 Docs are drafted on the branch as the work happens (they ride in the PR's diff, reviewed alongside the
 code) and finalized on the branch in the final pre-merge checkpoint:
 1. Bump the version per `project_dior_builds_changelog_system` (memory) — one number per MERGED PR, not per commit or push.
 2. `CHANGELOG.md`: a numbered entry (draft it in `Unreleased` on the branch; finalize it with the real
    number + timestamp + **PR number, no hash** in the final pre-merge checkpoint — the hash is backfilled
    one release later, per step 8).
-3. `CHANGELOG-SUMMARY.md`: a friendly line (user-facing) or a range/one-liner (ops/docs-only) — never skip the number.
+3. `CHANGELOG-SUMMARY.md`: a friendly line (user-facing) or a one-liner (ops/docs-only) under its OWN `## vX.Y.Z` heading — never skip the number, and never fold new releases into a range (that convention is retired; see the records table above).
 4. `CLAUDE.md` **or the matching `.claude/rules/*.md`**: update the design/architecture note the change
    affects (subsystem detail lives in the rule file now; invariants + the nav map live in root CLAUDE.md).
    Keep the root nav-map table current if you add/remove a rule file.
