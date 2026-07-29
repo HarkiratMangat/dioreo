@@ -90,6 +90,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
 - 2026-07-28 21:00 EDT — "Not checkable" was never true
 - 2026-07-29 11:44 EDT — The refs I left behind
+- 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3036,6 +3037,54 @@ A "behind" marker in `git branch -vv` is about your clone, not about the project
 against *each other* before reporting drift. And when a safety constraint blocks the obvious command,
 ask whether it blocks the **goal** or just that one command. Plumbing usually has a way through, and
 "I'd have to do the unsafe thing" is a claim worth testing before it becomes a reason.
+
+---
+
+## 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
+
+The line at the top of Part B reads "no dated entries" — an invariant nobody was checking. 19 dated
+journal entries (2026-07-27 08:02 EDT through 2026-07-29 11:44 EDT) were sitting below that header,
+another append-to-EOF habit, the same one this file's own `## 2026-07-29 11:44 EDT` entry had just
+named. The table of contents had listed all 19 under Part A the whole time, in the right order — the
+existing `devlog-toc` check compares the TOC against every dated heading in the file, full stop, with
+no awareness of which physical Part a heading sits in. A misplaced entry that keeps its TOC ordering
+passes that check clean.
+
+Re-deriving the boundary was the actual work. A first pass (filed in `docs/db-deferred-list.md`) had
+already gotten it wrong once, by nine entries — each dated entry carries its own `### Lessons` /
+`### Note to future self` subsections, and skimming for "the first thing that looks like a Part B
+section" finds one of those long before the real boundary. The fix was mechanical instead: grep every
+`^## 20\d\d-` heading with its line number, find the `# Part B` marker's line number, and take the
+first dated heading after it. That put the true first misplaced entry nine entries later than the
+original guess.
+
+The move itself was a single contiguous block, chronology already correct end-to-end — no
+resequencing needed, just relocation. Verified three ways beyond the audit: the exact set and order of
+every dated heading identical before and after (hashed the list), no dated heading anywhere after the
+`# Part B` marker post-move, and the file still ending in exactly one trailing newline.
+
+Added `devlog-parts` (ERROR) to `scripts/docs-audit.mjs` so this stops being a thing a session has to
+notice by reading — it asserts no `## 20\d\d-` heading appears after `# Part B`, using the same
+`anchorMissing()` pattern `devlog-toc` uses so a renamed marker fails loudly rather than quietly
+turning the check off. Gave it both required self-test assertions (broken fixture fails, valid fixture
+stays silent) plus an anchor-missing case, and had to add a real `# Part B` heading to the test
+fixture's `docs/DEVLOG.md` — without it, the new check reported "anchor missing" against the *baseline*
+fixture, which is exactly the vacuous-pass failure mode this whole audit exists to catch.
+
+Re-checked the three warnings standing since v2.42.1 while here. Two close clean: `root-docs`'s
+VACUOUS PASS is still the documented, correct behavior (self-corrects once `LICENSE`/`NOTICE` land on
+`main`). The `xref` warning for `memory-migration-handoff.md` turned out to be exactly what it looked
+like it might be — the file is real (`docs/db-deferred-list.md` calls it "now-complete"), it just lives
+in gitignored `local/`, which this working tree doesn't carry. Not a stale pointer, just the audit's
+own documented gitignored-file blind spot. The third, `memory-index` on Harkirat's WIP licensing doc,
+stays open — it's his file mid-edit, not something to paper over with an invented pointer line.
+
+### Note to future self
+
+"No dated entries" and "no dated heading appears after the `# Part B` marker" read like the same claim
+until one of them is actually machine-checked and the other is prose sitting at the top of a file
+nobody re-reads. A structural invariant that's only ever verified by eyeballing degrades exactly the
+way this one did — silently, then compounding, for two release cycles running.
 
 ---
 
