@@ -181,7 +181,72 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.42.2 — 2026-07-29 12:30 EDT (#54) — Nineteen entries the table of contents never lied about
+## v2.43.0 — 2026-07-29 18:24 EDT (#55) — A licence that said the opposite of what it meant
+**Docs + tooling — no bot behaviour change.** The project's legal footing, and the first time it has had one.
+
+- **`package.json` declared `"license": "ISC"` on a public repo with no LICENSE file.** ISC is
+  permissive: it granted redistribution, modification, commercial use, and the right to run a competing
+  instance — precisely the four things Harkirat does not want to give. The declared licence had been
+  saying the opposite of his intent for the entire life of the repo, and anyone who relied on it had a
+  defensible claim. Replaced with the custom **Dior's Builds Source-Available License v1.0**
+  (`LicenseRef-Diors-Builds-Source-Available-1.0`), plus `"private": true` to block an accidental
+  `npm publish`.
+- **The licence permits reading, auditing, good-faith security research, and a local single-user run;
+  it prohibits deployment where anyone else can reach it, redistribution, commercial use, competing
+  services, Curated-Data extraction, and AI/ML training.** The `Deploy` definition turns on a single
+  bright line — whether *any person other than You* can invoke it or receive its output — rather than on
+  server counts or hosting arrangements that would age badly.
+- **§4.2 carves out GitHub forking instead of banning it.** GitHub ToS §D.5 grants every user the right
+  to fork a public repo and no licence can revoke it while the repo stays public. A prohibition would
+  have been wrong on its face and would have undermined the document's credibility everywhere else, so
+  the carve-out states the right and confines it to reproduction *on GitHub* — conveying no
+  derivative-work or off-GitHub redistribution right. Same instinct in **§4.5**, which says plainly that
+  copyright protects expression and not functionality: someone may build a competing CODM bot, just not
+  from this code.
+- **§8A asserts human authorship, and it is load-bearing rather than decorative.** The licence has force
+  only if copyright subsists, and purely AI-generated material is not copyrightable (US Copyright
+  Office; cert denied 2026-03-02). §8A records the human creative control the claim rests on and
+  discloses the AI assistance openly instead of leaving it as a latent weakness.
+- **`NOTICE`, incorporated by reference (§7.1).** Per-dependency attributions; the Apache-2.0 §4
+  obligations that attach to discord.js and xlsx **regardless of what this licence permits**, because
+  that duty runs upstream; and an emoji.gg attribution to `tofooo` carrying a standing constraint — the
+  Basic License is conditional on users never being charged, so a paid tier would require replacing
+  those emoji first. Verified 127 packages, **zero copyleft**: no reciprocal licence that could force
+  source publication on terms incompatible with the source-available model.
+- **`docs/legal/TERMS.md` + `docs/legal/PRIVACY.md` (v1.0), Ontario law, CAD $20 liability cap.**
+  Class-action waiver with a consumer carve-out, and **deliberately no arbitration clause** — *Uber
+  Technologies Inc. v. Heller* (2020 SCC) makes an unconscionable one unenforceable, and a clause that
+  collapses in court is worse than none at all.
+- **The privacy policy states verified facts, not inferences.** MongoDB Atlas resolves to **Azure Canada
+  Central**, so user data stays in Canada; Cloudinary is US-hosted and holds no personal data; the bot
+  carries `GatewayIntentBits.Guilds` only and therefore cannot read message content; the AI call is
+  **Vertex AI**, not the consumer Gemini API, so Google does not train on it. **Google Cloud Logging was
+  an entirely undisclosed data flow** until this audit found it — now documented with its 30-day
+  retention. Appendix C records how every claim was checked.
+- **An earlier draft of the policy was false and was caught before publication.** It told users they
+  could self-delete by resetting preferences; `commands/settings.js` has no reset. There is **no**
+  automated deletion path anywhere in the codebase. §7.1 now discloses that absence rather than papering
+  over it, and the missing path is filed as `[P1 · M]` in `docs/db-deferred-list.md`.
+- **The documents are visibility-neutral on purpose.** The repo may flip public or private without
+  notice, so no document links to it and email is the sole canonical contact. `scripts/buildLegalPages.js`
+  renders them to `public/legal/*.html` for Cloudflare Pages, which keeps the Discord-required URLs live
+  either way.
+- **The page build renders every `§N` reference as a working anchor and verifies its own output**,
+  asserting that every multi-word run of source survived rendering (both documents: 100%). Two crashes
+  found and fixed in the process: code spans were stashed behind a space-delimited ` N ` sentinel that
+  the restore pass then matched against any bare number in prose ("30 days" → out-of-range index →
+  throw), and a section *count* was passed through the HTML escaper. Two earlier verifier alarms turned
+  out to be verifier bugs rather than lost content — investigated instead of assumed, which is the only
+  reason the real ones were distinguishable.
+- **`scripts/docs-audit.mjs` caught three gaps in this very change**, which is the point of it: `public/`
+  was tracked but described nowhere, `buildLegalPages.js` was in no pointer map, and the licensing
+  memory had no `MEMORY.md` index line. All three fixed here. The two remaining
+  `utils/emojiMap.dev.json` warnings are correct-by-design and were re-confirmed as the genuine optional
+  dev overlay read by `utils/emojiMap.js`.
+
+---
+
+## v2.42.2 — 2026-07-29 12:30 EDT (#54 · `a302aa8`) — Nineteen entries the table of contents never lied about
 **Docs + tooling — no bot behaviour change.**
 - **Moved 19 misplaced DEVLOG journal entries back into Part A.** An append-to-EOF habit had landed
   them physically below the `# Part B — Lessons Ledger` header — whose own text claims "no dated

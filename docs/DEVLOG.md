@@ -91,6 +91,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 21:00 EDT — "Not checkable" was never true
 - 2026-07-29 11:44 EDT — The refs I left behind
 - 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
+- 2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3086,6 +3087,30 @@ stays open — it's his file mid-edit, not something to paper over with an inven
 until one of them is actually machine-checked and the other is prose sitting at the top of a file
 nobody re-reads. A structural invariant that's only ever verified by eyeballing degrades exactly the
 way this one did — silently, then compounding, for two release cycles running.
+
+---
+
+## 2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold
+
+*Shipped as v2.43.0.*
+
+Harkirat wanted a licence. His terms were clear and, taken together, unusual: people may read the code, audit it for vulnerabilities, and run it locally — but must not deploy it where others can use it, must not clone it into a competitor, and must not take it, change it, and call it theirs. He is glad of contributions and wants contributors credited properly. "Concrete and airtight," he said. "No gaps or mistakes."
+
+The first thing to find was that the repo already had a licence, and it said the opposite. `package.json` declared `"license": "ISC"` — permissive, granting redistribution, modification, commercial use, and the right to stand up a rival instance. Four grants, each one a thing he had just told me he did not want to give. No LICENSE file existed to contradict it, and the repo was public. It had been that way for the whole life of the project. Anybody who had read that field and acted on it had a defensible claim, and nothing about writing a new licence today reaches backwards to undo that.
+
+The hardest judgement was what *not* to prohibit. GitHub's Terms of Service §D.5 gives every user the right to fork a public repository, and no licence text can revoke it while the repo stays public. I could have written "you may not fork this," and it would have read more forcefully. It would also have been false, and a document with one plainly unenforceable clause invites a reader to test the rest. So §4.2 states the fork right, then confines it: reproduction *on GitHub*, no derivative-work right, no off-GitHub redistribution. The same instinct produced §4.5, which concedes outright that copyright protects expression and not functionality — someone may build a competing CODM bot, they simply may not build it from this code. Conceding the true limit is what makes the rest credible.
+
+Then a subtler problem, and the one I nearly missed: this licence only has force if copyright subsists in the work. The US Copyright Office's position, undisturbed after cert was denied on 2026-03-02, is that autonomously AI-generated material is not copyrightable, and AI-assisted work is protected only to the extent of the human contribution. Most of this codebase was written with me. Disclosing that felt like handing over a weapon. Hiding it would have been worse — an undisclosed dependency of the entire licence on a fact nobody had asserted. §8A therefore does both: it discloses the AI assistance and, in the same breath, records specifically the human creative control the copyright claim rests on. The disclosure became the foundation instead of the crack.
+
+The privacy policy is where I was most tempted to write what sounded right rather than what was true. Harkirat pushed back on exactly that instinct twice — when I hedged about storage regions he told me to go check with his own credentials, and Atlas turned out to resolve to Azure Canada Central, which is materially *better* for him than the vague thing I would have written. The failure I'm least comfortable about is one I authored myself: a draft of §9.1 told users they could delete their own data by resetting their preferences. I had inferred it from the existence of `/settings`. `commands/settings.js` has no reset. There is no automated deletion path anywhere in this codebase. Had that shipped it would have been a false statement about data rights in a published legal document — the exact category of error where being confidently wrong is worst. The policy now discloses the absence, and the missing path is filed as `[P1 · M]`.
+
+Auditing turned up a flow nobody had disclosed at all: Google Cloud Logging, quietly shipping server logs with 30-day retention. Not malicious, just never written down — which is how most privacy failures actually happen.
+
+Two smaller lessons, both about not trusting my own instruments. The page build has a self-verifier that asserts every multi-word run of source survived into the HTML. It fired twice, reporting catastrophic content loss both times. Both were bugs in the verifier — once I'd stripped stop-words from one side of the comparison and not the other, once it was matching `1.` literals that `<ol>` renders via CSS counters. Had I trusted either alarm I'd have "fixed" working code; had I dismissed them as noise I'd have missed the two *real* crashes hiding behind them, one of which stashed code spans behind a ` N ` sentinel that then matched every bare number in the prose. "30 days" became an out-of-range array index. And when the browser pane returned blank screenshots and I started diagnosing a layout bug, the actual cause was that the pane was hidden — three separate "defects" I proved didn't exist before reporting any of them.
+
+Finally, `docs/docs-audit.mjs` caught three gaps in this very change: `public/` tracked but documented nowhere, `buildLegalPages.js` in no pointer map, a memory file with no index line. I had written the documents and forgotten to file them — which is the failure mode the audit was built for, and it worked on its author.
+
+The lesson I'd keep: a legal document's strength comes from the parts where it concedes a limit. Every place this licence stops short — the GitHub fork, functionality vs expression, the absent deletion path, the AI authorship — is a place a reader can verify it isn't bluffing.
 
 ---
 

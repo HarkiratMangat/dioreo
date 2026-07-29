@@ -13,6 +13,12 @@ the subsystem rule it belongs to:*
 - `backfillLoadoutSlots.js`, `test-vertex-extract.js` → `.claude/rules/autobuild.md`
 - `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot`
   → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
+- `buildLegalPages.js` → CLAUDE.md's **`public/` — the built legal site** section (renders
+  `docs/legal/*.md` → `public/legal/*.html` for Cloudflare Pages). Not a migration: a **generator**,
+  and the only script here whose output is committed. It deliberately hand-rolls its Markdown parsing
+  rather than adding a dependency — `NOTICE` §3 commits to a copyleft-free tree that gets re-audited on
+  every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you
+  touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
 
 ⚠️ **`vmstatus.sh` runs in TWO places and the difference is load-bearing** (rewritten 2026-07-28 15:34 EDT,
 v2.41.0 — design: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`). Normally it runs

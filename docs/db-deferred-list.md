@@ -142,9 +142,22 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
-*Real, self-contained builds; spin each up as its own session at the tagged setup. **Two are P1 now** —
-the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items added since.*
+*Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]`
+tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
+by items added since. (A count used to live here; it went stale the moment an item was added, so the
+tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
+- `[P1 · M · Sonnet5-M]` **User-data deletion path — the privacy policy now publicly promises it.**
+  *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
+  automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
+  reset — it only overwrites individual values. Only `AlertLog` prunes (30 days, `utils/alertStore.js`).
+  Removing the bot from a Discord account stops interaction but leaves the record sitting indefinitely.
+  `docs/legal/PRIVACY.md` §7.1 **honestly discloses this** and commits to manual deletion within 30 days
+  of an email request — so the promise is currently kept by hand, and every day it stays manual is a
+  standing obligation on Harkirat personally. Needed: (a) a self-service delete in `/settings`
+  (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records
+  untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** —
+  they currently describe the manual process as the only route.
 - `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
   from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
   sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a

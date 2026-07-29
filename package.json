@@ -1,8 +1,9 @@
 {
   "name": "diors-builds",
-  "version": "2.42.2",
-  "description": "",
+  "version": "2.43.0",
+  "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "check": "find . -name \"*.js\" -not -path \"./node_modules/*\" -print0 | xargs -0 -n1 node --check",
     "docs:audit": "node scripts/docs-audit.mjs",
@@ -13,8 +14,16 @@
     "node": ">=24"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Harkirat Mangat (dior)",
+  "license": "LicenseRef-Diors-Builds-Source-Available-1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarkiratMangat/diors-builds.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HarkiratMangat/diors-builds/issues"
+  },
+  "homepage": "https://github.com/HarkiratMangat/diors-builds#readme",
   "dependencies": {
     "chrono-node": "^2.9.1",
     "cloudinary": "^2.10.0",

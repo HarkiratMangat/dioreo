@@ -278,8 +278,53 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
+| `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
+
+### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
+`public/legal/{terms,privacy,index}.html` is **build output**, deployed to Cloudflare Pages so the
+Discord Developer Portal has stable public URLs that survive the repo flipping private. The source of
+truth is `docs/legal/*.md`; the HTML is produced by **`node scripts/buildLegalPages.js`**.
+- **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
+  the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
+  an empty build command, so nothing has to run on their side.
+- The build **verifies itself**: it re-reads its own output and asserts every multi-word run from the
+  source survived rendering, then reports a percentage. It is not a "it didn't crash" check — treat
+  anything below 100% as lost content, but confirm against the source before believing it, because
+  two of its early failures were verifier bugs (ordered-list markers and stop-words), not real loss.
+- It renders every `§N` cross-reference into a working anchor. That is why the parser only ever
+  rewrites text nodes — touching markup would corrupt existing `href`s.
+
+### ⚖️ Licensing — source-available, NOT open source (added 2026-07-28 21:36 EDT)
+`LICENSE` is the custom **Dior's Builds Source-Available License v1.0**: read/study/audit and
+**local single-user** running are permitted; deploying anywhere another person can use it,
+redistributing, commercial use, competing services, Curated-Data extraction, and AI/ML training are
+all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Available-1.0` and
+`"private": true` (guards against an accidental `npm publish`).
+- **`package.json` said `"license": "ISC"` until 2026-07-28 21:36 EDT** — a permissive licence that contradicted
+  every intention here, on a PUBLIC repo, with no LICENSE file present. **Never "helpfully" restore a
+  standard OSI licence** (MIT/ISC/Apache) or describe this project as open source.
+- **The repo is public, so GitHub ToS §D.5 lets anyone fork it on GitHub and that cannot be revoked**
+  while it stays public. That right is confined to reproduction *on GitHub* — it grants no
+  derivative-work or off-GitHub redistribution right, which is why `LICENSE` §4.2 carves the fork out
+  explicitly rather than pretending to ban it.
+- Contributions are governed by the CLA in `LICENSE` §5 + `CONTRIBUTING.md`; credit is a **binding
+  obligation** (§5.6) discharged via `CONTRIBUTORS.md` **and** the changelog entry for the shipping
+  release. Crediting a merged external contribution is not optional.
+- **`NOTICE` is incorporated into `LICENSE` by reference** (§7.1) and carries the dependency
+  attributions, trademark acknowledgements, and the **AI-assistance disclosure**. **discord.js and
+  xlsx are Apache-2.0**, which obliges anyone redistributing them to reproduce their notices — that
+  duty attaches upstream and survives regardless of what `LICENSE` permits. **Re-generate NOTICE §1/§3
+  whenever dependencies change**, and re-check that no GPL/AGPL/LGPL/MPL/SSPL package has entered the
+  tree — a reciprocal licence anywhere in it could force source publication on terms incompatible with
+  the source-available model. (Verified clean 2026-07-28 21:36 EDT: 127 packages, 0 copyleft.)
+- **`NOTICE` §6 asserts human authorship**, which matters more than it looks: the licence's force
+  depends on copyright subsisting, and purely AI-generated material is not copyrightable (US Copyright
+  Office; cert denied 2026-03-02). Never edit that section to downplay the human creative control —
+  it is the stated basis for the copyright claim the whole licence rests on.
 
 ### Records & workflow (outside the rules system)
+- **`LICENSE` / `CONTRIBUTING.md` / `CONTRIBUTORS.md`** (repo root) — licence terms + CLA, the
+  contributor guide, and the credit ledger. See the licensing block above.
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
 - **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
   gate.** `--list` prints the current roster; it covers the records: doc map · cross-references · version coverage across all three

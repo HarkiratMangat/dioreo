@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of Service — Dior's Builds</title>
+<meta name="description" content="Terms of Service for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="Terms of Service — Dior's Builds">
+<meta property="og:description" content="Terms of Service for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23F2994A'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
+<style>
+
+:root{
+  --gold:#F2C230;
+  /* "desk" is the surface the document sits on; "paper" is the document. Warm
+     plum-tinted graphite rather than neutral slate, derived from Plum Fortune —
+     a generic near-black is the thing that made the first version anonymous. */
+  --desk:#16131B; --paper:#1D1926; --raised:#241F30;
+  --rule:#302A3E; --rule2:#3D3550;
+  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#6E6782;
+  --shadow:0 24px 60px -28px rgba(0,0,0,.85);
+  --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+  --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+}
+:root[data-theme=light]{
+  --desk:#DCD8D1; --paper:#FCFBF9; --raised:#F2F0EB;
+  --rule:#DED9D0; --rule2:#C9C3B8;
+  --ink:#191521; --ink2:#544E5E; --ink3:#8A8393;
+  --shadow:0 20px 50px -30px rgba(40,32,50,.45);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]){
+    --desk:#DCD8D1; --paper:#FCFBF9; --raised:#F2F0EB;
+    --rule:#DED9D0; --rule2:#C9C3B8;
+    --ink:#191521; --ink2:#544E5E; --ink3:#8A8393;
+    --shadow:0 20px 50px -30px rgba(40,32,50,.45);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
+.lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500}
+
+:root{--accent:#F2994A;--glow:#6B4E7D}
+
+/* ── top bar ─────────────────────────────────────────────────────── */
+.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
+.mark{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--ink);
+  font-family:var(--display);font-weight:700;font-size:.9rem;letter-spacing:-.01em;white-space:nowrap}
+.mark b{display:block;width:3px;height:17px;background:var(--accent)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.35rem}
+.tab{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;color:var(--ink3);padding:.42rem .7rem;border:1px solid transparent}
+.tab:hover{color:var(--ink2)}
+.tab.on{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
+#th{margin-left:.4rem;width:32px;height:28px;display:grid;place-items:center;cursor:pointer;
+  background:none;border:1px solid var(--rule2);color:var(--ink3);font-size:.85rem;line-height:1}
+#th:hover{color:var(--ink)}
+#prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
+
+/* ── layout ──────────────────────────────────────────────────────── */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0;
+  display:grid;grid-template-columns:200px minmax(0,1fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+@media (max-width:980px){.page{grid-template-columns:1fr;gap:0}}
+
+/* ── rail: the section index, tracking position ──────────────────── */
+.rail{position:sticky;top:76px;padding:2.6rem 0 2rem;max-height:calc(100vh - 96px);
+  overflow-y:auto;scrollbar-width:thin}
+.rail::-webkit-scrollbar{width:3px}
+.rail::-webkit-scrollbar-thumb{background:var(--rule2)}
+.rail>.lab{display:block;margin-bottom:1rem;padding-left:.85rem}
+.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
+  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
+  transition:border-color .18s,color .18s}
+.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
+  font-weight:500;letter-spacing:-.005em}
+.slot:hover{border-left-color:var(--ink3)}
+.slot:hover span{color:var(--ink)}
+.slot.on{border-left-color:var(--accent)}
+.slot.on i{color:var(--accent)}
+.slot.on span{color:var(--ink);font-weight:650}
+@media (max-width:980px){
+  .rail{position:static;max-height:none;padding:1.6rem 0 0}
+  .rail>.lab{cursor:pointer;padding:.8rem 1rem;border:1px solid var(--rule);
+    background:var(--paper);margin:0;display:flex;justify-content:space-between;align-items:center}
+  .rail>.lab::after{content:"+";font-size:.9rem}
+  .rail.open>.lab::after{content:"–"}
+  .slots{display:none;padding-top:.7rem}
+  .rail.open .slots{display:block}
+}
+
+/* ── the document ────────────────────────────────────────────────── */
+.doc{background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:clamp(1.6rem,4.5vw,4rem);margin-bottom:3rem;position:relative;min-width:0}
+.doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+
+.mast{margin-bottom:3.2rem}
+.mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
+  font-size:clamp(2.4rem,7vw,4.15rem);margin:.7rem 0 0;color:var(--ink)}
+.mast .rule{height:1px;background:var(--rule);margin:1.6rem 0 .9rem}
+.mast .meta{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;color:var(--ink3);
+  text-transform:uppercase;display:flex;flex-wrap:wrap;gap:.35rem 1.1rem}
+.mast .meta b{color:var(--ink2);font-weight:500}
+
+/* ── headings: number lives in the margin ────────────────────────── */
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:76px}
+.doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
+  margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+.doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
+.doc h2:first-child,.doc h3:first-child{margin-top:0}
+.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent);
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
+.doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
+@media (min-width:1120px){
+  .idx{position:absolute;left:-3.6rem;top:.34em;margin:0;text-align:right;width:2.6rem}
+  .doc h3 .idx{left:-3.6rem;top:.28em}
+}
+.anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
+  opacity:0;transition:opacity .15s}
+.doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
+.anchor:hover{color:var(--accent)}
+
+/* ── prose ───────────────────────────────────────────────────────── */
+.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
+.doc p{margin:0 0 1.15rem;max-width:72ch}
+.doc strong{color:var(--ink);font-weight:600}
+.doc em{font-style:italic}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc li{margin:.5rem 0}
+.doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
+.doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
+  text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.doc a:hover{text-decoration-color:var(--accent)}
+/* The signature: live cross-references, set apart from ordinary links. */
+.xref{font-family:var(--mono);font-size:.86em;color:var(--accent)!important;
+  text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
+  padding-bottom:1px;white-space:nowrap}
+.xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.doc code{font-family:var(--mono);font-size:.83em;background:var(--raised);
+  border:1px solid var(--rule);padding:.11em .36em;color:var(--ink);word-break:break-word}
+.doc hr{border:0;border-top:1px solid var(--rule);margin:2.8rem 0}
+
+/* ── callouts ────────────────────────────────────────────────────── */
+.callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+.callout>:last-child{margin-bottom:0}
+.callout p{max-width:none}
+.callout.warn{border-left-color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 9%,var(--raised))}
+.callout h2,.callout h3{margin:0 0 .6rem;border:0;padding:0;font-size:.95rem;
+  letter-spacing:.02em;text-transform:uppercase;font-weight:700}
+.callout h2 .idx,.callout h3 .idx{display:none}
+.callout .anchor{display:none}
+
+/* ── tables: technical readout ───────────────────────────────────── */
+.tw{overflow-x:auto;margin:1.7rem 0;border:1px solid var(--rule);background:var(--raised)}
+.doc table{border-collapse:collapse;width:100%;min-width:min(540px,100%)}
+.doc th,.doc td{padding:.7rem .85rem;text-align:left;vertical-align:top;
+  border-bottom:1px solid var(--rule)}
+.doc th{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500;white-space:nowrap;background:var(--paper)}
+.doc td{font-family:var(--serif);font-size:.95rem;line-height:1.6;color:var(--ink2)}
+.doc tbody tr:last-child td{border-bottom:0}
+.doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+
+/* ── footer ──────────────────────────────────────────────────────── */
+.foot{grid-column:1/-1;border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  display:flex;flex-wrap:wrap;gap:.7rem 2rem;align-items:baseline}
+.foot p{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.7;
+  letter-spacing:.04em;color:var(--ink3);max-width:60ch}
+.foot a{color:var(--ink2)}
+
+@media print{
+  .bar,#prog,.rail,.anchor,#th{display:none!important}
+  body{background:#fff;color:#000}
+  .page{display:block;max-width:none;padding:0}
+  .doc{border:0;box-shadow:none;padding:0;background:#fff}
+  .doc::before{display:none}
+  .doc p,.doc li,.doc td{color:#000}
+  .idx{position:static!important;color:#000;display:inline;margin-right:.5rem}
+  .xref{color:#000!important;border:0}
+  .tw,.callout{border:1px solid #999;break-inside:avoid}
+  .doc h2,.doc h3{break-after:avoid}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <a class="mark" href="./"><b></b> Dior's Builds</a>
+  <nav>
+    <a class="tab on" href="./terms.html">Terms</a>
+    <a class="tab" href="./privacy.html">Privacy</a>
+    <button id="th" title="Toggle light or dark" aria-label="Toggle light or dark">◐</button>
+  </nav>
+</div>
+<div id="prog"></div>
+
+<div class="page">
+  <aside class="rail" id="rail">
+    <span class="lab">Sections</span>
+    <div class="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who you're dealing with</span></a><a href="#s-2" class="slot"><i>2</i><span>Agreement to these Terms</span></a><a href="#s-3" class="slot"><i>3</i><span>Eligibility</span></a><a href="#s-4" class="slot"><i>4</i><span>What the Bot does</span></a><a href="#s-5" class="slot"><i>5</i><span>Accuracy — please read this one</span></a><a href="#s-6" class="slot"><i>6</i><span>Acceptable use</span></a><a href="#s-7" class="slot"><i>7</i><span>Intellectual property</span></a><a href="#s-8" class="slot"><i>8</i><span>AI disclosure</span></a><a href="#s-9" class="slot"><i>9</i><span>Third-party services</span></a><a href="#s-10" class="slot"><i>10</i><span>Availability and changes</span></a><a href="#s-11" class="slot"><i>11</i><span>Force majeure</span></a><a href="#s-12" class="slot"><i>12</i><span>Export control and sanctions</span></a><a href="#s-13" class="slot"><i>13</i><span>Suspension and termination</span></a><a href="#s-14" class="slot"><i>14</i><span>Disclaimer of warranties</span></a><a href="#s-15" class="slot"><i>15</i><span>Limitation of liability</span></a><a href="#s-16" class="slot"><i>16</i><span>Indemnity</span></a><a href="#s-17" class="slot"><i>17</i><span>Governing law and disputes</span></a><a href="#s-18" class="slot"><i>18</i><span>General</span></a><a href="#s-19" class="slot"><i>19</i><span>Changes to these Terms</span></a><a href="#s-20" class="slot"><i>20</i><span>Contact</span></a><a href="#appendix-change-history" class="slot"><i>—</i><span>Appendix — Change history</span></a></div>
+  </aside>
+
+  <main class="doc">
+    <header class="mast">
+      <span class="lab">Agreement</span>
+      <h1>Terms of Service</h1>
+      <div class="rule"></div>
+      <div class="meta"><span>Effective <b>28 July 2026</b></span><span>Revision <b>1.0</b></span><span>Ontario, Canada</span></div>
+    </header>
+    <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" aria-label="Link to this section">¶</a></h2>
+<p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
+<p><strong>If you do not agree, do not install or use the Bot.</strong></p></blockquote>
+<hr>
+<h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" aria-label="Link to this section">¶</a></h2>
+<p>This is a free, unofficial Call of Duty: Mobile info bot run by one person as a hobby. Use it, enjoy it, don't abuse it. The game data is best-effort and often changes — don't spend money based on it. It comes with no warranty, and our liability is limited. Nothing here removes rights your local law gives you that can't be signed away.</p>
+<p><em>This summary is for convenience only. The numbered sections are the actual terms.</em></p>
+<hr>
+<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
+<p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
+<p><strong>Contact:</strong> harkirat117@gmail.com</p>
+<p>There is no company behind this. It's one person, and support is best-effort.</p>
+<hr>
+<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">Agreement to these Terms</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">How you accept</span><a class="anchor" href="#s-2.1" aria-label="Link to this section">¶</a></h3>
+<p><strong>You accept these Terms by doing any of the following:</strong></p>
+<ol><li><strong>Installing</strong> the Bot to your Discord account, or authorising it via Discord's OAuth flow;</li><li><strong>Invoking any command</strong> — every slash command, at every invocation;</li><li><strong>Interacting with any component</strong> the Bot presents — any button, dropdown, modal, or menu;</li><li><strong>Receiving output</strong> from the Bot in response to something you did; or</li><li><strong>Continuing to use</strong> the Bot after a change to these Terms takes effect.</li></ol>
+<p><strong>Each of those is a separate and independent act of acceptance.</strong> You do not need to accept more than once, and accepting once binds you to these Terms for all subsequent use.</p>
+<h3 id="s-2.2" class="numbered"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Notice</span><a class="anchor" href="#s-2.2" aria-label="Link to this section">¶</a></h3>
+<p>These Terms and the <a href="PRIVACY.html">Privacy Policy</a> are:</p>
+<ul><li>linked from the Bot's Discord Developer Portal listing, where Discord displays them on the Bot's profile;</li><li>published at a permanent public URL (see <a class="xref" href="#s-20">§20</a>);</li><li>referenced in the Bot's own help output; and</li><li>available on request at harkirat117@gmail.com.</li></ul>
+<p><strong>You are responsible for reading them.</strong> Choosing not to read terms you were given the opportunity to read does not stop them applying to you.</p>
+<h3 id="s-2.3" class="numbered"><span class="idx" aria-hidden="true">2.3</span><span class="ht">Acknowledgement</span><a class="anchor" href="#s-2.3" aria-label="Link to this section">¶</a></h3>
+<p>By using the Bot you acknowledge that you have had a reasonable opportunity to read these Terms and the Privacy Policy, that you understand them, that you agree to be bound by them, and that you accept them as a binding agreement between you and us with the same effect as a signed written contract.</p>
+<h3 id="s-2.4" class="numbered"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Electronic agreement</span><a class="anchor" href="#s-2.4" aria-label="Link to this section">¶</a></h3>
+<p>You consent to contract electronically. These Terms satisfy any requirement that an agreement be in writing, and your acceptance under <a class="xref" href="#s-2.1">§2.1</a> has the same legal effect as a handwritten signature under Ontario's <em>Electronic Commerce Act, 2000</em> and equivalent legislation elsewhere.</p>
+<h3 id="s-2.5" class="numbered"><span class="idx" aria-hidden="true">2.5</span><span class="ht">Incorporated documents</span><a class="anchor" href="#s-2.5" aria-label="Link to this section">¶</a></h3>
+<p>The <a href="PRIVACY.html">Privacy Policy</a> forms part of these Terms. The <a href="../LICENSE">LICENSE</a> governs the Bot's <strong>source code</strong> and is a separate agreement — using the Bot does not license you its code.</p>
+<h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" aria-label="Link to this section">¶</a></h3>
+<p><strong>Don't install or use the Bot.</strong> If you've already installed it, remove it via Discord's "Authorized Apps" settings and stop issuing commands. See <a class="xref" href="#s-13.1">§13.1</a>.</p>
+<hr>
+<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">Eligibility</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
+<p>To use the Bot you must:</p>
+<ol><li>Be at least <strong>13 years old</strong>, or the higher minimum age Discord requires in your country — in parts of the EU and elsewhere this is <strong>14, 15, or 16</strong>. Discord's <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> set the controlling minimum, and you must meet it.</li><li>Have the legal capacity to enter into these Terms, or have your parent or guardian's consent, in which case they accept these Terms on your behalf and are responsible for your use.</li><li>Not be barred from using Discord under Discord's terms.</li><li>Not be located in, or ordinarily resident in, a country subject to a comprehensive Canadian trade embargo, and not be listed on any applicable sanctions or restricted-party list.</li></ol>
+<p><strong>We do not knowingly permit use below Discord's minimum age.</strong> We have no independent age-verification mechanism and rely on Discord's enforcement. If we learn a user is under that age, we will delete their stored preferences — see <a class="xref" href="#s-10">§10</a> of the <a href="PRIVACY.html">Privacy Policy</a>.</p>
+<hr>
+<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">What the Bot does</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
+<p>The Bot is a <strong>user-installed Discord application</strong> providing Call of Duty: Mobile reference information:</p>
+<div class="tw"><table><thead><tr><th>Feature</th><th>What it gives you</th></tr></thead><tbody><tr><td>Weapon loadouts</td><td>Curated multiplayer and DMZ builds, attachments, rankings</td></tr><tr><td>Lucky draw info</td><td>Draw contents, items, and CP pricing</td></tr><tr><td>Patch notes</td><td>Season balance changes and patch history</td></tr><tr><td>Seasonal calendar</td><td>Events, start and end dates</td></tr><tr><td>Countdowns</td><td>Season, rank, and DMZ end timers</td></tr><tr><td><code>/timestamp</code></td><td>Discord timestamp generation in your timezone</td></tr><tr><td><code>/settings</code></td><td>Your display preferences</td></tr><tr><td>Accent colours</td><td>Message colours matched to your Discord profile</td></tr></tbody></table></div>
+<h3 id="s-4.1" class="numbered"><span class="idx" aria-hidden="true">4.1</span><span class="ht">What "user-installed" means</span><a class="anchor" href="#s-4.1" aria-label="Link to this section">¶</a></h3>
+<p>The Bot installs <strong>to your Discord account</strong>, not to a server:</p>
+<ul><li>It travels with you across servers and DMs.</li><li><strong>It has no permissions in any server.</strong> It is not a member, holds no role, and cannot read your messages, see your channels, moderate, or act on its own.</li><li>It only responds to interactions <strong>you</strong> initiate.</li><li>Whether it works in a given server is controlled by that server and by Discord — not by us.</li></ul>
+<h3 id="s-4.2" class="numbered"><span class="idx" aria-hidden="true">4.2</span><span class="ht">It's free</span><a class="anchor" href="#s-4.2" aria-label="Link to this section">¶</a></h3>
+<p>No paid tier, no subscription, no advertising, no in-app purchase. We are not obliged to keep it that way, but we will not start charging for access you already have without notice.</p>
+<h3 id="s-4.3" class="numbered"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Experimental features</span><a class="anchor" href="#s-4.3" aria-label="Link to this section">¶</a></h3>
+<p>Some features are experimental and may be changed, broken, or removed without notice. Where a feature is marked beta or experimental, expect it to be less reliable — and know that <a class="xref" href="#s-14">§14</a> and <a class="xref" href="#s-15">§15</a> apply to it with full force.</p>
+<h3 id="s-4.4" class="numbered"><span class="idx" aria-hidden="true">4.4</span><span class="ht">No support obligation</span><a class="anchor" href="#s-4.4" aria-label="Link to this section">¶</a></h3>
+<p>We have no obligation to provide support, respond to reports, fix bugs, maintain the Bot, or keep any feature working. We generally try. That is a courtesy, not a commitment, and no course of dealing creates one.</p>
+<hr>
+<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Accuracy — please read this one</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
+<p><strong>The game information in the Bot is best-effort and may be wrong.</strong></p>
+<ul><li>Loadouts, rankings, and "meta" designations reflect <strong>opinion and community consensus</strong>, not objective fact.</li><li>Call of Duty: Mobile is patched frequently. Data can go stale immediately after an update, and there may be a lag before it's corrected.</li><li>Draw contents, prices, and odds are <strong>as observed</strong>, may vary by region, account, and over time, and are <strong>not a representation of what you will receive</strong>.</li><li>Dates, countdowns, and calendar entries depend on information published by others and on your timezone setting being correct.</li></ul>
+<h3 id="s-5.1" class="numbered"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Spending money — the important part</span><a class="anchor" href="#s-5.1" aria-label="Link to this section">¶</a></h3>
+<p><strong>Do not make purchasing decisions in reliance on the Bot.</strong></p>
+<p>Lucky draws and similar mechanics are <strong>games of chance operated entirely by third parties</strong>. We do not operate, host, facilitate, promote, or take any part in them. We receive no commission, referral fee, or benefit of any kind from your spending. We have no control over odds, contents, pricing, or outcomes, and no ability to influence or predict them.</p>
+<p><strong>Nothing in the Bot is a recommendation, inducement, or encouragement to spend money.</strong> Information about draw contents and pricing is descriptive reference material only.</p>
+<p>If you're concerned about spending on in-game purchases, please seek support appropriate to your situation. Some jurisdictions regulate loot boxes and similar mechanics; where yours does, comply with your local law — that's your responsibility, not ours.</p>
+<h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">No professional advice</span><a class="anchor" href="#s-5.2" aria-label="Link to this section">¶</a></h3>
+<p>Nothing in the Bot is financial, legal, medical, or other professional advice.</p>
+<hr>
+<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
+<p>You must not:</p>
+<ol><li><strong>Abuse or overload it</strong> — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.</li><li><strong>Attack it</strong> — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.</li><li><strong>Circumvent controls</strong> — no bypassing cooldowns, permission checks, or admin-only gates.</li><li><strong>Impersonate</strong> — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.</li><li><strong>Break the law or Discord's rules</strong> — no use in connection with harassment, fraud, hate speech, or illegal activity, and no use violating <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Discord's Terms</a> or <a href="https://discord.com/guidelines" target="_blank" rel="noopener noreferrer">Community Guidelines</a>.</li><li><strong>Extract the data</strong> — no bulk collection, mirroring, re-hosting, or republishing of the Bot's curated datasets or output.</li><li><strong>Train models on it</strong> — no using the Bot's output or data as training, fine-tuning, evaluation, or retrieval input for any AI or machine-learning system.</li><li><strong>Redistribute the software</strong> — the source code is governed by the <a href="../LICENSE">LICENSE</a>, separate from these Terms. Reading it is allowed; deploying or redistributing it is not.</li></ol>
+<p><strong>Security researchers:</strong> good-faith research is welcome, but test against your own local instance, not the live Bot. See §4.11 of the <a href="../LICENSE">LICENSE</a> and the <a href="../CONTRIBUTING.html">contributing guide</a>.</p>
+<h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
+<p>To report misuse of the Bot, a security issue, or content that shouldn't be there, email <strong>harkirat117@gmail.com</strong>. Security issues should never go in a public GitHub issue.</p>
+<hr>
+<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" aria-label="Link to this section">¶</a></h3>
+<p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dior's Builds" name and visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
+<p>Source code licensing is governed separately by the <a href="../LICENSE">LICENSE</a>.</p>
+<p><strong>The source repository's visibility may change at any time, without notice</strong> — it may be public or private at any given moment, at our sole discretion, and we are under no obligation to publish the source at all or to keep publishing it. <strong>These Terms, the Privacy Policy, and the Bot itself are unaffected either way</strong>, and these documents stay published at their permanent public URLs regardless. Nothing in these Terms grants you any right of access to the source code.</p>
+<h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" aria-label="Link to this section">¶</a></h3>
+<p><strong>Call of Duty®</strong> and <strong>Call of Duty®: Mobile</strong> are trademarks of <strong>Activision Publishing, Inc.</strong> Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
+<blockquote class="callout"><p><strong>Dior's Builds is an unofficial, non-commercial fan project. It is not developed, published, licensed, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, Discord Inc., or any of their affiliates.</strong></p></blockquote>
+<p>Weapon names, item names, in-game imagery, and other game content shown by the Bot remain the property of their respective owners. We claim no ownership and grant you no rights in them. They are displayed for identification, commentary, and reference in a manner we believe constitutes fair dealing under the <em>Copyright Act</em> (Canada) and fair use under 17 U.S.C. § 107.</p>
+<p>We take that position seriously rather than assuming it: the Bot is <strong>free and non-commercial</strong>, its purpose is <strong>informational and referential</strong> rather than a substitute for the game, it uses <strong>no official logos or branding</strong>, it does not reproduce game code, assets in bulk, or anything playable, it makes clear on its face that it is unofficial, and it operates a <strong>prompt takedown process</strong> (<a class="xref" href="#s-7.4">§7.4</a>). Those are the factors that matter, and they are deliberate choices.</p>
+<p>We nonetheless acknowledge plainly that fan projects operate at the rights holder's sufferance. <strong>If Activision or any other rights holder asks us to change or remove something, we will comply promptly</strong> rather than argue.</p>
+<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.3" aria-label="Link to this section">¶</a></h3>
+<p>Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
+<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.4" aria-label="Link to this section">¶</a></h3>
+<p>If you own rights in material displayed by the Bot and want it removed, email <strong>harkirat117@gmail.com</strong> with:</p>
+<ul><li>identification of the work;</li><li>where it appears in the Bot;</li><li>your contact details;</li><li>a statement that you believe the use is unauthorised; and</li><li>a statement that your notice is accurate and that you are the rights holder or authorised to act for them.</li></ul>
+<p><strong>We action valid requests promptly</strong> — usually within a few days — and we don't require a formal legal process to do so. We will also consider counter-notices.</p>
+<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Yours</span><a class="anchor" href="#s-7.5" aria-label="Link to this section">¶</a></h3>
+<p>You retain ownership of anything you send us. By sending feedback, ideas, bug reports, or suggestions, you grant us a perpetual, worldwide, royalty-free, irrevocable licence to use them without restriction, obligation, or compensation, and you agree we owe you nothing for them. Code contributions are governed instead by <a class="xref" href="#s-5">§5</a> of the <a href="../LICENSE">LICENSE</a> and the <a href="../CONTRIBUTING.html">contributing guide</a>.</p>
+<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.6" aria-label="Link to this section">¶</a></h3>
+<p>We may develop, acquire, or operate features, products, or services similar to anything you suggest. Nothing in these Terms restricts that, and submitting an idea gives you no rights in what we later build.</p>
+<hr>
+<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
+<p>Portions of this project — its source code, documentation, and these legal documents — were <strong>written with the assistance of AI tools</strong>, principally Claude (Anthropic PBC), under human direction. Full disclosure: <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-6">§6</a>.</p>
+<p><strong>No AI system processes your data.</strong> The only AI in the running Bot is an administrator-only image-extraction command that never receives end-user data. See <a class="xref" href="#s-5.1">§5.1</a> of the <a href="PRIVACY.html">Privacy Policy</a>.</p>
+<hr>
+<h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Third-party services</span><a class="anchor" href="#s-9" aria-label="Link to this section">¶</a></h2>
+<p>The Bot runs on and interoperates with services we don't control:</p>
+<div class="tw"><table><thead><tr><th>Service</th><th>Role</th></tr></thead><tbody><tr><td><strong>Discord Inc.</strong></td><td>The platform the Bot runs on</td></tr><tr><td><strong>MongoDB Atlas</strong></td><td>Stores preferences and content data (Canada)</td></tr><tr><td><strong>Cloudinary</strong></td><td>Hosts and serves cached game images</td></tr><tr><td><strong>Google Cloud Platform</strong></td><td>Hosts the server; Vertex AI for admin-only image extraction</td></tr></tbody></table></div>
+<p>Your use of Discord is governed by Discord's own terms and privacy policy. We are not responsible for these services' availability, security, or acts. An outage or change at any of them can break the Bot without notice.</p>
+<p><strong>Discord Inc. is not a party to these Terms</strong>, has no obligation or liability to you in connection with the Bot, and does not sponsor or endorse it. Any dispute about the Bot is between you and us.</p>
+<h3 id="s-9.1" class="numbered"><span class="idx" aria-hidden="true">9.1</span><span class="ht">If a provider acts outside its terms</span><a class="anchor" href="#s-9.1" aria-label="Link to this section">¶</a></h3>
+<p>We select providers on the basis of their published terms and data processing agreements, and we do not authorise any of them to use your data for their own purposes. <strong>We cannot audit, inspect, or control what any of them does inside its own systems.</strong></p>
+<p><strong>To the fullest extent permitted by law, we are not liable for any act or omission of a third-party provider that falls outside the terms it publishes</strong> — including any unauthorised use, disclosure, retention, or loss of data by that provider. Your remedy in that situation lies against them, not us.</p>
+<p>Discord in particular is an <strong>independent controller</strong> of the data it collects about you through Discord itself. That is Discord's responsibility under <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a>, not ours.</p>
+<p>If we learn that a provider has mishandled data, we will investigate, notify you and any relevant regulator where required, and change provider where that's the right answer. See <a class="xref" href="#s-5.2">§5.2</a> of the <a href="PRIVACY.html">Privacy Policy</a>, which also explains the limits of this allocation — a controller's obligations under data protection law cannot be disclaimed by contract, and we don't claim otherwise.</p>
+<p>Data details: <a href="PRIVACY.html">Privacy Policy</a> <a class="xref" href="#s-5">§5</a>.</p>
+<hr>
+<h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Availability and changes</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
+<p><strong>The Bot is provided on an "as is" and "as available" basis.</strong> We make no promise about uptime.</p>
+<p>We may, at any time and without notice or liability:</p>
+<ul><li>Change, add, or remove features, commands, or data</li><li>Suspend, interrupt, or discontinue the Bot entirely</li><li>Impose or change rate limits and cooldowns</li><li>Modify or delete stored content, including curated data</li></ul>
+<p>The Bot runs on a single small server instance with no redundancy. Outages, restarts, and deploys will happen.</p>
+<hr>
+<h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Force majeure</span><a class="anchor" href="#s-11" aria-label="Link to this section">¶</a></h2>
+<p>We are not liable for any failure or delay caused by events beyond our reasonable control — including acts of God, natural disaster, fire, flood, epidemic or pandemic, war, terrorism, civil unrest, strike, government action, change of law, power or internet failure, hosting or cloud-provider outage, denial-of-service attack, or <strong>any act, omission, outage, policy change, suspension, or termination by Discord, GitHub, Google, MongoDB, Cloudinary, or Activision</strong>.</p>
+<hr>
+<h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Export control and sanctions</span><a class="anchor" href="#s-12" aria-label="Link to this section">¶</a></h2>
+<p>You must not use the Bot in violation of Canadian, US, EU, UK, or other applicable export-control or sanctions laws, and you represent that you are not a restricted party under any of them.</p>
+<hr>
+<h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Suspension and termination</span><a class="anchor" href="#s-13" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-13.1" class="numbered"><span class="idx" aria-hidden="true">13.1</span><span class="ht">By you</span><a class="anchor" href="#s-13.1" aria-label="Link to this section">¶</a></h3>
+<p>Remove the Bot from your Discord account at any time via Discord's "Authorized Apps" settings. That stops all future interaction immediately.</p>
+<p>Removing it does <strong>not</strong> automatically delete your stored preferences — see <a class="xref" href="#s-7.1">§7.1</a> and <a class="xref" href="#s-9">§9</a> of the <a href="PRIVACY.html">Privacy Policy</a> for how to request deletion.</p>
+<h3 id="s-13.2" class="numbered"><span class="idx" aria-hidden="true">13.2</span><span class="ht">By us</span><a class="anchor" href="#s-13.2" aria-label="Link to this section">¶</a></h3>
+<p>We may restrict, suspend, or permanently block your access, with or without notice, if we reasonably believe you have breached these Terms — particularly <a class="xref" href="#s-6">§6</a> — or where necessary to protect the Bot, its users, or ourselves. We may also do so if we discontinue the Bot.</p>
+<p>We have no obligation to give reasons, though we generally will if you ask in good faith.</p>
+<h3 id="s-13.3" class="numbered"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Survival</span><a class="anchor" href="#s-13.3" aria-label="Link to this section">¶</a></h3>
+<p>Sections 5, 6, 7, 8, 11, 12, 13.3, 14, 15, 16, 17, and 18 survive termination.</p>
+<hr>
+<h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">Disclaimer of warranties</span><a class="anchor" href="#s-14" aria-label="Link to this section">¶</a></h2>
+<p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE BOT IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY, CONDITION, OR REPRESENTATION OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE.</strong></p>
+<p><strong>WE EXPRESSLY DISCLAIM ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</strong></p>
+<p><strong>WE DO NOT WARRANT THAT THE BOT WILL BE AVAILABLE, UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE; THAT DEFECTS WILL BE CORRECTED; THAT IT IS FREE OF HARMFUL COMPONENTS; OR THAT ANY INFORMATION IT PROVIDES IS ACCURATE, CURRENT, OR COMPLETE.</strong></p>
+<p><strong>NO ADVICE OR INFORMATION OBTAINED FROM US CREATES ANY WARRANTY NOT EXPRESSLY STATED HERE.</strong></p>
+<p>Some jurisdictions don't allow the exclusion of certain warranties. Where an exclusion isn't permitted, it applies to the minimum extent the law allows and the rest of this section stands.</p>
+<hr>
+<h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">Limitation of liability</span><a class="anchor" href="#s-15" aria-label="Link to this section">¶</a></h2>
+<p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, WE WILL NOT BE LIABLE — WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY — FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, IN-GAME CURRENCY, IN-GAME ITEMS, ACCOUNT STANDING, OR ANTICIPATED SAVINGS, ARISING OUT OF OR RELATING TO THE BOT — EVEN IF ADVISED OF THE POSSIBILITY AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</strong></p>
+<p><strong>OUR TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THE BOT AND THESE TERMS WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</strong></p>
+<p>Since the Bot is free, (A) will normally be nil.</p>
+<p><strong>Nothing in these Terms excludes or limits our liability for death or personal injury caused by our negligence, for fraud or fraudulent misrepresentation, or for any other liability that cannot lawfully be excluded or limited.</strong> If you are a consumer, nothing here affects your statutory rights.</p>
+<p><strong>This allocation of risk is a fundamental basis of the bargain.</strong> The Bot is provided free of charge, and we could not offer it at all on terms of unlimited liability.</p>
+<hr>
+<h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">Indemnity</span><a class="anchor" href="#s-16" aria-label="Link to this section">¶</a></h2>
+<p>You will indemnify and hold us harmless from any claim, loss, liability, damage, cost, or expense (including reasonable legal fees) arising out of your use of the Bot, your breach of these Terms, or your violation of any law or third-party right.</p>
+<p>This does not apply to the extent the claim arises from our own breach, negligence, or wilful misconduct, and it does not apply where you are a consumer and the law prohibits it.</p>
+<hr>
+<h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">Governing law and disputes</span><a class="anchor" href="#s-17" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-17.1" class="numbered"><span class="idx" aria-hidden="true">17.1</span><span class="ht">Informal resolution first</span><a class="anchor" href="#s-17.1" aria-label="Link to this section">¶</a></h3>
+<p><strong>Before starting formal proceedings, please email harkirat117@gmail.com.</strong> Most problems are solvable in one message, and we ask for 30 days to try.</p>
+<h3 id="s-17.2" class="numbered"><span class="idx" aria-hidden="true">17.2</span><span class="ht">Governing law and venue</span><a class="anchor" href="#s-17.2" aria-label="Link to this section">¶</a></h3>
+<p>These Terms are governed by the laws of the <strong>Province of Ontario</strong> and the federal laws of Canada applicable in it, without regard to conflict-of-laws rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
+<p>The courts of Ontario, sitting in Toronto, have exclusive jurisdiction, and you attorn to that jurisdiction and waive any objection based on venue or forum non conveniens.</p>
+<p><strong>If you are a consumer resident elsewhere</strong>, this section does not deprive you of the protection of mandatory consumer-protection rules of your country of residence, or of the right to bring proceedings in your local courts where that right cannot lawfully be excluded.</p>
+<h3 id="s-17.3" class="numbered"><span class="idx" aria-hidden="true">17.3</span><span class="ht">Class-action waiver</span><a class="anchor" href="#s-17.3" aria-label="Link to this section">¶</a></h3>
+<p><strong>To the maximum extent permitted by applicable law, you and we agree that each may bring claims against the other only in an individual capacity, and not as a plaintiff or class member in any purported class, collective, consolidated, or representative proceeding.</strong></p>
+<p><strong>This waiver does not apply where it is prohibited or unenforceable by law</strong> — which includes claims by consumers under Ontario's <em>Consumer Protection Act, 2002</em>, under Quebec law, and under equivalent consumer-protection statutes elsewhere. In those cases the waiver has no effect on your rights, and the rest of this section continues to apply.</p>
+<p>We have deliberately <strong>not</strong> included a mandatory arbitration clause. Requiring an individual to arbitrate a small claim can be unconscionable and unenforceable, and we would rather have terms that work than terms that look strong and fail.</p>
+<h3 id="s-17.4" class="numbered"><span class="idx" aria-hidden="true">17.4</span><span class="ht">Limitation period</span><a class="anchor" href="#s-17.4" aria-label="Link to this section">¶</a></h3>
+<p>Any claim must be commenced within <strong>one year</strong> after it arose, except where a longer period is required by law.</p>
+<hr>
+<h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">General</span><a class="anchor" href="#s-18" aria-label="Link to this section">¶</a></h2>
+<p><strong>Entire agreement.</strong> These Terms, the Privacy Policy, and (for source code) the LICENSE are the entire agreement between you and us regarding the Bot, superseding all prior understandings. Nothing here limits liability for fraudulent misrepresentation.</p>
+<p><strong>Severability.</strong> If a provision is held unenforceable, it is modified to the minimum extent needed to make it enforceable, or severed, and the rest continues in full force. This applies with particular force to §<a class="xref" href="#s-14">§14</a>, 15, and 17.3, each of which is intended to be given the maximum effect the law permits.</p>
+<p><strong>No waiver.</strong> Not enforcing a right on one occasion doesn't waive it.</p>
+<p><strong>Assignment.</strong> You may not assign these Terms. We may assign them to a successor in connection with a transfer of the Bot, on notice.</p>
+<p><strong>No third-party beneficiaries.</strong> Other than as stated in <a class="xref" href="#s-9">§9</a> regarding Discord, no one but you and us has rights under these Terms.</p>
+<p><strong>Notices.</strong> We may contact you through the Bot, the project's Discord presence, the GitHub repository, or any address you've used to contact us. Notices to us go to harkirat117@gmail.com.</p>
+<p><strong>Relationship.</strong> These Terms create no employment, agency, partnership, or joint venture between us.</p>
+<p><strong>Headings and summaries.</strong> For convenience only; they have no legal effect.</p>
+<p><strong>Language.</strong> Drafted in English; the English version governs. <em>Les parties ont exigé que la présente convention soit rédigée en anglais.</em></p>
+<hr>
+<h2 id="s-19" class="numbered"><span class="idx" aria-hidden="true">19</span><span class="ht">Changes to these Terms</span><a class="anchor" href="#s-19" aria-label="Link to this section">¶</a></h2>
+<p>We may update these Terms. When we do:</p>
+<ul><li>The <strong>effective date and version</strong> at the top change.</li><li>The change is recorded in the repository's git history.</li><li>For <strong>material</strong> changes we will make reasonable efforts to give notice — typically through the project's Discord presence, a repository release note, or a notice in the Bot itself.</li></ul>
+<p>Continued use after a change takes effect means you accept the updated Terms. If you don't accept them, remove the Bot.</p>
+<hr>
+<h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" aria-label="Link to this section">¶</a></h2>
+<p><strong>Harkirat Mangat ("dior")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong></p>
+<p>Email is the canonical contact and always reaches us. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
+<p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
+<hr>
+<h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" aria-label="Link to this section">¶</a></h2>
+<div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial terms.</td></tr></tbody></table></div>
+<p>Future revisions will be listed here. The complete drafting history is public in the repository's git log.</p>
+<hr>
+<p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc. or Discord Inc.</em></p>
+  </main>
+
+  <footer class="foot">
+    <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
+    <p><a href="./terms.html">Terms</a> · <a href="./privacy.html">Privacy</a> · <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var prog=document.getElementById('prog');
+  var slots=[].slice.call(document.querySelectorAll('.slot'));
+  var heads=slots.map(function(a){return document.getElementById(a.getAttribute('href').slice(1))});
+  var queued=false;
+  function paint(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?h.scrollTop/max*100:0)+'%';
+    var cur=-1, y=h.scrollTop+130;
+    for(var i=0;i<heads.length;i++){ if(heads[i]&&heads[i].offsetTop<=y) cur=i; }
+    for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
+    queued=false;
+  }
+  addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
+  addEventListener('resize',paint); paint();
+
+  var rail=document.getElementById('rail');
+  rail.querySelector('.lab').addEventListener('click',function(){ rail.classList.toggle('open'); });
+  slots.forEach(function(a){ a.addEventListener('click',function(){ rail.classList.remove('open'); }); });
+
+  // Theme choice is per-browser and deliberately never sent anywhere.
+  var btn=document.getElementById('th');
+  try{ var s=localStorage.getItem('db-theme'); if(s) document.documentElement.setAttribute('data-theme',s); }catch(e){}
+  btn.addEventListener('click',function(){
+    var d=document.documentElement, cur=d.getAttribute('data-theme');
+    if(!cur) cur=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+    var next=cur==='dark'?'light':'dark';
+    d.setAttribute('data-theme',next);
+    try{ localStorage.setItem('db-theme',next); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
