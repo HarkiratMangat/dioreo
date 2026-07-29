@@ -158,25 +158,24 @@ and obtained through emoji.gg. With thanks:
 
     tofooo                      https://emoji.gg/user/tofooo
 
-emoji.gg does not apply a single blanket license. Each uploader selects a license
-for their submission, and the common tiers are:
+LICENSE TIER — CONFIRMED. These emoji carry emoji.gg's **Basic License**:
 
-    - use permitted WITH credit and attribution; no redistribution, no claim of
-      ownership, no commercial use;
-    - use permitted WITHOUT credit; no redistribution, no claim of ownership, no
-      commercial use; and
-    - Creative Commons terms permitting remixing and commercial use where the
-      original author is credited.
+    "This license grants you permission to use this emoji on Discord, Slack and
+     any other platform where the user is not charged for access to the emoji."
 
-The Licensor therefore credits the creator regardless of which tier applies, does
-not claim ownership of any such emoji, does not redistribute them as standalone
-assets, and operates the Bot non-commercially. See emoji.gg's terms
+The Bot satisfies this: it is distributed free of charge, has no paid tier, no
+subscription, and no in-app purchase, so no user is ever charged for access to
+these emoji. The Licensor additionally credits the creator (not strictly required
+by the Basic License, but given regardless), claims no ownership, and does not
+redistribute them as standalone assets. See emoji.gg's terms
 (https://emoji.gg/terms) and license reference (https://emoji.gg/licenses).
 
-  >> ACTION FOR THE MAINTAINER: confirm the specific license tier attached to
-  >> each emoji actually in use, and record it here. Attribution is given above
-  >> on the assumption that the strictest plausible tier applies. If any emoji
-  >> turns out to be licensed on terms this project cannot satisfy, replace it.
+  >> STANDING CONSTRAINT — READ BEFORE MONETISING. The Basic License is
+  >> conditional on users not being charged for access. If the Bot ever
+  >> introduces a paid tier, subscription, or any paywall, the license no longer
+  >> covers this use and these emoji MUST be replaced or separately licensed
+  >> first. This is a real limit on the project's commercial options, not a
+  >> formality. It is cross-referenced in TERMS.md §4.2 (the Bot is free).
 
 Creators whose work appears here and who want different attribution, or removal,
 should email harkirat117@gmail.com. Requests are actioned promptly.
