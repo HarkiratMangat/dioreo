@@ -181,7 +181,30 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.42.0 — 2026-07-28 23:10 EDT (#52) — "Not checkable" was never true
+## v2.42.1 — 2026-07-29 11:44 EDT (#53) — A local ref is not a remote state
+**Docs only — no code change, no bot behaviour change.**
+- **Brought the stale local `main` / `v3-pre-release` refs current without a checkout.** They had been
+  left behind after the v2.42.0 merge because the working tree was on another session's branch and
+  switching under it is the v2.41.4 incident. `git fetch origin main:main v3-pre-release:v3-pre-release`
+  writes the refs directly and git *refuses* the refspec if the branch is checked out, so it cannot
+  disturb a working tree. **This is now the merge close-out step**, recorded in `CLAUDE.md` and
+  [[project_git_workflow]].
+- **Separated "stale local pointer" from "stale remote state"** in how branch sync gets reported. A
+  `behind` marker in `git branch -vv` is a fact about the local clone only. The question Harkirat
+  actually asked is answered by `git rev-list --left-right --count origin/main...origin/v3-pre-release`,
+  which returned `0 0` — `origin/v3-pre-release` identical to `origin/main` at `fb43874`, the sync
+  workflow having run within seconds of the merge. The remote was never out of sync.
+- **Filed the GitHub Actions Node 20 deprecation as its own session** in `docs/db-deferred-list.md`
+  (`[P2 · XS]`). `actions/checkout@v4` and `actions/setup-node@v4` declare `using: node20` in their own
+  `action.yml`; GitHub is retiring that runtime and force-running them on Node 24 as a shim. Three call
+  sites across `ci.yml` and `sync-v3-pre-release.yml` need `@v5`. **Not our Node version** — the VM is on
+  24 and `ci.yml` pins `node-version` separately. The trap is written down with it: `checkout@v5` keeps
+  the depth-1 default, and a depth-1 clone costs the audit 42 false hash-chain errors, so `fetch-depth: 0`
+  must survive the bump. `ci-wiring` already asserts it.
+
+---
+
+## v2.42.0 — 2026-07-28 23:10 EDT (#52 · `fb43874`) — "Not checkable" was never true
 **Tooling + docs — no bot behaviour change.**
 - **`scripts/docs-audit.mjs`** — the documentation invariants as a **program**, not another hook.
   Run `node scripts/docs-audit.mjs --list` for the roster (deliberately not counted here). Two

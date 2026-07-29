@@ -89,6 +89,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x
 - 2026-07-28 18:40 EDT — The reset that ate a session I wasn't in
 - 2026-07-28 21:00 EDT — "Not checkable" was never true
+- 2026-07-29 11:44 EDT — The refs I left behind
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3113,3 +3114,72 @@ different failures. The audit is a layer on top, not a replacement.
 And the limits I had been listing in chat are now filed in `docs/db-deferred-list.md` with directions
 attached. A known limitation that lives only in a conversation is indistinguishable from one nobody
 noticed, three sessions later.
+
+## 2026-07-29 11:44 EDT — The refs I left behind
+*Released as `v2.42.1`.*
+
+Harkirat, reading the close-out of the release above: *"why wouldn't you check out local main and
+v3-pre-release? isn't v3 supposed to be kept sync'd to main?"*
+
+I had ended v2.42.0 with `main [origin/main: behind 1]` and `v3-pre-release [behind 16]` sitting in
+`git branch -vv`, and said nothing about it. My reasoning went as far as it went and then stopped: the
+working tree was on another session's branch holding their uncommitted work, and switching branches
+under a live session is the v2.41.4 incident. What I never questioned was the premise underneath —
+that updating a local branch requires checking it out.
+
+It doesn't.
+
+```bash
+git fetch origin main:main v3-pre-release:v3-pre-release
+```
+
+That writes the local refs directly and cannot disturb the working tree; git rejects the refspec
+outright if the target branch is checked out. It is precisely the tool for "make the pointer current,
+leave the tree alone", and I went a whole release without reaching for it.
+
+Which is this release's lesson pointed back at me from a slightly different angle. *"Can't be done
+safely"* and *"I only know one way to do it"* produce identical output — nothing — and I reported the
+first while meaning the second. Same shape as **"not checkable"** one entry above: a constraint
+asserted rather than tested.
+
+### A stale pointer is not stale state
+
+Two different things were getting conflated in how I reported it, and the alarming reading was the
+wrong one. A local ref being behind is a fact about *my clone*. It says nothing whatsoever about the
+remote. The check that actually answered his question was never run:
+
+```
+git rev-list --left-right --count origin/main...origin/v3-pre-release
+0	0
+```
+
+Zero divergence in both directions — `origin/v3-pre-release` identical to `origin/main` at the merge
+commit. `sync-v3-pre-release.yml` had done its job within seconds of the merge. The remote was never
+out of sync; only my view of it was, and I let the weaker fact stand in for the stronger one because I
+hadn't separated them.
+
+### The warning I'd have kept scrolling past
+
+He also asked about something on the CI run I had marked green and moved on from:
+
+> `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
+> run on Node.js 24: actions/checkout@v4, actions/setup-node@v4.`
+
+Worth understanding rather than dismissing, because the instinct — *"our Node version is fine, the VM
+runs 24"* — is wrong in an interesting way. The runtime being deprecated isn't ours. A JavaScript
+action carries its own `action.yml` declaring `using: node20`, and GitHub is retiring that runtime
+from the runners, force-running those actions on Node 24 as a temporary shim. It is a dependency's
+runtime, warned about in our logs, and nothing we pin controls it.
+
+Filed as its own session in `docs/db-deferred-list.md` rather than bolted onto a docs release — three
+`@v4` → `@v5` bumps across two workflows, with the one real trap written down: `checkout@v5` keeps
+the depth-1 default, so `fetch-depth: 0` has to survive the bump or the audit regresses to 42 false
+hash-chain errors. `ci-wiring` already guards that, which is the first time this audit has protected
+work that hadn't been done yet.
+
+### Note to future self
+
+A "behind" marker in `git branch -vv` is about your clone, not about the project — check the remotes
+against *each other* before reporting drift. And when a safety constraint blocks the obvious command,
+ask whether it blocks the **goal** or just that one command. Plumbing usually has a way through, and
+"I'd have to do the unsafe thing" is a claim worth testing before it becomes a reason.

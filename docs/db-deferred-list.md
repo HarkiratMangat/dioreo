@@ -154,6 +154,26 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
   exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap,
   and the fix has to address the cap (batching or a second pass), not just the prompt wording.
   Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
+- `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20
+  runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run:
+  `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
+  run on Node.js 24: actions/checkout@v4, actions/setup-node@v4.`
+  **What it actually is:** a JavaScript action declares its own runtime in its `action.yml`, and both of
+  these declare `using: node20`. GitHub is retiring Node 20 from the runners and force-running those
+  actions on Node 24 in the meantime ([changelog,
+  2025-09-19](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)).
+  Nothing is broken today; it becomes a hard failure when the shim is dropped. **This is about the
+  actions, not about our Node version** — the VM runs Node 24 already and `ci.yml` pins its own
+  `node-version` separately, so neither is the thing being warned about.
+  **Three call sites, all `@v4` → `@v5`:** `.github/workflows/ci.yml` (`actions/checkout`,
+  `actions/setup-node`) · `.github/workflows/sync-v3-pre-release.yml` (`actions/checkout`). The v5
+  releases are the same actions recompiled for Node 24 — no API change to absorb.
+  ⚠️ **`checkout@v5` keeps the depth-1 default, so `ci.yml`'s `fetch-depth: 0` must survive the bump.**
+  Measured on a real shallow clone: 42 false hash-chain errors and 1 tag visible instead of 100+.
+  `scripts/docs-audit.mjs`'s `ci-wiring` check already asserts `fetch-depth: 0` is present, so dropping
+  it fails CI rather than silently degrading the audit — but read that assertion before trusting it.
+  **It self-verifies:** merging to `main` triggers `sync-v3-pre-release.yml`, so both workflows get
+  exercised by the PR that changes them. Watch that run rather than assuming it passed.
 - `[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried
   over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did
   not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error
@@ -354,6 +374,29 @@ the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items 
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
+- `[P2 · S · any model]` **`docs/DEVLOG.md`: a run of dated Part A entries physically sits AFTER the
+  Part B ledger.** Found 2026-07-29 11:44 EDT while appending the v2.42.1 entry — I anchored on
+  `# Part B — Lessons Ledger` believing it marked the end of Part A, and the TOC check failed on
+  ordering. It doesn't: **everything from the first dated heading below the ledger's thematic sections
+  through to EOF** is Part-A-style journey prose, even though Part B's own header says *"no dated
+  entries"* and the TOC lists them all under Part A. Re-derive the split with
+  `awk 'NR>P && /^## 20[0-9][0-9]-/' docs/DEVLOG.md` where `P` is the `# Part B` line — as of filing
+  that was 36 entries correctly above it and 19 below, the misplaced run starting at
+  `2026-07-27 08:02 EDT`. Almost certainly an append-to-EOF habit that outran the structure. ⚠️ My first
+  write-up of this item put the run's start nine entries too late; the `### Lessons` subsections *inside*
+  each entry look like ledger sections at a glance. Map it before moving anything.
+  **Why it matters beyond tidiness:** the next session appending an entry hits the same trap, and
+  `devlog-toc` only catches it as an ordering error *after* the fact — it compares the TOC against every
+  `^## 20…` heading in the file regardless of which Part it is in, so the misplacement itself is
+  invisible to the audit.
+  **The fix is mechanical:** move the contiguous block from the first dated heading after the ledger to
+  EOF up to just before `# Part B`, leaving the ledger as the file's last section. Verify with
+  `npm run docs:audit -- --only devlog-toc` plus a heading-count comparison before and after — same set,
+  same order, ledger last. **Consider adding a check** that no `^## 20` heading appears after the Part B
+  marker; that is the invariant this violates and nothing currently states it. 🔗 Bundle-with the
+  `[P1 · L]` documentation audit in the Queued section, which already covers "restructure where the file
+  has outgrown its shape" — this is a concrete instance of exactly that, recorded here so it doesn't get
+  lost inside a large item.
 - `[P2 · M · 🧩needs-design · ⛓️blocked-by nothing, just deferred]` **Give the dev bot a real Cloudinary
   write namespace instead of the fail-closed block.** Filed 2026-07-27 18:40 EDT alongside the guard in
   `utils/cloudinaryDevGuard.js` (v2.35.9). The guard currently refuses **every** Cloudinary write when
