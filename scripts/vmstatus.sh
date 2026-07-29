@@ -176,9 +176,10 @@ now=$(date +%s)
 
 # ── argument parsing ─────────────────────────────────────────────────────────
 # Deliberately BEFORE the panel renders. The panel costs an SSH round-trip plus several Cloud Logging
-# queries — measured ~10s on 2026-07-28 18:05 EDT), and validating afterwards meant a typo'd window made
-you wait out the whole probe to be told
-# you'd mistyped it. Parse first, fail fast, then do the slow work.
+# queries (measured ~10s on 2026-07-28 18:05 EDT), and validating afterwards meant a typo'd window made
+# you wait out the whole probe just to be told you'd mistyped it. Parse first, fail fast, then do the
+# slow work. (The `#` on the third line here went missing at some point, so a fragment of this very
+# comment was being executed as a command — it printed "you: command not found" on every single run.)
 WANT_LOGS=0; LINES=$DEFAULT_LINES; SINCE=""; UNTIL=""; WINDOW_LABEL="last 30d"; WINDOW_ARG=""
 if [ "${1:-}" = "logs" ]; then
   WANT_LOGS=1; shift

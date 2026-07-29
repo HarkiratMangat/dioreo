@@ -83,6 +83,15 @@ const PAGES = [
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+// Exactly what the deployed site contains, relative to a page inside legal/.
+// Keep this in step with build()/buildCompanions() — if a new file starts being
+// published, add it here or its cross-references stay inert text.
+const PUBLISHED_TARGETS = new Set([
+    'terms.html', 'privacy.html', 'index.html', '',
+    '../LICENSE', '../NOTICE',
+]);
+const isPublished = href => PUBLISHED_TARGETS.has(href.split('#')[0]);
+
 function inline(s) {
     // Code spans are extracted FIRST and reinserted last, so their contents are
     // never treated as markup (a literal `**` inside code must stay literal).
@@ -96,10 +105,20 @@ function inline(s) {
 
     s = esc(s);
     s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, h) => {
-        const ext = /^https?:/.test(h);
+        const ext = /^https?:|^mailto:/.test(h);
+        if (ext) return `<a href="${h}" target="_blank" rel="noopener noreferrer">${t}</a>`;
         // .md cross-links become .html so they resolve in the built site
-        const href = ext ? h : h.replace(/\.md(#.*)?$/i, '.html$1').replace(/^\.\.\/\.\.\//, '../');
-        return `<a href="${href}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ''}>${t}</a>`;
+        const href = h.replace(/\.md(#.*)?$/i, '.html$1').replace(/^\.\.\/\.\.\//, '../');
+        // Only a handful of targets are actually deployed. Everything else the
+        // source markdown points at — CLAUDE.md, ROADMAP.md, models/*.js, the
+        // rules files — exists only in the repo, which a reader may not be able to
+        // see (and the repo may be private at any time). Emitting those as links
+        // publishes guaranteed 404s inside a legal document, so they degrade to
+        // plain text instead. Verified by the build's own link audit, which found
+        // seven dead links the first time this ran.
+        return isPublished(href)
+            ? `<a href="${href}">${t}</a>`
+            : `<span class="ref">${t}</span>`;
     });
     s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s.,;:)]|$)/g, '$1<em>$2</em>');
@@ -285,7 +304,11 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 
 /* ──────────────────────────────── template ─────────────────────────────── */
 
-function shell({ title, short, kicker, accent, glow, body, toc, meta, other, otherShort }) {
+// `out` identifies the current page so the active nav tab is DERIVED rather than
+// inferred from the title. The previous `short === 'Terms' ? ... : 'privacy'`
+// test silently assumed there would only ever be two pages, and quietly marked
+// anything else as Privacy.
+function shell({ title, short, kicker, accent, glow, body, toc, meta, other, otherShort, out = '' }) {
     const slots = toc.filter(t => !t.sub).map(t =>
         `<a href="#${t.id}" class="slot"><i>${t.num ? esc(t.num) : '—'}</i><span>${esc(t.text)}</span></a>`
     ).join('');
@@ -404,6 +427,10 @@ ${TOKENS}
   text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
   padding-bottom:1px;white-space:nowrap}
 .xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+/* A reference to a repo file that is NOT published (see PUBLISHED_TARGETS). Styled
+   as a named thing rather than a link, so it reads as deliberate instead of broken. */
+.ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
+  border-bottom:1px dotted var(--rule);padding-bottom:1px}
 .doc code{font-family:var(--mono);font-size:.83em;background:var(--raised);
   border:1px solid var(--rule);padding:.11em .36em;color:var(--ink);word-break:break-word}
 .doc hr{border:0;border-top:1px solid var(--rule);margin:2.8rem 0}
@@ -460,8 +487,8 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark" href="./"><b></b> Dior's Builds</a>
   <nav>
-    <a class="tab on" href="./${short === 'Terms' ? 'terms' : 'privacy'}.html">${esc(short)}</a>
-    <a class="tab" href="./${other}">${esc(otherShort)}</a>
+    <a class="tab${out === 'terms.html' ? ' on' : ''}" href="./terms.html">Terms</a>
+    <a class="tab${out === 'privacy.html' ? ' on' : ''}" href="./privacy.html">Privacy</a>
     <button id="th" title="Toggle light or dark" aria-label="Toggle light or dark">◐</button>
   </nav>
 </div>
@@ -643,7 +670,45 @@ function build() {
 
     fs.writeFileSync(path.join(OUT, 'index.html'), indexPage(built));
     console.log('  ✓ index.html');
+    buildCompanions();
     return built;
+}
+
+/**
+ * TERMS.md and PRIVACY.md link to `../LICENSE`, `../NOTICE`, and
+ * `../CONTRIBUTING.html` — the licence and CLA a reader is entitled to reach from
+ * the documents that cite them. Those resolve one level ABOVE the legal/
+ * directory, so the deployed site root has to carry them or every one of those
+ * links 404s in a published legal document. Caught exactly that way: the first
+ * deploy plan uploaded `public/legal` alone, which would have shipped three dead
+ * links out of documents whose whole value is being verifiable.
+ *
+ * LICENSE and NOTICE are served as plain text on purpose — they are the
+ * authoritative instruments, and rendering them through this parser would put a
+ * lossy transformation between the reader and the operative wording. CONTRIBUTING
+ * is prose about a process, so it renders like the other pages.
+ */
+function buildCompanions() {
+    const root = path.join(ROOT, 'public');
+
+    for (const f of ['LICENSE', 'NOTICE']) {
+        fs.copyFileSync(path.join(ROOT, f), path.join(root, f));
+        console.log(`  ✓ ${f} (verbatim)`);
+    }
+
+    // The landing page lives at legal/index.html, so the site ROOT would otherwise
+    // 404 — confirmed live on the first deploy. A redirect is used rather than a
+    // second copy of the index at the root, because two landing pages drift and
+    // the pages' own nav ("Dior's Builds" → "./") already resolves to legal/.
+    fs.writeFileSync(path.join(root, '_redirects'), '/ /legal/ 302\n');
+    console.log('  ✓ _redirects (/ → /legal/)');
+
+    // CONTRIBUTING.md is deliberately NOT published. It was, briefly, and a link
+    // audit showed why that is wrong: it cross-references CLAUDE.md, ROADMAP.md,
+    // CONTRIBUTORS.md and docs/reference/, none of which are published, so it
+    // shipped four dead links. It is also a document about working on the repo —
+    // moot to a reader who cannot see the repo. PUBLISHED_TARGETS below is what
+    // makes references to it render as plain text instead of broken links.
 }
 
 /**
@@ -708,9 +773,60 @@ function verify(built) {
     return bad === 0;
 }
 
+/**
+ * Walks every built page and resolves each internal href against the deploy tree.
+ *
+ * This exists because it caught SEVEN dead links the first time it ran, on output
+ * that looked completely fine and reported 100% content present — the content
+ * verifier and this check fail on genuinely different things. A legal document's
+ * value is that its citations can be followed, so a 404 behind "see the LICENSE"
+ * is a real defect, not cosmetic. External URLs are not fetched (a build must not
+ * depend on the network); only same-site paths are resolved.
+ */
+function linkAudit() {
+    const root = path.join(ROOT, 'public');
+    const walk = d => fs.readdirSync(d, { withFileTypes: true })
+        .flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+
+    let checked = 0;
+    const dead = [];
+    for (const file of walk(root).filter(f => f.endsWith('.html'))) {
+        const html = fs.readFileSync(file, 'utf8');
+        for (const m of html.matchAll(/href="([^"]+)"/g)) {
+            const raw = m[1];
+            if (/^(https?:|mailto:|#|data:)/.test(raw)) continue;
+            const rel = raw.split('#')[0];
+            if (rel === '') continue;
+            checked++;
+            let target = path.resolve(path.dirname(file), rel);
+            if (fs.existsSync(target) && fs.statSync(target).isDirectory()) {
+                target = path.join(target, 'index.html');
+            }
+            if (!fs.existsSync(target)) {
+                dead.push(`${path.relative(ROOT, file)} → ${raw}`);
+            }
+        }
+    }
+
+    if (dead.length) {
+        console.log(`  ✗ ${dead.length} DEAD internal link(s) of ${checked} checked:`);
+        dead.forEach(d => console.log(`      ${d}`));
+        console.log('    Either publish the target, or add it to PUBLISHED_TARGETS so the');
+        console.log('    reference renders as plain text instead of a broken link.');
+        return false;
+    }
+    console.log(`  ✓ all ${checked} internal links resolve`);
+    return true;
+}
+
 console.log('Building legal pages →', path.relative(ROOT, OUT));
 const built = build();
 console.log('\nVerifying rendered output against source:');
-const ok = verify(built);
-console.log(ok ? '\nDone. All content accounted for.' : '\nFAILED — content missing from rendered output.');
+const contentOk = verify(built);
+console.log('\nAuditing internal links:');
+const linksOk = linkAudit();
+const ok = contentOk && linksOk;
+console.log(ok
+    ? '\nDone. All content accounted for and every link resolves.'
+    : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);

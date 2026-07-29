@@ -148,6 +148,10 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
   text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
   padding-bottom:1px;white-space:nowrap}
 .xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+/* A reference to a repo file that is NOT published (see PUBLISHED_TARGETS). Styled
+   as a named thing rather than a link, so it reads as deliberate instead of broken. */
+.ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
+  border-bottom:1px dotted var(--rule);padding-bottom:1px}
 .doc code{font-family:var(--mono);font-size:.83em;background:var(--raised);
   border:1px solid var(--rule);padding:.11em .36em;color:var(--ink);word-break:break-word}
 .doc hr{border:0;border-top:1px solid var(--rule);margin:2.8rem 0}
@@ -204,8 +208,8 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark" href="./"><b></b> Dior's Builds</a>
   <nav>
-    <a class="tab on" href="./privacy.html">Privacy</a>
     <a class="tab" href="./terms.html">Terms</a>
+    <a class="tab on" href="./privacy.html">Privacy</a>
     <button id="th" title="Toggle light or dark" aria-label="Toggle light or dark">◐</button>
   </nav>
 </div>
@@ -284,7 +288,7 @@ html{scroll-behavior:smooth}
 <h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">If a provider mishandles your data</span><a class="anchor" href="#s-5.2" aria-label="Link to this section">¶</a></h3>
 <p>We choose our providers carefully and rely on their published privacy terms and data processing agreements. But we are one person, and <strong>we have no ability to audit, inspect, or control what Discord, Google, MongoDB, or Cloudinary actually do inside their own systems.</strong></p>
 <p>So, plainly:</p>
-<ul><li><strong>Discord is an independent controller of its own data</strong>, not our processor. What Discord collects about you through using Discord — far more than we ever see — is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a> and is Discord's responsibility, not ours.</li><li><strong>Our other providers act as processors</strong> on our instructions, under their own data processing agreements. We do not authorise any of them to use your data for their own purposes, and we have not agreed to any such use.</li><li><strong>If a provider acts outside those terms</strong>, that is their breach. To the fullest extent the law allows, we are not liable to you for it. Our liability to you in any event is limited by §15 of the <a href="TERMS.html">Terms of Service</a>.</li><li><strong>What we will do:</strong> if we learn a provider has mishandled your data, we will investigate, tell you where <a class="xref" href="#s-8.1">§8.1</a> requires it, notify the relevant regulator where required, and change provider where that's the right answer.</li></ul>
+<ul><li><strong>Discord is an independent controller of its own data</strong>, not our processor. What Discord collects about you through using Discord — far more than we ever see — is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a> and is Discord's responsibility, not ours.</li><li><strong>Our other providers act as processors</strong> on our instructions, under their own data processing agreements. We do not authorise any of them to use your data for their own purposes, and we have not agreed to any such use.</li><li><strong>If a provider acts outside those terms</strong>, that is their breach. To the fullest extent the law allows, we are not liable to you for it. Our liability to you in any event is limited by §15 of the <span class="ref">Terms of Service</span>.</li><li><strong>What we will do:</strong> if we learn a provider has mishandled your data, we will investigate, tell you where <a class="xref" href="#s-8.1">§8.1</a> requires it, notify the relevant regulator where required, and change provider where that's the right answer.</li></ul>
 <blockquote class="callout"><p><strong>Being honest about a limit of this section.</strong> If data protection law applies to us, we are the <strong>controller</strong>, and a controller carries responsibility for choosing and overseeing its processors that it cannot simply disclaim in a privacy notice. This section allocates <em>contractual</em> risk between you and us and tells you the truth about what we can and can't control. It does not, and cannot, override any obligation the law places on us, and we don't pretend otherwise.</p></blockquote>
 <h3 id="s-5.3" class="numbered"><span class="idx" aria-hidden="true">5.3</span><span class="ht">Other disclosure</span><a class="anchor" href="#s-5.3" aria-label="Link to this section">¶</a></h3>
 <p>We may disclose information where legally required — a valid court order, subpoena, or law-enforcement request under Canadian law — or where necessary to investigate a security incident or protect someone's rights or safety. Given what we hold, such a request would yield very little. Where we are lawfully permitted to tell you about such a request, we will.</p>
@@ -338,7 +342,7 @@ html{scroll-behavior:smooth}
 <p>We honour the equivalent rights anyway. For the record, in CCPA terms: the only category of personal information we collect is <strong>identifiers</strong> (a Discord user ID) plus user-set preferences; we collect it directly from your use of the Bot; we use it solely to operate the Bot; <strong>we do not and have never sold or shared personal information</strong>; and we do not collect sensitive personal information.</p>
 <hr>
 <h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Children's privacy</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
-<p>The Bot is <strong>not directed at children</strong>. You must meet Discord's minimum age for your country — <strong>13 in most places, and 14, 15, or 16 in parts of the EU and elsewhere</strong>. See <a class="xref" href="#s-3">§3</a> of the <a href="TERMS.html">Terms of Service</a>.</p>
+<p>The Bot is <strong>not directed at children</strong>. You must meet Discord's minimum age for your country — <strong>13 in most places, and 14, 15, or 16 in parts of the EU and elsewhere</strong>. See <a class="xref" href="#s-3">§3</a> of the <span class="ref">Terms of Service</span>.</p>
 <p>We do not knowingly collect data from anyone below that age, and we have no mechanism to verify age beyond Discord's own — we rely on Discord's enforcement of its minimum age.</p>
 <p>If you believe a child's data is stored, email <strong>harkirat117@gmail.com</strong> and we will delete it promptly and without requiring the verification steps in <a class="xref" href="#s-9.2">§9.2</a>.</p>
 <p>Because we never collect names, emails, photographs, or message content, the data we hold about any user — including a young one — is limited to a Discord ID and display preferences.</p>
@@ -357,7 +361,7 @@ html{scroll-behavior:smooth}
 <p>For privacy requests, use the subject line <strong>"Privacy Request"</strong> and include your Discord user ID.</p>
 <hr>
 <h2 id="appendix-a-complete-data-inventory" class="plain"><span class="ht">Appendix A — Complete data inventory</span><a class="anchor" href="#appendix-a-complete-data-inventory" aria-label="Link to this section">¶</a></h2>
-<p>Every field stored about a user. This mirrors the <code>UserPreference</code> schema, which you can read yourself at <a href="../models/UserPreference.js"><code>models/UserPreference.js</code></a>.</p>
+<p>Every field stored about a user. This mirrors the <code>UserPreference</code> schema, which you can read yourself at <span class="ref"><code>models/UserPreference.js</code></span>.</p>
 <p><strong>Identity</strong></p>
 <ul><li><code>discordId</code> — your Discord user ID</li></ul>
 <p><strong>Preferences</strong></p>
