@@ -129,6 +129,12 @@ version-number-yes; MAJOR always asked separately) → **deploy**, a separate op
 (`git pull` → restart) → verify `scripts/vmstatus.sh` (asked). **A merge alone does NOT update the VM** —
 a merged version can sit undeployed indefinitely; say plainly which steps happened ("merged v2.x, deploy
 held"), never let "merged" imply "live."
+**Close out the merge by refreshing the local refs — no checkout required:**
+`git fetch origin main:main v3-pre-release:v3-pre-release` writes them directly, and git *refuses* the
+refspec if that branch is checked out, so it can never disturb a working tree another session is using.
+Leaving them behind was mistaken for real drift once (v2.42.1). **A `behind` marker in `git branch -vv`
+is a fact about the local clone, never about the remote** — report actual branch sync from
+`git rev-list --left-right --count origin/main...origin/v3-pre-release` (`0 0` = identical).
 **⚠️ ONE commit + ONE tag per release — never a follow-up `chore(release): finalize …` commit
 (retired 2026-07-27 21:27 EDT, v2.36.0).** The bump and changelog entry go on the BRANCH, before the
 merge, so they fold into the squash commit and the tag lands on a commit whose `package.json` already
