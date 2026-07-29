@@ -20,6 +20,33 @@ the subsystem rule it belongs to:*
   every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you
   touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
 
+  ⚠️ **It has TWO independent gates and passing one proves nothing about the other** (learned the hard
+  way 2026-07-29 18:55 EDT, v2.43.1). `verify()` checks that every multi-word run of source survived into
+  the HTML; `linkAudit()` resolves every internal href against the deploy tree. Both documents reported
+  **"100% of source content present" while shipping seven dead links** — content presence and link
+  resolution are different properties, and only the first had a check. Never read a clean `verify()` as
+  "the output is correct."
+  - **`PUBLISHED_TARGETS` is the allowlist of what actually gets deployed.** The source Markdown
+    cross-references plenty of repo-only files (`CLAUDE.md`, `ROADMAP.md`, `models/UserPreference.js`,
+    the rules files); those render as inert `<span class="ref">` text instead of links, because a 404
+    inside a legal document is worse than an unlinked mention. **If you start publishing a new file, add
+    it here or its references stay inert.** Do NOT "fix" these by pointing at GitHub — the repo can be
+    private at any time, which is why the documents carry no repo links at all.
+  - `CONTRIBUTING.md` is deliberately **not** published; it was, briefly, and brought four more dead
+    links plus it documents working on a repo the reader may not be able to see.
+  - `public/_redirects` maps `/` → `/legal/` because the landing page lives in `legal/` and the site root
+    would otherwise 404. Cloudflare Pages also serves **extensionless** canonical URLs and 308-redirects
+    the `.html` form — so any script checking the live site needs `curl -L`, or it reads zero bytes and
+    reports total drift. `dior legal check` in the CLI repo does this correctly; copy from it.
+
+⚠️ **`vmstatus.sh` had a lost `#` for an unknown number of days** (fixed 2026-07-29 18:55 EDT, v2.43.1).
+Line 180 was a fragment of its own multi-line comment with the leading `#` missing, so the shell executed
+`you wait out the whole probe to be told` as a command and printed `you: command not found` on **every
+run**, from the Mac and on the VM. **`bash -n` cannot catch this** — the line is valid syntax, it just
+isn't a comment any more, which puts it in the same class as the bash-3.2 constructs noted above. When
+editing this script's long comment blocks, re-run it and read the FIRST lines of output, not just the
+panel; the error printed above the banner and had been read past as noise more than once.
+
 ⚠️ **`vmstatus.sh` runs in TWO places and the difference is load-bearing** (rewritten 2026-07-28 15:34 EDT,
 v2.41.0 — design: `docs/superpowers/specs/2026-07-28-vmstatus-overhaul-design.md`). Normally it runs
 **from the Mac** and reaches the VM over SSH. But `deploy.sh` runs it **on the VM** as its post-restart
