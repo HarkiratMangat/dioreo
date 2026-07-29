@@ -267,6 +267,13 @@ entire `public/` tree while this was being written — none of which the audit c
   a probe that scanned only `.md` and then shipped a check that also scanned `.js`/`.json`.
 - The audit now states **what a pass does not mean** on every run, and reports when it is running in a
   linked worktree (where gitignored files are legitimately absent).
+- **Folded in the second-account co-author trailer convention** (`docs: adopt a real second-account
+  co-author trailer for commits`, authored 2026-07-28 18:31 EDT) that had been stranded on a branch in
+  a nested worktree. Every commit now carries `Co-Authored-By: diorswrld
+  <310361322+diorswrld@users.noreply.github.com>` alongside the Claude trailer — a genuinely separate
+  personal account, which is what actually earns Pair Extraordinaire. It shipped here rather than as
+  its own release because it carried no changelog entry or version bump of its own, and one merged PR
+  is one version.
 
 ## v2.41.4 — 2026-07-28 18:40 EDT (#51 · `925aa0a`) — A hard reset that ate another session's work
 **Docs only — no behaviour change.**
