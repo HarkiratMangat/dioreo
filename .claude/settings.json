@@ -124,6 +124,10 @@
             "type": "command",
             "command": "today=$(date +%Y-%m-%d); content=$(jq -r '.tool_input.new_string // .tool_input.content // empty'); hits=$(printf '%s' \"$content\" | grep -F \"$today\"); if [ -n \"$hits\" ]; then bad=$(printf '%s' \"$hits\" | grep -vE \"$today [0-9]{2}:[0-9]{2}\"); if [ -n \"$bad\" ]; then jq -n --arg d \"$today\" '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:(\"TIMESTAMP CHECK: this edit wrote the date \" + $d + \" without an HH:MM TZ time next to it. Working-agreement checklist rule 10 (feedback_docs_at_push_time): every date you write in docs, memory, DEVLOG, changelogs, notes marks, or code comments needs YYYY-MM-DD HH:MM TZ. Add the time now, or -- only if it is a deliberate bare date such as a historical reference or the player-facing summary -- confirm that before moving on.\")}}'; fi; fi",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-hardwrap-check.sh\""
           }
         ]
       }

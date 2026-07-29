@@ -26,6 +26,22 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.43.0 — July 29, 2026
+- **The bot now has a Terms of Service and a Privacy Policy**, and you can read both as proper web
+  pages. The privacy policy lists *every single thing* the bot stores about you — field by field — where
+  it's kept, and how long for. Short version: your timestamp preference, your region, your colour
+  settings, and a few counters. **The bot cannot read your messages**; it isn't technically able to.
+- **Your data is stored in Canada.** Nothing about you is sent to any AI system.
+- **Want your data deleted?** Email harkirat117@gmail.com and it'll be done. Honest note: there's no
+  self-serve button for this yet — it's a manual request for now, and building the automatic version is
+  already on the to-do list.
+- **The bot's source code now has a proper licence.** You're welcome to read it, study it, audit it for
+  security problems, and run it locally for yourself. You can't deploy your own copy for other people to
+  use, or use it commercially.
+- Credit where it's due: some of the custom emoji you see come from **tofooo** on emoji.gg.
+- *Nothing about the bot itself changed in this release — no new commands, no fixes, no behaviour
+  differences. It's paperwork, and it's the kind you should be able to actually read.*
+
 ## v2.42.2 — July 29, 2026
 - *Internal only — fixed a filing mistake in Dior's own development journal (some entries had ended up in the wrong section) and added an automatic check so it can't happen again quietly. Nothing players see.*
 

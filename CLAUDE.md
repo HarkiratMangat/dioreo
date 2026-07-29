@@ -280,6 +280,20 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
 
+### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
+`public/legal/{terms,privacy,index}.html` is **build output**, deployed to Cloudflare Pages so the
+Discord Developer Portal has stable public URLs that survive the repo flipping private. The source of
+truth is `docs/legal/*.md`; the HTML is produced by **`node scripts/buildLegalPages.js`**.
+- **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
+  the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
+  an empty build command, so nothing has to run on their side.
+- The build **verifies itself**: it re-reads its own output and asserts every multi-word run from the
+  source survived rendering, then reports a percentage. It is not a "it didn't crash" check — treat
+  anything below 100% as lost content, but confirm against the source before believing it, because
+  two of its early failures were verifier bugs (ordered-list markers and stop-words), not real loss.
+- It renders every `§N` cross-reference into a working anchor. That is why the parser only ever
+  rewrites text nodes — touching markup would corrupt existing `href`s.
+
 ### ⚖️ Licensing — source-available, NOT open source (added 2026-07-28 21:36 EDT)
 `LICENSE` is the custom **Dior's Builds Source-Available License v1.0**: read/study/audit and
 **local single-user** running are permitted; deploying anywhere another person can use it,

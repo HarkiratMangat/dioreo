@@ -267,6 +267,26 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   works in those blocked-context cases AND is shareable OUTSIDE Discord entirely (a link/page). A `/invite`
   command is the obvious start but hits the blocked-user-apps wall — solve for that case too. Relates to the
   v4 guild-install direction, which would change the sharing story again (reconcile at design time).
+- **First-use welcome guide** `[P2 · S]` (filed 2026-07-29 18:24 EDT from the notes file) — on a user's very
+  first command, append a short welcome/orientation message: what the bot does, its main features, and a
+  pointer to `/help` for detail. Needs no new permissions and works in DMs — it is one extra component on a
+  first-use flag in `UserPreference`, and an interaction response never pings anyone. **The design question
+  worth settling before building is where that flag lives and how it interacts with `utils/passiveExpiry.js`**,
+  since a user whose panel idles out and comes back must not be re-welcomed. Pairs naturally with the `/help`
+  command already queued above — build them together or the welcome message points at something that isn't
+  there yet. Remember to add the flag to the Mongoose schema in the same change (the schema-save gotcha).
+- **Show a user's ACTUAL local time, not their configured timezone** `[P2 · M · 🧩needs-design]` (filed
+  2026-07-29 18:24 EDT from the notes file) — Harkirat asked for a way to read a user's current time from
+  their device or location rather than the timezone they set in `/settings`, and asked directly whether it is
+  even possible. **Answered, because it changes what this feature can be: NO. Discord exposes no device clock
+  and no geolocation to bots — there is no API for it, and no permission, intent, or guild install unlocks
+  it. It is a data-availability limit, not a permissions problem, so this cannot be built as literally
+  described.** His other concerns resolve easily by comparison: it would work in DMs, and nobody gets pinged
+  (an interaction response is not a mention). What IS buildable is better *inference plus less friction* —
+  either a one-tap timezone picker surfaced on first use (a select menu, no typing, no hunting through
+  `/settings`), or a guess derived from the user's Discord locale that they confirm or correct in one click.
+  Both are honest about being a guess, which the current silent default is not. Bundle with the welcome-guide
+  item above: first use is exactly the moment to ask.
 
 ### v4 — roadmap (filed 2026-07-15, further out than v3; nothing designed yet)
 - **Ship as a GUILD-INSTALL bot with text/prefix commands** — e.g. `d b ak117` ("dior build ak117"),
