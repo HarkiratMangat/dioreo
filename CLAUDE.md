@@ -251,8 +251,28 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
+| `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
+
+### ⚖️ Licensing — source-available, NOT open source (added 2026-07-28 21:36 EDT)
+`LICENSE` is the custom **Dior's Builds Source-Available License v1.0**: read/study/audit and
+**local single-user** running are permitted; deploying anywhere another person can use it,
+redistributing, commercial use, competing services, Curated-Data extraction, and AI/ML training are
+all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Available-1.0` and
+`"private": true` (guards against an accidental `npm publish`).
+- **`package.json` said `"license": "ISC"` until 2026-07-28 21:36 EDT** — a permissive licence that contradicted
+  every intention here, on a PUBLIC repo, with no LICENSE file present. **Never "helpfully" restore a
+  standard OSI licence** (MIT/ISC/Apache) or describe this project as open source.
+- **The repo is public, so GitHub ToS §D.5 lets anyone fork it on GitHub and that cannot be revoked**
+  while it stays public. That right is confined to reproduction *on GitHub* — it grants no
+  derivative-work or off-GitHub redistribution right, which is why `LICENSE` §4.2 carves the fork out
+  explicitly rather than pretending to ban it.
+- Contributions are governed by the CLA in `LICENSE` §5 + `CONTRIBUTING.md`; credit is a **binding
+  obligation** (§5.6) discharged via `CONTRIBUTORS.md` **and** the changelog entry for the shipping
+  release. Crediting a merged external contribution is not optional.
 
 ### Records & workflow (outside the rules system)
+- **`LICENSE` / `CONTRIBUTING.md` / `CONTRIBUTORS.md`** (repo root) — licence terms + CLA, the
+  contributor guide, and the credit ledger. See the licensing block above.
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
