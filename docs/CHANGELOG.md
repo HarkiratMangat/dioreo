@@ -181,7 +181,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.43.0 — 2026-07-29 12:30 EDT (#54) — Nineteen entries the table of contents never lied about
+## v2.42.2 — 2026-07-29 12:30 EDT (#54) — Nineteen entries the table of contents never lied about
 **Docs + tooling — no bot behaviour change.**
 - **Moved 19 misplaced DEVLOG journal entries back into Part A.** An append-to-EOF habit had landed
   them physically below the `# Part B — Lessons Ledger` header — whose own text claims "no dated

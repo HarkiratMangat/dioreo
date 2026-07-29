@@ -3041,6 +3041,7 @@ ask whether it blocks the **goal** or just that one command. Plumbing usually ha
 ---
 
 ## 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
+*Released as `v2.42.2`.*
 
 The line at the top of Part B reads "no dated entries" — an invariant nobody was checking. 19 dated
 journal entries (2026-07-27 08:02 EDT through 2026-07-29 11:44 EDT) were sitting below that header,
