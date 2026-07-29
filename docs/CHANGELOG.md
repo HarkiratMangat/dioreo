@@ -181,7 +181,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.42.1 — 2026-07-29 11:44 EDT (#PRNUM) — A local ref is not a remote state
+## v2.42.1 — 2026-07-29 11:44 EDT (#53) — A local ref is not a remote state
 **Docs only — no code change, no bot behaviour change.**
 - **Brought the stale local `main` / `v3-pre-release` refs current without a checkout.** They had been
   left behind after the v2.42.0 merge because the working tree was on another session's branch and
