@@ -181,7 +181,51 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.43.0 — 2026-07-29 18:24 EDT (#55) — A licence that said the opposite of what it meant
+## v2.43.1 — 2026-07-29 18:55 EDT (#56) — Seven dead links inside the documents whose point is being checkable
+**Docs + tooling — no bot behaviour change.** Going live found things that only going live could find.
+
+- **The legal site is LIVE** at `https://diors-builds-legal.pages.dev`, on Cloudflare Pages. The
+  canonical URLs are **extensionless** — Pages 308-redirects the `.html` form — so the Discord Developer
+  Portal should carry `…/legal/terms` and `…/legal/privacy`, not the `.html` variants.
+- **`terms.html` and `privacy.html` shipped SEVEN dead internal links**, and both documents had reported
+  "100% of source content present" while doing it. The content verifier and link resolution fail on
+  genuinely different things, and only one of them was being checked. Broken citations in a document
+  whose entire value is that its citations can be followed is not a cosmetic defect.
+- **Root cause: the source Markdown cross-references repo files that are not published** — `CLAUDE.md`,
+  `ROADMAP.md`, `CONTRIBUTORS.md`, `models/UserPreference.js`, the rules files. The `.md` → `.html`
+  rewrite turned each into a link to nothing. Fixed with an explicit `PUBLISHED_TARGETS` allowlist: a
+  reference to something that is not deployed now renders as styled plain text instead of a 404. That is
+  the right answer rather than linking to GitHub, because the repo may be private at any time — the same
+  reason these documents carry no repo links at all.
+- **`LICENSE` and `NOTICE` are now published** (verbatim text, deliberately not run through the parser —
+  they are the operative instruments and a lossy transformation has no business between a reader and the
+  wording). `TERMS`/`PRIVACY` cite them, so they had to be reachable.
+- **`CONTRIBUTING.html` was built, then deliberately un-built.** Publishing it dragged in four more dead
+  links to unpublished repo docs, and it is a document about working on a repo the reader may not be able
+  to see. Reverted in the same session it was added; the allowlist is what handles references to it now.
+- **A `linkAudit()` stage is now part of the build and fails it.** Every internal href in every built page
+  is resolved against the deploy tree. This is the check that found the seven, on output that looked
+  perfect — so it is permanent rather than a thing someone ran once by hand.
+- **`_redirects` maps `/` → `/legal/`.** The site root 404'd on the first deploy because the landing page
+  lives in `legal/`. A redirect rather than a second copy of the index, since two landing pages drift.
+- **The nav's active tab is now derived from the page** instead of inferred by testing the title against
+  the string `Terms`, which silently labelled any third page as Privacy.
+- **`scripts/vmstatus.sh` line 180 had lost its `#`**, so a fragment of its own comment was executed as a
+  command and printed `you: command not found` on every single run, from the Mac and on the VM. `bash -n`
+  cannot catch this — it is valid syntax, just not a comment.
+- **Notes-file workflow, two corrections from Harkirat.** Mark-dates now carry a time
+  (`(YYYY-MM-DD HH:MM TZ)`); the legend had required this since 2026-07-24 18:07 EDT and I had written a
+  bare date, then wrongly defended it as deliberate. And **acting on one of his follow-up marks now
+  requires replying with one** — a comment carries the date it was written, so a past-dated comment
+  cannot tell him whether it is a fresh reply or nine days old, which is exactly what happened on the
+  MarkEdit item. Both are now written into the file's own legend.
+- **`dior legal` shipped in the CLI** (separate repo): `deploy` / `check` / `build` / `open`. `deploy`
+  always rebuilds and refuses to upload a build that fails verification; `check` compares live SHA-256
+  against the local build, because a 200 proves something is there, not that it is current.
+
+---
+
+## v2.43.0 — 2026-07-29 18:24 EDT (#55 · `3dc6f4b`) — A licence that said the opposite of what it meant
 **Docs + tooling — no bot behaviour change.** The project's legal footing, and the first time it has had one.
 
 - **`package.json` declared `"license": "ISC"` on a public repo with no LICENSE file.** ISC is

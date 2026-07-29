@@ -26,6 +26,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.43.1 — July 29, 2026
+- **The Terms and Privacy pages are now live and public**, at
+  [diors-builds-legal.pages.dev](https://diors-builds-legal.pages.dev). You can read them any time — no
+  Discord account, no GitHub, nothing to sign in to.
+- Fixed a batch of links inside those pages that pointed nowhere. If a document says "see the licence,"
+  that link should actually take you to the licence — so the licence is published too now.
+- *Everything else here is internal tooling. No changes to the bot itself.*
+
 ## v2.43.0 — July 29, 2026
 - **The bot now has a Terms of Service and a Privacy Policy**, and you can read both as proper web
   pages. The privacy policy lists *every single thing* the bot stores about you — field by field — where

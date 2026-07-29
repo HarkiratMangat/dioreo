@@ -1,0 +1,308 @@
+================================================================================
+NOTICE — Third-Party Software, Trademarks, and Authorship
+Dior's Builds
+================================================================================
+
+Copyright (c) 2026 Harkirat Mangat ("dior"). All rights reserved.
+
+This file records (1) the third-party software Dior's Builds depends on and the
+licenses that govern it, (2) third-party trademarks referenced by the project,
+and (3) a disclosure of AI assistance in authoring the project.
+
+This file is required reading alongside LICENSE. Nothing in LICENSE restricts,
+enlarges, or otherwise varies your rights in any third-party component listed
+below — those components are licensed to you by their own licensors, on their
+own terms.
+
+
+================================================================================
+1. DIRECT DEPENDENCIES
+================================================================================
+
+Runtime dependencies, as declared in package.json:
+
+  chrono-node 2.9.1              MIT
+                                 Copyright (c) Wanasit Tanakitrungruang
+                                 https://github.com/wanasit/chrono
+
+  cloudinary 2.10.0              MIT
+                                 Copyright (c) Cloudinary Ltd.
+                                 https://cloudinary.com
+
+  color-namer 1.4.0              MIT
+                                 Copyright (c) Zeke Sikelianos
+                                 https://github.com/colorjs/color-namer
+
+  dayjs 1.11.21                  MIT
+                                 Copyright (c) iamkun
+                                 https://day.js.org
+
+  discord.js 14.26.4             Apache License 2.0
+                                 Copyright (c) discord.js contributors
+                                 https://discord.js.org
+                                 *** See Section 2 — Apache-2.0 obligations ***
+
+  dotenv 17.4.1                  BSD-2-Clause
+                                 Copyright (c) Scott Motte and contributors
+                                 https://github.com/motdotla/dotenv
+
+  jimp 1.6.1                     MIT
+                                 Copyright (c) Andrew Lisowski
+                                 https://github.com/jimp-dev/jimp
+
+  mongoose 9.7.3                 MIT
+                                 Copyright (c) LearnBoost <dev@learnboost.com>
+                                 https://mongoosejs.com
+
+Development dependencies:
+
+  xlsx (SheetJS) 0.18.5          Apache License 2.0
+                                 Copyright (c) SheetJS LLC
+                                 https://sheetjs.com
+                                 *** See Section 2 — Apache-2.0 obligations ***
+                                 Not used at runtime; required only by
+                                 scripts/migrateBuildsToMongo.js.
+
+
+================================================================================
+2. APACHE LICENSE 2.0 OBLIGATIONS
+================================================================================
+
+discord.js and xlsx are licensed under the Apache License, Version 2.0. If you
+redistribute this project or any work containing those components, Apache-2.0
+§4 requires you to:
+
+  (a) give recipients a copy of the Apache License 2.0;
+  (b) retain all copyright, patent, trademark, and attribution notices;
+  (c) state prominently that you changed any Apache-licensed file, if you did;
+      and
+  (d) include the contents of any NOTICE file distributed with those works.
+
+The full Apache License 2.0 text is available at:
+    http://www.apache.org/licenses/LICENSE-2.0
+
+The authoritative license text and any NOTICE file for each component ship
+inside that package's own directory under node_modules/.
+
+Note that LICENSE §4.2 prohibits you from redistributing Dior's Builds in any
+event. This section exists because the obligation attaches to the upstream
+components independently of what the Licensor permits, and because a GitHub
+fork places a copy in your hands.
+
+
+================================================================================
+3. TRANSITIVE DEPENDENCIES
+================================================================================
+
+The installed dependency tree resolves to 127 top-level packages under
+node_modules/, distributed across these licenses:
+
+     90   MIT
+     19   Apache-2.0
+      9   ISC
+      2   BSD-2-Clause
+      2   BSD-3-Clause
+      2   (unspecified in package metadata)
+      1   MIT AND Zlib
+      1   BlueOak-1.0.0
+      1   0BSD
+
+  *** No copyleft or reciprocal license (GPL, AGPL, LGPL, MPL, EUPL, CDDL, or
+      SSPL) is present anywhere in the tree. ***
+
+That matters: a reciprocal license in the dependency graph could oblige the
+Licensor to publish source under terms incompatible with the source-available
+model in LICENSE. This tree carries no such obligation. Re-verify after adding
+any dependency.
+
+  Counts measured 2026-07-28 21:36 EDT against the committed package-lock.json.
+  They will drift as dependencies change; regenerate rather than trusting the
+  numbers above. Authoritative per-package license text lives in each package's
+  own directory under node_modules/.
+
+
+================================================================================
+4. PLATFORM AND SERVICE PROVIDERS
+================================================================================
+
+Dior's Builds interoperates with, and depends on, services operated by third
+parties. Their terms govern their services, not this LICENSE.
+
+  Discord                Discord Inc.            https://discord.com/terms
+  GitHub                 GitHub, Inc.            https://docs.github.com/site-policy
+                         (a Microsoft company)
+  MongoDB Atlas          MongoDB, Inc.           https://www.mongodb.com/legal
+  Cloudinary             Cloudinary Ltd.         https://cloudinary.com/tou
+  Google Cloud Platform  Google LLC              https://cloud.google.com/terms
+  Google Cloud Logging   Google LLC              https://cloud.google.com/terms
+                         (server logs, 30-day retention)
+  Google Cloud Vertex AI Google LLC              https://cloud.google.com/terms
+                         (aiplatform.googleapis.com — the ENTERPRISE path, not
+                         the consumer Gemini API at generativelanguage.
+                         googleapis.com. Google does not train on data submitted
+                         to Vertex AI. Admin-only; no end-user data is sent.)
+  Node.js                OpenJS Foundation       https://nodejs.org
+  FFmpeg                 FFmpeg team             https://ffmpeg.org
+                         (system binary; LGPL/GPL depending on build — invoked
+                         as a separate process, never linked or redistributed)
+
+
+================================================================================
+4A. THIRD-PARTY CREATIVE ASSETS
+================================================================================
+
+4A.1  EMOJI
+
+Some custom emoji used in the Bot's interface were created by third-party artists
+and obtained through emoji.gg. With thanks:
+
+    tofooo                      https://emoji.gg/user/tofooo
+
+LICENSE TIER — CONFIRMED. These emoji carry emoji.gg's **Basic License**:
+
+    "This license grants you permission to use this emoji on Discord, Slack and
+     any other platform where the user is not charged for access to the emoji."
+
+The Bot satisfies this: it is distributed free of charge, has no paid tier, no
+subscription, and no in-app purchase, so no user is ever charged for access to
+these emoji. The Licensor additionally credits the creator (not strictly required
+by the Basic License, but given regardless), claims no ownership, and does not
+redistribute them as standalone assets. See emoji.gg's terms
+(https://emoji.gg/terms) and license reference (https://emoji.gg/licenses).
+
+  >> STANDING CONSTRAINT — READ BEFORE MONETISING. The Basic License is
+  >> conditional on users not being charged for access. If the Bot ever
+  >> introduces a paid tier, subscription, or any paywall, the license no longer
+  >> covers this use and these emoji MUST be replaced or separately licensed
+  >> first. This is a real limit on the project's commercial options, not a
+  >> formality. It is cross-referenced in TERMS.md §4.2 (the Bot is free).
+
+Creators whose work appears here and who want different attribution, or removal,
+should email harkirat117@gmail.com. Requests are actioned promptly.
+
+4A.2  OTHER VISUAL MATERIAL
+
+Game imagery, weapon renders, and screenshots displayed by the Bot are covered by
+Section 5 below and remain the property of their respective owners.
+
+
+================================================================================
+5. TRADEMARK ACKNOWLEDGEMENTS
+================================================================================
+
+All trademarks, service marks, and trade names referenced in this project or in
+its output are the property of their respective owners. Their use here is
+nominative — for identification and reference only — and does not imply
+endorsement, sponsorship, affiliation, or any commercial relationship.
+
+  Call of Duty(R), Call of Duty(R): Mobile, Activision(R)
+      Trademarks of Activision Publishing, Inc.
+      Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent
+      subsidiary) and published by Activision, with regional publishing by
+      Garena and VNG Games in some territories.
+
+  Discord(R)             Discord Inc.
+  GitHub(R)              GitHub, Inc. / Microsoft Corporation
+  MongoDB(R), Atlas(R)   MongoDB, Inc.
+  Cloudinary(R)          Cloudinary Ltd.
+  Google Cloud(TM), Gemini(TM), Vertex AI(TM)
+                         Google LLC
+  Microsoft(R), Azure(R) Microsoft Corporation
+  Amazon Web Services(R), S3(R)
+                         Amazon.com, Inc.
+  Node.js(R)             OpenJS Foundation
+  Apple(R), macOS(R), iOS(R)
+                         Apple Inc.
+  Android(TM)            Google LLC
+  Claude(TM), Anthropic(R)
+                         Anthropic PBC
+
+  >>> DIOR'S BUILDS IS AN UNOFFICIAL, NON-COMMERCIAL FAN PROJECT. IT IS NOT
+  >>> DEVELOPED, PUBLISHED, LICENSED, ENDORSED, SPONSORED BY, OR AFFILIATED
+  >>> WITH ACTIVISION PUBLISHING, INC., TiMi STUDIO GROUP, TENCENT, GARENA,
+  >>> VNG GAMES, DISCORD INC., OR ANY OF THEIR AFFILIATES.
+
+Weapon names, attachment names, item names, in-game imagery, screenshots, and
+other game content displayed by this project remain the property of their
+respective owners. The Licensor claims no ownership of that material and grants
+no rights in it. It is reproduced for identification, commentary, and reference
+in a manner believed to constitute fair dealing under the Copyright Act
+(Canada) and fair use under 17 U.S.C. § 107.
+
+Rights holders: to request removal of any material, email
+harkirat117@gmail.com. Requests are actioned promptly.
+
+
+================================================================================
+6. AI ASSISTANCE DISCLOSURE
+================================================================================
+
+Portions of Dior's Builds — including source code, documentation, and these
+legal documents — were authored with the assistance of AI coding assistants,
+principally Claude (Anthropic PBC), used as a drafting and implementation tool
+under the continuous direction of the human author.
+
+This disclosure is made deliberately, for three reasons.
+
+6.1  HONESTY. Anyone reading, auditing, or contributing to this project is
+     entitled to know how it was built.
+
+6.2  COPYRIGHT. The enforceability of LICENSE depends on copyright subsisting
+     in this work. The position in the United States, as set out by the
+     Copyright Office and left undisturbed when the Supreme Court denied
+     certiorari on 2 March 2026, is that:
+
+       - material generated autonomously by AI, without human creative
+         control, is NOT protected by copyright; but
+       - a work is protected where a human exercised meaningful creative
+         control over its expressive elements, and AI-assisted works are
+         copyrightable to the extent of that human contribution.
+
+     Accordingly, the Licensor states affirmatively that throughout this
+     project a human author (Harkirat Mangat) conceived the project and its
+     features; specified requirements and behaviour; directed, reviewed,
+     selected, rejected, corrected, and revised all generated output;
+     determined the architecture, structure, sequence, and organisation of the
+     codebase; and personally researched, selected, verified, arranged, and
+     curated the game data compilations. The creative choices that give this
+     work its expressive character are human choices.
+
+     Nothing in this disclosure is an admission that any part of the work
+     lacks copyright protection, and no waiver of any right is intended or
+     should be inferred.
+
+6.3  NO USER DATA IS SENT TO AI SYSTEMS. AI assistance was used in
+     *development*. It is not used to process end-user data at runtime. The
+     only AI call in the running application is Google Vertex AI (Gemini)
+     image-to-text extraction in the /autobuild command, which is restricted to
+     the administrator's own Discord account and never receives end-user data,
+     messages, or images. See PRIVACY.md §5.1.
+
+LICENSE §4.7 separately prohibits YOU from using this project, its data, or its
+output to train or otherwise feed any AI or machine-learning system. That
+prohibition is unaffected by the Licensor's own use of AI tooling in
+development.
+
+
+================================================================================
+7. CONTRIBUTIONS
+================================================================================
+
+Contributions from third parties are governed by LICENSE §5 and CONTRIBUTING.md.
+Contributors are credited in CONTRIBUTORS.md and in the changelog entry for the
+release in which their contribution first ships. Credit is a binding obligation
+of the Licensor under LICENSE §5.6, not a courtesy.
+
+
+================================================================================
+8. CONTACT
+================================================================================
+
+  Harkirat Mangat ("dior")
+  harkirat117@gmail.com
+  https://github.com/HarkiratMangat/diors-builds
+
+Attribution errors, omissions, licensing questions, and takedown requests are
+all welcome at that address and will be corrected promptly.
+
+================================================================================

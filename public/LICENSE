@@ -1,0 +1,784 @@
+DIOR'S BUILDS SOURCE-AVAILABLE LICENSE
+Version 1.0, 28 July 2026
+
+Copyright (c) 2026 Harkirat Mangat ("dior"). All rights reserved.
+
+This is a source-available license, not an open-source license. It is not
+approved by the Open Source Initiative and does not meet the Open Source
+Definition. The source code of Dior's Builds is published so that it can be
+read, studied, audited, and improved -- not so that it can be copied, deployed,
+redistributed, or turned into a competing bot.
+
+
+===============================================================================
+PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)
+===============================================================================
+
+This summary is provided for convenience only. It has no legal effect, and if
+it conflicts with the terms below, the terms below govern.
+
+  YOU MAY:
+    - Read, study, and learn from the source code.
+    - Look for security vulnerabilities and report them.
+    - Run the Software on a computer you control, by yourself, to test it or to
+      prepare an improvement you intend to send back.
+    - Send improvements, and be publicly credited for them.
+
+  YOU MAY NOT:
+    - Run the Software, or anything derived from it, anywhere that another
+      person can use it -- including a Discord server with other members in it.
+    - Publish, share, redistribute, sell, or sublicense the Software or any
+      modified version of it.
+    - Use the Software, its curated data, or its output to build, train, or
+      operate a competing bot or service.
+    - Use the "Dior's Builds" name, branding, or visual identity.
+
+  If you want to do something this license does not allow, ask. Permission is
+  freely given in writing where it makes sense; see Section 17.
+
+
+===============================================================================
+1. DEFINITIONS
+===============================================================================
+
+1.1  "Licensor" means Harkirat Mangat, also known as "dior", the sole copyright
+     holder of the Software, and his successors and assigns.
+
+1.2  "You" or "Your" means the individual or legal entity exercising rights
+     under this License, together with any entity that controls, is controlled
+     by, or is under common control with that entity. "Control" means direct or
+     indirect ownership of more than fifty percent (50%) of the voting
+     interests, or the power to direct the management of the entity.
+
+1.3  "Software" means the Dior's Builds source code, configuration, scripts,
+     documentation, and all other material contained in the repository at
+     https://github.com/HarkiratMangat/diors-builds, in whole or in part, in
+     source or object form, including all past and future versions, and
+     including any portion, fragment, module, function, or file of it.
+
+1.4  "Curated Data" means the compilations of factual information assembled,
+     selected, arranged, verified, and maintained by or for the Licensor,
+     including without limitation the weapon loadout and attachment database,
+     the build rankings and badges, the lucky-draw and pricing datasets, the
+     seasonal calendar and patch-note records, and the associated descriptive
+     text. Curated Data is protected as a compilation and as a database
+     independently of any protection attaching to the code that reads it.
+
+1.5  "Brand Assets" means the name "Dior's Builds", the name "dior" as used in
+     connection with the Software, any logo, avatar, banner, emoji set, color
+     palette, accent-color scheme, message layout, or other element of the
+     visual or textual identity of the Software or the Official Service,
+     together with any name or mark confusingly similar to any of them.
+
+1.6  "Official Service" means the instance or instances of the Software
+     operated by or on behalf of the Licensor and made available to the public
+     through Discord, together with any successor, replacement, or additional
+     public service operated by the Licensor.
+
+1.7  "Modify" means to adapt, alter, translate, port, refactor, extend,
+     abridge, merge with other material, or otherwise create a work based upon
+     the Software, and "Modification" means the result of doing so. A
+     Modification is a derivative work for the purposes of applicable
+     copyright law.
+
+1.8  "Deploy" means to run, execute, host, install, or otherwise make the
+     Software or a Modification operational in any circumstance in which any
+     person other than You is able, whether directly or indirectly and whether
+     or not that person is charged a fee, to:
+       (a) invoke it, issue a command to it, or otherwise cause it to act;
+       (b) interact with it or with any interface it presents; or
+       (c) receive, view, or otherwise obtain its output.
+     Adding the Software or a Modification to any Discord server, guild,
+     channel, group, or account of which You are not the only member or user
+     constitutes Deployment. Installing it as a Discord user-installed
+     application on any account other than Your own constitutes Deployment.
+
+1.9  "Permitted Local Use" means running the Software or a Modification solely
+     on hardware or a hosted environment that You control, where You are the
+     only person able to invoke it, interact with it, or receive its output,
+     and solely for one or more of the Permitted Purposes.
+
+1.10 "Permitted Purposes" means, and is limited to:
+       (a) reading, studying, and understanding the Software;
+       (b) evaluating the Software's quality, correctness, or behavior;
+       (c) good-faith security research, vulnerability discovery, and testing;
+       (d) preparing, developing, and testing a Contribution; and
+       (e) academic study, teaching, or private non-commercial learning.
+
+1.11 "Contribution" means any code, documentation, data, translation, design,
+     bug report, test, or other material that You intentionally submit to the
+     Licensor for inclusion in the Software, by any means, including a pull
+     request, an issue, a message, or an email.
+
+1.12 "Competing Service" means any bot, application, website, API, service, or
+     product that provides, in whole or in substantial part, functionality
+     comparable to that of the Software or the Official Service, whether or not
+     it is offered for a fee, and whether or not it is directed at the same
+     game, platform, or audience.
+
+1.13 "AI/ML System" means any machine learning model, neural network, large
+     language model, embedding index, retrieval corpus, or other automated
+     system that is trained on, fine-tuned on, indexed over, or otherwise
+     derives statistical or generative capability from input data.
+
+
+===============================================================================
+2. GRANT OF RIGHTS
+===============================================================================
+
+2.1  Grant. Subject to Your full and continuing compliance with every term and
+     condition of this License, the Licensor grants You a worldwide,
+     royalty-free, non-exclusive, non-transferable, non-sublicensable,
+     revocable license to:
+       (a) reproduce the Software for the purpose of reading and studying it;
+       (b) make and retain a reasonable number of copies of the Software as
+           necessary for Permitted Local Use;
+       (c) engage in Permitted Local Use of the Software; and
+       (d) create Modifications solely to the extent necessary for Permitted
+           Local Use, and solely for the Permitted Purposes.
+
+2.2  Nature of the grant. The rights granted in Section 2.1 are a bare license
+     to act, not a transfer of any ownership interest. No title, ownership, or
+     proprietary right in the Software, the Curated Data, or the Brand Assets
+     passes to You under this License.
+
+2.3  No implied rights. All rights not expressly granted in Section 2.1 are
+     reserved to the Licensor. Nothing in this License may be construed as
+     granting, by implication, estoppel, exhaustion, acquiescence, course of
+     dealing, or otherwise, any license or right other than those expressly
+     stated. The publication of the Software in a publicly readable repository
+     is not, and shall not be construed as, a waiver, abandonment, dedication
+     to the public, or implied license of any right.
+
+2.4  Patents. The Licensor grants You no patent license under this License,
+     except for a non-exclusive, royalty-free license under those patent claims
+     owned or controlled by the Licensor that are necessarily infringed by
+     Permitted Local Use of the Software as furnished by the Licensor. That
+     patent license terminates automatically and immediately if You, or any
+     entity controlled by You, initiate or voluntarily participate in any
+     patent claim, cross-claim, counterclaim, or proceeding alleging that the
+     Software or any Contribution constitutes direct or contributory patent
+     infringement.
+
+
+===============================================================================
+3. CONDITIONS
+===============================================================================
+
+Every right granted in Section 2 is conditional on Your compliance with this
+Section 3. Failure to comply is both a breach of this License and, because the
+grant is conditional, an act outside the scope of the license granted and
+therefore an infringement of the Licensor's copyright.
+
+3.1  Notices. You must retain, in every copy and every Modification You make,
+     this License file in full, all copyright notices, all attribution
+     notices, and all notices identifying the Licensor as the author. You must
+     not remove, obscure, alter, or falsify any such notice.
+
+3.2  No misrepresentation of origin. You must not represent, imply, or permit
+     any other person to believe that the Software, any Modification, or any
+     work incorporating either, is Your own original work, or that it
+     originates from, is endorsed by, is affiliated with, or is sponsored by
+     any person other than the Licensor.
+
+3.3  Marking of Modifications. Any Modification You make must be clearly marked
+     as modified, with a description of the changes and the date they were
+     made, so that it is not mistaken for the Software as furnished by the
+     Licensor.
+
+3.4  Lawful use. You must comply with all applicable laws and regulations in
+     exercising the rights granted, including without limitation export
+     control, economic sanctions, data protection, and computer misuse laws.
+
+3.5  Platform terms. You must comply with the terms of service, developer
+     terms, and policies of Discord Inc., GitHub Inc., and any other platform
+     through which You access, obtain, or run the Software.
+
+3.6  Capacity. You represent that You have the legal capacity to enter into
+     this License and, if You are accepting it on behalf of an entity, that You
+     have authority to bind that entity.
+
+
+===============================================================================
+4. PROHIBITED USES
+===============================================================================
+
+Without limiting Section 2.3, and for the avoidance of any doubt, You must not
+do any of the following, whether directly or indirectly, whether for a fee or
+free of charge, and whether or not You attribute the Licensor:
+
+4.1  Deployment. Deploy the Software or any Modification. This prohibition
+     applies regardless of the size, membership, privacy setting, or purpose of
+     the Discord server, group, or environment concerned, and applies to
+     servers You own, administer, or belong to.
+
+4.2  Distribution. Distribute, publish, transmit, upload, sell, rent, lease,
+     lend, share, mirror, or otherwise make available the Software, any
+     Modification, or any part of either, to any other person, in source or
+     object form, in whole or in part, by any medium. This includes publishing
+     it to any package registry, container registry, file host, code host,
+     archive, forum, chat platform, or website.
+
+     Exception: reproduction of the Software solely on GitHub through GitHub's
+     own forking functionality is not a breach of this Section 4.2, because
+     that reproduction is authorized by the GitHub Terms of Service and not by
+     this License. That exception is strictly limited to the act of forking on
+     GitHub. It does not permit You to Modify a fork beyond Permitted Local
+     Use, to Deploy it, to distribute it off GitHub, or to do anything else
+     this License prohibits.
+
+4.3  Sublicensing and assignment. Sublicense, assign, novate, delegate, or
+     otherwise transfer this License or any right under it, in whole or in
+     part, whether voluntarily, by operation of law, by merger, by acquisition,
+     or otherwise. Any purported transfer is void.
+
+4.4  Commercial use. Use the Software, any Modification, the Curated Data, or
+     the output of any of them for any commercial purpose, including without
+     limitation offering a paid or ad-supported service, accepting donations,
+     subscriptions, sponsorships, or tips in connection with it, providing paid
+     consulting or hosting around it, or using it in the internal operations of
+     a business.
+
+     Carve-out: reading or studying the Software to learn from it is not
+     commercial use, even if You happen to be employed, and even if what You
+     learn later informs Your paid work. This Section is directed at
+     exploitation of the Software, not at the education of the person reading
+     it. The line is whether the Software, a Modification, or the Curated Data
+     is itself put to commercial use -- not whether the reader has a job.
+
+4.5  Competing Services. Use the Software, any Modification, the Curated Data,
+     or knowledge of the Software's internal structure to create, develop,
+     operate, market, or assist any other person in creating, developing,
+     operating, or marketing a Competing Service.
+
+     For clarity and in good faith: copyright protects the expression in the
+     Software, not the underlying ideas, facts, or functionality. This Section
+     4.5 is a contractual undertaking You give in exchange for access to the
+     source code. It does not purport to prevent any person who has not
+     accepted this License from independently creating a bot with similar
+     features.
+
+4.6  Curated Data. Extract, copy, scrape, harvest, mirror, index, re-host,
+     republish, or create a substantial derivative of the Curated Data, whether
+     from the repository, from a database, or from the output of the Official
+     Service. Automated access to the Official Service for the purpose of
+     collecting its output is prohibited.
+
+4.7  AI and machine learning. Use the Software, any Modification, the Curated
+     Data, or the output of the Official Service as training data, fine-tuning
+     data, evaluation data, retrieval corpus, embedding source, or other input
+     to any AI/ML System; or permit, facilitate, or fail to take reasonable
+     steps to prevent any third party from doing so.
+
+     This prohibition does not restrict Your use of AI coding assistants to
+     help You read, understand, or write a Contribution, provided that the
+     Software is not retained by, or used to train, the assistant's provider.
+
+4.8  Circumvention. Circumvent, disable, interfere with, or attempt to defeat
+     any access control, rate limit, cooldown, permission check, administrative
+     gate, or security measure in the Software or the Official Service; or
+     access any part of the Official Service, its database, its media storage,
+     or its infrastructure other than through the interfaces the Licensor makes
+     available to ordinary users.
+
+4.9  Disruption. Use the Software or the Official Service to transmit malware,
+     to conduct a denial-of-service or resource-exhaustion attack, to harvest
+     credentials, to impersonate any person, or to harass, defraud, or harm any
+     person.
+
+4.10 Brand Assets. Use any Brand Asset, or any confusingly similar name or
+     mark, for any purpose, including in the name, description, avatar,
+     documentation, or marketing of any project, service, or account. This
+     prohibition survives termination of this License indefinitely.
+
+4.11 Security research limits. Notwithstanding Section 1.10(c), You must not,
+     in the course of security research, test against the Official Service or
+     its live infrastructure, access or exfiltrate any data belonging to the
+     Licensor or to any user, or publicly disclose a vulnerability before the
+     Licensor has had a reasonable opportunity to remedy it. Test against Your
+     own local instance, and report findings privately in accordance with
+     Section 17.
+
+
+===============================================================================
+5. CONTRIBUTIONS
+===============================================================================
+
+5.1  Contributor License. By submitting a Contribution, You grant the Licensor
+     a perpetual, worldwide, non-exclusive, irrevocable, royalty-free, fully
+     paid-up, transferable license, with the right to sublicense through
+     multiple tiers, to reproduce, prepare derivative works of, publicly
+     display, publicly perform, distribute, Deploy, commercialize, and
+     otherwise exploit Your Contribution and such derivative works, in any
+     medium and by any means now known or later devised, and to license or
+     relicense Your Contribution under any terms the Licensor chooses,
+     including proprietary terms.
+
+5.2  Retention of Your rights. You retain all copyright, moral rights (to the
+     extent not waived below), and other rights in Your Contribution. The
+     license in Section 5.1 is non-exclusive and does not prevent You from
+     using Your own Contribution elsewhere, subject to Sections 4.1 and 4.2 as
+     they apply to the Software as a whole.
+
+5.3  Patent license for Contributions. You grant the Licensor and all
+     recipients of the Software a perpetual, worldwide, non-exclusive,
+     royalty-free, irrevocable patent license under those patent claims You own
+     or control that are necessarily infringed by Your Contribution alone or by
+     its combination with the Software, to make, have made, use, offer to sell,
+     sell, import, and otherwise transfer the Software.
+
+5.4  Your warranties. You represent and warrant that: (a) each Contribution is
+     Your original creation, or You have the necessary rights to submit it and
+     to grant the licenses in this Section 5; (b) the Contribution does not
+     incorporate any third-party material except as You clearly identify at the
+     time of submission, together with its license; (c) the Contribution does
+     not knowingly infringe any third party's copyright, patent, trademark,
+     trade secret, or other right; (d) if Your employer has rights in
+     intellectual property You create, You have obtained permission to make the
+     Contribution or Your employer has waived those rights; and (e) the
+     Contribution contains no malicious code, backdoor, or intentionally
+     concealed functionality.
+
+5.5  Moral rights. To the fullest extent permitted by applicable law, and in
+     particular by section 14.1 of the Copyright Act (Canada), You waive, and
+     agree not to assert, any moral rights in Your Contribution against the
+     Licensor or persons authorized by the Licensor, to the extent necessary to
+     permit the exploitation licensed in Section 5.1. This waiver does not
+     affect Your right to attribution under Section 5.6.
+
+5.6  Attribution and credit. The Licensor will credit each accepted
+     Contribution to its author, by the name or handle the author specifies, in
+     the project's contributor records and in the changelog entry for the
+     release in which the Contribution first ships. The Licensor will not
+     represent a Contribution as his own original work. This commitment is a
+     binding obligation of the Licensor and survives termination. It does not
+     entitle You to compensation, to co-ownership, to a right of approval over
+     how the Contribution is used or modified, or to any right in the Software
+     as a whole.
+
+5.7  No obligation to accept. The Licensor is under no obligation to review,
+     accept, merge, retain, or continue to use any Contribution, and may remove
+     or replace a Contribution at any time for any reason. Where a Contribution
+     is removed entirely, the Licensor will remove the corresponding credit on
+     request.
+
+5.8  No relationship created. Submitting a Contribution creates no employment,
+     agency, partnership, joint venture, or fiduciary relationship, and confers
+     no right to remuneration.
+
+
+===============================================================================
+6. TRADEMARKS AND BRAND
+===============================================================================
+
+6.1  This License grants no trademark rights, express or implied. Section 4.10
+     applies in full.
+
+6.2  Nominative fair use is not restricted. You may truthfully refer to the
+     Software by name -- for example, to say that You reported a bug in Dior's
+     Builds, to cite it in an article, or to describe a Contribution You made
+     -- provided You do not thereby suggest endorsement, affiliation, or
+     sponsorship.
+
+
+===============================================================================
+7. THIRD-PARTY MATERIALS
+===============================================================================
+
+7.1  Dependencies. The Software depends on third-party packages that are not
+     owned by the Licensor and are licensed to You by their own respective
+     licensors under their own terms, not under this License. Those terms
+     govern those packages, and nothing in this License purports to restrict,
+     enlarge, or otherwise vary any right You have in them.
+
+     **The NOTICE file at the repository root is incorporated into this License
+     by reference** and identifies each direct dependency, its version, its
+     license, and its copyright holder, together with the trademark
+     acknowledgements in Section 7.2 and the authorship disclosure referenced
+     in Section 8A. Read it. Authoritative per-package license text lives in
+     each package's own distribution under node_modules/.
+
+     Certain components -- currently discord.js and xlsx -- are licensed under
+     the Apache License 2.0, which imposes attribution and NOTICE-reproduction
+     obligations on anyone who redistributes them. Those obligations attach to
+     those components independently of this License and are not waived,
+     narrowed, or satisfied by anything the Licensor permits or prohibits here.
+     See NOTICE Section 2.
+
+7.2  Game content. Call of Duty and Call of Duty: Mobile are trademarks of
+     Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi
+     Studio Group and published by Activision. The Software is an unofficial,
+     non-commercial fan project. It is not developed, published, endorsed,
+     sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio
+     Group, Tencent, Garena, VNG Games, or any of their affiliates.
+
+7.3  No grant in third-party material. Weapon names, attachment names, item
+     names, in-game imagery, screenshots, logos, and other game content
+     referenced or displayed by the Software remain the property of their
+     respective owners. The Licensor claims no ownership of that material and
+     grants You no rights in it. This License extends only to the Licensor's
+     own original expression -- the code, the structure and arrangement of the
+     Curated Data, the descriptive text, and the Brand Assets.
+
+7.4  Platform services. The Software interoperates with services operated by
+     third parties, including Discord Inc., GitHub Inc., MongoDB Inc.,
+     Cloudinary Ltd., and Google LLC. Your use of those services is governed by
+     their terms, not by this License.
+
+
+===============================================================================
+8. RESERVATION AND OWNERSHIP
+===============================================================================
+
+8.1  The Licensor retains all right, title, and interest in and to the
+     Software, the Curated Data, and the Brand Assets, including all
+     intellectual property rights in them, subject only to Section 7.
+
+8.2  The publication of the Software does not place it in the public domain.
+     Public availability and public licensing are distinct; the former has
+     occurred, the latter has not.
+
+8.3  The Licensor may at any time, in his sole discretion and without notice,
+     change the license under which future versions of the Software are made
+     available, cease publishing the source code, make the repository private,
+     or discontinue the Official Service. Doing so does not retroactively
+     withdraw the rights You held in a version You lawfully obtained before the
+     change, except on termination under Section 9.
+
+
+===============================================================================
+8A. AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS
+===============================================================================
+
+8A.1 AI assistance disclosed. Portions of the Software, its documentation, and
+     this License were authored with the assistance of AI tools, principally
+     Claude (Anthropic PBC), used as a drafting and implementation instrument
+     under the continuous direction of the human author. Full disclosure:
+     NOTICE Section 6.
+
+8A.2 Human authorship asserted. The Licensor states affirmatively that a human
+     author conceived the Software and its features; specified its requirements
+     and behavior; directed, reviewed, selected, rejected, corrected, and
+     revised all generated output; determined the architecture, structure,
+     sequence, and organization of the codebase; and personally researched,
+     selected, verified, arranged, and curated the Curated Data. The creative
+     choices giving the Software its expressive character are human choices,
+     and copyright subsists in the Software accordingly.
+
+8A.3 No admission or waiver. Section 8A.1 is made in the interest of candor. It
+     is not an admission that any part of the Software lacks copyright
+     protection, not a waiver of any right, and not to be construed against the
+     Licensor. No inference adverse to the subsistence, ownership, scope, or
+     enforceability of the Licensor's rights may be drawn from it.
+
+8A.4 Database and compilation rights. Independently of copyright in the code,
+     the Licensor asserts rights in the Curated Data as a compilation arising
+     from the selection, verification, arrangement, and presentation of its
+     contents -- including, where applicable, the sui generis database right
+     under Directive 96/9/EC and its national implementations, and equivalent
+     protection under the Copyright Act (Canada) and 17 U.S.C. Section 101.
+     Section 4.6 applies to the Curated Data whether or not copyright subsists
+     in any individual fact within it. Facts themselves are not owned; their
+     selection and arrangement are.
+
+8A.5 Independent development. The Licensor may develop, acquire, commission, or
+     operate software, features, data, or services similar or identical to
+     anything You suggest, contribute, or build, without obligation to You.
+     Nothing in this License restricts the Licensor's own activities, and
+     submitting a Contribution or an idea grants You no rights in what the
+     Licensor later creates.
+
+
+===============================================================================
+9. TERM AND TERMINATION
+===============================================================================
+
+9.1  Term. This License takes effect when You first access, download, copy, or
+     use the Software, and continues until terminated.
+
+9.2  Automatic termination on breach. This License and every right granted by
+     it terminate automatically and immediately, without notice and without any
+     act by the Licensor, upon Your breach of any term. Continued use after
+     termination is copyright infringement and, where applicable, breach of
+     contract.
+
+9.3  Reinstatement. If Your breach was inadvertent and is the first breach the
+     Licensor has notified to You, Your rights are reinstated automatically if
+     You cure the breach within thirty (30) days of the notice. Otherwise,
+     reinstatement is at the Licensor's sole discretion, in writing.
+
+9.4  Termination for convenience. The Licensor may terminate this License as to
+     You at any time, for any reason or no reason, by written notice.
+
+9.5  Effect of termination. On termination You must immediately cease all use
+     of the Software, permanently delete all copies and Modifications in Your
+     possession or control, delete any GitHub fork of the repository, and
+     confirm in writing on request that You have done so.
+
+9.6  Survival. Sections 1, 3.1, 3.2, 4.4, 4.5, 4.6, 4.7, 4.10, 5, 6, 7, 8, 8A,
+     9.5, 9.6, 10, 11, 12, 13, and 14 survive termination.
+
+9.7  Remedies. You acknowledge that a breach of Sections 4.1, 4.2, 4.5, 4.6,
+     4.7, or 4.10 would cause the Licensor harm that monetary damages alone
+     could not adequately remedy, and that the Licensor is entitled to seek
+     injunctive or other equitable relief without the necessity of posting a
+     bond, in addition to any other remedy available at law. The Licensor's
+     failure to enforce any provision on any occasion is not a waiver of that
+     or any other provision on any other occasion.
+
+
+===============================================================================
+10. NO WARRANTY
+===============================================================================
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY,
+CONDITION, REPRESENTATION, OR TERM OF ANY KIND, WHETHER EXPRESS, IMPLIED,
+STATUTORY, COLLATERAL, OR OTHERWISE. TO THE MAXIMUM EXTENT PERMITTED BY
+APPLICABLE LAW, THE LICENSOR EXPRESSLY DISCLAIMS ALL IMPLIED WARRANTIES AND
+CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR
+PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.
+
+THE LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED,
+ERROR-FREE, SECURE, OR FREE OF HARMFUL COMPONENTS, THAT DEFECTS WILL BE
+CORRECTED, THAT ANY DATA IT PRODUCES OR STORES IS ACCURATE, CURRENT, OR
+COMPLETE, OR THAT IT WILL MEET YOUR REQUIREMENTS. GAME DATA CHANGES FREQUENTLY
+AND MAY BE WRONG OR OUT OF DATE AT ANY TIME.
+
+NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED FROM THE LICENSOR
+CREATES ANY WARRANTY NOT EXPRESSLY STATED HERE.
+
+Some jurisdictions do not allow the exclusion of certain warranties. To the
+extent an exclusion above is unenforceable, it is limited to the minimum extent
+necessary and the remainder of this Section 10 continues in effect.
+
+
+===============================================================================
+11. LIMITATION OF LIABILITY
+===============================================================================
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL THE
+LICENSOR BE LIABLE, WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT
+LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY, FOR ANY INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY
+LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, OR ANTICIPATED SAVINGS,
+OR FOR BUSINESS INTERRUPTION OR COST OF SUBSTITUTE SERVICES, ARISING OUT OF OR
+RELATING TO THIS LICENSE OR THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
+
+THE LICENSOR'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS
+LICENSE OR THE SOFTWARE WILL NOT EXCEED THE GREATER OF (A) THE TOTAL AMOUNT YOU
+PAID THE LICENSOR FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE EVENT
+GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).
+
+Some jurisdictions do not allow the limitation or exclusion of liability for
+death or personal injury caused by negligence, for fraud or fraudulent
+misrepresentation, or for certain other liabilities. Nothing in this License
+limits any liability that cannot lawfully be limited. To the extent a
+limitation above is unenforceable, it is limited to the minimum extent
+necessary and the remainder of this Section 11 continues in effect.
+
+
+===============================================================================
+12. INDEMNITY
+===============================================================================
+
+You will defend, indemnify, and hold harmless the Licensor from and against any
+claim, demand, proceeding, loss, liability, damage, penalty, cost, and expense
+(including reasonable legal fees) arising out of or relating to: (a) Your use
+of the Software; (b) Your breach of this License; (c) Your violation of any law
+or of any third party's rights; or (d) any Contribution You submit, including
+any claim that it infringes a third party's rights.
+
+
+===============================================================================
+13. GOVERNING LAW AND DISPUTE RESOLUTION
+===============================================================================
+
+13.1 Governing law. This License is governed by and construed in accordance
+     with the laws of the Province of Ontario and the federal laws of Canada
+     applicable in that province, without regard to any conflict-of-laws rule
+     that would apply the law of another jurisdiction.
+
+13.2 Exclusion of the CISG and UCITA. The United Nations Convention on
+     Contracts for the International Sale of Goods and the Uniform Computer
+     Information Transactions Act do not apply to this License.
+
+13.3 Venue. The courts of the Province of Ontario, sitting in Toronto, have
+     exclusive jurisdiction over any dispute arising out of or relating to this
+     License, and You irrevocably attorn to that jurisdiction and waive any
+     objection based on venue or forum non conveniens.
+
+13.4 Mandatory local law preserved. If You are a consumer resident in a
+     jurisdiction whose law grants You rights that cannot be excluded by
+     agreement, Sections 13.1 and 13.3 do not deprive You of the protection of
+     those mandatory rules or of the right to bring proceedings in the courts
+     of Your place of residence where that right cannot lawfully be excluded.
+
+13.5 Injunctive relief anywhere. Notwithstanding Section 13.3, the Licensor may
+     seek injunctive or other equitable relief to protect his intellectual
+     property in any court of competent jurisdiction.
+
+13.6 Limitation period. Any claim You bring arising out of or relating to this
+     License must be commenced within one (1) year after the claim arose,
+     except where a longer period is required by law.
+
+
+===============================================================================
+14. GENERAL
+===============================================================================
+
+14.1 Entire agreement. This License, together with any written permission
+     granted under Section 17, is the entire agreement between You and the
+     Licensor concerning the Software, and supersedes all prior or
+     contemporaneous understandings, communications, and representations,
+     including anything stated in the repository's README, documentation,
+     package metadata, or issue tracker. In the event of any conflict between
+     this License and any other file in the repository, this License governs.
+
+14.2 Amendment. The Licensor may issue new versions of this License. A new
+     version applies only to versions of the Software distributed under it; it
+     does not retroactively change the terms on which You obtained an earlier
+     version. This License may not be varied by You except by a writing signed
+     by the Licensor.
+
+14.3 Severability. If any provision is held invalid, illegal, or unenforceable,
+     it will be modified to the minimum extent necessary to make it valid,
+     legal, and enforceable while preserving its intent as closely as possible,
+     or if that is not possible, severed. The remaining provisions continue in
+     full force.
+
+14.4 No waiver. No failure or delay in exercising any right operates as a
+     waiver. No single or partial exercise precludes any further exercise. A
+     waiver is effective only if in writing and signed by the Licensor.
+
+14.5 Independent construction. This License will not be construed against the
+     Licensor as its drafter.
+
+14.6 Headings and summary. Headings are for convenience only. The Plain-English
+     Summary above is not part of this License and has no legal effect.
+
+14.7 Notices. Notices to the Licensor must be sent to the address in Section
+     17. Notices to You may be sent to any email address, GitHub account, or
+     Discord account You have used to contact the Licensor or to access the
+     Software, and are deemed received on the day sent.
+
+14.8 Language. This License is drafted in English. Any translation is for
+     convenience only, and the English version governs.
+
+14.9 Relationship to platform terms. This License operates alongside, and does
+     not purport to override, the terms of service of Discord Inc. and GitHub
+     Inc. Where a platform's terms grant a right that this License would
+     otherwise prohibit, that right prevails to the extent of the conflict and
+     only to that extent, and the remainder of this License continues to apply.
+     Section 4.2's forking exception reflects this principle.
+
+14.10 Acceptance. You accept this License, and it becomes a binding agreement
+     between You and the Licensor, upon ANY of the following, each of which is
+     a separate and independent act of acceptance:
+       (a) accessing, viewing, or reading the Software's source code;
+       (b) downloading, cloning, forking, or copying the Software, in whole or
+           in part, by any means;
+       (c) compiling, installing, executing, or running the Software or any
+           Modification;
+       (d) creating a Modification;
+       (e) submitting a Contribution; or
+       (f) continuing any of the above after a new version of this License
+           applies to a version of the Software You obtain.
+     Accepting once binds You for all subsequent use. If You do not accept this
+     License, You have no rights whatsoever in the Software and must not do any
+     of the things listed above.
+
+14.11 Notice and opportunity to read. This License is published in full at the
+     root of the repository, under the filename LICENSE, which is the
+     conventional and expected location; GitHub additionally surfaces it in the
+     repository interface. You acknowledge that You have been given a
+     reasonable opportunity to read it before acting, and that choosing not to
+     read terms You were able to read does not prevent them binding You.
+
+14.12 Electronic agreement. You consent to contract electronically. This
+     License satisfies any requirement that an agreement be in writing, and
+     Your acceptance under Section 14.10 has the same legal effect as a
+     handwritten signature under Ontario's Electronic Commerce Act, 2000 and
+     equivalent legislation elsewhere.
+
+14.13 Interpretation. "Including" and "such as" mean "including without
+     limitation" and are never words of limitation. The singular includes the
+     plural and vice versa. "Or" is inclusive. A reference to a statute
+     includes its amendments and successors. Examples illustrate and do not
+     confine the general words they follow. Where a prohibition could be read
+     narrowly or broadly, and the narrow reading would defeat the evident
+     purpose of Section 4, the broader reading applies.
+
+14.14 No third-party beneficiaries. This License confers no right or remedy on
+     any person other than You and the Licensor, except that Section 7's
+     third-party licensors and rights holders may enforce their own rights
+     under their own terms.
+
+14.15 Assignment by the Licensor. The Licensor may assign, novate, or transfer
+     this License and any right under it, in whole or in part, freely and
+     without Your consent, including to a successor in connection with a
+     transfer of the Software. Section 4.3 restricts only You.
+
+14.16 No support obligation. The Licensor has no obligation to provide support,
+     maintenance, updates, bug fixes, security patches, or any assistance
+     whatsoever, and no obligation to continue publishing, developing, or
+     operating the Software. Providing any of these on any occasion creates no
+     obligation to continue, and no course of dealing or course of performance
+     may be construed as creating one.
+
+14.17 Force majeure. The Licensor is not liable for any failure or delay caused
+     by events beyond his reasonable control, including acts of God, natural
+     disaster, war, terrorism, civil unrest, epidemic or pandemic, strike,
+     government action, change of law, power or network failure, or any act,
+     omission, outage, policy change, suspension, or termination by Discord,
+     GitHub, Google, MongoDB, Cloudinary, Activision, or any other third party.
+
+14.18 Not a sale. This License is a grant of limited permission, not a sale.
+     No exhaustion, first-sale, or equivalent doctrine applies to it, and no
+     right is transferred to You beyond the express permissions in Section 2.
+
+14.19 Cumulative remedies. The Licensor's rights and remedies under this
+     License are cumulative and in addition to, and not in substitution for,
+     any right or remedy available at law or in equity.
+
+
+===============================================================================
+15. FILE-LEVEL NOTICE
+===============================================================================
+
+The following notice may be applied to individual source files:
+
+    Copyright (c) 2026 Harkirat Mangat ("dior"). All rights reserved.
+    Licensed under the Dior's Builds Source-Available License v1.0.
+    Source-available, not open source. No deployment, no redistribution.
+    See the LICENSE file at the repository root for full terms.
+
+
+===============================================================================
+16. SPDX IDENTIFIER
+===============================================================================
+
+This is a custom license with no OSI-approved SPDX short identifier. Refer to
+it in machine-readable metadata as:
+
+    LicenseRef-Diors-Builds-Source-Available-1.0
+
+
+===============================================================================
+17. CONTACT AND PERMISSIONS
+===============================================================================
+
+Requests for permission beyond the scope of this License, security reports
+under Section 4.11, licensing enquiries, and notices under Section 14.7 should
+be sent to:
+
+    Harkirat Mangat ("dior")
+    harkirat117@gmail.com
+    https://github.com/HarkiratMangat/diors-builds
+
+Permission outside this License is effective only if granted by the Licensor in
+writing and signed or sent from the address above. Silence, inaction, or a
+response from any other channel is not permission.
+
+The Licensor is generally willing to grant additional permission for genuine
+research, education, accessibility, and archival purposes. Ask.

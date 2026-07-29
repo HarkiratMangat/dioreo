@@ -92,6 +92,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-29 11:44 EDT — The refs I left behind
 - 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
 - 2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold
+- 2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3111,6 +3112,29 @@ Two smaller lessons, both about not trusting my own instruments. The page build 
 Finally, `docs/docs-audit.mjs` caught three gaps in this very change: `public/` tracked but documented nowhere, `buildLegalPages.js` in no pointer map, a memory file with no index line. I had written the documents and forgotten to file them — which is the failure mode the audit was built for, and it worked on its author.
 
 The lesson I'd keep: a legal document's strength comes from the parts where it concedes a limit. Every place this licence stops short — the GitHub fork, functionality vs expression, the absent deletion path, the AI authorship — is a place a reader can verify it isn't bluffing.
+
+---
+
+
+## 2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable
+
+*Shipped as v2.43.1.*
+
+The licence work was merged, tagged, and deployed. Then I put the pages on Cloudflare and started checking them, and the checking is where the actual lesson is.
+
+Both documents reported "100% of source content present." Every word of the Markdown had survived into the HTML, verified run by run. And both were shipping seven links to nothing. The source Markdown cross-references repo files — `CLAUDE.md`, `ROADMAP.md`, `models/UserPreference.js` — and the `.md` → `.html` rewrite dutifully turned each one into a link to a file that was never published. The content verifier could not see it because content presence and link resolution are different properties, and I had only built a check for one of them. A privacy policy whose citations 404 is failing at the one thing that distinguishes it from a page of assertions.
+
+The fix that was tempting was to point those links at GitHub. It's wrong: the repo may be private at any time, which is the same reason these documents deliberately carry no repo links and name email as the only contact. So references to unpublished files now render as styled plain text via an explicit allowlist — the reference is preserved, the false promise isn't.
+
+I also briefly published `CONTRIBUTING.html` to satisfy three of those links, then removed it in the same session once the audit showed it brought four *more* dead links with it. Building something and then unbuilding it in one pass looks like waste, but the alternative was shipping it and finding out later.
+
+Then a smaller thing that bothers me more than the links. `scripts/vmstatus.sh` line 180 had lost its leading `#`, so a fragment of its own comment — the words "you wait out the whole probe to be told" — was being executed as a shell command. It printed `you: command not found` on every single run, from the Mac and on the VM, for some unknown number of days. `bash -n` cannot catch it: the line is perfectly valid syntax, it just isn't a comment any more. I had *seen* that error text earlier in this very session and read straight past it as noise. It took deploying to notice, and the only reason I noticed then was that I was reading the output carefully for a different purpose.
+
+Harkirat corrected me twice on the notes file, and both were the same species of error. I wrote a mark-date without a time and then, when the hook flagged it, **confidently confirmed it as a deliberate convention** — while the legend three sections up had required the time since 2026-07-24. I asserted rather than checked, on a file whose legend I had just read. Second: I acted on his follow-up mark, filed the evidence he gave me, and left no reply mark — so the only thing under his follow-up was a comment dated nine days earlier, and there was no way for him to tell whether anything had happened. His framing is exactly right: comments are reasoning, the follow-up marks are the conversation. Doing the work and leaving no trace of it is indistinguishable from ignoring him.
+
+Three false alarms this session are worth naming together, because they nearly cost more than the real bugs: tables "overflowing" (they scroll inside their own container by design), the page "scrolling horizontally" (a transient artefact of `scrollIntoView`), and the whole site "returning empty" (my checksum command was missing `-L`, so Cloudflare's 308 to the extensionless URL returned zero bytes and every file "differed"). Each looked like a defect and each would have produced a confident wrong report. The habit that saved all three was refusing to report until I could explain the mechanism — and the same habit is what surfaced the seven links that *were* real.
+
+The lesson: "the output is complete" and "the output is correct" are different claims, and a verifier that proves the first will happily let you believe you've proven the second.
 
 ---
 
