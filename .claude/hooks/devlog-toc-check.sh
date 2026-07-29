@@ -37,8 +37,24 @@ BASE="${1:-main}"
 # Committed changes only — correct for a `gh pr create` gate, since you commit before opening a PR.
 git diff --name-only "$BASE...HEAD" 2>/dev/null | grep -qx 'docs/DEVLOG.md' || exit 0
 
-findings=$(node scripts/docs-audit.mjs --only devlog-toc --json 2>/dev/null \
-  | jq -r '.results[]? | "    - " + .msg' 2>/dev/null)
+# ⚠️ FAILSAFE (2026-07-29 02:00 EDT). This gate DELEGATES to scripts/docs-audit.mjs so there is one
+# implementation of the TOC rule -- but delegation replaced a working standalone check with a single
+# point of failure. If the audit is deleted, renamed, or throws, a bare \`exit 0\` here would silently
+# retire the gate, which is the exact class of failure this whole enforcement layer exists to stop.
+# So an audit that cannot RUN is itself reported. Deliberately NOT a duplicated copy of the comparison
+# logic: two copies drift, and the drift is silent too.
+if [ ! -f scripts/docs-audit.mjs ]; then
+  jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:"DEVLOG TOC GATE CANNOT RUN: scripts/docs-audit.mjs is missing, so the table of contents was NOT checked against the body. Restore it, or check the TOC by hand before opening this PR -- do not treat this as a pass."}}'
+  exit 0
+fi
+
+raw=$(node scripts/docs-audit.mjs --only devlog-toc --json 2>&1)
+if ! printf '%s' "$raw" | jq -e . >/dev/null 2>&1; then
+  jq -n --arg e "$(printf '%s' "$raw" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:("DEVLOG TOC GATE CANNOT RUN: docs-audit.mjs did not return valid JSON, so the TOC was NOT checked. A broken audit must never read as a clean one.\n\n" + $e)}}'
+  exit 0
+fi
+
+findings=$(printf '%s' "$raw" | jq -r '.results[]? | "    - " + .msg' 2>/dev/null)
 
 [ -n "${findings// /}" ] || exit 0
 

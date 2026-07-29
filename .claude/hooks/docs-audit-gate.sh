@@ -23,11 +23,20 @@ set -uo pipefail
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
-[ -f scripts/docs-audit.mjs ] || exit 0
 BASE="${1:-main}"
 
-out=$(node scripts/docs-audit.mjs --diff "$BASE" --json 2>/dev/null)
-[ -n "$out" ] || exit 0
+# ⚠️ FAILSAFE (2026-07-29 02:00 EDT): "the audit is missing" and "the audit found nothing" must never
+# look the same. A silent skip here would turn a deleted or crashing script into a permanent green.
+if [ ! -f scripts/docs-audit.mjs ]; then
+  jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:"DOCS AUDIT CANNOT RUN: scripts/docs-audit.mjs is missing, so NONE of the documentation invariants were checked for this PR. CI will still run its own copy -- but if it is gone there too, this PR is completely ungated."}}'
+  exit 0
+fi
+
+out=$(node scripts/docs-audit.mjs --diff "$BASE" --json 2>&1)
+if ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
+  jq -n --arg e "$(printf '%s' "$out" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:("DOCS AUDIT CRASHED: it did not return valid JSON, so nothing was verified. Fix the audit before trusting this PR.\n\n" + $e)}}'
+  exit 0
+fi
 
 # Only ERRORs gate. WARNs are advisory by contract and must never block a hotfix — surfacing them here
 # as a blocker would be the fastest way to teach everyone to bypass the gate.

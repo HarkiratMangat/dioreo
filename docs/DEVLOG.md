@@ -3086,3 +3086,30 @@ is a claim about the checks, and only if they ran, and only if they looked at so
 evidence, not just the verdict. And when a safety measure forces you into an unfamiliar setup — a
 worktree, a fresh clone, a shallow checkout — pay attention to what breaks there, because that is
 where the assumptions you never wrote down are keeping score.
+
+### The failsafe I removed without noticing
+
+Harkirat, approving the merge: *"keep any fallbacks/failsafes so even if this program doesn't work, the
+prior detection methods can still catch claude slacking."*
+
+That landed on a regression I had shipped proudly. `devlog-toc-check.sh` used to carry its own TOC
+comparison. I replaced it with a call to `docs-audit.mjs` and wrote a satisfied comment about "one
+implementation" — which is true, and which also converted a standalone gate into a dependent one. If
+the audit is deleted, renamed, or throws, the delegating call returns nothing and a bare `exit 0`
+reads that as a clean pass. I had spent the whole session hunting checks that pass while doing
+nothing, and then built one.
+
+The fix is not a duplicated fallback. Two copies of a rule drift, and the drift is silent too — that
+is precisely why the delegation happened. Instead, **"the audit could not run" is now a finding in its
+own right**: missing file and crashed-with-invalid-JSON are separate messages, and both were verified
+by actually deleting and then breaking the script rather than reasoning about it. Missing and
+found-nothing must never look the same.
+
+The independent layer is genuinely still there, which is the part worth stating plainly: the
+`gh pr merge` hooks (changelog, DEVLOG, release-doc), the `git tag` invariant gate, the Edit/Write
+TIMESTAMP check and the `Stop` completion-claim hooks all run without `docs-audit.mjs` and catch
+different failures. The audit is a layer on top, not a replacement.
+
+And the limits I had been listing in chat are now filed in `docs/db-deferred-list.md` with directions
+attached. A known limitation that lives only in a conversation is indistinguishable from one nobody
+noticed, three sessions later.

@@ -47,6 +47,26 @@ If you touch it:
   errors and sees 1 tag instead of 100+ (measured).
 - `DOCS_AUDIT_ROOT` repoints the whole audit at a fixture tree; that's how the self-test works.
 
+**Current state and its honest edges (2026-07-29 02:10 EDT, v2.42.0).** Run
+`node scripts/docs-audit.mjs --list` for the live roster — no count is written here, it would rot.
+Read the **accounting line** every run prints, not just the verdict: `N/M checks verified (K items
+examined)`, plus anything **SKIPPED** and anything that examined **nothing**. A check matching zero
+items "passes" while verifying nothing, and that is how a broken matcher survives indefinitely.
+A pass means *no known failure mode tripped* — never *the records are correct*.
+**What it cannot cover is filed, not forgotten:** see `docs/db-deferred-list.md` → 🧹 Someday /
+tech-debt → "the limits it does NOT cover" (content accuracy, novel drift, the web-UI PR path).
+
+**Two gates DELEGATE to this script — and both fail LOUD, never silent.**
+`.claude/hooks/devlog-toc-check.sh` and `.claude/hooks/docs-audit-gate.sh` call it rather than keeping
+their own copies, so there is one implementation of each rule. The cost of that is a single point of
+failure: delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired both gates.
+So **"the audit could not run" is reported as its own finding** — missing file and invalid-JSON crash
+are both handled, and both were tested by actually removing and breaking the script. Deliberately NOT
+a duplicated fallback implementation: two copies drift, and the drift is silent too. The independent
+prior detection layer still stands beside it — the `gh pr merge` hooks (changelog, DEVLOG, release-doc
+check), the `git tag` invariant gate, the Edit/Write TIMESTAMP check and the `Stop` completion-claim
+hooks all run without this script and catch different failures.
+
 *General rules: a migration/backfill script should be safe to re-run (clear/upsert, not blind insert).
 Never log a raw Cloudinary error object from a script — plaintext secrets; see
 `.claude/rules/loadout-images-and-metadata.md`.*

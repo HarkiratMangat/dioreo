@@ -267,6 +267,18 @@ entire `public/` tree while this was being written — none of which the audit c
   a probe that scanned only `.md` and then shipped a check that also scanned `.js`/`.json`.
 - The audit now states **what a pass does not mean** on every run, and reports when it is running in a
   linked worktree (where gitignored files are legitimately absent).
+- **Both delegating gates now fail LOUD instead of silent.** Pointing `devlog-toc-check.sh` at the
+  audit removed a working standalone implementation and replaced it with a single point of failure —
+  delete or break `docs-audit.mjs` and a bare `exit 0` would have quietly retired that gate and the
+  new PR gate with it. "The audit could not run" is now reported as its own finding, for both the
+  missing-file and crashed-with-invalid-JSON cases, and both were verified by actually removing and
+  then breaking the script. Not a duplicated fallback: two copies drift, and the drift is silent too.
+  The independent layer still stands beside it — the `gh pr merge` hooks, the `git tag` invariant gate,
+  the TIMESTAMP check and the `Stop` completion-claim hooks all run without this script.
+- **Filed what the audit does NOT cover** to `docs/db-deferred-list.md` rather than leaving it in a
+  chat message: content accuracy, the whitelist limitation, the unguarded web-UI PR path, and three
+  smaller ones — each with a direction, so the next session improves the program instead of
+  rediscovering its edges.
 - **Folded in the second-account co-author trailer convention** (`docs: adopt a real second-account
   co-author trailer for commits`, authored 2026-07-28 18:31 EDT) that had been stranded on a branch in
   a nested worktree. Every commit now carries `Co-Authored-By: diorswrld
