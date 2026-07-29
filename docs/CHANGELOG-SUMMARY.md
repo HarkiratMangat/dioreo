@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.43.2 — July 29, 2026
+- *Internal only — notes for Dior's own future reference about how the legal-page builder works and one
+  lesson learned from it. Nothing players see, and no change to the bot.*
+
 ## v2.43.1 — July 29, 2026
 - **The Terms and Privacy pages are now live and public**, at
   [diors-builds-legal.pages.dev](https://diors-builds-legal.pages.dev). You can read them any time — no

@@ -181,7 +181,29 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.43.1 — 2026-07-29 18:55 EDT (#56) — Seven dead links inside the documents whose point is being checkable
+## v2.43.2 — 2026-07-29 19:20 EDT (#57) — The rule note the merge gate asked for, and the lessons behind it
+**Docs only — no behaviour change.** Closes the chore-checklist gap the `gh pr merge` hook flagged on #56.
+
+- **`scripts/` changed in v2.43.1 with no accompanying rules note**, which the release-doc hook caught at
+  merge time. It could not be folded into #56's squash after the fact (that would need a force-push, which
+  this project never does), so it ships here instead — additively, one release later, the same way a
+  changelog hash gets backfilled.
+- **`.claude/rules/scripts-and-migrations.md` now records the two things a future session would otherwise
+  rediscover the expensive way.** (1) `buildLegalPages.js` has **two independent gates and passing one
+  proves nothing about the other** — `verify()` covers content survival, `linkAudit()` covers link
+  resolution, and both documents reported "100% of source content present" while shipping seven dead
+  links. (2) `PUBLISHED_TARGETS` is the allowlist of what is actually deployed, with the standing warning
+  never to "fix" an inert reference by pointing it at GitHub, since the repo can go private at any time.
+- **Also recorded: the `vmstatus.sh` lost-`#` failure mode**, because `bash -n` cannot catch it. A comment
+  fragment with a missing `#` is valid syntax that simply isn't a comment, which puts it in the same class
+  as the bash-3.2 constructs already flagged in that file. It printed `you: command not found` above the
+  banner on every run and had been read past as noise more than once.
+- **Two memories added** — `feedback_complete_is_not_correct` (a verifier proving output is COMPLETE never
+  proves it is CORRECT) and `feedback_reply_with_the_followup_mark` (the notes-file conversation rule).
+
+---
+
+## v2.43.1 — 2026-07-29 18:55 EDT (#56 · `4895432`) — Seven dead links inside the documents whose point is being checkable
 **Docs + tooling — no bot behaviour change.** Going live found things that only going live could find.
 
 - **The legal site is LIVE** at `https://diors-builds-legal.pages.dev`, on Cloudflare Pages. The
