@@ -281,9 +281,26 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
 
 ### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
-`public/legal/{terms,privacy,index}.html` is **build output**, deployed to Cloudflare Pages so the
-Discord Developer Portal has stable public URLs that survive the repo flipping private. The source of
-truth is `docs/legal/*.md`; the HTML is produced by **`node scripts/buildLegalPages.js`**.
+`public/legal/*.html` is **build output**, deployed to Cloudflare Pages so the
+Discord Developer Portal has stable public URLs that survive the repo flipping private. The sources are
+`docs/legal/*.md` plus the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`); the HTML is produced by **`node scripts/buildLegalPages.js`**.
+**Run `node scripts/buildLegalPages.js && dior legal deploy` after editing ANY of those six sources** —
+nothing else republishes the site, and `dior legal check` compares live bytes against the local build.
+- **Two page classes, and the distinction is deliberate** (expanded 2026-07-29 22:17 EDT). `PAGES` is the
+  numbered legal set (terms · privacy · license · notice) rendered by `shell()`: squared corners,
+  hairline rules, cold graphite, a numbered margin index, and the `01/02/03` series on the landing page.
+  `EXTRA_PAGES` is contributing + contributors rendered by `warmShell()`: rounded, warm radial wash,
+  glow, **no numbers anywhere**. The number series is what tells a reader "these bind you", so an
+  invitation must never enter it. Don't collapse the two templates.
+- **The site's only repo link is the header button, and that is on purpose.** A citation inside a legal
+  document must resolve (repo visibility can change — TERMS §7.1), so in-prose repo references still
+  degrade to inert text via `PUBLISHED_TARGETS`. A nav button that 404s is a dead button, not a
+  defective instrument. TERMS §20 still withholds the repo as a *contact* route.
+- **The homepage leads with Discord (`diorswrld`) and hides the email behind a `<details>` reveal.** It
+  is `<details>`, not a script, because a data subject must be able to reach the controller with JS
+  disabled (PRIVACY §13 / GDPR Art. 13). The wording says Discord is *fastest* and email is *canonical* —
+  which is what the documents say; claiming Discord was "primary" would contradict TERMS §20.
 - **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
   the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
   an empty build command, so nothing has to run on their side.

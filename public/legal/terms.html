@@ -50,22 +50,213 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 
 :root{--accent:#F2994A;--glow:#6B4E7D}
 
+/* ── wordmark ─────────────────────────────────────────────────────── */
+.mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
+  font-family:var(--display);font-weight:700;font-size:.9rem;letter-spacing:-.01em;
+  white-space:nowrap;position:relative;padding:.2rem 0}
+.glyph{display:grid;gap:2.5px;width:16px;flex:0 0 16px}
+.glyph i{display:block;height:2.5px;background:var(--ink3);border-radius:1px;
+  transform-origin:left center;transition:width .3s cubic-bezier(.2,.8,.2,1),background .3s}
+.glyph i:nth-child(1){width:100%;background:var(--accent)}
+.glyph i:nth-child(2){width:60%}
+.glyph i:nth-child(3){width:80%}
+.wm{position:relative}
+/* the hover underline, wiped in from the left */
+.wm::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1.5px;
+  background:var(--accent);transform:scaleX(0);transform-origin:left;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.go{font-size:1.05rem;line-height:1;color:var(--accent);opacity:0;transform:translateX(-5px);
+  transition:opacity .24s,transform .24s}
+.mark.live:hover .wm::after,.mark.live:focus-visible .wm::after{transform:scaleX(1)}
+.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
+.mark.live:hover .glyph i:nth-child(2){transition-delay:.05s}
+.mark.live:hover .glyph i:nth-child(3){transition-delay:.1s}
+/* The idle tell. A hover state cannot tell you a thing is interactive before you
+   hover it, which is exactly the confusion this fixes. */
+.mark.live .glyph i{animation:sweep 5s cubic-bezier(.4,0,.6,1) infinite}
+.mark.live .glyph i:nth-child(2){animation-delay:.13s}
+.mark.live .glyph i:nth-child(3){animation-delay:.26s}
+@keyframes sweep{
+  0%,72%,100%{background:var(--ink3)}
+  8%,20%{background:var(--accent)}
+}
+.mark.live .glyph i:nth-child(1){animation-name:sweep1}
+@keyframes sweep1{
+  0%,72%,100%{background:var(--accent)}
+  8%,20%{background:var(--ink)}
+}
+.mark.live:hover .glyph i{animation-play-state:paused}
+
+/* ── repo button: collapsed pill that opens on hover ──────────────── */
+.ghb{display:inline-flex;align-items:center;gap:0;overflow:hidden;text-decoration:none;
+  color:var(--ink3);border:1px solid var(--rule2);height:28px;padding:0 .48rem;
+  max-width:28px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),color .2s,
+  border-color .2s,background .2s}
+.ghb svg{width:15px;height:15px;flex:0 0 15px;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.ghb-t{font-family:var(--mono);font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;
+  padding-left:.45rem;white-space:nowrap;opacity:0;transition:opacity .26s .06s}
+.ghb:hover,.ghb:focus-visible{max-width:110px;color:var(--ink);border-color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.ghb:hover svg,.ghb:focus-visible svg{transform:rotate(360deg)}
+.ghb:hover .ghb-t,.ghb:focus-visible .ghb-t{opacity:1}
+
+/* ── theme switch: a travelling knob that morphs sun ↔ moon ───────── */
+.thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto}
+.thm-tr{display:block;position:relative;width:52px;height:28px;border-radius:999px;
+  border:1px solid var(--rule2);background:var(--raised);overflow:hidden;
+  transition:background .4s,border-color .3s}
+.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent)}
+.thm-st{position:absolute;inset:0;opacity:1;transition:opacity .4s}
+.thm-st i{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--ink3);
+  animation:twinkle 3.4s ease-in-out infinite}
+.thm-st i:nth-child(1){left:31px;top:8px}
+.thm-st i:nth-child(2){left:39px;top:16px;animation-delay:.7s}
+.thm-st i:nth-child(3){left:43px;top:7px;width:1.5px;height:1.5px;animation-delay:1.4s}
+.thm-st i:nth-child(4){left:35px;top:20px;width:1.5px;height:1.5px;animation-delay:2.1s}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+.thm-kn{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 16%,var(--paper));
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent);
+  transform:translateX(0) rotate(0deg);
+  transition:transform .46s cubic-bezier(.5,-0.3,.3,1.4),background .4s,box-shadow .4s}
+.thm-kn svg{width:16px;height:16px;overflow:visible}
+.thm-kn .cut{transform:translate(7.5px,-7.5px);transition:transform .46s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{opacity:0;transform:scale(.55);transform-origin:12px 12px;
+  transition:opacity .3s,transform .42s cubic-bezier(.2,.8,.2,1)}
+/* LIGHT state — knob travels right, rays fan out, the mask's occluder is pushed
+   clear of the disc so it renders as a full sun. The stars fade out. */
+:root[data-theme=light] .thm-kn{transform:translateX(24px) rotate(180deg)}
+:root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
+:root[data-theme=light] .thm-st{opacity:0}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(24px) rotate(180deg)}
+  :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
+  :root:not([data-theme=dark]) .thm-st{opacity:0}
+}
+@media (prefers-reduced-motion:reduce){.thm-st i{animation:none}}
+
+/* ── install CTA: the one filled element on the site ──────────────── */
+.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;overflow:hidden;
+  text-decoration:none;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:600;height:28px;padding:0 .7rem;
+  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .28s,filter .22s}
+.ins svg{width:15px;height:15px;flex:0 0 15px;position:relative;z-index:1}
+.ins-t{position:relative;z-index:1}
+/* The sheen. Runs on a slow idle loop so the button advertises itself, and
+   accelerates on hover — same reasoning as the wordmark's idle sweep. */
+.ins-gl{position:absolute;inset:0;z-index:0;
+  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.55) 48%,transparent 76%);
+  transform:translateX(-120%);animation:sheen 4.6s ease-in-out infinite}
+@keyframes sheen{0%,68%{transform:translateX(-120%)}88%,100%{transform:translateX(120%)}}
+.ins:hover,.ins:focus-visible{transform:translateY(-1px);filter:brightness(1.08);
+  box-shadow:0 6px 20px -6px color-mix(in srgb,var(--accent) 75%,transparent)}
+.ins:hover .ins-gl{animation-duration:1.1s}
+.ins:active{transform:translateY(0)}
+/* ── header crowding ──────────────────────────────────────────────────
+   Six controls (wordmark, four tabs, repo, install, theme) do not fit a narrow
+   bar. Measured at 800px: the theme switch was clipped off the right edge and the
+   bar scrolled horizontally. They shed in order of how recoverable each is —
+   the repo link and the wordmark's text both exist elsewhere on the page, the
+   install action and the theme control do not. */
+@media (max-width:900px){ .bar .ghb{display:none} }
+@media (max-width:620px){ .bar .mark .wm,.bar .mark .go{display:none} }
+@media (max-width:560px){ .bar .ins-t{display:none}.bar .ins{padding:0 .5rem} }
+@media (max-width:480px){ .bar{gap:.7rem} .bar nav{gap:.4rem} }
+
+/* hero variant. The supporting line is a SIBLING, not a flex child: as a child
+   with flex-basis 100% it forced the shrink-to-fit button to resolve against the
+   container, so the CTA stretched the full column width and read as a banner
+   rather than a button. (No backticks in these CSS comments — this block is a JS
+   template literal and a backtick terminates it mid-stylesheet.) */
+.ins.big{height:auto;padding:1.05rem 1.5rem;font-size:.82rem;
+  letter-spacing:.14em;gap:.7rem}
+.ins.big svg{width:21px;height:21px;flex:0 0 21px}
+.cta-note{margin:.7rem 0 0;font-family:var(--mono);font-size:.63rem;letter-spacing:.06em;
+  color:var(--ink3)}
+/* The pulse ring, hero only — a second, slower rhythm behind the sheen so the
+   hero reads as the loudest thing on the page without changing colour. */
+.ins.big::after{content:"";position:absolute;inset:0;border:1px solid var(--accent);
+  animation:ring 2.8s cubic-bezier(.2,.6,.3,1) infinite;pointer-events:none}
+@keyframes ring{0%{transform:scale(1);opacity:.7}70%,100%{transform:scale(1.14);opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .ins-gl{animation:none;transform:translateX(-120%)}
+  .ins.big::after{animation:none;opacity:0}
+}
+
+/* ── Discord handle + email reveal ────────────────────────────────── */
+.dh{font-family:var(--mono);font-weight:600;color:var(--ink);letter-spacing:.02em;
+  background:color-mix(in srgb,var(--accent) 14%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--accent) 50%,transparent);
+  padding:.06em .3em}
+.rev{margin-top:.6rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
+.rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+  color:var(--ink3);list-style:none;transition:color .2s}
+.rev summary::-webkit-details-marker{display:none}
+.rev summary:hover{color:var(--ink)}
+/* A shutter that slides off the label — the "uncover" gesture, done with a
+   pseudo-element so it needs no script. */
+.rv-i{position:relative;width:22px;height:9px;flex:0 0 22px;overflow:hidden;
+  border:1px solid var(--rule2)}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}
+.rev summary:hover .rv-i::after{transform:translateX(46%)}
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+.rv-b{display:grid;gap:.3rem;margin-top:.6rem;padding:.7rem .9rem;
+  border:1px solid var(--rule);border-left:2px solid var(--accent);
+  background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
+.rv-b a{color:var(--ink);font-size:.78rem;letter-spacing:.02em}
+.rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
+@keyframes uncover{from{opacity:0;transform:translateY(-4px);clip-path:inset(0 0 100% 0)}
+  to{opacity:1;transform:translateY(0);clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
+
+
 /* ── top bar ─────────────────────────────────────────────────────── */
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
-.mark{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--ink);
-  font-family:var(--display);font-weight:700;font-size:.9rem;letter-spacing:-.01em;white-space:nowrap}
-.mark b{display:block;width:3px;height:17px;background:var(--accent)}
-.bar nav{margin-left:auto;display:flex;align-items:center;gap:.35rem}
-.tab{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
-  text-decoration:none;color:var(--ink3);padding:.42rem .7rem;border:1px solid transparent}
-.tab:hover{color:var(--ink2)}
-.tab.on{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
-#th{margin-left:.4rem;width:32px;height:28px;display:grid;place-items:center;cursor:pointer;
-  background:none;border:1px solid var(--rule2);color:var(--ink3);font-size:.85rem;line-height:1}
-#th:hover{color:var(--ink)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
+
+/* ── segmented page switcher ──────────────────────────────────────────
+   Was three bordered boxes, which read as inert. Now one segmented control
+   with an indicator that slides. Because these are separate documents and not
+   an SPA, the slide happens on LOAD: the indicator animates in from the
+   previous tab's position, so arriving on a page shows you the move you just
+   made. --i is the active index, --n the tab count, both known at build time,
+   so no measuring in JS and nothing to go wrong on first paint. */
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  border:1px solid var(--rule);background:var(--raised);isolation:isolate}
+.seg-ink{position:absolute;z-index:0;top:0;bottom:0;left:0;width:calc(100%/var(--n));
+  background:color-mix(in srgb,var(--accent) 15%,transparent);
+  border-bottom:2px solid var(--accent);
+  transform:translateX(calc(var(--i) * 100%))}
+/* Only animates once JS has supplied a real previous index — see the inline
+   script under the switcher. Without JS the indicator is simply already correct. */
+.seg.go .seg-ink{animation:segIn .52s cubic-bezier(.2,.85,.2,1) both}
+@keyframes segIn{
+  from{transform:translateX(calc(var(--from) * 100%));opacity:0}
+  60%{opacity:1}
+  to{transform:translateX(calc(var(--i) * 100%));opacity:1}
+}
+.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;
+  text-transform:uppercase;text-decoration:none;color:var(--ink3);padding:.46rem .8rem;
+  text-align:center;transition:color .22s,transform .22s}
+.tab .n{display:block;font-size:.55rem;letter-spacing:.14em;opacity:.55;margin-bottom:1px}
+.tab:hover{color:var(--ink);transform:translateY(-1px)}
+.tab.on{color:var(--ink);font-weight:600}
+.tab.on .n{color:var(--accent);opacity:1}
+@media (max-width:640px){
+  .tab{padding:.46rem .5rem;font-size:.62rem;letter-spacing:.06em}
+  .tab .n{display:none}
+}
 
 /* ── layout ──────────────────────────────────────────────────────── */
 .page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0;
@@ -90,14 +281,33 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent)}
 .slot.on span{color:var(--ink);font-weight:650}
+/* ── mobile section index ─────────────────────────────────────────────
+   It used to be position:static, so the opener scrolled away with the top of
+   the page and became unreachable exactly when a long document needs it most.
+   It is now STICKY directly beneath the fixed bar, so it is in reach at every
+   scroll position, and it names the section you are currently in — the desktop
+   rail already tracks that, and on mobile it is the only positional cue there is.
+   The open list is height-capped and scrolls internally so it can never grow past
+   the viewport on a 22-section document. */
 @media (max-width:980px){
-  .rail{position:static;max-height:none;padding:1.6rem 0 0}
-  .rail>.lab{cursor:pointer;padding:.8rem 1rem;border:1px solid var(--rule);
-    background:var(--paper);margin:0;display:flex;justify-content:space-between;align-items:center}
-  .rail>.lab::after{content:"+";font-size:.9rem}
-  .rail.open>.lab::after{content:"–"}
-  .slots{display:none;padding-top:.7rem}
+  .rail{position:sticky;top:54px;z-index:50;max-height:none;padding:0;
+    margin:0 0 1.6rem;background:color-mix(in srgb,var(--desk) 94%,transparent);
+    backdrop-filter:blur(12px) saturate(1.2)}
+  .rail>.lab{cursor:pointer;padding:.72rem 1rem;border:1px solid var(--rule);
+    background:var(--paper);margin:0;display:flex;gap:.6rem;align-items:center;
+    width:100%;-webkit-appearance:none;appearance:none;text-align:left;
+    font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink3)}
+  .rail>.lab .cur{margin-left:auto;color:var(--ink2);letter-spacing:.04em;
+    text-transform:none;font-size:.68rem;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;max-width:52%}
+  .rail>.lab::after{content:"+";font-size:.95rem;color:var(--accent);flex:0 0 auto;
+    transition:transform .24s}
+  .rail.open>.lab::after{transform:rotate(45deg)}
+  .slots{display:none;padding:.6rem 0;border:1px solid var(--rule);border-top:0;
+    background:var(--paper);max-height:min(58vh,420px);overflow-y:auto}
   .rail.open .slots{display:block}
+  .slot{padding-left:1rem}
 }
 
 /* ── the document ────────────────────────────────────────────────── */
@@ -131,6 +341,9 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
   opacity:0;transition:opacity .15s}
 .doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
 .anchor:hover{color:var(--accent)}
+/* On a touch device there is no hover to reveal it, so a per-heading ¶ is either
+   permanently invisible or permanent clutter. Neither is worth the space. */
+@media (hover:none){.anchor{display:none}}
 
 /* ── prose ───────────────────────────────────────────────────────── */
 .doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
@@ -155,6 +368,48 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .doc code{font-family:var(--mono);font-size:.83em;background:var(--raised);
   border:1px solid var(--rule);padding:.11em .36em;color:var(--ink);word-break:break-word}
 .doc hr{border:0;border-top:1px solid var(--rule);margin:2.8rem 0}
+
+/* ── plain-text licence: clauses, sub-paragraphs, capitals ────────────
+   Only the LICENSE page uses these. The source is plain text whose structure is
+   carried entirely by indentation, so the job here is to make that structure
+   visible without altering a character of it. */
+.authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
+  letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
+  border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
+  max-width:72ch}
+.authoritative a{color:var(--ink)}
+h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
+  font-size:1rem;font-weight:700}
+h3.clause .idx{color:var(--accent);margin:0;flex:0 0 auto;font-size:.76rem}
+@media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
+  text-align:right;width:3.2rem}}
+h3.clause .ht:empty{display:none}
+/* A clause with no title phrase leaves only the index; without this its body
+   would start against the heading's bottom margin and read as orphaned. */
+h3.clause:has(.ht:empty){margin-bottom:.15rem}
+p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
+  margin:0 0 .95rem;max-width:70ch}
+p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
+  font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
+  margin:.34rem 0}
+/* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
+   so they are preserved rather than down-cased — but a wall of capital serif at
+   reading size is genuinely hard going, hence the smaller, looser, mono setting. */
+p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
+  color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
+  background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}
+/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
+   IS the structure, so it must not wrap — hence its own horizontal scroll rather
+   than letting the page body scroll, which is the rule for every wide element. */
+pre.cols{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
+  background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
+  margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
+pre.cols a{color:var(--ink)}
 
 /* ── callouts ────────────────────────────────────────────────────── */
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
@@ -187,7 +442,9 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .foot a{color:var(--ink2)}
 
 @media print{
-  .bar,#prog,.rail,.anchor,#th{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb{display:none!important}
+  .authoritative{border:1px solid #999}
+  p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
   .page{display:block;max-width:none;padding:0}
   .doc{border:0;box-shadow:none;padding:0;background:#fff}
@@ -206,19 +463,72 @@ html{scroll-behavior:smooth}
 <body>
 
 <div class="bar">
-  <a class="mark" href="./"><b></b> Dior's Builds</a>
+  <a class="mark live" href="./">
+    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="wm">Dior&#8217;s Builds</span>
+    <span class="go" aria-hidden="true">&#8250;</span>
+  </a>
   <nav>
-    <a class="tab on" href="./terms.html">Terms</a>
-    <a class="tab" href="./privacy.html">Privacy</a>
-    <button id="th" title="Toggle light or dark" aria-label="Toggle light or dark">◐</button>
+    <div class="seg" style="--n:4;--i:0;--from:0">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab on" href="./terms.html" aria-current="page"><span class="n">01</span>Terms</a>
+      <a class="tab" href="./privacy.html"><span class="n">02</span>Privacy</a>
+      <a class="tab" href="./license.html"><span class="n">03</span>License</a>
+      <a class="tab" href="./notice.html"><span class="n">04</span>Notice</a>
+    </div>
+    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+  title="View the source on GitHub">
+  <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+  <span class="ghb-t">Source</span>
+</a>
+    <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+  target="_blank" rel="noopener noreferrer">
+  <span class="ins-gl" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.32 4.57A19.8 19.8 0 0 0 15.43 3c-.2.37-.44.87-.6 1.26a14.8 14.8 0 0 0-4.44 0c-.17-.4-.4-.89-.61-1.26a19.7 19.7 0 0 0-4.9 1.58C1.79 8.9.98 13.1 1.39 17.25a19.9 19.9 0 0 0 6.03 3.05c.39-.53.73-1.1 1.03-1.69-.57-.21-1.11-.47-1.63-.78.14-.1.27-.21.4-.32a14.2 14.2 0 0 0 12.18 0c.13.11.26.22.4.32-.52.31-1.07.57-1.64.78.3.59.65 1.16 1.03 1.69a19.8 19.8 0 0 0 6.04-3.05c.48-4.8-.82-8.96-3.91-12.68ZM8.68 14.7c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.21 0 2.18 1.09 2.16 2.4 0 1.33-.95 2.41-2.16 2.41Zm6.64 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.21 0 2.18 1.09 2.16 2.4 0 1.33-.95 2.41-2.16 2.41Z"/></svg>
+  <span class="ins-t">Install</span>
+</a>
+    <button id="th" class="thm " role="switch"
+  aria-checked="false" aria-label="Switch between light and dark">
+  <span class="thm-tr" aria-hidden="true">
+    <span class="thm-st"><i></i><i></i><i></i><i></i></span>
+    <span class="thm-kn">
+      <svg viewBox="0 0 24 24">
+        <mask id="thm-cut">
+          <rect width="24" height="24" fill="#000"/>
+          <circle cx="12" cy="12" r="7.2" fill="#fff"/>
+          <circle class="cut" cx="12" cy="12" r="6.4" fill="#000"/>
+        </mask>
+        <g class="rays" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <line x1="12" y1="1.4" x2="12" y2="3.6"/><line x1="12" y1="20.4" x2="12" y2="22.6"/>
+          <line x1="1.4" y1="12" x2="3.6" y2="12"/><line x1="20.4" y1="12" x2="22.6" y2="12"/>
+          <line x1="4.6" y1="4.6" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.4" y2="19.4"/>
+          <line x1="19.4" y1="4.6" x2="17.8" y2="6.2"/><line x1="6.2" y1="17.8" x2="4.6" y2="19.4"/>
+        </g>
+        <rect class="orb" width="24" height="24" fill="currentColor" mask="url(#thm-cut)"/>
+      </svg>
+    </span>
+  </span>
+</button>
   </nav>
 </div>
+<script>
+/* Runs during parse, before first paint, so setting --from can't flash. Only the
+   browser knows which tab you were on last, hence sessionStorage rather than a
+   build-time guess. */
+(function(){
+  var seg=document.querySelector('.seg');
+  if(!seg) return;
+  var i=0, prev=null;
+  try{ prev=sessionStorage.getItem('db-tab'); sessionStorage.setItem('db-tab',i); }catch(e){}
+  if(prev!==null&&prev!==''&&+prev!==i){ seg.style.setProperty('--from',+prev); seg.classList.add('go'); }
+})();
+</script>
 <div id="prog"></div>
 
 <div class="page">
   <aside class="rail" id="rail">
-    <span class="lab">Sections</span>
-    <div class="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who you're dealing with</span></a><a href="#s-2" class="slot"><i>2</i><span>Agreement to these Terms</span></a><a href="#s-3" class="slot"><i>3</i><span>Eligibility</span></a><a href="#s-4" class="slot"><i>4</i><span>What the Bot does</span></a><a href="#s-5" class="slot"><i>5</i><span>Accuracy — please read this one</span></a><a href="#s-6" class="slot"><i>6</i><span>Acceptable use</span></a><a href="#s-7" class="slot"><i>7</i><span>Intellectual property</span></a><a href="#s-8" class="slot"><i>8</i><span>AI disclosure</span></a><a href="#s-9" class="slot"><i>9</i><span>Third-party services</span></a><a href="#s-10" class="slot"><i>10</i><span>Availability and changes</span></a><a href="#s-11" class="slot"><i>11</i><span>Force majeure</span></a><a href="#s-12" class="slot"><i>12</i><span>Export control and sanctions</span></a><a href="#s-13" class="slot"><i>13</i><span>Suspension and termination</span></a><a href="#s-14" class="slot"><i>14</i><span>Disclaimer of warranties</span></a><a href="#s-15" class="slot"><i>15</i><span>Limitation of liability</span></a><a href="#s-16" class="slot"><i>16</i><span>Indemnity</span></a><a href="#s-17" class="slot"><i>17</i><span>Governing law and disputes</span></a><a href="#s-18" class="slot"><i>18</i><span>General</span></a><a href="#s-19" class="slot"><i>19</i><span>Changes to these Terms</span></a><a href="#s-20" class="slot"><i>20</i><span>Contact</span></a><a href="#appendix-change-history" class="slot"><i>—</i><span>Appendix — Change history</span></a></div>
+    <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
+    <div class="slots" id="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who you're dealing with</span></a><a href="#s-2" class="slot"><i>2</i><span>Agreement to these Terms</span></a><a href="#s-3" class="slot"><i>3</i><span>Eligibility</span></a><a href="#s-4" class="slot"><i>4</i><span>What the Bot does</span></a><a href="#s-5" class="slot"><i>5</i><span>Accuracy — please read this one</span></a><a href="#s-6" class="slot"><i>6</i><span>Acceptable use</span></a><a href="#s-7" class="slot"><i>7</i><span>Intellectual property</span></a><a href="#s-8" class="slot"><i>8</i><span>AI disclosure</span></a><a href="#s-9" class="slot"><i>9</i><span>Third-party services</span></a><a href="#s-10" class="slot"><i>10</i><span>Availability and changes</span></a><a href="#s-11" class="slot"><i>11</i><span>Force majeure</span></a><a href="#s-12" class="slot"><i>12</i><span>Export control and sanctions</span></a><a href="#s-13" class="slot"><i>13</i><span>Suspension and termination</span></a><a href="#s-14" class="slot"><i>14</i><span>Disclaimer of warranties</span></a><a href="#s-15" class="slot"><i>15</i><span>Limitation of liability</span></a><a href="#s-16" class="slot"><i>16</i><span>Indemnity</span></a><a href="#s-17" class="slot"><i>17</i><span>Governing law and disputes</span></a><a href="#s-18" class="slot"><i>18</i><span>General</span></a><a href="#s-19" class="slot"><i>19</i><span>Changes to these Terms</span></a><a href="#s-20" class="slot"><i>20</i><span>Contact</span></a><a href="#appendix-change-history" class="slot"><i>—</i><span>Appendix — Change history</span></a></div>
   </aside>
 
   <main class="doc">
@@ -226,7 +536,7 @@ html{scroll-behavior:smooth}
       <span class="lab">Agreement</span>
       <h1>Terms of Service</h1>
       <div class="rule"></div>
-      <div class="meta"><span>Effective <b>28 July 2026</b></span><span>Revision <b>1.0</b></span><span>Ontario, Canada</span></div>
+      <div class="meta"><span>Effective <b>29 July 2026</b></span><span>Revision <b>1.1</b></span><span>Ontario, Canada</span></div>
     </header>
     <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" aria-label="Link to this section">¶</a></h2>
 <p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
@@ -237,7 +547,7 @@ html{scroll-behavior:smooth}
 <p><em>This summary is for convenience only. The numbered sections are the actual terms.</em></p>
 <hr>
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
-<p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
+<p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
 <p><strong>Contact:</strong> harkirat117@gmail.com</p>
 <p>There is no company behind this. It's one person, and support is best-effort.</p>
 <hr>
@@ -304,17 +614,23 @@ html{scroll-behavior:smooth}
 <p><strong>Call of Duty®</strong> and <strong>Call of Duty®: Mobile</strong> are trademarks of <strong>Activision Publishing, Inc.</strong> Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
 <blockquote class="callout"><p><strong>Dior's Builds is an unofficial, non-commercial fan project. It is not developed, published, licensed, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, Discord Inc., or any of their affiliates.</strong></p></blockquote>
 <p>Weapon names, item names, in-game imagery, and other game content shown by the Bot remain the property of their respective owners. We claim no ownership and grant you no rights in them. They are displayed for identification, commentary, and reference in a manner we believe constitutes fair dealing under the <em>Copyright Act</em> (Canada) and fair use under 17 U.S.C. § 107.</p>
-<p>We take that position seriously rather than assuming it: the Bot is <strong>free and non-commercial</strong>, its purpose is <strong>informational and referential</strong> rather than a substitute for the game, it uses <strong>no official logos or branding</strong>, it does not reproduce game code, assets in bulk, or anything playable, it makes clear on its face that it is unofficial, and it operates a <strong>prompt takedown process</strong> (<a class="xref" href="#s-7.4">§7.4</a>). Those are the factors that matter, and they are deliberate choices.</p>
+<p>We take that position seriously rather than assuming it: the Bot is <strong>free and non-commercial</strong>, its purpose is <strong>informational and referential</strong> rather than a substitute for the game, it uses <strong>no official logos or branding</strong>, it does not reproduce game code, assets in bulk, or anything playable, it makes clear on its face that it is unofficial, and it operates a <strong>prompt takedown process</strong> (<a class="xref" href="#s-7.5">§7.5</a>). Those are the factors that matter, and they are deliberate choices.</p>
 <p>We nonetheless acknowledge plainly that fan projects operate at the rights holder's sufferance. <strong>If Activision or any other rights holder asks us to change or remove something, we will comply promptly</strong> rather than argue.</p>
-<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Not ours — crossover and collaboration content</span><a class="anchor" href="#s-7.3" aria-label="Link to this section">¶</a></h3>
+<p>Call of Duty: Mobile regularly features <strong>licensed content from third-party rights holders who have nothing to do with us and no connection to this project</strong> — crossover seasons, guest characters, themed weapon blueprints, and tie-in events drawn from films, television, comics, music, anime, sports, and other franchises. Those collaborations come and go every season.</p>
+<p>Where the Bot names, describes, dates, or lists such content, the following applies in full:</p>
+<ul><li>The characters, titles, logos, likenesses, designs, and other elements of that content are the property of <strong>their own respective rights holders</strong>, who are typically not Activision, TiMi Studio Group, Tencent, or any of the publishers named in <a class="xref" href="#s-7.2">§7.2</a>.</li><li><strong>We are not affiliated with, licensed by, endorsed by, or sponsored by any of those rights holders either</strong>, and nothing in the Bot's output should be read as suggesting otherwise. The disclaimer in <a class="xref" href="#s-7.2">§7.2</a> extends to every one of them.</li><li>We claim no ownership of and grant you no rights in any of it. It is named and described for identification, commentary, and reference on the same fair dealing / fair use basis set out in <a class="xref" href="#s-7.2">§7.2</a>.</li><li>The takedown process in <a class="xref" href="#s-7.5">§7.5</a> is open to <strong>any</strong> rights holder, not only the game's publishers, and we action valid requests the same way.</li></ul>
+<blockquote class="callout"><p><strong>We deliberately do not list individual collaborations here.</strong> Any list would be out of date within a season, and a stale list of third-party marks is worse than none: it implies we track and vet each one, and it goes wrong silently. This clause is written to cover every collaboration — past, current, and future — without needing to be revised each time one launches.</p></blockquote>
+<p>We also deliberately <strong>do not reproduce other companies' own copyright notices</strong> (the "© / ™ / ® [YEAR] [COMPANY]. All Rights Reserved." blocks you see in the game itself and in officially licensed products). Those notices are published by the rights holders and their licensees to assert <em>their</em> rights under <em>their</em> licence agreements. We hold no such licence, so reproducing them here would misrepresent our relationship with those companies — the opposite of what a disclaimer is for. We acknowledge their rights instead, which is the accurate thing for an unofficial project to do. A consolidated acknowledgement list is kept in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
+<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.4" aria-label="Link to this section">¶</a></h3>
 <p>Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
-<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.4" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.5" aria-label="Link to this section">¶</a></h3>
 <p>If you own rights in material displayed by the Bot and want it removed, email <strong>harkirat117@gmail.com</strong> with:</p>
 <ul><li>identification of the work;</li><li>where it appears in the Bot;</li><li>your contact details;</li><li>a statement that you believe the use is unauthorised; and</li><li>a statement that your notice is accurate and that you are the rights holder or authorised to act for them.</li></ul>
 <p><strong>We action valid requests promptly</strong> — usually within a few days — and we don't require a formal legal process to do so. We will also consider counter-notices.</p>
-<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Yours</span><a class="anchor" href="#s-7.5" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Yours</span><a class="anchor" href="#s-7.6" aria-label="Link to this section">¶</a></h3>
 <p>You retain ownership of anything you send us. By sending feedback, ideas, bug reports, or suggestions, you grant us a perpetual, worldwide, royalty-free, irrevocable licence to use them without restriction, obligation, or compensation, and you agree we owe you nothing for them. Code contributions are governed instead by <a class="xref" href="#s-5">§5</a> of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
-<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.6" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" aria-label="Link to this section">¶</a></h3>
 <p>We may develop, acquire, or operate features, products, or services similar to anything you suggest. Nothing in these Terms restricts that, and submitting an idea gives you no rights in what we later build.</p>
 <hr>
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
@@ -402,9 +718,12 @@ html{scroll-behavior:smooth}
 <p>We may update these Terms. When we do:</p>
 <ul><li>The <strong>effective date and version</strong> at the top change.</li><li>The change is recorded in the repository's git history.</li><li>For <strong>material</strong> changes we will make reasonable efforts to give notice — typically through the project's Discord presence, a repository release note, or a notice in the Bot itself.</li></ul>
 <p>Continued use after a change takes effect means you accept the updated Terms. If you don't accept them, remove the Bot.</p>
+<h3 id="s-19.1" class="numbered"><span class="idx" aria-hidden="true">19.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-19.1" aria-label="Link to this section">¶</a></h3>
+<p>Kept here as well as in git, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a change record you can't reach isn't a change record.</p>
+<div class="tw"><table><thead><tr><th>Version</th><th>Effective</th><th>What changed</th></tr></thead><tbody><tr><td>1.1</td><td>29 July 2026</td><td>Added <a class="xref" href="#s-7.3">§7.3</a> (crossover and collaboration content — third-party IP featured in the game); noted the operator's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>; renumbered the former <a class="xref" href="#s-7.3">§7.3</a>–<a class="xref" href="#s-7.6">§7.6</a> to <a class="xref" href="#s-7.4">§7.4</a>–<a class="xref" href="#s-7.7">§7.7</a> to make room. <strong>Clarifying additions only</strong> — no reduction of your rights, no new data collected, no new obligation on you.</td></tr><tr><td>1.0</td><td>28 July 2026</td><td>First published version.</td></tr></tbody></table></div>
 <hr>
 <h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" aria-label="Link to this section">¶</a></h2>
-<p><strong>Harkirat Mangat ("dior")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong></p>
+<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong></p>
 <p>Email is the canonical contact and always reaches us. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
 <p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
 <hr>
@@ -417,7 +736,7 @@ html{scroll-behavior:smooth}
 
   <footer class="foot">
     <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
-    <p><a href="./terms.html">Terms</a> · <a href="./privacy.html">Privacy</a> · <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a></p>
+    <p><a href="./terms.html">Terms</a> · <a href="./privacy.html">Privacy</a> · <a href="./license.html">License</a> · <a href="./notice.html">Notice</a> · <a href="../NOTICE">Notice</a> · <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a></p>
   </footer>
 </div>
 
@@ -433,24 +752,45 @@ html{scroll-behavior:smooth}
     var cur=-1, y=h.scrollTop+130;
     for(var i=0;i<heads.length;i++){ if(heads[i]&&heads[i].offsetTop<=y) cur=i; }
     for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
+    // Mirror the tracked section into the mobile opener. On desktop the rail
+    // shows position by itself; on mobile the list is collapsed, so without this
+    // there is no positional cue anywhere on a 22-section document.
+    var curEl=document.getElementById('railcur');
+    if(curEl){
+      var t=cur>=0?slots[cur].querySelector('span'):null;
+      curEl.textContent=t?t.textContent:'';
+    }
     queued=false;
   }
   addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
   addEventListener('resize',paint); paint();
 
-  var rail=document.getElementById('rail');
-  rail.querySelector('.lab').addEventListener('click',function(){ rail.classList.toggle('open'); });
-  slots.forEach(function(a){ a.addEventListener('click',function(){ rail.classList.remove('open'); }); });
+  var rail=document.getElementById('rail'), rbtn=document.getElementById('railbtn');
+  rbtn.addEventListener('click',function(){
+    var open=rail.classList.toggle('open');
+    rbtn.setAttribute('aria-expanded', open?'true':'false');
+  });
+  slots.forEach(function(a){ a.addEventListener('click',function(){
+    rail.classList.remove('open'); rbtn.setAttribute('aria-expanded','false');
+  }); });
 
+})();
+
+(function(){
+  var d=document.documentElement, btn=document.getElementById('th');
+  function resolved(){
+    return d.getAttribute('data-theme') ||
+      (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  }
+  function sync(){ if(btn) btn.setAttribute('aria-checked', resolved()==='light'?'true':'false'); }
   // Theme choice is per-browser and deliberately never sent anywhere.
-  var btn=document.getElementById('th');
-  try{ var s=localStorage.getItem('db-theme'); if(s) document.documentElement.setAttribute('data-theme',s); }catch(e){}
-  btn.addEventListener('click',function(){
-    var d=document.documentElement, cur=d.getAttribute('data-theme');
-    if(!cur) cur=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-    var next=cur==='dark'?'light':'dark';
+  try{ var s=localStorage.getItem('db-theme'); if(s) d.setAttribute('data-theme',s); }catch(e){}
+  sync();
+  if(btn) btn.addEventListener('click',function(){
+    var next=resolved()==='dark'?'light':'dark';
     d.setAttribute('data-theme',next);
     try{ localStorage.setItem('db-theme',next); }catch(e){}
+    sync();
   });
 })();
 </script>

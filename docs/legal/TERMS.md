@@ -1,7 +1,7 @@
 # Terms of Service — Dior's Builds
 
-**Effective date:** 28 July 2026
-**Version:** 1.0
+**Effective date:** 29 July 2026
+**Version:** 1.1
 **Applies to:** the Dior's Builds Discord application (the "Bot")
 
 ---
@@ -32,8 +32,8 @@ can't be signed away.
 
 ## 1. Who you're dealing with
 
-Dior's Builds is operated by **Harkirat Mangat**, also known as **"dior"**, an
-individual based in Ontario, Canada ("we", "us", "our").
+Dior's Builds is operated by **Harkirat Mangat**, also known as **"dior"** or
+**"diorswrld"**, an individual based in Ontario, Canada ("we", "us", "our").
 
 **Contact:** harkirat117@gmail.com
 
@@ -285,20 +285,60 @@ We take that position seriously rather than assuming it: the Bot is **free and
 non-commercial**, its purpose is **informational and referential** rather than a
 substitute for the game, it uses **no official logos or branding**, it does not
 reproduce game code, assets in bulk, or anything playable, it makes clear on its
-face that it is unofficial, and it operates a **prompt takedown process** (§7.4).
+face that it is unofficial, and it operates a **prompt takedown process** (§7.5).
 Those are the factors that matter, and they are deliberate choices.
 
 We nonetheless acknowledge plainly that fan projects operate at the rights
 holder's sufferance. **If Activision or any other rights holder asks us to change
 or remove something, we will comply promptly** rather than argue.
 
-### 7.3 Other trademarks
+### 7.3 Not ours — crossover and collaboration content
+
+Call of Duty: Mobile regularly features **licensed content from third-party
+rights holders who have nothing to do with us and no connection to this
+project** — crossover seasons, guest characters, themed weapon blueprints, and
+tie-in events drawn from films, television, comics, music, anime, sports, and
+other franchises. Those collaborations come and go every season.
+
+Where the Bot names, describes, dates, or lists such content, the following
+applies in full:
+
+- The characters, titles, logos, likenesses, designs, and other elements of that
+  content are the property of **their own respective rights holders**, who are
+  typically not Activision, TiMi Studio Group, Tencent, or any of the
+  publishers named in §7.2.
+- **We are not affiliated with, licensed by, endorsed by, or sponsored by any of
+  those rights holders either**, and nothing in the Bot's output should be read
+  as suggesting otherwise. The disclaimer in §7.2 extends to every one of them.
+- We claim no ownership of and grant you no rights in any of it. It is named and
+  described for identification, commentary, and reference on the same fair
+  dealing / fair use basis set out in §7.2.
+- The takedown process in §7.5 is open to **any** rights holder, not only the
+  game's publishers, and we action valid requests the same way.
+
+> **We deliberately do not list individual collaborations here.** Any list would
+> be out of date within a season, and a stale list of third-party marks is worse
+> than none: it implies we track and vet each one, and it goes wrong silently.
+> This clause is written to cover every collaboration — past, current, and
+> future — without needing to be revised each time one launches.
+
+We also deliberately **do not reproduce other companies' own copyright notices**
+(the "© / ™ / ® [YEAR] [COMPANY]. All Rights Reserved." blocks you see in the
+game itself and in officially licensed products). Those notices are published by
+the rights holders and their licensees to assert *their* rights under *their*
+licence agreements. We hold no such licence, so reproducing them here would
+misrepresent our relationship with those companies — the opposite of what a
+disclaimer is for. We acknowledge their rights instead, which is the accurate
+thing for an unofficial project to do. A consolidated acknowledgement list is
+kept in [NOTICE](../../NOTICE) §5.
+
+### 7.4 Other trademarks
 
 Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and
 all other marks are the property of their respective owners. A full acknowledgement
 list is in [NOTICE](../../NOTICE) §5.
 
-### 7.4 Copyright complaints and takedowns
+### 7.5 Copyright complaints and takedowns
 
 If you own rights in material displayed by the Bot and want it removed, email
 **harkirat117@gmail.com** with:
@@ -313,7 +353,7 @@ If you own rights in material displayed by the Bot and want it removed, email
 **We action valid requests promptly** — usually within a few days — and we don't
 require a formal legal process to do so. We will also consider counter-notices.
 
-### 7.5 Yours
+### 7.6 Yours
 
 You retain ownership of anything you send us. By sending feedback, ideas, bug
 reports, or suggestions, you grant us a perpetual, worldwide, royalty-free,
@@ -322,7 +362,7 @@ and you agree we owe you nothing for them. Code contributions are governed inste
 by §5 of the [LICENSE](../../LICENSE) and the
 [contributing guide](../../CONTRIBUTING.md).
 
-### 7.6 Independent development
+### 7.7 Independent development
 
 We may develop, acquire, or operate features, products, or services similar to
 anything you suggest. Nothing in these Terms restricts that, and submitting an idea
@@ -607,11 +647,21 @@ We may update these Terms. When we do:
 Continued use after a change takes effect means you accept the updated Terms. If you
 don't accept them, remove the Bot.
 
+### 19.1 Revision history
+
+Kept here as well as in git, because the repository's visibility can change
+(§7.1) and a change record you can't reach isn't a change record.
+
+| Version | Effective | What changed |
+|---|---|---|
+| 1.1 | 29 July 2026 | Added §7.3 (crossover and collaboration content — third-party IP featured in the game); noted the operator's `diorswrld` alias in §1 and §20; renumbered the former §7.3–§7.6 to §7.4–§7.7 to make room. **Clarifying additions only** — no reduction of your rights, no new data collected, no new obligation on you. |
+| 1.0 | 28 July 2026 | First published version. |
+
 ---
 
 ## 20. Contact
 
-**Harkirat Mangat ("dior")**
+**Harkirat Mangat ("dior", "diorswrld")**
 Ontario, Canada
 📧 **harkirat117@gmail.com**
 

@@ -20,9 +20,25 @@ the subsystem rule it belongs to:*
   every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you
   touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
 
-  ⚠️ **It has TWO independent gates and passing one proves nothing about the other** (learned the hard
-  way 2026-07-29 18:55 EDT, v2.43.1). `verify()` checks that every multi-word run of source survived into
-  the HTML; `linkAudit()` resolves every internal href against the deploy tree. Both documents reported
+  ⚠️ **The CSS lives inside JS template literals**, so a **backtick in a stylesheet comment** terminates
+  the string and fails the build with a SyntaxError pointing at CSS. It happened twice, 2026-07-29 22:00 EDT.
+  Run `node --check scripts/buildLegalPages.js` before a full run. Related trap: a `//` comment
+  containing `/*` (a glob like the model-file path) reads as an unclosed block comment to naive tooling.
+
+  ⚠️ **`parseBlocks()` strips HTML comments, and that is load-bearing** (added 2026-07-29 22:17 EDT).
+  `CONTRIBUTORS.md` keeps its "format for new entries" template inside a comment, complete with a worked
+  example row. Without the strip the comment rendered as visible content and the live credits page
+  listed a **fabricated contributor** (`@example`) as though it were real.
+
+  ⚠️ **It has THREE independent gates and passing one proves nothing about the others** (learned the hard
+  way 2026-07-29 18:55 EDT, v2.43.1; third added 2026-07-29 22:17 EDT). `verify()` checks that every
+  multi-word run of source survived into the HTML; `linkAudit()` resolves every internal href against the
+  deploy tree; `structureAudit()` asserts every column-aligned source line landed inside a `<pre>` or a
+  heading. **The third exists because NOTICE holds its dependency and trademark tables together with runs
+  of spaces — the *alignment* is the structure, and joining those rows into a paragraph destroys the table
+  without changing one word**, so the other two stay green on a wrecked document. It was proven to fail
+  before being trusted: neutering the column detector produced 24 findings naming the real dependency
+  rows. Both documents reported
   **"100% of source content present" while shipping seven dead links** — content presence and link
   resolution are different properties, and only the first had a check. Never read a clean `verify()` as
   "the output is correct."
@@ -32,8 +48,11 @@ the subsystem rule it belongs to:*
     inside a legal document is worse than an unlinked mention. **If you start publishing a new file, add
     it here or its references stay inert.** Do NOT "fix" these by pointing at GitHub — the repo can be
     private at any time, which is why the documents carry no repo links at all.
-  - `CONTRIBUTING.md` is deliberately **not** published; it was, briefly, and brought four more dead
-    links plus it documents working on a repo the reader may not be able to see.
+  - `CONTRIBUTING.md` **and `CONTRIBUTORS.md` ARE published now** (2026-07-29 22:17 EDT), as the two
+    `EXTRA_PAGES` rendered by `warmShell()`. This reverses the earlier pull, and both original objections
+    are answered: `CONTRIBUTORS.md` being published makes that link resolve, the rest degrade to inert
+    text, and every page's header now carries a repo link. `linkAudit()` enforces this per build rather
+    than trusting the note.
   - `public/_redirects` maps `/` → `/legal/` because the landing page lives in `legal/` and the site root
     would otherwise 404. Cloudflare Pages also serves **extensionless** canonical URLs and 308-redirects
     the `.html` form — so any script checking the live site needs `curl -L`, or it reads zero bytes and
