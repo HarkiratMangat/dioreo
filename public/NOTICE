@@ -3,7 +3,7 @@ NOTICE — Third-Party Software, Trademarks, and Authorship
 Dior's Builds
 ================================================================================
 
-Copyright (c) 2026 Harkirat Mangat ("dior"). All rights reserved.
+Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
 
 This file records (1) the third-party software Dior's Builds depends on and the
 licenses that govern it, (2) third-party trademarks referenced by the project,
@@ -222,6 +222,36 @@ endorsement, sponsorship, affiliation, or any commercial relationship.
   >>> WITH ACTIVISION PUBLISHING, INC., TiMi STUDIO GROUP, TENCENT, GARENA,
   >>> VNG GAMES, DISCORD INC., OR ANY OF THEIR AFFILIATES.
 
+CROSSOVER AND COLLABORATION CONTENT
+
+Call of Duty: Mobile regularly features licensed content from third-party
+rights holders unconnected to this project -- crossover seasons, guest
+characters, themed blueprints, and tie-in events drawn from films, television,
+comics, music, anime, sports, and other franchises. Where this project names,
+describes, dates, or lists such content:
+
+  - Those characters, titles, logos, likenesses, and designs are the property
+    of their OWN respective rights holders, who are typically not Activision,
+    TiMi Studio Group, Tencent, or any of the publishers named above.
+  - The Licensor is not affiliated with, licensed by, endorsed by, or sponsored
+    by any of those rights holders either. The disclaimer above extends to
+    every one of them.
+  - The takedown address below is open to ANY rights holder, not only the
+    game's publishers.
+
+Individual collaborations are deliberately NOT enumerated here. Any such list
+would be stale within a season, and a stale list of third-party marks implies
+a vetting process that does not exist. This acknowledgement is written to cover
+every collaboration -- past, current, and future -- without revision.
+
+Other companies' own copyright notices (the "(C)/(TM)/(R) [YEAR] [COMPANY].
+All Rights Reserved." blocks carried by the game and by officially licensed
+products) are deliberately NOT reproduced here. Those are published by rights
+holders and their licensees to assert THEIR rights under THEIR licence
+agreements; the Licensor holds no such licence, and reproducing them would
+misrepresent the relationship. Their rights are acknowledged instead.
+See TERMS.md section 7.3 for the user-facing statement of this position.
+
 Weapon names, attachment names, item names, in-game imagery, screenshots, and
 other game content displayed by this project remain the property of their
 respective owners. The Licensor claims no ownership of that material and grants
@@ -298,7 +328,7 @@ of the Licensor under LICENSE §5.6, not a courtesy.
 8. CONTACT
 ================================================================================
 
-  Harkirat Mangat ("dior")
+  Harkirat Mangat ("dior", "diorswrld")
   harkirat117@gmail.com
   https://github.com/HarkiratMangat/diors-builds
 

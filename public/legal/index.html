@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Legal — Dior's Builds</title>
-<meta name="description" content="Terms of Service and Privacy Policy for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta name="description" content="Terms of Service, Privacy Policy, Source-Available License, Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23F2994A'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
@@ -20,18 +20,25 @@
   --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
 }
+/* LIGHT MODE. The rules used to be #DED9D0 on #FCFBF9 paper — about 1.15:1,
+   which is to say invisible: every divider, table border and callout edge that
+   structures these documents simply vanished in light mode while looking fine in
+   dark. Light is not dark with the values flipped; the same separation needs more
+   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
+   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
+   table headers read as distinct surfaces rather than the same cream. */
 :root[data-theme=light]{
-  --desk:#DCD8D1; --paper:#FCFBF9; --raised:#F2F0EB;
-  --rule:#DED9D0; --rule2:#C9C3B8;
-  --ink:#191521; --ink2:#544E5E; --ink3:#8A8393;
-  --shadow:0 20px 50px -30px rgba(40,32,50,.45);
+  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+  --rule:#CBC3B4; --rule2:#A39A8B;
+  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#DCD8D1; --paper:#FCFBF9; --raised:#F2F0EB;
-    --rule:#DED9D0; --rule2:#C9C3B8;
-    --ink:#191521; --ink2:#544E5E; --ink3:#8A8393;
-    --shadow:0 20px 50px -30px rgba(40,32,50,.45);
+    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+    --rule:#CBC3B4; --rule2:#A39A8B;
+    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
   }
 }
 *{box-sizing:border-box}
@@ -44,11 +51,221 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
   color:var(--ink3);font-weight:500}
 
 :root{--accent:#F2994A}
+
+/* ── shared reset for the label buttons ───────────────────────────────
+   .lab is a <button> in the section rail. Without this reset it inherits the
+   platform's default button chrome, which rendered as a grey box floating above
+   the rail on DESKTOP — the mobile rules were scoped to a media query, so the
+   desktop path got the element change with none of the styling. */
+button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
+  padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}
+
+/* ── wordmark ─────────────────────────────────────────────────────────
+   Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
+   favicon. The interaction is that motif behaving like the thing it depicts:
+   on hover the slots LOCK IN — they align to full width in sequence and go
+   accent — and a light passes across the wordmark once. The only always-on
+   movement is a single slow pulse on the top bar, because three staggered idle
+   loops competed with everything else in the bar and read as noise. */
+.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
+  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
+  white-space:nowrap;position:relative;padding:.25rem 0}
+.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
+.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
+  transform-origin:left center;
+  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
+.glyph i:nth-child(1){width:100%;background:var(--accent)}
+.glyph i:nth-child(2){width:56%}
+.glyph i:nth-child(3){width:78%}
+.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
+@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
+
+/* The shine. A masked gradient swept across the letterforms — text, not a bar
+   under it, so the mark itself is what responds. */
+.wm{position:relative;background-image:linear-gradient(100deg,
+  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
+  background-size:280% 100%;background-position:130% 0;
+  -webkit-background-clip:text;background-clip:text;
+  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
+.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
+  background-position:-30% 0}
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
+  opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
+.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
+.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
+.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
+.mark.live:hover .glyph i:nth-child(1){animation:none}
+
+/* ── action controls: pills ───────────────────────────────────────────
+   ROUNDED, deliberately. The site's rule is squared = the documents that bind
+   you, rounded = an invitation. An action is an invitation, so the earlier
+   squared repo/install buttons contradicted the rule the rest of the site is
+   built on. Every interactive control in the bar is now a pill; only document
+   chrome stays squared. */
+.ghb,.ins{border-radius:999px;height:30px}
+
+/* repo — icon-only, opening on hover. The label is revealed by a clip, and the
+   icon holds still. It used to spin 360°, which is the stock "look, animation"
+   move and reads as filler. */
+.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
+  overflow:hidden;text-decoration:none;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  width:30px;padding:0;transition:width .38s cubic-bezier(.16,.84,.28,1),
+  color .22s,border-color .22s,background .22s}
+.ghb-ic{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px}
+.ghb-ic svg{width:15px;height:15px;display:block}
+.ghb-t{overflow:hidden;padding-right:.85rem}
+.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
+  transform:translateX(-8px);opacity:0;
+  transition:transform .38s cubic-bezier(.16,.84,.28,1),opacity .3s}
+.ghb:hover,.ghb:focus-visible{width:106px;color:var(--ink);border-color:var(--ink3);
+  background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+
+/* install — the one filled control on the site. Motion on hover only: the fill
+   brightens from the leading edge and the arrow steps out. No idle sheen loop
+   and no pulsing ring; two ambient loops on a single button was the clearest
+   case of decoration competing with the theme switch for attention. */
+.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;
+  overflow:hidden;text-decoration:none;padding:0 .95rem;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
+  text-transform:uppercase;font-weight:700;
+  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  transition:box-shadow .3s,filter .22s}
+.ins-ic{display:grid;place-items:center;width:16px;height:16px;flex:0 0 16px;
+  position:relative;z-index:1}
+.ins-ic svg{width:16px;height:auto;display:block}
+.ins-t,.ins-ar{position:relative;z-index:1}
+.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+  transition:opacity .26s,width .26s,transform .26s}
+.ins-gl{position:absolute;inset:0;z-index:0;opacity:0;
+  background:radial-gradient(120% 180% at 0% 50%,rgba(255,255,255,.5),transparent 62%);
+  transition:opacity .3s}
+.ins:hover,.ins:focus-visible{filter:brightness(1.06);
+  box-shadow:0 5px 20px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
+.ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
+.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
+.ins:active{filter:brightness(.97)}
+
+/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
+   This is the one place the design spends its boldness, so it is the one place
+   with real depth. It is a sky you carry the sun and moon across:
+     dark  — a cratered crescent, stars behind it
+     light — a rayed sun, clouds behind it
+   Both states are furnished; the first version left light mode as a plain white
+   disc with nothing in it.
+   The sun and moon carry their OWN colours (warm yellow, pale blue-grey) and
+   NOT the page accent — a violet moon read as an unidentifiable blob. Only the
+   track border and focus ring follow the accent.
+   Hovering PEEKS: the knob leans toward the far side and the destination's
+   furniture fades up, so the control shows you what pressing it will do. */
+.thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+.thm-tr{display:block;position:relative;width:56px;height:30px;border-radius:999px;
+  border:1px solid var(--rule2);overflow:hidden;
+  background:linear-gradient(165deg,#1B1830,#2A2340);
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
+.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.thm-sky{position:absolute;inset:0}
+
+/* stars — dark only */
+.thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
+  opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
+.thm-st i:nth-child(1){left:34px;top:7px}
+.thm-st i:nth-child(2){left:43px;top:14px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:47px;top:6px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:38px;top:21px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:49px;top:19px;width:1.5px;height:1.5px;animation-delay:2.4s}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.thm-st{transition:opacity .4s}
+
+/* clouds — light only. Two soft lozenges, drifting slowly. */
+.thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px;opacity:.92}
+.thm-cl i:nth-child(1){left:7px;top:17px;width:16px;height:6px;
+  box-shadow:5px -4px 0 -1px #fff;animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:8px;width:10px;height:4px;opacity:.6;
+  animation:drift 9s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+.thm-kn{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;
+  transform:translateX(0);
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32)}
+.thm-kn svg{width:22px;height:22px;overflow:visible}
+/* moon */
+.thm-kn .orb{fill:#CFD8EA}
+.thm-kn .craters{fill:#A8B3CC;opacity:1;transition:opacity .3s}
+.thm-kn .cut{transform:translate(7.4px,-7.4px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{stroke:#F6C560;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
+
+/* the hover peek — leans toward the destination and previews its furniture */
+.thm:hover .thm-kn{transform:translateX(5px)}
+.thm:hover .thm-cl{opacity:.28}
+
+/* LIGHT: knob crosses, mask occluder is pushed clear so the disc fills, rays fan
+   out, the orb warms to a sun, craters go, clouds replace stars. */
+:root[data-theme=light] .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+:root[data-theme=light] .thm-kn{transform:translateX(26px)}
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(21px)}
+:root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .orb{fill:#F6C560}
+:root[data-theme=light] .thm-kn .craters{opacity:0}
+:root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
+:root[data-theme=light] .thm-st{opacity:0}
+:root[data-theme=light] .thm-cl{opacity:1}
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(26px)}
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(21px)}
+  :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F6C560}
+  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
+  :root:not([data-theme=dark]) .thm-st{opacity:0}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}
+}
+@media (prefers-reduced-motion:reduce){
+  .thm-st i,.thm-cl i{animation:none}
+  .thm:hover .thm-kn{transform:translateX(0)}
+}
+
+/* ── Discord handle + email reveal ──────────────────────────────────── */
+.dh{font-family:var(--mono);font-weight:600;color:var(--ink);letter-spacing:.02em;
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-radius:4px;padding:.1em .36em}
+.rev{margin-top:.7rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
+.rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
+  color:var(--ink3);list-style:none;transition:color .2s}
+.rev summary::-webkit-details-marker{display:none}
+.rev summary:hover{color:var(--ink)}
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}
+.rev summary:hover .rv-i::after{transform:translateX(48%)}
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+.rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
+  border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
+  background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
+.rv-b a{color:var(--ink);font-size:.78rem;letter-spacing:.02em}
+.rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
+@keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
+  to{opacity:1;clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
+
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
-.mark{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem);
-  font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--ink);letter-spacing:-.01em}
-.mark b{display:block;width:3px;height:17px;background:#F2994A}
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
+.top .ghb{margin-left:auto}
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
@@ -77,12 +294,99 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .foot p{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;letter-spacing:.04em;
   color:var(--ink3);max-width:62ch}
 .foot a{color:var(--ink2)}
+/* ── invitation cards: contributing / contributors ────────────────────
+   Deliberately NOT rows in the numbered list above. The 01/02/03 series means
+   "documents that bind you"; these are an offer. So: rounded where those are
+   squared, warm where those are cold, and side by side rather than stacked in a
+   ledger. The visual grammar carries the distinction on its own. */
+.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1rem;
+  margin-top:clamp(2.2rem,6vh,3rem)}
+.inv{position:relative;display:block;text-decoration:none;color:inherit;
+  border-radius:16px;padding:1.45rem 1.5rem 1.35rem;background:var(--paper);
+  border:1px solid var(--rule);
+  transition:transform .34s cubic-bezier(.16,.84,.28,1),box-shadow .34s}
+
+/* ONE effect, not four. The previous card stacked a lift, a border-gradient
+   fade, a diagonal light sweep and a coloured shadow — four things firing at once,
+   which is what made it read as effects-for-their-own-sake rather than a design.
+   What remains is a single conic gradient rotating slowly around the card edge,
+   masked to a 1px ring. It is the same "live readout" idea as the wordmark's
+   slots, and it belongs to the card's own accent so the two cards never animate
+   identically. */
+.inv::before{content:"";position:absolute;inset:-1px;border-radius:17px;padding:1.4px;
+  background:conic-gradient(from var(--a,0deg),transparent 0deg,
+    color-mix(in srgb,var(--ia) 92%,white) 42deg,transparent 96deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .34s;animation:orbit 3.6s linear infinite paused}
+.inv:hover,.inv:focus-visible{transform:translateY(-3px);
+  box-shadow:0 20px 44px -26px color-mix(in srgb,var(--ia) 55%,transparent)}
+.inv:hover::before,.inv:focus-visible::before{opacity:1;animation-play-state:running}
+@property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes orbit{to{--a:360deg}}
+
+.inv-h{display:flex;align-items:center;gap:.6rem}
+/* A small mark per card, animated in a way that means something: the plus draws
+   itself open (an invitation to add), and the three dots light in sequence (a
+   list of names filling up). */
+.inv-m{position:relative;width:26px;height:26px;flex:0 0 26px;border-radius:8px;
+  display:grid;place-items:center;color:var(--ia);
+  background:color-mix(in srgb,var(--ia) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--ia) 34%,transparent)}
+.inv-m svg{width:14px;height:14px;display:block;overflow:visible}
+.inv-m .pv,.inv-m .ph{stroke:currentColor;stroke-width:2;stroke-linecap:round;
+  transition:transform .42s cubic-bezier(.16,.84,.28,1)}
+.inv:hover .inv-m .pv{transform:rotate(90deg);transform-origin:7px 7px}
+.inv-m .d{fill:currentColor;opacity:.35}
+.inv:hover .inv-m .d{animation:roll 1.4s ease-in-out infinite}
+.inv:hover .inv-m .d:nth-child(2){animation-delay:.18s}
+.inv:hover .inv-m .d:nth-child(3){animation-delay:.36s}
+@keyframes roll{0%,100%{opacity:.35}45%{opacity:1}}
+
+.inv .ik{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ia)}
+.inv h3{font-family:var(--display);font-size:1.24rem;font-weight:750;letter-spacing:-.025em;
+  color:var(--ink);margin:.75rem 0 .4rem}
+.inv p{font-family:var(--serif);font-size:.95rem;line-height:1.62;color:var(--ink2);margin:0}
+.inv .arw{display:inline-flex;align-items:center;gap:.4rem;margin-top:.95rem;
+  font-family:var(--mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ia)}
+.inv .arw i{font-style:normal;transition:transform .3s cubic-bezier(.16,.84,.28,1)}
+.inv:hover .arw i{transform:translateX(5px)}
+@media (prefers-reduced-motion:reduce){
+  .inv::before{animation:none}
+  .inv:hover .inv-m .d{animation:none;opacity:1}
+}
+
+/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+   request: on a landing page the masthead should be the only thing competing for
+   the top of the screen. */
+.tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
+  display:flex;align-items:center;gap:.7rem}
+.tray .lab{margin-right:auto}
 </style></head><body>
 <div class="wrap">
-  <div class="mark"><b></b> Dior's Builds</div>
+  <div class="top">
+    <div class="mark">
+    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="wm">Dior&#8217;s Builds</span>
+  </div>
+    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+  title="View the source on GitHub">
+  <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
+  <span class="ghb-t"><b>Source</b></span>
+</a>
+    <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+  target="_blank" rel="noopener noreferrer">
+  <span class="ins-gl" aria-hidden="true"></span>
+  <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
+  <span class="ins-t">Install</span>
+  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+</a>
+  </div>
   <span class="lab">Legal</span>
   <h1>The fine print,<br>written to be read.</h1>
-  <p class="lede">Two documents. What you agree to by using the bot, and exactly what it stores about you — down to the individual database field.</p>
+  <p class="lede">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
   <div class="list">
       <a class="entry" href="terms.html" style="--accent:#F2994A;--glow:#6B4E7D">
         <i>01</i>
@@ -99,9 +403,100 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
           <p>Every field stored about you, where it lives, and how to have it deleted.</p>
         </div>
         <em>17 sections</em>
+      </a>
+      <a class="entry" href="license.html" style="--accent:#9B6BE3;--glow:#6B4E7D">
+        <i>03</i>
+        <div>
+          <h2>Source-Available License</h2>
+          <p>Read it, study it, run it on your own machine. Source-available, not open source.</p>
+        </div>
+        <em>19 sections</em>
+      </a>
+      <a class="entry" href="notice.html" style="--accent:#E8657F;--glow:#6B4E7D">
+        <i>04</i>
+        <div>
+          <h2>Notices &amp; Attributions</h2>
+          <p>Every dependency and its licence, the marks that are not ours, and where AI helped.</p>
+        </div>
+        <em>9 sections</em>
+      </a></div>
+  <div class="invite">
+      <a class="inv" href="contributing.html" style="--ia:#1F8A5E">
+        <span class="inv-h">
+          <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/><line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg></span>
+          <span class="ik">Join in</span>
+        </span>
+        <h3>Contributing</h3>
+        <p>How to report a bug, send a fix, and what the CLA actually asks of you.</p>
+        <span class="arw">Open <i>&#8594;</i></span>
+      </a>
+      <a class="inv" href="contributors.html" style="--ia:#F2C230">
+        <span class="inv-h">
+          <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><circle class="d" cx="2.4" cy="7" r="1.7"/><circle class="d" cx="7" cy="7" r="1.7"/><circle class="d" cx="11.6" cy="7" r="1.7"/></svg></span>
+          <span class="ik">Credit</span>
+        </span>
+        <h3>Contributors</h3>
+        <p>Who helped build this, and how credit works. Bug reports count.</p>
+        <span class="arw">Open <i>&#8594;</i></span>
       </a></div>
   <div class="foot">
-    <p>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, or Discord Inc.</p>
-    <p>Questions, corrections, or a privacy request — <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a></p>
+    <p>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+    <p>Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
+    <details class="rev">
+  <summary><span class="rv-i" aria-hidden="true"></span>Prefer email? Reveal address</summary>
+  <div class="rv-b">
+    <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
+    <span>The formal route. Named in the Terms and Privacy Policy for legal notices,
+    rights requests, and takedowns.</span>
   </div>
-</div></body></html>
+</details>
+  </div>
+  <div class="tray">
+    <span class="lab">Appearance</span>
+    <button id="th" class="thm " role="switch"
+  aria-checked="false" aria-label="Switch between light and dark">
+  <span class="thm-tr" aria-hidden="true">
+    <span class="thm-sky">
+      <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="thm-cl"><i></i><i></i></span>
+    </span>
+    <span class="thm-kn">
+      <svg viewBox="0 0 24 24">
+        <mask id="thm-cut">
+          <rect width="24" height="24" fill="#000"/>
+          <circle cx="12" cy="12" r="7.4" fill="#fff"/>
+          <circle class="cut" cx="12" cy="12" r="6.6" fill="#000"/>
+        </mask>
+        <g class="rays" stroke-width="1.8" stroke-linecap="round">
+          <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
+          <line x1="1.2" y1="12" x2="3.4" y2="12"/><line x1="20.6" y1="12" x2="22.8" y2="12"/>
+          <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
+          <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
+        </g>
+        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        <g class="craters"><circle cx="10.4" cy="9.6" r="1.15"/><circle cx="8.7" cy="14.2" r=".8"/><circle cx="13" cy="13.6" r=".62"/></g>
+      </svg>
+    </span>
+  </span>
+</button>
+  </div>
+</div>
+<script>
+(function(){
+  var d=document.documentElement, btn=document.getElementById('th');
+  function resolved(){
+    return d.getAttribute('data-theme') ||
+      (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  }
+  function sync(){ if(btn) btn.setAttribute('aria-checked', resolved()==='light'?'true':'false'); }
+  // Theme choice is per-browser and deliberately never sent anywhere.
+  try{ var s=localStorage.getItem('db-theme'); if(s) d.setAttribute('data-theme',s); }catch(e){}
+  sync();
+  if(btn) btn.addEventListener('click',function(){
+    var next=resolved()==='dark'?'light':'dark';
+    d.setAttribute('data-theme',next);
+    try{ localStorage.setItem('db-theme',next); }catch(e){}
+    sync();
+  });
+})();</script>
+</body></html>

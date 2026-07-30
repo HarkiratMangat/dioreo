@@ -66,6 +66,11 @@
           },
           {
             "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr merge' && echo \"$cmd\" | grep -q '\\-\\-squash'; then if ! echo \"$cmd\" | grep -qE '\\-\\-body|\\-\\-body-file|\\-F |\\-b '; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"SQUASH-TRAILER GATE: gh pr merge --squash with no --body lets GitHub build the squash message by CONCATENATING every branch commit, so each commit trailer repeats once per commit. Measured on 3dc6f4b: the Co-Authored-By: Claude line appeared 8 TIMES and the diorswrld line was absent entirely -- which silently costs the Pair Extraordinaire credit that trailer exists for (CLAUDE.md, adopted 2026-07-28 18:30 EDT). Pass an explicit --body ending in exactly ONE trailer block, both lines, at the very end: Co-Authored-By: Claude Opus 5 <noreply@anthropic.com> and Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>.\"}}'; fi; fi",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash '/Applications/Claude Code/Diors-Builds/.claude/hooks/stale-reference-sweep.sh' \"${base:-main}\"; fi"
           },
           {

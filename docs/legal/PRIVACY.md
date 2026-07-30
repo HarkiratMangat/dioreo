@@ -1,7 +1,7 @@
 # Privacy Policy — Dior's Builds
 
-**Effective date:** 28 July 2026
-**Version:** 1.0
+**Effective date:** 29 July 2026
+**Version:** 1.1
 **Applies to:** the Dior's Builds Discord application (the "Bot")
 
 ---
@@ -28,8 +28,8 @@ You can have everything deleted by emailing **harkirat117@gmail.com** — see §
 
 The **data controller** is:
 
-**Harkirat Mangat**, also known as **"dior"**, an individual based in Ontario,
-Canada.
+**Harkirat Mangat**, also known as **"dior"** or **"diorswrld"**, an individual
+based in Ontario, Canada.
 📧 **harkirat117@gmail.com**
 
 This is a hobby project run by one person. There is no company, no data
@@ -398,7 +398,8 @@ from the account holder before we act on it — otherwise anyone could delete
 someone else's settings.
 
 **We will ask you to confirm the request from the Discord account in question**,
-normally by sending a direct message to the administrator (`dior`) from that
+normally by sending a direct message to the administrator (`dior`, also seen as
+`diorswrld`) from that
 account referencing your email. If we can't reasonably verify you, we may decline
 to act, and we'll tell you why (GDPR Art. 12(6)).
 
@@ -497,11 +498,21 @@ Continued use after a change takes effect means you accept the updated policy. W
 will not apply a materially different use of already-collected data retroactively
 without your consent.
 
+### 12.1 Revision history
+
+Kept here as well as in git, because the repository's visibility can change and a
+change record you can't reach isn't a change record.
+
+| Version | Effective | What changed |
+|---|---|---|
+| 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
+| 1.0 | 28 July 2026 | First published version. |
+
 ---
 
 ## 13. Contact
 
-**Harkirat Mangat ("dior")** — Data Controller
+**Harkirat Mangat ("dior", "diorswrld")** — Data Controller
 Ontario, Canada
 📧 **harkirat117@gmail.com**
 

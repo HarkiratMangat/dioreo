@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notices &amp; Attributions — Dior's Builds</title>
+<meta name="description" content="Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="Notices &amp; Attributions — Dior's Builds">
+<meta property="og:description" content="Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23E8657F'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
+<style>
+
+:root{
+  --gold:#F2C230;
+  /* "desk" is the surface the document sits on; "paper" is the document. Warm
+     plum-tinted graphite rather than neutral slate, derived from Plum Fortune —
+     a generic near-black is the thing that made the first version anonymous. */
+  --desk:#16131B; --paper:#1D1926; --raised:#241F30;
+  --rule:#302A3E; --rule2:#3D3550;
+  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#6E6782;
+  --shadow:0 24px 60px -28px rgba(0,0,0,.85);
+  --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+  --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+}
+/* LIGHT MODE. The rules used to be #DED9D0 on #FCFBF9 paper — about 1.15:1,
+   which is to say invisible: every divider, table border and callout edge that
+   structures these documents simply vanished in light mode while looking fine in
+   dark. Light is not dark with the values flipped; the same separation needs more
+   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
+   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
+   table headers read as distinct surfaces rather than the same cream. */
+:root[data-theme=light]{
+  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+  --rule:#CBC3B4; --rule2:#A39A8B;
+  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]){
+    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+    --rule:#CBC3B4; --rule2:#A39A8B;
+    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
+.lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500}
+
+:root{--accent:#E8657F;--glow:#6B4E7D}
+
+/* ── shared reset for the label buttons ───────────────────────────────
+   .lab is a <button> in the section rail. Without this reset it inherits the
+   platform's default button chrome, which rendered as a grey box floating above
+   the rail on DESKTOP — the mobile rules were scoped to a media query, so the
+   desktop path got the element change with none of the styling. */
+button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
+  padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}
+
+/* ── wordmark ─────────────────────────────────────────────────────────
+   Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
+   favicon. The interaction is that motif behaving like the thing it depicts:
+   on hover the slots LOCK IN — they align to full width in sequence and go
+   accent — and a light passes across the wordmark once. The only always-on
+   movement is a single slow pulse on the top bar, because three staggered idle
+   loops competed with everything else in the bar and read as noise. */
+.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
+  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
+  white-space:nowrap;position:relative;padding:.25rem 0}
+.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
+.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
+  transform-origin:left center;
+  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
+.glyph i:nth-child(1){width:100%;background:var(--accent)}
+.glyph i:nth-child(2){width:56%}
+.glyph i:nth-child(3){width:78%}
+.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
+@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
+
+/* The shine. A masked gradient swept across the letterforms — text, not a bar
+   under it, so the mark itself is what responds. */
+.wm{position:relative;background-image:linear-gradient(100deg,
+  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
+  background-size:280% 100%;background-position:130% 0;
+  -webkit-background-clip:text;background-clip:text;
+  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
+.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
+  background-position:-30% 0}
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
+  opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
+.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
+.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
+.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
+.mark.live:hover .glyph i:nth-child(1){animation:none}
+
+/* ── action controls: pills ───────────────────────────────────────────
+   ROUNDED, deliberately. The site's rule is squared = the documents that bind
+   you, rounded = an invitation. An action is an invitation, so the earlier
+   squared repo/install buttons contradicted the rule the rest of the site is
+   built on. Every interactive control in the bar is now a pill; only document
+   chrome stays squared. */
+.ghb,.ins{border-radius:999px;height:30px}
+
+/* repo — icon-only, opening on hover. The label is revealed by a clip, and the
+   icon holds still. It used to spin 360°, which is the stock "look, animation"
+   move and reads as filler. */
+.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
+  overflow:hidden;text-decoration:none;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  width:30px;padding:0;transition:width .38s cubic-bezier(.16,.84,.28,1),
+  color .22s,border-color .22s,background .22s}
+.ghb-ic{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px}
+.ghb-ic svg{width:15px;height:15px;display:block}
+.ghb-t{overflow:hidden;padding-right:.85rem}
+.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
+  transform:translateX(-8px);opacity:0;
+  transition:transform .38s cubic-bezier(.16,.84,.28,1),opacity .3s}
+.ghb:hover,.ghb:focus-visible{width:106px;color:var(--ink);border-color:var(--ink3);
+  background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+
+/* install — the one filled control on the site. Motion on hover only: the fill
+   brightens from the leading edge and the arrow steps out. No idle sheen loop
+   and no pulsing ring; two ambient loops on a single button was the clearest
+   case of decoration competing with the theme switch for attention. */
+.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;
+  overflow:hidden;text-decoration:none;padding:0 .95rem;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
+  text-transform:uppercase;font-weight:700;
+  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  transition:box-shadow .3s,filter .22s}
+.ins-ic{display:grid;place-items:center;width:16px;height:16px;flex:0 0 16px;
+  position:relative;z-index:1}
+.ins-ic svg{width:16px;height:auto;display:block}
+.ins-t,.ins-ar{position:relative;z-index:1}
+.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+  transition:opacity .26s,width .26s,transform .26s}
+.ins-gl{position:absolute;inset:0;z-index:0;opacity:0;
+  background:radial-gradient(120% 180% at 0% 50%,rgba(255,255,255,.5),transparent 62%);
+  transition:opacity .3s}
+.ins:hover,.ins:focus-visible{filter:brightness(1.06);
+  box-shadow:0 5px 20px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
+.ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
+.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
+.ins:active{filter:brightness(.97)}
+
+/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
+   This is the one place the design spends its boldness, so it is the one place
+   with real depth. It is a sky you carry the sun and moon across:
+     dark  — a cratered crescent, stars behind it
+     light — a rayed sun, clouds behind it
+   Both states are furnished; the first version left light mode as a plain white
+   disc with nothing in it.
+   The sun and moon carry their OWN colours (warm yellow, pale blue-grey) and
+   NOT the page accent — a violet moon read as an unidentifiable blob. Only the
+   track border and focus ring follow the accent.
+   Hovering PEEKS: the knob leans toward the far side and the destination's
+   furniture fades up, so the control shows you what pressing it will do. */
+.thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+.thm-tr{display:block;position:relative;width:56px;height:30px;border-radius:999px;
+  border:1px solid var(--rule2);overflow:hidden;
+  background:linear-gradient(165deg,#1B1830,#2A2340);
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
+.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.thm-sky{position:absolute;inset:0}
+
+/* stars — dark only */
+.thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
+  opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
+.thm-st i:nth-child(1){left:34px;top:7px}
+.thm-st i:nth-child(2){left:43px;top:14px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:47px;top:6px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:38px;top:21px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:49px;top:19px;width:1.5px;height:1.5px;animation-delay:2.4s}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.thm-st{transition:opacity .4s}
+
+/* clouds — light only. Two soft lozenges, drifting slowly. */
+.thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px;opacity:.92}
+.thm-cl i:nth-child(1){left:7px;top:17px;width:16px;height:6px;
+  box-shadow:5px -4px 0 -1px #fff;animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:8px;width:10px;height:4px;opacity:.6;
+  animation:drift 9s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+.thm-kn{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;
+  transform:translateX(0);
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32)}
+.thm-kn svg{width:22px;height:22px;overflow:visible}
+/* moon */
+.thm-kn .orb{fill:#CFD8EA}
+.thm-kn .craters{fill:#A8B3CC;opacity:1;transition:opacity .3s}
+.thm-kn .cut{transform:translate(7.4px,-7.4px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{stroke:#F6C560;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
+
+/* the hover peek — leans toward the destination and previews its furniture */
+.thm:hover .thm-kn{transform:translateX(5px)}
+.thm:hover .thm-cl{opacity:.28}
+
+/* LIGHT: knob crosses, mask occluder is pushed clear so the disc fills, rays fan
+   out, the orb warms to a sun, craters go, clouds replace stars. */
+:root[data-theme=light] .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+:root[data-theme=light] .thm-kn{transform:translateX(26px)}
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(21px)}
+:root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .orb{fill:#F6C560}
+:root[data-theme=light] .thm-kn .craters{opacity:0}
+:root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
+:root[data-theme=light] .thm-st{opacity:0}
+:root[data-theme=light] .thm-cl{opacity:1}
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(26px)}
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(21px)}
+  :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F6C560}
+  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
+  :root:not([data-theme=dark]) .thm-st{opacity:0}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}
+}
+@media (prefers-reduced-motion:reduce){
+  .thm-st i,.thm-cl i{animation:none}
+  .thm:hover .thm-kn{transform:translateX(0)}
+}
+
+/* ── Discord handle + email reveal ──────────────────────────────────── */
+.dh{font-family:var(--mono);font-weight:600;color:var(--ink);letter-spacing:.02em;
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-radius:4px;padding:.1em .36em}
+.rev{margin-top:.7rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
+.rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
+  color:var(--ink3);list-style:none;transition:color .2s}
+.rev summary::-webkit-details-marker{display:none}
+.rev summary:hover{color:var(--ink)}
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}
+.rev summary:hover .rv-i::after{transform:translateX(48%)}
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+.rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
+  border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
+  background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
+.rv-b a{color:var(--ink);font-size:.78rem;letter-spacing:.02em}
+.rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
+@keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
+  to{opacity:1;clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
+
+
+/* ── top bar ─────────────────────────────────────────────────────── */
+.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+#prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
+
+/* ── segmented page switcher ──────────────────────────────────────────
+   Was three bordered boxes, which read as inert. Now one segmented control
+   with an indicator that slides. Because these are separate documents and not
+   an SPA, the slide happens on LOAD: the indicator animates in from the
+   previous tab's position, so arriving on a page shows you the move you just
+   made. --i is the active index, --n the tab count, both known at build time,
+   so no measuring in JS and nothing to go wrong on first paint. */
+/* A pill group, matching the other action controls. Three things were wrong
+   before: the inactive labels sat on --ink3 (the faintest ink token) so they
+   genuinely were close to invisible; the active marker was a 15%-alpha tint that
+   barely registered; and each tab carried an 01/02 number chip that duplicated
+   the landing page's numbering inside an already-crowded bar.
+   Now: inactive labels on --ink2, the active tab is a raised pill with an accent
+   border and accent text, and the numbers are gone. */
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;
+  background:color-mix(in srgb,var(--ink) 7%,transparent);isolation:isolate}
+.seg-ink{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;
+  width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);
+  box-shadow:0 2px 9px -4px rgba(0,0,0,.55);
+  transform:translateX(calc(var(--i) * 100%))}
+/* Only animates once JS has supplied a real previous index — see the inline
+   script under the switcher. Without JS the indicator is simply already correct. */
+.seg.go .seg-ink{animation:segIn .5s cubic-bezier(.2,.85,.2,1) both}
+@keyframes segIn{
+  from{transform:translateX(calc(var(--from) * 100%))}
+  to{transform:translateX(calc(var(--i) * 100%))}
+}
+.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
+  text-align:center;border-radius:999px;transition:color .2s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--accent);font-weight:700}
+@media (max-width:640px){
+  .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
+}
+
+/* ── layout ──────────────────────────────────────────────────────── */
+/* .page centres and bounds; .cols is the grid. The footer sits in .page and OUTSIDE
+   .cols on purpose — see the markup comment: it is what stops the sticky rail from
+   travelling into the footer, and keeping it in .page is what stops it stretching to
+   the full viewport width. Do not fold these two back together. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.cols{display:grid;grid-template-columns:200px minmax(0,1fr);
+  gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+@media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
+
+/* ── rail: the section index, tracking position ──────────────────── */
+/* align-self:start stops the rail STRETCHING to its grid row's full height, which is
+   worth having on its own — but it does NOT keep the rail out of the footer, and this
+   comment claimed it did from 2026-07-29 until it was actually measured in a browser
+   on 2026-07-30 00:00 EDT. What bounds a sticky element is its CONTAINING BLOCK, not
+   its own height, so shrinking the box changed nothing: at 1440x900, scrolled to the
+   bottom of Terms, the rail still sat 126px inside the footer. The real fix is
+   structural and lives in .cols — see the markup comment above it. Keeping this note
+   because "the CSS looks like it should work" is exactly how the bug survived a fix. */
+.rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 2rem;
+  max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:thin}
+.rail::-webkit-scrollbar{width:3px}
+.rail::-webkit-scrollbar-thumb{background:var(--rule2)}
+.rail>.lab{display:block;margin-bottom:1rem;padding-left:.85rem}
+.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
+  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
+  transition:border-color .18s,color .18s}
+.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
+  font-weight:500;letter-spacing:-.005em}
+.slot:hover{border-left-color:var(--ink3)}
+.slot:hover span{color:var(--ink)}
+.slot.on{border-left-color:var(--accent)}
+.slot.on i{color:var(--accent)}
+.slot.on span{color:var(--ink);font-weight:650}
+/* ── mobile section index ─────────────────────────────────────────────
+   It used to be position:static, so the opener scrolled away with the top of
+   the page and became unreachable exactly when a long document needs it most.
+   It is now STICKY directly beneath the fixed bar, so it is in reach at every
+   scroll position, and it names the section you are currently in — the desktop
+   rail already tracks that, and on mobile it is the only positional cue there is.
+   The open list is height-capped and scrolls internally so it can never grow past
+   the viewport on a 22-section document. */
+@media (max-width:980px){
+  .rail{position:sticky;top:54px;z-index:50;max-height:none;padding:0;
+    margin:0 0 1.6rem;background:color-mix(in srgb,var(--desk) 94%,transparent);
+    backdrop-filter:blur(12px) saturate(1.2)}
+  .rail>.lab{cursor:pointer;padding:.72rem 1rem;border:1px solid var(--rule);
+    background:var(--paper);margin:0;display:flex;gap:.6rem;align-items:center;
+    width:100%;-webkit-appearance:none;appearance:none;text-align:left;
+    font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink3)}
+  .rail>.lab .cur{margin-left:auto;color:var(--ink2);letter-spacing:.04em;
+    text-transform:none;font-size:.68rem;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;max-width:52%}
+  .rail>.lab::after{content:"+";font-size:.95rem;color:var(--accent);flex:0 0 auto;
+    transition:transform .24s}
+  .rail.open>.lab::after{transform:rotate(45deg)}
+  .slots{display:none;padding:.6rem 0;border:1px solid var(--rule);border-top:0;
+    background:var(--paper);max-height:min(58vh,420px);overflow-y:auto}
+  .rail.open .slots{display:block}
+  .slot{padding-left:1rem}
+}
+
+/* ── the document ────────────────────────────────────────────────── */
+.doc{background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:clamp(1.6rem,4.5vw,4rem);margin-bottom:3rem;position:relative;min-width:0}
+.doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+
+.mast{margin-bottom:3.2rem}
+.mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
+  font-size:clamp(2.4rem,7vw,4.15rem);margin:.7rem 0 0;color:var(--ink)}
+.mast .rule{height:1px;background:var(--rule);margin:1.6rem 0 .9rem}
+.mast .meta{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;color:var(--ink3);
+  text-transform:uppercase;display:flex;flex-wrap:wrap;gap:.35rem 1.1rem}
+.mast .meta b{color:var(--ink2);font-weight:500}
+
+/* ── headings: number lives in the margin ────────────────────────── */
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:76px}
+.doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
+  margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+.doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
+.doc h2:first-child,.doc h3:first-child{margin-top:0}
+.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent);
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
+.doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
+@media (min-width:1120px){
+  .idx{position:absolute;left:-3.6rem;top:.34em;margin:0;text-align:right;width:2.6rem}
+  .doc h3 .idx{left:-3.6rem;top:.28em}
+}
+.anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
+  opacity:0;transition:opacity .15s}
+.doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
+.anchor:hover{color:var(--accent)}
+/* On a touch device there is no hover to reveal it, so a per-heading ¶ is either
+   permanently invisible or permanent clutter. Neither is worth the space. */
+@media (hover:none){.anchor{display:none}}
+
+/* ── prose ───────────────────────────────────────────────────────── */
+.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
+.doc p{margin:0 0 1.15rem;max-width:72ch}
+.doc strong{color:var(--ink);font-weight:600}
+.doc em{font-style:italic}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc li{margin:.5rem 0}
+.doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
+.doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
+  text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.doc a:hover{text-decoration-color:var(--accent)}
+/* The signature: live cross-references, set apart from ordinary links. */
+.xref{font-family:var(--mono);font-size:.86em;color:var(--accent)!important;
+  text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
+  padding-bottom:1px;white-space:nowrap}
+.xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+/* A reference to a repo file that is NOT published (see PUBLISHED_TARGETS). Styled
+   as a named thing rather than a link, so it reads as deliberate instead of broken. */
+.ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
+  border-bottom:1px dotted var(--rule);padding-bottom:1px}
+.doc code{font-family:var(--mono);font-size:.83em;background:var(--raised);
+  border:1px solid var(--rule);padding:.11em .36em;color:var(--ink);word-break:break-word}
+.doc hr{border:0;border-top:1px solid var(--rule);margin:2.8rem 0}
+
+/* ── plain-text licence: clauses, sub-paragraphs, capitals ────────────
+   Only the LICENSE page uses these. The source is plain text whose structure is
+   carried entirely by indentation, so the job here is to make that structure
+   visible without altering a character of it. */
+.authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
+  letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
+  border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
+  max-width:72ch}
+.authoritative a{color:var(--ink)}
+h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
+  font-size:1rem;font-weight:700}
+h3.clause .idx{color:var(--accent);margin:0;flex:0 0 auto;font-size:.76rem}
+@media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
+  text-align:right;width:3.2rem}}
+h3.clause .ht:empty{display:none}
+/* A clause with no title phrase leaves only the index; without this its body
+   would start against the heading's bottom margin and read as orphaned. */
+h3.clause:has(.ht:empty){margin-bottom:.15rem}
+p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
+  margin:0 0 .95rem;max-width:70ch}
+p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
+  font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
+  margin:.34rem 0}
+/* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
+   so they are preserved rather than down-cased — but a wall of capital serif at
+   reading size is genuinely hard going, hence the smaller, looser, mono setting. */
+p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
+  color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
+  background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}
+/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
+   IS the structure, so it must not wrap — hence its own horizontal scroll rather
+   than letting the page body scroll, which is the rule for every wide element. */
+pre.cols{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
+  background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
+  margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
+pre.cols a{color:var(--ink)}
+
+/* ── callouts ────────────────────────────────────────────────────── */
+.callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+.callout>:last-child{margin-bottom:0}
+.callout p{max-width:none}
+.callout.warn{border-left-color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 9%,var(--raised))}
+.callout h2,.callout h3{margin:0 0 .6rem;border:0;padding:0;font-size:.95rem;
+  letter-spacing:.02em;text-transform:uppercase;font-weight:700}
+.callout h2 .idx,.callout h3 .idx{display:none}
+.callout .anchor{display:none}
+
+/* ── tables: technical readout ───────────────────────────────────── */
+.tw{overflow-x:auto;margin:1.7rem 0;border:1px solid var(--rule);background:var(--raised)}
+.doc table{border-collapse:collapse;width:100%;min-width:min(540px,100%)}
+.doc th,.doc td{padding:.7rem .85rem;text-align:left;vertical-align:top;
+  border-bottom:1px solid var(--rule)}
+.doc th{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500;white-space:nowrap;background:var(--paper)}
+.doc td{font-family:var(--serif);font-size:.95rem;line-height:1.6;color:var(--ink2)}
+.doc tbody tr:last-child td{border-bottom:0}
+.doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+
+/* ── footer ──────────────────────────────────────────────────────── */
+/* No grid-column here any more: the footer left the grid when .cols was introduced,
+   so grid-column:1/-1 had become an inert declaration describing a layout that no
+   longer exists. It spans the full .page width simply by being a block child of it. */
+.foot{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  display:flex;flex-wrap:wrap;gap:.7rem 2rem;align-items:baseline}
+.foot p{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.7;
+  letter-spacing:.04em;color:var(--ink3);max-width:60ch}
+.foot a{color:var(--ink2)}
+
+@media print{
+  .bar,#prog,.rail,.anchor,.thm,.ghb{display:none!important}
+  .authoritative{border:1px solid #999}
+  p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
+  body{background:#fff;color:#000}
+  .page{max-width:none;padding:0}
+  /* .cols carries the grid now, so the print reset has to flatten IT — resetting
+     .page alone would have left the 200px rail column reserved on paper. */
+  .cols{display:block}
+  .doc{border:0;box-shadow:none;padding:0;background:#fff}
+  .doc::before{display:none}
+  .doc p,.doc li,.doc td{color:#000}
+  .idx{position:static!important;color:#000;display:inline;margin-right:.5rem}
+  .xref{color:#000!important;border:0}
+  .tw,.callout{border:1px solid #999;break-inside:avoid}
+  .doc h2,.doc h3{break-after:avoid}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <a class="mark live" href="./">
+    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="wm">Dior&#8217;s Builds</span>
+    <span class="go" aria-hidden="true">&#8250;</span>
+  </a>
+  <nav>
+    <div class="seg" style="--n:4;--i:3;--from:3">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab" href="./terms.html">Terms</a>
+      <a class="tab" href="./privacy.html">Privacy</a>
+      <a class="tab" href="./license.html">License</a>
+      <a class="tab on" href="./notice.html" aria-current="page">Notice</a>
+    </div>
+    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+  title="View the source on GitHub">
+  <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
+  <span class="ghb-t"><b>Source</b></span>
+</a>
+    <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+  target="_blank" rel="noopener noreferrer">
+  <span class="ins-gl" aria-hidden="true"></span>
+  <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
+  <span class="ins-t">Install</span>
+  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+</a>
+    <button id="th" class="thm " role="switch"
+  aria-checked="false" aria-label="Switch between light and dark">
+  <span class="thm-tr" aria-hidden="true">
+    <span class="thm-sky">
+      <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="thm-cl"><i></i><i></i></span>
+    </span>
+    <span class="thm-kn">
+      <svg viewBox="0 0 24 24">
+        <mask id="thm-cut">
+          <rect width="24" height="24" fill="#000"/>
+          <circle cx="12" cy="12" r="7.4" fill="#fff"/>
+          <circle class="cut" cx="12" cy="12" r="6.6" fill="#000"/>
+        </mask>
+        <g class="rays" stroke-width="1.8" stroke-linecap="round">
+          <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
+          <line x1="1.2" y1="12" x2="3.4" y2="12"/><line x1="20.6" y1="12" x2="22.8" y2="12"/>
+          <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
+          <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
+        </g>
+        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        <g class="craters"><circle cx="10.4" cy="9.6" r="1.15"/><circle cx="8.7" cy="14.2" r=".8"/><circle cx="13" cy="13.6" r=".62"/></g>
+      </svg>
+    </span>
+  </span>
+</button>
+  </nav>
+</div>
+<script>
+/* Runs during parse, before first paint, so setting --from can't flash. Only the
+   browser knows which tab you were on last, hence sessionStorage rather than a
+   build-time guess. */
+(function(){
+  var seg=document.querySelector('.seg');
+  if(!seg) return;
+  var i=3, prev=null;
+  try{ prev=sessionStorage.getItem('db-tab'); sessionStorage.setItem('db-tab',i); }catch(e){}
+  if(prev!==null&&prev!==''&&+prev!==i){ seg.style.setProperty('--from',+prev); seg.classList.add('go'); }
+})();
+</script>
+<div id="prog"></div>
+
+<div class="page">
+  <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
+       split is load-bearing and was measured, not guessed (2026-07-30).
+
+       The footer used to be a third child of the grid itself, and that is what put
+       the sticky rail INTO it: a sticky element's travel is bounded by its
+       containing block, and with the footer inside that same block the rail was
+       free to slide across the footer's row. At 1440x900 on Terms it ran 236px
+       past the end of the document and 126px into the footer. align-self:start
+       does NOT fix this — it sizes the rail's own box and leaves the containing
+       block exactly as tall as before, which is why the earlier blind fix looked
+       right in the CSS and changed nothing on screen.
+
+       Lifting the footer OUT of the grid but leaving it in .page is what makes the
+       rail stop: the rail's containing block is now .cols, which ends with the
+       document. It has to stay inside .page, though — as a direct child of <body>
+       it stretched to the full 1440px viewport instead of the 1156px document
+       column. Both halves were verified in a live browser at the scrolled-to-bottom
+       position, which is the only place the bug is visible at all. -->
+  <div class="cols">
+    <aside class="rail" id="rail">
+      <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
+      <div class="slots" id="slots"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
+    </aside>
+
+    <main class="doc">
+      <header class="mast">
+        <span class="lab">Attribution</span>
+        <h1>Notices &amp; Attributions</h1>
+        <div class="rule"></div>
+        <div class="meta"><span>Ontario, Canada</span></div>
+      </header>
+      <p class="authoritative">This page is a formatted reading copy. The <a href="../NOTICE">plain-text NOTICE</a> is the authoritative instrument, and governs if the two ever differ.</p><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
+<p>This file records (1) the third-party software Dior's Builds depends on and the licenses that govern it, (2) third-party trademarks referenced by the project, and (3) a disclosure of AI assistance in authoring the project.</p>
+<p>This file is required reading alongside LICENSE. Nothing in LICENSE restricts, enlarges, or otherwise varies your rights in any third-party component listed below — those components are licensed to you by their own licensors, on their own terms.</p>
+<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DIRECT DEPENDENCIES</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
+<p>Runtime dependencies, as declared in package.json:</p>
+<pre class="cols">chrono-node 2.9.1              MIT
+                               Copyright (c) Wanasit Tanakitrungruang
+                               <a href="https://github.com/wanasit/chrono" target="_blank" rel="noopener noreferrer">https://github.com/wanasit/chrono</a></pre>
+<pre class="cols">cloudinary 2.10.0              MIT
+                               Copyright (c) Cloudinary Ltd.
+                               <a href="https://cloudinary.com" target="_blank" rel="noopener noreferrer">https://cloudinary.com</a></pre>
+<pre class="cols">color-namer 1.4.0              MIT
+                               Copyright (c) Zeke Sikelianos
+                               <a href="https://github.com/colorjs/color-namer" target="_blank" rel="noopener noreferrer">https://github.com/colorjs/color-namer</a></pre>
+<pre class="cols">dayjs 1.11.21                  MIT
+                               Copyright (c) iamkun
+                               <a href="https://day.js.org" target="_blank" rel="noopener noreferrer">https://day.js.org</a></pre>
+<pre class="cols">discord.js 14.26.4             Apache License 2.0
+                               Copyright (c) discord.js contributors
+                               <a href="https://discord.js.org" target="_blank" rel="noopener noreferrer">https://discord.js.org</a>
+                               *** See <a class="xref" href="#s-2">Section&nbsp;2</a> — Apache-2.0 obligations ***</pre>
+<pre class="cols">dotenv 17.4.1                  BSD-2-Clause
+                               Copyright (c) Scott Motte and contributors
+                               <a href="https://github.com/motdotla/dotenv" target="_blank" rel="noopener noreferrer">https://github.com/motdotla/dotenv</a></pre>
+<pre class="cols">jimp 1.6.1                     MIT
+                               Copyright (c) Andrew Lisowski
+                               <a href="https://github.com/jimp-dev/jimp" target="_blank" rel="noopener noreferrer">https://github.com/jimp-dev/jimp</a></pre>
+<pre class="cols">mongoose 9.7.3                 MIT
+                               Copyright (c) LearnBoost &lt;dev@learnboost.com&gt;
+                               <a href="https://mongoosejs.com" target="_blank" rel="noopener noreferrer">https://mongoosejs.com</a></pre>
+<p>Development dependencies:</p>
+<pre class="cols">xlsx (SheetJS) 0.18.5          Apache License 2.0
+                               Copyright (c) SheetJS LLC
+                               <a href="https://sheetjs.com" target="_blank" rel="noopener noreferrer">https://sheetjs.com</a>
+                               *** See <a class="xref" href="#s-2">Section&nbsp;2</a> — Apache-2.0 obligations ***
+                               Not used at runtime; required only by
+                               scripts/migrateBuildsToMongo.js.</pre>
+<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">APACHE LICENSE 2.0 OBLIGATIONS</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
+<p>discord.js and xlsx are licensed under the Apache License, Version 2.0. If you redistribute this project or any work containing those components, Apache-2.0 <a class="xref" href="#s-4">§4</a> requires you to:</p>
+<ul class="lettered"><li>(a) give recipients a copy of the Apache License 2.0;</li><li>(b) retain all copyright, patent, trademark, and attribution notices;</li><li>(c) state prominently that you changed any Apache-licensed file, if you did; and</li><li>(d) include the contents of any NOTICE file distributed with those works.</li></ul>
+<p>The full Apache License 2.0 text is available at:</p>
+<pre class="block"><a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">http://www.apache.org/licenses/LICENSE-2.0</a></pre>
+<p>The authoritative license text and any NOTICE file for each component ship inside that package's own directory under node_modules/.</p>
+<p>Note that LICENSE §4.2 prohibits you from redistributing Dior's Builds in any event. This section exists because the obligation attaches to the upstream components independently of what the Licensor permits, and because a GitHub fork places a copy in your hands.</p>
+<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">TRANSITIVE DEPENDENCIES</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
+<p>The installed dependency tree resolves to 127 top-level packages under node_modules/, distributed across these licenses:</p>
+<pre class="cols">90   MIT
+19   Apache-2.0
+ 9   ISC
+ 2   BSD-2-Clause
+ 2   BSD-3-Clause
+ 2   (unspecified in package metadata)
+ 1   MIT AND Zlib
+ 1   BlueOak-1.0.0
+ 1   0BSD</pre>
+<p class="sub">*** No copyleft or reciprocal license (GPL, AGPL, LGPL, MPL, EUPL, CDDL, or SSPL) is present anywhere in the tree. ***</p>
+<p>That matters: a reciprocal license in the dependency graph could oblige the Licensor to publish source under terms incompatible with the source-available model in LICENSE. This tree carries no such obligation. Re-verify after adding any dependency.</p>
+<p class="sub">Counts measured 2026-07-28 21:36 EDT against the committed package-lock.json. They will drift as dependencies change; regenerate rather than trusting the numbers above. Authoritative per-package license text lives in each package's own directory under node_modules/.</p>
+<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PLATFORM AND SERVICE PROVIDERS</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
+<p>Dior's Builds interoperates with, and depends on, services operated by third parties. Their terms govern their services, not this LICENSE.</p>
+<pre class="cols">Discord                Discord Inc.            <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">https://discord.com/terms</a>
+GitHub                 GitHub, Inc.            <a href="https://docs.github.com/site-policy" target="_blank" rel="noopener noreferrer">https://docs.github.com/site-policy</a>
+                       (a Microsoft company)
+MongoDB Atlas          MongoDB, Inc.           <a href="https://www.mongodb.com/legal" target="_blank" rel="noopener noreferrer">https://www.mongodb.com/legal</a>
+Cloudinary             Cloudinary Ltd.         <a href="https://cloudinary.com/tou" target="_blank" rel="noopener noreferrer">https://cloudinary.com/tou</a>
+Google Cloud Platform  Google LLC              <a href="https://cloud.google.com/terms" target="_blank" rel="noopener noreferrer">https://cloud.google.com/terms</a>
+Google Cloud Logging   Google LLC              <a href="https://cloud.google.com/terms" target="_blank" rel="noopener noreferrer">https://cloud.google.com/terms</a>
+                       (server logs, 30-day retention)
+Google Cloud Vertex AI Google LLC              <a href="https://cloud.google.com/terms" target="_blank" rel="noopener noreferrer">https://cloud.google.com/terms</a>
+                       (aiplatform.googleapis.com — the ENTERPRISE path, not
+                       the consumer Gemini API at generativelanguage.
+                       googleapis.com. Google does not train on data submitted
+                       to Vertex AI. Admin-only; no end-user data is sent.)
+Node.js                OpenJS Foundation       <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">https://nodejs.org</a>
+FFmpeg                 FFmpeg team             <a href="https://ffmpeg.org" target="_blank" rel="noopener noreferrer">https://ffmpeg.org</a>
+                       (system binary; LGPL/GPL depending on build — invoked
+                       as a separate process, never linked or redistributed)</pre>
+<h2 id="s-4a" class="numbered"><span class="idx" aria-hidden="true">4A</span><span class="ht">THIRD-PARTY CREATIVE ASSETS</span><a class="anchor" href="#s-4a" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-4a.1" class="clause"><span class="idx" aria-hidden="true">4A.1</span><span class="ht">EMOJI</span><a class="anchor" href="#s-4a.1" aria-label="Link to this section">¶</a></h3>
+
+<p>Some custom emoji used in the Bot's interface were created by third-party artists and obtained through emoji.gg. With thanks:</p>
+<pre class="block">tofooo                      <a href="https://emoji.gg/user/tofooo" target="_blank" rel="noopener noreferrer">https://emoji.gg/user/tofooo</a></pre>
+<p>LICENSE TIER — CONFIRMED. These emoji carry emoji.gg's **Basic License**:</p>
+<pre class="block">"This license grants you permission to use this emoji on Discord, Slack and
+any other platform where the user is not charged for access to the emoji."</pre>
+<p>The Bot satisfies this: it is distributed free of charge, has no paid tier, no subscription, and no in-app purchase, so no user is ever charged for access to these emoji. The Licensor additionally credits the creator (not strictly required by the Basic License, but given regardless), claims no ownership, and does not redistribute them as standalone assets. See emoji.gg's terms (<a href="https://emoji.gg/terms" target="_blank" rel="noopener noreferrer">https://emoji.gg/terms</a>) and license reference (<a href="https://emoji.gg/licenses" target="_blank" rel="noopener noreferrer">https://emoji.gg/licenses</a>).</p>
+<p class="sub">&gt;&gt; STANDING CONSTRAINT — READ BEFORE MONETISING. The Basic License is &gt;&gt; conditional on users not being charged for access. If the Bot ever &gt;&gt; introduces a paid tier, subscription, or any paywall, the license no longer &gt;&gt; covers this use and these emoji MUST be replaced or separately licensed &gt;&gt; first. This is a real limit on the project's commercial options, not a &gt;&gt; formality. It is cross-referenced in TERMS.md §4.2 (the Bot is free).</p>
+<p>Creators whose work appears here and who want different attribution, or removal, should email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
+<h3 id="s-4a.2" class="clause"><span class="idx" aria-hidden="true">4A.2</span><span class="ht">OTHER VISUAL MATERIAL</span><a class="anchor" href="#s-4a.2" aria-label="Link to this section">¶</a></h3>
+
+<p>Game imagery, weapon renders, and screenshots displayed by the Bot are covered by <a class="xref" href="#s-5">Section&nbsp;5</a> below and remain the property of their respective owners.</p>
+<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">TRADEMARK ACKNOWLEDGEMENTS</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
+<p>All trademarks, service marks, and trade names referenced in this project or in its output are the property of their respective owners. Their use here is nominative — for identification and reference only — and does not imply endorsement, sponsorship, affiliation, or any commercial relationship.</p>
+<p class="sub">Call of Duty(R), Call of Duty(R): Mobile, Activision(R) Trademarks of Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
+<pre class="cols">Discord(R)             Discord Inc.
+GitHub(R)              GitHub, Inc. / Microsoft Corporation
+MongoDB(R), Atlas(R)   MongoDB, Inc.
+Cloudinary(R)          Cloudinary Ltd.
+Google Cloud(TM), Gemini(TM), Vertex AI(TM)
+                       Google LLC
+Microsoft(R), Azure(R) Microsoft Corporation
+Amazon Web Services(R), S3(R)
+                       Amazon.com, Inc.
+Node.js(R)             OpenJS Foundation
+Apple(R), macOS(R), iOS(R)
+                       Apple Inc.
+Android(TM)            Google LLC
+Claude(TM), Anthropic(R)
+                       Anthropic PBC</pre>
+<p class="sub">&gt;&gt;&gt; DIOR'S BUILDS IS AN UNOFFICIAL, NON-COMMERCIAL FAN PROJECT. IT IS NOT &gt;&gt;&gt; DEVELOPED, PUBLISHED, LICENSED, ENDORSED, SPONSORED BY, OR AFFILIATED &gt;&gt;&gt; WITH ACTIVISION PUBLISHING, INC., TiMi STUDIO GROUP, TENCENT, GARENA, &gt;&gt;&gt; VNG GAMES, DISCORD INC., OR ANY OF THEIR AFFILIATES.</p>
+<p>CROSSOVER AND COLLABORATION CONTENT</p>
+<p>Call of Duty: Mobile regularly features licensed content from third-party rights holders unconnected to this project -- crossover seasons, guest characters, themed blueprints, and tie-in events drawn from films, television, comics, music, anime, sports, and other franchises. Where this project names, describes, dates, or lists such content:</p>
+<ul class="lettered"><li>Those characters, titles, logos, likenesses, and designs are the property of their OWN respective rights holders, who are typically not Activision, TiMi Studio Group, Tencent, or any of the publishers named above.</li><li>The Licensor is not affiliated with, licensed by, endorsed by, or sponsored by any of those rights holders either. The disclaimer above extends to every one of them.</li><li>The takedown address below is open to ANY rights holder, not only the game's publishers.</li></ul>
+<p>Individual collaborations are deliberately NOT enumerated here. Any such list would be stale within a season, and a stale list of third-party marks implies a vetting process that does not exist. This acknowledgement is written to cover every collaboration -- past, current, and future -- without revision.</p>
+<p>Other companies' own copyright notices (the "(C)/(TM)/(R) [YEAR] [COMPANY]. All Rights Reserved." blocks carried by the game and by officially licensed products) are deliberately NOT reproduced here. Those are published by rights holders and their licensees to assert THEIR rights under THEIR licence agreements; the Licensor holds no such licence, and reproducing them would misrepresent the relationship. Their rights are acknowledged instead. See TERMS.md section 7.3 for the user-facing statement of this position.</p>
+<p>Weapon names, attachment names, item names, in-game imagery, screenshots, and other game content displayed by this project remain the property of their respective owners. The Licensor claims no ownership of that material and grants no rights in it. It is reproduced for identification, commentary, and reference in a manner believed to constitute fair dealing under the Copyright Act (Canada) and fair use under 17 U.S.C. § 107.</p>
+<p>Rights holders: to request removal of any material, email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
+<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">AI ASSISTANCE DISCLOSURE</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
+<p>Portions of Dior's Builds — including source code, documentation, and these legal documents — were authored with the assistance of AI coding assistants, principally Claude (Anthropic PBC), used as a drafting and implementation tool under the continuous direction of the human author.</p>
+<p>This disclosure is made deliberately, for three reasons.</p>
+<h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">HONESTY.</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Anyone reading, auditing, or contributing to this project is entitled to know how it was built.</p>
+<h3 id="s-6.2" class="clause"><span class="idx" aria-hidden="true">6.2</span><span class="ht">COPYRIGHT.</span><a class="anchor" href="#s-6.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The enforceability of LICENSE depends on copyright subsisting in this work. The position in the United States, as set out by the Copyright Office and left undisturbed when the Supreme Court denied certiorari on 2 March 2026, is that:</p>
+<ul class="lettered"><li>material generated autonomously by AI, without human creative control, is NOT protected by copyright; but</li><li>a work is protected where a human exercised meaningful creative control over its expressive elements, and AI-assisted works are copyrightable to the extent of that human contribution.</li></ul>
+<p class="sub">Accordingly, the Licensor states affirmatively that throughout this project a human author (Harkirat Mangat) conceived the project and its features; specified requirements and behaviour; directed, reviewed, selected, rejected, corrected, and revised all generated output; determined the architecture, structure, sequence, and organisation of the codebase; and personally researched, selected, verified, arranged, and curated the game data compilations. The creative choices that give this work its expressive character are human choices.</p>
+<p class="sub">Nothing in this disclosure is an admission that any part of the work lacks copyright protection, and no waiver of any right is intended or should be inferred.</p>
+<h3 id="s-6.3" class="clause"><span class="idx" aria-hidden="true">6.3</span><span class="ht">NO USER DATA IS SENT TO AI SYSTEMS.</span><a class="anchor" href="#s-6.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">AI assistance was used in *development*. It is not used to process end-user data at runtime. The only AI call in the running application is Google Vertex AI (Gemini) image-to-text extraction in the /autobuild command, which is restricted to the administrator's own Discord account and never receives end-user data, messages, or images. See PRIVACY.md §5.1.</p>
+<p>LICENSE §4.7 separately prohibits YOU from using this project, its data, or its output to train or otherwise feed any AI or machine-learning system. That prohibition is unaffected by the Licensor's own use of AI tooling in development.</p>
+<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">CONTRIBUTIONS</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
+<p>Contributions from third parties are governed by LICENSE <a class="xref" href="#s-5">§5</a> and CONTRIBUTING.md. Contributors are credited in CONTRIBUTORS.md and in the changelog entry for the release in which their contribution first ships. Credit is a binding obligation of the Licensor under LICENSE §5.6, not a courtesy.</p>
+<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">CONTACT</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
+<pre class="block">Harkirat Mangat ("dior", "diorswrld")
+<a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
+<a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a></pre>
+<p>Attribution errors, omissions, licensing questions, and takedown requests are all welcome at that address and will be corrected promptly.</p>
+    </main>
+  </div>
+
+  <footer class="foot">
+    <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
+    <!-- PAGES already contains Notice, so the hand-added ../NOTICE link that used
+         to sit here produced two "Notice" entries side by side. The email is gone
+         too: it belongs on the landing page and in the Privacy Policy, and
+         repeating it in every page footer is just noise. -->
+    <p><a href="./terms.html">Terms</a> · <a href="./privacy.html">Privacy</a> · <a href="./license.html">License</a> · <a href="./notice.html">Notice</a>
+      · <a href="./contributing.html">Contributing</a> · <a href="./contributors.html">Contributors</a></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var prog=document.getElementById('prog');
+  var slots=[].slice.call(document.querySelectorAll('.slot'));
+  var heads=slots.map(function(a){return document.getElementById(a.getAttribute('href').slice(1))});
+  var queued=false;
+  function paint(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?h.scrollTop/max*100:0)+'%';
+    var cur=-1, y=h.scrollTop+130;
+    for(var i=0;i<heads.length;i++){ if(heads[i]&&heads[i].offsetTop<=y) cur=i; }
+    for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
+    // Mirror the tracked section into the mobile opener. On desktop the rail
+    // shows position by itself; on mobile the list is collapsed, so without this
+    // there is no positional cue anywhere on a 22-section document.
+    var curEl=document.getElementById('railcur');
+    if(curEl){
+      var t=cur>=0?slots[cur].querySelector('span'):null;
+      curEl.textContent=t?t.textContent:'';
+    }
+    queued=false;
+  }
+  addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
+  addEventListener('resize',paint); paint();
+
+  var rail=document.getElementById('rail'), rbtn=document.getElementById('railbtn');
+  rbtn.addEventListener('click',function(){
+    var open=rail.classList.toggle('open');
+    rbtn.setAttribute('aria-expanded', open?'true':'false');
+  });
+  slots.forEach(function(a){ a.addEventListener('click',function(){
+    rail.classList.remove('open'); rbtn.setAttribute('aria-expanded','false');
+  }); });
+
+})();
+
+(function(){
+  var d=document.documentElement, btn=document.getElementById('th');
+  function resolved(){
+    return d.getAttribute('data-theme') ||
+      (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  }
+  function sync(){ if(btn) btn.setAttribute('aria-checked', resolved()==='light'?'true':'false'); }
+  // Theme choice is per-browser and deliberately never sent anywhere.
+  try{ var s=localStorage.getItem('db-theme'); if(s) d.setAttribute('data-theme',s); }catch(e){}
+  sync();
+  if(btn) btn.addEventListener('click',function(){
+    var next=resolved()==='dark'?'light':'dark';
+    d.setAttribute('data-theme',next);
+    try{ localStorage.setItem('db-theme',next); }catch(e){}
+    sync();
+  });
+})();
+</script>
+</body>
+</html>

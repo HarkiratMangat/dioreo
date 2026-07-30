@@ -1,7 +1,7 @@
 DIOR'S BUILDS SOURCE-AVAILABLE LICENSE
 Version 1.0, 28 July 2026
 
-Copyright (c) 2026 Harkirat Mangat ("dior"). All rights reserved.
+Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
 
 This is a source-available license, not an open-source license. It is not
 approved by the Open Source Initiative and does not meet the Open Source
@@ -41,7 +41,7 @@ it conflicts with the terms below, the terms below govern.
 1. DEFINITIONS
 ===============================================================================
 
-1.1  "Licensor" means Harkirat Mangat, also known as "dior", the sole copyright
+1.1  "Licensor" means Harkirat Mangat, also known as "dior" or "diorswrld", the
      holder of the Software, and his successors and assigns.
 
 1.2  "You" or "Your" means the individual or legal entity exercising rights
@@ -748,7 +748,7 @@ any claim that it infringes a third party's rights.
 
 The following notice may be applied to individual source files:
 
-    Copyright (c) 2026 Harkirat Mangat ("dior"). All rights reserved.
+    Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
     Licensed under the Dior's Builds Source-Available License v1.0.
     Source-available, not open source. No deployment, no redistribution.
     See the LICENSE file at the repository root for full terms.
@@ -772,7 +772,7 @@ Requests for permission beyond the scope of this License, security reports
 under Section 4.11, licensing enquiries, and notices under Section 14.7 should
 be sent to:
 
-    Harkirat Mangat ("dior")
+    Harkirat Mangat ("dior", "diorswrld")
     harkirat117@gmail.com
     https://github.com/HarkiratMangat/diors-builds
 

@@ -281,16 +281,57 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
 
 ### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
-`public/legal/{terms,privacy,index}.html` is **build output**, deployed to Cloudflare Pages so the
-Discord Developer Portal has stable public URLs that survive the repo flipping private. The source of
-truth is `docs/legal/*.md`; the HTML is produced by **`node scripts/buildLegalPages.js`**.
+`public/legal/*.html` is **build output**, deployed to Cloudflare Pages so the
+Discord Developer Portal has stable public URLs that survive the repo flipping private. The sources are
+`docs/legal/*.md` plus the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`); the HTML is produced by **`node scripts/buildLegalPages.js`**.
+**Run `node scripts/buildLegalPages.js && dior legal deploy` after editing ANY of those six sources** —
+nothing else republishes the site, and `dior legal check` compares live bytes against the local build.
+- **Two page classes, and the distinction is deliberate** (expanded 2026-07-29 22:17 EDT). `PAGES` is the
+  numbered legal set (terms · privacy · license · notice) rendered by `shell()`: squared corners,
+  hairline rules, cold graphite, a numbered margin index, and the `01/02/03` series on the landing page.
+  `EXTRA_PAGES` is contributing + contributors rendered by `warmShell()`: rounded, warm radial wash,
+  glow, **no numbers anywhere**. The number series is what tells a reader "these bind you", so an
+  invitation must never enter it. Don't collapse the two templates.
+- **The site's only repo link is the header button, and that is on purpose.** A citation inside a legal
+  document must resolve (repo visibility can change — TERMS §7.1), so in-prose repo references still
+  degrade to inert text via `PUBLISHED_TARGETS`. A nav button that 404s is a dead button, not a
+  defective instrument. TERMS §20 still withholds the repo as a *contact* route.
+- **The homepage leads with Discord (`diorswrld`) and hides the email behind a `<details>` reveal.** It
+  is `<details>`, not a script, because a data subject must be able to reach the controller with JS
+  disabled (PRIVACY §13 / GDPR Art. 13). The wording says Discord is *fastest* and email is *canonical* —
+  which is what the documents say; claiming Discord was "primary" would contradict TERMS §20.
 - **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
   the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
   an empty build command, so nothing has to run on their side.
 - The build **verifies itself**: it re-reads its own output and asserts every multi-word run from the
   source survived rendering, then reports a percentage. It is not a "it didn't crash" check — treat
   anything below 100% as lost content, but confirm against the source before believing it, because
-  two of its early failures were verifier bugs (ordered-list markers and stop-words), not real loss.
+  several of its failures were verifier bugs, not real loss: ordered-list markers, stop-words, and
+  (2026-07-30 00:40 EDT) **an undecoded HTML entity becoming a WORD** — `&middot;` reduces to the token
+  `"middot"` and `&#9825;` to `"9825"`, which then sits *inside* an intact source run and splits it.
+  It now decodes numeric/hex/named entities; that is safe because an entity resolves to exactly one
+  character, so decoding can only *remove* a fabricated word, never supply a source word the page
+  doesn't render.
+- **There are FIVE gates now, not three.** `warmStructAudit()` (added 2026-07-30 00:40 EDT) asserts every
+  treatment each warm page **declares** in `WARM_STRUCT` actually fired. The warm treatments key off
+  source heading text, so renaming a heading in `CONTRIBUTING.md` would silently drop that section back
+  to plain prose — and **no other gate can see it**: all words still present, no links changed, no aligned
+  columns, no cross-references. `WARM_STRUCT` is declared rather than sniffed so the check can't draw its
+  expectations from the code under test.
+- **Decorative text belongs in CSS, never the DOM.** The ledger's direction marks and the ghost plate's
+  "Your name" label are drawn with CSS `content` on `aria-hidden` spans. Emitting them as HTML text put
+  invented characters between a section's heading and its first source sentence, breaking `verify()` runs.
+  The alternative — teaching `verify()` to ignore `aria-hidden` text — was rejected because it would hide
+  real content loss just as well. If a mark's meaning is already carried by adjacent prose, it is
+  reinforcement, and it goes in the stylesheet.
+- ⚠️ **`.page` is only the centred wrapper; `.cols` carries the two-column grid, and the footer sits in
+  `.page` OUTSIDE `.cols`. Do not fold these back together.** A sticky element is bounded by its
+  containing block, not its own height, so while the footer was a third child of the grid the section
+  rail was free to travel across it — measured at 1440×900 on Terms, 236px past the document and 126px
+  into the footer. `align-self:start` does **not** fix this and was wrongly documented as doing so for a
+  day. The footer must also stay *inside* `.page`, or it stretches to the full viewport width instead of
+  the document column.
 - It renders every `§N` cross-reference into a working anchor. That is why the parser only ever
   rewrites text nodes — touching markup would corrupt existing `href`s.
 

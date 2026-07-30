@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source-Available License — Dior's Builds</title>
+<meta name="description" content="Source-Available License for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="Source-Available License — Dior's Builds">
+<meta property="og:description" content="Source-Available License for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%239B6BE3'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
+<style>
+
+:root{
+  --gold:#F2C230;
+  /* "desk" is the surface the document sits on; "paper" is the document. Warm
+     plum-tinted graphite rather than neutral slate, derived from Plum Fortune —
+     a generic near-black is the thing that made the first version anonymous. */
+  --desk:#16131B; --paper:#1D1926; --raised:#241F30;
+  --rule:#302A3E; --rule2:#3D3550;
+  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#6E6782;
+  --shadow:0 24px 60px -28px rgba(0,0,0,.85);
+  --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+  --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+}
+/* LIGHT MODE. The rules used to be #DED9D0 on #FCFBF9 paper — about 1.15:1,
+   which is to say invisible: every divider, table border and callout edge that
+   structures these documents simply vanished in light mode while looking fine in
+   dark. Light is not dark with the values flipped; the same separation needs more
+   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
+   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
+   table headers read as distinct surfaces rather than the same cream. */
+:root[data-theme=light]{
+  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+  --rule:#CBC3B4; --rule2:#A39A8B;
+  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]){
+    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+    --rule:#CBC3B4; --rule2:#A39A8B;
+    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
+.lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500}
+
+:root{--accent:#9B6BE3;--glow:#6B4E7D}
+
+/* ── shared reset for the label buttons ───────────────────────────────
+   .lab is a <button> in the section rail. Without this reset it inherits the
+   platform's default button chrome, which rendered as a grey box floating above
+   the rail on DESKTOP — the mobile rules were scoped to a media query, so the
+   desktop path got the element change with none of the styling. */
+button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
+  padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}
+
+/* ── wordmark ─────────────────────────────────────────────────────────
+   Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
+   favicon. The interaction is that motif behaving like the thing it depicts:
+   on hover the slots LOCK IN — they align to full width in sequence and go
+   accent — and a light passes across the wordmark once. The only always-on
+   movement is a single slow pulse on the top bar, because three staggered idle
+   loops competed with everything else in the bar and read as noise. */
+.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
+  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
+  white-space:nowrap;position:relative;padding:.25rem 0}
+.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
+.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
+  transform-origin:left center;
+  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
+.glyph i:nth-child(1){width:100%;background:var(--accent)}
+.glyph i:nth-child(2){width:56%}
+.glyph i:nth-child(3){width:78%}
+.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
+@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
+
+/* The shine. A masked gradient swept across the letterforms — text, not a bar
+   under it, so the mark itself is what responds. */
+.wm{position:relative;background-image:linear-gradient(100deg,
+  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
+  background-size:280% 100%;background-position:130% 0;
+  -webkit-background-clip:text;background-clip:text;
+  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
+.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
+  background-position:-30% 0}
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
+  opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
+.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
+.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
+.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
+.mark.live:hover .glyph i:nth-child(1){animation:none}
+
+/* ── action controls: pills ───────────────────────────────────────────
+   ROUNDED, deliberately. The site's rule is squared = the documents that bind
+   you, rounded = an invitation. An action is an invitation, so the earlier
+   squared repo/install buttons contradicted the rule the rest of the site is
+   built on. Every interactive control in the bar is now a pill; only document
+   chrome stays squared. */
+.ghb,.ins{border-radius:999px;height:30px}
+
+/* repo — icon-only, opening on hover. The label is revealed by a clip, and the
+   icon holds still. It used to spin 360°, which is the stock "look, animation"
+   move and reads as filler. */
+.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
+  overflow:hidden;text-decoration:none;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  width:30px;padding:0;transition:width .38s cubic-bezier(.16,.84,.28,1),
+  color .22s,border-color .22s,background .22s}
+.ghb-ic{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px}
+.ghb-ic svg{width:15px;height:15px;display:block}
+.ghb-t{overflow:hidden;padding-right:.85rem}
+.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
+  transform:translateX(-8px);opacity:0;
+  transition:transform .38s cubic-bezier(.16,.84,.28,1),opacity .3s}
+.ghb:hover,.ghb:focus-visible{width:106px;color:var(--ink);border-color:var(--ink3);
+  background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+
+/* install — the one filled control on the site. Motion on hover only: the fill
+   brightens from the leading edge and the arrow steps out. No idle sheen loop
+   and no pulsing ring; two ambient loops on a single button was the clearest
+   case of decoration competing with the theme switch for attention. */
+.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;
+  overflow:hidden;text-decoration:none;padding:0 .95rem;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
+  text-transform:uppercase;font-weight:700;
+  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  transition:box-shadow .3s,filter .22s}
+.ins-ic{display:grid;place-items:center;width:16px;height:16px;flex:0 0 16px;
+  position:relative;z-index:1}
+.ins-ic svg{width:16px;height:auto;display:block}
+.ins-t,.ins-ar{position:relative;z-index:1}
+.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+  transition:opacity .26s,width .26s,transform .26s}
+.ins-gl{position:absolute;inset:0;z-index:0;opacity:0;
+  background:radial-gradient(120% 180% at 0% 50%,rgba(255,255,255,.5),transparent 62%);
+  transition:opacity .3s}
+.ins:hover,.ins:focus-visible{filter:brightness(1.06);
+  box-shadow:0 5px 20px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
+.ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
+.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
+.ins:active{filter:brightness(.97)}
+
+/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
+   This is the one place the design spends its boldness, so it is the one place
+   with real depth. It is a sky you carry the sun and moon across:
+     dark  — a cratered crescent, stars behind it
+     light — a rayed sun, clouds behind it
+   Both states are furnished; the first version left light mode as a plain white
+   disc with nothing in it.
+   The sun and moon carry their OWN colours (warm yellow, pale blue-grey) and
+   NOT the page accent — a violet moon read as an unidentifiable blob. Only the
+   track border and focus ring follow the accent.
+   Hovering PEEKS: the knob leans toward the far side and the destination's
+   furniture fades up, so the control shows you what pressing it will do. */
+.thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+.thm-tr{display:block;position:relative;width:56px;height:30px;border-radius:999px;
+  border:1px solid var(--rule2);overflow:hidden;
+  background:linear-gradient(165deg,#1B1830,#2A2340);
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
+.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.thm-sky{position:absolute;inset:0}
+
+/* stars — dark only */
+.thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
+  opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
+.thm-st i:nth-child(1){left:34px;top:7px}
+.thm-st i:nth-child(2){left:43px;top:14px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:47px;top:6px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:38px;top:21px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:49px;top:19px;width:1.5px;height:1.5px;animation-delay:2.4s}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.thm-st{transition:opacity .4s}
+
+/* clouds — light only. Two soft lozenges, drifting slowly. */
+.thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px;opacity:.92}
+.thm-cl i:nth-child(1){left:7px;top:17px;width:16px;height:6px;
+  box-shadow:5px -4px 0 -1px #fff;animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:8px;width:10px;height:4px;opacity:.6;
+  animation:drift 9s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+.thm-kn{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;
+  transform:translateX(0);
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32)}
+.thm-kn svg{width:22px;height:22px;overflow:visible}
+/* moon */
+.thm-kn .orb{fill:#CFD8EA}
+.thm-kn .craters{fill:#A8B3CC;opacity:1;transition:opacity .3s}
+.thm-kn .cut{transform:translate(7.4px,-7.4px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{stroke:#F6C560;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
+
+/* the hover peek — leans toward the destination and previews its furniture */
+.thm:hover .thm-kn{transform:translateX(5px)}
+.thm:hover .thm-cl{opacity:.28}
+
+/* LIGHT: knob crosses, mask occluder is pushed clear so the disc fills, rays fan
+   out, the orb warms to a sun, craters go, clouds replace stars. */
+:root[data-theme=light] .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+:root[data-theme=light] .thm-kn{transform:translateX(26px)}
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(21px)}
+:root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .orb{fill:#F6C560}
+:root[data-theme=light] .thm-kn .craters{opacity:0}
+:root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
+:root[data-theme=light] .thm-st{opacity:0}
+:root[data-theme=light] .thm-cl{opacity:1}
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(26px)}
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(21px)}
+  :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F6C560}
+  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
+  :root:not([data-theme=dark]) .thm-st{opacity:0}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}
+}
+@media (prefers-reduced-motion:reduce){
+  .thm-st i,.thm-cl i{animation:none}
+  .thm:hover .thm-kn{transform:translateX(0)}
+}
+
+/* ── Discord handle + email reveal ──────────────────────────────────── */
+.dh{font-family:var(--mono);font-weight:600;color:var(--ink);letter-spacing:.02em;
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-radius:4px;padding:.1em .36em}
+.rev{margin-top:.7rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
+.rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
+  color:var(--ink3);list-style:none;transition:color .2s}
+.rev summary::-webkit-details-marker{display:none}
+.rev summary:hover{color:var(--ink)}
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}
+.rev summary:hover .rv-i::after{transform:translateX(48%)}
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+.rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
+  border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
+  background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
+.rv-b a{color:var(--ink);font-size:.78rem;letter-spacing:.02em}
+.rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
+@keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
+  to{opacity:1;clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
+
+
+/* ── top bar ─────────────────────────────────────────────────────── */
+.bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
+  gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
+#prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
+
+/* ── segmented page switcher ──────────────────────────────────────────
+   Was three bordered boxes, which read as inert. Now one segmented control
+   with an indicator that slides. Because these are separate documents and not
+   an SPA, the slide happens on LOAD: the indicator animates in from the
+   previous tab's position, so arriving on a page shows you the move you just
+   made. --i is the active index, --n the tab count, both known at build time,
+   so no measuring in JS and nothing to go wrong on first paint. */
+/* A pill group, matching the other action controls. Three things were wrong
+   before: the inactive labels sat on --ink3 (the faintest ink token) so they
+   genuinely were close to invisible; the active marker was a 15%-alpha tint that
+   barely registered; and each tab carried an 01/02 number chip that duplicated
+   the landing page's numbering inside an already-crowded bar.
+   Now: inactive labels on --ink2, the active tab is a raised pill with an accent
+   border and accent text, and the numbers are gone. */
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;
+  background:color-mix(in srgb,var(--ink) 7%,transparent);isolation:isolate}
+.seg-ink{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;
+  width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);
+  box-shadow:0 2px 9px -4px rgba(0,0,0,.55);
+  transform:translateX(calc(var(--i) * 100%))}
+/* Only animates once JS has supplied a real previous index — see the inline
+   script under the switcher. Without JS the indicator is simply already correct. */
+.seg.go .seg-ink{animation:segIn .5s cubic-bezier(.2,.85,.2,1) both}
+@keyframes segIn{
+  from{transform:translateX(calc(var(--from) * 100%))}
+  to{transform:translateX(calc(var(--i) * 100%))}
+}
+.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
+  text-align:center;border-radius:999px;transition:color .2s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--accent);font-weight:700}
+@media (max-width:640px){
+  .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
+}
+
+/* ── layout ──────────────────────────────────────────────────────── */
+/* .page centres and bounds; .cols is the grid. The footer sits in .page and OUTSIDE
+   .cols on purpose — see the markup comment: it is what stops the sticky rail from
+   travelling into the footer, and keeping it in .page is what stops it stretching to
+   the full viewport width. Do not fold these two back together. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.cols{display:grid;grid-template-columns:200px minmax(0,1fr);
+  gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+@media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
+
+/* ── rail: the section index, tracking position ──────────────────── */
+/* align-self:start stops the rail STRETCHING to its grid row's full height, which is
+   worth having on its own — but it does NOT keep the rail out of the footer, and this
+   comment claimed it did from 2026-07-29 until it was actually measured in a browser
+   on 2026-07-30 00:00 EDT. What bounds a sticky element is its CONTAINING BLOCK, not
+   its own height, so shrinking the box changed nothing: at 1440x900, scrolled to the
+   bottom of Terms, the rail still sat 126px inside the footer. The real fix is
+   structural and lives in .cols — see the markup comment above it. Keeping this note
+   because "the CSS looks like it should work" is exactly how the bug survived a fix. */
+.rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 2rem;
+  max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:thin}
+.rail::-webkit-scrollbar{width:3px}
+.rail::-webkit-scrollbar-thumb{background:var(--rule2)}
+.rail>.lab{display:block;margin-bottom:1rem;padding-left:.85rem}
+.slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
+  padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
+  transition:border-color .18s,color .18s}
+.slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
+  font-weight:500;letter-spacing:-.005em}
+.slot:hover{border-left-color:var(--ink3)}
+.slot:hover span{color:var(--ink)}
+.slot.on{border-left-color:var(--accent)}
+.slot.on i{color:var(--accent)}
+.slot.on span{color:var(--ink);font-weight:650}
+/* ── mobile section index ─────────────────────────────────────────────
+   It used to be position:static, so the opener scrolled away with the top of
+   the page and became unreachable exactly when a long document needs it most.
+   It is now STICKY directly beneath the fixed bar, so it is in reach at every
+   scroll position, and it names the section you are currently in — the desktop
+   rail already tracks that, and on mobile it is the only positional cue there is.
+   The open list is height-capped and scrolls internally so it can never grow past
+   the viewport on a 22-section document. */
+@media (max-width:980px){
+  .rail{position:sticky;top:54px;z-index:50;max-height:none;padding:0;
+    margin:0 0 1.6rem;background:color-mix(in srgb,var(--desk) 94%,transparent);
+    backdrop-filter:blur(12px) saturate(1.2)}
+  .rail>.lab{cursor:pointer;padding:.72rem 1rem;border:1px solid var(--rule);
+    background:var(--paper);margin:0;display:flex;gap:.6rem;align-items:center;
+    width:100%;-webkit-appearance:none;appearance:none;text-align:left;
+    font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink3)}
+  .rail>.lab .cur{margin-left:auto;color:var(--ink2);letter-spacing:.04em;
+    text-transform:none;font-size:.68rem;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;max-width:52%}
+  .rail>.lab::after{content:"+";font-size:.95rem;color:var(--accent);flex:0 0 auto;
+    transition:transform .24s}
+  .rail.open>.lab::after{transform:rotate(45deg)}
+  .slots{display:none;padding:.6rem 0;border:1px solid var(--rule);border-top:0;
+    background:var(--paper);max-height:min(58vh,420px);overflow-y:auto}
+  .rail.open .slots{display:block}
+  .slot{padding-left:1rem}
+}
+
+/* ── the document ────────────────────────────────────────────────── */
+.doc{background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:clamp(1.6rem,4.5vw,4rem);margin-bottom:3rem;position:relative;min-width:0}
+.doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+
+.mast{margin-bottom:3.2rem}
+.mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
+  font-size:clamp(2.4rem,7vw,4.15rem);margin:.7rem 0 0;color:var(--ink)}
+.mast .rule{height:1px;background:var(--rule);margin:1.6rem 0 .9rem}
+.mast .meta{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;color:var(--ink3);
+  text-transform:uppercase;display:flex;flex-wrap:wrap;gap:.35rem 1.1rem}
+.mast .meta b{color:var(--ink2);font-weight:500}
+
+/* ── headings: number lives in the margin ────────────────────────── */
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:76px}
+.doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
+  margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
+.doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
+.doc h2:first-child,.doc h3:first-child{margin-top:0}
+.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent);
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
+.doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
+@media (min-width:1120px){
+  .idx{position:absolute;left:-3.6rem;top:.34em;margin:0;text-align:right;width:2.6rem}
+  .doc h3 .idx{left:-3.6rem;top:.28em}
+}
+.anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
+  opacity:0;transition:opacity .15s}
+.doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
+.anchor:hover{color:var(--accent)}
+/* On a touch device there is no hover to reveal it, so a per-heading ¶ is either
+   permanently invisible or permanent clutter. Neither is worth the space. */
+@media (hover:none){.anchor{display:none}}
+
+/* ── prose ───────────────────────────────────────────────────────── */
+.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
+.doc p{margin:0 0 1.15rem;max-width:72ch}
+.doc strong{color:var(--ink);font-weight:600}
+.doc em{font-style:italic}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc li{margin:.5rem 0}
+.doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
+.doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
+  text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.doc a:hover{text-decoration-color:var(--accent)}
+/* The signature: live cross-references, set apart from ordinary links. */
+.xref{font-family:var(--mono);font-size:.86em;color:var(--accent)!important;
+  text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
+  padding-bottom:1px;white-space:nowrap}
+.xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+/* A reference to a repo file that is NOT published (see PUBLISHED_TARGETS). Styled
+   as a named thing rather than a link, so it reads as deliberate instead of broken. */
+.ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
+  border-bottom:1px dotted var(--rule);padding-bottom:1px}
+.doc code{font-family:var(--mono);font-size:.83em;background:var(--raised);
+  border:1px solid var(--rule);padding:.11em .36em;color:var(--ink);word-break:break-word}
+.doc hr{border:0;border-top:1px solid var(--rule);margin:2.8rem 0}
+
+/* ── plain-text licence: clauses, sub-paragraphs, capitals ────────────
+   Only the LICENSE page uses these. The source is plain text whose structure is
+   carried entirely by indentation, so the job here is to make that structure
+   visible without altering a character of it. */
+.authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
+  letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
+  border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
+  max-width:72ch}
+.authoritative a{color:var(--ink)}
+h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
+  font-size:1rem;font-weight:700}
+h3.clause .idx{color:var(--accent);margin:0;flex:0 0 auto;font-size:.76rem}
+@media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
+  text-align:right;width:3.2rem}}
+h3.clause .ht:empty{display:none}
+/* A clause with no title phrase leaves only the index; without this its body
+   would start against the heading's bottom margin and read as orphaned. */
+h3.clause:has(.ht:empty){margin-bottom:.15rem}
+p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
+  margin:0 0 .95rem;max-width:70ch}
+p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
+  font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
+  margin:.34rem 0}
+/* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
+   so they are preserved rather than down-cased — but a wall of capital serif at
+   reading size is genuinely hard going, hence the smaller, looser, mono setting. */
+p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
+  color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
+  background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}
+/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
+   IS the structure, so it must not wrap — hence its own horizontal scroll rather
+   than letting the page body scroll, which is the rule for every wide element. */
+pre.cols{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
+  background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
+  margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
+pre.cols a{color:var(--ink)}
+
+/* ── callouts ────────────────────────────────────────────────────── */
+.callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+.callout>:last-child{margin-bottom:0}
+.callout p{max-width:none}
+.callout.warn{border-left-color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 9%,var(--raised))}
+.callout h2,.callout h3{margin:0 0 .6rem;border:0;padding:0;font-size:.95rem;
+  letter-spacing:.02em;text-transform:uppercase;font-weight:700}
+.callout h2 .idx,.callout h3 .idx{display:none}
+.callout .anchor{display:none}
+
+/* ── tables: technical readout ───────────────────────────────────── */
+.tw{overflow-x:auto;margin:1.7rem 0;border:1px solid var(--rule);background:var(--raised)}
+.doc table{border-collapse:collapse;width:100%;min-width:min(540px,100%)}
+.doc th,.doc td{padding:.7rem .85rem;text-align:left;vertical-align:top;
+  border-bottom:1px solid var(--rule)}
+.doc th{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500;white-space:nowrap;background:var(--paper)}
+.doc td{font-family:var(--serif);font-size:.95rem;line-height:1.6;color:var(--ink2)}
+.doc tbody tr:last-child td{border-bottom:0}
+.doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+
+/* ── footer ──────────────────────────────────────────────────────── */
+/* No grid-column here any more: the footer left the grid when .cols was introduced,
+   so grid-column:1/-1 had become an inert declaration describing a layout that no
+   longer exists. It spans the full .page width simply by being a block child of it. */
+.foot{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+  display:flex;flex-wrap:wrap;gap:.7rem 2rem;align-items:baseline}
+.foot p{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.7;
+  letter-spacing:.04em;color:var(--ink3);max-width:60ch}
+.foot a{color:var(--ink2)}
+
+@media print{
+  .bar,#prog,.rail,.anchor,.thm,.ghb{display:none!important}
+  .authoritative{border:1px solid #999}
+  p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
+  body{background:#fff;color:#000}
+  .page{max-width:none;padding:0}
+  /* .cols carries the grid now, so the print reset has to flatten IT — resetting
+     .page alone would have left the 200px rail column reserved on paper. */
+  .cols{display:block}
+  .doc{border:0;box-shadow:none;padding:0;background:#fff}
+  .doc::before{display:none}
+  .doc p,.doc li,.doc td{color:#000}
+  .idx{position:static!important;color:#000;display:inline;margin-right:.5rem}
+  .xref{color:#000!important;border:0}
+  .tw,.callout{border:1px solid #999;break-inside:avoid}
+  .doc h2,.doc h3{break-after:avoid}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <a class="mark live" href="./">
+    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="wm">Dior&#8217;s Builds</span>
+    <span class="go" aria-hidden="true">&#8250;</span>
+  </a>
+  <nav>
+    <div class="seg" style="--n:4;--i:2;--from:2">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab" href="./terms.html">Terms</a>
+      <a class="tab" href="./privacy.html">Privacy</a>
+      <a class="tab on" href="./license.html" aria-current="page">License</a>
+      <a class="tab" href="./notice.html">Notice</a>
+    </div>
+    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+  title="View the source on GitHub">
+  <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
+  <span class="ghb-t"><b>Source</b></span>
+</a>
+    <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
+  target="_blank" rel="noopener noreferrer">
+  <span class="ins-gl" aria-hidden="true"></span>
+  <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
+  <span class="ins-t">Install</span>
+  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+</a>
+    <button id="th" class="thm " role="switch"
+  aria-checked="false" aria-label="Switch between light and dark">
+  <span class="thm-tr" aria-hidden="true">
+    <span class="thm-sky">
+      <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="thm-cl"><i></i><i></i></span>
+    </span>
+    <span class="thm-kn">
+      <svg viewBox="0 0 24 24">
+        <mask id="thm-cut">
+          <rect width="24" height="24" fill="#000"/>
+          <circle cx="12" cy="12" r="7.4" fill="#fff"/>
+          <circle class="cut" cx="12" cy="12" r="6.6" fill="#000"/>
+        </mask>
+        <g class="rays" stroke-width="1.8" stroke-linecap="round">
+          <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
+          <line x1="1.2" y1="12" x2="3.4" y2="12"/><line x1="20.6" y1="12" x2="22.8" y2="12"/>
+          <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
+          <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
+        </g>
+        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        <g class="craters"><circle cx="10.4" cy="9.6" r="1.15"/><circle cx="8.7" cy="14.2" r=".8"/><circle cx="13" cy="13.6" r=".62"/></g>
+      </svg>
+    </span>
+  </span>
+</button>
+  </nav>
+</div>
+<script>
+/* Runs during parse, before first paint, so setting --from can't flash. Only the
+   browser knows which tab you were on last, hence sessionStorage rather than a
+   build-time guess. */
+(function(){
+  var seg=document.querySelector('.seg');
+  if(!seg) return;
+  var i=2, prev=null;
+  try{ prev=sessionStorage.getItem('db-tab'); sessionStorage.setItem('db-tab',i); }catch(e){}
+  if(prev!==null&&prev!==''&&+prev!==i){ seg.style.setProperty('--from',+prev); seg.classList.add('go'); }
+})();
+</script>
+<div id="prog"></div>
+
+<div class="page">
+  <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
+       split is load-bearing and was measured, not guessed (2026-07-30).
+
+       The footer used to be a third child of the grid itself, and that is what put
+       the sticky rail INTO it: a sticky element's travel is bounded by its
+       containing block, and with the footer inside that same block the rail was
+       free to slide across the footer's row. At 1440x900 on Terms it ran 236px
+       past the end of the document and 126px into the footer. align-self:start
+       does NOT fix this — it sizes the rail's own box and leaves the containing
+       block exactly as tall as before, which is why the earlier blind fix looked
+       right in the CSS and changed nothing on screen.
+
+       Lifting the footer OUT of the grid but leaving it in .page is what makes the
+       rail stop: the rail's containing block is now .cols, which ends with the
+       document. It has to stay inside .page, though — as a direct child of <body>
+       it stretched to the full 1440px viewport instead of the 1156px document
+       column. Both halves were verified in a live browser at the scrolled-to-bottom
+       position, which is the only place the bug is visible at all. -->
+  <div class="cols">
+    <aside class="rail" id="rail">
+      <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
+      <div class="slots" id="slots"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a></div>
+    </aside>
+
+    <main class="doc">
+      <header class="mast">
+        <span class="lab">Licence</span>
+        <h1>Source-Available License</h1>
+        <div class="rule"></div>
+        <div class="meta"><span>Effective <b>28 July 2026</b></span><span>Revision <b>1.0</b></span><span>Ontario, Canada</span></div>
+      </header>
+      <p class="authoritative">This page is a formatted reading copy. The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative instrument, and governs if the two ever differ.</p><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
+<p>This is a source-available license, not an open-source license. It is not approved by the Open Source Initiative and does not meet the Open Source Definition. The source code of Dior's Builds is published so that it can be read, studied, audited, and improved -- not so that it can be copied, deployed, redistributed, or turned into a competing bot.</p>
+<h2 id="plain-english-summary-not-part-of-the-license" class="plain"><span class="ht">PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span><a class="anchor" href="#plain-english-summary-not-part-of-the-license" aria-label="Link to this section">¶</a></h2>
+<p>This summary is provided for convenience only. It has no legal effect, and if it conflicts with the terms below, the terms below govern.</p>
+<p class="sub">YOU MAY:</p>
+<ul class="lettered"><li>Read, study, and learn from the source code.</li><li>Look for security vulnerabilities and report them.</li><li>Run the Software on a computer you control, by yourself, to test it or to prepare an improvement you intend to send back.</li><li>Send improvements, and be publicly credited for them.</li></ul>
+<p class="sub">YOU MAY NOT:</p>
+<ul class="lettered"><li>Run the Software, or anything derived from it, anywhere that another person can use it -- including a Discord server with other members in it.</li><li>Publish, share, redistribute, sell, or sublicense the Software or any modified version of it.</li><li>Use the Software, its curated data, or its output to build, train, or operate a competing bot or service.</li><li>Use the "Dior's Builds" name, branding, or visual identity.</li></ul>
+<p class="sub">If you want to do something this license does not allow, ask. Permission is freely given in writing where it makes sense; see <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
+<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DEFINITIONS</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-1.1" class="clause"><span class="idx" aria-hidden="true">1.1</span><span class="ht"></span><a class="anchor" href="#s-1.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Licensor" means Harkirat Mangat, also known as "dior" or "diorswrld", the holder of the Software, and his successors and assigns.</p>
+<h3 id="s-1.2" class="clause"><span class="idx" aria-hidden="true">1.2</span><span class="ht"></span><a class="anchor" href="#s-1.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"You" or "Your" means the individual or legal entity exercising rights under this License, together with any entity that controls, is controlled by, or is under common control with that entity. "Control" means direct or indirect ownership of more than fifty percent (50%) of the voting interests, or the power to direct the management of the entity.</p>
+<h3 id="s-1.3" class="clause"><span class="idx" aria-hidden="true">1.3</span><span class="ht"></span><a class="anchor" href="#s-1.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Software" means the Dior's Builds source code, configuration, scripts, documentation, and all other material contained in the repository at <a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a>, in whole or in part, in source or object form, including all past and future versions, and including any portion, fragment, module, function, or file of it.</p>
+<h3 id="s-1.4" class="clause"><span class="idx" aria-hidden="true">1.4</span><span class="ht"></span><a class="anchor" href="#s-1.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Curated Data" means the compilations of factual information assembled, selected, arranged, verified, and maintained by or for the Licensor, including without limitation the weapon loadout and attachment database, the build rankings and badges, the lucky-draw and pricing datasets, the seasonal calendar and patch-note records, and the associated descriptive text. Curated Data is protected as a compilation and as a database independently of any protection attaching to the code that reads it.</p>
+<h3 id="s-1.5" class="clause"><span class="idx" aria-hidden="true">1.5</span><span class="ht"></span><a class="anchor" href="#s-1.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Brand Assets" means the name "Dior's Builds", the name "dior" as used in connection with the Software, any logo, avatar, banner, emoji set, color palette, accent-color scheme, message layout, or other element of the visual or textual identity of the Software or the Official Service, together with any name or mark confusingly similar to any of them.</p>
+<h3 id="s-1.6" class="clause"><span class="idx" aria-hidden="true">1.6</span><span class="ht"></span><a class="anchor" href="#s-1.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Official Service" means the instance or instances of the Software operated by or on behalf of the Licensor and made available to the public through Discord, together with any successor, replacement, or additional public service operated by the Licensor.</p>
+<h3 id="s-1.7" class="clause"><span class="idx" aria-hidden="true">1.7</span><span class="ht"></span><a class="anchor" href="#s-1.7" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Modify" means to adapt, alter, translate, port, refactor, extend, abridge, merge with other material, or otherwise create a work based upon the Software, and "Modification" means the result of doing so. A Modification is a derivative work for the purposes of applicable copyright law.</p>
+<h3 id="s-1.8" class="clause"><span class="idx" aria-hidden="true">1.8</span><span class="ht"></span><a class="anchor" href="#s-1.8" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Deploy" means to run, execute, host, install, or otherwise make the Software or a Modification operational in any circumstance in which any person other than You is able, whether directly or indirectly and whether or not that person is charged a fee, to:</p>
+<ul class="lettered"><li>(a) invoke it, issue a command to it, or otherwise cause it to act;</li><li>(b) interact with it or with any interface it presents; or</li><li>(c) receive, view, or otherwise obtain its output.</li></ul>
+<p class="sub">Adding the Software or a Modification to any Discord server, guild, channel, group, or account of which You are not the only member or user constitutes Deployment. Installing it as a Discord user-installed application on any account other than Your own constitutes Deployment.</p>
+<h3 id="s-1.9" class="clause"><span class="idx" aria-hidden="true">1.9</span><span class="ht"></span><a class="anchor" href="#s-1.9" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Permitted Local Use" means running the Software or a Modification solely on hardware or a hosted environment that You control, where You are the only person able to invoke it, interact with it, or receive its output, and solely for one or more of the Permitted Purposes.</p>
+<h3 id="s-1.10" class="clause"><span class="idx" aria-hidden="true">1.10</span><span class="ht"></span><a class="anchor" href="#s-1.10" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Permitted Purposes" means, and is limited to:</p>
+<ul class="lettered"><li>(a) reading, studying, and understanding the Software;</li><li>(b) evaluating the Software's quality, correctness, or behavior;</li><li>(c) good-faith security research, vulnerability discovery, and testing;</li><li>(d) preparing, developing, and testing a Contribution; and</li><li>(e) academic study, teaching, or private non-commercial learning.</li></ul>
+<h3 id="s-1.11" class="clause"><span class="idx" aria-hidden="true">1.11</span><span class="ht"></span><a class="anchor" href="#s-1.11" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Contribution" means any code, documentation, data, translation, design, bug report, test, or other material that You intentionally submit to the Licensor for inclusion in the Software, by any means, including a pull request, an issue, a message, or an email.</p>
+<h3 id="s-1.12" class="clause"><span class="idx" aria-hidden="true">1.12</span><span class="ht"></span><a class="anchor" href="#s-1.12" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"Competing Service" means any bot, application, website, API, service, or product that provides, in whole or in substantial part, functionality comparable to that of the Software or the Official Service, whether or not it is offered for a fee, and whether or not it is directed at the same game, platform, or audience.</p>
+<h3 id="s-1.13" class="clause"><span class="idx" aria-hidden="true">1.13</span><span class="ht"></span><a class="anchor" href="#s-1.13" aria-label="Link to this section">¶</a></h3>
+<p class="sub">"AI/ML System" means any machine learning model, neural network, large language model, embedding index, retrieval corpus, or other automated system that is trained on, fine-tuned on, indexed over, or otherwise derives statistical or generative capability from input data.</p>
+<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">GRANT OF RIGHTS</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-2.1" class="clause"><span class="idx" aria-hidden="true">2.1</span><span class="ht">Grant.</span><a class="anchor" href="#s-2.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Subject to Your full and continuing compliance with every term and condition of this License, the Licensor grants You a worldwide, royalty-free, non-exclusive, non-transferable, non-sublicensable, revocable license to:</p>
+<ul class="lettered"><li>(a) reproduce the Software for the purpose of reading and studying it;</li><li>(b) make and retain a reasonable number of copies of the Software as necessary for Permitted Local Use;</li><li>(c) engage in Permitted Local Use of the Software; and</li><li>(d) create Modifications solely to the extent necessary for Permitted Local Use, and solely for the Permitted Purposes.</li></ul>
+<h3 id="s-2.2" class="clause"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Nature of the grant.</span><a class="anchor" href="#s-2.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The rights granted in <a class="xref" href="#s-2.1">Section&nbsp;2.1</a> are a bare license to act, not a transfer of any ownership interest. No title, ownership, or proprietary right in the Software, the Curated Data, or the Brand Assets passes to You under this License.</p>
+<h3 id="s-2.3" class="clause"><span class="idx" aria-hidden="true">2.3</span><span class="ht">No implied rights.</span><a class="anchor" href="#s-2.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">All rights not expressly granted in <a class="xref" href="#s-2.1">Section&nbsp;2.1</a> are reserved to the Licensor. Nothing in this License may be construed as granting, by implication, estoppel, exhaustion, acquiescence, course of dealing, or otherwise, any license or right other than those expressly stated. The publication of the Software in a publicly readable repository is not, and shall not be construed as, a waiver, abandonment, dedication to the public, or implied license of any right.</p>
+<h3 id="s-2.4" class="clause"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Patents.</span><a class="anchor" href="#s-2.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor grants You no patent license under this License, except for a non-exclusive, royalty-free license under those patent claims owned or controlled by the Licensor that are necessarily infringed by Permitted Local Use of the Software as furnished by the Licensor. That patent license terminates automatically and immediately if You, or any entity controlled by You, initiate or voluntarily participate in any patent claim, cross-claim, counterclaim, or proceeding alleging that the Software or any Contribution constitutes direct or contributory patent infringement.</p>
+<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">CONDITIONS</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
+<p>Every right granted in <a class="xref" href="#s-2">Section&nbsp;2</a> is conditional on Your compliance with this <a class="xref" href="#s-3">Section&nbsp;3</a>. Failure to comply is both a breach of this License and, because the grant is conditional, an act outside the scope of the license granted and therefore an infringement of the Licensor's copyright.</p>
+<h3 id="s-3.1" class="clause"><span class="idx" aria-hidden="true">3.1</span><span class="ht">Notices.</span><a class="anchor" href="#s-3.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You must retain, in every copy and every Modification You make, this License file in full, all copyright notices, all attribution notices, and all notices identifying the Licensor as the author. You must not remove, obscure, alter, or falsify any such notice.</p>
+<h3 id="s-3.2" class="clause"><span class="idx" aria-hidden="true">3.2</span><span class="ht">No misrepresentation of origin.</span><a class="anchor" href="#s-3.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You must not represent, imply, or permit any other person to believe that the Software, any Modification, or any work incorporating either, is Your own original work, or that it originates from, is endorsed by, is affiliated with, or is sponsored by any person other than the Licensor.</p>
+<h3 id="s-3.3" class="clause"><span class="idx" aria-hidden="true">3.3</span><span class="ht">Marking of Modifications.</span><a class="anchor" href="#s-3.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Any Modification You make must be clearly marked as modified, with a description of the changes and the date they were made, so that it is not mistaken for the Software as furnished by the Licensor.</p>
+<h3 id="s-3.4" class="clause"><span class="idx" aria-hidden="true">3.4</span><span class="ht">Lawful use.</span><a class="anchor" href="#s-3.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You must comply with all applicable laws and regulations in exercising the rights granted, including without limitation export control, economic sanctions, data protection, and computer misuse laws.</p>
+<h3 id="s-3.5" class="clause"><span class="idx" aria-hidden="true">3.5</span><span class="ht">Platform terms.</span><a class="anchor" href="#s-3.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You must comply with the terms of service, developer terms, and policies of Discord Inc., GitHub Inc., and any other platform through which You access, obtain, or run the Software.</p>
+<h3 id="s-3.6" class="clause"><span class="idx" aria-hidden="true">3.6</span><span class="ht">Capacity.</span><a class="anchor" href="#s-3.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You represent that You have the legal capacity to enter into this License and, if You are accepting it on behalf of an entity, that You have authority to bind that entity.</p>
+<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PROHIBITED USES</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
+<p>Without limiting <a class="xref" href="#s-2.3">Section&nbsp;2.3</a>, and for the avoidance of any doubt, You must not do any of the following, whether directly or indirectly, whether for a fee or free of charge, and whether or not You attribute the Licensor:</p>
+<h3 id="s-4.1" class="clause"><span class="idx" aria-hidden="true">4.1</span><span class="ht">Deployment.</span><a class="anchor" href="#s-4.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Deploy the Software or any Modification. This prohibition applies regardless of the size, membership, privacy setting, or purpose of the Discord server, group, or environment concerned, and applies to servers You own, administer, or belong to.</p>
+<h3 id="s-4.2" class="clause"><span class="idx" aria-hidden="true">4.2</span><span class="ht">Distribution.</span><a class="anchor" href="#s-4.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Distribute, publish, transmit, upload, sell, rent, lease, lend, share, mirror, or otherwise make available the Software, any Modification, or any part of either, to any other person, in source or object form, in whole or in part, by any medium. This includes publishing it to any package registry, container registry, file host, code host, archive, forum, chat platform, or website.</p>
+<p class="sub aside">Exception: reproduction of the Software solely on GitHub through GitHub's own forking functionality is not a breach of this <a class="xref" href="#s-4.2">Section&nbsp;4.2</a>, because that reproduction is authorized by the GitHub Terms of Service and not by this License. That exception is strictly limited to the act of forking on GitHub. It does not permit You to Modify a fork beyond Permitted Local Use, to Deploy it, to distribute it off GitHub, or to do anything else this License prohibits.</p>
+<h3 id="s-4.3" class="clause"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Sublicensing and assignment.</span><a class="anchor" href="#s-4.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Sublicense, assign, novate, delegate, or otherwise transfer this License or any right under it, in whole or in part, whether voluntarily, by operation of law, by merger, by acquisition, or otherwise. Any purported transfer is void.</p>
+<h3 id="s-4.4" class="clause"><span class="idx" aria-hidden="true">4.4</span><span class="ht">Commercial use.</span><a class="anchor" href="#s-4.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Use the Software, any Modification, the Curated Data, or the output of any of them for any commercial purpose, including without limitation offering a paid or ad-supported service, accepting donations, subscriptions, sponsorships, or tips in connection with it, providing paid consulting or hosting around it, or using it in the internal operations of a business.</p>
+<p class="sub aside">Carve-out: reading or studying the Software to learn from it is not commercial use, even if You happen to be employed, and even if what You learn later informs Your paid work. This Section is directed at exploitation of the Software, not at the education of the person reading it. The line is whether the Software, a Modification, or the Curated Data is itself put to commercial use -- not whether the reader has a job.</p>
+<h3 id="s-4.5" class="clause"><span class="idx" aria-hidden="true">4.5</span><span class="ht">Competing Services.</span><a class="anchor" href="#s-4.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Use the Software, any Modification, the Curated Data, or knowledge of the Software's internal structure to create, develop, operate, market, or assist any other person in creating, developing, operating, or marketing a Competing Service.</p>
+<p class="sub aside">For clarity and in good faith: copyright protects the expression in the Software, not the underlying ideas, facts, or functionality. This <a class="xref" href="#s-4.5">Section&nbsp;4.5</a> is a contractual undertaking You give in exchange for access to the source code. It does not purport to prevent any person who has not accepted this License from independently creating a bot with similar features.</p>
+<h3 id="s-4.6" class="clause"><span class="idx" aria-hidden="true">4.6</span><span class="ht">Curated Data.</span><a class="anchor" href="#s-4.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Extract, copy, scrape, harvest, mirror, index, re-host, republish, or create a substantial derivative of the Curated Data, whether from the repository, from a database, or from the output of the Official Service. Automated access to the Official Service for the purpose of collecting its output is prohibited.</p>
+<h3 id="s-4.7" class="clause"><span class="idx" aria-hidden="true">4.7</span><span class="ht">AI and machine learning.</span><a class="anchor" href="#s-4.7" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Use the Software, any Modification, the Curated Data, or the output of the Official Service as training data, fine-tuning data, evaluation data, retrieval corpus, embedding source, or other input to any AI/ML System; or permit, facilitate, or fail to take reasonable steps to prevent any third party from doing so.</p>
+<p class="sub">This prohibition does not restrict Your use of AI coding assistants to help You read, understand, or write a Contribution, provided that the Software is not retained by, or used to train, the assistant's provider.</p>
+<h3 id="s-4.8" class="clause"><span class="idx" aria-hidden="true">4.8</span><span class="ht">Circumvention.</span><a class="anchor" href="#s-4.8" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Circumvent, disable, interfere with, or attempt to defeat any access control, rate limit, cooldown, permission check, administrative gate, or security measure in the Software or the Official Service; or access any part of the Official Service, its database, its media storage, or its infrastructure other than through the interfaces the Licensor makes available to ordinary users.</p>
+<h3 id="s-4.9" class="clause"><span class="idx" aria-hidden="true">4.9</span><span class="ht">Disruption.</span><a class="anchor" href="#s-4.9" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Use the Software or the Official Service to transmit malware, to conduct a denial-of-service or resource-exhaustion attack, to harvest credentials, to impersonate any person, or to harass, defraud, or harm any person.</p>
+<h3 id="s-4.10" class="clause"><span class="idx" aria-hidden="true">4.10</span><span class="ht">Brand Assets.</span><a class="anchor" href="#s-4.10" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Use any Brand Asset, or any confusingly similar name or mark, for any purpose, including in the name, description, avatar, documentation, or marketing of any project, service, or account. This prohibition survives termination of this License indefinitely.</p>
+<h3 id="s-4.11" class="clause"><span class="idx" aria-hidden="true">4.11</span><span class="ht">Security research limits.</span><a class="anchor" href="#s-4.11" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Notwithstanding <a class="xref" href="#s-1.10">Section&nbsp;1.10</a>(c), You must not, in the course of security research, test against the Official Service or its live infrastructure, access or exfiltrate any data belonging to the Licensor or to any user, or publicly disclose a vulnerability before the Licensor has had a reasonable opportunity to remedy it. Test against Your own local instance, and report findings privately in accordance with <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
+<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">CONTRIBUTIONS</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-5.1" class="clause"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Contributor License.</span><a class="anchor" href="#s-5.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">By submitting a Contribution, You grant the Licensor a perpetual, worldwide, non-exclusive, irrevocable, royalty-free, fully paid-up, transferable license, with the right to sublicense through multiple tiers, to reproduce, prepare derivative works of, publicly display, publicly perform, distribute, Deploy, commercialize, and otherwise exploit Your Contribution and such derivative works, in any medium and by any means now known or later devised, and to license or relicense Your Contribution under any terms the Licensor chooses, including proprietary terms.</p>
+<h3 id="s-5.2" class="clause"><span class="idx" aria-hidden="true">5.2</span><span class="ht">Retention of Your rights.</span><a class="anchor" href="#s-5.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You retain all copyright, moral rights (to the extent not waived below), and other rights in Your Contribution. The license in <a class="xref" href="#s-5.1">Section&nbsp;5.1</a> is non-exclusive and does not prevent You from using Your own Contribution elsewhere, subject to Sections 4.1 and 4.2 as they apply to the Software as a whole.</p>
+<h3 id="s-5.3" class="clause"><span class="idx" aria-hidden="true">5.3</span><span class="ht">Patent license for Contributions.</span><a class="anchor" href="#s-5.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You grant the Licensor and all recipients of the Software a perpetual, worldwide, non-exclusive, royalty-free, irrevocable patent license under those patent claims You own or control that are necessarily infringed by Your Contribution alone or by its combination with the Software, to make, have made, use, offer to sell, sell, import, and otherwise transfer the Software.</p>
+<h3 id="s-5.4" class="clause"><span class="idx" aria-hidden="true">5.4</span><span class="ht">Your warranties.</span><a class="anchor" href="#s-5.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You represent and warrant that: (a) each Contribution is Your original creation, or You have the necessary rights to submit it and to grant the licenses in this <a class="xref" href="#s-5">Section&nbsp;5</a>; (b) the Contribution does not incorporate any third-party material except as You clearly identify at the time of submission, together with its license; (c) the Contribution does not knowingly infringe any third party's copyright, patent, trademark, trade secret, or other right; (d) if Your employer has rights in intellectual property You create, You have obtained permission to make the Contribution or Your employer has waived those rights; and (e) the Contribution contains no malicious code, backdoor, or intentionally concealed functionality.</p>
+<h3 id="s-5.5" class="clause"><span class="idx" aria-hidden="true">5.5</span><span class="ht">Moral rights.</span><a class="anchor" href="#s-5.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">To the fullest extent permitted by applicable law, and in particular by section 14.1 of the Copyright Act (Canada), You waive, and agree not to assert, any moral rights in Your Contribution against the Licensor or persons authorized by the Licensor, to the extent necessary to permit the exploitation licensed in <a class="xref" href="#s-5.1">Section&nbsp;5.1</a>. This waiver does not affect Your right to attribution under <a class="xref" href="#s-5.6">Section&nbsp;5.6</a>.</p>
+<h3 id="s-5.6" class="clause"><span class="idx" aria-hidden="true">5.6</span><span class="ht">Attribution and credit.</span><a class="anchor" href="#s-5.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor will credit each accepted Contribution to its author, by the name or handle the author specifies, in the project's contributor records and in the changelog entry for the release in which the Contribution first ships. The Licensor will not represent a Contribution as his own original work. This commitment is a binding obligation of the Licensor and survives termination. It does not entitle You to compensation, to co-ownership, to a right of approval over how the Contribution is used or modified, or to any right in the Software as a whole.</p>
+<h3 id="s-5.7" class="clause"><span class="idx" aria-hidden="true">5.7</span><span class="ht">No obligation to accept.</span><a class="anchor" href="#s-5.7" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor is under no obligation to review, accept, merge, retain, or continue to use any Contribution, and may remove or replace a Contribution at any time for any reason. Where a Contribution is removed entirely, the Licensor will remove the corresponding credit on request.</p>
+<h3 id="s-5.8" class="clause"><span class="idx" aria-hidden="true">5.8</span><span class="ht">No relationship created.</span><a class="anchor" href="#s-5.8" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Submitting a Contribution creates no employment, agency, partnership, joint venture, or fiduciary relationship, and confers no right to remuneration.</p>
+<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">TRADEMARKS AND BRAND</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">This License grants no trademark rights, express or implied.</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub"><a class="xref" href="#s-4.10">Section&nbsp;4.10</a> applies in full.</p>
+<h3 id="s-6.2" class="clause"><span class="idx" aria-hidden="true">6.2</span><span class="ht">Nominative fair use is not restricted.</span><a class="anchor" href="#s-6.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You may truthfully refer to the Software by name -- for example, to say that You reported a bug in Dior's Builds, to cite it in an article, or to describe a Contribution You made -- provided You do not thereby suggest endorsement, affiliation, or sponsorship.</p>
+<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">THIRD-PARTY MATERIALS</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-7.1" class="clause"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Dependencies.</span><a class="anchor" href="#s-7.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Software depends on third-party packages that are not owned by the Licensor and are licensed to You by their own respective licensors under their own terms, not under this License. Those terms govern those packages, and nothing in this License purports to restrict, enlarge, or otherwise vary any right You have in them.</p>
+<p class="sub">**The NOTICE file at the repository root is incorporated into this License by reference** and identifies each direct dependency, its version, its license, and its copyright holder, together with the trademark acknowledgements in <a class="xref" href="#s-7.2">Section&nbsp;7.2</a> and the authorship disclosure referenced in <a class="xref" href="#s-8a">Section&nbsp;8A</a>. Read it. Authoritative per-package license text lives in each package's own distribution under node_modules/.</p>
+<p class="sub">Certain components -- currently discord.js and xlsx -- are licensed under the Apache License 2.0, which imposes attribution and NOTICE-reproduction obligations on anyone who redistributes them. Those obligations attach to those components independently of this License and are not waived, narrowed, or satisfied by anything the Licensor permits or prohibits here. See NOTICE <a class="xref" href="#s-2">Section&nbsp;2</a>.</p>
+<h3 id="s-7.2" class="clause"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Game content.</span><a class="anchor" href="#s-7.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Call of Duty and Call of Duty: Mobile are trademarks of Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi Studio Group and published by Activision. The Software is an unofficial, non-commercial fan project. It is not developed, published, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, or any of their affiliates.</p>
+<h3 id="s-7.3" class="clause"><span class="idx" aria-hidden="true">7.3</span><span class="ht">No grant in third-party material.</span><a class="anchor" href="#s-7.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Weapon names, attachment names, item names, in-game imagery, screenshots, logos, and other game content referenced or displayed by the Software remain the property of their respective owners. The Licensor claims no ownership of that material and grants You no rights in it. This License extends only to the Licensor's own original expression -- the code, the structure and arrangement of the Curated Data, the descriptive text, and the Brand Assets.</p>
+<h3 id="s-7.4" class="clause"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Platform services.</span><a class="anchor" href="#s-7.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Software interoperates with services operated by third parties, including Discord Inc., GitHub Inc., MongoDB Inc., Cloudinary Ltd., and Google LLC. Your use of those services is governed by their terms, not by this License.</p>
+<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">RESERVATION AND OWNERSHIP</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-8.1" class="clause"><span class="idx" aria-hidden="true">8.1</span><span class="ht"></span><a class="anchor" href="#s-8.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor retains all right, title, and interest in and to the Software, the Curated Data, and the Brand Assets, including all intellectual property rights in them, subject only to <a class="xref" href="#s-7">Section&nbsp;7</a>.</p>
+<h3 id="s-8.2" class="clause"><span class="idx" aria-hidden="true">8.2</span><span class="ht"></span><a class="anchor" href="#s-8.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The publication of the Software does not place it in the public domain. Public availability and public licensing are distinct; the former has occurred, the latter has not.</p>
+<h3 id="s-8.3" class="clause"><span class="idx" aria-hidden="true">8.3</span><span class="ht"></span><a class="anchor" href="#s-8.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor may at any time, in his sole discretion and without notice, change the license under which future versions of the Software are made available, cease publishing the source code, make the repository private, or discontinue the Official Service. Doing so does not retroactively withdraw the rights You held in a version You lawfully obtained before the change, except on termination under <a class="xref" href="#s-9">Section&nbsp;9</a>.</p>
+<h2 id="s-8a" class="numbered"><span class="idx" aria-hidden="true">8A</span><span class="ht">AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span><a class="anchor" href="#s-8a" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-8a.1" class="clause"><span class="idx" aria-hidden="true">8A.1</span><span class="ht">AI assistance disclosed.</span><a class="anchor" href="#s-8a.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Portions of the Software, its documentation, and this License were authored with the assistance of AI tools, principally Claude (Anthropic PBC), used as a drafting and implementation instrument under the continuous direction of the human author. Full disclosure: NOTICE <a class="xref" href="#s-6">Section&nbsp;6</a>.</p>
+<h3 id="s-8a.2" class="clause"><span class="idx" aria-hidden="true">8A.2</span><span class="ht">Human authorship asserted.</span><a class="anchor" href="#s-8a.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor states affirmatively that a human author conceived the Software and its features; specified its requirements and behavior; directed, reviewed, selected, rejected, corrected, and revised all generated output; determined the architecture, structure, sequence, and organization of the codebase; and personally researched, selected, verified, arranged, and curated the Curated Data. The creative choices giving the Software its expressive character are human choices, and copyright subsists in the Software accordingly.</p>
+<h3 id="s-8a.3" class="clause"><span class="idx" aria-hidden="true">8A.3</span><span class="ht">No admission or waiver.</span><a class="anchor" href="#s-8a.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub"><a class="xref" href="#s-8a.1">Section&nbsp;8A.1</a> is made in the interest of candor. It is not an admission that any part of the Software lacks copyright protection, not a waiver of any right, and not to be construed against the Licensor. No inference adverse to the subsistence, ownership, scope, or enforceability of the Licensor's rights may be drawn from it.</p>
+<h3 id="s-8a.4" class="clause"><span class="idx" aria-hidden="true">8A.4</span><span class="ht">Database and compilation rights.</span><a class="anchor" href="#s-8a.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Independently of copyright in the code, the Licensor asserts rights in the Curated Data as a compilation arising from the selection, verification, arrangement, and presentation of its contents -- including, where applicable, the sui generis database right under Directive 96/9/EC and its national implementations, and equivalent protection under the Copyright Act (Canada) and 17 U.S.C. Section 101. <a class="xref" href="#s-4.6">Section&nbsp;4.6</a> applies to the Curated Data whether or not copyright subsists in any individual fact within it. Facts themselves are not owned; their selection and arrangement are.</p>
+<h3 id="s-8a.5" class="clause"><span class="idx" aria-hidden="true">8A.5</span><span class="ht">Independent development.</span><a class="anchor" href="#s-8a.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor may develop, acquire, commission, or operate software, features, data, or services similar or identical to anything You suggest, contribute, or build, without obligation to You. Nothing in this License restricts the Licensor's own activities, and submitting a Contribution or an idea grants You no rights in what the Licensor later creates.</p>
+<h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">TERM AND TERMINATION</span><a class="anchor" href="#s-9" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-9.1" class="clause"><span class="idx" aria-hidden="true">9.1</span><span class="ht">Term.</span><a class="anchor" href="#s-9.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License takes effect when You first access, download, copy, or use the Software, and continues until terminated.</p>
+<h3 id="s-9.2" class="clause"><span class="idx" aria-hidden="true">9.2</span><span class="ht">Automatic termination on breach.</span><a class="anchor" href="#s-9.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License and every right granted by it terminate automatically and immediately, without notice and without any act by the Licensor, upon Your breach of any term. Continued use after termination is copyright infringement and, where applicable, breach of contract.</p>
+<h3 id="s-9.3" class="clause"><span class="idx" aria-hidden="true">9.3</span><span class="ht">Reinstatement.</span><a class="anchor" href="#s-9.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">If Your breach was inadvertent and is the first breach the Licensor has notified to You, Your rights are reinstated automatically if You cure the breach within thirty (30) days of the notice. Otherwise, reinstatement is at the Licensor's sole discretion, in writing.</p>
+<h3 id="s-9.4" class="clause"><span class="idx" aria-hidden="true">9.4</span><span class="ht">Termination for convenience.</span><a class="anchor" href="#s-9.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor may terminate this License as to You at any time, for any reason or no reason, by written notice.</p>
+<h3 id="s-9.5" class="clause"><span class="idx" aria-hidden="true">9.5</span><span class="ht">Effect of termination.</span><a class="anchor" href="#s-9.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">On termination You must immediately cease all use of the Software, permanently delete all copies and Modifications in Your possession or control, delete any GitHub fork of the repository, and confirm in writing on request that You have done so.</p>
+<h3 id="s-9.6" class="clause"><span class="idx" aria-hidden="true">9.6</span><span class="ht">Survival.</span><a class="anchor" href="#s-9.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Sections 1, 3.1, 3.2, 4.4, 4.5, 4.6, 4.7, 4.10, 5, 6, 7, 8, 8A, 9.5, 9.6, 10, 11, 12, 13, and 14 survive termination.</p>
+<h3 id="s-9.7" class="clause"><span class="idx" aria-hidden="true">9.7</span><span class="ht">Remedies.</span><a class="anchor" href="#s-9.7" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You acknowledge that a breach of Sections 4.1, 4.2, 4.5, 4.6, 4.7, or 4.10 would cause the Licensor harm that monetary damages alone could not adequately remedy, and that the Licensor is entitled to seek injunctive or other equitable relief without the necessity of posting a bond, in addition to any other remedy available at law. The Licensor's failure to enforce any provision on any occasion is not a waiver of that or any other provision on any other occasion.</p>
+<h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">NO WARRANTY</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
+<p class="shout">THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY, CONDITION, REPRESENTATION, OR TERM OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR EXPRESSLY DISCLAIMS ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</p>
+<p class="shout">THE LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF HARMFUL COMPONENTS, THAT DEFECTS WILL BE CORRECTED, THAT ANY DATA IT PRODUCES OR STORES IS ACCURATE, CURRENT, OR COMPLETE, OR THAT IT WILL MEET YOUR REQUIREMENTS. GAME DATA CHANGES FREQUENTLY AND MAY BE WRONG OR OUT OF DATE AT ANY TIME.</p>
+<p class="shout">NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED FROM THE LICENSOR CREATES ANY WARRANTY NOT EXPRESSLY STATED HERE.</p>
+<p>Some jurisdictions do not allow the exclusion of certain warranties. To the extent an exclusion above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-10">Section&nbsp;10</a> continues in effect.</p>
+<h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">LIMITATION OF LIABILITY</span><a class="anchor" href="#s-11" aria-label="Link to this section">¶</a></h2>
+<p class="shout">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL THE LICENSOR BE LIABLE, WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY, FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, OR ANTICIPATED SAVINGS, OR FOR BUSINESS INTERRUPTION OR COST OF SUBSTITUTE SERVICES, ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</p>
+<p class="shout">THE LICENSOR'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE WILL NOT EXCEED THE GREATER OF (A) THE TOTAL AMOUNT YOU PAID THE LICENSOR FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</p>
+<p>Some jurisdictions do not allow the limitation or exclusion of liability for death or personal injury caused by negligence, for fraud or fraudulent misrepresentation, or for certain other liabilities. Nothing in this License limits any liability that cannot lawfully be limited. To the extent a limitation above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-11">Section&nbsp;11</a> continues in effect.</p>
+<h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">INDEMNITY</span><a class="anchor" href="#s-12" aria-label="Link to this section">¶</a></h2>
+<p>You will defend, indemnify, and hold harmless the Licensor from and against any claim, demand, proceeding, loss, liability, damage, penalty, cost, and expense (including reasonable legal fees) arising out of or relating to: (a) Your use of the Software; (b) Your breach of this License; (c) Your violation of any law or of any third party's rights; or (d) any Contribution You submit, including any claim that it infringes a third party's rights.</p>
+<h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">GOVERNING LAW AND DISPUTE RESOLUTION</span><a class="anchor" href="#s-13" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-13.1" class="clause"><span class="idx" aria-hidden="true">13.1</span><span class="ht">Governing law.</span><a class="anchor" href="#s-13.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License is governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable in that province, without regard to any conflict-of-laws rule that would apply the law of another jurisdiction.</p>
+<h3 id="s-13.2" class="clause"><span class="idx" aria-hidden="true">13.2</span><span class="ht">Exclusion of the CISG and UCITA.</span><a class="anchor" href="#s-13.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The United Nations Convention on Contracts for the International Sale of Goods and the Uniform Computer Information Transactions Act do not apply to this License.</p>
+<h3 id="s-13.3" class="clause"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Venue.</span><a class="anchor" href="#s-13.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The courts of the Province of Ontario, sitting in Toronto, have exclusive jurisdiction over any dispute arising out of or relating to this License, and You irrevocably attorn to that jurisdiction and waive any objection based on venue or forum non conveniens.</p>
+<h3 id="s-13.4" class="clause"><span class="idx" aria-hidden="true">13.4</span><span class="ht">Mandatory local law preserved.</span><a class="anchor" href="#s-13.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">If You are a consumer resident in a jurisdiction whose law grants You rights that cannot be excluded by agreement, Sections 13.1 and 13.3 do not deprive You of the protection of those mandatory rules or of the right to bring proceedings in the courts of Your place of residence where that right cannot lawfully be excluded.</p>
+<h3 id="s-13.5" class="clause"><span class="idx" aria-hidden="true">13.5</span><span class="ht">Injunctive relief anywhere.</span><a class="anchor" href="#s-13.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Notwithstanding <a class="xref" href="#s-13.3">Section&nbsp;13.3</a>, the Licensor may seek injunctive or other equitable relief to protect his intellectual property in any court of competent jurisdiction.</p>
+<h3 id="s-13.6" class="clause"><span class="idx" aria-hidden="true">13.6</span><span class="ht">Limitation period.</span><a class="anchor" href="#s-13.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Any claim You bring arising out of or relating to this License must be commenced within one (1) year after the claim arose, except where a longer period is required by law.</p>
+<h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">GENERAL</span><a class="anchor" href="#s-14" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-14.1" class="clause"><span class="idx" aria-hidden="true">14.1</span><span class="ht">Entire agreement.</span><a class="anchor" href="#s-14.1" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License, together with any written permission granted under <a class="xref" href="#s-17">Section&nbsp;17</a>, is the entire agreement between You and the Licensor concerning the Software, and supersedes all prior or contemporaneous understandings, communications, and representations, including anything stated in the repository's README, documentation, package metadata, or issue tracker. In the event of any conflict between this License and any other file in the repository, this License governs.</p>
+<h3 id="s-14.2" class="clause"><span class="idx" aria-hidden="true">14.2</span><span class="ht">Amendment.</span><a class="anchor" href="#s-14.2" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor may issue new versions of this License. A new version applies only to versions of the Software distributed under it; it does not retroactively change the terms on which You obtained an earlier version. This License may not be varied by You except by a writing signed by the Licensor.</p>
+<h3 id="s-14.3" class="clause"><span class="idx" aria-hidden="true">14.3</span><span class="ht">Severability.</span><a class="anchor" href="#s-14.3" aria-label="Link to this section">¶</a></h3>
+<p class="sub">If any provision is held invalid, illegal, or unenforceable, it will be modified to the minimum extent necessary to make it valid, legal, and enforceable while preserving its intent as closely as possible, or if that is not possible, severed. The remaining provisions continue in full force.</p>
+<h3 id="s-14.4" class="clause"><span class="idx" aria-hidden="true">14.4</span><span class="ht">No waiver.</span><a class="anchor" href="#s-14.4" aria-label="Link to this section">¶</a></h3>
+<p class="sub">No failure or delay in exercising any right operates as a waiver. No single or partial exercise precludes any further exercise. A waiver is effective only if in writing and signed by the Licensor.</p>
+<h3 id="s-14.5" class="clause"><span class="idx" aria-hidden="true">14.5</span><span class="ht">Independent construction.</span><a class="anchor" href="#s-14.5" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License will not be construed against the Licensor as its drafter.</p>
+<h3 id="s-14.6" class="clause"><span class="idx" aria-hidden="true">14.6</span><span class="ht">Headings and summary.</span><a class="anchor" href="#s-14.6" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Headings are for convenience only. The Plain-English Summary above is not part of this License and has no legal effect.</p>
+<h3 id="s-14.7" class="clause"><span class="idx" aria-hidden="true">14.7</span><span class="ht">Notices.</span><a class="anchor" href="#s-14.7" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Notices to the Licensor must be sent to the address in <a class="xref" href="#s-17">Section&nbsp;17</a>. Notices to You may be sent to any email address, GitHub account, or Discord account You have used to contact the Licensor or to access the Software, and are deemed received on the day sent.</p>
+<h3 id="s-14.8" class="clause"><span class="idx" aria-hidden="true">14.8</span><span class="ht">Language.</span><a class="anchor" href="#s-14.8" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License is drafted in English. Any translation is for convenience only, and the English version governs.</p>
+<h3 id="s-14.9" class="clause"><span class="idx" aria-hidden="true">14.9</span><span class="ht">Relationship to platform terms.</span><a class="anchor" href="#s-14.9" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License operates alongside, and does not purport to override, the terms of service of Discord Inc. and GitHub Inc. Where a platform's terms grant a right that this License would otherwise prohibit, that right prevails to the extent of the conflict and only to that extent, and the remainder of this License continues to apply. <a class="xref" href="#s-4.2">Section&nbsp;4.2</a>'s forking exception reflects this principle.</p>
+<h3 id="s-14.10" class="clause"><span class="idx" aria-hidden="true">14.10</span><span class="ht">Acceptance.</span><a class="anchor" href="#s-14.10" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You accept this License, and it becomes a binding agreement between You and the Licensor, upon ANY of the following, each of which is a separate and independent act of acceptance:</p>
+<ul class="lettered"><li>(a) accessing, viewing, or reading the Software's source code;</li><li>(b) downloading, cloning, forking, or copying the Software, in whole or in part, by any means;</li><li>(c) compiling, installing, executing, or running the Software or any Modification;</li><li>(d) creating a Modification;</li><li>(e) submitting a Contribution; or</li><li>(f) continuing any of the above after a new version of this License applies to a version of the Software You obtain.</li></ul>
+<p class="sub">Accepting once binds You for all subsequent use. If You do not accept this License, You have no rights whatsoever in the Software and must not do any of the things listed above.</p>
+<h3 id="s-14.11" class="clause"><span class="idx" aria-hidden="true">14.11</span><span class="ht">Notice and opportunity to read.</span><a class="anchor" href="#s-14.11" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License is published in full at the root of the repository, under the filename LICENSE, which is the conventional and expected location; GitHub additionally surfaces it in the repository interface. You acknowledge that You have been given a reasonable opportunity to read it before acting, and that choosing not to read terms You were able to read does not prevent them binding You.</p>
+<h3 id="s-14.12" class="clause"><span class="idx" aria-hidden="true">14.12</span><span class="ht">Electronic agreement.</span><a class="anchor" href="#s-14.12" aria-label="Link to this section">¶</a></h3>
+<p class="sub">You consent to contract electronically. This License satisfies any requirement that an agreement be in writing, and Your acceptance under <a class="xref" href="#s-14.10">Section&nbsp;14.10</a> has the same legal effect as a handwritten signature under Ontario's Electronic Commerce Act, 2000 and equivalent legislation elsewhere.</p>
+<h3 id="s-14.13" class="clause"><span class="idx" aria-hidden="true">14.13</span><span class="ht"></span><a class="anchor" href="#s-14.13" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Interpretation. "Including" and "such as" mean "including without limitation" and are never words of limitation. The singular includes the plural and vice versa. "Or" is inclusive. A reference to a statute includes its amendments and successors. Examples illustrate and do not confine the general words they follow. Where a prohibition could be read narrowly or broadly, and the narrow reading would defeat the evident purpose of <a class="xref" href="#s-4">Section&nbsp;4</a>, the broader reading applies.</p>
+<h3 id="s-14.14" class="clause"><span class="idx" aria-hidden="true">14.14</span><span class="ht">No third-party beneficiaries.</span><a class="anchor" href="#s-14.14" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License confers no right or remedy on any person other than You and the Licensor, except that <a class="xref" href="#s-7">Section&nbsp;7</a>'s third-party licensors and rights holders may enforce their own rights under their own terms.</p>
+<h3 id="s-14.15" class="clause"><span class="idx" aria-hidden="true">14.15</span><span class="ht">Assignment by the Licensor.</span><a class="anchor" href="#s-14.15" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor may assign, novate, or transfer this License and any right under it, in whole or in part, freely and without Your consent, including to a successor in connection with a transfer of the Software. <a class="xref" href="#s-4.3">Section&nbsp;4.3</a> restricts only You.</p>
+<h3 id="s-14.16" class="clause"><span class="idx" aria-hidden="true">14.16</span><span class="ht">No support obligation.</span><a class="anchor" href="#s-14.16" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor has no obligation to provide support, maintenance, updates, bug fixes, security patches, or any assistance whatsoever, and no obligation to continue publishing, developing, or operating the Software. Providing any of these on any occasion creates no obligation to continue, and no course of dealing or course of performance may be construed as creating one.</p>
+<h3 id="s-14.17" class="clause"><span class="idx" aria-hidden="true">14.17</span><span class="ht">Force majeure.</span><a class="anchor" href="#s-14.17" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor is not liable for any failure or delay caused by events beyond his reasonable control, including acts of God, natural disaster, war, terrorism, civil unrest, epidemic or pandemic, strike, government action, change of law, power or network failure, or any act, omission, outage, policy change, suspension, or termination by Discord, GitHub, Google, MongoDB, Cloudinary, Activision, or any other third party.</p>
+<h3 id="s-14.18" class="clause"><span class="idx" aria-hidden="true">14.18</span><span class="ht">Not a sale.</span><a class="anchor" href="#s-14.18" aria-label="Link to this section">¶</a></h3>
+<p class="sub">This License is a grant of limited permission, not a sale. No exhaustion, first-sale, or equivalent doctrine applies to it, and no right is transferred to You beyond the express permissions in <a class="xref" href="#s-2">Section&nbsp;2</a>.</p>
+<h3 id="s-14.19" class="clause"><span class="idx" aria-hidden="true">14.19</span><span class="ht">Cumulative remedies.</span><a class="anchor" href="#s-14.19" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Licensor's rights and remedies under this License are cumulative and in addition to, and not in substitution for, any right or remedy available at law or in equity.</p>
+<h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">FILE-LEVEL NOTICE</span><a class="anchor" href="#s-15" aria-label="Link to this section">¶</a></h2>
+<p>The following notice may be applied to individual source files:</p>
+<p class="sub">Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved. Licensed under the Dior's Builds Source-Available License v1.0. Source-available, not open source. No deployment, no redistribution. See the LICENSE file at the repository root for full terms.</p>
+<h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">SPDX IDENTIFIER</span><a class="anchor" href="#s-16" aria-label="Link to this section">¶</a></h2>
+<p>This is a custom license with no OSI-approved SPDX short identifier. Refer to it in machine-readable metadata as:</p>
+<pre class="block">LicenseRef-Diors-Builds-Source-Available-1.0</pre>
+<h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">CONTACT AND PERMISSIONS</span><a class="anchor" href="#s-17" aria-label="Link to this section">¶</a></h2>
+<p>Requests for permission beyond the scope of this License, security reports under <a class="xref" href="#s-4.11">Section&nbsp;4.11</a>, licensing enquiries, and notices under <a class="xref" href="#s-14.7">Section&nbsp;14.7</a> should be sent to:</p>
+<pre class="block">Harkirat Mangat ("dior", "diorswrld")
+<a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
+<a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a></pre>
+<p>Permission outside this License is effective only if granted by the Licensor in writing and signed or sent from the address above. Silence, inaction, or a response from any other channel is not permission.</p>
+<p>The Licensor is generally willing to grant additional permission for genuine research, education, accessibility, and archival purposes. Ask.</p>
+    </main>
+  </div>
+
+  <footer class="foot">
+    <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
+    <!-- PAGES already contains Notice, so the hand-added ../NOTICE link that used
+         to sit here produced two "Notice" entries side by side. The email is gone
+         too: it belongs on the landing page and in the Privacy Policy, and
+         repeating it in every page footer is just noise. -->
+    <p><a href="./terms.html">Terms</a> · <a href="./privacy.html">Privacy</a> · <a href="./license.html">License</a> · <a href="./notice.html">Notice</a>
+      · <a href="./contributing.html">Contributing</a> · <a href="./contributors.html">Contributors</a></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var prog=document.getElementById('prog');
+  var slots=[].slice.call(document.querySelectorAll('.slot'));
+  var heads=slots.map(function(a){return document.getElementById(a.getAttribute('href').slice(1))});
+  var queued=false;
+  function paint(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?h.scrollTop/max*100:0)+'%';
+    var cur=-1, y=h.scrollTop+130;
+    for(var i=0;i<heads.length;i++){ if(heads[i]&&heads[i].offsetTop<=y) cur=i; }
+    for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
+    // Mirror the tracked section into the mobile opener. On desktop the rail
+    // shows position by itself; on mobile the list is collapsed, so without this
+    // there is no positional cue anywhere on a 22-section document.
+    var curEl=document.getElementById('railcur');
+    if(curEl){
+      var t=cur>=0?slots[cur].querySelector('span'):null;
+      curEl.textContent=t?t.textContent:'';
+    }
+    queued=false;
+  }
+  addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
+  addEventListener('resize',paint); paint();
+
+  var rail=document.getElementById('rail'), rbtn=document.getElementById('railbtn');
+  rbtn.addEventListener('click',function(){
+    var open=rail.classList.toggle('open');
+    rbtn.setAttribute('aria-expanded', open?'true':'false');
+  });
+  slots.forEach(function(a){ a.addEventListener('click',function(){
+    rail.classList.remove('open'); rbtn.setAttribute('aria-expanded','false');
+  }); });
+
+})();
+
+(function(){
+  var d=document.documentElement, btn=document.getElementById('th');
+  function resolved(){
+    return d.getAttribute('data-theme') ||
+      (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  }
+  function sync(){ if(btn) btn.setAttribute('aria-checked', resolved()==='light'?'true':'false'); }
+  // Theme choice is per-browser and deliberately never sent anywhere.
+  try{ var s=localStorage.getItem('db-theme'); if(s) d.setAttribute('data-theme',s); }catch(e){}
+  sync();
+  if(btn) btn.addEventListener('click',function(){
+    var next=resolved()==='dark'?'light':'dark';
+    d.setAttribute('data-theme',next);
+    try{ localStorage.setItem('db-theme',next); }catch(e){}
+    sync();
+  });
+})();
+</script>
+</body>
+</html>

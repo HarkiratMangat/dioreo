@@ -93,6 +93,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19
 - 2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold
 - 2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable
+- 2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3135,6 +3136,67 @@ Harkirat corrected me twice on the notes file, and both were the same species of
 Three false alarms this session are worth naming together, because they nearly cost more than the real bugs: tables "overflowing" (they scroll inside their own container by design), the page "scrolling horizontally" (a transient artefact of `scrollIntoView`), and the whole site "returning empty" (my checksum command was missing `-L`, so Cloudflare's 308 to the extensionless URL returned zero bytes and every file "differed"). Each looked like a defect and each would have produced a confident wrong report. The habit that saved all three was refusing to report until I could explain the mechanism — and the same habit is what surfaced the seven links that *were* real.
 
 The lesson: "the output is complete" and "the output is correct" are different claims, and a verifier that proves the first will happily let you believe you've proven the second.
+
+*(Postscript: the `scripts/` rules note this release should have carried couldn't be folded into #56's squash after the fact — that would need a force-push, which this project doesn't do — so it shipped one release later, additively, as **v2.43.2** (#57). Recorded here so that release is findable by number.)*
+
+---
+
+## 2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache
+*(v2.44.0, #58. Continuation of a session that had already been killed twice by usage limits, resumed
+from a handoff summary.)*
+
+Two things happened here that are the same mistake wearing different clothes: **a check that passed
+without checking, and a comment that asserted a fix that had never worked.** Both survived because
+something *looked* green.
+
+**The rail.** The handoff said `align-self:start` had fixed the sticky section rail from sliding over the
+footer, applied blind because the preview pane had only ever rendered the mobile layout. It hadn't fixed
+anything. A sticky element is bounded by its **containing block**, not by its own height — so making the
+rail's box shorter changed nothing at all. At 1440×900, scrolled to the bottom of Terms, it ran 236px
+past the end of the document and 126px into the footer. The actual cause: `.page` was a grid with
+**three** children — rail, document, *and footer* — so the footer sat inside the very block that
+bounded the rail's travel. The CSS comment next to it confidently explained the wrong mechanism, which
+is exactly why the bug survived a fix; I kept the comment and rewrote it to say so.
+
+Two process notes from that hunt, both cheap and both nearly missed. My first overlap test returned a
+clean pass **because nothing had scrolled** — `scroll-behavior: smooth` was swallowing the programmatic
+jump, and `scrollY` read 0 on all three probes with identical numbers. Identical numbers across three
+different scroll positions is the tell, and I almost read it as a pass. Second: I tested the candidate
+fix in the live DOM before editing the generator, which caught that the naive version (footer as a
+`<body>` child) stretched the footer to the full 1440px viewport instead of the 1156px document column.
+That's a two-call experiment that prevented shipping a second wrong fix.
+
+**The site was down and the checker said it was healthy.** Harkirat opened the bare domain and got a
+404. Everything else looked fine — until the deployment aliases showed that two consecutive Cloudflare
+deployments had published **zero files**, including `/LICENSE`. Production pointed at the newest one. The
+reason `/legal/*` still answered 200 was Cloudflare's cache (`cf-cache-status: HIT`, `age: 6525`), so
+`dior legal check` was byte-comparing **stale cached bytes** against the local build and reporting OK.
+The root was the only URL that could expose it, precisely because a redirect can't be cached — and the
+checker never looked at the root. *A checker blind to the one URL a human actually types is not checking
+the site.* It looks at `/` now, and both the root assertion and the widened retry were proven able to
+fail before I trusted them (pointed at the empty deployment: 10 failures, not 9).
+
+The other half of that: Cloudflare's edge propagation presents as a **404**, not merely as drift, for up
+to ~60 seconds. The existing retry only fired when the response was *already* 200, so it structurally
+could not see the case it most needed to — and it told the reader to redeploy a site that was fine. I
+spent two rounds distinguishing propagation lag from a real outage before touching anything, which was
+the right order: the first read of that same evidence would have been "two more files are broken."
+
+**The verifier was lying in the other direction too.** Three `verify()` misses turned out to be one real
+mechanism I'd never considered: an undecoded HTML entity doesn't vanish under a `[^a-z0-9]` reduction —
+it becomes a **word**. `&middot;` → `"middot"`, `&#9825;` → `"9825"`, sitting inside an otherwise-intact
+source run and splitting it. What made that safe to fix rather than a hole to punch: an entity resolves
+to exactly one character, so decoding can only ever *remove* a fabricated word, never supply a source
+word the page doesn't render. Sensitivity is unchanged — and I re-proved it rather than asserting it.
+The other two misses were real content problems, both mine, and the fix in both cases was the same
+principle the ledger glyphs had already established: **decorative text belongs in CSS, not the DOM.**
+The tempting alternative — teach `verify()` to skip `aria-hidden` text — would have opened a hole big
+enough to hide real content loss in.
+
+**What I did not do.** Harkirat reviewed the live site, found "many bugs," and went to sleep before
+listing them. I filed the item with an explicit warning that the list in it is *mine*, not his, and that
+the next session's first action is to ask. Writing a plausible list from my side and letting it stand in
+for his observations would have been the most useful-looking wrong thing available.
 
 ---
 

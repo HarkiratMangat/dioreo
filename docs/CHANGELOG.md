@@ -181,7 +181,70 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.43.2 — 2026-07-29 19:20 EDT (#57) — The rule note the merge gate asked for, and the lessons behind it
+## v2.44.0 — 2026-07-30 00:40 EDT (#58) — Two pages that stopped reading like a Markdown dump, and a sticky rail that was never actually fixed
+**The legal site's two warm pages get real structure, and a fifth build gate to keep it.** No bot code
+changed; nothing here touches the VM.
+
+- **`contributing` and `contributors` were "basic / lazy designed"** — prose in a rounded box, which is
+  the right treatment for a statute and the wrong one for an invitation. Each now gets structure derived
+  from what its content actually **is**, via a new composition layer (`warmCompose()`):
+  - **contributing is a path**, so its sections hang off a **spine** — with no numerals, because the
+    `01/02/03` series belongs to the legal set and means *"this binds you."* Inside it: the four ways to
+    contribute are **parallel**, not sequential, so they became option **tiles**; the CLA is genuinely
+    two-sided, so it became a **ledger** marked by direction (what leaves your hands vs what stays);
+    and the one line a contributor must physically take away became a **consent slip** with a tear edge
+    and a copy button.
+  - **contributors is a wall.** No spine — it has three sections and the truth of the page is *one
+    filled plate beside empty space.* The "no external contributions yet" line stopped being an italic
+    apology and became the **empty plate itself**: the invitation IS the object.
+- **New GATE 5, `warmStructAudit()`.** The treatments key off source heading text, so renaming a heading
+  in `CONTRIBUTING.md` would silently revert a section to plain prose — and **none of the existing four
+  gates can see it**: every word is still present (gate 1), no link changes (gate 2), no aligned columns
+  (gate 3), no cross-references (gate 4). Different property, so a different gate. `WARM_STRUCT` is
+  **declared** rather than sniffed from the source, so the check cannot draw its expectations from the
+  thing it is testing.
+- **`verify()` was reporting three false misses, and the mechanism was an undecoded HTML entity becoming
+  a WORD.** `&middot;` reduced to the literal token `"middot"` and `&#9825;` to `"9825"`, which then sat
+  *inside* an otherwise-intact source run and broke it — 12 entities across 7 pages. It now decodes
+  numeric, hex and named entities. This cannot hide real content loss, which is the only reason it is
+  safe: an entity resolves to exactly one character, so decoding can only ever *remove* a fabricated
+  word, never supply a source word the page does not render. **Re-proved the gate can still fail** after
+  the change (deleting a real paragraph took contributors from 1 → 5 missing runs).
+- **Two of the three misses were real, and both were mine.** The ghost plate's `Your name` label was
+  invented text sitting between a heading and the source's own sentence — it moved to CSS, the same test
+  the ledger's direction marks had to pass. And the lifted sign-off was rendering **below the footer
+  nav**, so five link labels sat inside a source run; a reader met the nav mid-sentence too. A letter
+  signs off before the site's footer, not after it.
+- **The desktop rail was NOT fixed, and had been documented as fixed.** `align-self:start` was recorded
+  as "what keeps this out of the footer." It does not: a sticky element is bounded by its **containing
+  block**, not by its own height, so shrinking the box changed nothing. Measured at 1440×900, scrolled to
+  the bottom of Terms, the rail ran **236px past the document and 126px into the footer.** The cause was
+  that `.page` was a grid holding **three** children — rail, doc **and footer** — so the footer lived
+  inside the very block that bounded the rail. Fixed structurally: `.page` is now only the centred
+  wrapper, a new `.cols` carries the two-column grid, and the footer sits in `.page` outside `.cols`.
+  The naive version of that fix (footer as a `<body>` child) was tried first and rejected because it
+  stretched the footer to the full 1440px viewport instead of the 1156px document column. Both halves
+  were verified in a real browser at the scrolled-to-bottom position, which is the only place the bug is
+  visible at all.
+- **`dior legal check` was blind to the one URL a human types.** It checked every uploaded file and never
+  checked `/`. That is not hypothetical: two Cloudflare deployments published **zero files**, production
+  pointed at the newest, and every `/legal/*` path still answered 200 **from cache** (`age: 6525`) — so
+  the byte comparison passed on stale bytes while the site was down. The bare domain, uncacheable because
+  it is a redirect, was the only thing that exposed it, and that is how it got reported. The root is now
+  asserted (expects a 3xx that lands on 200), and the retry that absorbs Cloudflare's edge lag now covers
+  **non-200 responses**, not only hash mismatches — propagation presents as a **404** for up to ~60s, and
+  the old retry only fired when the code was already 200, so it reported the landing page DOWN and told
+  the reader to redeploy a site that was fine. Both new checks were proven to fail before being trusted.
+- The backtick-in-a-CSS-comment trap bit **twice more** while writing this change's own comments. `node
+  --check` caught both, which is precisely why that step is in the rules.
+- **Outstanding: Harkirat reviewed the live site and found bugs I have not seen**, and went to sleep
+  before listing them. Filed as `[P1 · M]` at the top of `docs/db-deferred-list.md`'s 🐞 section, with an
+  explicit warning that the list there is *mine*, not his, and that the next session's first action is to
+  ask him what he actually saw.
+
+---
+
+## v2.43.2 — 2026-07-29 19:20 EDT (#57 · `ff74e8e`) — The rule note the merge gate asked for, and the lessons behind it
 **Docs only — no behaviour change.** Closes the chore-checklist gap the `gh pr merge` hook flagged on #56.
 
 - **`scripts/` changed in v2.43.1 with no accompanying rules note**, which the release-doc hook caught at

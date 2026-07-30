@@ -2,7 +2,7 @@
 
 Contributions are genuinely welcome — bug reports, security findings, fixes, and
 features. If your contribution ships, **you get credited by name in
-[`CONTRIBUTORS.md`](CONTRIBUTORS.md) and in the changelog entry for the release
+the [contributors list](CONTRIBUTORS.md) and in the changelog entry for the release
 it lands in.** That's a binding commitment, written into §5.6 of the
 [LICENSE](LICENSE), not just a nice intention.
 
@@ -197,4 +197,6 @@ require it.
 
 Open an issue, or email **harkirat117@gmail.com**.
 
-Thanks for being here. 🖤
+Thanks for being here — genuinely.
+
+♡ Made with love by **dior**

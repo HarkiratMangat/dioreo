@@ -52,8 +52,61 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-**None open right now.** The last confirmed bot bug (the `/manage` Edit-loadout timeout) was fixed in
-v2.20.0 — see `docs/archive/resolved-list.md`.
+- `[P1 · M · Opus5-H]` 🔗 **The legal site has outstanding bugs Harkirat has seen and I have not.**
+  *Filed 2026-07-30 00:35 EDT, at the end of the warm-page redesign session (v2.44.0), at his request:
+  "theres still many bugs with the site but lets put it on the deferred list for now."*
+
+  ⚠️ **READ THIS FIRST: the specific bug list does not exist yet.** Harkirat reviewed the live site and
+  found "many bugs"; he went to sleep before enumerating them, and I never saw them. **Nothing below is
+  his list** — it is everything *I* independently know to be unresolved or unverified. **The first action
+  of the session that picks this up is to ask him what he actually saw**, on which page, at which width,
+  in which theme. Do not assume the items below are the same bugs, and do not assume they are all of
+  them. Writing a plausible-looking list from my side and treating it as his would be the failure mode
+  this warning exists to prevent.
+
+  **What IS known, with evidence:**
+
+  1. **Two Cloudflare deployments published ZERO files, cause unexplained.** `2752b4fd` and `2a85d094`
+     (2026-07-30 ~00:08 EDT) return 404 for *every* path on their own alias URLs, including `/LICENSE`.
+     Production pointed at the newest, so the entire site was down; `/legal/*` only appeared healthy
+     because Cloudflare was serving cache (`cf-cache-status: HIT`, `age: 6525`). The bare domain, being
+     an uncacheable redirect, was the only URL that exposed it — which is how Harkirat found it.
+     Redeploying the identical command (`npx wrangler pages deploy public --project-name=… --branch main
+     --commit-dirty=true`) worked first time and uploaded 9 files + `_redirects`, so **the command is not
+     the bug.** Unresolved: *why* two consecutive deploys uploaded nothing. **If it recurs, capture
+     wrangler's full stdout/stderr** — I only have the deployment list as evidence, not the failing run's
+     output. Possible: a transient Cloudflare-side fault, or a deploy racing a concurrent rebuild of
+     `public/`. `_redirects` itself is fine and was proven working on both older deployments (`/` → 302).
+  2. **Edge propagation presents as 404, not just as drift, and it lasts up to ~60s.** Measured
+     2026-07-30 00:15 EDT: immediately after a successful deploy, `/legal/` and `/legal/privacy` returned
+     404 while the other seven files were already correct; all were 200 sixty seconds later with no
+     action. Already fixed in `dior legal check` (retry now covers non-200, not only hash mismatch) —
+     recorded here because **any future "the site is down" report within a minute of a deploy should be
+     re-checked before it is believed.**
+  3. **Harkirat has still not reviewed several design changes** — they shipped without his eyes on them:
+     the four-tab switcher, the moon/sun theme toggle with craters and clouds, the conic-ring invite
+     cards on the landing page, the light-mode retune, and the larger wordmark. Any of these could be
+     among the bugs he means.
+  4. **Only `terms` was measured at desktop width.** The rail/footer fix was verified on `/legal/terms`
+     at 1440×900 and 1100px. The other three legal pages share the template so they *should* behave
+     identically, but "should" is not "was measured" — and `license` (59.5 KB) and `notice` have
+     markedly different content shapes, including the space-aligned tables.
+  5. **Light mode was never checked at desktop width at all.** Every desktop measurement this session
+     was in dark mode. Geometry is theme-independent, so the rail fix holds, but colour, contrast, and
+     the glow/wash treatments were not looked at above 980px.
+  6. **The warm pages' new devices are structurally verified, not aesthetically reviewed.** The spine,
+     consent slip, CLA ledger, credit wall and promise cards were asserted to *exist and be wired*
+     (counts, data attributes, CSS-vs-DOM placement). Whether they *look* right is exactly what Harkirat
+     was reviewing when he found bugs.
+
+  **Useful context for whoever takes this:** the build has five self-checks and all five are green, which
+  proves content completeness, link resolution, column-block survival, cross-reference liveness and warm
+  structure — and **proves nothing about appearance or layout.** That gap is the entire subject of this
+  item. See `[[feedback_complete_is_not_correct]]`. Verification recipe, mechanism notes and the two
+  backtick traps: CLAUDE.md's `public/` section + `.claude/rules/scripts-and-migrations.md`.
+
+*(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in
+v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
 
 *(A security-hygiene item — two dead host credentials sitting in `.env` — was found and **fully resolved**
 2026-07-28 11:20 EDT. See `docs/archive/resolved-list.md`.)*
