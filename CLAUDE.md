@@ -307,7 +307,31 @@ nothing else republishes the site, and `dior legal check` compares live bytes ag
 - The build **verifies itself**: it re-reads its own output and asserts every multi-word run from the
   source survived rendering, then reports a percentage. It is not a "it didn't crash" check — treat
   anything below 100% as lost content, but confirm against the source before believing it, because
-  two of its early failures were verifier bugs (ordered-list markers and stop-words), not real loss.
+  several of its failures were verifier bugs, not real loss: ordered-list markers, stop-words, and
+  (2026-07-30 00:40 EDT) **an undecoded HTML entity becoming a WORD** — `&middot;` reduces to the token
+  `"middot"` and `&#9825;` to `"9825"`, which then sits *inside* an intact source run and splits it.
+  It now decodes numeric/hex/named entities; that is safe because an entity resolves to exactly one
+  character, so decoding can only *remove* a fabricated word, never supply a source word the page
+  doesn't render.
+- **There are FIVE gates now, not three.** `warmStructAudit()` (added 2026-07-30 00:40 EDT) asserts every
+  treatment each warm page **declares** in `WARM_STRUCT` actually fired. The warm treatments key off
+  source heading text, so renaming a heading in `CONTRIBUTING.md` would silently drop that section back
+  to plain prose — and **no other gate can see it**: all words still present, no links changed, no aligned
+  columns, no cross-references. `WARM_STRUCT` is declared rather than sniffed so the check can't draw its
+  expectations from the code under test.
+- **Decorative text belongs in CSS, never the DOM.** The ledger's direction marks and the ghost plate's
+  "Your name" label are drawn with CSS `content` on `aria-hidden` spans. Emitting them as HTML text put
+  invented characters between a section's heading and its first source sentence, breaking `verify()` runs.
+  The alternative — teaching `verify()` to ignore `aria-hidden` text — was rejected because it would hide
+  real content loss just as well. If a mark's meaning is already carried by adjacent prose, it is
+  reinforcement, and it goes in the stylesheet.
+- ⚠️ **`.page` is only the centred wrapper; `.cols` carries the two-column grid, and the footer sits in
+  `.page` OUTSIDE `.cols`. Do not fold these back together.** A sticky element is bounded by its
+  containing block, not its own height, so while the footer was a third child of the grid the section
+  rail was free to travel across it — measured at 1440×900 on Terms, 236px past the document and 126px
+  into the footer. `align-self:start` does **not** fix this and was wrongly documented as doing so for a
+  day. The footer must also stay *inside* `.page`, or it stretches to the full viewport width instead of
+  the document column.
 - It renders every `§N` cross-reference into a working anchor. That is why the parser only ever
   rewrites text nodes — touching markup would corrupt existing `href`s.
 

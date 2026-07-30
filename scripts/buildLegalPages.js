@@ -418,7 +418,11 @@ function parseBlocks(md) {
         if (buf.length) out.push(`<p>${inline(buf.join(' '))}</p>`);
     }
 
-    return { html: out.join('\n'), toc };
+    // `blocks` is the same content as `html`, un-joined. warmCompose() needs the
+    // top-level block boundaries to group sections, and it must NOT recover them by
+    // splitting `html` on newlines: fenced code blocks and blockquotes both contain
+    // embedded newlines, so that split would tear them apart mid-block.
+    return { html: out.join('\n'), toc, blocks: out };
 }
 
 /* ─────────────────── plain-text legal instruments (LICENSE) ─────────────── */
@@ -1227,16 +1231,24 @@ ${COMPONENT_CSS}
 }
 
 /* ── layout ──────────────────────────────────────────────────────── */
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0;
-  display:grid;grid-template-columns:200px minmax(0,1fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
-@media (max-width:980px){.page{grid-template-columns:1fr;gap:0}}
+/* .page centres and bounds; .cols is the grid. The footer sits in .page and OUTSIDE
+   .cols on purpose — see the markup comment: it is what stops the sticky rail from
+   travelling into the footer, and keeping it in .page is what stops it stretching to
+   the full viewport width. Do not fold these two back together. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.cols{display:grid;grid-template-columns:200px minmax(0,1fr);
+  gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+@media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
 
 /* ── rail: the section index, tracking position ──────────────────── */
-/* align-self:start is what keeps this out of the footer. Without it the rail
-   stretches to the full height of its grid row, and a sticky element can travel
-   the whole of its own box — so at the bottom of a long document it slid down
-   over the footer that follows. Constrained to its own content height, it stops
-   where the document stops. */
+/* align-self:start stops the rail STRETCHING to its grid row's full height, which is
+   worth having on its own — but it does NOT keep the rail out of the footer, and this
+   comment claimed it did from 2026-07-29 until it was actually measured in a browser
+   on 2026-07-30 00:00 EDT. What bounds a sticky element is its CONTAINING BLOCK, not
+   its own height, so shrinking the box changed nothing: at 1440x900, scrolled to the
+   bottom of Terms, the rail still sat 126px inside the footer. The real fix is
+   structural and lives in .cols — see the markup comment above it. Keeping this note
+   because "the CSS looks like it should work" is exactly how the bug survived a fix. */
 .rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 2rem;
   max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:thin}
 .rail::-webkit-scrollbar{width:3px}
@@ -1408,7 +1420,10 @@ pre.cols a{color:var(--ink)}
 .doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 
 /* ── footer ──────────────────────────────────────────────────────── */
-.foot{grid-column:1/-1;border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+/* No grid-column here any more: the footer left the grid when .cols was introduced,
+   so grid-column:1/-1 had become an inert declaration describing a layout that no
+   longer exists. It spans the full .page width simply by being a block child of it. */
+.foot{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
   display:flex;flex-wrap:wrap;gap:.7rem 2rem;align-items:baseline}
 .foot p{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.7;
   letter-spacing:.04em;color:var(--ink3);max-width:60ch}
@@ -1419,7 +1434,10 @@ pre.cols a{color:var(--ink)}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
-  .page{display:block;max-width:none;padding:0}
+  .page{max-width:none;padding:0}
+  /* .cols carries the grid now, so the print reset has to flatten IT — resetting
+     .page alone would have left the 200px rail column reserved on paper. */
+  .cols{display:block}
   .doc{border:0;box-shadow:none;padding:0;background:#fff}
   .doc::before{display:none}
   .doc p,.doc li,.doc td{color:#000}
@@ -1463,20 +1481,40 @@ html{scroll-behavior:smooth}
 <div id="prog"></div>
 
 <div class="page">
-  <aside class="rail" id="rail">
-    <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
-    <div class="slots" id="slots">${slots}</div>
-  </aside>
+  <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
+       split is load-bearing and was measured, not guessed (2026-07-30).
 
-  <main class="doc">
-    <header class="mast">
-      <span class="lab">${esc(kicker)}</span>
-      <h1>${esc(title)}</h1>
-      <div class="rule"></div>
-      <div class="meta">${meta.map(m => `<span>${m}</span>`).join('')}</div>
-    </header>
-    ${body}
-  </main>
+       The footer used to be a third child of the grid itself, and that is what put
+       the sticky rail INTO it: a sticky element's travel is bounded by its
+       containing block, and with the footer inside that same block the rail was
+       free to slide across the footer's row. At 1440x900 on Terms it ran 236px
+       past the end of the document and 126px into the footer. align-self:start
+       does NOT fix this — it sizes the rail's own box and leaves the containing
+       block exactly as tall as before, which is why the earlier blind fix looked
+       right in the CSS and changed nothing on screen.
+
+       Lifting the footer OUT of the grid but leaving it in .page is what makes the
+       rail stop: the rail's containing block is now .cols, which ends with the
+       document. It has to stay inside .page, though — as a direct child of <body>
+       it stretched to the full 1440px viewport instead of the 1156px document
+       column. Both halves were verified in a live browser at the scrolled-to-bottom
+       position, which is the only place the bug is visible at all. -->
+  <div class="cols">
+    <aside class="rail" id="rail">
+      <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
+      <div class="slots" id="slots">${slots}</div>
+    </aside>
+
+    <main class="doc">
+      <header class="mast">
+        <span class="lab">${esc(kicker)}</span>
+        <h1>${esc(title)}</h1>
+        <div class="rule"></div>
+        <div class="meta">${meta.map(m => `<span>${m}</span>`).join('')}</div>
+      </header>
+      ${body}
+    </main>
+  </div>
 
   <footer class="foot">
     <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
@@ -1542,7 +1580,346 @@ ${THEME_JS}
  * still reads as one site; the four-tab switcher is replaced by a single route
  * back to the legal index, because a reader here is not choosing between documents.
  */
-function warmShell({ title, kicker, accent, glow, lede, badge, body, out }) {
+/* ─────────── warm-page composition: contributing / contributors ─────────── */
+
+/**
+ * The legal pages are prose in a frame on purpose — a statute reads as a statute.
+ * These two are not statutes, and rendering them the same way is what made them
+ * read as a Markdown dump in a rounded box.
+ *
+ * So each one gets structure derived from what its content actually IS:
+ *
+ *   contributing  A path. Understand the licence, pick a lane, set up, follow the
+ *                 conventions, open the PR, sign the CLA. Order carries real
+ *                 information, so the sections hang off a spine — but with NO
+ *                 numerals: the 01/02/03 series is the legal set's, and it means
+ *                 "this binds you". Inside it, two sub-structures:
+ *                   · the four ways to contribute are PARALLEL, not sequential →
+ *                     option tiles, so a reader picks rather than reads through
+ *                   · the CLA is genuinely two-sided — what leaves your hands vs
+ *                     what stays in them → a ledger, marked by direction
+ *   contributors  A wall. No spine: it has three sections, and the truth of the
+ *                 page is one filled plate beside empty space.
+ *
+ * Signature object per page, one each, nothing more:
+ *   contributing  the consent slip — the single line a reader must physically take
+ *                 away, given a tear edge and a copy button
+ *   contributors  the plate — engraved for the maintainer, ghosted and waiting for
+ *                 the next name
+ *
+ * WARM_STRUCT is declared rather than sniffed so warmStructAudit() can fail when a
+ * source heading is renamed. Without that, the treatment would silently stop
+ * matching and the page would quietly revert to the plain prose it started as —
+ * the same class of failure as a check that draws its expectations from the code
+ * it is testing.
+ */
+const WARM_STRUCT = {
+    'contributing.html': {
+        spine: true,
+        sections: {
+            'ways to contribute': 'options',
+            'contributor licence agreement (cla)': 'ledger'
+        },
+        // The slip is found by content, not by heading: it is the line itself that
+        // matters, and it sits under a heading ("How to confirm it") whose wording
+        // is far more likely to change than the sentence a contributor must paste.
+        slip: 'I have read and agree'
+    },
+    'contributors.html': {
+        spine: false,
+        sections: {
+            'maintainer': 'plates',
+            'contributors': 'plates',
+            'how credit works': 'promises'
+        }
+    }
+};
+
+// What leaves your hands, and what stays in them. Only the direction NAME is
+// emitted; the glyph itself is drawn from CSS.
+//
+// That is not a style preference. Emitting the mark as HTML text put "↗" into the
+// document between a section's lead paragraph and its first heading, which broke
+// four of verify()'s source runs — the run was contiguous in the source and no
+// longer contiguous in the output. A decorative mark that a screen reader must be
+// told to ignore has no business in the DOM in the first place, so moving it to
+// CSS fixes the accessibility story and the verifier in one move. The alternative
+// on offer was teaching verify() to skip aria-hidden text, which would have opened
+// a hole big enough to hide real content loss in.
+const LEDGER_DIRS = [
+    [/granting/, 'out'],
+    [/you keep/, 'hold'],
+    [/confirming/, 'check'],
+    [/not getting/, 'none']
+];
+
+let WARM_HITS = {};
+const warmHit = k => { WARM_HITS[k] = (WARM_HITS[k] || 0) + 1; };
+
+const stripTags = s => s.replace(/<[^>]*>/g, '').trim();
+const headingInner = h => (h.match(/<span class="ht">([\s\S]*?)<\/span>/) || [, ''])[1];
+const headingText = h => stripTags(headingInner(h)).toLowerCase();
+
+// Split a section body at its <h3> boundaries. Anything before the first one is
+// lead-in prose that belongs to the section, not to a sub-group.
+function byH3(body) {
+    const pre = [];
+    const groups = [];
+    for (const b of body) {
+        const h = b.match(/^<h3 id="([^"]+)"/);
+        if (h) { groups.push({ id: h[1], head: b, text: headingText(b), body: [] }); continue; }
+        (groups.length ? groups[groups.length - 1].body : pre).push(b);
+    }
+    return { pre, groups };
+}
+
+function asOptions(body) {
+    const { pre, groups } = byH3(body);
+    const tiles = groups.map(g => {
+        // Each lane is marked with an emoji in the source. It carries nothing a
+        // screen reader needs — "lady beetle, Bug reports" is worse than "Bug
+        // reports" — so it is lifted out of the accessible name into an
+        // aria-hidden mark and kept as pure visual.
+        const inner = headingInner(g.head);
+        const em = inner.match(/^\s*(\p{Extended_Pictographic}️?)\s*/u);
+        const head = em ? g.head.replace(inner, inner.slice(em[0].length)) : g.head;
+        const mark = em ? `<span class="opt-m" aria-hidden="true">${em[1]}</span>` : '';
+        return `<article class="opt">${mark}${head}<div>${g.body.join('\n')}</div></article>`;
+    }).join('');
+    if (tiles) warmHit('options');
+    return pre.join('\n') + (tiles ? `<div class="opts">${tiles}</div>` : '');
+}
+
+function asSlip(block, mark) {
+    if (!mark || !block.startsWith('<pre class="code"') || !block.includes(mark)) return block;
+    const line = (block.match(/<code>([\s\S]*?)<\/code>/) || [, ''])[1];
+    warmHit('slip');
+    // No label above the line: the source paragraph immediately before it already
+    // says "Include this line in your pull request description". A second caption
+    // would be the same job done twice.
+    return '<div class="slip">'
+        + `<p class="slip-t" id="cla-line">${line}</p>`
+        + '<button class="cpy" type="button" data-copy="cla-line">'
+        + '<span class="cpy-i" aria-hidden="true">&#9106;</span>'
+        + '<span class="cpy-t">Copy</span></button>'
+        + '<span class="cpy-s" role="status" aria-live="polite"></span></div>';
+}
+
+function asLedger(body, slipMark) {
+    const { pre, groups } = byH3(body);
+    const rows = [];
+    const rest = [];
+    for (const g of groups) {
+        const dir = LEDGER_DIRS.find(([re]) => re.test(g.text));
+        if (dir) {
+            rows.push(`<div class="ldg-r" data-d="${dir[1]}">`
+                + '<span class="ldg-m" aria-hidden="true"></span>'
+                + `${g.head}<div>${g.body.join('\n')}</div></div>`);
+        } else {
+            // "How to confirm it" is an instruction, not a side of the ledger, so it
+            // stays outside it — and it is where the slip lives.
+            rest.push(g.head + '<div>'
+                + g.body.map(b => asSlip(b, slipMark)).join('\n') + '</div>');
+        }
+    }
+    if (rows.length) warmHit('ledger');
+    return pre.join('\n')
+        + (rows.length ? `<div class="ldg">${rows.join('')}</div>` : '')
+        + rest.join('\n');
+}
+
+function asPlates(body) {
+    return body.map(b => {
+        if (b.startsWith('<div class="tw"')) {
+            // Our own table markup, so the shape is fixed: one <tr> per row, one
+            // <td> per cell, and inline() never emits a nested </td>.
+            const tb = (b.match(/<tbody>([\s\S]*?)<\/tbody>/) || [, ''])[1];
+            const plates = [...tb.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(m => {
+                const c = [...m[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map(x => x[1]);
+                return `<div class="plate"><span class="plate-n">${c[0] || ''}</span>`
+                    + `<span class="plate-r">${c.slice(1).join(' · ')}</span></div>`;
+            }).join('');
+            if (!plates) return b;
+            warmHit('plates');
+            // The column headers survive as a legend above the wall rather than as
+            // a label on every plate. Dropping them was real content loss, caught
+            // by verify() ("name role harkirat mangat...") — a plate needs no NAME
+            // label above a name, but the header row is still authored text, and
+            // the documented format for future entries adds Contribution and First
+            // shipped in, which are NOT self-describing once three values sit on
+            // one plate. A legend covers both cases with one line.
+            const th = [...b.matchAll(/<th>([\s\S]*?)<\/th>/g)].map(x => stripTags(x[1]));
+            const legend = th.length
+                ? `<p class="wall-l">${th.join(' &middot; ')}</p>` : '';
+            return `${legend}<div class="wall">${plates}</div>`;
+        }
+        // "*No external contributions yet — this is where your name goes.*" is the
+        // most important sentence on the page, and italic body text is the weakest
+        // possible way to say it. It becomes the empty plate itself: the invitation
+        // IS the object.
+        //
+        // Nothing is invented in it beyond the "Your name" affordance — a
+        // FABRICATED contributor row once reached the live site from an HTML
+        // comment, so the plate carries the source's own words and no plausible
+        // name, handle, or contribution.
+        const em = b.match(/^<p><em>([\s\S]*?)<\/em><\/p>$/);
+        if (em) {
+            warmHit('plates');
+            // The name slot's "Your name" is drawn by CSS, not emitted here. It is a
+            // label whose entire meaning is already stated by the sentence beside it
+            // ("...this is where your name goes"), so it is reinforcement rather than
+            // information — the same test the ledger's direction marks had to pass.
+            // Emitting it put invented text BETWEEN the "Contributors" heading and the
+            // source's own sentence, which broke that run in verify(). The alternative
+            // was teaching verify() to ignore aria-hidden text, and that would hide
+            // real content loss just as effectively as it hides this.
+            return '<div class="wall"><div class="plate ghost">'
+                + '<span class="plate-n" aria-hidden="true"></span>'
+                + `<span class="plate-r">${em[1]}</span></div></div>`;
+        }
+        return b;
+    }).join('\n');
+}
+
+function asPromises(body) {
+    return body.map(b => {
+        if (!/^<ul>/.test(b)) return b;
+        const items = [...b.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => m[1]);
+        if (items.length < 2) return b;
+        warmHit('promises');
+        const cards = items.map(t => {
+            const m = t.match(/^<strong>([\s\S]*?)<\/strong>\s*([\s\S]*)$/);
+            return '<article class="prom">'
+                + `<h4>${m ? m[1] : ''}</h4><p>${m ? m[2] : t}</p></article>`;
+        }).join('');
+        return `<div class="proms">${cards}</div>`;
+    }).join('\n');
+}
+
+/**
+ * Groups a parsed warm page into sections and applies its declared treatments.
+ * Returns the body, the lifted sign-off, and which treatments actually fired.
+ */
+function warmCompose(blocks, out) {
+    const spec = WARM_STRUCT[out];
+    if (!spec) return { body: blocks.join('\n'), sig: '', spine: false, hits: {} };
+    WARM_HITS = {};
+
+    // Lift the closing sign-off out of the body. Both sources end with the same
+    // line the bot's /settings panel closes with, which is correct when the file is
+    // read on GitHub — but the template also renders a sign-off, so leaving it in
+    // the body printed it twice. Lifting beats deleting: the page still shows the
+    // words the file actually carries, rather than a second hardcoded copy that
+    // could drift away from it.
+    let sig = '';
+    const last = blocks[blocks.length - 1] || '';
+    if (/^<p>[^<]*Made with love by/.test(last)) {
+        sig = last.replace(/^<p>/, '').replace(/<\/p>$/, '')
+            .replace('♡', '<span class="hrt" aria-hidden="true">&#9825;</span>');
+        blocks = blocks.slice(0, -1);
+        warmHit('sig');
+    }
+
+    const lead = [];
+    const secs = [];
+    for (const b of blocks) {
+        // The source rules separated sections when they were a flat run of prose.
+        // The section frames do that job now, so a horizontal rule between two
+        // framed blocks is a divider dividing nothing.
+        if (b === '<hr>') continue;
+        const h = b.match(/^<h2 id="([^"]+)"/);
+        if (h) { secs.push({ head: b, text: headingText(b), body: [] }); continue; }
+        (secs.length ? secs[secs.length - 1].body : lead).push(b);
+    }
+
+    const parts = [];
+    if (lead.length) parts.push(`<div class="lead">${lead.join('\n')}</div>`);
+    for (const s of secs) {
+        const treat = spec.sections[s.text];
+        let inner;
+        if (treat === 'options') inner = asOptions(s.body);
+        else if (treat === 'ledger') inner = asLedger(s.body, spec.slip);
+        else if (treat === 'plates') inner = asPlates(s.body);
+        else if (treat === 'promises') inner = asPromises(s.body);
+        else inner = s.body.join('\n');
+        parts.push(`<section class="sec"${treat ? ` data-t="${treat}"` : ''}>`
+            + `<span class="node" aria-hidden="true"></span>${s.head}`
+            + `<div class="sec-b">${inner}</div></section>`);
+    }
+    return { body: parts.join('\n'), sig, spine: !!spec.spine, hits: WARM_HITS };
+}
+
+/**
+ * GATE 5. Every treatment a page declares must have actually fired.
+ *
+ * The treatments key off source heading text, so renaming "Ways to contribute" in
+ * CONTRIBUTING.md would stop matching and the tiles would become a plain run of
+ * h3s and paragraphs — a silent revert to the exact design this pass replaced.
+ * verify() cannot see it (every word still present), linkAudit() cannot see it (no
+ * links change), structureAudit() cannot see it (no aligned columns involved).
+ * Different property, so: different gate.
+ */
+function warmStructAudit(results) {
+    const bad = [];
+    for (const [out, spec] of Object.entries(WARM_STRUCT)) {
+        const hits = results[out];
+        if (!hits) { bad.push(`${out}: page was never composed`); continue; }
+        const want = new Set(Object.values(spec.sections));
+        if (spec.slip) want.add('slip');
+        want.add('sig');
+        for (const t of want) {
+            if (!hits[t]) {
+                bad.push(`${out}: treatment "${t}" matched nothing — `
+                    + 'a source heading or marker was renamed, so this section '
+                    + 'silently rendered as plain prose');
+            }
+        }
+    }
+    if (bad.length) {
+        console.error('\n  ✗ warm-page structure:');
+        bad.forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    const n = Object.values(results).reduce(
+        (a, h) => a + Object.values(h).reduce((x, y) => x + y, 0), 0);
+    console.log(`  ✓ warm structure: ${n} treatment(s) applied across `
+        + `${Object.keys(WARM_STRUCT).length} page(s)`);
+    return true;
+}
+
+// Copy button + spine reveal. Both degrade to a fully usable page with no JS at
+// all: the slip line is selectable text on its own, and a spine node is styled
+// visible by default — .on only brightens it.
+const WARM_JS = `
+(function(){
+  var b=document.querySelector('.cpy');
+  if(b&&navigator.clipboard){
+    var s=document.querySelector('.cpy-s'),t=b.querySelector('.cpy-t');
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.getAttribute('data-copy'));
+      if(!el)return;
+      navigator.clipboard.writeText(el.textContent.trim()).then(function(){
+        b.setAttribute('data-done','');t.textContent='Copied';
+        if(s)s.textContent='Copied to clipboard';
+        setTimeout(function(){b.removeAttribute('data-done');t.textContent='Copy';
+          if(s)s.textContent='';},2400);
+      });
+    });
+  } else if(b){b.parentNode.removeChild(b);}
+  var secs=document.querySelectorAll('.spine .sec');
+  if(!secs.length)return;
+  var on=function(el){el.classList.add('on')};
+  if(!('IntersectionObserver' in window)||
+     matchMedia('(prefers-reduced-motion:reduce)').matches){
+    Array.prototype.forEach.call(secs,on);return;
+  }
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){on(e.target);io.unobserve(e.target)}})
+  },{rootMargin:'0px 0px -18% 0px'});
+  Array.prototype.forEach.call(secs,function(s){io.observe(s)});
+})();`;
+
+function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine }) {
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -1636,8 +2013,8 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .anchor{display:none}
 .card .idx{display:none}
 
-/* CONTRIBUTORS' tables become credit plates rather than data grids: centred,
-   generous, with the name as display type. It is a wall of names, not a readout. */
+/* Any table that survives un-composed still needs to render. CONTRIBUTORS' own
+   tables become plates below; this is the fallback for a future warm source. */
 .tw{overflow-x:auto;margin:1.5rem 0;border-radius:12px;border:1px solid var(--rule);
   background:color-mix(in srgb,var(--accent) 6%,var(--raised))}
 .card table{border-collapse:collapse;width:100%}
@@ -1647,35 +2024,163 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card td{font-family:var(--serif);font-size:1rem;padding:.9rem .95rem;color:var(--ink2);
   border-bottom:1px solid var(--rule);vertical-align:top}
 .card tbody tr:last-child td{border-bottom:0}
-.card td:first-child strong{font-family:var(--display);font-size:1.06rem;font-weight:750;
-  letter-spacing:-.02em;color:var(--ink)}
-/* A slow sheen across the credit plate. The point of this page is that being on
-   it feels good; a static table does not do that. */
-.card td:first-child strong{background:linear-gradient(100deg,var(--ink) 30%,
+
+/* ── section frames + the spine ──────────────────────────────────────────
+   Only contributing gets the spine (.card.spine). It is a path with an order
+   that matters. Contributors is a wall, and hanging three plates off a timeline
+   would be a device borrowed rather than earned. */
+.sec{position:relative;margin:0 0 2.5rem}
+.sec:last-child{margin-bottom:0}
+.card .sec>h2{margin-top:0}
+.lead{margin:0 0 2.2rem}
+.card .lead>p:first-child{font-size:1.12rem;line-height:1.72;color:var(--ink)}
+.card .lead>p:last-child{margin-bottom:0}
+.sec-b>:last-child{margin-bottom:0}
+.node{display:none}
+.spine .sec{padding-left:2.05rem}
+.spine .sec::before{content:"";position:absolute;left:4.5px;top:.75rem;bottom:-2.5rem;width:1px;
+  background:var(--rule)}
+.spine .sec:last-child::before{bottom:0;
+  background:linear-gradient(var(--rule),transparent)}
+.spine .node{display:block;position:absolute;left:0;top:.42rem;width:10px;height:10px;
+  border-radius:50%;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--rule));
+  transition:background .5s ease,box-shadow .5s ease}
+.spine .sec.on>.node{background:var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+
+/* ── ways to contribute: four parallel lanes, so tiles rather than a run of
+      subheadings a reader has to read through to choose between ───────────── */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:.85rem;
+  margin:1.3rem 0}
+.opt{border:1px solid var(--rule);border-radius:14px;padding:1.1rem 1.2rem;
+  background:color-mix(in srgb,var(--raised) 62%,transparent);
+  transition:border-color .25s,transform .25s}
+.opt:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--rule));transform:translateY(-2px)}
+.opt-m{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;font-size:.95rem;
+  background:color-mix(in srgb,var(--accent) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);margin-bottom:.65rem}
+.card .opt h3{margin:0 0 .5rem;font-size:1rem}
+.card .opt p,.card .opt li{font-size:.95rem;line-height:1.62}
+.card .opt>div>:last-child{margin-bottom:0}
+
+/* ── the CLA ledger. Two sides: what leaves your hands, what stays in them.
+      The out-rows carry the accent tint; everything you keep stays neutral. */
+.ldg{margin:1.4rem 0;display:grid;gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.ldg-r{background:var(--paper);padding:1.15rem 1.3rem 1.05rem;
+  display:grid;grid-template-columns:26px 1fr;column-gap:.85rem}
+.ldg-r[data-d=out]{background:color-mix(in srgb,var(--accent) 7%,var(--paper))}
+.ldg-m{grid-column:1;grid-row:1/span 2;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--mono);font-size:.78rem;line-height:1;
+  margin-top:.1rem}
+.ldg-r[data-d=out] .ldg-m{color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 36%,transparent)}
+.ldg-r[data-d=hold] .ldg-m,.ldg-r[data-d=check] .ldg-m{color:var(--ink);
+  background:var(--raised);border:1px solid var(--rule2)}
+.ldg-r[data-d=none] .ldg-m{color:var(--ink3);border:1px dashed var(--rule2)}
+.card .ldg-r>h3{grid-column:2;grid-row:1;margin:0 0 .45rem;font-size:1rem}
+.ldg-r>div{grid-column:2;grid-row:2}
+.ldg-r>div>:last-child{margin-bottom:0}
+.card .ldg-r p,.card .ldg-r li{font-size:.97rem;line-height:1.68}
+
+/* ── the consent slip. The one thing on this page a reader has to physically
+      take away, so it looks detachable: a dashed tear edge down the left and a
+      real copy control. The line stays selectable text if JS never runs. */
+.slip{position:relative;margin:1.3rem 0;padding:.95rem 1.15rem .95rem 1.55rem;
+  border-radius:12px;background:var(--raised);border:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;align-items:center;gap:.7rem 1rem}
+.slip::before{content:"";position:absolute;left:.62rem;top:.7rem;bottom:.7rem;
+  border-left:2px dashed color-mix(in srgb,var(--accent) 48%,var(--rule))}
+.card .slip-t{flex:1 1 17rem;margin:0;font-family:var(--mono);font-size:.78rem;
+  line-height:1.7;color:var(--ink);word-break:break-word}
+.cpy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  min-height:44px;padding:0 1.05rem;border-radius:999px;cursor:pointer;
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);
+  transition:background .2s,color .2s,border-color .2s}
+.cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
+.cpy-i{font-size:.85rem}
+/* Visually hidden, still announced. The button label also changes, so a sighted
+   user gets the same confirmation without the live region. */
+.cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+  white-space:nowrap}
+
+/* ── the credit wall. A plate is engraved: inset highlight along the top edge,
+      name in display type. The ghost plate is the page's actual argument — the
+      empty space is the offer, so it is drawn as a reserved object rather than
+      apologised for in italics. */
+.wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.9rem;
+  margin:1.4rem 0}
+.plate{position:relative;border-radius:14px;padding:1.15rem 1.25rem;overflow:hidden;
+  display:flex;flex-direction:column;gap:.45rem;
+  background:linear-gradient(158deg,color-mix(in srgb,var(--accent) 10%,var(--raised)),
+    var(--raised) 70%);
+  border:1px solid color-mix(in srgb,var(--accent) 28%,var(--rule));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,white 12%,transparent),
+    0 16px 34px -24px rgba(0,0,0,.8)}
+.plate-n{font-family:var(--display);font-size:1.22rem;font-weight:800;letter-spacing:-.028em;
+  color:var(--ink);line-height:1.2}
+.plate-r{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink2)}
+/* A slow sheen across the engraved name. The point of this page is that being on
+   it feels good; a static row of table cells does not do that. */
+.plate:not(.ghost) .plate-n strong{background:linear-gradient(100deg,var(--ink) 30%,
   color-mix(in srgb,var(--accent) 85%,var(--ink)) 50%,var(--ink) 70%);
   background-size:220% 100%;-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;animation:plate 6s ease-in-out infinite}
 @keyframes plate{0%,70%{background-position:120% 0}100%{background-position:-20% 0}}
+.plate.ghost{background:none;box-shadow:none;border-style:dashed;
+  animation:wait 5s ease-in-out infinite}
+/* The waiting slot's label lives here rather than in the DOM — see asPlates(). */
+.plate.ghost .plate-n{color:var(--ink3)}
+.plate.ghost .plate-n::before{content:"Your name"}
+.plate.ghost .plate-r{font-family:var(--serif);font-size:.95rem;line-height:1.6;
+  letter-spacing:0;text-transform:none;color:var(--ink2)}
+@keyframes wait{0%,100%{border-color:color-mix(in srgb,var(--accent) 20%,var(--rule))}
+  50%{border-color:color-mix(in srgb,var(--accent) 58%,var(--rule))}}
+
+/* ── how credit works: four guarantees, so four plainly-bounded cards. The
+      accent hairline underlines each one rather than boxing it in colour. */
+.proms{display:grid;grid-template-columns:repeat(auto-fit,minmax(218px,1fr));gap:.85rem;
+  margin:1.3rem 0}
+.prom{position:relative;border:1px solid var(--rule);border-radius:13px;
+  padding:1.05rem 1.15rem 1.1rem;background:color-mix(in srgb,var(--accent) 5%,var(--raised))}
+.prom::after{content:"";position:absolute;left:1.15rem;right:1.15rem;bottom:0;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);opacity:.55}
+.card .prom h4{font-family:var(--display);font-size:.95rem;font-weight:750;
+  letter-spacing:-.012em;color:var(--ink);margin:0 0 .4rem}
+.card .prom p{font-family:var(--serif);font-size:.93rem;line-height:1.62;
+  color:var(--ink2);margin:0}
+
 @media (prefers-reduced-motion:reduce){
   .chip::before{animation:none}
-  .card td:first-child strong{animation:none;-webkit-text-fill-color:var(--ink)}
+  .plate:not(.ghost) .plate-n strong{animation:none;-webkit-text-fill-color:var(--ink)}
+  .plate.ghost{animation:none;border-color:color-mix(in srgb,var(--accent) 42%,var(--rule))}
 }
 
-.foot{margin-top:2.6rem;padding-top:1.5rem;border-top:1px solid var(--rule);
+/* The sign-off now comes FIRST (see the markup), so it carries the gap away from the
+   document and the nav's hairline sits below it, separating site chrome from the
+   letter rather than cutting the letter off from its own last line. */
+.sig{margin:2.7rem 0 0;text-align:center;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.05em;color:var(--ink3)}
+.foot{margin-top:1.5rem;padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.1rem .6rem;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase}
 .foot a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
 .foot a:hover{color:var(--ink);border-bottom-color:var(--accent)}
 .foot span{color:var(--ink3);opacity:.5}
-.sig{margin:1.4rem 0 0;text-align:center;font-family:var(--mono);font-size:.68rem;
-  letter-spacing:.05em;color:var(--ink3)}
 .sig b{color:var(--ink2);font-weight:600}
 .hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ghb,.ins{display:none!important}
-  body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}}
+@media print{.bar,.thm,.ghb,.ins,.cpy,.node{display:none!important}
+  body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
+  .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -1699,7 +2204,7 @@ html{scroll-behavior:smooth}
     <h1>${esc(title)}</h1>
     <p class="lede">${esc(lede)}</p>
   </header>
-  <main class="card">${body}</main>
+  <main class="card${spine ? ' spine' : ''}">${body}</main>
   <!-- No bottom theme tray here. The header on this template already carries the
        switch, and offering the same control twice on one screen is just clutter.
        (The landing page is the exception: it has no fixed header, so its switch
@@ -1707,13 +2212,23 @@ html{scroll-behavior:smooth}
        collapsed behind "Legal documents" — there are only four, so a group label
        hides more than it saves. The email is deliberately absent: it is on the
        landing page and in the Privacy Policy, which is enough. -->
+  <!-- The sign-off is the one the source file itself ends with, lifted out of the
+       body by warmCompose so it appears once. DIOR_SIG is the fallback for a warm
+       page whose source carries no closing line.
+
+       IT MUST PRECEDE THE NAV. It is the closing line of the DOCUMENT, not site
+       chrome, and the source has it running straight on from the last paragraph
+       ("Thanks for being here — genuinely. / ♡ Made with love by dior"). Placing it
+       below the nav put five link labels inside that source run and verify() reported
+       it missing — correctly, since a reader met the nav mid-sentence too. A letter
+       signs off before the site's footer, not after it. -->
+  <p class="sig">${sig || DIOR_SIG}</p>
   <nav class="foot">
     ${PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join('<span>·</span>')}
     ${EXTRA_PAGES.filter(p => p.out !== out).map(p => `<span>·</span><a href="./${p.out}">${esc(p.short)}</a>`).join('')}
   </nav>
-  <p class="sig">${DIOR_SIG}</p>
 </div>
-<script>${THEME_JS}</script>
+<script>${THEME_JS}${WARM_JS}</script>
 </body>
 </html>`;
 }
@@ -1934,6 +2449,11 @@ const stripTextHead = txt => {
 
 /* ───────────────────────────────── build ───────────────────────────────── */
 
+// Which warm treatments actually fired, per page. Populated by build() and read by
+// warmStructAudit() — kept outside build() so the gate cannot be handed a fresh
+// empty object and report a clean pass on nothing.
+const warmResults = {};
+
 function build() {
     fs.mkdirSync(OUT, { recursive: true });
     const built = [];
@@ -2003,13 +2523,18 @@ function build() {
         LINK_BASE = page.root ? '../' : '';
         const parsed = parseBlocks(stripMdHead(md));
         const ids = new Set(parsed.toc.map(t => t.id));
-        const html = linkifyRefs(
-            parsed.html.replace(/^\s*<hr>\s*/, '').replace(/\s*<hr>\s*$/, ''),
-            ids
-        );
-        fs.writeFileSync(path.join(OUT, page.out), warmShell({ ...page, body: html }));
+        // Compose BEFORE linkifying: warmCompose matches on our own block markup,
+        // and linkifyRefs only ever rewrites text nodes, so it is safe either way —
+        // but composing first keeps the patterns it matches against simple.
+        const comp = warmCompose(parsed.blocks, page.out);
+        const html = linkifyRefs(comp.body, ids);
+        warmResults[page.out] = comp.hits;
+        fs.writeFileSync(path.join(OUT, page.out), warmShell({
+            ...page, body: html, sig: comp.sig, spine: comp.spine
+        }));
         built.push({ ...page, sections: parsed.toc.filter(t => !t.sub).length, extra: true });
-        console.log(`  ✓ ${page.out}  ${parsed.toc.filter(t => !t.sub).length} sections · ${(html.length / 1024).toFixed(1)} KB`);
+        const applied = Object.entries(comp.hits).map(([k, v]) => `${k}×${v}`).join(' ');
+        console.log(`  ✓ ${page.out}  ${parsed.toc.filter(t => !t.sub).length} sections · ${(html.length / 1024).toFixed(1)} KB · ${applied}`);
     }
 
     // Only the numbered legal set goes in the numbered list.
@@ -2084,7 +2609,29 @@ function verify(built) {
             .replace(/<script[\s\S]*?<\/script>/g, ' ')
             .replace(/<style[\s\S]*?<\/style>/g, ' ')
             .replace(/<[^>]+>/g, ' ')
-            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+            // EVERY entity, not a hand-picked four. An undecoded entity does not
+            // vanish under words()' [^a-z0-9] pass — it becomes a WORD. `&middot;`
+            // reduces to "middot" and `&#9825;` to "9825", and that fabricated word
+            // lands inside an otherwise-intact source run and breaks it. Measured on
+            // this build: 12 entities across 7 pages, and "middot" alone accounted
+            // for a reported miss of "name role harkirat mangat..." whose every word
+            // was in fact rendered.
+            //
+            // This cannot open a hole for real content loss, which is the only reason
+            // it is safe: an entity resolves to exactly ONE character, so decoding
+            // can only ever REMOVE a fabricated word, never supply a source word the
+            // page does not visibly render. Same principle as the ordered-list and
+            // stop-word fixes below — compare like with like.
+            //
+            // Runs after tag-stripping on purpose, so a decoded `<` cannot be mistaken
+            // for markup. The trailing catch-all covers named entities nothing emits
+            // yet: every one is a single character that words() would reduce to a
+            // separator anyway (`&eacute;` → é → ' ', exactly as the source side
+            // reduces it), so a future `&hellip;` cannot silently revive this bug.
+            .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
+            .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+            .replace(/&\w+;/g, ' ')
             // Symmetry: URLs are stripped from the source side below, so they must
             // go from here too. The plain-text licence prints a bare URL in its
             // contact block, which stays visible after tag-stripping and split an
@@ -2338,11 +2885,14 @@ console.log('\nChecking column-aligned blocks survived:');
 const structOk = structureAudit(built);
 console.log('\nChecking cross-references to published files are live:');
 const xrefOk = crossRefAudit(built);
-const ok = contentOk && linksOk && structOk && xrefOk;
+console.log('\nChecking the warm pages kept their structure:');
+const warmOk = warmStructAudit(warmResults);
+const ok = contentOk && linksOk && structOk && xrefOk && warmOk;
 // Names each property that was actually checked, rather than one word that reads
-// as "the output is correct". Three gates test three different things, and a pass
+// as "the output is correct". Five gates test five different things, and a pass
 // on one has already been mistaken for a pass on another once.
 console.log(ok
-    ? '\nDone. Content complete · links resolve · aligned blocks intact · cross-refs live.'
+    ? '\nDone. Content complete · links resolve · aligned blocks intact · '
+      + 'cross-refs live · warm structure applied.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);

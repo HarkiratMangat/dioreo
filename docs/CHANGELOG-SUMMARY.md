@@ -26,6 +26,16 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.44.0 — July 30, 2026
+- **The "Contributing" and "Contributors" pages on the public site got a proper redesign.** They used to
+  be plain walls of text in a box. Now the contributing guide reads as a path you follow, the line you
+  need to agree to the contributor terms has its own copy button, and the credits page shows a real
+  nameplate — with an empty one beside it waiting for the next person's name.
+- **The site briefly went down and is back up.** A publish step silently uploaded nothing; the pages kept
+  answering for a while from a cached copy, so it looked fine from the outside. It's fixed, and the
+  checker now tests the front page too, which is what caught it.
+- *No changes to the bot itself.*
+
 ## v2.43.2 — July 29, 2026
 - *Internal only — notes for Dior's own future reference about how the legal-page builder works and one
   lesson learned from it. Nothing players see, and no change to the bot.*

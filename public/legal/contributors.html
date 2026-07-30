@@ -344,8 +344,8 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .anchor{display:none}
 .card .idx{display:none}
 
-/* CONTRIBUTORS' tables become credit plates rather than data grids: centred,
-   generous, with the name as display type. It is a wall of names, not a readout. */
+/* Any table that survives un-composed still needs to render. CONTRIBUTORS' own
+   tables become plates below; this is the fallback for a future warm source. */
 .tw{overflow-x:auto;margin:1.5rem 0;border-radius:12px;border:1px solid var(--rule);
   background:color-mix(in srgb,var(--accent) 6%,var(--raised))}
 .card table{border-collapse:collapse;width:100%}
@@ -355,35 +355,163 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card td{font-family:var(--serif);font-size:1rem;padding:.9rem .95rem;color:var(--ink2);
   border-bottom:1px solid var(--rule);vertical-align:top}
 .card tbody tr:last-child td{border-bottom:0}
-.card td:first-child strong{font-family:var(--display);font-size:1.06rem;font-weight:750;
-  letter-spacing:-.02em;color:var(--ink)}
-/* A slow sheen across the credit plate. The point of this page is that being on
-   it feels good; a static table does not do that. */
-.card td:first-child strong{background:linear-gradient(100deg,var(--ink) 30%,
+
+/* ── section frames + the spine ──────────────────────────────────────────
+   Only contributing gets the spine (.card.spine). It is a path with an order
+   that matters. Contributors is a wall, and hanging three plates off a timeline
+   would be a device borrowed rather than earned. */
+.sec{position:relative;margin:0 0 2.5rem}
+.sec:last-child{margin-bottom:0}
+.card .sec>h2{margin-top:0}
+.lead{margin:0 0 2.2rem}
+.card .lead>p:first-child{font-size:1.12rem;line-height:1.72;color:var(--ink)}
+.card .lead>p:last-child{margin-bottom:0}
+.sec-b>:last-child{margin-bottom:0}
+.node{display:none}
+.spine .sec{padding-left:2.05rem}
+.spine .sec::before{content:"";position:absolute;left:4.5px;top:.75rem;bottom:-2.5rem;width:1px;
+  background:var(--rule)}
+.spine .sec:last-child::before{bottom:0;
+  background:linear-gradient(var(--rule),transparent)}
+.spine .node{display:block;position:absolute;left:0;top:.42rem;width:10px;height:10px;
+  border-radius:50%;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--rule));
+  transition:background .5s ease,box-shadow .5s ease}
+.spine .sec.on>.node{background:var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+
+/* ── ways to contribute: four parallel lanes, so tiles rather than a run of
+      subheadings a reader has to read through to choose between ───────────── */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:.85rem;
+  margin:1.3rem 0}
+.opt{border:1px solid var(--rule);border-radius:14px;padding:1.1rem 1.2rem;
+  background:color-mix(in srgb,var(--raised) 62%,transparent);
+  transition:border-color .25s,transform .25s}
+.opt:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--rule));transform:translateY(-2px)}
+.opt-m{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;font-size:.95rem;
+  background:color-mix(in srgb,var(--accent) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);margin-bottom:.65rem}
+.card .opt h3{margin:0 0 .5rem;font-size:1rem}
+.card .opt p,.card .opt li{font-size:.95rem;line-height:1.62}
+.card .opt>div>:last-child{margin-bottom:0}
+
+/* ── the CLA ledger. Two sides: what leaves your hands, what stays in them.
+      The out-rows carry the accent tint; everything you keep stays neutral. */
+.ldg{margin:1.4rem 0;display:grid;gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.ldg-r{background:var(--paper);padding:1.15rem 1.3rem 1.05rem;
+  display:grid;grid-template-columns:26px 1fr;column-gap:.85rem}
+.ldg-r[data-d=out]{background:color-mix(in srgb,var(--accent) 7%,var(--paper))}
+.ldg-m{grid-column:1;grid-row:1/span 2;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--mono);font-size:.78rem;line-height:1;
+  margin-top:.1rem}
+.ldg-r[data-d=out] .ldg-m{color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 15%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 36%,transparent)}
+.ldg-r[data-d=hold] .ldg-m,.ldg-r[data-d=check] .ldg-m{color:var(--ink);
+  background:var(--raised);border:1px solid var(--rule2)}
+.ldg-r[data-d=none] .ldg-m{color:var(--ink3);border:1px dashed var(--rule2)}
+.card .ldg-r>h3{grid-column:2;grid-row:1;margin:0 0 .45rem;font-size:1rem}
+.ldg-r>div{grid-column:2;grid-row:2}
+.ldg-r>div>:last-child{margin-bottom:0}
+.card .ldg-r p,.card .ldg-r li{font-size:.97rem;line-height:1.68}
+
+/* ── the consent slip. The one thing on this page a reader has to physically
+      take away, so it looks detachable: a dashed tear edge down the left and a
+      real copy control. The line stays selectable text if JS never runs. */
+.slip{position:relative;margin:1.3rem 0;padding:.95rem 1.15rem .95rem 1.55rem;
+  border-radius:12px;background:var(--raised);border:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;align-items:center;gap:.7rem 1rem}
+.slip::before{content:"";position:absolute;left:.62rem;top:.7rem;bottom:.7rem;
+  border-left:2px dashed color-mix(in srgb,var(--accent) 48%,var(--rule))}
+.card .slip-t{flex:1 1 17rem;margin:0;font-family:var(--mono);font-size:.78rem;
+  line-height:1.7;color:var(--ink);word-break:break-word}
+.cpy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  min-height:44px;padding:0 1.05rem;border-radius:999px;cursor:pointer;
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);
+  transition:background .2s,color .2s,border-color .2s}
+.cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
+.cpy-i{font-size:.85rem}
+/* Visually hidden, still announced. The button label also changes, so a sighted
+   user gets the same confirmation without the live region. */
+.cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+  white-space:nowrap}
+
+/* ── the credit wall. A plate is engraved: inset highlight along the top edge,
+      name in display type. The ghost plate is the page's actual argument — the
+      empty space is the offer, so it is drawn as a reserved object rather than
+      apologised for in italics. */
+.wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.9rem;
+  margin:1.4rem 0}
+.plate{position:relative;border-radius:14px;padding:1.15rem 1.25rem;overflow:hidden;
+  display:flex;flex-direction:column;gap:.45rem;
+  background:linear-gradient(158deg,color-mix(in srgb,var(--accent) 10%,var(--raised)),
+    var(--raised) 70%);
+  border:1px solid color-mix(in srgb,var(--accent) 28%,var(--rule));
+  box-shadow:inset 0 1px 0 color-mix(in srgb,white 12%,transparent),
+    0 16px 34px -24px rgba(0,0,0,.8)}
+.plate-n{font-family:var(--display);font-size:1.22rem;font-weight:800;letter-spacing:-.028em;
+  color:var(--ink);line-height:1.2}
+.plate-r{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink2)}
+/* A slow sheen across the engraved name. The point of this page is that being on
+   it feels good; a static row of table cells does not do that. */
+.plate:not(.ghost) .plate-n strong{background:linear-gradient(100deg,var(--ink) 30%,
   color-mix(in srgb,var(--accent) 85%,var(--ink)) 50%,var(--ink) 70%);
   background-size:220% 100%;-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;animation:plate 6s ease-in-out infinite}
 @keyframes plate{0%,70%{background-position:120% 0}100%{background-position:-20% 0}}
+.plate.ghost{background:none;box-shadow:none;border-style:dashed;
+  animation:wait 5s ease-in-out infinite}
+/* The waiting slot's label lives here rather than in the DOM — see asPlates(). */
+.plate.ghost .plate-n{color:var(--ink3)}
+.plate.ghost .plate-n::before{content:"Your name"}
+.plate.ghost .plate-r{font-family:var(--serif);font-size:.95rem;line-height:1.6;
+  letter-spacing:0;text-transform:none;color:var(--ink2)}
+@keyframes wait{0%,100%{border-color:color-mix(in srgb,var(--accent) 20%,var(--rule))}
+  50%{border-color:color-mix(in srgb,var(--accent) 58%,var(--rule))}}
+
+/* ── how credit works: four guarantees, so four plainly-bounded cards. The
+      accent hairline underlines each one rather than boxing it in colour. */
+.proms{display:grid;grid-template-columns:repeat(auto-fit,minmax(218px,1fr));gap:.85rem;
+  margin:1.3rem 0}
+.prom{position:relative;border:1px solid var(--rule);border-radius:13px;
+  padding:1.05rem 1.15rem 1.1rem;background:color-mix(in srgb,var(--accent) 5%,var(--raised))}
+.prom::after{content:"";position:absolute;left:1.15rem;right:1.15rem;bottom:0;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);opacity:.55}
+.card .prom h4{font-family:var(--display);font-size:.95rem;font-weight:750;
+  letter-spacing:-.012em;color:var(--ink);margin:0 0 .4rem}
+.card .prom p{font-family:var(--serif);font-size:.93rem;line-height:1.62;
+  color:var(--ink2);margin:0}
+
 @media (prefers-reduced-motion:reduce){
   .chip::before{animation:none}
-  .card td:first-child strong{animation:none;-webkit-text-fill-color:var(--ink)}
+  .plate:not(.ghost) .plate-n strong{animation:none;-webkit-text-fill-color:var(--ink)}
+  .plate.ghost{animation:none;border-color:color-mix(in srgb,var(--accent) 42%,var(--rule))}
 }
 
-.foot{margin-top:2.6rem;padding-top:1.5rem;border-top:1px solid var(--rule);
+/* The sign-off now comes FIRST (see the markup), so it carries the gap away from the
+   document and the nav's hairline sits below it, separating site chrome from the
+   letter rather than cutting the letter off from its own last line. */
+.sig{margin:2.7rem 0 0;text-align:center;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.05em;color:var(--ink3)}
+.foot{margin-top:1.5rem;padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.1rem .6rem;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase}
 .foot a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
 .foot a:hover{color:var(--ink);border-bottom-color:var(--accent)}
 .foot span{color:var(--ink3);opacity:.5}
-.sig{margin:1.4rem 0 0;text-align:center;font-family:var(--mono);font-size:.68rem;
-  letter-spacing:.05em;color:var(--ink3)}
 .sig b{color:var(--ink2);font-weight:600}
 .hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ghb,.ins{display:none!important}
-  body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}}
+@media print{.bar,.thm,.ghb,.ins,.cpy,.node{display:none!important}
+  body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
+  .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -446,20 +574,13 @@ html{scroll-behavior:smooth}
     <h1>Contributors</h1>
     <p class="lede">Everyone who has made this better, credited under the name they chose.</p>
   </header>
-  <main class="card"><p>Everyone who has contributed to Dior's Builds, credited by the name or handle they asked to be credited under.</p>
-<p>Crediting contributors is a <strong>binding commitment</strong> under §5.6 of the <a href="../LICENSE">LICENSE</a>, not a courtesy — every accepted contribution is credited here and in the changelog entry for the release it first shipped in.</p>
-<hr>
-<h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" aria-label="Link to this section">¶</a></h2>
-<div class="tw"><table><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody><tr><td><strong>Harkirat Mangat</strong> (<strong>dior</strong>)</td><td>Creator and maintainer</td></tr></tbody></table></div>
-<hr>
-<h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" aria-label="Link to this section">¶</a></h2>
-<p><em>No external contributions yet — this is where your name goes.</em></p>
-<p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p>
-<hr>
-<h2 id="how-credit-works" class="plain"><span class="ht">How credit works</span><a class="anchor" href="#how-credit-works" aria-label="Link to this section">¶</a></h2>
-<ul><li><strong>You choose the name.</strong> GitHub handle, display name, or anything reasonable — tell us in the pull request.</li><li><strong>Credit appears in two places:</strong> this file, and the <code>docs/CHANGELOG.md</code> entry for the release your work ships in.</li><li><strong>Credit survives.</strong> It stays even if the code is later refactored or replaced.</li><li><strong>If a contribution is removed entirely</strong>, we'll remove the credit on request — or leave it, if you'd rather keep it.</li></ul>
-<p>Thanks to everyone who has taken the time to make this better.</p>
-<p>♡ Made with love by <strong>dior</strong></p></main>
+  <main class="card"><div class="lead"><p>Everyone who has contributed to Dior's Builds, credited by the name or handle they asked to be credited under.</p>
+<p>If your work ships, your name goes here and in the changelog entry for the release it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the <a href="../LICENSE">LICENSE</a> requires it.</p></div>
+<section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p class="wall-l">Name &middot; Role</p><div class="wall"><div class="plate"><span class="plate-n"><strong>Harkirat Mangat</strong> (<strong>dior</strong>)</span><span class="plate-r">Creator and maintainer</span></div></div></div></section>
+<section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><div class="plate ghost"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></div></div>
+<p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p></div></section>
+<section class="sec" data-t="promises"><span class="node" aria-hidden="true"></span><h2 id="how-credit-works" class="plain"><span class="ht">How credit works</span><a class="anchor" href="#how-credit-works" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="proms"><article class="prom"><h4>You choose the name.</h4><p>GitHub handle, display name, or anything reasonable — tell us in the pull request.</p></article><article class="prom"><h4>Credit appears in two places:</h4><p>this file, and the <code>docs/CHANGELOG.md</code> entry for the release your work ships in.</p></article><article class="prom"><h4>Credit survives.</h4><p>It stays even if the code is later refactored or replaced.</p></article><article class="prom"><h4>If a contribution is removed entirely</h4><p>, we'll remove the credit on request — or leave it, if you'd rather keep it.</p></article></div>
+<p>Thanks to everyone who has taken the time to make this better.</p></div></section></main>
   <!-- No bottom theme tray here. The header on this template already carries the
        switch, and offering the same control twice on one screen is just clutter.
        (The landing page is the exception: it has no fixed header, so its switch
@@ -467,11 +588,21 @@ html{scroll-behavior:smooth}
        collapsed behind "Legal documents" — there are only four, so a group label
        hides more than it saves. The email is deliberately absent: it is on the
        landing page and in the Privacy Policy, which is enough. -->
+  <!-- The sign-off is the one the source file itself ends with, lifted out of the
+       body by warmCompose so it appears once. DIOR_SIG is the fallback for a warm
+       page whose source carries no closing line.
+
+       IT MUST PRECEDE THE NAV. It is the closing line of the DOCUMENT, not site
+       chrome, and the source has it running straight on from the last paragraph
+       ("Thanks for being here — genuinely. / ♡ Made with love by dior"). Placing it
+       below the nav put five link labels inside that source run and verify() reported
+       it missing — correctly, since a reader met the nav mid-sentence too. A letter
+       signs off before the site's footer, not after it. -->
+  <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <strong>dior</strong></p>
   <nav class="foot">
     <a href="./terms.html">Terms</a><span>·</span><a href="./privacy.html">Privacy</a><span>·</span><a href="./license.html">License</a><span>·</span><a href="./notice.html">Notice</a>
     <span>·</span><a href="./contributing.html">Contributing</a>
   </nav>
-  <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <b>dior</b></p>
 </div>
 <script>
 (function(){
@@ -490,6 +621,33 @@ html{scroll-behavior:smooth}
     try{ localStorage.setItem('db-theme',next); }catch(e){}
     sync();
   });
+})();
+(function(){
+  var b=document.querySelector('.cpy');
+  if(b&&navigator.clipboard){
+    var s=document.querySelector('.cpy-s'),t=b.querySelector('.cpy-t');
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.getAttribute('data-copy'));
+      if(!el)return;
+      navigator.clipboard.writeText(el.textContent.trim()).then(function(){
+        b.setAttribute('data-done','');t.textContent='Copied';
+        if(s)s.textContent='Copied to clipboard';
+        setTimeout(function(){b.removeAttribute('data-done');t.textContent='Copy';
+          if(s)s.textContent='';},2400);
+      });
+    });
+  } else if(b){b.parentNode.removeChild(b);}
+  var secs=document.querySelectorAll('.spine .sec');
+  if(!secs.length)return;
+  var on=function(el){el.classList.add('on')};
+  if(!('IntersectionObserver' in window)||
+     matchMedia('(prefers-reduced-motion:reduce)').matches){
+    Array.prototype.forEach.call(secs,on);return;
+  }
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){on(e.target);io.unobserve(e.target)}})
+  },{rootMargin:'0px 0px -18% 0px'});
+  Array.prototype.forEach.call(secs,function(s){io.observe(s)});
 })();</script>
 </body>
 </html>

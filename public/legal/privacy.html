@@ -314,16 +314,24 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 }
 
 /* ── layout ──────────────────────────────────────────────────────── */
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0;
-  display:grid;grid-template-columns:200px minmax(0,1fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
-@media (max-width:980px){.page{grid-template-columns:1fr;gap:0}}
+/* .page centres and bounds; .cols is the grid. The footer sits in .page and OUTSIDE
+   .cols on purpose — see the markup comment: it is what stops the sticky rail from
+   travelling into the footer, and keeping it in .page is what stops it stretching to
+   the full viewport width. Do not fold these two back together. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.cols{display:grid;grid-template-columns:200px minmax(0,1fr);
+  gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+@media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
 
 /* ── rail: the section index, tracking position ──────────────────── */
-/* align-self:start is what keeps this out of the footer. Without it the rail
-   stretches to the full height of its grid row, and a sticky element can travel
-   the whole of its own box — so at the bottom of a long document it slid down
-   over the footer that follows. Constrained to its own content height, it stops
-   where the document stops. */
+/* align-self:start stops the rail STRETCHING to its grid row's full height, which is
+   worth having on its own — but it does NOT keep the rail out of the footer, and this
+   comment claimed it did from 2026-07-29 until it was actually measured in a browser
+   on 2026-07-30 00:00 EDT. What bounds a sticky element is its CONTAINING BLOCK, not
+   its own height, so shrinking the box changed nothing: at 1440x900, scrolled to the
+   bottom of Terms, the rail still sat 126px inside the footer. The real fix is
+   structural and lives in .cols — see the markup comment above it. Keeping this note
+   because "the CSS looks like it should work" is exactly how the bug survived a fix. */
 .rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 2rem;
   max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:thin}
 .rail::-webkit-scrollbar{width:3px}
@@ -495,7 +503,10 @@ pre.cols a{color:var(--ink)}
 .doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 
 /* ── footer ──────────────────────────────────────────────────────── */
-.foot{grid-column:1/-1;border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
+/* No grid-column here any more: the footer left the grid when .cols was introduced,
+   so grid-column:1/-1 had become an inert declaration describing a layout that no
+   longer exists. It spans the full .page width simply by being a block child of it. */
+.foot{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
   display:flex;flex-wrap:wrap;gap:.7rem 2rem;align-items:baseline}
 .foot p{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.7;
   letter-spacing:.04em;color:var(--ink3);max-width:60ch}
@@ -506,7 +517,10 @@ pre.cols a{color:var(--ink)}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
-  .page{display:block;max-width:none;padding:0}
+  .page{max-width:none;padding:0}
+  /* .cols carries the grid now, so the print reset has to flatten IT — resetting
+     .page alone would have left the 200px rail column reserved on paper. */
+  .cols{display:block}
   .doc{border:0;box-shadow:none;padding:0;background:#fff}
   .doc::before{display:none}
   .doc p,.doc li,.doc td{color:#000}
@@ -591,19 +605,38 @@ html{scroll-behavior:smooth}
 <div id="prog"></div>
 
 <div class="page">
-  <aside class="rail" id="rail">
-    <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
-    <div class="slots" id="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who is responsible for your data</span></a><a href="#s-2" class="slot"><i>2</i><span>What we collect</span></a><a href="#s-3" class="slot"><i>3</i><span>What we do NOT collect</span></a><a href="#s-4" class="slot"><i>4</i><span>Why we process it, and our legal basis</span></a><a href="#s-5" class="slot"><i>5</i><span>Who your data is shared with</span></a><a href="#s-6" class="slot"><i>6</i><span>International transfers</span></a><a href="#s-7" class="slot"><i>7</i><span>How long we keep it</span></a><a href="#s-8" class="slot"><i>8</i><span>Security</span></a><a href="#s-9" class="slot"><i>9</i><span>Your rights and how to use them</span></a><a href="#s-10" class="slot"><i>10</i><span>Children's privacy</span></a><a href="#s-11" class="slot"><i>11</i><span>Third-party links and content</span></a><a href="#s-12" class="slot"><i>12</i><span>Changes to this policy</span></a><a href="#s-13" class="slot"><i>13</i><span>Contact</span></a><a href="#appendix-a-complete-data-inventory" class="slot"><i>—</i><span>Appendix A — Complete data inventory</span></a><a href="#appendix-b-change-history" class="slot"><i>—</i><span>Appendix B — Change history</span></a><a href="#appendix-c-how-each-claim-was-verified" class="slot"><i>—</i><span>Appendix C — How each claim was verified</span></a></div>
-  </aside>
+  <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
+       split is load-bearing and was measured, not guessed (2026-07-30).
 
-  <main class="doc">
-    <header class="mast">
-      <span class="lab">Data</span>
-      <h1>Privacy Policy</h1>
-      <div class="rule"></div>
-      <div class="meta"><span>Effective <b>29 July 2026</b></span><span>Revision <b>1.1</b></span><span>Ontario, Canada</span></div>
-    </header>
-    <h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" aria-label="Link to this section">¶</a></h2>
+       The footer used to be a third child of the grid itself, and that is what put
+       the sticky rail INTO it: a sticky element's travel is bounded by its
+       containing block, and with the footer inside that same block the rail was
+       free to slide across the footer's row. At 1440x900 on Terms it ran 236px
+       past the end of the document and 126px into the footer. align-self:start
+       does NOT fix this — it sizes the rail's own box and leaves the containing
+       block exactly as tall as before, which is why the earlier blind fix looked
+       right in the CSS and changed nothing on screen.
+
+       Lifting the footer OUT of the grid but leaving it in .page is what makes the
+       rail stop: the rail's containing block is now .cols, which ends with the
+       document. It has to stay inside .page, though — as a direct child of <body>
+       it stretched to the full 1440px viewport instead of the 1156px document
+       column. Both halves were verified in a live browser at the scrolled-to-bottom
+       position, which is the only place the bug is visible at all. -->
+  <div class="cols">
+    <aside class="rail" id="rail">
+      <button class="lab" id="railbtn" aria-expanded="false" aria-controls="slots">Sections<span class="cur" id="railcur"></span></button>
+      <div class="slots" id="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who is responsible for your data</span></a><a href="#s-2" class="slot"><i>2</i><span>What we collect</span></a><a href="#s-3" class="slot"><i>3</i><span>What we do NOT collect</span></a><a href="#s-4" class="slot"><i>4</i><span>Why we process it, and our legal basis</span></a><a href="#s-5" class="slot"><i>5</i><span>Who your data is shared with</span></a><a href="#s-6" class="slot"><i>6</i><span>International transfers</span></a><a href="#s-7" class="slot"><i>7</i><span>How long we keep it</span></a><a href="#s-8" class="slot"><i>8</i><span>Security</span></a><a href="#s-9" class="slot"><i>9</i><span>Your rights and how to use them</span></a><a href="#s-10" class="slot"><i>10</i><span>Children's privacy</span></a><a href="#s-11" class="slot"><i>11</i><span>Third-party links and content</span></a><a href="#s-12" class="slot"><i>12</i><span>Changes to this policy</span></a><a href="#s-13" class="slot"><i>13</i><span>Contact</span></a><a href="#appendix-a-complete-data-inventory" class="slot"><i>—</i><span>Appendix A — Complete data inventory</span></a><a href="#appendix-b-change-history" class="slot"><i>—</i><span>Appendix B — Change history</span></a><a href="#appendix-c-how-each-claim-was-verified" class="slot"><i>—</i><span>Appendix C — How each claim was verified</span></a></div>
+    </aside>
+
+    <main class="doc">
+      <header class="mast">
+        <span class="lab">Data</span>
+        <h1>Privacy Policy</h1>
+        <div class="rule"></div>
+        <div class="meta"><span>Effective <b>29 July 2026</b></span><span>Revision <b>1.1</b></span><span>Ontario, Canada</span></div>
+      </header>
+      <h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" aria-label="Link to this section">¶</a></h2>
 <p>We store <strong>your Discord user ID</strong> and <strong>your display preferences</strong> — timezone, visibility toggles, region, and colour settings. That's essentially it.</p>
 <p><strong>We cannot read your messages.</strong> The Bot doesn't have Discord's Message Content permission, so message text is technically inaccessible to us, not merely unused.</p>
 <p><strong>Your data is stored in Canada.</strong> No advertising, no analytics, no tracking, no cookies, no profiling, and nothing is sold or shared for marketing.</p>
@@ -759,7 +792,8 @@ html{scroll-behavior:smooth}
 <p>You are welcome to check any of this yourself, or to ask us to show you the relevant code.</p>
 <hr>
 <p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc. or Discord Inc.</em></p>
-  </main>
+    </main>
+  </div>
 
   <footer class="foot">
     <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>

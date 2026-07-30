@@ -197,4 +197,6 @@ require it.
 
 Open an issue, or email **harkirat117@gmail.com**.
 
-Thanks for being here. 🖤
+Thanks for being here — genuinely.
+
+♡ Made with love by **dior**

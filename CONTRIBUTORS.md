@@ -3,9 +3,9 @@
 Everyone who has contributed to Dior's Builds, credited by the name or handle
 they asked to be credited under.
 
-Crediting contributors is a **binding commitment** under §5.6 of the
-[LICENSE](LICENSE), not a courtesy — every accepted contribution is credited here
-and in the changelog entry for the release it first shipped in.
+If your work ships, your name goes here and in the changelog entry for the release
+it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the
+[LICENSE](LICENSE) requires it.
 
 ---
 
