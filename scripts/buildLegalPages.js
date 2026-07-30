@@ -74,7 +74,16 @@ const BRAND = {
     gold: '#F2C230',      // Patch Gold     — commands/patchnotes.js
     emerald: '#1F8A5E',   // CP Emerald     — commands/drawprices.js
     amber: '#F2994A',     // Neon Amber     — commands/seasonend.js
-    teal: '#17A2A2'       // Cyber Teal     — commands/timestamp.js
+    teal: '#17A2A2',      // Cyber Teal     — commands/timestamp.js
+
+    // SITE-ONLY, not PRESET_ACCENT values. The four legal pages need four
+    // distinguishable hues, and the first attempt used gold for the licence and
+    // harbor for the notice — different SHADES of the amber and teal already
+    // taken by terms and privacy, which read as the same two colours twice.
+    // These two are separated by hue, not lightness: amber ~28°, teal ~180°,
+    // violet ~268°, rose ~345°. Four clearly distinct positions on the wheel.
+    violet: '#9B6BE3',
+    rose: '#E8657F'
 };
 
 // `kind` selects the parser: 'md' for the Markdown sources in docs/legal, 'text'
@@ -100,8 +109,8 @@ const PAGES = [
         file: 'LICENSE', kind: 'text', root: true, out: 'license.html',
         title: 'Source-Available License',
         short: 'License', kicker: 'Licence',
-        accent: BRAND.gold, glow: BRAND.harbor,
-        blurb: 'Read it, study it, run it locally. Not open source — and deliberately so.'
+        accent: BRAND.violet, glow: BRAND.plum,
+        blurb: 'Read it, study it, run it on your own machine. Source-available, not open source.'
     },
     {
         // Incorporated into LICENSE by reference (§7.1), so it is an operative
@@ -109,8 +118,8 @@ const PAGES = [
         file: 'NOTICE', kind: 'text', root: true, out: 'notice.html',
         title: 'Notices & Attributions',
         short: 'Notice', kicker: 'Attribution',
-        accent: BRAND.harbor, glow: BRAND.teal,
-        blurb: 'Every dependency, every trademark acknowledged, and an honest AI-assistance disclosure.'
+        accent: BRAND.rose, glow: BRAND.plum,
+        blurb: 'Every dependency and its licence, the marks that are not ours, and where AI helped.'
     }
 ];
 
@@ -134,7 +143,7 @@ const EXTRA_PAGES = [
         title: 'Contributing', short: 'Contributing',
         kicker: 'Join in', accent: BRAND.emerald, glow: BRAND.teal,
         lede: 'Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.',
-        badge: 'Open to everyone',
+        badge: 'Open to anyone',
         blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.'
     },
     {
@@ -142,8 +151,8 @@ const EXTRA_PAGES = [
         title: 'Contributors', short: 'Contributors',
         kicker: 'Credit', accent: BRAND.gold, glow: BRAND.amber,
         lede: 'Everyone who has made this better, credited under the name they chose.',
-        badge: 'A binding commitment, not a courtesy',
-        blurb: 'The credit ledger. Crediting contributions is required by the licence, not optional.'
+        badge: 'Your name goes here',
+        blurb: 'Who helped build this, and how credit works. Bug reports count.'
     }
 ];
 
@@ -159,7 +168,37 @@ const PUBLISHED_TARGETS = new Set([
     'contributing.html', 'contributors.html',
     '../LICENSE', '../NOTICE',
 ]);
-const isPublished = href => PUBLISHED_TARGETS.has(href.split('#')[0]);
+// Case-insensitive lookup that returns the CORRECTLY-CASED published name.
+//
+// The sources write their cross-links as [Privacy Policy](PRIVACY.md) — uppercase,
+// matching the filename on disk — and the .md→.html rewrite preserved that case,
+// producing PRIVACY.html. PUBLISHED_TARGETS holds lowercase privacy.html, so the
+// set lookup missed and Terms' references to Privacy (and Privacy's to Terms)
+// silently degraded to inert grey text while ../LICENSE, which happens to match
+// exactly, stayed a live link. linkAudit() cannot see this class of fault at all:
+// an inert span has no href, so there is nothing for it to resolve and fail on.
+const PUBLISHED_MAP = new Map([...PUBLISHED_TARGETS].map(t => [t.toLowerCase(), t]));
+const resolvePublished = href => {
+    const [p, hash] = href.split('#');
+    const hit = PUBLISHED_MAP.get(p.toLowerCase());
+    return hit === undefined ? null : hit + (hash ? '#' + hash : '');
+};
+
+/**
+ * Prefix applied to relative links for the page currently being rendered.
+ *
+ * The Markdown sources sit at two different depths but all render into
+ * public/legal/. docs/legal/*.md links out with `../../LICENSE`, which the rewrite
+ * below folds to `../LICENSE`. The two ROOT sources (CONTRIBUTING.md,
+ * CONTRIBUTORS.md) link out with a bare `LICENSE` — correct from the repo root and
+ * wrong by exactly one level once rendered a directory down. Every such link was
+ * silently degrading to inert text, which is why the Contributing page discussed
+ * the licence in four places and linked it in none.
+ *
+ * Module-level rather than threaded through parseBlocks → inline, which would mean
+ * a parameter on every block type for one value. build() sets it per page.
+ */
+let LINK_BASE = '';
 
 function inline(s) {
     // Code spans are extracted FIRST and reinserted last, so their contents are
@@ -185,8 +224,18 @@ function inline(s) {
         // publishes guaranteed 404s inside a legal document, so they degrade to
         // plain text instead. Verified by the build's own link audit, which found
         // seven dead links the first time this ran.
-        return isPublished(href)
-            ? `<a href="${href}">${t}</a>`
+        // RESOLVE, then lift — not lift, then resolve.
+        //
+        // A blanket LINK_BASE prefix on every root-relative link was wrong: the two
+        // root-authored pages both render into legal/, so CONTRIBUTORS.md is a
+        // SAME-directory neighbour and ../CONTRIBUTORS.html pointed out of the tree.
+        // Only root files published verbatim beside legal/ (LICENSE, NOTICE) need the
+        // extra level. Asking the allowlist which of the two a target actually is
+        // settles it without special-casing filenames.
+        const pub = resolvePublished(href)
+            || (LINK_BASE ? resolvePublished(LINK_BASE + href) : null);
+        return pub
+            ? `<a href="${pub}">${t}</a>`
             : `<span class="ref">${t}</span>`;
     });
     s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -261,6 +310,29 @@ function parseBlocks(md) {
     while (i < lines.length) {
         const line = lines[i];
         if (!line.trim()) { i++; continue; }
+
+        // ── fenced code block ──
+        // Added 2026-07-29 23:05 EDT. TERMS.md and PRIVACY.md contain no fences, so
+        // this parser never needed them; publishing CONTRIBUTING.md widened the
+        // input set and the omission surfaced as literal ``` markers on the page,
+        // the language tag absorbed into the code, and multi-line blocks flattened
+        // onto one line. Note verify() still reported 100% throughout — every WORD
+        // was present, just structured wrongly. Handle the fence BEFORE the <hr>
+        // rule below, which would otherwise not match but ordering here is load-
+        // bearing for any future fence style.
+        const fence = line.match(/^\s*```+\s*([\w-]*)\s*$/);
+        if (fence) {
+            const lang = fence[1];
+            const buf = [];
+            i++;
+            while (i < lines.length && !/^\s*```+\s*$/.test(lines[i])) { buf.push(lines[i]); i++; }
+            i++; // consume the closing fence
+            out.push(
+                `<pre class="code"${lang ? ` data-lang="${esc(lang)}"` : ''}>` +
+                `<code>${esc(buf.join('\n'))}</code></pre>`
+            );
+            continue;
+        }
 
         if (/^\s*(-{3,}|={3,}|\*{3,})\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
 
@@ -676,18 +748,25 @@ const TOKENS = `
   --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
 }
+/* LIGHT MODE. The rules used to be #DED9D0 on #FCFBF9 paper — about 1.15:1,
+   which is to say invisible: every divider, table border and callout edge that
+   structures these documents simply vanished in light mode while looking fine in
+   dark. Light is not dark with the values flipped; the same separation needs more
+   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
+   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
+   table headers read as distinct surfaces rather than the same cream. */
 :root[data-theme=light]{
-  --desk:#DCD8D1; --paper:#FCFBF9; --raised:#F2F0EB;
-  --rule:#DED9D0; --rule2:#C9C3B8;
-  --ink:#191521; --ink2:#544E5E; --ink3:#8A8393;
-  --shadow:0 20px 50px -30px rgba(40,32,50,.45);
+  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+  --rule:#CBC3B4; --rule2:#A39A8B;
+  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#DCD8D1; --paper:#FCFBF9; --raised:#F2F0EB;
-    --rule:#DED9D0; --rule2:#C9C3B8;
-    --ink:#191521; --ink2:#544E5E; --ink3:#8A8393;
-    --shadow:0 20px 50px -30px rgba(40,32,50,.45);
+    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+    --rule:#CBC3B4; --rule2:#A39A8B;
+    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
   }
 }
 *{box-sizing:border-box}
@@ -703,6 +782,11 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 /* ─────────────── shared components: wordmark, repo, theme switch ───────── */
 
 const REPO_URL = 'https://github.com/HarkiratMangat/diors-builds';
+
+// Matches the bot's own sign-off. commands/settings.js closes its panel with
+// `-# {diorHeart} Made with love by @dior`, so the site says the same thing in
+// the same words rather than inventing a second voice for the same person.
+const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <b>dior</b>';
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 
 /**
@@ -714,12 +798,20 @@ const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=149147487177
  * every page, so the action is always one click away no matter how deep into a
  * document someone has scrolled.
  */
+// The Discord mark, drawn on its OWN 127x96 viewBox rather than squeezed into a
+// 24x24 grid. The previous path was authored for 24x24 but its geometry ran past
+// the box, so the wordmark's ears were clipped off at the top — visible on the
+// hero button. Using the mark's native aspect ratio means nothing has to be
+// guessed or scaled by hand.
+const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg>`;
+
 const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INSTALL_URL}"
   target="_blank" rel="noopener noreferrer">
   <span class="ins-gl" aria-hidden="true"></span>
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.32 4.57A19.8 19.8 0 0 0 15.43 3c-.2.37-.44.87-.6 1.26a14.8 14.8 0 0 0-4.44 0c-.17-.4-.4-.89-.61-1.26a19.7 19.7 0 0 0-4.9 1.58C1.79 8.9.98 13.1 1.39 17.25a19.9 19.9 0 0 0 6.03 3.05c.39-.53.73-1.1 1.03-1.69-.57-.21-1.11-.47-1.63-.78.14-.1.27-.21.4-.32a14.2 14.2 0 0 0 12.18 0c.13.11.26.22.4.32-.52.31-1.07.57-1.64.78.3.59.65 1.16 1.03 1.69a19.8 19.8 0 0 0 6.04-3.05c.48-4.8-.82-8.96-3.91-12.68ZM8.68 14.7c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.21 0 2.18 1.09 2.16 2.4 0 1.33-.95 2.41-2.16 2.41Zm6.64 0c-1.18 0-2.15-1.08-2.15-2.4 0-1.33.95-2.41 2.15-2.41 1.21 0 2.18 1.09 2.16 2.4 0 1.33-.95 2.41-2.16 2.41Z"/></svg>
+  <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
   <span class="ins-t">${big ? 'Add to Discord' : 'Install'}</span>
-</a>${big ? '<p class="cta-note">Free · installs to your Discord account, not to a server</p>' : ''}`;
+  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+</a>`;
 
 /**
  * The wordmark. It was previously a static accent bar plus text, and the first
@@ -753,8 +845,8 @@ const wordmark = href => href
 // repo as a *contact* route, which this does not change.
 const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"
   title="View the source on GitHub">
-  <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-  <span class="ghb-t">Source</span>
+  <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
+  <span class="ghb-t"><b>Source</b></span>
 </a>`;
 
 /**
@@ -773,21 +865,25 @@ const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener
 const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
-    <span class="thm-st"><i></i><i></i><i></i><i></i></span>
+    <span class="thm-sky">
+      <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="thm-cl"><i></i><i></i></span>
+    </span>
     <span class="thm-kn">
       <svg viewBox="0 0 24 24">
         <mask id="thm-cut">
           <rect width="24" height="24" fill="#000"/>
-          <circle cx="12" cy="12" r="7.2" fill="#fff"/>
-          <circle class="cut" cx="12" cy="12" r="6.4" fill="#000"/>
+          <circle cx="12" cy="12" r="7.4" fill="#fff"/>
+          <circle class="cut" cx="12" cy="12" r="6.6" fill="#000"/>
         </mask>
-        <g class="rays" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <line x1="12" y1="1.4" x2="12" y2="3.6"/><line x1="12" y1="20.4" x2="12" y2="22.6"/>
-          <line x1="1.4" y1="12" x2="3.6" y2="12"/><line x1="20.4" y1="12" x2="22.6" y2="12"/>
-          <line x1="4.6" y1="4.6" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.4" y2="19.4"/>
-          <line x1="19.4" y1="4.6" x2="17.8" y2="6.2"/><line x1="6.2" y1="17.8" x2="4.6" y2="19.4"/>
+        <g class="rays" stroke-width="1.8" stroke-linecap="round">
+          <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
+          <line x1="1.2" y1="12" x2="3.4" y2="12"/><line x1="20.6" y1="12" x2="22.8" y2="12"/>
+          <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
+          <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
-        <rect class="orb" width="24" height="24" fill="currentColor" mask="url(#thm-cut)"/>
+        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        <g class="craters"><circle cx="10.4" cy="9.6" r="1.15"/><circle cx="8.7" cy="14.2" r=".8"/><circle cx="13" cy="13.6" r=".62"/></g>
       </svg>
     </span>
   </span>
@@ -811,177 +907,220 @@ const emailReveal = `<details class="rev">
   <summary><span class="rv-i" aria-hidden="true"></span>Prefer email? Reveal address</summary>
   <div class="rv-b">
     <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
-    <span>The formal route — and the one named in the Terms and Privacy Policy for
-    legal notices, rights requests, and takedowns.</span>
+    <span>The formal route. Named in the Terms and Privacy Policy for legal notices,
+    rights requests, and takedowns.</span>
   </div>
 </details>`;
 
 const COMPONENT_CSS = `
-/* ── wordmark ─────────────────────────────────────────────────────── */
-.mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
-  font-family:var(--display);font-weight:700;font-size:.9rem;letter-spacing:-.01em;
-  white-space:nowrap;position:relative;padding:.2rem 0}
-.glyph{display:grid;gap:2.5px;width:16px;flex:0 0 16px}
-.glyph i{display:block;height:2.5px;background:var(--ink3);border-radius:1px;
-  transform-origin:left center;transition:width .3s cubic-bezier(.2,.8,.2,1),background .3s}
+/* ── shared reset for the label buttons ───────────────────────────────
+   .lab is a <button> in the section rail. Without this reset it inherits the
+   platform's default button chrome, which rendered as a grey box floating above
+   the rail on DESKTOP — the mobile rules were scoped to a media query, so the
+   desktop path got the element change with none of the styling. */
+button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
+  padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}
+
+/* ── wordmark ─────────────────────────────────────────────────────────
+   Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
+   favicon. The interaction is that motif behaving like the thing it depicts:
+   on hover the slots LOCK IN — they align to full width in sequence and go
+   accent — and a light passes across the wordmark once. The only always-on
+   movement is a single slow pulse on the top bar, because three staggered idle
+   loops competed with everything else in the bar and read as noise. */
+.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
+  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
+  white-space:nowrap;position:relative;padding:.25rem 0}
+.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
+.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
+  transform-origin:left center;
+  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
 .glyph i:nth-child(1){width:100%;background:var(--accent)}
-.glyph i:nth-child(2){width:60%}
-.glyph i:nth-child(3){width:80%}
-.wm{position:relative}
-/* the hover underline, wiped in from the left */
-.wm::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1.5px;
-  background:var(--accent);transform:scaleX(0);transform-origin:left;
-  transition:transform .28s cubic-bezier(.2,.8,.2,1)}
-.go{font-size:1.05rem;line-height:1;color:var(--accent);opacity:0;transform:translateX(-5px);
-  transition:opacity .24s,transform .24s}
-.mark.live:hover .wm::after,.mark.live:focus-visible .wm::after{transform:scaleX(1)}
+.glyph i:nth-child(2){width:56%}
+.glyph i:nth-child(3){width:78%}
+.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
+@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
+
+/* The shine. A masked gradient swept across the letterforms — text, not a bar
+   under it, so the mark itself is what responds. */
+.wm{position:relative;background-image:linear-gradient(100deg,
+  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
+  background-size:280% 100%;background-position:130% 0;
+  -webkit-background-clip:text;background-clip:text;
+  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
+.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
+  background-position:-30% 0}
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
+  opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
 .mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 .mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
-.mark.live:hover .glyph i:nth-child(2){transition-delay:.05s}
-.mark.live:hover .glyph i:nth-child(3){transition-delay:.1s}
-/* The idle tell. A hover state cannot tell you a thing is interactive before you
-   hover it, which is exactly the confusion this fixes. */
-.mark.live .glyph i{animation:sweep 5s cubic-bezier(.4,0,.6,1) infinite}
-.mark.live .glyph i:nth-child(2){animation-delay:.13s}
-.mark.live .glyph i:nth-child(3){animation-delay:.26s}
-@keyframes sweep{
-  0%,72%,100%{background:var(--ink3)}
-  8%,20%{background:var(--accent)}
-}
-.mark.live .glyph i:nth-child(1){animation-name:sweep1}
-@keyframes sweep1{
-  0%,72%,100%{background:var(--accent)}
-  8%,20%{background:var(--ink)}
-}
-.mark.live:hover .glyph i{animation-play-state:paused}
+.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
+.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
+.mark.live:hover .glyph i:nth-child(1){animation:none}
 
-/* ── repo button: collapsed pill that opens on hover ──────────────── */
-.ghb{display:inline-flex;align-items:center;gap:0;overflow:hidden;text-decoration:none;
-  color:var(--ink3);border:1px solid var(--rule2);height:28px;padding:0 .48rem;
-  max-width:28px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),color .2s,
-  border-color .2s,background .2s}
-.ghb svg{width:15px;height:15px;flex:0 0 15px;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
-.ghb-t{font-family:var(--mono);font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;
-  padding-left:.45rem;white-space:nowrap;opacity:0;transition:opacity .26s .06s}
-.ghb:hover,.ghb:focus-visible{max-width:110px;color:var(--ink);border-color:var(--accent);
-  background:color-mix(in srgb,var(--accent) 10%,transparent)}
-.ghb:hover svg,.ghb:focus-visible svg{transform:rotate(360deg)}
-.ghb:hover .ghb-t,.ghb:focus-visible .ghb-t{opacity:1}
+/* ── action controls: pills ───────────────────────────────────────────
+   ROUNDED, deliberately. The site's rule is squared = the documents that bind
+   you, rounded = an invitation. An action is an invitation, so the earlier
+   squared repo/install buttons contradicted the rule the rest of the site is
+   built on. Every interactive control in the bar is now a pill; only document
+   chrome stays squared. */
+.ghb,.ins{border-radius:999px;height:30px}
 
-/* ── theme switch: a travelling knob that morphs sun ↔ moon ───────── */
+/* repo — icon-only, opening on hover. The label is revealed by a clip, and the
+   icon holds still. It used to spin 360°, which is the stock "look, animation"
+   move and reads as filler. */
+.ghb{display:inline-flex;align-items:center;justify-content:flex-start;
+  overflow:hidden;text-decoration:none;color:var(--ink2);
+  border:1px solid var(--rule2);background:transparent;
+  width:30px;padding:0;transition:width .38s cubic-bezier(.16,.84,.28,1),
+  color .22s,border-color .22s,background .22s}
+.ghb-ic{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px}
+.ghb-ic svg{width:15px;height:15px;display:block}
+.ghb-t{overflow:hidden;padding-right:.85rem}
+.ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
+  transform:translateX(-8px);opacity:0;
+  transition:transform .38s cubic-bezier(.16,.84,.28,1),opacity .3s}
+.ghb:hover,.ghb:focus-visible{width:106px;color:var(--ink);border-color:var(--ink3);
+  background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+
+/* install — the one filled control on the site. Motion on hover only: the fill
+   brightens from the leading edge and the arrow steps out. No idle sheen loop
+   and no pulsing ring; two ambient loops on a single button was the clearest
+   case of decoration competing with the theme switch for attention. */
+.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;
+  overflow:hidden;text-decoration:none;padding:0 .95rem;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
+  text-transform:uppercase;font-weight:700;
+  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  transition:box-shadow .3s,filter .22s}
+.ins-ic{display:grid;place-items:center;width:16px;height:16px;flex:0 0 16px;
+  position:relative;z-index:1}
+.ins-ic svg{width:16px;height:auto;display:block}
+.ins-t,.ins-ar{position:relative;z-index:1}
+.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+  transition:opacity .26s,width .26s,transform .26s}
+.ins-gl{position:absolute;inset:0;z-index:0;opacity:0;
+  background:radial-gradient(120% 180% at 0% 50%,rgba(255,255,255,.5),transparent 62%);
+  transition:opacity .3s}
+.ins:hover,.ins:focus-visible{filter:brightness(1.06);
+  box-shadow:0 5px 20px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
+.ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
+.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
+.ins:active{filter:brightness(.97)}
+
+/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
+   This is the one place the design spends its boldness, so it is the one place
+   with real depth. It is a sky you carry the sun and moon across:
+     dark  — a cratered crescent, stars behind it
+     light — a rayed sun, clouds behind it
+   Both states are furnished; the first version left light mode as a plain white
+   disc with nothing in it.
+   The sun and moon carry their OWN colours (warm yellow, pale blue-grey) and
+   NOT the page accent — a violet moon read as an unidentifiable blob. Only the
+   track border and focus ring follow the accent.
+   Hovering PEEKS: the knob leans toward the far side and the destination's
+   furniture fades up, so the control shows you what pressing it will do. */
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
-  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto}
-.thm-tr{display:block;position:relative;width:52px;height:28px;border-radius:999px;
-  border:1px solid var(--rule2);background:var(--raised);overflow:hidden;
-  transition:background .4s,border-color .3s}
-.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent)}
-.thm-st{position:absolute;inset:0;opacity:1;transition:opacity .4s}
-.thm-st i{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--ink3);
-  animation:twinkle 3.4s ease-in-out infinite}
-.thm-st i:nth-child(1){left:31px;top:8px}
-.thm-st i:nth-child(2){left:39px;top:16px;animation-delay:.7s}
-.thm-st i:nth-child(3){left:43px;top:7px;width:1.5px;height:1.5px;animation-delay:1.4s}
-.thm-st i:nth-child(4){left:35px;top:20px;width:1.5px;height:1.5px;animation-delay:2.1s}
-@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
-.thm-kn{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
-  display:grid;place-items:center;color:var(--accent);
-  background:color-mix(in srgb,var(--accent) 16%,var(--paper));
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent);
-  transform:translateX(0) rotate(0deg);
-  transition:transform .46s cubic-bezier(.5,-0.3,.3,1.4),background .4s,box-shadow .4s}
-.thm-kn svg{width:16px;height:16px;overflow:visible}
-.thm-kn .cut{transform:translate(7.5px,-7.5px);transition:transform .46s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .rays{opacity:0;transform:scale(.55);transform-origin:12px 12px;
-  transition:opacity .3s,transform .42s cubic-bezier(.2,.8,.2,1)}
-/* LIGHT state — knob travels right, rays fan out, the mask's occluder is pushed
-   clear of the disc so it renders as a full sun. The stars fade out. */
-:root[data-theme=light] .thm-kn{transform:translateX(24px) rotate(180deg)}
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+.thm-tr{display:block;position:relative;width:56px;height:30px;border-radius:999px;
+  border:1px solid var(--rule2);overflow:hidden;
+  background:linear-gradient(165deg,#1B1830,#2A2340);
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
+.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.thm-sky{position:absolute;inset:0}
+
+/* stars — dark only */
+.thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
+  opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
+.thm-st i:nth-child(1){left:34px;top:7px}
+.thm-st i:nth-child(2){left:43px;top:14px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:47px;top:6px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:38px;top:21px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:49px;top:19px;width:1.5px;height:1.5px;animation-delay:2.4s}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.thm-st{transition:opacity .4s}
+
+/* clouds — light only. Two soft lozenges, drifting slowly. */
+.thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px;opacity:.92}
+.thm-cl i:nth-child(1){left:7px;top:17px;width:16px;height:6px;
+  box-shadow:5px -4px 0 -1px #fff;animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:8px;width:10px;height:4px;opacity:.6;
+  animation:drift 9s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+
+.thm-kn{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;
+  transform:translateX(0);
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32)}
+.thm-kn svg{width:22px;height:22px;overflow:visible}
+/* moon */
+.thm-kn .orb{fill:#CFD8EA}
+.thm-kn .craters{fill:#A8B3CC;opacity:1;transition:opacity .3s}
+.thm-kn .cut{transform:translate(7.4px,-7.4px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{stroke:#F6C560;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
+
+/* the hover peek — leans toward the destination and previews its furniture */
+.thm:hover .thm-kn{transform:translateX(5px)}
+.thm:hover .thm-cl{opacity:.28}
+
+/* LIGHT: knob crosses, mask occluder is pushed clear so the disc fills, rays fan
+   out, the orb warms to a sun, craters go, clouds replace stars. */
+:root[data-theme=light] .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+:root[data-theme=light] .thm-kn{transform:translateX(26px)}
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(21px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .orb{fill:#F6C560}
+:root[data-theme=light] .thm-kn .craters{opacity:0}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
+:root[data-theme=light] .thm-cl{opacity:1}
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}
 @media (prefers-color-scheme:light){
-  :root:not([data-theme=dark]) .thm-kn{transform:translateX(24px) rotate(180deg)}
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(26px)}
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(21px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F6C560}
+  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}
 }
-@media (prefers-reduced-motion:reduce){.thm-st i{animation:none}}
-
-/* ── install CTA: the one filled element on the site ──────────────── */
-.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;overflow:hidden;
-  text-decoration:none;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
-  text-transform:uppercase;font-weight:600;height:28px;padding:0 .7rem;
-  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
-  transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .28s,filter .22s}
-.ins svg{width:15px;height:15px;flex:0 0 15px;position:relative;z-index:1}
-.ins-t{position:relative;z-index:1}
-/* The sheen. Runs on a slow idle loop so the button advertises itself, and
-   accelerates on hover — same reasoning as the wordmark's idle sweep. */
-.ins-gl{position:absolute;inset:0;z-index:0;
-  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.55) 48%,transparent 76%);
-  transform:translateX(-120%);animation:sheen 4.6s ease-in-out infinite}
-@keyframes sheen{0%,68%{transform:translateX(-120%)}88%,100%{transform:translateX(120%)}}
-.ins:hover,.ins:focus-visible{transform:translateY(-1px);filter:brightness(1.08);
-  box-shadow:0 6px 20px -6px color-mix(in srgb,var(--accent) 75%,transparent)}
-.ins:hover .ins-gl{animation-duration:1.1s}
-.ins:active{transform:translateY(0)}
-/* ── header crowding ──────────────────────────────────────────────────
-   Six controls (wordmark, four tabs, repo, install, theme) do not fit a narrow
-   bar. Measured at 800px: the theme switch was clipped off the right edge and the
-   bar scrolled horizontally. They shed in order of how recoverable each is —
-   the repo link and the wordmark's text both exist elsewhere on the page, the
-   install action and the theme control do not. */
-@media (max-width:900px){ .bar .ghb{display:none} }
-@media (max-width:620px){ .bar .mark .wm,.bar .mark .go{display:none} }
-@media (max-width:560px){ .bar .ins-t{display:none}.bar .ins{padding:0 .5rem} }
-@media (max-width:480px){ .bar{gap:.7rem} .bar nav{gap:.4rem} }
-
-/* hero variant. The supporting line is a SIBLING, not a flex child: as a child
-   with flex-basis 100% it forced the shrink-to-fit button to resolve against the
-   container, so the CTA stretched the full column width and read as a banner
-   rather than a button. (No backticks in these CSS comments — this block is a JS
-   template literal and a backtick terminates it mid-stylesheet.) */
-.ins.big{height:auto;padding:1.05rem 1.5rem;font-size:.82rem;
-  letter-spacing:.14em;gap:.7rem}
-.ins.big svg{width:21px;height:21px;flex:0 0 21px}
-.cta-note{margin:.7rem 0 0;font-family:var(--mono);font-size:.63rem;letter-spacing:.06em;
-  color:var(--ink3)}
-/* The pulse ring, hero only — a second, slower rhythm behind the sheen so the
-   hero reads as the loudest thing on the page without changing colour. */
-.ins.big::after{content:"";position:absolute;inset:0;border:1px solid var(--accent);
-  animation:ring 2.8s cubic-bezier(.2,.6,.3,1) infinite;pointer-events:none}
-@keyframes ring{0%{transform:scale(1);opacity:.7}70%,100%{transform:scale(1.14);opacity:0}}
 @media (prefers-reduced-motion:reduce){
-  .ins-gl{animation:none;transform:translateX(-120%)}
-  .ins.big::after{animation:none;opacity:0}
+  .thm-st i,.thm-cl i{animation:none}
+  .thm:hover .thm-kn{transform:translateX(0)}
 }
 
-/* ── Discord handle + email reveal ────────────────────────────────── */
+/* ── Discord handle + email reveal ──────────────────────────────────── */
 .dh{font-family:var(--mono);font-weight:600;color:var(--ink);letter-spacing:.02em;
-  background:color-mix(in srgb,var(--accent) 14%,transparent);
-  border-bottom:1px solid color-mix(in srgb,var(--accent) 50%,transparent);
-  padding:.06em .3em}
-.rev{margin-top:.6rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
-.rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-radius:4px;padding:.1em .36em}
+.rev{margin-top:.7rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
+.rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
   color:var(--ink3);list-style:none;transition:color .2s}
 .rev summary::-webkit-details-marker{display:none}
 .rev summary:hover{color:var(--ink)}
-/* A shutter that slides off the label — the "uncover" gesture, done with a
-   pseudo-element so it needs no script. */
-.rv-i{position:relative;width:22px;height:9px;flex:0 0 22px;overflow:hidden;
-  border:1px solid var(--rule2)}
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
 .rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
-  transform:translateX(0);transition:transform .42s cubic-bezier(.2,.8,.2,1)}
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
 .rev[open] .rv-i::after{transform:translateX(101%)}
-.rev summary:hover .rv-i::after{transform:translateX(46%)}
+.rev summary:hover .rv-i::after{transform:translateX(48%)}
 .rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
-.rv-b{display:grid;gap:.3rem;margin-top:.6rem;padding:.7rem .9rem;
-  border:1px solid var(--rule);border-left:2px solid var(--accent);
+.rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
+  border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
   background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
 .rv-b a{color:var(--ink);font-size:.78rem;letter-spacing:.02em}
 .rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
-@keyframes uncover{from{opacity:0;transform:translateY(-4px);clip-path:inset(0 0 100% 0)}
-  to{opacity:1;transform:translateY(0);clip-path:inset(0 0 0 0)}}
+@keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
+  to{opacity:1;clip-path:inset(0 0 0 0)}}
 @media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
 `;
 
@@ -1056,30 +1195,35 @@ ${COMPONENT_CSS}
    previous tab's position, so arriving on a page shows you the move you just
    made. --i is the active index, --n the tab count, both known at build time,
    so no measuring in JS and nothing to go wrong on first paint. */
+/* A pill group, matching the other action controls. Three things were wrong
+   before: the inactive labels sat on --ink3 (the faintest ink token) so they
+   genuinely were close to invisible; the active marker was a 15%-alpha tint that
+   barely registered; and each tab carried an 01/02 number chip that duplicated
+   the landing page's numbering inside an already-crowded bar.
+   Now: inactive labels on --ink2, the active tab is a raised pill with an accent
+   border and accent text, and the numbers are gone. */
 .seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
-  border:1px solid var(--rule);background:var(--raised);isolation:isolate}
-.seg-ink{position:absolute;z-index:0;top:0;bottom:0;left:0;width:calc(100%/var(--n));
-  background:color-mix(in srgb,var(--accent) 15%,transparent);
-  border-bottom:2px solid var(--accent);
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;
+  background:color-mix(in srgb,var(--ink) 7%,transparent);isolation:isolate}
+.seg-ink{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;
+  width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);
+  box-shadow:0 2px 9px -4px rgba(0,0,0,.55);
   transform:translateX(calc(var(--i) * 100%))}
 /* Only animates once JS has supplied a real previous index — see the inline
    script under the switcher. Without JS the indicator is simply already correct. */
-.seg.go .seg-ink{animation:segIn .52s cubic-bezier(.2,.85,.2,1) both}
+.seg.go .seg-ink{animation:segIn .5s cubic-bezier(.2,.85,.2,1) both}
 @keyframes segIn{
-  from{transform:translateX(calc(var(--from) * 100%));opacity:0}
-  60%{opacity:1}
-  to{transform:translateX(calc(var(--i) * 100%));opacity:1}
+  from{transform:translateX(calc(var(--from) * 100%))}
+  to{transform:translateX(calc(var(--i) * 100%))}
 }
-.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;
-  text-transform:uppercase;text-decoration:none;color:var(--ink3);padding:.46rem .8rem;
-  text-align:center;transition:color .22s,transform .22s}
-.tab .n{display:block;font-size:.55rem;letter-spacing:.14em;opacity:.55;margin-bottom:1px}
-.tab:hover{color:var(--ink);transform:translateY(-1px)}
-.tab.on{color:var(--ink);font-weight:600}
-.tab.on .n{color:var(--accent);opacity:1}
+.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
+  text-align:center;border-radius:999px;transition:color .2s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--accent);font-weight:700}
 @media (max-width:640px){
-  .tab{padding:.46rem .5rem;font-size:.62rem;letter-spacing:.06em}
-  .tab .n{display:none}
+  .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
 }
 
 /* ── layout ──────────────────────────────────────────────────────── */
@@ -1088,8 +1232,13 @@ ${COMPONENT_CSS}
 @media (max-width:980px){.page{grid-template-columns:1fr;gap:0}}
 
 /* ── rail: the section index, tracking position ──────────────────── */
-.rail{position:sticky;top:76px;padding:2.6rem 0 2rem;max-height:calc(100vh - 96px);
-  overflow-y:auto;scrollbar-width:thin}
+/* align-self:start is what keeps this out of the footer. Without it the rail
+   stretches to the full height of its grid row, and a sticky element can travel
+   the whole of its own box — so at the bottom of a long document it slid down
+   over the footer that follows. Constrained to its own content height, it stops
+   where the document stops. */
+.rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 2rem;
+  max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:thin}
 .rail::-webkit-scrollbar{width:3px}
 .rail::-webkit-scrollbar-thumb{background:var(--rule2)}
 .rail>.lab{display:block;margin-bottom:1rem;padding-left:.85rem}
@@ -1291,9 +1440,8 @@ html{scroll-behavior:smooth}
   <nav>
     <div class="seg" style="--n:${PAGES.length};--i:${active};--from:${from}">
       <span class="seg-ink" aria-hidden="true"></span>
-      ${PAGES.map((p, n) => `<a class="tab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
-        `${p.out === out ? ' aria-current="page"' : ''}>` +
-        `<span class="n">${String(n + 1).padStart(2, '0')}</span>${esc(p.short)}</a>`).join('\n      ')}
+      ${PAGES.map(p => `<a class="tab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
+        `${p.out === out ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('\n      ')}
     </div>
     ${repoBtn}
     ${installBtn()}
@@ -1332,7 +1480,12 @@ html{scroll-behavior:smooth}
 
   <footer class="foot">
     <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
-    <p>${PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join(' · ')} · <a href="../NOTICE">Notice</a> · <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a></p>
+    <!-- PAGES already contains Notice, so the hand-added ../NOTICE link that used
+         to sit here produced two "Notice" entries side by side. The email is gone
+         too: it belongs on the landing page and in the Privacy Policy, and
+         repeating it in every page footer is just noise. -->
+    <p>${PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join(' · ')}
+      · ${EXTRA_PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join(' · ')}</p>
   </footer>
 </div>
 
@@ -1463,6 +1616,15 @@ body{min-height:100vh;background:
   border:1px solid var(--rule);border-radius:4px;padding:.11em .36em;color:var(--ink);
   word-break:break-word}
 .card hr{border:0;border-top:1px solid var(--rule);margin:2.4rem 0}
+/* Fenced code blocks. The language tag is shown as a corner label rather than
+   dropped, so a reader can tell a shell snippet from a config one. */
+pre.code{position:relative;margin:1.3rem 0;padding:1rem 1.15rem;border-radius:10px;
+  background:var(--raised);border:1px solid var(--rule);overflow-x:auto}
+pre.code code{display:block;font-family:var(--mono);font-size:.8rem;line-height:1.75;
+  color:var(--ink);white-space:pre;background:none;border:0;padding:0}
+pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;right:.75rem;
+  font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3)}
 .card .ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
   border-bottom:1px dotted var(--rule)}
 .card blockquote.callout{margin:1.5rem 0;padding:1.05rem 1.25rem;border-radius:12px;
@@ -1499,13 +1661,20 @@ body{min-height:100vh;background:
   .card td:first-child strong{animation:none;-webkit-text-fill-color:var(--ink)}
 }
 
-.tray{margin-top:2.6rem;padding-top:1.5rem;border-top:1px solid var(--rule);
-  display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
-.tray .lab{margin-right:auto}
-.foot{margin-top:2.2rem;font-family:var(--mono);font-size:.66rem;line-height:1.8;
-  letter-spacing:.04em;color:var(--ink3);text-align:center}
-.foot a{color:var(--ink2)}
-@media print{.bar,.thm,.ghb,.ins,.tray{display:none!important}
+.foot{margin-top:2.6rem;padding-top:1.5rem;border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.1rem .6rem;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase}
+.foot a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+  border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.foot a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+.foot span{color:var(--ink3);opacity:.5}
+.sig{margin:1.4rem 0 0;text-align:center;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.05em;color:var(--ink3)}
+.sig b{color:var(--ink2);font-weight:600}
+.hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}
+@media print{.bar,.thm,.ghb,.ins{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 html{scroll-behavior:smooth}
@@ -1531,13 +1700,18 @@ html{scroll-behavior:smooth}
     <p class="lede">${esc(lede)}</p>
   </header>
   <main class="card">${body}</main>
-  <div class="tray">
-    <span class="lab">Appearance</span>
-    ${themeBtn()}
-  </div>
-  <p class="foot">${EXTRA_PAGES.filter(p => p.out !== out).map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join(' · ')}
-    ${EXTRA_PAGES.some(p => p.out !== out) ? '·' : ''} <a href="./">Legal documents</a>
-    · <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a></p>
+  <!-- No bottom theme tray here. The header on this template already carries the
+       switch, and offering the same control twice on one screen is just clutter.
+       (The landing page is the exception: it has no fixed header, so its switch
+       lives at the foot.) The four legal pages are listed by name rather than
+       collapsed behind "Legal documents" — there are only four, so a group label
+       hides more than it saves. The email is deliberately absent: it is on the
+       landing page and in the Privacy Policy, which is enough. -->
+  <nav class="foot">
+    ${PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join('<span>·</span>')}
+    ${EXTRA_PAGES.filter(p => p.out !== out).map(p => `<span>·</span><a href="./${p.out}">${esc(p.short)}</a>`).join('')}
+  </nav>
+  <p class="sig">${DIOR_SIG}</p>
 </div>
 <script>${THEME_JS}</script>
 </body>
@@ -1560,9 +1734,21 @@ function indexPage(built) {
     // Derived from what was actually built, so it can't claim "two documents"
     // after a third one is added — which is exactly what it said before the
     // licence page landed.
+    const marks = {
+        'contributing.html': '<svg viewBox="0 0 14 14" aria-hidden="true">'
+            + '<line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/>'
+            + '<line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg>',
+        'contributors.html': '<svg viewBox="0 0 14 14" aria-hidden="true">'
+            + '<circle class="d" cx="2.4" cy="7" r="1.7"/>'
+            + '<circle class="d" cx="7" cy="7" r="1.7"/>'
+            + '<circle class="d" cx="11.6" cy="7" r="1.7"/></svg>'
+    };
     const invites = EXTRA_PAGES.map(p => `
       <a class="inv" href="${p.out}" style="--ia:${p.accent}">
-        <span class="ik">${esc(p.kicker)}</span>
+        <span class="inv-h">
+          <span class="inv-m" aria-hidden="true">${marks[p.out] || ''}</span>
+          <span class="ik">${esc(p.kicker)}</span>
+        </span>
         <h3>${esc(p.title)}</h3>
         <p>${esc(p.blurb)}</p>
         <span class="arw">Open <i>&#8594;</i></span>
@@ -1570,9 +1756,13 @@ function indexPage(built) {
 
     const n = built.length;
     const count = ['no', 'One', 'Two', 'Three', 'Four', 'Five'][n] || String(n);
-    const lede = `${count} document${n === 1 ? '' : 's'}. What you agree to by using the bot, `
-        + 'exactly what it stores about you — down to the individual database field — '
-        + 'and the terms the source code is published under.';
+    // Four parallel clauses, one per document, each naming a thing the reader
+    // actually wants to know. The previous version buried an em-dash aside
+    // ("down to the individual database field") mid-sentence and then trailed off
+    // on "the terms the source code is published under", which is the weakest way
+    // to end a line and left the fourth document unmentioned entirely.
+    const lede = `${count} document${n === 1 ? '' : 's'}: what you agree to, what the bot `
+        + 'stores about you, what you may do with the code, and who owns what it shows you.';
 
     return `<!doctype html>
 <html lang="en"><head>
@@ -1587,7 +1777,7 @@ ${TOKENS}
 ${COMPONENT_CSS}
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
-.top{display:flex;align-items:center;gap:1rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
 .top .ghb{margin-left:auto}
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
@@ -1622,40 +1812,64 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
    "documents that bind you"; these are an offer. So: rounded where those are
    squared, warm where those are cold, and side by side rather than stacked in a
    ledger. The visual grammar carries the distinction on its own. */
-.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;
-  margin-top:clamp(2rem,6vh,3rem)}
-.inv{position:relative;overflow:hidden;display:block;text-decoration:none;color:inherit;
-  border:1px solid var(--rule);border-radius:14px;padding:1.3rem 1.4rem 1.2rem;
-  background:linear-gradient(160deg,color-mix(in srgb,var(--ia) 13%,var(--paper)),var(--paper) 70%);
-  transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s}
-.inv::before{content:"";position:absolute;inset:-1px;border-radius:14px;padding:1px;
-  background:linear-gradient(140deg,var(--ia),transparent 55%);
+.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1rem;
+  margin-top:clamp(2.2rem,6vh,3rem)}
+.inv{position:relative;display:block;text-decoration:none;color:inherit;
+  border-radius:16px;padding:1.45rem 1.5rem 1.35rem;background:var(--paper);
+  border:1px solid var(--rule);
+  transition:transform .34s cubic-bezier(.16,.84,.28,1),box-shadow .34s}
+
+/* ONE effect, not four. The previous card stacked a lift, a border-gradient
+   fade, a diagonal light sweep and a coloured shadow — four things firing at once,
+   which is what made it read as effects-for-their-own-sake rather than a design.
+   What remains is a single conic gradient rotating slowly around the card edge,
+   masked to a 1px ring. It is the same "live readout" idea as the wordmark's
+   slots, and it belongs to the card's own accent so the two cards never animate
+   identically. */
+.inv::before{content:"";position:absolute;inset:-1px;border-radius:17px;padding:1.4px;
+  background:conic-gradient(from var(--a,0deg),transparent 0deg,
+    color-mix(in srgb,var(--ia) 92%,white) 42deg,transparent 96deg,transparent 360deg);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s}
-/* The sweep. Sits behind the text and crosses the card on hover — the "woah" is
-   meant to come from the card feeling alive, not from a louder colour. */
-.inv::after{content:"";position:absolute;top:0;bottom:0;width:45%;
-  background:linear-gradient(100deg,transparent,color-mix(in srgb,var(--ia) 26%,transparent),transparent);
-  transform:translateX(-160%);transition:transform .75s cubic-bezier(.2,.8,.2,1)}
-.inv:hover,.inv:focus-visible{transform:translateY(-4px);border-color:transparent;
-  box-shadow:0 22px 44px -22px color-mix(in srgb,var(--ia) 60%,transparent)}
-.inv:hover::before,.inv:focus-visible::before{opacity:1}
-.inv:hover::after,.inv:focus-visible::after{transform:translateX(320%)}
-.inv>*{position:relative;z-index:1}
-.inv .ik{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.6rem;
-  letter-spacing:.15em;text-transform:uppercase;color:var(--ia)}
-.inv h3{font-family:var(--display);font-size:1.22rem;font-weight:750;letter-spacing:-.025em;
-  color:var(--ink);margin:.6rem 0 .4rem}
-.inv p{font-family:var(--serif);font-size:.94rem;line-height:1.62;color:var(--ink2);margin:0}
-.inv .arw{display:inline-flex;align-items:center;gap:.35rem;margin-top:.85rem;
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .34s;animation:orbit 3.6s linear infinite paused}
+.inv:hover,.inv:focus-visible{transform:translateY(-3px);
+  box-shadow:0 20px 44px -26px color-mix(in srgb,var(--ia) 55%,transparent)}
+.inv:hover::before,.inv:focus-visible::before{opacity:1;animation-play-state:running}
+@property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes orbit{to{--a:360deg}}
+
+.inv-h{display:flex;align-items:center;gap:.6rem}
+/* A small mark per card, animated in a way that means something: the plus draws
+   itself open (an invitation to add), and the three dots light in sequence (a
+   list of names filling up). */
+.inv-m{position:relative;width:26px;height:26px;flex:0 0 26px;border-radius:8px;
+  display:grid;place-items:center;color:var(--ia);
+  background:color-mix(in srgb,var(--ia) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--ia) 34%,transparent)}
+.inv-m svg{width:14px;height:14px;display:block;overflow:visible}
+.inv-m .pv,.inv-m .ph{stroke:currentColor;stroke-width:2;stroke-linecap:round;
+  transition:transform .42s cubic-bezier(.16,.84,.28,1)}
+.inv:hover .inv-m .pv{transform:rotate(90deg);transform-origin:7px 7px}
+.inv-m .d{fill:currentColor;opacity:.35}
+.inv:hover .inv-m .d{animation:roll 1.4s ease-in-out infinite}
+.inv:hover .inv-m .d:nth-child(2){animation-delay:.18s}
+.inv:hover .inv-m .d:nth-child(3){animation-delay:.36s}
+@keyframes roll{0%,100%{opacity:.35}45%{opacity:1}}
+
+.inv .ik{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ia)}
+.inv h3{font-family:var(--display);font-size:1.24rem;font-weight:750;letter-spacing:-.025em;
+  color:var(--ink);margin:.75rem 0 .4rem}
+.inv p{font-family:var(--serif);font-size:.95rem;line-height:1.62;color:var(--ink2);margin:0}
+.inv .arw{display:inline-flex;align-items:center;gap:.4rem;margin-top:.95rem;
   font-family:var(--mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;
   color:var(--ia)}
-.inv .arw i{font-style:normal;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.inv .arw i{font-style:normal;transition:transform .3s cubic-bezier(.16,.84,.28,1)}
 .inv:hover .arw i{transform:translateX(5px)}
-@media (prefers-reduced-motion:reduce){.inv::after{display:none}}
-
-/* ── install hero ─────────────────────────────────────────────────── */
-.cta{margin:clamp(1.6rem,5vh,2.4rem) 0 clamp(2rem,6vh,3rem)}
+@media (prefers-reduced-motion:reduce){
+  .inv::before{animation:none}
+  .inv:hover .inv-m .d{animation:none;opacity:1}
+}
 
 /* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
@@ -1668,11 +1882,11 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <div class="top">
     ${wordmark(null)}
     ${repoBtn}
+    ${installBtn()}
   </div>
   <span class="lab">Legal</span>
   <h1>The fine print,<br>written to be read.</h1>
   <p class="lede">${esc(lede)}</p>
-  <div class="cta">${installBtn(true)}</div>
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
   <div class="foot">
@@ -1726,6 +1940,8 @@ function build() {
 
     for (const page of PAGES) {
         const raw = fs.readFileSync(sourcePath(page), 'utf8');
+        // Root sources render into legal/, one level below where they were authored.
+        LINK_BASE = page.root ? '../' : '';
         const meta = [];
         let parsed;
         let note = '';
@@ -1743,9 +1959,13 @@ function build() {
             // Stated on the page itself, not just in a build comment: this render
             // is for reading, and the plain-text file is the instrument. Without
             // this a reader has two copies and no way to know which governs.
-            note = '<p class="authoritative">This page is a formatted reading copy. ' +
-                'The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative ' +
-                'instrument, and governs if the two ever differ.</p>';
+            //
+            // Named from page.file rather than hardcoded — this said "the
+            // plain-text LICENSE" on the NOTICE page, pointing a reader at the
+            // wrong document to resolve a discrepancy in the one they were reading.
+            note = `<p class="authoritative">This page is a formatted reading copy. ` +
+                `The <a href="../${page.file}">plain-text ${esc(page.file)}</a> is the ` +
+                `authoritative instrument, and governs if the two ever differ.</p>`;
         } else {
             // Pull the metadata straight out of the document, so the page can never
             // advertise a version or date the source doesn't actually carry.
@@ -1780,6 +2000,7 @@ function build() {
     // An unverified page is the one that quietly rots.
     for (const page of EXTRA_PAGES) {
         const md = fs.readFileSync(sourcePath(page), 'utf8');
+        LINK_BASE = page.root ? '../' : '';
         const parsed = parseBlocks(stripMdHead(md));
         const ids = new Set(parsed.toc.map(t => t.id));
         const html = linkifyRefs(
@@ -1901,6 +2122,11 @@ function verify(built) {
             // correctly never appears in the rendered text. Without this the
             // check reports ~17 false misses per document.
             cleaned = cleaned.replace(/^\s*\d+\.\s+/gm, ' ');
+            // Code-fence lines are structure too, and the language tag on them is
+            // metadata: it is rendered as a CSS-generated corner label, so it is
+            // deliberately absent from the document text. Same reasoning as above —
+            // the alternative is four permanent false misses naming "bash".
+            cleaned = cleaned.replace(/^\s*```+\s*[\w-]*\s*$/gm, ' ');
         }
 
         const srcWords = words(cleaned);
@@ -2020,6 +2246,88 @@ function structureAudit(built) {
     return bad === 0;
 }
 
+/**
+ * Fourth gate: a cross-reference that SHOULD be a link and isn't.
+ *
+ * The other three can only inspect what was emitted. This one compares the source
+ * against the output: for every Markdown link whose target is a published file,
+ * the rendered page must contain an anchor to it. A reference that quietly
+ * degraded to inert text emits no href, so linkAudit() has nothing to resolve and
+ * reports success — which is exactly how Terms' and Privacy's references to each
+ * other sat dead on the live site while all three gates were green. The trigger
+ * was case: PRIVACY.md became PRIVACY.html and the allowlist held privacy.html.
+ */
+function crossRefAudit(built) {
+    let bad = 0;
+    let examined = 0;
+
+    for (const page of built.filter(p => p.kind === 'md')) {
+        const src = fs.readFileSync(sourcePath(page), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+        const html = fs.readFileSync(path.join(OUT, page.out), 'utf8');
+
+        const want = new Set();
+        for (const m of src.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
+            if (/^https?:|^mailto:/.test(m[2])) continue;
+            const href = m[2].replace(/\.md(#.*)?$/i, '.html$1').replace(/^\.\.\/\.\.\//, '../');
+            const rel = href.split('#')[0];
+            if (!rel) continue;
+            // GROUND TRUTH IS THE DEPLOY TREE, not PUBLISHED_TARGETS.
+            //
+            // The first version of this gate asked resolvePublished() whether the
+            // target was published — the same function whose bug it existed to
+            // catch. Breaking that function therefore emptied `want`, and the gate
+            // reported "all 0 cross-references" and PASSED. A check that draws its
+            // expectations from the code under test cannot fail. Resolving against
+            // the files actually written to public/ is independent of the
+            // allowlist, the case handling, and the rewrite rules alike.
+            //
+            // Case-insensitive on purpose: the filesystem here is case-insensitive,
+            // so existsSync would happily confirm PRIVACY.html and hide the very
+            // mismatch being hunted. The directory listing is compared instead.
+            // BOTH candidate depths are tried: the link as written, and the same
+            // link lifted one level. A root-authored page renders into legal/, so
+            // its bare `LICENSE` is correct only as `../LICENSE` — and checking
+            // just the as-written form made this gate SKIP those links entirely
+            // rather than flag them, which is how the licence stayed unlinked in
+            // four places on the Contributing page while every gate was green.
+            const base = path.basename(rel);
+            const deployRoot = path.join(ROOT, 'public');
+            let found = null;
+            for (const cand of [rel, '../' + rel]) {
+                const dir = path.resolve(OUT, path.dirname(cand));
+                // MUST stay inside the deploy tree. Without this guard the lifted
+                // candidate walked out of public/ and matched the repo's own
+                // models/UserPreference.js, reporting a correctly-inert reference
+                // as a defect. Only files that are actually shipped count.
+                if (dir !== deployRoot && !dir.startsWith(deployRoot + path.sep)) continue;
+                if (!fs.existsSync(dir)) continue;
+                const actual = fs.readdirSync(dir).find(e => e.toLowerCase() === base.toLowerCase());
+                if (actual) { found = path.join(path.dirname(cand), actual).replace(/\\/g, '/'); break; }
+            }
+            if (found) want.add(found);
+        }
+
+        examined += want.size;
+        const missing = [...want].filter(t => !html.includes(`href="${t}`));
+        if (missing.length) {
+            bad++;
+            console.log(`  ✗ ${page.out}: ${missing.length} reference(s) to a DEPLOYED file rendered as inert text:`);
+            missing.forEach(t => console.log(`      → ${t}  (exists in public/, but no anchor points at it)`));
+        } else {
+            console.log(`  ✓ ${page.out}: ${want.size} cross-reference(s) to deployed files, all live links`);
+        }
+    }
+
+    // A gate that examined nothing has verified nothing, and must not read as a
+    // pass. These documents cite each other constantly; zero means the matcher
+    // broke, not that the documents stopped cross-referencing.
+    if (examined === 0) {
+        console.log('  ✗ examined 0 cross-references — the matcher is broken, not the documents');
+        return false;
+    }
+    return bad === 0;
+}
+
 console.log('Building legal pages →', path.relative(ROOT, OUT));
 const built = build();
 console.log('\nVerifying rendered output against source:');
@@ -2028,11 +2336,13 @@ console.log('\nAuditing internal links:');
 const linksOk = linkAudit();
 console.log('\nChecking column-aligned blocks survived:');
 const structOk = structureAudit(built);
-const ok = contentOk && linksOk && structOk;
+console.log('\nChecking cross-references to published files are live:');
+const xrefOk = crossRefAudit(built);
+const ok = contentOk && linksOk && structOk && xrefOk;
 // Names each property that was actually checked, rather than one word that reads
 // as "the output is correct". Three gates test three different things, and a pass
 // on one has already been mistaken for a pass on another once.
 console.log(ok
-    ? '\nDone. Content complete · every link resolves · aligned blocks intact.'
+    ? '\nDone. Content complete · links resolve · aligned blocks intact · cross-refs live.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);

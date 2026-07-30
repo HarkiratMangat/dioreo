@@ -21,7 +21,7 @@ and in the changelog entry for the release it first shipped in.
 
 *No external contributions yet — this is where your name goes.*
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get started. Bug reports and security
+See the [contributing guide](CONTRIBUTING.md) to get started. Bug reports and security
 findings count, and they don't require agreeing to the CLA.
 
 <!--
@@ -44,4 +44,6 @@ Format for new entries — keep newest at the bottom:
 - **If a contribution is removed entirely**, we'll remove the credit on request —
   or leave it, if you'd rather keep it.
 
-Thanks to everyone who has taken the time to make this better. 🖤
+Thanks to everyone who has taken the time to make this better.
+
+♡ Made with love by **dior**
