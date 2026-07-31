@@ -51,24 +51,32 @@ function applyInfoAliases(text) {
         .replace(/(^|[\s\n])n:/gi, (_, pre) => `${pre}${emojis.nerf}`);
 }
 
-// Additional Info auto-formatting (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply) --
-// renders into Harkirat's decided structure (his own reference screenshot,
-// `local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): a `### Additional Changes` heading,
-// `__**Weapon**__` per weapon, its attachment name(s) as plain lines, and each change as
-// `> {buff/nerf emoji} details`.
+// Additional Info auto-formatting (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply;
+// PARSER REWRITTEN same day, direct correction) -- renders into Harkirat's decided output structure
+// (his own reference screenshot, `local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): a
+// `### Additional Changes` heading, `__**Weapon**__` per weapon, its attachment name(s) as plain
+// lines, and each change as `> {buff/nerf emoji} details`.
+//
+// The FIRST version of this parser required every weapon/attachment/change on its OWN physical
+// line -- which directly caused a real submission mistake (a comma-separated one-liner got read as
+// a single giant weapon name). Harkirat's direct correction: match the SAME comma-delimited mental
+// model draws/calendar bulk imports already use -- one weapon's ENTIRE block is one line, comma-
+// separated; only a NEW weapon needs its own line.
 //
 // OPT-IN, not a format change to every entry -- only triggers when the admin actually uses the new
 // `# Weapon Name` line marker. With no `#` line anywhere, this is a no-op beyond the existing b:/n:
 // alias, so every pre-existing free-typed entry (most of them are just a one-line blurb) keeps
 // rendering exactly as it always has.
 //
-// Grammar, line by line, once at least one `#` line is present:
-//   `# Weapon Name`        -> starts a new weapon block
-//   `b: text` / `n: text`  -> a change line under the CURRENT attachment (needs one to already exist)
-//   anything else          -> a new attachment name under the current weapon
-// A weapon can have multiple attachment lines (each starts its own change list); an attachment can
-// have multiple b:/n: change lines before the next attachment/weapon line. Any lines typed BEFORE
-// the first `#` marker are kept as free prose above the structured block, not discarded.
+// Grammar, once at least one `#` line is present:
+//   `# Weapon, Attachment, n:/b: text, n:/b: text2, Attachment2, n:/b: text3` -- ONE line, comma-
+//   separated. First segment (after `#`) is the weapon name. Every segment after that is EITHER a
+//   new attachment name, or -- if it starts with `b:`/`n:` -- a change line under whichever
+//   attachment came most recently in THIS line. A new plain (non-b:/n:) segment always starts a new
+//   attachment, so any number of attachments/changes can ride on one weapon's line.
+//   A plain NEWLINE (a new `# ` line) starts the next weapon -- weapons are never comma-joined with
+//   each other. Lines typed BEFORE the first `#` marker are kept as free prose above the structured
+//   block, not discarded.
 function formatAdditionalInfo(text) {
     const raw = (text || '').trim();
     if (!raw) return '';
@@ -77,9 +85,7 @@ function formatAdditionalInfo(text) {
     if (!hasWeaponMarker) return applyInfoAliases(raw);
 
     const preambleLines = [];
-    const weapons = []; // { name, attachments: [{ name, changes: [] }] }
-    let currentWeapon = null;
-    let currentAttachment = null;
+    const weaponBlocks = [];
     let seenWeapon = false;
 
     for (const rawLine of lines) {
@@ -87,34 +93,36 @@ function formatAdditionalInfo(text) {
         if (!line) continue;
 
         const weaponMatch = line.match(/^#\s*(.+)$/);
-        if (weaponMatch) {
-            seenWeapon = true;
-            currentWeapon = { name: weaponMatch[1].trim(), attachments: [] };
-            weapons.push(currentWeapon);
-            currentAttachment = null;
+        if (!weaponMatch) {
+            if (!seenWeapon) { preambleLines.push(line); continue; }
+            // A stray non-`#` line after weapons have already started -- graceful degradation
+            // (kept verbatim, alias-applied) rather than dropped or crashed on.
+            weaponBlocks.push(applyInfoAliases(line));
             continue;
         }
-        if (!seenWeapon) {
-            preambleLines.push(line);
-            continue;
-        }
-        const changeMatch = line.match(/^(b|n):\s*(.+)$/i);
-        if (changeMatch && currentAttachment) {
-            const emoji = changeMatch[1].toLowerCase() === 'b' ? emojis.buff : emojis.nerf;
-            currentAttachment.changes.push(`> ${emoji} ${changeMatch[2].trim()}`);
-            continue;
-        }
-        // Anything else (including a stray b:/n: line with no attachment yet -- graceful
-        // degradation, not a crash: it just becomes an oddly-named attachment the admin will
-        // immediately notice and fix) starts a new attachment under the current weapon.
-        currentAttachment = { name: line, changes: [] };
-        currentWeapon.attachments.push(currentAttachment);
-    }
+        seenWeapon = true;
 
-    const weaponBlocks = weapons.map(w => {
-        const attachmentLines = w.attachments.map(a => [a.name, ...a.changes].join('\n')).join('\n');
-        return `__**${w.name}**__\n${attachmentLines}`;
-    });
+        const segments = weaponMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+        const weaponName = segments.shift();
+        const attachments = []; // { name, changes: [] }
+        let currentAttachment = null;
+        for (const seg of segments) {
+            const changeMatch = seg.match(/^(b|n):\s*(.+)$/i);
+            if (changeMatch && currentAttachment) {
+                const emoji = changeMatch[1].toLowerCase() === 'b' ? emojis.buff : emojis.nerf;
+                currentAttachment.changes.push(`> ${emoji} ${changeMatch[2].trim()}`);
+                continue;
+            }
+            // Anything else (including a stray b:/n: segment with no attachment yet -- graceful
+            // degradation, not a crash: it just becomes an oddly-named attachment the admin will
+            // immediately notice and fix) starts a new attachment under this weapon.
+            currentAttachment = { name: seg, changes: [] };
+            attachments.push(currentAttachment);
+        }
+
+        const attachmentLines = attachments.map(a => [a.name, ...a.changes].join('\n')).join('\n');
+        weaponBlocks.push(`__**${weaponName}**__\n${attachmentLines}`);
+    }
 
     const parts = [];
     if (preambleLines.length) parts.push(applyInfoAliases(preambleLines.join('\n')));

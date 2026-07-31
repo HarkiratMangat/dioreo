@@ -197,25 +197,29 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   disclaimer rides directly under the title with no divider, since dividing up just one disclaimer
   line on its own read as visually pointless (Harkirat's own call).
 - **Additional Info auto-formats into a real weapon/attachment/change structure, OPT-IN via a `#`
-  line marker (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply, structure decided from
-  Harkirat's own reference screenshot).** `commands/patchnotes.js`'s `formatAdditionalInfo()` — a
-  line starting `# Weapon Name` opens a new weapon block (`__**Weapon Name**__`); any other non-blank
-  line becomes an attachment name under it; a `b:`/`n:` line becomes a change line under the most
-  recent attachment (`> {buff/nerf emoji} details`), reusing the existing `applyInfoAliases()` emoji
-  lookup. A weapon can carry multiple attachment lines, each with multiple change lines. **With no
-  `#` line anywhere in the field, this is a pure no-op beyond the pre-existing b:/n: alias** — every
-  pre-existing free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the
-  whole `### Additional Changes` heading only appears once the admin actually opts in. Any lines
-  typed before the first `#` marker are kept as free prose above the structured block, not discarded.
-  **Real submission mistake this caused (same-day live-testing, 2026-07-31 17:20 EDT):** the
-  original placeholder read as if the whole example belonged on ONE comma-separated line (matching
-  the draws/calendar bulk formats' mental model) — Harkirat typed `# Fennec (DMZ only), Ultra
-  Extended Mag, n: Ammo capacity reduced...` as one line, which (correctly, per the grammar above)
-  parsed as a single weapon named that entire sentence, printing it back bold+underlined verbatim.
-  Fixed two ways: the placeholder now explicitly says "OWN LINE" and points at the Guide button
-  (Discord's 100-char placeholder cap ruled out a real multi-line example there); the new rich
-  `/manage` Guide's Patch Notes topic (`utils/manageGuides.js`) leads with this exact failure mode as
-  its own callout, not just the correct syntax.
+  line marker (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply; PARSER REWRITTEN twice
+  same day).** Output structure decided from Harkirat's own reference screenshot and never changed:
+  a `### Additional Changes` heading, `__**Weapon**__` per weapon, its attachments as plain lines,
+  each change as `> {buff/nerf emoji} details`. The INPUT grammar went through two shapes before
+  landing:
+  1. First build: every weapon/attachment/change needed its OWN physical line. This directly caused
+     a real submission mistake — Harkirat typed the whole thing as one comma-separated line (the
+     same mental model draws/calendar bulk imports already use), which got read as a single weapon
+     named that entire sentence and printed back bold+underlined verbatim.
+  2. **Final shape, per Harkirat's direct correction:** one weapon's ENTIRE block is ONE line,
+     comma-delimited — `# Weapon, Attachment, n:/b: text, n:/b: text2, Attachment2, n:/b: text3`.
+     The first segment after `#` is the weapon name; every segment after that is a NEW ATTACHMENT
+     unless it starts with `b:`/`n:`, in which case it's a CHANGE under whichever attachment came
+     right before it in that same line. Only a NEW WEAPON needs its own new line — this is now
+     genuinely the same mental model as the draws/calendar bulk formats, not a different one.
+  `commands/patchnotes.js`'s `formatAdditionalInfo()` implements this; `b:`/`n:` reuses the existing
+  `applyInfoAliases()` emoji lookup. **With no `#` line anywhere in the field, this is a pure no-op
+  beyond the pre-existing b:/n: alias** — every pre-existing free-typed entry (most are a one-line
+  blurb) keeps rendering exactly as before; the whole `### Additional Changes` heading only appears
+  once the admin actually opts in. Any lines typed before the first `#` marker are kept as free
+  prose above the structured block, not discarded. The `/manage` placeholder (100-char Discord cap
+  ruled out a real example there) and the rich Guide's Patch Notes topic (`utils/manageGuides.js`)
+  both document the FINAL comma-delimited grammar, not the abandoned one-line-per-thing version.
 - **Tier shorthand `ll` → `lg` for Legacy (changed 2026-07-31 17:20 EDT, Harkirat's direct
   request).** `utils/adminParser.js`'s `resolveTier()`/`TIER_SHORTHAND` — no back-compat kept for
   the old `ll` token, since it's purely an admin-typed input shorthand with no stored data depending

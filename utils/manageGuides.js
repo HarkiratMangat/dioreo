@@ -131,13 +131,12 @@ function patchnotesSections() {
             '`July 15, 7:20 AM` → **this one field is different** -- the moment you add a time, it\'s read as **your own local clock** (`/settings`' + '\u2019s timezone), not UTC, then converted correctly. Every other date field in the bot ignores time-of-day entirely; this is the one exception.'),
         section('🔗 URLs 1 / URLs 2',
             'Each is 5 separate fields (image 1-5 / image 6-10), not one big paste. Blank = no image in that slot. Every submitted URL is auto re-hosted to Cloudinary so a dead source link never breaks the carousel later.'),
-        section('⚔️ Additional Info — the auto-formatting that confused the last submission',
+        section('⚔️ Additional Info — one weapon per line, comma-separated',
             'Typing `b:`/`n:` ANYWHERE always swaps in the buff/nerf icon -- that part always worked.\n' +
-            '**The structured "Additional Changes" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. It needs REAL LINE BREAKS (Shift+Enter in the field), not commas:\n' +
-            '```\n# Fennec (DMZ only)\nUltra Extended Mag\nn: Ammo capacity reduced from 40 Rounds to 20 Rounds\n```\n' +
+            '**The structured "Additional Changes" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b: text` -- ONE weapon per line, a NEW LINE for the next weapon:\n' +
+            '```\n# Fennec (DMZ only), Ultra Extended Mag, n: Ammo capacity reduced from 40 Rounds to 20 Rounds\n```\n' +
             `Renders as:\n### Additional Changes\n__**Fennec (DMZ only)**__\nUltra Extended Mag\n> ${emojis.nerf} Ammo capacity reduced from 40 Rounds to 20 Rounds\n` +
-            '-# Typing it all on ONE line (comma-separated, like the draws/calendar bulk formats) does NOT work here -- it gets read as one giant weapon name and prints back exactly what you typed, bolded and underlined. That\'s the exact bug that bit last time.\n' +
-            'A weapon can have multiple attachment lines, each with multiple `b:`/`n:` change lines under it. No `#` line anywhere = plain free-typed text, unchanged (just the b:/n: icon swap).'),
+            '-# How it\'s read: the first thing after `#` is the WEAPON name. Every comma-separated thing after that is a new ATTACHMENT — UNLESS it starts with `b:`/`n:`, in which case it\'s a CHANGE under whichever attachment came right before it. A weapon can carry as many attachments/changes as you want on its one line; the NEXT weapon just needs its own new line.'),
         section('💡 Tip',
             'Not writing structured changes this patch? Just type a normal sentence -- no `#` needed, nothing forces the structured layout on you.')
     ];

@@ -803,7 +803,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: = icon. # Weapon on its OWN LINE, then Attachment, then n:/b: text — see Guide button.').setValue(currentEntry?.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: # Weapon, Attachment, n:/b: text, ... — new weapon = new line. See Guide button.').setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
         // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
@@ -842,7 +842,7 @@ function buildPatchAddSeasonModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: = icon. # Weapon on its OWN LINE, then Attachment, then n:/b: text — see Guide button.').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: # Weapon, Attachment, n:/b: text, ... — new weapon = new line. See Guide button.').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
     );
@@ -858,7 +858,7 @@ function buildPatchEditSeasonModal(entry, userTimezone) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: = icon. # Weapon on its OWN LINE, then Attachment, then n:/b: text — see Guide button.').setValue(entry.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: # Weapon, Attachment, n:/b: text, ... — new weapon = new line. See Guide button.').setValue(entry.description || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
     );
