@@ -238,7 +238,14 @@ const PLAYLIST_KEYWORDS = [
     /\bmodes?\b/i,     // Mode, Modes ("MP Mode", "Game Mode" -- any spaced form)
     /gamemode/i,       // fused compound with no word boundary to anchor \bmodes?\b on
     /\bplaylists?\b/i, // Playlist, Playlists
-    /\bmaps?\b/i       // Map, Maps -- boundaried so "Roadmap"/"Mapping" don't false-positive
+    /\bmaps?\b/i,      // Map, Maps -- boundaried so "Roadmap"/"Mapping" don't false-positive
+    // Standalone "MP"/"BR" (added 2026-07-31 13:05 EDT, Harkirat's direct correction -- "Krai BR" and
+    // "Rebirth Island BR" are unambiguous mode names to him even with no "mode"/"playlist" word at
+    // all, the same way "Nuketown MP" would be). Both are 2-letter tokens, so `\b` on both sides is
+    // load-bearing here specifically -- without it "MP"/"BR" would match as substrings of unrelated
+    // words constantly.
+    /\bmp\b/i,
+    /\bbr\b/i
 ];
 
 function guessCalendarCategory(title) {

@@ -144,9 +144,13 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   instead of a false date range. **Category no longer has to be typed by hand (added 12:40 EDT the
   same session, per Harkirat's explicit follow-up):** with no `d•`/`p•`/`e•` prefix (or a blank
   Category field on the single modal), `adminParser.js`'s `guessCalendarCategory()` keyword-matches
-  the title itself — `DRAW_KEYWORDS` (`draw`/`armory`/`it goes two`/`redux`/`mythic drop`) checked
-  before `PLAYLIST_KEYWORDS` (`mode`/`playlist`/`gamemode`/`map`), defaulting to `'event'` when
-  neither hits, per Harkirat's own stated rule. **The explicit prefix still wins when present** —
+  the title itself — `DRAW_KEYWORDS` (`draw`/`armory`/`it goes two`/`redux`/`mythic drop`, word-form
+  aware: plurals, "Armories", the fused "Gamemode" spelling) checked before `PLAYLIST_KEYWORDS`
+  (`mode`/`playlist`/`gamemode`/`map`/standalone `MP`/`BR`), defaulting to `'event'` when neither
+  hits, per Harkirat's own stated rule. **Standalone `MP`/`BR` were a direct correction** (2026-07-31
+  13:05 EDT) — "Krai BR"/"Rebirth Island BR" have no "mode"/"playlist" word at all but are
+  unambiguous mode names to him; both are word-boundaried (`\bmp\b`/`\bbr\b`) since they're 2-letter
+  tokens that would otherwise match constantly as substrings of unrelated words. **The explicit prefix still wins when present** —
   it's the override for a genuinely ambiguous title (his own `calendar_bulk.txt` prefixes bare map
   names like "Krai BR" for exactly this, since neither keyword list matches them). Navigation stays the pre-existing left/right pagination on Harkirat's
   explicit call (page 1 = Draws + Events, page 2 = Playlists/Modes) rather than switching to
