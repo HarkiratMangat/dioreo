@@ -172,7 +172,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
         { type: 12, items: carouselItems }, // NATIVE MEDIA CAROUSEL INJECTION
         { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` },
         { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `-# Select from the list below to view previous balance changes` }
+        { type: 10, content: `-# Select from the list below to view **previous balance changes**` }
     );
 
     const containerPayload = {

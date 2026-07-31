@@ -41,7 +41,7 @@ function resolveTier(shorthand) {
     const clean = shorthand.toLowerCase().trim();
     if (['m', 'mythic'].includes(clean)) return 'mythic';
     if (['l', 'leggy', 'legendary'].includes(clean)) return 'legendary';
-    if (['ll', 'lega', 'legacy'].includes(clean)) return 'legacy';
+    if (['lg', 'lega', 'legacy'].includes(clean)) return 'legacy';
     if (['e', 'epic'].includes(clean)) return 'epic';
     return toTitleCase(shorthand);
 }
@@ -311,13 +311,16 @@ function parseBulkEvents(bulkText) {
 }
 
 // Reverse of resolveTier's shorthand->full-word mapping, used to reconstruct the compact bulk-add
-// tier token ("m"/"l"/"ll"/"e") from what's actually stored in the DB ("mythic"/"legendary"/
-// "legacy"/"epic"). Falls back to the stored value itself for anything unrecognized (shouldn't
-// happen from data that went through resolveTier, but keeps this from ever throwing).
+// tier token ("m"/"l"/"lg"/"e") from what's actually stored in the DB ("mythic"/"legendary"/
+// "legacy"/"epic"). `lg` was `ll` until 2026-07-31 17:20 EDT (Harkirat's direct request) -- changed
+// here only, no back-compat kept for the old token, since it's purely an admin-typed shorthand with
+// no stored data depending on it (the DB always stores the full word "legacy"). Falls back to the
+// stored value itself for anything unrecognized (shouldn't happen from data that went through
+// resolveTier, but keeps this from ever throwing).
 // 'comment' isn't a real tier -- it's the free-text "-# note" item type (see parseItemLine below) --
 // but it goes through this same reverse map when reconstructing bulk-add/edit text, so it needs an
 // entry too or a comment line round-trips back out as the literal word "comment" instead of "-#".
-const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'll', epic: 'e', comment: '-#' };
+const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'lg', epic: 'e', comment: '-#' };
 
 /**
  * Reconstructs the bulk-add text format (see parseBulkDrawList) from Draw documents already in

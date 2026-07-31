@@ -207,7 +207,54 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   pre-existing free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the
   whole `### Additional Changes` heading only appears once the admin actually opts in. Any lines
   typed before the first `#` marker are kept as free prose above the structured block, not discarded.
-  Older patch note entries keep their own historical title forever (so a past season's
+  **Real submission mistake this caused (same-day live-testing, 2026-07-31 17:20 EDT):** the
+  original placeholder read as if the whole example belonged on ONE comma-separated line (matching
+  the draws/calendar bulk formats' mental model) — Harkirat typed `# Fennec (DMZ only), Ultra
+  Extended Mag, n: Ammo capacity reduced...` as one line, which (correctly, per the grammar above)
+  parsed as a single weapon named that entire sentence, printing it back bold+underlined verbatim.
+  Fixed two ways: the placeholder now explicitly says "OWN LINE" and points at the Guide button
+  (Discord's 100-char placeholder cap ruled out a real multi-line example there); the new rich
+  `/manage` Guide's Patch Notes topic (`utils/manageGuides.js`) leads with this exact failure mode as
+  its own callout, not just the correct syntax.
+- **Tier shorthand `ll` → `lg` for Legacy (changed 2026-07-31 17:20 EDT, Harkirat's direct
+  request).** `utils/adminParser.js`'s `resolveTier()`/`TIER_SHORTHAND` — no back-compat kept for
+  the old `ll` token, since it's purely an admin-typed input shorthand with no stored data depending
+  on it (the DB always stores the full word `"legacy"`). If you ever see `ll` referenced as the
+  legacy shorthand anywhere (a stale comment, an old screenshot), it's out of date.
+- **`/calendar` banner images prefer Discord's own CDN over Cloudinary when the source already is
+  one (added 2026-07-31 17:20 EDT, direct follow-up to the banner feature above).** A
+  `cdn.discordapp.com`/`media.discordapp.net` source URL skips Cloudinary re-hosting entirely
+  (`utils/calendarBannerCache.js`'s `isDiscordCdnUrl()`) — re-hosting it would be pure downside: an
+  extra copy of an already-durable asset, AND it throws away Discord's own dynamic resize proxy
+  (`media.discordapp.net?width=N`), which is the one mechanism that gives a REAL small-preview/
+  full-resolution-on-click pairing (Discord's own image viewer loads the true original when you
+  click through, not the resized proxy URL). A Cloudinary-hosted banner (from a non-Discord source
+  that got re-hosted for durability) doesn't have this — `capBannerPreviewWidth()`'s Cloudinary
+  branch caps the SAME width everywhere, inline and on zoom alike, since a Cloudinary-transformed
+  derivative is a genuinely separate, smaller file with no path back to anything larger. Practical
+  upshot for Harkirat: pasting a `cdn.discordapp.com` link (from posting the image in any real
+  Discord channel/DM first) is the BETTER path for a banner now, not just an accepted fallback.
+  ⚠️ The Discord-CDN resize-proxy path is NOT live-verified against a real uploaded banner as of this
+  build — if a Discord-CDN banner's preview doesn't visibly shrink to `BANNER_MAX_WIDTH` (512),
+  check `capBannerPreviewWidth()` in `utils/calendarBannerCache.js` first.
+- **`/manage`'s bulk-import guides rebuilt into a rich, structured Components V2 view with a
+  topic-switching dropdown (2026-07-31 17:20 EDT, same-day follow-up — was a plain-text ephemeral
+  reply from earlier the same session).** `utils/manageGuides.js` — one shared render function
+  (`buildGuideContainer(topicKey)`) covering 5 topics (Draws/Calendar/Loadouts/Patch Notes/Next
+  Season Draft — the last two are NEW, they had no guide at all before), each with a paste skeleton,
+  a field-by-field breakdown of what's literal vs. auto-formatted, a real before/after example, and
+  tips. A `mng_guide_pick` select menu (index.js) re-renders the SAME message to any other topic
+  without closing the guide — same `deferUpdate()` + `sendV2Payload()` shape `mng_pagesel` already
+  uses for the main panel. **Every page's Guide button now lives in the LAST section, matching a
+  fixed ordering convention across every `/manage` page: single-item management → bulk management →
+  purge → export → guide** (Harkirat's direct correction — it was scattered mid-page before). The
+  Draws example in the old plain-text version was literal filler nonsense (`Jupiter Cannon Draw, m
+  Jupiter Cannon, l Void Blade...`) — replaced with a real one (`Void Implosion Draw, l M4 - Void
+  Implosion, e Dusk - Otherworld Ensemble, -# Girls Frontline Collab, July 15, URL.com/image.png`).
+  Calendar's "Page Banners" button, previously its own separate inline group, is folded into the
+  "Add Multiple Events" bulk group as a 4th button — it had no reason to sit apart from Guide's own
+  inline placement. Calendar's Export/Purge order was also swapped to match the fixed convention
+  above (Purge now comes before Export, it had been the other way around). (so a past season's
   patch notes don't get renamed retroactively), but the entry representing the
   currently-live season needs to track the live season title — see index.js's
   `modal_season_titles_deadlines` handler (formerly `edit_season_titles`, merged with the old

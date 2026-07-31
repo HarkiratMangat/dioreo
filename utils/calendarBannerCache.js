@@ -31,11 +31,32 @@ function publicIdFor(page) {
     return `${FOLDER}/${page}`;
 }
 
+// A real Discord CDN link doesn't expire the way an external host (Facebook, etc.) can -- that's
+// the whole reason cloudinaryCache.js/patchNotesCache.js re-host in the first place, and it doesn't
+// apply to a URL that's already on Discord's own CDN. (Harkirat's direct follow-up, 2026-07-31
+// 17:20 EDT.)
+function isDiscordCdnUrl(url) {
+    try {
+        const { hostname } = new URL(url);
+        return hostname === 'cdn.discordapp.com' || hostname === 'media.discordapp.net';
+    } catch {
+        return false;
+    }
+}
+
 // Uploads a REMOTE url straight into Cloudinary (server-side fetch, the bot never downloads the
 // image itself) -- never throws, a Cloudinary hiccup falls back to the raw URL rather than
 // blocking the admin's save, same philosophy as cacheThumbnail()/cachePatchImage().
+//
+// A Discord CDN source URL skips the Cloudinary upload entirely -- re-hosting it would be pure
+// downside: an extra copy of an already-durable asset, AND it would throw away Discord's own
+// dynamic resize proxy (see capBannerPreviewWidth below), which is the one mechanism that actually
+// gives a real small-preview/full-resolution-on-click pairing. A Cloudinary-transformed derivative
+// can never do that (see capBannerPreviewWidth's Cloudinary branch) -- it's a genuinely separate,
+// smaller file with no path back to anything larger.
 async function cacheBannerImage(page, sourceUrl) {
     if (!VALID_PAGES.includes(page)) throw new Error(`Invalid calendar banner page: ${page}`);
+    if (isDiscordCdnUrl(sourceUrl)) return { url: sourceUrl, cached: true, error: null };
     if (isCloudinaryWriteBlocked('upload', publicIdFor(page))) {
         return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
@@ -71,4 +92,39 @@ async function clearBannerImage(page) {
     }
 }
 
-module.exports = { cacheBannerImage, clearBannerImage, VALID_PAGES, FOLDER };
+// Caps the DISPLAYED width of a banner image for the inline preview, without touching whatever's
+// actually stored (Harkirat's direct follow-up, 2026-07-31 17:20 EDT: the raw banner rendered
+// unnecessarily wide on desktop; further follow-up same session: use Discord's own CDN instead of
+// Cloudinary where possible, for a REAL small-preview/full-res-on-click pairing). Two branches:
+//
+// - **Discord CDN source (the good path):** `media.discordapp.net` is Discord's own dynamic resize
+//   proxy for its CDN assets -- `?width=N` requests a resized derivative while the ORIGINAL asset
+//   stays fully reachable (Discord's own image viewer loads the true source when you click through
+//   to zoom, not this resized proxy URL). `cdn.discordapp.com` doesn't accept these query params, so
+//   a cdn.discordapp.com URL is rewritten onto the media.discordapp.net host (same path) first.
+//   ⚠️ NOT live-verified against a real Discord attachment as of this build (no real banner had been
+//   uploaded through this path yet) -- if the preview doesn't visibly shrink once a real Discord CDN
+//   banner URL is set, this is the first thing to check.
+// - **Cloudinary source (the fallback path, e.g. a non-Discord URL that got re-hosted):** splices a
+//   `c_limit,w_N` transform into the delivery URL (`.../upload/{transform}/v.../public_id`). This
+//   path has the real platform limitation the Discord path avoids: Discord shows exactly the URL
+//   it's given, both inline and on zoom, so the zoomed view here is ALSO capped to this same width --
+//   a Cloudinary-transformed derivative is a genuinely separate, smaller file with no path back to
+//   anything larger, unlike Discord's own proxy.
+function capBannerPreviewWidth(url, maxWidth) {
+    if (!url) return url;
+    if (isDiscordCdnUrl(url)) {
+        try {
+            const parsed = new URL(url);
+            parsed.hostname = 'media.discordapp.net';
+            parsed.searchParams.set('width', String(maxWidth));
+            return parsed.toString();
+        } catch {
+            return url;
+        }
+    }
+    if (url.includes('/upload/')) return url.replace('/upload/', `/upload/c_limit,w_${maxWidth}/`);
+    return url;
+}
+
+module.exports = { cacheBannerImage, clearBannerImage, capBannerPreviewWidth, isDiscordCdnUrl, VALID_PAGES, FOLDER };

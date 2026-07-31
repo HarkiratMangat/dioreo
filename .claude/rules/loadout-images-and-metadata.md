@@ -122,11 +122,23 @@ Cloudinary usage only ever builds URL strings for images an admin already upload
   - Provided a URL + caching fails (source already dead, network hiccup, etc.) → falls back to the
     raw URL as typed, so the draw still saves — a Cloudinary hiccup must never block an admin action,
     that's the opposite of what this feature is for.
-  - No URL + a cache hit exists → reuses the cached URL.
-  - No URL + no cache hit at all → `url: null`, and this IS treated as a real validation error by
-    every caller (the draw needs *some* thumbnail to render at all) — single add/edit rejects the
-    submission with a clear message; bulk routes skip just that one entry and report it by name in
-    the confirmation, rather than silently saving a draw with a broken/missing image field.
+  - No URL + a cache hit exists → reuses the cached URL. **Fuzzy fallback (added 2026-07-31 17:20
+    EDT, Harkirat's request):** an exact-slug miss now tries a near-match against everything cached
+    under `temp_draws/` before giving up — `getCachedUrlFuzzy()`'s `titleSimilarity()` is plain
+    Levenshtein edit-distance ratio (character-level), NOT `utils/search.js`'s word-overlap
+    `isSameDrawTitle()` (that one's built for reworded/extra-word variants of the same content — the
+    wrong tool for "same title, off by a typo or a small edit"). Threshold `0.75`, not a literal 0.9
+    — his own framing was "~90%... or something similar as per your judgement," and "slightly adjust
+    it" (his example) reads as more than single-character typo tolerance; a false match's worst case
+    is reusing a different-but-real cached thumbnail, not corrupted data, so this errs toward
+    matching over missing. `resolveThumbnail()`'s return shape gained `matchedTitle` (only set on a
+    non-exact match) — every draws call site in `index.js` surfaces it via a shared `thumbnailNote()`
+    helper so a typo reusing a DIFFERENT draw's image is visible in the confirmation, never silent.
+  - No URL + no cache hit at all (exact or fuzzy) → `url: null`, and this IS treated as a real
+    validation error by every caller (the draw needs *some* thumbnail to render at all) — single
+    add/edit rejects the submission with a clear message; bulk routes skip just that one entry and
+    report it by name in the confirmation, rather than silently saving a draw with a broken/missing
+    image field.
 - **Bulk-paste URL detection is a space heuristic, not a stricter format change.** Every date this
   bot's admin flows accept ("July 15", "August 5, 2026") contains a space; a URL or bare Cloudinary
   key never does. `adminParser.js`'s `looksLikeUrlOrKey()` pops the trailing comma-field as a URL

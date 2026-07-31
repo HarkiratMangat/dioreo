@@ -57,65 +57,6 @@ const PURGE_LABELS = {
     patchnotes: { all: 'the ENTIRE patch notes history' }
 };
 
-// Bulk-import format reference (added 2026-07-31 17:20 EDT, notes L189) -- Harkirat's own words
-// were "I lowkey forget what the bulk input formatting is... I need a template." Scoped down from
-// the filed entry's heavier "raw-text -> bulk-format AI converter" option to a static, always-
-// accurate reference pulled straight from each parser's own real behavior (utils/adminParser.js) --
-// a converter is still the bigger option on the table if this doesn't cover it. Plain text, no
-// emoji interpolation, so this is safe as a top-level const (unlike buildPagesTable(), which is
-// rebuilt per-render specifically because emoji ids get live-patched after this file loads).
-const BULK_FORMAT_GUIDES = {
-    draws: [
-        '**Bulk Add/Replace Draws — Format**',
-        'One draw per line, comma-separated:',
-        '`Title, [Tier] Item 1, [Tier] Item 2, ..., Thumbnail URL (optional), Date`',
-        '',
-        '• **Tier shorthand:** `m` mythic · `l` legendary · `ll` legacy · `e` epic (or spell the tier out)',
-        '• **Comment line:** start an item with `-# ` for a free-text note instead of a tiered item',
-        '• **Thumbnail URL** is optional — leave it out to reuse whatever\'s already cached for that exact title',
-        '• **Date** is UTC-0, e.g. `July 15` or `July 15, 2026` (a date containing its own comma is handled fine)',
-        '',
-        'Example:',
-        '`Jupiter Cannon Draw, m Jupiter Cannon, l Void Blade, -# Character bundle only, July 15`',
-        '',
-        '-# Tip: use Export above to see this format filled in with your real current data.'
-    ].join('\n'),
-    calendar: [
-        '**Bulk Add/Replace/Delete Calendar Events — Format**',
-        'Bullet-separated entries (a `•` character), NOT one-per-line — this is what survives a copy-paste out of Notes:',
-        '`[d|p|e]•M/D - M/D | Event Title` or `[d|p|e]•M/D - All Season | Event Title`',
-        '',
-        '• Optional `d`/`p`/`e` prefix directly touching the bullet = Draw/Playlist/Event section. Leave it off and the title is auto-classified by keyword (words like "draw"/"mode"/"playlist"/standalone "MP"/"BR").',
-        '• `All Season` as the end date means the event runs until the Battle Pass ends — no fixed end date.',
-        '• Dates are UTC-0.',
-        '',
-        'Example:',
-        '`d•7/15 - 8/1 | Jupiter Cannon Draw•p•7/20 - All Season | Krai BR`',
-        '',
-        '-# Tip: use Export above to see this format filled in with your real current data.'
-    ].join('\n'),
-    loadouts_mp: [
-        '**Bulk Add/Replace Loadouts — Format**',
-        'One build per BLOCK (blank line between blocks). The first line is the header, every line after it is one attachment:',
-        '`Weapon | Category | MP or DMZ | Build Name | Cloudinary Image Key | Gunsmith Code | Badges`',
-        '`Attachment 1`',
-        '`Attachment 2`',
-        '...',
-        '',
-        '• **Badges** (comma-separated, optional): `meta`, `toxic`, `best`, `top5`, `bestclose`, `top3midlong`, etc.',
-        '• **Image Key** and **Gunsmith Code** are optional — leave blank if not set yet.',
-        '• The Mode field is required in the paste even though the button is already MP/DMZ-scoped — it\'s force-overridden to match whichever page you\'re on either way, so a stray mismatched value can\'t misfile a loadout.',
-        '',
-        'Example:',
-        '`BAL-27 | AR | MP | Aggro Build | BAL-27-1 | ABCD1234 | meta, top3`',
-        '`Monolithic Suppressor`',
-        '`FTAC Champion`',
-        '',
-        '-# Tip: use one of the Export options above to see this format filled in with your real current data.'
-    ].join('\n')
-};
-BULK_FORMAT_GUIDES.loadouts_dmz = BULK_FORMAT_GUIDES.loadouts_mp;
-
 // One entry per "page". Each page has a title icon/label and an ordered list of `groups` — a group
 // is an optional `## ` heading (Loadouts/Calendar only — Draws/Patch Notes render flat, no group
 // headings, matching the mockups exactly) plus one or more `blocks` (each becomes its own Text
@@ -150,12 +91,6 @@ function buildPagesTable() {
                     { id: 'addreturning', label: 'Add Returning', style: 3 },
                     { id: 'edit', label: 'Edit', style: 1 },
                     { id: 'delete', label: 'Delete', style: 4 }
-                ]
-            },
-            {
-                style: 'inline',
-                items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a quick reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             },
             {
@@ -197,6 +132,15 @@ function buildPagesTable() {
                     { id: 'exportnew', label: 'Export New Draws', style: 2 },
                     { id: 'exportreturning', label: 'Export Returning Draws', style: 2 }
                 ]
+            },
+            // Bulk Format Guide -- last section on every page that has one (2026-07-31 17:20 EDT,
+            // direct correction: was mid-page, wrong). Ordering convention across every page now:
+            // single-item management > bulk management > purge > export > guide.
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                ]
             }
         ]
     },
@@ -220,29 +164,34 @@ function buildPagesTable() {
                 ]
             },
             {
-                style: 'inline',
-                items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a quick reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
-                ]
-            },
-            {
+                // Page Banners folded in as a 4th button here (2026-07-31 17:20 EDT, direct
+                // correction -- it was its own separate inline group before, which put it visually
+                // out of step with the Guide button's inline placement for no real reason). One
+                // modal, 3 independently-clearable fields (same shape as Season Titles & Deadlines'
+                // 3-related-lines-one-modal pattern) -- each page's banner is still independently
+                // settable/clearable, just reached from this group instead of its own.
                 blocks: [
                     `### ${emojis.mngBulkAdd} Add Multiple Events\n-# Add multiple events at once. Additive — doesn't affect existing events.`,
                     `### ${emojis.mngBulkReplace} Replace Multiple Events\n-# Updates existing events by matching title, or adds them if they don't exist yet. Events not included in the paste are left untouched — use Purge below for a full wipe.`,
-                    `### ${emojis.mngBulkDelete} Delete Multiple Events\n-# Remove multiple events at once by pasting their titles. Only removes what's matched by search.`
+                    `### ${emojis.mngBulkDelete} Delete Multiple Events\n-# Remove multiple events at once by pasting their titles. Only removes what's matched by search.`,
+                    `### ${emojis.mngUrls} Page Banners\n-# Set a banner image for the Draws, Events, and Playlists pages independently. Leave a field blank to show nothing for that page.`
                 ],
                 buttons: [
                     { id: 'addmultiple', label: 'Add', style: 3 },
                     { id: 'replacemultiple', label: 'Replace', style: 1 },
-                    { id: 'deletemultiple', label: 'Delete', style: 4 }
+                    { id: 'deletemultiple', label: 'Delete', style: 4 },
+                    { id: 'banners', label: 'Banners', style: 1 }
                 ]
             },
-            // Export and Purge split into their own separate groups (2026-07-12, Harkirat's
-            // request) -- buildManagePage already puts a divider BETWEEN every group, so this alone
-            // gives them the requested separator. Each renders as a `style: 'inline'` group --
-            // a Section with the button as a side accessory (same pattern /settings' visibility
-            // toggles use) instead of the block-list-then-shared-button-row layout every other
-            // group on this page uses.
+            // Purge, then Export, then Guide -- ordering convention across every page now: single-item
+            // management > bulk management > purge > export > guide (2026-07-31 17:20 EDT, direct
+            // correction -- Export used to sit above Purge here).
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
+                ]
+            },
             {
                 style: 'inline',
                 items: [
@@ -252,16 +201,8 @@ function buildPagesTable() {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
-            },
-            // Page Banners (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- one action, one
-            // modal with 3 independently-clearable fields (same shape as Season Titles &
-            // Deadlines' 3-related-lines-one-modal pattern), rather than 3 separate buttons -- each
-            // page's banner is still independently settable/clearable, just through one modal.
-            {
-                blocks: [`### ${emojis.mngUrls} Page Banners\n-# Set a banner image for the Draws, Events, and Playlists pages independently. Leave a field blank to show nothing for that page.`],
-                buttons: [{ id: 'banners', label: 'Banners', style: 1 }]
             }
         ]
     },
@@ -311,6 +252,16 @@ function buildPagesTable() {
             {
                 blocks: [`### ${emojis.mngPurge} Purge All Patch Notes\n-# Permanently erase the release date, additional info, and URL history to start fresh for a new season.`],
                 buttons: [{ id: 'purge', label: 'Purge', style: 4 }]
+            },
+            // Guide (added 2026-07-31 17:20 EDT) -- this page has no bulk PASTE format, but the
+            // Release Date / URLs / Additional Info fields have real syntax rules admins get
+            // confused by (a real submission mistake on Additional Info's auto-formatting is what
+            // prompted this whole guide rewrite) -- worth its own reference just like every other page.
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Field Format Guide\n-# Release date, URLs, and Additional Info -- what's literal vs. auto-formatted.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                ]
             }
         ]
     },
@@ -352,6 +303,15 @@ function buildPagesTable() {
                 buttons: [
                     { id: 'promote', label: 'Promote to Live', style: 3 },
                     { id: 'discard', label: 'Discard Draft', style: 4 }
+                ]
+            },
+            // Guide (added 2026-07-31 17:20 EDT) -- same paste formats as the live Draws/Calendar
+            // pages, plus the TBD-deadline convention; worth its own quick pointer rather than
+            // assuming that carries over obviously.
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Same formats as the live pages -- get a rich, structured reference.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -421,12 +381,6 @@ function loadoutsPageDef(mode, headerLabel, icon) {
                 ]
             },
             {
-                style: 'inline',
-                items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a quick reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
-                ]
-            },
-            {
                 heading: 'Manage Multiple Loadouts',
                 blocks: [
                     `### ${emojis.mngBulkAdd} Add Multiple Loadouts\n-# Add multiple new loadouts at once. Image is pulled from Cloudinary automatically once uploaded there.`,
@@ -452,6 +406,13 @@ function loadoutsPageDef(mode, headerLabel, icon) {
                     { id: 'exportall', label: 'All', style: 2 }
                 ]
                 // No Purge here — see PURGE_LABELS comment above.
+            },
+            // Guide -- last section, matching every other page's convention (2026-07-31 17:20 EDT).
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                ]
             }
         ]
     };
@@ -842,7 +803,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: for buff/nerf icon. Start a line with # Weapon Name to auto-format Additional Changes').setValue(currentEntry?.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: = icon. # Weapon on its OWN LINE, then Attachment, then n:/b: text — see Guide button.').setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
         // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
@@ -881,7 +842,7 @@ function buildPatchAddSeasonModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: for buff/nerf icon. Start a line with # Weapon Name to auto-format Additional Changes').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: = icon. # Weapon on its OWN LINE, then Attachment, then n:/b: text — see Guide button.').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
     );
@@ -897,7 +858,7 @@ function buildPatchEditSeasonModal(entry, userTimezone) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: for buff/nerf icon. Start a line with # Weapon Name to auto-format Additional Changes').setValue(entry.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: b:/n: = icon. # Weapon on its OWN LINE, then Attachment, then n:/b: text — see Guide button.').setValue(entry.description || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
     );
@@ -978,7 +939,6 @@ function buildDraftBulkCalendarModal(seasonalDoc) {
 
 module.exports = {
     ALLOWED_ADMIN_ID, // Exposed so index.js's centralized panel-interaction guard (button/select/
-    BULK_FORMAT_GUIDES,
                       // modal-submit) can check against the same single source of truth instead of
                       // a second hardcoded literal drifting out of sync — see the guard right after
                       // the anti-spam block in interactionCreate.

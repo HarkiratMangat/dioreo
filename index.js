@@ -496,6 +496,17 @@ const COLORS_REFRESH_COOLDOWN_MS = 10 * 1000;
 // needs a real URL on every entry, so a draw with no provided URL AND no existing cache hit has
 // nothing to show and is dropped from the batch entirely (reported back as "skipped", not silently
 // discarded) rather than saved with a broken/undefined image field.
+// Shared by every single-item add/edit draw confirmation (bulk has its own `warnings` array style
+// above) -- one line describing anything notable about how the thumbnail was resolved: a real
+// Cloudinary failure (kept the raw URL), a fuzzy-matched reuse (2026-07-31 17:20 EDT, so a
+// typo'd/reworded title reusing a DIFFERENT cached draw's image is visible, not silent), or nothing
+// at all for the common exact-match/fresh-upload case.
+function thumbnailNote(thumbResult) {
+    if (thumbResult.error) return `⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
+    if (thumbResult.reused && thumbResult.matchedTitle) return `ℹ️ Thumbnail reused from a similarly-named cached draw: "${thumbResult.matchedTitle}"`;
+    return null;
+}
+
 async function resolveThumbnailsForDraws(draws) {
     const results = await Promise.all(draws.map(d => resolveThumbnail(d.title, d.thumbnailUrl)));
     const validDraws = [];
@@ -510,6 +521,9 @@ async function resolveThumbnailsForDraws(draws) {
         draw.thumbnailUrl = result.url;
         validDraws.push(draw);
         if (result.error) warnings.push(`${draw.title} (${result.error})`);
+        // Fuzzy cache reuse (2026-07-31 17:20 EDT) -- surface it when the match wasn't an exact
+        // title hit, so a typo/rewording reusing a DIFFERENT draw's thumbnail is visible, not silent.
+        else if (result.reused && result.matchedTitle) warnings.push(`${draw.title} (thumbnail reused from a similarly-named cached draw: "${result.matchedTitle}")`);
     });
     return { validDraws, skipped, warnings };
 }
@@ -1150,6 +1164,16 @@ client.on('interactionCreate', async interaction => {
                 dynamicData = { draftStatus: manageCommand.buildDraftStatusText(seasonalDoc) };
             }
             return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData));
+        }
+
+        // Bulk Format Guide's own topic-switcher dropdown (utils/manageGuides.js, added 2026-07-31
+        // 17:20 EDT) -- re-renders the SAME guide message in place, same deferUpdate + sendV2Payload
+        // shape as mng_pagesel above, just editing a standalone guide message instead of the panel.
+        if (interaction.customId === 'mng_guide_pick') {
+            const { buildGuideContainer } = require('./utils/manageGuides');
+            await interaction.deferUpdate();
+            const { sendV2Payload } = require('./utils/sendV2Payload');
+            return sendV2Payload(interaction, buildGuideContainer(interaction.values[0]));
         }
 
         // E. MANAGE PANEL DISAMBIGUATION SELECT -- shown by the `mng_search_` modal-submit handler
@@ -1963,12 +1987,19 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.showModal(manageCommand.buildSearchModal(group, action));
             }
 
-            // Bulk Format Guide (2026-07-31 17:20 EDT, notes L189) -- a static ephemeral reference,
-            // not a modal/DB action, so it's handled here before any of the group-specific branches.
-            // Same guide text for loadouts_mp/loadouts_dmz (manage.js aliases the object entry).
+            // Bulk Format Guide (rebuilt into a rich Components V2 view 2026-07-31 17:20 EDT, same-
+            // day follow-up -- was a plain-text reply, notes L189) -- a real structured reference, not a
+            // modal/DB action, so it's handled here before any of the group-specific branches. Opens
+            // pre-selected to the page that was clicked; utils/manageGuides.js's select-menu row
+            // lets switching to any other topic without leaving the guide (mng_guide_pick handler,
+            // isStringSelectMenu() block below). Deferred + sendV2Payload, same pattern every other
+            // V2 render in this bot uses -- discord.js's high-level reply() can't reliably serialize
+            // raw V2 JSON (see rendering-and-ui.md).
             if (action === 'formatguide') {
-                const guide = manageCommand.BULK_FORMAT_GUIDES[group];
-                return interaction.reply({ content: guide || 'No format guide available for this page yet.', ephemeral: true });
+                const { resolveGuideTopic, buildGuideContainer } = require('./utils/manageGuides');
+                await interaction.deferReply({ ephemeral: true });
+                const { sendV2Payload } = require('./utils/sendV2Payload');
+                return await sendV2Payload(interaction, buildGuideContainer(resolveGuideTopic(group)));
             }
 
             // "Purge" (draws/calendar/patchnotes only -- Loadouts deliberately has none, see
@@ -3383,7 +3414,8 @@ client.on('interactionCreate', async interaction => {
                 arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();
                 let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${arrayTarget[drawIndex].items.length} item(s), releases <t:${Math.floor(new Date(arrayTarget[drawIndex].date).getTime() / 1000)}:D>).`;
-                if (thumbResult.error) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
+                const editThumbNote = thumbnailNote(thumbResult);
+                if (editThumbNote) confirmation += `\n${editThumbNote}`;
                 return interaction.followUp({ content: confirmation });
             }
         }
@@ -3509,7 +3541,7 @@ client.on('interactionCreate', async interaction => {
                 if (!thumbResult.url) {
                     return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${parsed.title}" -- provide a thumbnail URL.` });
                 }
-                cloudinaryWarning = thumbResult.error;
+                cloudinaryWarning = thumbnailNote(thumbResult);
                 newDrawObj = { title: parsed.title, items: parsed.items, date: parsed.date, thumbnailUrl: thumbResult.url };
             } else {
                 const title = toTitleCase(interaction.fields.getTextInputValue('title'));
@@ -3532,7 +3564,7 @@ client.on('interactionCreate', async interaction => {
                 if (!thumbResult.url) {
                     return interaction.followUp({ content: `❌ No URL provided and no cached image found for "${title}" -- provide a thumbnail URL.` });
                 }
-                cloudinaryWarning = thumbResult.error;
+                cloudinaryWarning = thumbnailNote(thumbResult);
 
                 const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
                 newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url };
@@ -3546,7 +3578,7 @@ client.on('interactionCreate', async interaction => {
             await seasonalDoc.save();
 
             let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
-            if (cloudinaryWarning) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${cloudinaryWarning}`;
+            if (cloudinaryWarning) confirmation += `\n${cloudinaryWarning}`;
             return interaction.followUp({ content: confirmation });
         }
 

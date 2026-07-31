@@ -65,11 +65,13 @@ mechanics, per-page accent colors, and the `/manage` admin-only lock. The per-us
     Loadouts (MP/DMZ): `add`, `bulkadd`, `bulkreplace` (currently routes to the SAME upsert modal as
     `bulkadd` — see the deferred-work note below), `bulkdelete`. Patch Notes: `dateinfo`, `urls1`,
     `urls2` (see the single-current-entry note below).
-  - **`formatguide` (Draws/Calendar/Loadouts, added 2026-07-31 17:20 EDT, notes L189)** — NOT a
-    modal, just an ephemeral text reply of that page's `BULK_FORMAT_GUIDES` entry (real syntax
-    pulled from `utils/adminParser.js`'s own parsers, not hand-guessed). Handled directly in the
-    `mng_act_` router, before the group-specific branches, since it needs no DB access. `loadouts_mp`/
-    `loadouts_dmz` share one guide text (aliased in `manage.js`).
+  - **`formatguide` (every page, added 2026-07-31 17:20 EDT, rebuilt same day into a rich view)** —
+    NOT a modal, an ephemeral V2 Container reply built by `utils/manageGuides.js`'s
+    `buildGuideContainer(topicKey)` (real syntax pulled from `utils/adminParser.js`'s own parsers,
+    not hand-guessed), with a `mng_guide_pick` select menu to switch topics without closing it. Every
+    page's Guide button lives in the LAST group, matching the fixed convention: single-item
+    management → bulk management → purge → export → guide. Full design/content detail:
+    `.claude/rules/design-decisions.md`.
   - **Edit/Delete need a specific item picked first, and a button can't autocomplete the way a
     slash-command option could** (draws/calendar/MP+DMZ loadouts only — Patch Notes has neither
     anymore) — clicking either opens a one-field "search by name" modal
