@@ -200,16 +200,23 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
-- `[P2 · M]` **`/calendar` banner image — ONE PER PAGE, not one shared banner.** *Filed 2026-07-31
-  12:10 EDT from notes L184, spec refined 2026-07-31 16:41 EDT (direct follow-up).* Separate banners
-  for the Draws page, the Events page, and the Playlists/Modes page (matches the 3-page redesign —
-  see `.claude/rules/design-decisions.md`'s "3 separate PAGES" entry), each independently updatable
-  from its own `/manage` calendar action. Blank/not-set = show nothing for that page, not a
-  placeholder. Needs: 3 new fields on `SeasonalData` (`drawsBannerUrl`/`eventsBannerUrl`/
-  `playlistsBannerUrl`, + the matching `draft.*` trio for the staging area), a per-page Cloudinary
-  upload step in `/manage`'s calendar page (same caching pattern as draw thumbnails/patch images —
-  see `.claude/rules/loadout-images-and-metadata.md`), and a Media Gallery (type 12) component added
-  to each page's own branch in `calendar.js`'s `buildContainer()`. Not started.
+- ~~`[P2 · M]` **`/calendar` banner image — ONE PER PAGE, not one shared banner.**~~ **SHIPPED
+  2026-07-31 17:20 EDT.** *Filed 2026-07-31 12:10 EDT from notes L184, spec refined 2026-07-31
+  16:41 EDT.* Separate banners for the Draws/Events/Playlists pages, each independently settable
+  via `/manage`'s Calendar → "Banners" action (one modal, 3 clearable fields). Blank = shows
+  nothing for that page. Re-hosted through the new `utils/calendarBannerCache.js`, its own
+  Cloudinary folder (`calendar_banners/draws|events|playlists`), overwrite-in-place per page — no
+  age-based pruning needed since only 3 possible assets exist, and clearing a field does a real
+  Cloudinary delete rather than orphaning the asset. Rendered as a Media Gallery (type 12) at the
+  VERY TOP of the container, above even the title (Harkirat's explicit placement call — reads as a
+  true cover/hero image rather than a mid-card illustration). `SeasonalData` gained
+  `drawsBannerUrl`/`eventsBannerUrl`/`playlistsBannerUrl` + the matching `draft.*` trio (schema-only
+  forward compat for now — no staging UI exists yet to actually set a draft banner, but Promote-to-
+  Live already copies them across if one's ever set directly). Verified via a dry-run script against
+  the dev DB: banner renders as the first component when set, is absent (not a placeholder) when
+  blank, disappears immediately on clear, and stays well under Discord's 40-component cap (20/16/16
+  across the 3 pages with a banner set). Not yet pushed/merged/deployed — awaiting the standing
+  push/PR/merge confirmation.
 - `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
   2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
   from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.

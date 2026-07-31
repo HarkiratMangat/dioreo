@@ -143,6 +143,11 @@ const PAGE_DEFS = [
     { page: 1, label: 'Events' },
     { page: 2, label: 'Gamemodes' }
 ];
+
+// Per-page banner fields (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- indexed by the same
+// numeric page used everywhere else in this file. Blank/'' = show nothing for that page, not a
+// placeholder -- see utils/calendarBannerCache.js + /manage's "Banners" action.
+const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBannerUrl'];
 function buildSectionToggleRow(currentPage) {
     return {
         type: 1,
@@ -175,14 +180,23 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
 
     const safePage = Math.min(Math.max(0, page), 2);
 
+    const calendarComponents = [];
+
+    // Per-page banner -- rendered as a true cover image at the VERY TOP of the container, above
+    // even the title (Harkirat's explicit call, 2026-07-31 17:20 EDT -- reads like a real banner/
+    // splash image rather than a mid-card illustration this way). Independently settable per page;
+    // omitted entirely (no placeholder) when unset.
+    const bannerUrl = seasonalDoc[BANNER_FIELDS_BY_PAGE[safePage]];
+    if (bannerUrl) {
+        calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
+    }
+
     // Two-line title (season title on top, command header below) — shared pattern, see
-    // utils/titleBlock.js.
-    const calendarComponents = [
-        // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
-        // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
-        buildTitleBlock(seasonTitle, emojis.calendar, 'Events Calendar', 2),
-        { type: 14, spacing: 2, divider: true }
-    ];
+    // utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw
+    // prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the
+    // same size.
+    calendarComponents.push(buildTitleBlock(seasonTitle, emojis.calendar, 'Events Calendar', 2));
+    calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
     const noneScheduledText = filterMode === 'active' && totalEntryCount > 0
         ? `*No active or upcoming events right now — every event this season has already ended. Change this under \`/settings\`'s Preferences page.*`

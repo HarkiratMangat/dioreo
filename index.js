@@ -2032,6 +2032,12 @@ client.on('interactionCreate', async interaction => {
                         ephemeral: true
                     });
                 }
+                // Page Banners (2026-07-31 17:20 EDT) -- opens pre-filled with whatever's currently saved.
+                if (action === 'banners') {
+                    const SeasonalData = require('./models/SeasonalData');
+                    const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                    return await interaction.showModal(manageCommand.buildCalendarBannersModal(seasonalDoc));
+                }
             }
 
             if (isLoadoutsGroup) {
@@ -2217,7 +2223,8 @@ client.on('interactionCreate', async interaction => {
                 rankTitle: seasonalDoc.rankTitle, dmzTitle: seasonalDoc.dmzTitle,
                 bpEnd: seasonalDoc.bpEnd, rankEnd: seasonalDoc.rankEnd, dmzEnd: seasonalDoc.dmzEnd,
                 bpEndTBD: seasonalDoc.bpEndTBD, rankEndTBD: seasonalDoc.rankEndTBD, dmzEndTBD: seasonalDoc.dmzEndTBD,
-                newDraws: seasonalDoc.newDraws, returningDraws: seasonalDoc.returningDraws, calendar: seasonalDoc.calendar
+                newDraws: seasonalDoc.newDraws, returningDraws: seasonalDoc.returningDraws, calendar: seasonalDoc.calendar,
+                drawsBannerUrl: seasonalDoc.drawsBannerUrl, eventsBannerUrl: seasonalDoc.eventsBannerUrl, playlistsBannerUrl: seasonalDoc.playlistsBannerUrl
             };
             if (draft.currentSeasonTitle) seasonalDoc.currentSeasonTitle = draft.currentSeasonTitle;
             if (draft.bpTitle) seasonalDoc.bpTitle = draft.bpTitle;
@@ -2234,6 +2241,13 @@ client.on('interactionCreate', async interaction => {
             seasonalDoc.newDraws = draft.newDraws || [];
             seasonalDoc.returningDraws = draft.returningDraws || [];
             seasonalDoc.calendar = draft.calendar || [];
+            // No staging UI exists for draft banners yet (schema-only forward compat, filed
+            // 2026-07-31 17:20 EDT) -- these are no-ops today, but copy the same "truthy draft value
+            // wins, blank leaves live untouched" convention titles use above, so a future staging
+            // modal doesn't ALSO need this promote logic added separately.
+            if (draft.drawsBannerUrl) seasonalDoc.drawsBannerUrl = draft.drawsBannerUrl;
+            if (draft.eventsBannerUrl) seasonalDoc.eventsBannerUrl = draft.eventsBannerUrl;
+            if (draft.playlistsBannerUrl) seasonalDoc.playlistsBannerUrl = draft.playlistsBannerUrl;
             // Most-recent patchNotes[] entry stays synced to the live title, same as the manual
             // Season Titles & Deadlines flow above.
             if (draft.currentSeasonTitle && seasonalDoc.patchNotes.length > 0) {
@@ -2956,6 +2970,43 @@ client.on('interactionCreate', async interaction => {
             // Real Discord timestamps instead of plain toDateString() text (notes L185, 2026-07-31
             // 12:10 EDT) -- renders in the viewer's own local time/format instead of a fixed string.
             return interaction.followUp({ content: `✅ **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
+        }
+
+        // --- ADMIN ROUTE C.2b: PAGE BANNERS (2026-07-31 17:20 EDT) ---
+        // 3 independently-clearable fields in one modal -- each is handled on its own: a filled
+        // field re-hosts through calendarBannerCache (falls back to the raw URL on a Cloudinary
+        // hiccup, never blocks the save); a blank field that previously had a value clears it (best-
+        // effort Cloudinary delete + resets the DB field to ''); a blank field that was already
+        // empty is a no-op, not reported as a change.
+        if (customId === 'modal_calendar_banners') {
+            await interaction.deferReply({ ephemeral: true });
+            const { cacheBannerImage, clearBannerImage } = require('./utils/calendarBannerCache');
+            const fieldMap = [
+                { field: 'draws_banner', urlKey: 'drawsBannerUrl', page: 'draws', label: 'Draws' },
+                { field: 'events_banner', urlKey: 'eventsBannerUrl', page: 'events', label: 'Events' },
+                { field: 'playlists_banner', urlKey: 'playlistsBannerUrl', page: 'playlists', label: 'Playlists' }
+            ];
+            const changes = [];
+            for (const { field, urlKey, page, label } of fieldMap) {
+                const raw = interaction.fields.getTextInputValue(field)?.trim();
+                if (!raw) {
+                    if (seasonalDoc[urlKey]) {
+                        await clearBannerImage(page);
+                        seasonalDoc[urlKey] = '';
+                        changes.push(`${label}: cleared`);
+                    }
+                    continue;
+                }
+                const result = await cacheBannerImage(page, raw);
+                seasonalDoc[urlKey] = result.url || '';
+                changes.push(`${label}: banner set${result.cached ? '' : ' (not re-hosted -- Cloudinary hiccup, using the raw URL)'}`);
+            }
+            await seasonalDoc.save();
+            return interaction.followUp({
+                content: changes.length
+                    ? `✅ **Calendar Banners Updated!**\n${changes.map(c => `-# ${c}`).join('\n')}`
+                    : 'ℹ️ No changes made.'
+            });
         }
 
         // --- ADMIN ROUTE C.3: SAVE EDITED CALENDAR EVENT ---

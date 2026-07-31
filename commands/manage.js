@@ -183,6 +183,14 @@ function buildPagesTable() {
                 items: [
                     { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
                 ]
+            },
+            // Page Banners (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- one action, one
+            // modal with 3 independently-clearable fields (same shape as Season Titles &
+            // Deadlines' 3-related-lines-one-modal pattern), rather than 3 separate buttons -- each
+            // page's banner is still independently settable/clearable, just through one modal.
+            {
+                blocks: [`### ${emojis.mngUrls} Page Banners\n-# Set a banner image for the Draws, Events, and Playlists pages independently. Leave a field blank to show nothing for that page.`],
+                buttons: [{ id: 'banners', label: 'Banners', style: 1 }]
             }
         ]
     },
@@ -626,6 +634,19 @@ function buildCalendarAddModal() {
     return modal;
 }
 
+// Page Banners (added 2026-07-31 17:20 EDT) -- one modal, 3 independently-clearable Short URL
+// fields. Pre-filled from whatever's currently saved so re-submitting to change just one field
+// doesn't blank out the other two.
+function buildCalendarBannersModal(seasonalDoc) {
+    const modal = new ModalBuilder().setCustomId('modal_calendar_banners').setTitle('Calendar: Page Banners');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('draws_banner').setLabel('Draws Page Banner URL (blank = none)').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.drawsBannerUrl || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('events_banner').setLabel('Events Page Banner URL (blank = none)').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.eventsBannerUrl || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('playlists_banner').setLabel('Playlists Page Banner URL (blank = none)').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.playlistsBannerUrl || '').setRequired(false))
+    );
+    return modal;
+}
+
 function buildEditCalendarModal(targetEvent, targetId) {
     const modal = new ModalBuilder().setCustomId(`edit_calendar_${targetId}`).setTitle('Edit Calendar Event');
     modal.addComponents(
@@ -921,7 +942,7 @@ module.exports = {
     buildPastSeasonsOptions,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
-    buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal,
+    buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal, buildCalendarBannersModal,
     buildLoadoutsBulkAddModal, buildLoadoutsBulkRemoveModal, buildAddLoadoutModal, buildEditLoadoutModal,
     buildLoadoutsExportUpTo5Modal, buildLoadoutsExportCategoryModal,
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
