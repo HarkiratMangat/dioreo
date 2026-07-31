@@ -209,20 +209,37 @@ function parseBulkDrawList(bulkText) {
  */
 // Optional single-letter category prefix directly touching the bullet ("d•"/"p•"/"e•" -- draw/
 // playlist/event), added for the 3-section calendar redesign (2026-07-31 12:10 EDT) to match
-// Harkirat's own convention from his calendar_bulk.txt reference paste. No prefix (every bulk paste
-// before this, and any line where the admin doesn't bother) defaults to 'event'.
+// Harkirat's own convention from his calendar_bulk.txt reference paste. Still the highest-priority
+// signal -- it's how an admin overrides the keyword guess below for a genuinely ambiguous title
+// (Harkirat's own bulk file explicitly prefixes bare map names like "Krai BR" for exactly this).
 const CALENDAR_CATEGORY_PREFIX = { d: 'draw', p: 'playlist', e: 'event' };
 const CALENDAR_CATEGORY_TO_PREFIX = { draw: 'd', playlist: 'p', event: 'e' };
 
+// Keyword-based fallback classification (added 2026-07-31 12:40 EDT, per Harkirat's explicit request
+// to not have to prefix every line by hand) -- only consulted when there's NO explicit prefix/typed
+// category. Checked in this order (draw, then playlist) because a title can plausibly contain both
+// an event-ish and a draw-ish word; draw/playlist are the more specific signals, so they win, and
+// "event" is never actually matched against -- it's just wherever nothing else hits, exactly as
+// Harkirat asked ("otherwise just default unknown things to the event section").
+const DRAW_KEYWORDS = ['draw', 'armory', 'it goes two', 'redux', 'mythic drop'];
+const PLAYLIST_KEYWORDS = ['mode', 'playlist', 'gamemode', 'map'];
+
+function guessCalendarCategory(title) {
+    const t = (title || '').toLowerCase();
+    if (DRAW_KEYWORDS.some(k => t.includes(k))) return 'draw';
+    if (PLAYLIST_KEYWORDS.some(k => t.includes(k))) return 'playlist';
+    return 'event';
+}
+
 // Shared by the single add/edit calendar-event modals (index.js) -- accepts a full word
-// ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive; blank or anything
-// unrecognized defaults to 'event', same default the bulk parser above uses for an un-prefixed line.
-function normalizeCalendarCategory(raw) {
+// ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls
+// through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
+function normalizeCalendarCategory(raw, title) {
     const cleaned = (raw || '').trim().toLowerCase();
-    if (!cleaned) return 'event';
+    if (!cleaned) return guessCalendarCategory(title);
     if (CALENDAR_CATEGORY_PREFIX[cleaned]) return CALENDAR_CATEGORY_PREFIX[cleaned];
     if (['draw', 'event', 'playlist'].includes(cleaned)) return cleaned;
-    return 'event';
+    return guessCalendarCategory(title);
 }
 
 function parseBulkEvents(bulkText) {
@@ -237,7 +254,6 @@ function parseBulkEvents(bulkText) {
     let match;
 
     while ((match = entryRegex.exec(bulkText)) !== null) {
-        const category = CALENDAR_CATEGORY_PREFIX[match[1]] || 'event';
         const entry = match[2].trim();
         if (!entry) continue;
 
@@ -248,6 +264,8 @@ function parseBulkEvents(bulkText) {
         // Title is preserved EXACTLY as typed (no toTitleCase) — event names routinely include
         // acronyms like "MP"/"BR"/"DMZ" that title-casing would mangle into "Mp"/"Br"/"Dmz".
         const title = entry.slice(pipeIndex + 1).trim();
+        // Explicit prefix wins; no prefix falls through to the keyword guess against the title.
+        const category = CALENDAR_CATEGORY_PREFIX[match[1]] || guessCalendarCategory(title);
 
         const dashIndex = dateRange.indexOf('-');
         if (dashIndex === -1) continue; // Skip malformed entries missing the "start - end" portion
@@ -632,4 +650,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };

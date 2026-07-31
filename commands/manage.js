@@ -593,11 +593,13 @@ function buildCalendarBulkModal(mode) {
     // mode: 'add' (additive — NEW, appends) | 'replace' (existing wholesale-replace behavior)
     const modal = new ModalBuilder().setCustomId(`modal_calendar_bulk_${mode}`).setTitle(mode === 'add' ? 'Add Multiple Calendar Events' : 'Replace Calendar Events');
     modal.addComponents(
-        // d•/p•/e• prefix (draw/playlist/event) added for the 3-section calendar redesign
-        // (2026-07-31 12:10 EDT) — matches Harkirat's own calendar_bulk.txt convention. No prefix
-        // still parses fine and defaults to 'event' (see adminParser.js's parseBulkEvents).
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('d•/p•/e• Bulleted List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("e• 7/2 - 8/5 | Throwable Frenzy MP Mode\np• 7/6 - 7/19 | Nuketown Dedicated Playlist\nd• 7/10 - All Season | Shadow and Shade Mythic Drop").setRequired(true))
+        // Optional d•/p•/e• prefix (draw/playlist/event) added for the 3-section calendar redesign
+        // (2026-07-31 12:10/12:40 EDT) — matches Harkirat's own calendar_bulk.txt convention. No
+        // prefix auto-detects from the title's own wording (adminParser.js's
+        // guessCalendarCategory) -- only needed to override an ambiguous title (e.g. a bare map
+        // name with no "mode"/"playlist" in it).
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Bulleted List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("7/2 - 8/5 | Throwable Frenzy MP Mode\n7/6 - 7/19 | Nuketown Dedicated Playlist\n7/10 - All Season | Shadow and Shade Mythic Drop\np• 8/6 - 8/19 | Krai BR (prefix to override the guess)").setRequired(true))
     );
     return modal;
 }
@@ -616,9 +618,10 @@ function buildCalendarAddModal() {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2').setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false)),
-        // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank defaults to
-        // 'event', same as an un-prefixed bulk-import line.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('event').setRequired(false))
+        // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects
+        // from the title's own wording (adminParser.js's guessCalendarCategory), same as an
+        // un-prefixed bulk-import line.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false))
     );
     return modal;
 }

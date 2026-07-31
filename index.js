@@ -2949,7 +2949,7 @@ client.on('interactionCreate', async interaction => {
             const isOngoing = !endDateStr;
             const endDate = isOngoing ? null : parseAdminDate(endDateStr);
             if (!isOngoing && !endDate) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
-            const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'));
+            const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), title);
 
             seasonalDoc.calendar.push({ title, date: startDate, endDate, isOngoing, category });
             seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -2979,7 +2979,7 @@ client.on('interactionCreate', async interaction => {
                 targetEvent.date = parsedStart;
                 targetEvent.isOngoing = isOngoing;
                 targetEvent.endDate = parsedEnd;
-                targetEvent.category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'));
+                targetEvent.category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'), targetEvent.title);
 
                 seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();

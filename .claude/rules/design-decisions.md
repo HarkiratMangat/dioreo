@@ -141,7 +141,14 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   `returningDraws` that has no explicit `category: 'draw'` calendar entry**, fuzzy-matched by title
   (`utils/search.js`'s `fuzzyMatch`) so a draw someone ALSO typed as a `d•` bulk line doesn't double up
   — an auto-merged entry is tagged `dateOnly: true` and renders as a single "Releases \<date\>" line
-  instead of a false date range. Navigation stays the pre-existing left/right pagination on Harkirat's
+  instead of a false date range. **Category no longer has to be typed by hand (added 12:40 EDT the
+  same session, per Harkirat's explicit follow-up):** with no `d•`/`p•`/`e•` prefix (or a blank
+  Category field on the single modal), `adminParser.js`'s `guessCalendarCategory()` keyword-matches
+  the title itself — `DRAW_KEYWORDS` (`draw`/`armory`/`it goes two`/`redux`/`mythic drop`) checked
+  before `PLAYLIST_KEYWORDS` (`mode`/`playlist`/`gamemode`/`map`), defaulting to `'event'` when
+  neither hits, per Harkirat's own stated rule. **The explicit prefix still wins when present** —
+  it's the override for a genuinely ambiguous title (his own `calendar_bulk.txt` prefixes bare map
+  names like "Krai BR" for exactly this, since neither keyword list matches them). Navigation stays the pre-existing left/right pagination on Harkirat's
   explicit call (page 1 = Draws + Events, page 2 = Playlists/Modes) rather than switching to
   section-toggle buttons — that's filed in `docs/db-deferred-list.md`'s Queued section for its own pass
   since it's new UI worth seeing first, not a wiring change. Section heading is `### `.
