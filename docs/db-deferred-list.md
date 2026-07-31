@@ -200,11 +200,16 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
-- `[P2 · M]` **`/calendar` banner image.** *Filed 2026-07-31 12:10 EDT from notes L184.* "Add a banner
-  image to the calendar page. Like a season banner." Needs: a new `bannerUrl` field on `SeasonalData`
-  (+ `draft.bannerUrl` for the staging area), a Cloudinary upload step in `/manage`'s calendar page
-  (same caching pattern as draw thumbnails/patch images — see `.claude/rules/loadout-images-and-metadata.md`),
-  and a Media Gallery (type 12) component in `calendar.js`'s title area. Not started.
+- `[P2 · M]` **`/calendar` banner image — ONE PER PAGE, not one shared banner.** *Filed 2026-07-31
+  12:10 EDT from notes L184, spec refined 2026-07-31 16:41 EDT (direct follow-up).* Separate banners
+  for the Draws page, the Events page, and the Playlists/Modes page (matches the 3-page redesign —
+  see `.claude/rules/design-decisions.md`'s "3 separate PAGES" entry), each independently updatable
+  from its own `/manage` calendar action. Blank/not-set = show nothing for that page, not a
+  placeholder. Needs: 3 new fields on `SeasonalData` (`drawsBannerUrl`/`eventsBannerUrl`/
+  `playlistsBannerUrl`, + the matching `draft.*` trio for the staging area), a per-page Cloudinary
+  upload step in `/manage`'s calendar page (same caching pattern as draw thumbnails/patch images —
+  see `.claude/rules/loadout-images-and-metadata.md`), and a Media Gallery (type 12) component added
+  to each page's own branch in `calendar.js`'s `buildContainer()`. Not started.
 - `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
   2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
   from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.
@@ -220,6 +225,27 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   ("idk") means this needs a design pass, not a guess: could be as simple as a static placeholder/help
   text improvement on each bulk modal, or as involved as an actual raw-text → bulk-format converter
   (possibly LLM-assisted, per his "via gemini" aside). Scope this out before building.
+- `[P2 · S]` **Patch notes "Additional Info" auto-formatting.** *Filed 2026-07-31 16:41 EDT from
+  notes L182's ∴ follow-up reply (2026-07-31 11:39 EDT).* Harkirat decided on a real structure per
+  his own screenshot (`local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): `### Additional
+  Changes` heading, then `__**Weapon**__`, then `Attachment`, then `> b:/n: details` — auto-format
+  the Additional Info field into this shape rather than leaving it fully free-typed. Must handle a
+  weapon with multiple different attachment changes, and multiple changes for one attachment.
+  Explicitly still deferred as of the last session (he'd already manually formatted that season's
+  info by hand) — ready to build now that he wants to pick it up.
+- `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
+  "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
+  shard error" alert live and had "absolutely no clue what it meant," and separately has no
+  indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related
+  gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`,
+  `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a
+  plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves,
+  what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert
+  to close the loop after a disruption alert fires, so a one-off blip reads as an open question
+  forever. See `utils/alertStore.js` + the alert-tier design referenced in
+  `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
+  mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
+  before scoping the actual build.
 - `[P1 · M · Sonnet5-M]` **User-data deletion path — the privacy policy now publicly promises it.**
   *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
   automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
