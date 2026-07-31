@@ -136,10 +136,12 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
 // sections, not a variable chunk count. The current page's button is styled Primary+disabled
 // (matches the "active/current page" convention documented in rendering-and-ui.md); the other two
 // are Secondary and clickable.
+// Button label "Gamemodes" is intentionally shorter than the page 2 heading text "Playlists &
+// Modes" -- Harkirat's explicit call (2026-07-31 16:55 EDT), a button reads better short.
 const PAGE_DEFS = [
     { page: 0, label: 'Draws' },
     { page: 1, label: 'Events' },
-    { page: 2, label: 'Playlists / Modes' }
+    { page: 2, label: 'Gamemodes' }
 ];
 function buildSectionToggleRow(currentPage) {
     return {
@@ -206,18 +208,17 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Events'), eventEntries, seasonalDoc);
         calendarComponents.push(eventSection || { type: 10, content: noneScheduledText });
     } else {
-        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists / Modes'), playlistEntries, seasonalDoc);
+        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Modes'), playlistEntries, seasonalDoc);
         calendarComponents.push(playlistSection || { type: 10, content: noneScheduledText });
     }
 
-    // PAGE NAV: divider -> toggle row -> divider -> hint, matching the structure /draws and /draw
-    // prices already use for their own pagination rows (screenshot correction, 2026-07-31 14:00 EDT
-    // -- the divider directly above the row is the one that was wrong before; the one between the
-    // row and the hint was already correct).
+    // PAGE NAV: divider -> hint -> toggle row (reworked 2026-07-31 16:55 EDT, direct follow-up) --
+    // was divider/row/divider/hint; Harkirat wanted the hint directly under the content with the
+    // toggle row below it, and only ONE divider total separating the section content above from
+    // this whole nav block.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
+    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Playlists & Modes**.` });
     calendarComponents.push(buildSectionToggleRow(safePage));
-    calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    calendarComponents.push({ type: 10, content: `-# Switch between **Draws**, **Events**, and **Playlists / Modes**.` });
 
     const containerPayload = {
         type: 17,
@@ -240,7 +241,7 @@ module.exports = {
         // preference when omitted; `page` just opens on Draws (page 0) when omitted, same as before
         // this option existed.
         .addStringOption(option => option.setName('page').setDescription('Jump directly to a specific page').addChoices(
-            { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists / Modes', value: 'playlists' }
+            { name: 'Draws', value: 'draws' }, { name: 'Events', value: 'events' }, { name: 'Playlists & Modes', value: 'playlists' }
         ))
         .addStringOption(option => option.setName('view').setDescription('Show all events, or only active/upcoming ones (defaults to your /settings choice)').addChoices(
             { name: 'All Events', value: 'all' }, { name: 'Active/Upcoming Only', value: 'active' }
