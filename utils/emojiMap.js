@@ -82,6 +82,11 @@ const emojis = {
     // Harkirat-provided icon, lives in the button's `emoji` field via parseEmoji(), not baked into
     // `label` (see Components V2 point 4 above).
     share: '<a:Share:1526666464625430558>',
+    // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:`
+    // token in the additional-info text gets swapped for these at render time (patchnotes.js's
+    // applyInfoAliases()). Harkirat-uploaded, not animated.
+    buff: '<:buff:1532528904210743376>',
+    nerf: '<:nerf:1532528903028084826>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

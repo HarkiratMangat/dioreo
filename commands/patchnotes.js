@@ -38,6 +38,19 @@ function displayTitle(patch) {
     return cleanPatchTitle(patch.titleOverride || patch.title);
 }
 
+// Buff/nerf shorthand for the additional-info field (2026-07-30 22:24 EDT, per Harkirat's request) --
+// typing a standalone "b:" or "n:" token gets swapped for the buff/nerf emoji. Read INSIDE this
+// function (render time), not captured into a module-level string -- emojiMap's ids get rewritten
+// in place by refreshEmojiIds() on the dev bot, and anything that reads emojis.x at require time
+// freezes the pre-sync prod id (see rendering-and-ui.md's emoji-capture rule).
+// Word-boundary guarded (start-of-line/whitespace before, nothing glued on after the colon) so this
+// only fires on the alias itself, not on a URL or some other "b:"/"n:" substring inside real prose.
+function applyInfoAliases(text) {
+    return text
+        .replace(/(^|[\s\n])b:/gi, (_, pre) => `${pre}${emojis.buff}`)
+        .replace(/(^|[\s\n])n:/gi, (_, pre) => `${pre}${emojis.nerf}`);
+}
+
 function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
     // Array Trimming: Prevent dropdown menu overload by grabbing only the 5 most recent records
     const recentPatches = seasonalDoc.patchNotes.slice(-5).reverse();
@@ -68,7 +81,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 
     // Optional additional info section — completely omitted (no placeholder text) when blank
     if (activePatch.description && activePatch.description.trim().length > 0) {
-        components.push({ type: 10, content: activePatch.description });
+        components.push({ type: 10, content: applyInfoAliases(activePatch.description) });
     }
 
     components.push(

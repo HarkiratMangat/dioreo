@@ -41,6 +41,10 @@ function buildDrawSections(drawsArray) {
     drawsArray.forEach(draw => {
         // Resolve emoji tiers and title casing
         const itemsString = draw.items.map(item => {
+            // "-# comment" items (2026-07-30 22:24 EDT, adminParser.js's parseItemLine) are a free-
+            // text note, not a real tiered item -- render as plain Discord subtext with no tier
+            // emoji/bold, matching how the admin typed it in.
+            if (item.tier === 'comment') return `-# ${item.name}`;
             const emoji = emojis[item.tier.toLowerCase()] || '🔹';
             // Split once and reuse, instead of re-splitting the same string up to 3 times per item.
             const nameParts = item.name.split(' - ');

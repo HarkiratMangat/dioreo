@@ -65,7 +65,46 @@ const SeasonalDataSchema = new mongoose.Schema({
         date: { type: Date }, // start date
         endDate: { type: Date }, // optional — null/absent when isOngoing is true
         isOngoing: { type: Boolean, default: false } // true for "All Season" bulk entries
-    }]
+    }],
+
+    // Next-season staging area (added 2026-07-30 22:24 EDT) -- lets the admin prep an entire upcoming season
+    // (title/deadlines/draws/calendar) WITHOUT it going live, then flip it live in one shot via
+    // /manage's "Promote to Live" action. Exists because this whole document is a single global
+    // doc (`docType: 'global'`) -- editing newDraws/calendar/bpEnd directly during the overlap
+    // window between "current season not over yet" and "new season announced" immediately
+    // overwrote what was still publicly live, and an "All Season" calendar event's displayed end
+    // always reads the LIVE bpEnd (see calendar.js), so a draft entry prepared before bpEnd was
+    // updated would show the OLD season's end date until promoted. Mirrors the shape of the live
+    // fields it stages, minus patchNotes (patch notes already has its own overlap-safe system --
+    // "Add New Season" pushes a new entry without touching the current one).
+    draft: {
+        active: { type: Boolean, default: false }, // true once any draft field has been set
+        currentSeasonTitle: { type: String, default: '' },
+        bpTitle: { type: String, default: 'Battle Pass' },
+        rankTitle: { type: String, default: 'Ranked Series' },
+        dmzTitle: { type: String, default: 'DMZ Season' },
+        bpEnd: { type: Date },
+        rankEnd: { type: Date },
+        dmzEnd: { type: Date },
+        newDraws: [{
+            title: { type: String },
+            date: { type: Date },
+            thumbnailUrl: { type: String },
+            items: [{ tier: { type: String }, name: { type: String } }]
+        }],
+        returningDraws: [{
+            title: { type: String },
+            date: { type: Date },
+            thumbnailUrl: { type: String },
+            items: [{ tier: { type: String }, name: { type: String } }]
+        }],
+        calendar: [{
+            title: { type: String },
+            date: { type: Date },
+            endDate: { type: Date },
+            isOngoing: { type: Boolean, default: false }
+        }]
+    }
 });
 
 module.exports = mongoose.model('SeasonalData', SeasonalDataSchema);

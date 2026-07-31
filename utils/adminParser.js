@@ -27,7 +27,13 @@ function capitalizeSegment(segment) {
 function toTitleCase(str) {
     return str.split(/(\s+)/).map(word => {
         if (/^\s*$/.test(word)) return word; // preserve whitespace runs as-is
-        return word.split(/(-)/).map(part => part === '-' ? part : capitalizeSegment(part)).join('');
+        // Split on hyphens AND slashes (found live 2026-07-30 22:24 EDT: "Jupiter Cannon/Void Implosion Draw"
+        // came out "Jupiter Cannon/void Implosion Draw" -- "Cannon/Void" is one whitespace-delimited
+        // token with no hyphen, so it went through capitalizeSegment() as a single unit, which only
+        // capitalizes the FIRST letter of the whole token and lowercases everything after it,
+        // clobbering the "V" in "Void". Same fix shape as the hyphen case above: split each side of
+        // the separator into its own segment and capitalize them independently.
+        return word.split(/([-/])/).map(part => (part === '-' || part === '/') ? part : capitalizeSegment(part)).join('');
     }).join('');
 }
 
@@ -44,6 +50,16 @@ function resolveTier(shorthand) {
 // used to be copy-pasted verbatim in all three places. Matches the first word as the tier
 // shorthand, the rest as the item name; falls back to 'epic' if there's no tier prefix at all.
 function parseItemLine(itemStr) {
+    const trimmed = itemStr.trim();
+    // "-# comment" lines (2026-07-30 22:24 EDT) -- a free-text note attached to a draw's item list
+    // (e.g. "-# Character bundle only, no weapon this time"), rendered later as Discord subtext
+    // instead of a tiered item (see draws.js's buildDrawSections). Must be checked BEFORE the
+    // generic tier-shorthand parse below: "-#" doesn't match any known tier shorthand, so it used to
+    // fall through to resolveTier's toTitleCase() fallback and get stored as a nonsense tier, AND
+    // the comment text itself got title-cased like a weapon/character name, mangling it.
+    if (/^-#\s*/.test(trimmed)) {
+        return { tier: 'comment', name: trimmed.replace(/^-#\s*/, '') };
+    }
     const match = itemStr.match(/^(\S+)\s+(.+)$/);
     if (match) {
         return { tier: resolveTier(match[1]), name: toTitleCase(match[2]) };
@@ -217,7 +233,10 @@ function parseBulkEvents(bulkText) {
 // tier token ("m"/"l"/"ll"/"e") from what's actually stored in the DB ("mythic"/"legendary"/
 // "legacy"/"epic"). Falls back to the stored value itself for anything unrecognized (shouldn't
 // happen from data that went through resolveTier, but keeps this from ever throwing).
-const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'll', epic: 'e' };
+// 'comment' isn't a real tier -- it's the free-text "-# note" item type (see parseItemLine below) --
+// but it goes through this same reverse map when reconstructing bulk-add/edit text, so it needs an
+// entry too or a comment line round-trips back out as the literal word "comment" instead of "-#".
+const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'll', epic: 'e', comment: '-#' };
 
 /**
  * Reconstructs the bulk-add text format (see parseBulkDrawList) from Draw documents already in

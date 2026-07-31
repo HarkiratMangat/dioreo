@@ -234,8 +234,70 @@ function buildPagesTable() {
                 buttons: [{ id: 'purge', label: 'Purge', style: 4 }]
             }
         ]
+    },
+    // "Next Season Draft" (added 2026-07-30 22:24 EDT) -- a staging area for preparing an entire
+    // upcoming season (title/deadlines/draws/calendar) WITHOUT any of it going live, since
+    // SeasonalData is a single global document and editing newDraws/calendar/bpEnd directly during
+    // the overlap window between "current season not over" and "new season announced" immediately
+    // overwrites what's still publicly live. "Promote to Live" swaps the whole staged draft in at
+    // once; the draft-only fields live under `seasonalDoc.draft` (see models/SeasonalData.js).
+    // Deliberately bulk-only for draws/calendar (no single add/edit/delete against the draft) --
+    // the real use case is "type up the whole next season once, then promote," and a typo is fixed
+    // by just re-running the bulk modal (same replace-not-append convention every other bulk action
+    // on this panel already uses), not by building a second parallel single-item CRUD surface.
+    seasondraft: {
+        label: 'Next Season Draft',
+        icon: emojis.calendar,
+        headerLabel: 'Next Season Draft',
+        groups: [
+            { style: 'status', dynamicKey: 'draftStatus' },
+            {
+                heading: 'Prepare',
+                blocks: [
+                    `### ${emojis.mngEdit} Titles & Deadlines\n-# Stage the next season's title and Battle Pass/Ranked/DMZ titles + end dates. Doesn't touch what's currently live.`,
+                    `### ${emojis.mngBulkAdd} New + Returning Draws\n-# Stage the next season's full New/Returning draws list. Replaces the whole staged list each submit — doesn't touch what's currently live.`,
+                    `### ${emojis.mngBulkAdd} Calendar\n-# Stage the next season's full calendar. Replaces the whole staged list each submit — doesn't touch what's currently live.`
+                ],
+                buttons: [
+                    { id: 'settitles', label: 'Titles & Deadlines', style: 1 },
+                    { id: 'bulkdraws', label: 'Draws', style: 1 },
+                    { id: 'bulkcalendar', label: 'Calendar', style: 1 }
+                ]
+            },
+            {
+                heading: 'Go Live',
+                blocks: [
+                    `### ${emojis.mngAdd} Promote to Live\n-# Swaps the staged draft in as the live season — title, deadlines, draws, and calendar all switch over together. The draft is cleared after.`,
+                    `### ${emojis.mngPurge} Discard Draft\n-# Erase the staged draft without touching what's live.`
+                ],
+                buttons: [
+                    { id: 'promote', label: 'Promote to Live', style: 3 },
+                    { id: 'discard', label: 'Discard Draft', style: 4 }
+                ]
+            }
+        ]
     }
   };
+}
+
+// Renders the "Next Season Draft" page's live status block -- the one dynamic block on this panel
+// (see buildManagePage's 'status' group style, same dynamicData mechanism Patch Notes' "Past
+// Seasons" select already uses). Computed fresh from a live seasonalDoc every render, never cached.
+function buildDraftStatusText(seasonalDoc) {
+    const draft = seasonalDoc?.draft;
+    if (!draft || !draft.active) {
+        return `${emojis.mngInfo} **No draft in progress.** Use the actions below to start staging next season's data — none of it goes live until you press **Promote to Live**.`;
+    }
+    const deadline = (title, date) => `${title || '*(untitled)*'}${date ? `, ends ${formatAdminDate(date)}` : ' *(no end date staged)*'}`;
+    return [
+        `${emojis.mngInfo} **Draft in progress** — nothing below is live yet.`,
+        `**Title:** ${draft.currentSeasonTitle || '*(not set)*'}`,
+        `**Battle Pass:** ${deadline(draft.bpTitle, draft.bpEnd)}`,
+        `**Ranked:** ${deadline(draft.rankTitle, draft.rankEnd)}`,
+        `**DMZ:** ${deadline(draft.dmzTitle, draft.dmzEnd)}`,
+        `**Draws:** ${draft.newDraws?.length || 0} New, ${draft.returningDraws?.length || 0} Returning`,
+        `**Calendar:** ${draft.calendar?.length || 0} event(s)`
+    ].join('\n');
 }
 
 // Loadouts page definition factory — MP and DMZ render from the exact same shape, just with a
@@ -330,7 +392,9 @@ const PAGE_ACCENT = {
     calendar: 3821672,     // Slate Harbor #3A5068 — mirrors commands/calendar.js's PRESET_ACCENT
     patchnotes: 15909424,  // Patch Gold #F2C230 — mirrors commands/patchnotes.js's PRESET_ACCENT
     loadouts_mp: 16725040, // #FF3430 — sampled from the :Rank_7Legendary_CODM: emoji
-    loadouts_dmz: 3373990  // #337BA6 — sampled from the :DMZ_CODM: emoji
+    loadouts_dmz: 3373990, // #337BA6 — sampled from the :DMZ_CODM: emoji
+    seasondraft: 15898954  // Neon Amber #F2994A — mirrors commands/seasonend.js's PRESET_ACCENT (same
+                            // season-lifecycle theme; this page has no public-facing command of its own)
 };
 
 // Builds Patch Notes' "Past Seasons" select-menu options from a live seasonalDoc (2026-07-24) --
@@ -391,6 +455,13 @@ function buildManagePage(page, dynamicData = {}) {
                 type: 1,
                 components: [{ type: 3, custom_id: group.selectId, placeholder: group.placeholder || 'Select...', options, disabled: !hasOptions }]
             });
+        } else if (group.style === 'status') {
+            // Live-computed text block (2026-07-24 pattern extended 2026-07-30 22:24 EDT) -- same
+            // dynamicData mechanism as the 'select' branch above, just rendered as a Text Display
+            // instead of a select menu. `dynamicData[group.dynamicKey]` is built fresh per render by
+            // whichever call site is rendering this page (see manage.js's execute()/index.js's
+            // mng_pagesel), never baked into the static PAGES table.
+            components.push({ type: 10, content: dynamicData[group.dynamicKey] || 'Loading…' });
         } else {
             group.blocks.forEach(content => components.push({ type: 10, content }));
             const buttons = group.buttons.map(a => ({ type: 2, style: a.style, label: a.label, custom_id: `mng_act_${pageKey}_${a.id}` }));
@@ -474,7 +545,7 @@ function buildAddDrawModal(drawType) {
         // required, submitting with only the combined-line field filled would get rejected by
         // Discord itself before index.js's handler got a chance to fall back to it.
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name").setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('items').setLabel('Items (Shorthand)').setStyle(TextInputStyle.Paragraph).setPlaceholder("m Character Name\nl Gun Name\ne Emote Name\n-# Optional note").setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder("e.g. July 15").setRequired(false)),
         // Optional (2026-07-12, Cloudinary-cache feature) — leaving this blank reuses whatever's
         // already cached for this exact draw title (utils/cloudinaryCache.js). Only fails if nothing
@@ -493,7 +564,10 @@ function buildAddDrawModal(drawType) {
 }
 
 function buildEditDrawModal(targetDraw, targetId, drawType) {
-    const itemsText = targetDraw.items.map(i => `${i.tier.charAt(0).toLowerCase()} ${i.name}`).join('\n');
+    // 'comment' items (2026-07-30 22:24 EDT, "-# note" lines) reconstruct as "-# text", not their
+    // first-letter shorthand -- charAt(0) would produce "c", which round-trips through parseItemLine
+    // as an unrecognized tier instead of a comment.
+    const itemsText = targetDraw.items.map(i => `${i.tier === 'comment' ? '-#' : i.tier.charAt(0).toLowerCase()} ${i.name}`).join('\n');
     const modal = new ModalBuilder().setCustomId(`edit_draw_${targetId}_${drawType}`).setTitle('Edit Lucky Draw');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Draw Title').setStyle(TextInputStyle.Short).setValue(targetDraw.title)),
@@ -660,7 +734,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(currentEntry?.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: type b: or n: for the buff/nerf icon').setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
         // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
@@ -699,7 +773,7 @@ function buildPatchAddSeasonModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: type b: or n: for the buff/nerf icon').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
     );
@@ -715,7 +789,7 @@ function buildPatchEditSeasonModal(entry, userTimezone) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setValue(entry.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: type b: or n: for the buff/nerf icon').setValue(entry.description || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
     );
@@ -745,6 +819,51 @@ function buildSeasonTitlesDeadlinesModal(seasonalDoc) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, End Date').setStyle(TextInputStyle.Short).setValue(bpLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, End Date').setStyle(TextInputStyle.Short).setValue(rankLine)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, End Date').setStyle(TextInputStyle.Short).setValue(dmzLine))
+    );
+    return modal;
+}
+
+// --- NEXT SEASON DRAFT modal builders (2026-07-30 22:24 EDT) ---
+// Same field shapes/parsers as their live equivalents above (splitTitleDate/parseAdminDate for
+// titles+dates, parseBulkDrawList/parseBulkEvents for the bulk pastes) so index.js's submit
+// handlers can reuse the exact same parsing logic, just writing into `seasonalDoc.draft.*` instead
+// of the top-level fields.
+function buildDraftTitlesDatesModal(seasonalDoc) {
+    const draft = seasonalDoc?.draft || {};
+    const bpLine = [draft.bpTitle || 'Battle Pass', draft.bpEnd ? formatAdminDate(draft.bpEnd) : ''].filter(Boolean).join(', ');
+    const rankLine = [draft.rankTitle || 'Ranked Series', draft.rankEnd ? formatAdminDate(draft.rankEnd) : ''].filter(Boolean).join(', ');
+    const dmzLine = [draft.dmzTitle || 'DMZ Season', draft.dmzEnd ? formatAdminDate(draft.dmzEnd) : ''].filter(Boolean).join(', ');
+
+    const modal = new ModalBuilder().setCustomId('modal_draft_titles_dates').setTitle('Draft: Season Titles & Deadlines');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('main_title').setLabel('Main Season Title').setStyle(TextInputStyle.Short).setValue(draft.currentSeasonTitle || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bp_line').setLabel('Battle Pass: Title, End Date').setStyle(TextInputStyle.Short).setValue(bpLine).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('rank_line').setLabel('Ranked Series: Title, End Date').setStyle(TextInputStyle.Short).setValue(rankLine).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('dmz_line').setLabel('DMZ Season: Title, End Date').setStyle(TextInputStyle.Short).setValue(dmzLine).setRequired(false))
+    );
+    return modal;
+}
+
+function buildDraftBulkDrawsModal(seasonalDoc) {
+    const draft = seasonalDoc?.draft || {};
+    const { formatDrawsAsBulkText } = require('../utils/adminParser');
+    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_draws').setTitle('Draft: New + Returning Draws');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('new_text').setLabel('New Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("Title, m Item 1, july 10, url.jpg").setValue(formatDrawsAsBulkText(draft.newDraws || [])).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('returning_text').setLabel('Returning Draws (leave blank to skip)').setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("Title, l Item, aug 5, url.jpg").setValue(formatDrawsAsBulkText(draft.returningDraws || [])).setRequired(false))
+    );
+    return modal;
+}
+
+function buildDraftBulkCalendarModal(seasonalDoc) {
+    const draft = seasonalDoc?.draft || {};
+    const { formatCalendarAsBulkText } = require('../utils/adminParser');
+    const modal = new ModalBuilder().setCustomId('modal_draft_bulk_calendar').setTitle('Draft: Calendar');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Events (replaces the whole staged list)').setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("7/15 - 8/1 | Event Title\n7/20 - All Season | Other Event").setValue(formatCalendarAsBulkText(draft.calendar || [])).setRequired(true))
     );
     return modal;
 }
@@ -779,7 +898,8 @@ module.exports = {
             { name: 'MP Loadouts', value: 'loadouts_mp' },
             { name: 'DMZ Loadouts', value: 'loadouts_dmz' },
             { name: 'Patch Notes', value: 'patchnotes' },
-            { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' }
+            { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' },
+            { name: 'Season: Next Season Draft', value: 'seasondraft' }
         ))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
 
@@ -796,6 +916,7 @@ module.exports = {
     buildLoadoutsExportUpTo5Modal, buildLoadoutsExportCategoryModal,
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
     buildWipeSeasonModal, buildSeasonTitlesDeadlinesModal,
+    buildDraftTitlesDatesModal, buildDraftBulkDrawsModal, buildDraftBulkCalendarModal, buildDraftStatusText,
 
     async execute(interaction) {
         if (interaction.user.id !== ALLOWED_ADMIN_ID) {
@@ -830,6 +951,10 @@ module.exports = {
             const SeasonalData = require('../models/SeasonalData');
             const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
             dynamicData = { pastSeasons: buildPastSeasonsOptions(seasonalDoc) };
+        } else if (section === 'seasondraft') {
+            const SeasonalData = require('../models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+            dynamicData = { draftStatus: buildDraftStatusText(seasonalDoc) };
         }
         return sendV2Payload(interaction, buildManagePage(section, dynamicData));
     }
