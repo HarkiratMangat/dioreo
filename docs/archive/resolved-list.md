@@ -25,6 +25,35 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🗂️ Bulk-import format helper/template — SHIPPED (scoped-down) 2026-07-31 17:20 EDT, on branch
+  `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
+  *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L189.* Harkirat's own uncertainty ("idk")
+  flagged 2 options — a static help-text improvement, or a full raw-text → bulk-format AI converter.
+  Scoped to the former: a "Guide" button on Draws/Calendar/Loadouts' bulk sections in `/manage`
+  (`commands/manage.js`'s `BULK_FORMAT_GUIDES`, real syntax pulled straight from each parser in
+  `utils/adminParser.js`, not hand-guessed) replies ephemeral with the exact syntax + a worked
+  example + a pointer to that page's own Export button for a live example against real data. Chosen
+  over the AI-converter option as the well-scoped MVP — verified char counts stay well under
+  Discord's 2000-char message cap (727-907 chars per guide). **If this doesn't fully solve the
+  "forget the format" problem, the raw-text→bulk-format AI converter is still the bigger option on
+  the table** — ask Harkirat whether the static guide is enough before considering this fully closed.
+- **🖼️ `/calendar` banner image — ONE PER PAGE — SHIPPED 2026-07-31 17:20 EDT, on branch
+  `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
+  *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L184, spec refined 2026-07-31 16:41 EDT.*
+  Separate banners for the Draws/Events/Playlists pages, each independently settable via
+  `/manage`'s Calendar → "Banners" action (one modal, 3 clearable fields). Blank = shows nothing
+  for that page. Re-hosted through the new `utils/calendarBannerCache.js`, its own Cloudinary
+  folder (`calendar_banners/draws|events|playlists`), overwrite-in-place per page — no age-based
+  pruning needed since only 3 possible assets exist, and clearing a field does a real Cloudinary
+  delete rather than orphaning the asset. Rendered as a Media Gallery (type 12) at the VERY TOP of
+  the container, above even the title (Harkirat's explicit placement call — reads as a true
+  cover/hero image rather than a mid-card illustration). `SeasonalData` gained `drawsBannerUrl`/
+  `eventsBannerUrl`/`playlistsBannerUrl` + the matching `draft.*` trio (schema-only forward compat
+  for now — no staging UI exists yet to actually set a draft banner, but Promote-to-Live already
+  copies them across if one's ever set directly). Verified via a dry-run script against the dev DB:
+  banner renders as the first component when set, is absent (not a placeholder) when blank,
+  disappears immediately on clear, and stays well under Discord's 40-component cap (20/16/16 across
+  the 3 pages with a banner set).
 - **📟 `scripts/vmstatus.sh logs` overhaul — SHIPPED 2026-07-28 15:52 EDT as v2.41.0.**
   *Was `[P2 · M · Sonnet5-H]`, filed 2026-07-28 01:41 EDT from notes L120.* Original ask: per-line
   date/time + running commit hash, retention 1,000 → ~3,000, default 25 → 40 lines, m/h/d time-window

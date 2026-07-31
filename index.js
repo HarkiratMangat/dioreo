@@ -1963,6 +1963,14 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.showModal(manageCommand.buildSearchModal(group, action));
             }
 
+            // Bulk Format Guide (2026-07-31 17:20 EDT, notes L189) -- a static ephemeral reference,
+            // not a modal/DB action, so it's handled here before any of the group-specific branches.
+            // Same guide text for loadouts_mp/loadouts_dmz (manage.js aliases the object entry).
+            if (action === 'formatguide') {
+                const guide = manageCommand.BULK_FORMAT_GUIDES[group];
+                return interaction.reply({ content: guide || 'No format guide available for this page yet.', ephemeral: true });
+            }
+
             // "Purge" (draws/calendar/patchnotes only -- Loadouts deliberately has none, see
             // manage.js's PURGE_LABELS note) needs a second confirmation before it actually deletes
             // anything -- a single misclick on a destructive button shouldn't be enough to wipe a

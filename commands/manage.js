@@ -57,6 +57,65 @@ const PURGE_LABELS = {
     patchnotes: { all: 'the ENTIRE patch notes history' }
 };
 
+// Bulk-import format reference (added 2026-07-31 17:20 EDT, notes L189) -- Harkirat's own words
+// were "I lowkey forget what the bulk input formatting is... I need a template." Scoped down from
+// the filed entry's heavier "raw-text -> bulk-format AI converter" option to a static, always-
+// accurate reference pulled straight from each parser's own real behavior (utils/adminParser.js) --
+// a converter is still the bigger option on the table if this doesn't cover it. Plain text, no
+// emoji interpolation, so this is safe as a top-level const (unlike buildPagesTable(), which is
+// rebuilt per-render specifically because emoji ids get live-patched after this file loads).
+const BULK_FORMAT_GUIDES = {
+    draws: [
+        '**Bulk Add/Replace Draws — Format**',
+        'One draw per line, comma-separated:',
+        '`Title, [Tier] Item 1, [Tier] Item 2, ..., Thumbnail URL (optional), Date`',
+        '',
+        '• **Tier shorthand:** `m` mythic · `l` legendary · `ll` legacy · `e` epic (or spell the tier out)',
+        '• **Comment line:** start an item with `-# ` for a free-text note instead of a tiered item',
+        '• **Thumbnail URL** is optional — leave it out to reuse whatever\'s already cached for that exact title',
+        '• **Date** is UTC-0, e.g. `July 15` or `July 15, 2026` (a date containing its own comma is handled fine)',
+        '',
+        'Example:',
+        '`Jupiter Cannon Draw, m Jupiter Cannon, l Void Blade, -# Character bundle only, July 15`',
+        '',
+        '-# Tip: use Export above to see this format filled in with your real current data.'
+    ].join('\n'),
+    calendar: [
+        '**Bulk Add/Replace/Delete Calendar Events — Format**',
+        'Bullet-separated entries (a `•` character), NOT one-per-line — this is what survives a copy-paste out of Notes:',
+        '`[d|p|e]•M/D - M/D | Event Title` or `[d|p|e]•M/D - All Season | Event Title`',
+        '',
+        '• Optional `d`/`p`/`e` prefix directly touching the bullet = Draw/Playlist/Event section. Leave it off and the title is auto-classified by keyword (words like "draw"/"mode"/"playlist"/standalone "MP"/"BR").',
+        '• `All Season` as the end date means the event runs until the Battle Pass ends — no fixed end date.',
+        '• Dates are UTC-0.',
+        '',
+        'Example:',
+        '`d•7/15 - 8/1 | Jupiter Cannon Draw•p•7/20 - All Season | Krai BR`',
+        '',
+        '-# Tip: use Export above to see this format filled in with your real current data.'
+    ].join('\n'),
+    loadouts_mp: [
+        '**Bulk Add/Replace Loadouts — Format**',
+        'One build per BLOCK (blank line between blocks). The first line is the header, every line after it is one attachment:',
+        '`Weapon | Category | MP or DMZ | Build Name | Cloudinary Image Key | Gunsmith Code | Badges`',
+        '`Attachment 1`',
+        '`Attachment 2`',
+        '...',
+        '',
+        '• **Badges** (comma-separated, optional): `meta`, `toxic`, `best`, `top5`, `bestclose`, `top3midlong`, etc.',
+        '• **Image Key** and **Gunsmith Code** are optional — leave blank if not set yet.',
+        '• The Mode field is required in the paste even though the button is already MP/DMZ-scoped — it\'s force-overridden to match whichever page you\'re on either way, so a stray mismatched value can\'t misfile a loadout.',
+        '',
+        'Example:',
+        '`BAL-27 | AR | MP | Aggro Build | BAL-27-1 | ABCD1234 | meta, top3`',
+        '`Monolithic Suppressor`',
+        '`FTAC Champion`',
+        '',
+        '-# Tip: use one of the Export options above to see this format filled in with your real current data.'
+    ].join('\n')
+};
+BULK_FORMAT_GUIDES.loadouts_dmz = BULK_FORMAT_GUIDES.loadouts_mp;
+
 // One entry per "page". Each page has a title icon/label and an ordered list of `groups` — a group
 // is an optional `## ` heading (Loadouts/Calendar only — Draws/Patch Notes render flat, no group
 // headings, matching the mockups exactly) plus one or more `blocks` (each becomes its own Text
@@ -91,6 +150,12 @@ function buildPagesTable() {
                     { id: 'addreturning', label: 'Add Returning', style: 3 },
                     { id: 'edit', label: 'Edit', style: 1 },
                     { id: 'delete', label: 'Delete', style: 4 }
+                ]
+            },
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a quick reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             },
             {
@@ -152,6 +217,12 @@ function buildPagesTable() {
                     { id: 'add', label: 'Add', style: 3 },
                     { id: 'edit', label: 'Edit', style: 1 },
                     { id: 'delete', label: 'Delete', style: 4 }
+                ]
+            },
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a quick reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             },
             {
@@ -347,6 +418,12 @@ function loadoutsPageDef(mode, headerLabel, icon) {
                     { id: 'add', label: 'Add', style: 3 },
                     { id: 'edit', label: 'Edit', style: 1 },
                     { id: 'delete', label: 'Delete', style: 4 }
+                ]
+            },
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a quick reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             },
             {
@@ -901,6 +978,7 @@ function buildDraftBulkCalendarModal(seasonalDoc) {
 
 module.exports = {
     ALLOWED_ADMIN_ID, // Exposed so index.js's centralized panel-interaction guard (button/select/
+    BULK_FORMAT_GUIDES,
                       // modal-submit) can check against the same single source of truth instead of
                       // a second hardcoded literal drifting out of sync — see the guard right after
                       // the anti-spam block in interactionCreate.

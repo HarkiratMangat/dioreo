@@ -200,23 +200,6 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
-- ~~`[P2 · M]` **`/calendar` banner image — ONE PER PAGE, not one shared banner.**~~ **SHIPPED
-  2026-07-31 17:20 EDT.** *Filed 2026-07-31 12:10 EDT from notes L184, spec refined 2026-07-31
-  16:41 EDT.* Separate banners for the Draws/Events/Playlists pages, each independently settable
-  via `/manage`'s Calendar → "Banners" action (one modal, 3 clearable fields). Blank = shows
-  nothing for that page. Re-hosted through the new `utils/calendarBannerCache.js`, its own
-  Cloudinary folder (`calendar_banners/draws|events|playlists`), overwrite-in-place per page — no
-  age-based pruning needed since only 3 possible assets exist, and clearing a field does a real
-  Cloudinary delete rather than orphaning the asset. Rendered as a Media Gallery (type 12) at the
-  VERY TOP of the container, above even the title (Harkirat's explicit placement call — reads as a
-  true cover/hero image rather than a mid-card illustration). `SeasonalData` gained
-  `drawsBannerUrl`/`eventsBannerUrl`/`playlistsBannerUrl` + the matching `draft.*` trio (schema-only
-  forward compat for now — no staging UI exists yet to actually set a draft banner, but Promote-to-
-  Live already copies them across if one's ever set directly). Verified via a dry-run script against
-  the dev DB: banner renders as the first component when set, is absent (not a placeholder) when
-  blank, disappears immediately on clear, and stays well under Discord's 40-component cap (20/16/16
-  across the 3 pages with a banner set). Not yet pushed/merged/deployed — awaiting the standing
-  push/PR/merge confirmation.
 - `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
   2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
   from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.
@@ -226,12 +209,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
   means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
   gets its own Active/All toggle like `/calendar`'s or something simpler.
-- `[P2 · M]` **Bulk-import format helper/template.** *Filed 2026-07-31 12:10 EDT from notes L189.*
-  "I lowkey also forget what the bulk input formatting is. I need a template... or some way where I can
-  provide raw data and get the bulk import format (maybe via gemini? Idk)." Harkirat's own uncertainty
-  ("idk") means this needs a design pass, not a guess: could be as simple as a static placeholder/help
-  text improvement on each bulk modal, or as involved as an actual raw-text → bulk-format converter
-  (possibly LLM-assisted, per his "via gemini" aside). Scope this out before building.
 - `[P2 · S]` **Patch notes "Additional Info" auto-formatting.** *Filed 2026-07-31 16:41 EDT from
   notes L182's ∴ follow-up reply (2026-07-31 11:39 EDT).* Harkirat decided on a real structure per
   his own screenshot (`local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): `### Additional
