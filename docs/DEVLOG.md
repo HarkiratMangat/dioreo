@@ -95,6 +95,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable
 - 2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache
 - 2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document
+- 2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3246,6 +3247,65 @@ since Harkirat only uploaded them to the prod app's dev portal — they'll rende
 in `emojiMap.js` are prod's real ids) but show as broken text on the dev bot until those two are also
 cloned over there, same as any newly-added emoji before a clone pass. Flagged to Harkirat rather than
 silently claimed as fully tested.
+
+## 2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common
+
+*(v2.46.0, #60.)*
+
+The day started as the direct follow-up to the six-item pass above (calendar redesign, notes L184-197)
+and ended up shipping two features that each had to be rebuilt after shipping their first version —
+and both rebuilds trace back to the same root mistake, not two unrelated ones.
+
+**The bulk-format guide** started as a genuinely well-scoped answer to Harkirat's "I lowkey forget the
+paste format" ask: a static, ephemeral plain-text reply pulling real syntax from the parsers instead of
+an AI converter. Shipped, tested, committed. Then Harkirat actually looked at it: "why tf is the guide
+plain text? put that shit into an embed and make it nice." The gap wasn't the *content* — it was that I'd
+solved "does this contain the right information" and stopped, without asking whether the *presentation*
+matched how this bot actually looks. Every other command in this codebase is a structured Components V2
+container with headings, dividers, and color; a plain-text reply was a regression in polish even though
+it was correct in substance. Rebuilt as `utils/manageGuides.js` — 5 topics, a real paste skeleton, a
+field-by-field auto-formatting breakdown, a before/after example, a topic-switching select menu — and
+while rebuilding it, the placement turned out to be wrong too (scattered mid-page instead of a consistent
+last-section convention across every page).
+
+**The patch-notes Additional Info parser** is the clearer case, because it produced a *reproducible user
+mistake*, not just a style complaint. The decided output structure (from Harkirat's own reference
+screenshot) was never in question — `### Additional Changes` / `__**Weapon**__` / attachment / `> b:n:
+details`. What I got wrong was the *input* grammar: I required every weapon, attachment, and change on
+its own physical line. Harkirat typed the whole thing as one comma-separated line instead — because
+that's the mental model every OTHER bulk format in this bot already uses (draws, calendar), and nothing
+in the placeholder text told him this field was different. The parser did exactly what I told it to: read
+the entire line as one weapon name, and printed it back bold+underlined verbatim. That's not a bug in the
+code, it's a bug in the design — I designed a grammar that was inconsistent with the rest of the app
+without noticing, then wrote a placeholder that didn't warn about the inconsistency either. Harkirat's fix
+request wasn't "explain the syntax better," it was "make the syntax match the pattern that's already
+everywhere else": one weapon per line, comma-delimited within the line — genuinely the same shape as
+draws/calendar now, not a different one dressed up to look similar.
+
+**What both corrections have in common:** neither was "the code was wrong." Both were "I made a
+presentation/consistency choice without checking it against the rest of the app, and only found out it
+was wrong when Harkirat actually used it." A guide that's technically complete but doesn't look like the
+bot it's guiding. A syntax that's technically documented but doesn't match the syntax right next to it.
+Correctness at the unit level (does this function do what I said it does) isn't the same question as
+correctness at the system level (does this fit the thing it's part of) — and only live usage reliably
+catches the second kind.
+
+**Smaller, worth recording:** while updating the deferred-list entries for these features to "SHIPPED,"
+`docs:audit`'s `deferred-sweep` check caught that the bulk-format-guide entry hadn't actually moved to the
+resolved archive — it was left in the active list with a strikethrough. Investigating why the check
+hadn't ALSO caught an earlier "SHIPPED" entry for the calendar banner feature (same session, same
+pattern) turned up a real escape: that entry's `SHIPPED` keyword and its date had happened to land on two
+different wrapped source lines, and the check's regex requires both on the same line. Not a case where the
+rule didn't apply — a case where formatting accidentally dodged the mechanism meant to enforce it. Both
+entries were moved to `docs/archive/resolved-list.md` properly once this was noticed, rather than treating
+the accidental pass as real compliance.
+
+Also fixed this session, all from the same live-testing pass, none requiring a second correction: tier
+shorthand `ll` → `lg`, draw-thumbnail fuzzy matching (Levenshtein similarity against everything cached,
+not just an exact title), a Discord-CDN-aware banner cache (skips Cloudinary re-hosting entirely for a
+`cdn.discordapp.com`/`media.discordapp.net` source, using Discord's own resize proxy instead — Harkirat's
+own suggestion, and a strictly better answer than the Cloudinary-width-cap approach tried first), and a
+dedicated animated emoji for every guide heading instead of reusing the generic info icon.
 
 ---
 

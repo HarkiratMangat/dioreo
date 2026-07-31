@@ -181,6 +181,60 @@ changelog until v3 actually launches.
 
 ---
 
+## v2.46.0 — 2026-07-31 23:50 EDT (#60 · ) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
+
+The full follow-up to v2.45.0's launch-bug pass: the calendar redesign notes L184-197 asked for,
+plus everything live-testing turned up once it actually shipped.
+
+**Calendar: 3 separate pages, TBD deadlines, a settings-based filter.**
+- `/calendar` split into 3 named pages (Draws / Events / Playlists & Modes) with toggle buttons
+  instead of Prev/Next arrows — Draws further soft-splits into NEW DRAWS / RETURNING DRAWS
+  sub-sections. Category auto-guessed from title keywords (`draw`/`armory`/`mode`/`playlist`/
+  standalone `MP`/`BR`, etc.), with a `d•`/`p•`/`e•` bulk-paste prefix as the explicit override.
+- Season-end deadlines gained a real **TBD state** (`bpEndTBD`/`rankEndTBD`/`dmzEndTBD`) — typing
+  "TBD" no longer corrupts the date (the actual bug: `parseAdminDate()` silently fell back to
+  `new Date()` on unparseable input, and a typo'd "TDB" landed almost exactly on Aug 1 00:00 UTC
+  across all 3 fields in one submit). Every date-writing call site now treats a parse failure as
+  "leave it alone," never "guess now."
+- The Active/All Events filter moved from an in-page toggle to `/settings`' Preferences page.
+
+**Calendar per-page banners.** One optional banner image per page, set via `/manage` → Calendar →
+"Banners." A `cdn.discordapp.com`/`media.discordapp.net` source URL skips Cloudinary re-hosting
+entirely and uses Discord's own dynamic resize proxy instead — the only way to get a real
+small-preview/full-resolution-on-click pairing; a Cloudinary-hosted fallback (non-Discord sources)
+caps the same width everywhere, inline and on zoom alike.
+
+**`/manage`'s bulk-import guide, rebuilt twice.** Went from nonexistent, to a plain-text reply, to a
+rich structured Components V2 view with a topic-switching dropdown (`utils/manageGuides.js`) covering
+all 5 bulk-having pages — Patch Notes and Next Season Draft had no guide at all before. Reachable from
+every page's own Guide button (now consistently the LAST section: single-item management → bulk
+management → purge → export → guide) and directly as `/manage`'s own `data_for` choice. Carries a
+dedicated animated emoji (`emojiMap.js`'s `guide`) instead of the generic info icon.
+
+**Patch Notes "Additional Info" auto-formats into a real structure — and the grammar was corrected
+twice from live-testing.** Typing `# Weapon, Attachment, b: text, n: text, ...` renders a
+`### Additional Changes` heading with `__**Weapon**__`/attachment/`> {buff/nerf} details` blocks —
+opt-in via the `#` marker, so every pre-existing free-typed entry is untouched. The first version
+required every weapon/attachment/change on its own physical line, which directly caused a real
+submission mistake (a comma-separated one-liner got read as one giant weapon name) — the final
+grammar matches the SAME comma-delimited mental model draws/calendar bulk pastes already use: one
+weapon per line, comma-separated, only a new weapon needs a new line.
+
+**Smaller fixes, all from the same live-testing pass:**
+- Draw thumbnails: an exact-title cache miss now tries a Levenshtein-based fuzzy match against
+  everything cached before giving up, so a typo or a slight rewording reuses the right image instead
+  of failing — surfaced by name in the confirmation when it wasn't an exact match.
+- Tier shorthand: legacy `ll` → `lg`.
+- Buff/nerf emoji IDs updated to Harkirat's uploaded replacements.
+- Draw/calendar add/edit confirmations use real `<t:X:D>` Discord timestamps instead of
+  `.toDateString()` text; draws bulk confirmations list actual titles, not just counts.
+- Patch Notes' "previous balance changes" footer text bolded.
+
+**A real gap caught mid-session, not just fixed quietly:** an earlier deferred-list entry marked
+"SHIPPED" had wrapped its own date across two lines, which accidentally dodged the `docs:audit`
+deferred-sweep check instead of actually passing it — both that entry and this session's other
+shipped items were moved into `docs/archive/resolved-list.md` properly once the escape was noticed.
+
 ## v2.45.0 — 2026-07-30 22:24 EDT (#59 · `ee3b0cd`) — Six v2 launch bugs: a lowercased "V", a comment line stored as a fake weapon, and a real staging area for next season
 
 Six items pulled off the notes file (lines 191/192/197/199/200/201), all picked because they're
