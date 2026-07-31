@@ -215,19 +215,36 @@ function parseBulkDrawList(bulkText) {
 const CALENDAR_CATEGORY_PREFIX = { d: 'draw', p: 'playlist', e: 'event' };
 const CALENDAR_CATEGORY_TO_PREFIX = { draw: 'd', playlist: 'p', event: 'e' };
 
-// Keyword-based fallback classification (added 2026-07-31 12:40 EDT, per Harkirat's explicit request
-// to not have to prefix every line by hand) -- only consulted when there's NO explicit prefix/typed
-// category. Checked in this order (draw, then playlist) because a title can plausibly contain both
-// an event-ish and a draw-ish word; draw/playlist are the more specific signals, so they win, and
-// "event" is never actually matched against -- it's just wherever nothing else hits, exactly as
-// Harkirat asked ("otherwise just default unknown things to the event section").
-const DRAW_KEYWORDS = ['draw', 'armory', 'it goes two', 'redux', 'mythic drop'];
-const PLAYLIST_KEYWORDS = ['mode', 'playlist', 'gamemode', 'map'];
+// Keyword-based fallback classification (added 2026-07-31 12:40/12:55 EDT, per Harkirat's explicit
+// request to not have to prefix every line by hand -- then tightened the same session when he asked
+// for real word-form handling: "draw" vs "draws", "gamemode" vs "game mode", etc). Only consulted
+// when there's NO explicit prefix/typed category. Word-boundaried (`\b`) with optional plural
+// suffixes rather than a plain .includes() -- a bare substring check would both MISS "Armories"
+// against a literal "armory" keyword, and FALSE-POSITIVE on an unrelated word that merely contains
+// one (e.g. "Roadmap Update" containing "map"). `gamemode` is the one deliberate exception: it's a
+// single fused word with no natural boundary between "game" and "mode" to anchor `\bmodes?\b` on, so
+// it needs its own unboundaried pattern. Checked in this order (draw, then playlist) because a title
+// can plausibly contain both an event-ish and a draw-ish word; draw/playlist are the more specific
+// signals, so they win, and "event" is never actually matched against -- it's just wherever nothing
+// else hits, exactly as Harkirat asked ("otherwise just default unknown things to the event section").
+const DRAW_KEYWORDS = [
+    /\bdraws?\b/i,             // Draw, Draws
+    /\barmor(?:y|ies|ed)?\b/i, // Armory, Armories, Armored
+    /\bit goes two\b/i,
+    /\bredux\b/i,
+    /\bmythic drops?\b/i       // Mythic Drop, Mythic Drops
+];
+const PLAYLIST_KEYWORDS = [
+    /\bmodes?\b/i,     // Mode, Modes ("MP Mode", "Game Mode" -- any spaced form)
+    /gamemode/i,       // fused compound with no word boundary to anchor \bmodes?\b on
+    /\bplaylists?\b/i, // Playlist, Playlists
+    /\bmaps?\b/i       // Map, Maps -- boundaried so "Roadmap"/"Mapping" don't false-positive
+];
 
 function guessCalendarCategory(title) {
-    const t = (title || '').toLowerCase();
-    if (DRAW_KEYWORDS.some(k => t.includes(k))) return 'draw';
-    if (PLAYLIST_KEYWORDS.some(k => t.includes(k))) return 'playlist';
+    const t = title || '';
+    if (DRAW_KEYWORDS.some(re => re.test(t))) return 'draw';
+    if (PLAYLIST_KEYWORDS.some(re => re.test(t))) return 'playlist';
     return 'event';
 }
 
