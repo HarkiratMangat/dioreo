@@ -209,14 +209,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
   means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
   gets its own Active/All toggle like `/calendar`'s or something simpler.
-- `[P2 · S]` **Patch notes "Additional Info" auto-formatting.** *Filed 2026-07-31 16:41 EDT from
-  notes L182's ∴ follow-up reply (2026-07-31 11:39 EDT).* Harkirat decided on a real structure per
-  his own screenshot (`local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): `### Additional
-  Changes` heading, then `__**Weapon**__`, then `Attachment`, then `> b:/n: details` — auto-format
-  the Additional Info field into this shape rather than leaving it fully free-typed. Must handle a
-  weapon with multiple different attachment changes, and multiple changes for one attachment.
-  Explicitly still deferred as of the last session (he'd already manually formatted that season's
-  info by hand) — ready to build now that he wants to pick it up.
 - `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
   "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
   shard error" alert live and had "absolutely no clue what it meant," and separately has no

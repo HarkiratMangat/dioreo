@@ -196,7 +196,17 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   CONDITIONAL — it only appears when `description` actually has content; with nothing typed, the
   disclaimer rides directly under the title with no divider, since dividing up just one disclaimer
   line on its own read as visually pointless (Harkirat's own call).
-- **The most recent `patchNotes[]` entry's title stays synced to `currentSeasonTitle`.**
+- **Additional Info auto-formats into a real weapon/attachment/change structure, OPT-IN via a `#`
+  line marker (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply, structure decided from
+  Harkirat's own reference screenshot).** `commands/patchnotes.js`'s `formatAdditionalInfo()` — a
+  line starting `# Weapon Name` opens a new weapon block (`__**Weapon Name**__`); any other non-blank
+  line becomes an attachment name under it; a `b:`/`n:` line becomes a change line under the most
+  recent attachment (`> {buff/nerf emoji} details`), reusing the existing `applyInfoAliases()` emoji
+  lookup. A weapon can carry multiple attachment lines, each with multiple change lines. **With no
+  `#` line anywhere in the field, this is a pure no-op beyond the pre-existing b:/n: alias** — every
+  pre-existing free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the
+  whole `### Additional Changes` heading only appears once the admin actually opts in. Any lines
+  typed before the first `#` marker are kept as free prose above the structured block, not discarded.
   Older patch note entries keep their own historical title forever (so a past season's
   patch notes don't get renamed retroactively), but the entry representing the
   currently-live season needs to track the live season title — see index.js's

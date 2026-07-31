@@ -25,6 +25,19 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **⚔️ Patch notes "Additional Info" auto-formatting — SHIPPED 2026-07-31 17:20 EDT, on branch
+  `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
+  *Was `[P2 · S]`, filed 2026-07-31 16:41 EDT from notes L182's ∴ follow-up reply (2026-07-31 11:39
+  EDT).* Harkirat's decided structure, from his own reference screenshot (`local/Screenshots/
+  CleanShot 2026-07-31 at 11.38.34@2x.png`): `### Additional Changes` heading, `__**Weapon**__` per
+  weapon, its attachments as plain lines, each change as `> b:/n: details`. `commands/patchnotes.js`'s
+  new `formatAdditionalInfo()` — OPT-IN via a `# Weapon Name` line marker so every pre-existing
+  free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the structured
+  heading only appears once the admin actually starts a line with `#`. Handles a weapon with
+  multiple attachment lines and an attachment with multiple change lines, per the filed requirement.
+  Verified against 5 cases via a dry-run script: the exact screenshot structure, plain prose with no
+  `#` marker (unchanged, alias-only), multiple attachments/multiple changes per attachment, a preamble
+  line before the first `#` marker (kept, not discarded), and empty input.
 - **🗂️ Bulk-import format helper/template — SHIPPED (scoped-down) 2026-07-31 17:20 EDT, on branch
   `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
   *Was `[P2 · M]`, filed 2026-07-31 12:10 EDT from notes L189.* Harkirat's own uncertainty ("idk")

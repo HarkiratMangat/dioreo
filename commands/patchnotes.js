@@ -51,6 +51,77 @@ function applyInfoAliases(text) {
         .replace(/(^|[\s\n])n:/gi, (_, pre) => `${pre}${emojis.nerf}`);
 }
 
+// Additional Info auto-formatting (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply) --
+// renders into Harkirat's decided structure (his own reference screenshot,
+// `local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): a `### Additional Changes` heading,
+// `__**Weapon**__` per weapon, its attachment name(s) as plain lines, and each change as
+// `> {buff/nerf emoji} details`.
+//
+// OPT-IN, not a format change to every entry -- only triggers when the admin actually uses the new
+// `# Weapon Name` line marker. With no `#` line anywhere, this is a no-op beyond the existing b:/n:
+// alias, so every pre-existing free-typed entry (most of them are just a one-line blurb) keeps
+// rendering exactly as it always has.
+//
+// Grammar, line by line, once at least one `#` line is present:
+//   `# Weapon Name`        -> starts a new weapon block
+//   `b: text` / `n: text`  -> a change line under the CURRENT attachment (needs one to already exist)
+//   anything else          -> a new attachment name under the current weapon
+// A weapon can have multiple attachment lines (each starts its own change list); an attachment can
+// have multiple b:/n: change lines before the next attachment/weapon line. Any lines typed BEFORE
+// the first `#` marker are kept as free prose above the structured block, not discarded.
+function formatAdditionalInfo(text) {
+    const raw = (text || '').trim();
+    if (!raw) return '';
+    const lines = raw.split('\n');
+    const hasWeaponMarker = lines.some(l => /^#\s*\S/.test(l.trim()));
+    if (!hasWeaponMarker) return applyInfoAliases(raw);
+
+    const preambleLines = [];
+    const weapons = []; // { name, attachments: [{ name, changes: [] }] }
+    let currentWeapon = null;
+    let currentAttachment = null;
+    let seenWeapon = false;
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) continue;
+
+        const weaponMatch = line.match(/^#\s*(.+)$/);
+        if (weaponMatch) {
+            seenWeapon = true;
+            currentWeapon = { name: weaponMatch[1].trim(), attachments: [] };
+            weapons.push(currentWeapon);
+            currentAttachment = null;
+            continue;
+        }
+        if (!seenWeapon) {
+            preambleLines.push(line);
+            continue;
+        }
+        const changeMatch = line.match(/^(b|n):\s*(.+)$/i);
+        if (changeMatch && currentAttachment) {
+            const emoji = changeMatch[1].toLowerCase() === 'b' ? emojis.buff : emojis.nerf;
+            currentAttachment.changes.push(`> ${emoji} ${changeMatch[2].trim()}`);
+            continue;
+        }
+        // Anything else (including a stray b:/n: line with no attachment yet -- graceful
+        // degradation, not a crash: it just becomes an oddly-named attachment the admin will
+        // immediately notice and fix) starts a new attachment under the current weapon.
+        currentAttachment = { name: line, changes: [] };
+        currentWeapon.attachments.push(currentAttachment);
+    }
+
+    const weaponBlocks = weapons.map(w => {
+        const attachmentLines = w.attachments.map(a => [a.name, ...a.changes].join('\n')).join('\n');
+        return `__**${w.name}**__\n${attachmentLines}`;
+    });
+
+    const parts = [];
+    if (preambleLines.length) parts.push(applyInfoAliases(preambleLines.join('\n')));
+    parts.push(`### Additional Changes\n${weaponBlocks.join('\n')}`);
+    return parts.join('\n\n');
+}
+
 function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
     // Array Trimming: Prevent dropdown menu overload by grabbing only the 5 most recent records
     const recentPatches = seasonalDoc.patchNotes.slice(-5).reverse();
@@ -90,7 +161,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     if (hasInfo) {
         components.push(
             { type: 14, spacing: 2, divider: true },
-            { type: 10, content: `${applyInfoAliases(activePatch.description)}\n${SUBJECT_TO_CHANGE_DISCLAIMER}` }
+            { type: 10, content: `${formatAdditionalInfo(activePatch.description)}\n${SUBJECT_TO_CHANGE_DISCLAIMER}` }
         );
     } else {
         components.push({ type: 10, content: SUBJECT_TO_CHANGE_DISCLAIMER });
@@ -136,6 +207,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 module.exports = {
     cleanPatchTitle,
     displayTitle,
+    formatAdditionalInfo,
 
     // COMMAND DEFINITION: Base 'patch', Subcommand 'notes'
     data: new SlashCommandBuilder()
