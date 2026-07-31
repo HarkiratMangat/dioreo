@@ -156,6 +156,39 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   explicit call (page 1 = Draws + Events, page 2 = Playlists/Modes) rather than switching to
   section-toggle buttons — that's filed in `docs/db-deferred-list.md`'s Queued section for its own pass
   since it's new UI worth seeing first, not a wiring change. Section heading is `### `.
+- **Season-end deadlines support an explicit TBD state (added 2026-07-31 14:00 EDT, direct
+  follow-up).** Typing the literal word "TBD" (case-insensitive) into a deadline field now sets a
+  `${field}TBD` boolean (`bpEndTBD`/`rankEndTBD`/`dmzEndTBD`, live + draft) and nulls the Date field,
+  instead of being unparseable text that gets skipped. Distinct from "not set yet" — `seasonend.js`
+  shows *"TBD — date not yet announced"* rather than *"Date has not been set yet."* Anything checking
+  whether a deadline (or an "All Season" calendar event riding on `bpEnd`) has ended treats TBD as
+  running **indefinitely** — `calendar.js`'s `isEventEnded()` returns `false` immediately when
+  `bpEndTBD` is set, before ever comparing against the (null) date. The Promote-to-Live handler
+  (`index.js`'s `mng_draftpromoteconfirm`) has to check the TBD flag BEFORE the date — a plain
+  `if (draft.bpEnd)` truthy check would silently skip promoting a TBD deadline, since TBD leaves
+  `draft.bpEnd` explicitly `null`.
+- **`/calendar` is 3 separate PAGES now, not 2 combined ones (redesigned again 2026-07-31 14:00 EDT,
+  same-session follow-up to the initial 3-section build below).** Draws / Events / Playlists-Modes
+  each get their own page, switched via 3 named toggle buttons (`calpage_0/1/2`) instead of Prev/Next
+  arrows — the section-toggle-buttons item originally filed to `db-deferred-list.md` was built
+  immediately instead of deferred, per Harkirat's direct follow-up. Current page's button is
+  Primary+disabled, the other two Secondary+enabled (same convention as any other "active page"
+  button elsewhere in the bot). The Draws page itself further soft-splits into two sub-sections —
+  `### {newDraws emoji} __**NEW DRAWS**__` / `### {returningDraws emoji} __**RETURNING DRAWS**__`
+  (full caps + underline, per Harkirat's explicit heading-style request applied to every section
+  heading) — replacing the single "Draws" heading entirely. An entry's new/returning split is a
+  property of `getDrawSectionEntries()`'s tagging: a synthetic entry (from `newDraws`/
+  `returningDraws`, no explicit calendar row) knows its type directly; an EXPLICIT `category: 'draw'`
+  calendar entry has no stored new/returning distinction of its own, so it's inferred via
+  `isSameDrawTitle` against both arrays — an "orphan" match-neither entry defaults to 'new'.
+  Events/Playlists pages use the same full-caps+underline heading treatment with their own new
+  emojis (`emojiMap.js`'s `events`/`modes`).
+  **The Active/All Events filter moved to `/settings`' Preferences page entirely** (a binary toggle,
+  `toggle_calfilter_active`/`toggle_calfilter_all` in `index.js`'s generic `toggle_` handler,
+  re-rendering page 1 specifically rather than the page-0 default every other toggle there uses) —
+  `/calendar` no longer has an in-page way to change it, just reads `prefs.calendarEventFilter`
+  fresh on every render. This directly reverses the ORIGINAL 3-section build's explicit call ("NOT a
+  /settings toggle, Harkirat's request") — his own follow-up call this session.
 - **Patch notes' layout reordered (2026-07-31 12:10 EDT, notes L181):** the release-timestamp line
   moved from directly under the title to directly under the image carousel (same visual "section" as
   the images now), and a permanent `-# NOTE: Final patch notes are subject to change` disclaimer was

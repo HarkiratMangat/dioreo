@@ -87,6 +87,10 @@ const emojis = {
     // applyInfoAliases()). Harkirat-uploaded, not animated.
     buff: '<:Buff:1532771212172984401>',
     nerf: '<:Nerf:1532771213271892089>',
+    // Section heading icons for the 3-section calendar redesign's Events/Playlists pages
+    // (2026-07-31 14:00 EDT) -- Draws reuses the existing newDraws/returningDraws emojis above.
+    events: '<a:Events:1532830530108653659>',
+    modes: '<a:Modes:1532809521305489610>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

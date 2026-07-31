@@ -16,6 +16,16 @@ const SeasonalDataSchema = new mongoose.Schema({
     bpEnd: { type: Date },
     rankEnd: { type: Date },
     dmzEnd: { type: Date },
+    // TBD state (added 2026-07-31 14:00 EDT) -- typing the literal word "TBD" into a deadline field
+    // now sets this flag + nulls the Date, instead of silently corrupting the date (the L194 bug --
+    // see adminParser.js's parseAdminDate). Distinct from "not set yet" (both fields default
+    // false/undefined): TBD means "known to be undecided," so seasonend.js shows "TBD" rather than
+    // "Date has not been set yet," and anything checking whether the season/an "All Season" calendar
+    // event has ended (calendar.js's isEventEnded) treats a TBD end as indefinitely running rather
+    // than comparing against a null date.
+    bpEndTBD: { type: Boolean, default: false },
+    rankEndTBD: { type: Boolean, default: false },
+    dmzEndTBD: { type: Boolean, default: false },
 
     // /patchnotes
     patchNotes: [{
@@ -92,6 +102,9 @@ const SeasonalDataSchema = new mongoose.Schema({
         bpEnd: { type: Date },
         rankEnd: { type: Date },
         dmzEnd: { type: Date },
+        bpEndTBD: { type: Boolean, default: false },
+        rankEndTBD: { type: Boolean, default: false },
+        dmzEndTBD: { type: Boolean, default: false },
         newDraws: [{
             title: { type: String },
             date: { type: Date },

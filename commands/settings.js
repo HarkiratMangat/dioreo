@@ -369,6 +369,23 @@ module.exports = {
                 }]
             });
 
+            // Calendar's Active/All Events filter (2026-07-31 14:00 EDT) -- moved here from an
+            // in-page /calendar toggle, per Harkirat's explicit request. Same binary-toggle shape as
+            // page 0's buildToggleRow above, but that helper is hardcoded to PUBLIC/EPHEMERAL
+            // wording, so this is its own small block rather than a reused call. Default 'all',
+            // matching the UserPreference schema default.
+            const eventFilter = prefs.calendarEventFilter || 'all';
+            const isActiveOnly = eventFilter === 'active';
+            containerComponents.push({
+                type: 9,
+                components: [{ type: 10, content: `\`• Calendar Events\` = **${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}**` }],
+                accessory: {
+                    type: 2, style: 2,
+                    label: isActiveOnly ? 'Show All' : 'Show Active Only',
+                    custom_id: `${isActiveOnly ? 'toggle_calfilter_all' : 'toggle_calfilter_active'}|${userId}`
+                }
+            });
+
             containerComponents.push({ type: 10, content: `-# ← Back to page 1 for Visibility settings` });
         }
 

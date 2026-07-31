@@ -101,7 +101,8 @@ add it to the corresponding schema in `models/` in the same change.** Full data-
 `.claude/rules/models.md`.
 
 ### There is a LOCAL DEV BOT — use it, and never point it at prod (built 2026-07-26 13:45 EDT)
-A **separate Discord application**, `Dio (Dev)` (`1529636846248919263`), exists purely to test changes
+A **separate Discord application**, `Dioreo (Dev)` (`1529636846248919263`, renamed from `Dio (Dev)` — Harkirat plans to rename the
+whole bot to "Dioreo" once v3 publicly launches, and started using the new name on the dev app first), exists purely to test changes
 locally before they reach prod. Run it from the repo root with **`node --watch --env-file=.env.dev index.js`**
 — it auto-restarts on every file save and branch switch, so any branch or PR can be tried live in Discord
 in seconds. **Default to testing on it** instead of shipping untested or asking Harkirat to eyeball prod.
@@ -275,7 +276,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | File | Covers |
 |---|---|
 | `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
-| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dio (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
+| `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dioreo (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |

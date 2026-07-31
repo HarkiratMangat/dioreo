@@ -1488,6 +1488,13 @@ client.on('interactionCreate', async interaction => {
             if (action === 'timestamp_ephemeral') prefs.timestampVisibility = 'ephemeral';
             if (action === 'settings_public') prefs.settingsVisibility = 'public';
             if (action === 'settings_ephemeral') prefs.settingsVisibility = 'ephemeral';
+            // Calendar's Active/All Events filter moved here from an in-page /calendar toggle
+            // (2026-07-31 14:00 EDT, per Harkirat's explicit request) -- lives on /settings' page 1
+            // (Preferences), so the re-render below needs page 1, not the page-0 default every other
+            // toggle here uses.
+            if (action === 'calfilter_active') prefs.calendarEventFilter = 'active';
+            if (action === 'calfilter_all') prefs.calendarEventFilter = 'all';
+            const targetPage = (action === 'calfilter_active' || action === 'calfilter_all') ? 1 : 0;
             // NOTE (removed 2026-07-12): region_10/region_30 toggle actions used to live here as a
             // binary button. Replaced by a 3-option dropdown ("Show Last Viewed Region" / "10 CP" /
             // "30 CP") writing to the new `defaultRegionMode` field instead -- see the `set_region_mode`
@@ -1502,7 +1509,7 @@ client.on('interactionCreate', async interaction => {
             // the passive idle-timeout using THIS interaction's fresh token at the end of its render.
             const settingsCommand = client.commands.get('settings');
             const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
-            return await settingsCommand.execute(renderInteraction, 0);
+            return await settingsCommand.execute(renderInteraction, targetPage);
         }
 
         // B. DRAWS PAGINATION (New vs Returning)
@@ -1529,36 +1536,21 @@ client.on('interactionCreate', async interaction => {
             return await drawsCommand.execute(syntheticInteraction, targetPage, targetSubPage);
         }
 
-        // B.3 CALENDAR SUB-PAGE PAGINATION (Prev/Next, once event list exceeds CHUNK_SIZE)
-        // custom_id format: calsubpage_<targetIndex>, e.g. "calsubpage_1"
-        if (interaction.customId.startsWith('calsubpage_') && interaction.customId !== 'calsubpage_indicator') {
+        // B.3 CALENDAR PAGE TOGGLE (Draws / Events / Playlists-Modes -- replaces the old Prev/Next
+        // sub-page pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request for named
+        // section-toggle buttons instead of arrows). custom_id format: calpage_<0|1|2>.
+        if (interaction.customId.startsWith('calpage_')) {
             await interaction.deferUpdate();
-            const targetSubPage = parseInt(interaction.customId.replace('calsubpage_', ''), 10) || 0;
+            const targetPage = parseInt(interaction.customId.replace('calpage_', ''), 10) || 0;
             const calendarCommand = client.commands.get('calendar');
 
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
-            return await calendarCommand.execute(syntheticInteraction, targetSubPage);
+            return await calendarCommand.execute(syntheticInteraction, targetPage);
         }
 
-        // B.4 CALENDAR EVENT-FILTER TOGGLE ("Show All Events" <-> "Show Active Events Only")
-        // Persisted straight to UserPreference.calendarEventFilter -- deliberately NOT a /settings
-        // toggle (Harkirat's request), so this is the only place that field ever gets written.
-        // Resets to sub-page 0 on every toggle since the filtered event count (and therefore chunk
-        // layout) changes along with the filter.
-        if (interaction.customId === 'calendar_filter_all' || interaction.customId === 'calendar_filter_active') {
-            await interaction.deferUpdate();
-            const targetFilter = interaction.customId === 'calendar_filter_all' ? 'all' : 'active';
-
-            const UserPreference = require('./models/UserPreference');
-            let prefs = await UserPreference.findOne({ discordId: interaction.user.id });
-            if (!prefs) prefs = new UserPreference({ discordId: interaction.user.id });
-            prefs.calendarEventFilter = targetFilter;
-            await prefs.save();
-
-            const calendarCommand = client.commands.get('calendar');
-            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
-            return await calendarCommand.execute(syntheticInteraction, 0, targetFilter);
-        }
+        // (The old B.4 CALENDAR EVENT-FILTER TOGGLE handler was removed 2026-07-31 14:00 EDT -- the
+        // Active/All Events filter moved to /settings entirely, per Harkirat's explicit request. See
+        // the generic `toggle_` handler below for `calfilter_active`/`calfilter_all`.)
 
         // B.5 SETTINGS PAGE NAVIGATION -- /settings paginated into 2 pages (2026-07-12, once the new
         // region dropdown + hex codes + footer line pushed it close to Discord's 40-component cap):
@@ -2224,15 +2216,21 @@ client.on('interactionCreate', async interaction => {
                 currentSeasonTitle: seasonalDoc.currentSeasonTitle, bpTitle: seasonalDoc.bpTitle,
                 rankTitle: seasonalDoc.rankTitle, dmzTitle: seasonalDoc.dmzTitle,
                 bpEnd: seasonalDoc.bpEnd, rankEnd: seasonalDoc.rankEnd, dmzEnd: seasonalDoc.dmzEnd,
+                bpEndTBD: seasonalDoc.bpEndTBD, rankEndTBD: seasonalDoc.rankEndTBD, dmzEndTBD: seasonalDoc.dmzEndTBD,
                 newDraws: seasonalDoc.newDraws, returningDraws: seasonalDoc.returningDraws, calendar: seasonalDoc.calendar
             };
             if (draft.currentSeasonTitle) seasonalDoc.currentSeasonTitle = draft.currentSeasonTitle;
             if (draft.bpTitle) seasonalDoc.bpTitle = draft.bpTitle;
             if (draft.rankTitle) seasonalDoc.rankTitle = draft.rankTitle;
             if (draft.dmzTitle) seasonalDoc.dmzTitle = draft.dmzTitle;
-            if (draft.bpEnd) seasonalDoc.bpEnd = draft.bpEnd;
-            if (draft.rankEnd) seasonalDoc.rankEnd = draft.rankEnd;
-            if (draft.dmzEnd) seasonalDoc.dmzEnd = draft.dmzEnd;
+            // A `if (draft.bpEnd)` truthy check alone would silently skip promoting a TBD deadline --
+            // TBD leaves draft.bpEnd explicitly null, so the TBD flag has to be checked FIRST (2026-07-31 14:00 EDT).
+            if (draft.bpEndTBD) { seasonalDoc.bpEnd = null; seasonalDoc.bpEndTBD = true; }
+            else if (draft.bpEnd) { seasonalDoc.bpEnd = draft.bpEnd; seasonalDoc.bpEndTBD = false; }
+            if (draft.rankEndTBD) { seasonalDoc.rankEnd = null; seasonalDoc.rankEndTBD = true; }
+            else if (draft.rankEnd) { seasonalDoc.rankEnd = draft.rankEnd; seasonalDoc.rankEndTBD = false; }
+            if (draft.dmzEndTBD) { seasonalDoc.dmzEnd = null; seasonalDoc.dmzEndTBD = true; }
+            else if (draft.dmzEnd) { seasonalDoc.dmzEnd = draft.dmzEnd; seasonalDoc.dmzEndTBD = false; }
             seasonalDoc.newDraws = draft.newDraws || [];
             seasonalDoc.returningDraws = draft.returningDraws || [];
             seasonalDoc.calendar = draft.calendar || [];
@@ -3157,13 +3155,26 @@ client.on('interactionCreate', async interaction => {
             // returns null instead, so an unparseable date is treated the same as a blank one (field
             // left untouched) rather than corrupted, and the admin gets told which line was skipped.
             const skippedDates = [];
+            // Typing the literal word "TBD" (case-insensitive) is now a real, explicit directive --
+            // added 2026-07-31 14:00 EDT -- rather than unparseable text that gets skipped. Clears
+            // the Date field and sets its matching `${dateField}TBD` flag; seasonend.js/calendar.js
+            // both read that flag to show "TBD" and treat the deadline as indefinitely running.
             const applyLine = (line, titleField, dateField, label) => {
                 const { title, dateStr } = splitTitleDate(line);
                 if (title) seasonalDoc[titleField] = title;
                 if (dateStr) {
-                    const parsed = parseAdminDate(dateStr);
-                    if (parsed) seasonalDoc[dateField] = parsed;
-                    else skippedDates.push(`${label} ("${dateStr}")`);
+                    if (dateStr.trim().toLowerCase() === 'tbd') {
+                        seasonalDoc[dateField] = null;
+                        seasonalDoc[`${dateField}TBD`] = true;
+                    } else {
+                        const parsed = parseAdminDate(dateStr);
+                        if (parsed) {
+                            seasonalDoc[dateField] = parsed;
+                            seasonalDoc[`${dateField}TBD`] = false;
+                        } else {
+                            skippedDates.push(`${label} ("${dateStr}")`);
+                        }
+                    }
                 }
             };
             applyLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd', 'Battle Pass');
@@ -3209,9 +3220,18 @@ client.on('interactionCreate', async interaction => {
                 const { title, dateStr } = splitTitleDate(line);
                 if (title) seasonalDoc.draft[titleField] = title;
                 if (dateStr) {
-                    const parsed = parseAdminDate(dateStr);
-                    if (parsed) seasonalDoc.draft[dateField] = parsed;
-                    else skippedDraftDates.push(`${label} ("${dateStr}")`);
+                    if (dateStr.trim().toLowerCase() === 'tbd') {
+                        seasonalDoc.draft[dateField] = null;
+                        seasonalDoc.draft[`${dateField}TBD`] = true;
+                    } else {
+                        const parsed = parseAdminDate(dateStr);
+                        if (parsed) {
+                            seasonalDoc.draft[dateField] = parsed;
+                            seasonalDoc.draft[`${dateField}TBD`] = false;
+                        } else {
+                            skippedDraftDates.push(`${label} ("${dateStr}")`);
+                        }
+                    }
                 }
             };
             applyDraftLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd', 'Battle Pass');

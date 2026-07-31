@@ -378,7 +378,7 @@ Some overlap (noted inline). The v3 branch / pre-release-versioning / test-bot s
   `node index.js` can't silently race the deployed Render instance again. Until this exists, killing
   stray local instances is a manual step in the push flow.
   - **⚠️ Clarified 2026-07-26 13:45 EDT — the collision is PER-TOKEN, not per-machine.** The local dev bot
-    (`Dio (Dev)`) is a **separate Discord application with its own token**, so running it alongside the VM
+    (`Dioreo (Dev)`) is a **separate Discord application with its own token**, so running it alongside the VM
     is safe by design and must NOT be "cleaned up" before a deploy. Only a local run using **prod's** `.env`
     collides. The manual step above applies to that case only.
   - **Merged:** PR [#9](https://github.com/HarkiratMangat/diors-builds/pull/9) implements this as a

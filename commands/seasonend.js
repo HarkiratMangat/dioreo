@@ -84,10 +84,14 @@ module.exports = {
         // ("✦ **Ends...** <timestamp>" / "✦ **That's...** <relative>") — the heading is now just
         // "{emoji} **{title}**", short enough to stay on one line even on mobile, which means it's
         // safe to go back to the bigger H2 (##) size.
-        const buildEndBlock = (emoji, title, unix) => {
-            const body = unix
-                ? `✦ **Ends...** <t:${unix}:F>\n✦ **That's...** <t:${unix}:R>`
-                : '*Date has not been set yet.*';
+        // isTBD (added 2026-07-31 14:00 EDT) -- distinct from "not set yet": TBD means the admin
+        // explicitly typed "TBD" for this deadline (adminParser's applyLine, index.js), so it gets
+        // its own honest message instead of reading as simply forgotten/unconfigured.
+        const buildEndBlock = (emoji, title, unix, isTBD) => {
+            let body;
+            if (isTBD) body = '*TBD — date not yet announced.*';
+            else if (unix) body = `✦ **Ends...** <t:${unix}:F>\n✦ **That's...** <t:${unix}:R>`;
+            else body = '*Date has not been set yet.*';
             return { type: 10, content: `## ${emoji} **${title}**\n${body}` };
         };
 
@@ -95,13 +99,13 @@ module.exports = {
             type: 17,
             accent_color: accentColor,
             components: [
-                buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix),
+                buildEndBlock(emojis.bp1, seasonalDoc?.bpTitle || 'Battle Pass', bpUnix, seasonalDoc?.bpEndTBD),
                 { type: 14, spacing: 2, divider: true }, // Structural Separator
 
-                buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix),
+                buildEndBlock(emojis.rank || '🏆', seasonalDoc?.rankTitle || 'Ranked Series', rankUnix, seasonalDoc?.rankEndTBD),
                 { type: 14, spacing: 2, divider: true },
 
-                buildEndBlock(emojis.dmz || '💀', seasonalDoc?.dmzTitle || 'DMZ Season', dmzUnix)
+                buildEndBlock(emojis.dmz || '💀', seasonalDoc?.dmzTitle || 'DMZ Season', dmzUnix, seasonalDoc?.dmzEndTBD)
             ]
         };
 

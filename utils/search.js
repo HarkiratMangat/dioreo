@@ -16,6 +16,46 @@ function fuzzyMatch(query, target) {
     return normalizeForSearch(target).includes(normalizeForSearch(query));
 }
 
+// Purpose-built for ONE thing: deciding whether a draw in newDraws/returningDraws and an explicit
+// `category: 'draw'` calendar entry refer to the SAME real draw, for calendar.js's Draws-section
+// auto-merge (added 2026-07-31 13:30 EDT). fuzzyMatch() above requires one full name to be a literal
+// substring of the other, which real admin-typed titles for the same draw routinely fail — verified
+// against Harkirat's own live data: "Persona 5 Royal (Operator) Series Armory" vs "Persona 5
+// Operator Series Armory" (extra word + parens), "Shadow & Shade Mythic Draw" vs "Shadow and Shade
+// Mythic Drop" (different final word entirely), "Crimson Moonlight Howl Double Draw" vs "Crimson
+// Moonlight Howl (It Goes Two Draw)" (differently-worded double-draw suffix) — none of these are a
+// substring of the other, so fuzzyMatch() silently failed to dedupe any of them.
+//
+// Instead: tokenize both titles into words, strip out CODM's own generic draw/category vocabulary
+// (these appear in nearly every draw title and carry no distinguishing information on their own --
+// counting them caused a real false positive: "Free Legendary Weapon (Secret Cache)" vs "Persona 5
+// Weapon Series Armory" only share the word "weapon"), and require at least 2 shared DISTINCTIVE
+// words. Two, not one, because a single shared distinctive word is still too weak a signal at these
+// title lengths -- "The Chariot Draw" vs "Rewired Draw" share zero distinctive words (correct, they
+// are different draws) once "draw" itself is excluded, but a 1-word threshold using a less complete
+// exclusion list would have false-matched them on "draw" alone. Verified against 8 real title pairs
+// from Harkirat's own data (4 genuine matches, 4 genuine non-matches) — see
+// `scripts/calendarDedup.test.js`.
+const GENERIC_DRAW_WORDS = new Set([
+    'draw', 'draws', 'drop', 'drops', 'series', 'armory', 'armories', 'redux', 'mythic', 'double',
+    'the', 'and', 'for', 'with', 'from', 'into'
+]);
+
+function distinctiveDrawTokens(title) {
+    return new Set(
+        (title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+            .filter(w => w.length >= 3 && !GENERIC_DRAW_WORDS.has(w))
+    );
+}
+
+function isSameDrawTitle(a, b) {
+    const tokensA = distinctiveDrawTokens(a);
+    const tokensB = distinctiveDrawTokens(b);
+    let shared = 0;
+    for (const w of tokensA) if (tokensB.has(w)) shared++;
+    return shared >= 2;
+}
+
 // Category-level search synonyms (2026-07-18, v2 quick-wins follow-up) -- a plain name/category
 // substring match can never surface anything for a query like "pistol", since no stored weapon
 // NAME contains that word for most Secondaries weapons (Combat Knife, J358, Crossbow, ...), and the
@@ -79,4 +119,4 @@ function findWeaponMatches(query, candidates) {
     return results;
 }
 
-module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonym };
+module.exports = { fuzzyMatch, normalizeForSearch, findWeaponMatches, resolveCategorySynonym, isSameDrawTitle };

@@ -621,7 +621,7 @@ function buildCalendarAddModal() {
         // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects
         // from the title's own wording (adminParser.js's guessCalendarCategory), same as an
         // un-prefixed bulk-import line.
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false))
     );
     return modal;
 }
@@ -632,7 +632,7 @@ function buildEditCalendarModal(targetEvent, targetId) {
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false))
     );
     return modal;
 }
