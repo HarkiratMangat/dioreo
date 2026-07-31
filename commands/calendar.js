@@ -217,7 +217,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     // toggle row below it, and only ONE divider total separating the section content above from
     // this whole nav block.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Playlists & Modes**.` });
+    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Playlists & Modes**. (Tip: check out \`/settings\`)` });
     calendarComponents.push(buildSectionToggleRow(safePage));
 
     const containerPayload = {
