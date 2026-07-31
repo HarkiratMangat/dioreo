@@ -26,6 +26,16 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.45.0 — July 30, 2026
+- **A draw title with a "/" in it no longer gets half-lowercased.** "Jupiter Cannon/Void Implosion
+  Draw" was showing up as "Jupiter Cannon/void Implosion Draw" — fixed.
+- **Draws can now carry a short note.** Admin-side only — lets a "-# comment" line be added to a
+  draw's item list without it getting mistaken for an actual weapon or character name.
+- **Patch notes' extra info can now show buff/nerf icons.** Admin-side — typing `b:` or `n:` swaps in
+  the buff/nerf icon automatically.
+- **Behind the scenes: a proper way to prep next season ahead of time**, so it's not stuck sharing the
+  same live data as the season that's still running.
+
 ## v2.44.0 — July 30, 2026
 - **The "Contributing" and "Contributors" pages on the public site got a proper redesign.** They used to
   be plain walls of text in a box. Now the contributing guide reads as a path you follow, the line you

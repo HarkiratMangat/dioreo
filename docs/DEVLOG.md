@@ -94,6 +94,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold
 - 2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable
 - 2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache
+- 2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3197,6 +3198,54 @@ enough to hide real content loss in.
 listing them. I filed the item with an explicit warning that the list in it is *mine*, not his, and that
 the next session's first action is to ask. Writing a plausible list from my side and letting it stand in
 for his observations would have been the most useful-looking wrong thing available.
+
+## 2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document
+
+*(v2.45.0, #59.)*
+
+Harkirat picked six specific lines out of the notes file's v2 fixes list (191/192/197/199/200/201) and
+asked for those, not the whole list — the rest were explicit "later" items. Three of the six
+(192/197/201) looked unrelated on the page but traced back to the exact same fact once I actually read
+the schema: `SeasonalData` is one global Mongo document. There's no such thing as "next season's data"
+separate from "this season's data" — they're the same fields. Editing ahead of time IS editing live.
+
+That reframing is what made the season-overlap bug (201) make sense. Harkirat described dates
+"reverting" to the old season's Jul 31/Aug 1 end right as he was setting up the new one. Nothing was
+reverting — `calendar.js`'s "All Season" events have always resolved their displayed end to the *live*
+`bpEnd` (a deliberate design decision from an earlier session), so a new-season calendar entry staged
+before `bpEnd` got updated was, correctly, showing the OLD `bpEnd` — there was no "new" value yet for
+it to show. The bug wasn't in the display logic; it was that there was nowhere to put in-progress next-
+season data that wasn't *also* live data.
+
+Given that, I asked Harkirat directly which fix he wanted rather than guessing — a real draft/staging
+sub-document (biggest build, most turns), a lighter partial fix (pin dates + a queued title/date only),
+or just root-causing 201 and deferring 192/197. He picked the full staging area, explicitly accepting
+the turn cost up front. That's the right way to spend a clarifying question: not "does this look right"
+after building it, but "which of these three real tradeoffs do you want" before starting, when the
+answer still changes what gets built.
+
+The other three (199/200/191's alias half) were unambiguous once traced to source:
+- **200** was `toTitleCase()`'s hyphen-splitting logic never having been extended to slashes —
+  "Cannon/Void" is one whitespace token with no hyphen, so `capitalizeSegment()` treated it as an
+  atomic unit and lowercased everything past its first letter. Same shape bug the hyphen fix already
+  solved once; just needed the same treatment applied to a second separator character.
+- **199** was a missing case, not a wrong one — `-#` never matched any tier shorthand, so it fell
+  through to the generic "unrecognized tier" path and got title-cased like a weapon name. Added the
+  case before the generic parse runs, deliberately excluded from `toTitleCase()` since a free-text note
+  isn't a game item name.
+- **191's alias half** was the easy, load-bearing-free kind of feature: read the existing emoji-capture
+  rule (render-time only, never module-scope), follow it, done in two functions.
+
+### Verification, honestly stated
+Ran a syntax check on every touched file, `scripts/checkEmojiCaptures.js` (clean), and a real dev-bot
+boot (Mongo connected, gateway routing integrated, no crash). What I could NOT do from this environment:
+click through the actual `/manage` → Next Season Draft buttons in a live Discord client — there's no
+authenticated Discord session available here to drive that. The boot log did surface one real, expected
+gap: the two new buff/nerf emojis are unmatched on the DEV bot's application (`2 unmatched (buff, nerf)`)
+since Harkirat only uploaded them to the prod app's dev portal — they'll render fine on prod (the ids
+in `emojiMap.js` are prod's real ids) but show as broken text on the dev bot until those two are also
+cloned over there, same as any newly-added emoji before a clone pass. Flagged to Harkirat rather than
+silently claimed as fully tested.
 
 ---
 

@@ -105,6 +105,20 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   already fully uppercase, 2+ letters — an acronym like "FSS") or has its first actual
   *letter* capitalized, skipping over leading punctuation like `(`. Applies to draw/item
   titles in both the bulk parser and the single-add/edit modals in index.js.
+- **`toTitleCase` also splits on `/`, not just `-` (fixed 2026-07-30 22:24 EDT).** "Jupiter
+  Cannon/Void Implosion Draw" was rendering as "...Cannon/void..." — a whitespace-delimited token with
+  a `/` but no `-` (e.g. "Cannon/Void") went through `capitalizeSegment()` as one atomic unit, which
+  only capitalizes the token's first letter and lowercases everything after it. Same fix shape as the
+  existing hyphen handling: each word is now split on `/([-/])/` and both separators are treated
+  identically (preserved verbatim, segments on either side capitalized independently).
+- **Draw items can be a `-# comment` instead of a tiered weapon/character** (added 2026-07-30 22:24
+  EDT) — typing `-# some note` in the Items field (single add/edit or bulk) is parsed by
+  `adminParser.js`'s `parseItemLine` into `{ tier: 'comment', name: '...' }` BEFORE the generic
+  tier-shorthand parse runs (otherwise `-#` falls through as an unrecognized tier and the note text
+  gets title-cased like a weapon name, which mangles free text). Deliberately NOT run through
+  `toTitleCase` — it's a note, not a game item name. `draws.js`'s `buildDrawSections` renders it as
+  plain `-# text` subtext, no tier emoji/bold. `TIER_SHORTHAND['comment']` = `'-#'` so it round-trips
+  correctly through Edit Draw's pre-fill and the bulk export format.
 - **"All Season" calendar events resolve their end date to `bpEnd`, not a literal
   "Ongoing" label.** The Battle Pass ending is what actually closes out an all-season
   event; `calendar.js` only falls back to showing "Ongoing" text if `bpEnd` hasn't been

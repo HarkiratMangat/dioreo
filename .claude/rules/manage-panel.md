@@ -121,6 +121,16 @@ mechanics, per-page accent colors, and the `/manage` admin-only lock. The per-us
     `Category | Badges`, not `Category | Mode | Badges`) since there's no third segment worth adding
     back for a field that's genuinely per-button now — editing an existing loadout reads its mode
     straight off the document instead (there's no "move this loadout to the other mode" action).
+  - **"Next Season Draft" page (`seasondraft`, added 2026-07-30 22:24 EDT)** — a staging area for
+    prepping an entire upcoming season without any of it going live. Bulk-only for draws/calendar
+    (`settitles`/`bulkdraws`/`bulkcalendar` write into `seasonalDoc.draft.*`, pre-filled from the
+    current draft so re-running one to fix a typo doesn't start blank) plus `promote`/`discard`, both
+    behind the same 2-step Confirm/Cancel every other irreversible `/manage` action uses. Promote
+    snapshots the pre-swap LIVE values (not the draft) for Undo, then copies the draft onto the
+    top-level fields and clears it. The page's one dynamic block (`style: 'status'` in
+    `buildManagePage` — a new group style, same `dynamicData` mechanism Patch Notes' "Past Seasons"
+    select already uses) shows draft status computed fresh every render via `buildDraftStatusText()`.
+    See `.claude/rules/models.md` for the schema shape and root cause this solves.
   - **Deferred work, on purpose: the real "search + multi-select" flow.** The mockups describe
     "Delete Multiple" (all entities) and Loadouts' "Replace Multiple" as searching first, then
     picking which matches to act on from a list — genuinely new interaction, different from today's

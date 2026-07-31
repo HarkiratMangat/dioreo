@@ -181,7 +181,48 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.44.0 — 2026-07-30 00:40 EDT (#58) — Two pages that stopped reading like a Markdown dump, and a sticky rail that was never actually fixed
+## v2.45.0 — 2026-07-30 22:24 EDT (#59) — Six v2 launch bugs: a lowercased "V", a comment line stored as a fake weapon, and a real staging area for next season
+
+Six items pulled off the notes file (lines 191/192/197/199/200/201), all picked because they're
+launch-blocking for the new season, not "nice to have":
+
+- **`toTitleCase()` mangled any title containing a `/`.** "Jupiter Cannon/Void Implosion Draw" came out
+  "Jupiter Cannon/void Implosion Draw" — `capitalizeSegment()` only ever capitalizes the FIRST letter
+  of a whitespace-delimited token, and "Cannon/Void" has no hyphen, so it was treated as one token and
+  everything after its first letter got lowercased, including the "V". Same fix shape as the existing
+  hyphen handling: `toTitleCase()` now splits each word on `-` **and** `/`, capitalizing each side
+  independently (`utils/adminParser.js`).
+- **Draw items can now carry a `-# comment` line** instead of only tiered weapon/character entries —
+  typing `-# {note}` in the Items field (single add/edit or bulk) stores it as a `tier: 'comment'` item
+  and renders it as plain Discord subtext (`-# text`, no tier emoji, no bold) instead of a real item row.
+  Previously "-#" wasn't a recognized tier shorthand, so it silently fell through to the generic
+  fallback and got title-cased like a weapon name (`adminParser.js`'s `parseItemLine`, `draws.js`'s
+  `buildDrawSections`, round-trips correctly through Edit Draw's pre-fill and the bulk export format).
+- **Buff/nerf emoji aliasing for Patch Notes' "Additional Info" field** — typing a standalone `b:` or
+  `n:` token now swaps in Harkirat's uploaded buff/nerf emoji at render time (never baked into the
+  stored text, same "resolve at render time" rule as every other emoji in this bot —
+  `patchnotes.js`'s `applyInfoAliases()`). Both modals that write this field now hint at it in their
+  placeholder text.
+- **A real "Next Season Draft" staging area** (`/manage` → new "Next Season Draft" section) — the
+  actual fix for the season-overlap problem (notes lines 192, 197, 201). `SeasonalData` is a single
+  global document, so editing next-season draws/calendar/dates directly during the overlap window
+  between "current season not over" and "new season announced" immediately overwrote what was still
+  live — and an "All Season" calendar event's displayed end always reads the LIVE `bpEnd`, which is
+  exactly why dates briefly reverted to the OLD season's Jul 31/Aug 1 end when the new one was being
+  set up (line 201's reported bug). The new `seasonalDoc.draft` sub-document lets the whole next
+  season (title, BP/Ranked/DMZ deadlines, New + Returning draws, calendar) be staged completely
+  separately — nothing in it is live, nothing it stages can bleed into what's currently shown — until
+  **Promote to Live** swaps it in as one atomic save and clears the draft. Promote snapshots the
+  pre-swap live values so it's Undo-able like every other destructive `/manage` action; Discard just
+  clears the draft. Deliberately bulk-only for the staged draws/calendar (no single add/edit/delete
+  against a draft) — the real workflow is "type up the whole next season once, then promote," and a
+  typo is fixed by re-running the bulk modal, same replace-not-append convention every other bulk
+  action on this panel already uses.
+
+**Not done tonight, on purpose:** the broader "how should Additional Info be formatted" question (part
+of line 191) is a style question, not a bug — the buff/nerf alias covers the concrete, checkable part
+of the ask. Lines 193–196, 198 are extra-feature requests Harkirat explicitly deferred, not part of
+this pass.
 **The legal site's two warm pages get real structure, and a fifth build gate to keep it.** No bot code
 changed; nothing here touches the VM.
 

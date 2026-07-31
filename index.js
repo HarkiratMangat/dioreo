@@ -1144,6 +1144,10 @@ client.on('interactionCreate', async interaction => {
                 const SeasonalData = require('./models/SeasonalData');
                 const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
                 dynamicData = { pastSeasons: manageCommand.buildPastSeasonsOptions(seasonalDoc) };
+            } else if (targetPage === 'seasondraft') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                dynamicData = { draftStatus: manageCommand.buildDraftStatusText(seasonalDoc) };
             }
             return sendV2Payload(interaction, manageCommand.buildManagePage(targetPage, dynamicData));
         }
@@ -2085,6 +2089,48 @@ client.on('interactionCreate', async interaction => {
                 // entry -- see modal_patch_addseason below.
                 if (action === 'addseason') return await interaction.showModal(manageCommand.buildPatchAddSeasonModal());
             }
+
+            // "Next Season Draft" (2026-07-30 22:24 EDT) -- settitles/bulkdraws/bulkcalendar open
+            // their modal pre-filled from the CURRENT draft (so re-running one to fix a typo doesn't
+            // start from blank); promote/discard are destructive-ish enough to need the same
+            // 2-step Confirm/Cancel every other irreversible action on this panel already uses.
+            if (group === 'seasondraft') {
+                const SeasonalData = require('./models/SeasonalData');
+                const seasonalDoc = await SeasonalData.findOne({ docType: 'global' }).lean();
+                if (action === 'settitles') return await interaction.showModal(manageCommand.buildDraftTitlesDatesModal(seasonalDoc));
+                if (action === 'bulkdraws') return await interaction.showModal(manageCommand.buildDraftBulkDrawsModal(seasonalDoc));
+                if (action === 'bulkcalendar') return await interaction.showModal(manageCommand.buildDraftBulkCalendarModal(seasonalDoc));
+                if (action === 'promote') {
+                    if (!seasonalDoc.draft?.active) {
+                        return interaction.reply({ content: '❌ No draft in progress — nothing to promote.', ephemeral: true });
+                    }
+                    return interaction.reply({
+                        content: `⚠️ **Promote the staged draft to live?** This swaps in the draft's title, deadlines, ${seasonalDoc.draft.newDraws?.length || 0} New draw(s), ${seasonalDoc.draft.returningDraws?.length || 0} Returning draw(s), and ${seasonalDoc.draft.calendar?.length || 0} calendar event(s) as what's live RIGHT NOW, and clears the draft. Undo is available after.`,
+                        components: [{
+                            type: 1, components: [
+                                { type: 2, style: 3, label: 'Yes, Promote', custom_id: 'mng_draftpromoteconfirm' },
+                                { type: 2, style: 2, label: 'Cancel', custom_id: 'mng_draftpromotecancel' }
+                            ]
+                        }],
+                        ephemeral: true
+                    });
+                }
+                if (action === 'discard') {
+                    if (!seasonalDoc.draft?.active) {
+                        return interaction.reply({ content: '❌ No draft in progress — nothing to discard.', ephemeral: true });
+                    }
+                    return interaction.reply({
+                        content: `⚠️ **Discard the staged draft?** This erases everything staged for next season. What's currently live is untouched. Cannot be undone.`,
+                        components: [{
+                            type: 1, components: [
+                                { type: 2, style: 4, label: 'Yes, Discard', custom_id: 'mng_draftdiscardconfirm' },
+                                { type: 2, style: 2, label: 'Cancel', custom_id: 'mng_draftdiscardcancel' }
+                            ]
+                        }],
+                        ephemeral: true
+                    });
+                }
+            }
         }
 
         // G. MANAGE PANEL: PURGE CONFIRM / CANCEL -- the second step of the two-tap confirmation
@@ -2158,6 +2204,82 @@ client.on('interactionCreate', async interaction => {
             } catch (notifyError) {
                 console.error('Failed to confirm manage-panel purge cancellation (interaction likely expired):', notifyError);
             }
+            return;
+        }
+
+        // G.1 MANAGE PANEL: NEXT SEASON DRAFT -- PROMOTE / DISCARD CONFIRM-CANCEL (2026-07-30 22:24
+        // EDT). Promote snapshots the pre-swap LIVE values (not the draft) so Undo restores exactly
+        // what was live before -- the draft itself is simply cleared, not restorable via Undo (it's
+        // reachable again the normal way: just re-stage it).
+        if (interaction.customId === 'mng_draftpromoteconfirm') {
+            const SeasonalData = require('./models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            const draft = seasonalDoc.draft || {};
+            if (!draft.active) {
+                try { await interaction.update({ content: '❌ No draft in progress -- nothing to promote.', components: [] }); }
+                catch (notifyError) { console.error('Failed to notify empty-draft promote attempt:', notifyError); }
+                return;
+            }
+            const prevLive = {
+                currentSeasonTitle: seasonalDoc.currentSeasonTitle, bpTitle: seasonalDoc.bpTitle,
+                rankTitle: seasonalDoc.rankTitle, dmzTitle: seasonalDoc.dmzTitle,
+                bpEnd: seasonalDoc.bpEnd, rankEnd: seasonalDoc.rankEnd, dmzEnd: seasonalDoc.dmzEnd,
+                newDraws: seasonalDoc.newDraws, returningDraws: seasonalDoc.returningDraws, calendar: seasonalDoc.calendar
+            };
+            if (draft.currentSeasonTitle) seasonalDoc.currentSeasonTitle = draft.currentSeasonTitle;
+            if (draft.bpTitle) seasonalDoc.bpTitle = draft.bpTitle;
+            if (draft.rankTitle) seasonalDoc.rankTitle = draft.rankTitle;
+            if (draft.dmzTitle) seasonalDoc.dmzTitle = draft.dmzTitle;
+            if (draft.bpEnd) seasonalDoc.bpEnd = draft.bpEnd;
+            if (draft.rankEnd) seasonalDoc.rankEnd = draft.rankEnd;
+            if (draft.dmzEnd) seasonalDoc.dmzEnd = draft.dmzEnd;
+            seasonalDoc.newDraws = draft.newDraws || [];
+            seasonalDoc.returningDraws = draft.returningDraws || [];
+            seasonalDoc.calendar = draft.calendar || [];
+            // Most-recent patchNotes[] entry stays synced to the live title, same as the manual
+            // Season Titles & Deadlines flow above.
+            if (draft.currentSeasonTitle && seasonalDoc.patchNotes.length > 0) {
+                seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1].title = seasonalDoc.currentSeasonTitle;
+            }
+            seasonalDoc.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
+            seasonalDoc.markModified('draft');
+            await seasonalDoc.save();
+            const undoToken = registerUndo('Promote Draft to Live', async () => {
+                const doc = await SeasonalData.findOne({ docType: 'global' });
+                Object.assign(doc, prevLive);
+                await doc.save();
+            });
+            try {
+                await interaction.update({
+                    content: `✅ **Draft promoted to live!** "${seasonalDoc.currentSeasonTitle}" is now the live season (${seasonalDoc.newDraws.length} New, ${seasonalDoc.returningDraws.length} Returning, ${seasonalDoc.calendar.length} calendar event(s)). The draft has been cleared.`,
+                    components: [undoButtonRow(undoToken)]
+                });
+            } catch (notifyError) {
+                console.error('Failed to confirm draft promote (interaction likely expired):', notifyError);
+            }
+            return;
+        }
+
+        if (interaction.customId === 'mng_draftpromotecancel') {
+            try { await interaction.update({ content: '❎ Promote cancelled -- the draft is untouched.', components: [] }); }
+            catch (notifyError) { console.error('Failed to confirm draft promote cancellation (interaction likely expired):', notifyError); }
+            return;
+        }
+
+        if (interaction.customId === 'mng_draftdiscardconfirm') {
+            const SeasonalData = require('./models/SeasonalData');
+            const seasonalDoc = await SeasonalData.findOne({ docType: 'global' });
+            seasonalDoc.draft = { active: false, newDraws: [], returningDraws: [], calendar: [] };
+            seasonalDoc.markModified('draft');
+            await seasonalDoc.save();
+            try { await interaction.update({ content: '✅ Draft discarded. What\'s live is untouched.', components: [] }); }
+            catch (notifyError) { console.error('Failed to confirm draft discard (interaction likely expired):', notifyError); }
+            return;
+        }
+
+        if (interaction.customId === 'mng_draftdiscardcancel') {
+            try { await interaction.update({ content: '❎ Discard cancelled -- the draft is untouched.', components: [] }); }
+            catch (notifyError) { console.error('Failed to confirm draft discard cancellation (interaction likely expired):', notifyError); }
             return;
         }
 
@@ -3038,6 +3160,72 @@ client.on('interactionCreate', async interaction => {
                 await syncPatchEntryMetadata(latestPatch, cleanTitleForMeta(latestPatch.title));
             }
             return interaction.followUp({ content: `✅ **Season Titles & Deadlines Updated!** The \`/season end\` module has been synced.` });
+        }
+
+        // --- NEXT SEASON DRAFT: submit handlers (2026-07-30 22:24 EDT) ---
+        // Same parsing as their live equivalents above (splitTitleDate/parseAdminDate,
+        // parseBulkDrawList, parseBulkEvents), writing into `seasonalDoc.draft.*` instead of the
+        // top-level fields -- none of this touches what's currently live.
+        if (customId === 'modal_draft_titles_dates') {
+            await interaction.deferReply({ ephemeral: true });
+            if (!seasonalDoc.draft) seasonalDoc.draft = {};
+            const mainTitle = interaction.fields.getTextInputValue('main_title').trim();
+            if (mainTitle) seasonalDoc.draft.currentSeasonTitle = mainTitle;
+
+            const applyDraftLine = (line, titleField, dateField) => {
+                const { title, dateStr } = splitTitleDate(line);
+                if (title) seasonalDoc.draft[titleField] = title;
+                if (dateStr) seasonalDoc.draft[dateField] = parseAdminDate(dateStr);
+            };
+            applyDraftLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd');
+            applyDraftLine(interaction.fields.getTextInputValue('rank_line'), 'rankTitle', 'rankEnd');
+            applyDraftLine(interaction.fields.getTextInputValue('dmz_line'), 'dmzTitle', 'dmzEnd');
+            seasonalDoc.draft.active = true;
+            seasonalDoc.markModified('draft');
+            await seasonalDoc.save();
+            return interaction.followUp({ content: '✅ **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.' });
+        }
+
+        if (customId === 'modal_draft_bulk_draws') {
+            await interaction.deferReply({ ephemeral: true });
+            const newText = interaction.fields.getTextInputValue('new_text')?.trim();
+            const returningText = interaction.fields.getTextInputValue('returning_text')?.trim();
+            if (!newText && !returningText) {
+                return interaction.followUp({ content: '❌ Both fields were left blank -- nothing was changed.' });
+            }
+            if (!seasonalDoc.draft) seasonalDoc.draft = {};
+            const summary = [];
+            if (newText) {
+                const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(newText));
+                validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
+                seasonalDoc.draft.newDraws = validDraws;
+                summary.push(`New Draws: staged ${validDraws.length}`);
+            }
+            if (returningText) {
+                const { validDraws } = await resolveThumbnailsForDraws(parseBulkDrawList(returningText));
+                validDraws.sort((a, b) => new Date(a.date) - new Date(b.date));
+                seasonalDoc.draft.returningDraws = validDraws;
+                summary.push(`Returning Draws: staged ${validDraws.length}`);
+            }
+            seasonalDoc.draft.active = true;
+            seasonalDoc.markModified('draft');
+            await seasonalDoc.save();
+            return interaction.followUp({ content: `✅ **Draft Draws Staged!**\n${summary.join('\n')}\nNothing is live yet — use Promote to Live when ready.` });
+        }
+
+        if (customId === 'modal_draft_bulk_calendar') {
+            await interaction.deferReply({ ephemeral: true });
+            const bulkText = interaction.fields.getTextInputValue('bulk_text');
+            const parsedEvents = parseBulkEvents(bulkText);
+            const eventDocs = parsedEvents.map(e => ({
+                title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing
+            })).sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (!seasonalDoc.draft) seasonalDoc.draft = {};
+            seasonalDoc.draft.calendar = eventDocs;
+            seasonalDoc.draft.active = true;
+            seasonalDoc.markModified('draft');
+            await seasonalDoc.save();
+            return interaction.followUp({ content: `✅ **Draft Calendar Staged!** ${eventDocs.length} event(s). Nothing is live yet — use Promote to Live when ready.` });
         }
 
         // --- ADMIN ROUTE F: SAVE EDITED DRAW ---

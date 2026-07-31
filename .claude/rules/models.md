@@ -22,6 +22,14 @@ the same change**, or it will not actually save.
   `patchNotes[]` (title = season # & name, NOT "Balance Changes for..." — see
   patchnotes.js), `newDraws[]`/`returningDraws[]`, `calendar[]` (with `endDate`/
   `isOngoing` for "All Season" events).
+  - **`draft` (added 2026-07-30 22:24 EDT)** — a next-season staging sub-document mirroring
+    `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`/`bpEnd`/`rankEnd`/`dmzEnd`/`newDraws[]`/
+    `returningDraws[]`/`calendar[]` (no `patchNotes` — that already has its own overlap-safe "Add New
+    Season" flow). Exists because this whole document is a SINGLE global doc — editing next-season
+    data directly during the overlap window between "current season not over" and "new season
+    announced" immediately overwrites what's live. `/manage` → "Next Season Draft" stages into these
+    fields; "Promote to Live" (`index.js`'s `mng_draftpromoteconfirm` handler) copies them onto the
+    top-level fields in one save and clears the draft — see `.claude/rules/manage-panel.md`.
 - `UserPreference.js` — per-user. `seasonalVisibility` is a **shared** toggle
   covering `/season end`, `/draws`, `/patch notes`, `/calendar`, `/draw prices`
   together (Option A design decision — see `.claude/rules/design-decisions.md`). `timestampVisibility`,
