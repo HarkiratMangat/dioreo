@@ -77,7 +77,12 @@ function parseAdminDate(dateStr) {
     // interpret the input AS IF it's already UTC-0, matching the actual admin workflow (dates are
     // always typed in UTC-0), and removes any dependency on the host machine's local settings.
     const parsedResult = chrono.parseDate(cleanStr, new Date(), { timezone: 0 });
-    if (!parsedResult) return new Date();
+    // Returns null (not a "now" fallback) on unparseable input -- a typo like "TDB" used to silently
+    // become the literal current instant, which on 2026-07-31 landed almost exactly on Aug 1 00:00
+    // UTC (Harkirat's local evening crossing the UTC day boundary) and read as a real, intentional
+    // date. Every caller must now treat null as "not a valid date" -- either leave the field
+    // untouched (same as blank input) or reject the submission, never write it silently.
+    if (!parsedResult) return null;
 
     // Normalize to midnight UTC on the parsed calendar day — deadlines/events are date-only,
     // no specific time-of-day is collected from the admin. Use the UTC getters here (not the
@@ -107,8 +112,10 @@ function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto') {
 
     const parsedComponents = parseResults[0].start;
     if (!parsedComponents.isCertain('hour')) {
-        // No time typed -- same UTC-midnight, date-only convention as parseAdminDate.
-        return parseAdminDate(cleanStr);
+        // No time typed -- same UTC-midnight, date-only convention as parseAdminDate. chrono.parse
+        // already matched cleanStr above, so parseAdminDate's own chrono.parseDate call practically
+        // always succeeds too; the `|| new Date()` is just a safety net, not the new bug's fallback.
+        return parseAdminDate(cleanStr) || new Date();
     }
 
     // A time was typed -- treat the literal date/time numbers as Harkirat's own local clock
@@ -174,6 +181,7 @@ function parseBulkDrawList(bulkText) {
             dateStr = `${parts.pop()}, ${dateStr}`;
         }
         const parsedDate = parseAdminDate(dateStr);
+        if (!parsedDate) continue; // Unparseable date -- skip this line rather than import a wrong one
 
         // Extract Items (everything left in the middle)
         const items = parts.slice(1).map(parseItemLine);
@@ -199,11 +207,40 @@ function parseBulkDrawList(bulkText) {
  * survive that copy, but the bullet characters do).
  * Dates are assumed to be UTC-0, same as parseAdminDate.
  */
-function parseBulkEvents(bulkText) {
-    const entries = bulkText.split('•').map(e => e.trim()).filter(e => e.length > 0);
-    const parsedEvents = [];
+// Optional single-letter category prefix directly touching the bullet ("d•"/"p•"/"e•" -- draw/
+// playlist/event), added for the 3-section calendar redesign (2026-07-31 12:10 EDT) to match
+// Harkirat's own convention from his calendar_bulk.txt reference paste. No prefix (every bulk paste
+// before this, and any line where the admin doesn't bother) defaults to 'event'.
+const CALENDAR_CATEGORY_PREFIX = { d: 'draw', p: 'playlist', e: 'event' };
+const CALENDAR_CATEGORY_TO_PREFIX = { draw: 'd', playlist: 'p', event: 'e' };
 
-    for (const entry of entries) {
+// Shared by the single add/edit calendar-event modals (index.js) -- accepts a full word
+// ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive; blank or anything
+// unrecognized defaults to 'event', same default the bulk parser above uses for an un-prefixed line.
+function normalizeCalendarCategory(raw) {
+    const cleaned = (raw || '').trim().toLowerCase();
+    if (!cleaned) return 'event';
+    if (CALENDAR_CATEGORY_PREFIX[cleaned]) return CALENDAR_CATEGORY_PREFIX[cleaned];
+    if (['draw', 'event', 'playlist'].includes(cleaned)) return cleaned;
+    return 'event';
+}
+
+function parseBulkEvents(bulkText) {
+    // Can't just bulkText.split('•') anymore -- the prefix letter sits BEFORE the bullet it belongs
+    // to, so a naive split leaves it dangling on the END of the PREVIOUS entry's content instead of
+    // tagging the entry that follows. This regex's non-greedy content group stops as early as
+    // possible, which is always right at the next real "[dpe]?•" boundary -- verified against
+    // legacy unprefixed text too (no prefix character = zero-width match, same split points as the
+    // old bulkText.split('•') behavior).
+    const entryRegex = /([dpe])?•\s*([\s\S]*?)(?=[dpe]?•|$)/g;
+    const parsedEvents = [];
+    let match;
+
+    while ((match = entryRegex.exec(bulkText)) !== null) {
+        const category = CALENDAR_CATEGORY_PREFIX[match[1]] || 'event';
+        const entry = match[2].trim();
+        if (!entry) continue;
+
         const pipeIndex = entry.indexOf('|');
         if (pipeIndex === -1) continue; // Skip malformed entries missing the "| Title" portion
 
@@ -219,11 +256,13 @@ function parseBulkEvents(bulkText) {
         const endStr = dateRange.slice(dashIndex + 1).trim();
 
         const startDate = parseAdminDate(startStr);
+        if (!startDate) continue; // Unparseable start date -- skip this entry rather than import a wrong one
         // "All Season" means the event runs through the rest of the season with no fixed end date
         const isOngoing = /all season/i.test(endStr);
         const endDate = isOngoing ? null : parseAdminDate(endStr);
+        if (!isOngoing && !endDate) continue; // Unparseable end date -- same skip
 
-        parsedEvents.push({ title, startDate, endDate, isOngoing });
+        parsedEvents.push({ title, startDate, endDate, isOngoing, category });
     }
 
     return parsedEvents;
@@ -547,7 +586,8 @@ function formatCalendarAsBulkText(calendar) {
     return calendar.map(event => {
         const startStr = dayjs.utc(event.date).format('M/D');
         const endStr = event.isOngoing ? 'All Season' : dayjs.utc(event.endDate).format('M/D');
-        return `• ${startStr} - ${endStr} | ${event.title}`;
+        const prefix = CALENDAR_CATEGORY_TO_PREFIX[event.category] || 'e';
+        return `${prefix}• ${startStr} - ${endStr} | ${event.title}`;
     }).join('\n');
 }
 
@@ -592,4 +632,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory };

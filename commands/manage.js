@@ -593,8 +593,11 @@ function buildCalendarBulkModal(mode) {
     // mode: 'add' (additive — NEW, appends) | 'replace' (existing wholesale-replace behavior)
     const modal = new ModalBuilder().setCustomId(`modal_calendar_bulk_${mode}`).setTitle(mode === 'add' ? 'Add Multiple Calendar Events' : 'Replace Calendar Events');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Bulleted Event List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("• 7/2 - 8/5 | Throwable Frenzy MP Mode • 7/10 - All Season | Shadow and Shade Mythic Drop").setRequired(true))
+        // d•/p•/e• prefix (draw/playlist/event) added for the 3-section calendar redesign
+        // (2026-07-31 12:10 EDT) — matches Harkirat's own calendar_bulk.txt convention. No prefix
+        // still parses fine and defaults to 'event' (see adminParser.js's parseBulkEvents).
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('d•/p•/e• Bulleted List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("e• 7/2 - 8/5 | Throwable Frenzy MP Mode\np• 7/6 - 7/19 | Nuketown Dedicated Playlist\nd• 7/10 - All Season | Shadow and Shade Mythic Drop").setRequired(true))
     );
     return modal;
 }
@@ -612,7 +615,10 @@ function buildCalendarAddModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false)),
+        // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank defaults to
+        // 'event', same as an un-prefixed bulk-import line.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('event').setRequired(false))
     );
     return modal;
 }
@@ -622,7 +628,8 @@ function buildEditCalendarModal(targetEvent, targetId) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Category (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false))
     );
     return modal;
 }

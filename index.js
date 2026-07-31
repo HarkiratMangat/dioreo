@@ -2531,7 +2531,7 @@ client.on('interactionCreate', async interaction => {
         const Loadout = require('./models/Loadout');
         // Hoisted once here instead of being re-required with a different destructured subset in
         // nearly every branch below (all inside the same already-required module scope).
-        const { parseAdminDate, parseReleaseDateTime, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate } = require('./utils/adminParser');
+        const { parseAdminDate, parseReleaseDateTime, toTitleCase, resolveTier, parseItemLine, parseBulkDrawList, parseBulkEvents, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatAdminDate, normalizeCalendarCategory } = require('./utils/adminParser');
         const { fuzzyMatch } = require('./utils/search');
         // checkImageExists() (2026-07-18, /manage loadout UX overhaul) -- real Cloudinary existence
         // check used by add_loadout_/edit_loadout_/modal_loadouts_bulk_add_ below.
@@ -2700,9 +2700,13 @@ client.on('interactionCreate', async interaction => {
                     : upsertDrawsByTitle(seasonalDoc.newDraws, validDraws);
                 finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
                 seasonalDoc.newDraws = finalArray;
-                updated.push(mode === 'add'
-                    ? `New Draws: added ${insertedCount} (now ${finalArray.length} total)`
-                    : `New Draws: updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`);
+                // Actual titles, not just counts (notes L186, 2026-07-31 12:10 EDT) -- "added 2" told
+                // you nothing about WHICH 2 without opening the page and checking yourself.
+                const newTitleList = validDraws.map(d => `"${d.title}"`).join(', ');
+                updated.push((mode === 'add'
+                    ? `**New Draws:** added ${insertedCount} (now ${finalArray.length} total)`
+                    : `**New Draws:** updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`)
+                    + (newTitleList ? `\n-# ${newTitleList}` : ''));
                 allSkipped.push(...skipped);
                 allWarnings.push(...warnings);
             }
@@ -2713,9 +2717,11 @@ client.on('interactionCreate', async interaction => {
                     : upsertDrawsByTitle(seasonalDoc.returningDraws, validDraws);
                 finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
                 seasonalDoc.returningDraws = finalArray;
-                updated.push(mode === 'add'
-                    ? `Returning Draws: added ${insertedCount} (now ${finalArray.length} total)`
-                    : `Returning Draws: updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`);
+                const returningTitleList = validDraws.map(d => `"${d.title}"`).join(', ');
+                updated.push((mode === 'add'
+                    ? `**Returning Draws:** added ${insertedCount} (now ${finalArray.length} total)`
+                    : `**Returning Draws:** updated ${updatedCount}, added ${insertedCount} (now ${finalArray.length} total)`)
+                    + (returningTitleList ? `\n-# ${returningTitleList}` : ''));
                 allSkipped.push(...skipped);
                 allWarnings.push(...warnings);
             }
@@ -2841,7 +2847,8 @@ client.on('interactionCreate', async interaction => {
                 title: e.title,
                 date: e.startDate,
                 endDate: e.isOngoing ? null : e.endDate,
-                isOngoing: e.isOngoing
+                isOngoing: e.isOngoing,
+                category: e.category
             }));
 
             const prevCalendar = seasonalDoc.calendar;
@@ -2935,16 +2942,22 @@ client.on('interactionCreate', async interaction => {
         if (customId === 'modal_calendar_add') {
             await interaction.deferReply({ ephemeral: true });
             const title = interaction.fields.getTextInputValue('title').trim();
-            const startDate = parseAdminDate(interaction.fields.getTextInputValue('start_date'));
+            const startDateStr = interaction.fields.getTextInputValue('start_date');
+            const startDate = parseAdminDate(startDateStr);
+            if (!startDate) return interaction.followUp({ content: `❌ Start date "${startDateStr}" wasn't understood -- nothing was saved.` });
             const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
             const isOngoing = !endDateStr;
             const endDate = isOngoing ? null : parseAdminDate(endDateStr);
+            if (!isOngoing && !endDate) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
+            const category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'));
 
-            seasonalDoc.calendar.push({ title, date: startDate, endDate, isOngoing });
+            seasonalDoc.calendar.push({ title, date: startDate, endDate, isOngoing, category });
             seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
             await seasonalDoc.save();
 
-            return interaction.followUp({ content: `✅ **Event Added:** "${title}" (${new Date(startDate).toDateString()} -- ${isOngoing ? 'All Season' : new Date(endDate).toDateString()}).` });
+            // Real Discord timestamps instead of plain toDateString() text (notes L185, 2026-07-31
+            // 12:10 EDT) -- renders in the viewer's own local time/format instead of a fixed string.
+            return interaction.followUp({ content: `✅ **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
         }
 
         // --- ADMIN ROUTE C.3: SAVE EDITED CALENDAR EVENT ---
@@ -2954,15 +2967,23 @@ client.on('interactionCreate', async interaction => {
             const targetEvent = seasonalDoc.calendar.find(e => e._id.toString() === targetId);
 
             if (targetEvent) {
-                targetEvent.title = interaction.fields.getTextInputValue('title').trim();
-                targetEvent.date = parseAdminDate(interaction.fields.getTextInputValue('start_date'));
+                const startDateStr = interaction.fields.getTextInputValue('start_date');
+                const parsedStart = parseAdminDate(startDateStr);
+                if (!parsedStart) return interaction.followUp({ content: `❌ Start date "${startDateStr}" wasn't understood -- nothing was saved.` });
                 const endDateStr = interaction.fields.getTextInputValue('end_date')?.trim();
-                targetEvent.isOngoing = !endDateStr;
-                targetEvent.endDate = targetEvent.isOngoing ? null : parseAdminDate(endDateStr);
+                const isOngoing = !endDateStr;
+                const parsedEnd = isOngoing ? null : parseAdminDate(endDateStr);
+                if (!isOngoing && !parsedEnd) return interaction.followUp({ content: `❌ End date "${endDateStr}" wasn't understood -- nothing was saved.` });
+
+                targetEvent.title = interaction.fields.getTextInputValue('title').trim();
+                targetEvent.date = parsedStart;
+                targetEvent.isOngoing = isOngoing;
+                targetEvent.endDate = parsedEnd;
+                targetEvent.category = normalizeCalendarCategory(interaction.fields.getTextInputValue('category'));
 
                 seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();
-                return interaction.followUp({ content: `✅ **Event Updated:** "${targetEvent.title}" (${new Date(targetEvent.date).toDateString()} -- ${targetEvent.isOngoing ? 'All Season' : new Date(targetEvent.endDate).toDateString()}).` });
+                return interaction.followUp({ content: `✅ **Event Updated:** "${targetEvent.title}" (<t:${Math.floor(new Date(targetEvent.date).getTime() / 1000)}:D> -- ${targetEvent.isOngoing ? 'All Season' : `<t:${Math.floor(new Date(targetEvent.endDate).getTime() / 1000)}:D>`}).` });
             }
         }
 
@@ -3131,14 +3152,23 @@ client.on('interactionCreate', async interaction => {
 
             seasonalDoc.currentSeasonTitle = interaction.fields.getTextInputValue('main_title').trim();
 
-            const applyLine = (line, titleField, dateField) => {
+            // Unrecognized date text (e.g. a "TDB" typo for "TBD") used to silently fall back to the
+            // literal current instant via parseAdminDate -- see that function's header. Now it
+            // returns null instead, so an unparseable date is treated the same as a blank one (field
+            // left untouched) rather than corrupted, and the admin gets told which line was skipped.
+            const skippedDates = [];
+            const applyLine = (line, titleField, dateField, label) => {
                 const { title, dateStr } = splitTitleDate(line);
                 if (title) seasonalDoc[titleField] = title;
-                if (dateStr) seasonalDoc[dateField] = parseAdminDate(dateStr);
+                if (dateStr) {
+                    const parsed = parseAdminDate(dateStr);
+                    if (parsed) seasonalDoc[dateField] = parsed;
+                    else skippedDates.push(`${label} ("${dateStr}")`);
+                }
             };
-            applyLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd');
-            applyLine(interaction.fields.getTextInputValue('rank_line'), 'rankTitle', 'rankEnd');
-            applyLine(interaction.fields.getTextInputValue('dmz_line'), 'dmzTitle', 'dmzEnd');
+            applyLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd', 'Battle Pass');
+            applyLine(interaction.fields.getTextInputValue('rank_line'), 'rankTitle', 'rankEnd', 'Ranked');
+            applyLine(interaction.fields.getTextInputValue('dmz_line'), 'dmzTitle', 'dmzEnd', 'DMZ');
 
             // patchNotes[].title is captured independently at "Add Patch Notes" time (so older,
             // past-season entries keep their own historical title forever) -- but the MOST RECENT
@@ -3159,7 +3189,9 @@ client.on('interactionCreate', async interaction => {
                 const latestPatch = seasonalDoc.patchNotes[seasonalDoc.patchNotes.length - 1];
                 await syncPatchEntryMetadata(latestPatch, cleanTitleForMeta(latestPatch.title));
             }
-            return interaction.followUp({ content: `✅ **Season Titles & Deadlines Updated!** The \`/season end\` module has been synced.` });
+            let confirmation = `✅ **Season Titles & Deadlines Updated!** The \`/season end\` module has been synced.`;
+            if (skippedDates.length > 0) confirmation += `\n⚠️ Date not understood, left unchanged: ${skippedDates.join(', ')}.`;
+            return interaction.followUp({ content: confirmation });
         }
 
         // --- NEXT SEASON DRAFT: submit handlers (2026-07-30 22:24 EDT) ---
@@ -3172,18 +3204,25 @@ client.on('interactionCreate', async interaction => {
             const mainTitle = interaction.fields.getTextInputValue('main_title').trim();
             if (mainTitle) seasonalDoc.draft.currentSeasonTitle = mainTitle;
 
-            const applyDraftLine = (line, titleField, dateField) => {
+            const skippedDraftDates = [];
+            const applyDraftLine = (line, titleField, dateField, label) => {
                 const { title, dateStr } = splitTitleDate(line);
                 if (title) seasonalDoc.draft[titleField] = title;
-                if (dateStr) seasonalDoc.draft[dateField] = parseAdminDate(dateStr);
+                if (dateStr) {
+                    const parsed = parseAdminDate(dateStr);
+                    if (parsed) seasonalDoc.draft[dateField] = parsed;
+                    else skippedDraftDates.push(`${label} ("${dateStr}")`);
+                }
             };
-            applyDraftLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd');
-            applyDraftLine(interaction.fields.getTextInputValue('rank_line'), 'rankTitle', 'rankEnd');
-            applyDraftLine(interaction.fields.getTextInputValue('dmz_line'), 'dmzTitle', 'dmzEnd');
+            applyDraftLine(interaction.fields.getTextInputValue('bp_line'), 'bpTitle', 'bpEnd', 'Battle Pass');
+            applyDraftLine(interaction.fields.getTextInputValue('rank_line'), 'rankTitle', 'rankEnd', 'Ranked');
+            applyDraftLine(interaction.fields.getTextInputValue('dmz_line'), 'dmzTitle', 'dmzEnd', 'DMZ');
             seasonalDoc.draft.active = true;
             seasonalDoc.markModified('draft');
             await seasonalDoc.save();
-            return interaction.followUp({ content: '✅ **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.' });
+            let draftConfirmation = '✅ **Draft Titles & Deadlines Staged!** Nothing is live yet — use Promote to Live when ready.';
+            if (skippedDraftDates.length > 0) draftConfirmation += `\n⚠️ Date not understood, left unchanged: ${skippedDraftDates.join(', ')}.`;
+            return interaction.followUp({ content: draftConfirmation });
         }
 
         if (customId === 'modal_draft_bulk_draws') {
@@ -3218,7 +3257,7 @@ client.on('interactionCreate', async interaction => {
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
             const parsedEvents = parseBulkEvents(bulkText);
             const eventDocs = parsedEvents.map(e => ({
-                title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing
+                title: e.title, date: e.startDate, endDate: e.isOngoing ? null : e.endDate, isOngoing: e.isOngoing, category: e.category
             })).sort((a, b) => new Date(a.date) - new Date(b.date));
             if (!seasonalDoc.draft) seasonalDoc.draft = {};
             seasonalDoc.draft.calendar = eventDocs;
@@ -3238,9 +3277,12 @@ client.on('interactionCreate', async interaction => {
             const drawIndex = arrayTarget.findIndex(d => d._id.toString() === targetId);
 
             if (drawIndex > -1) {
+                const drawDateStr = interaction.fields.getTextInputValue('date');
+                const parsedDrawDate = parseAdminDate(drawDateStr);
+                if (!parsedDrawDate) return interaction.followUp({ content: `❌ Date "${drawDateStr}" wasn't understood -- nothing was saved.` });
                 const newTitle = toTitleCase(interaction.fields.getTextInputValue('title'));
                 arrayTarget[drawIndex].title = newTitle;
-                arrayTarget[drawIndex].date = parseAdminDate(interaction.fields.getTextInputValue('date'));
+                arrayTarget[drawIndex].date = parsedDrawDate;
 
                 // URL field is now optional (2026-07-12) -- blank reuses whatever's cached in
                 // Cloudinary for this draw's (possibly just-renamed) title; see
@@ -3261,7 +3303,7 @@ client.on('interactionCreate', async interaction => {
                 // Auto-sort to maintain order after edit
                 arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
                 await seasonalDoc.save();
-                let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${arrayTarget[drawIndex].items.length} item(s), releases ${new Date(arrayTarget[drawIndex].date).toDateString()}).`;
+                let confirmation = `✅ **Draw Updated:** "${newTitle}" (${drawType === 'new' ? 'New' : 'Returning'}, ${arrayTarget[drawIndex].items.length} item(s), releases <t:${Math.floor(new Date(arrayTarget[drawIndex].date).getTime() / 1000)}:D>).`;
                 if (thumbResult.error) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${thumbResult.error}`;
                 return interaction.followUp({ content: confirmation });
             }
@@ -3399,6 +3441,10 @@ client.on('interactionCreate', async interaction => {
                 if (!title || !dateStr || !rawItems) {
                     return interaction.followUp({ content: '❌ Fill in Title, Items, and Release Date, or use the "Or Paste As One Line" field instead.' });
                 }
+                const parsedSingleDate = parseAdminDate(dateStr);
+                if (!parsedSingleDate) {
+                    return interaction.followUp({ content: `❌ Date "${dateStr}" wasn't understood -- nothing was saved.` });
+                }
 
                 // URL is optional (2026-07-12) -- blank reuses a Cloudinary cache hit for this exact
                 // title if one exists (see utils/cloudinaryCache.js); no URL AND no cache hit is a
@@ -3410,7 +3456,7 @@ client.on('interactionCreate', async interaction => {
                 cloudinaryWarning = thumbResult.error;
 
                 const parsedItems = rawItems.split('\n').filter(l => l.trim().length > 0).map(parseItemLine);
-                newDrawObj = { title, items: parsedItems, date: parseAdminDate(dateStr), thumbnailUrl: thumbResult.url };
+                newDrawObj = { title, items: parsedItems, date: parsedSingleDate, thumbnailUrl: thumbResult.url };
             }
 
             const arrayTarget = drawType === 'new' ? seasonalDoc.newDraws : seasonalDoc.returningDraws;
@@ -3420,7 +3466,7 @@ client.on('interactionCreate', async interaction => {
             arrayTarget.sort((a, b) => new Date(a.date) - new Date(b.date));
             await seasonalDoc.save();
 
-            let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases ${new Date(newDrawObj.date).toDateString()}).`;
+            let confirmation = `✅ **Draw Added:** "${newDrawObj.title}" (${drawType === 'new' ? 'New' : 'Returning'}, ${newDrawObj.items.length} item(s), releases <t:${Math.floor(new Date(newDrawObj.date).getTime() / 1000)}:D>).`;
             if (cloudinaryWarning) confirmation += `\n⚠️ Cloudinary caching failed, kept the original URL instead: ${cloudinaryWarning}`;
             return interaction.followUp({ content: confirmation });
         }

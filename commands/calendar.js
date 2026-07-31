@@ -17,6 +17,7 @@ const { withShareButton } = require('../utils/shareButton');
 const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
+const { fuzzyMatch } = require('../utils/search');
 
 // Repalette (2026-07-12, Section 5 of the batch) -- replaces the old flat 5-color nav-order
 // gradient (Police Blue/Chinese Violet/China Rose/Light Coral/Tumbleweed) with a color chosen per
@@ -27,42 +28,93 @@ const { sendV2Payload } = require('../utils/sendV2Payload');
 // amber, left to right).
 const PRESET_ACCENT = 3821672; // Slate Harbor (#3A5068) — 1st nav button (Calendar)
 
-// All events in a chunk are joined into ONE Text Display component (see buildContainer) rather
-// than one component per event — Discord renders visible vertical margin BETWEEN components, not
-// between lines inside a single component's content, so this was the real fix for "the container
-// is too long/tall" instead of just shrinking the chunk size. That also means the component-count
-// ceiling is no longer the limiting factor here (a whole page of events is 1 component); the cap
-// on a single Text Display's `content` is 4000 characters, so CHUNK_SIZE now exists to keep well
-// under that per page rather than under the 40-component ceiling.
-const CHUNK_SIZE = 20;
+// A Text Display's `content` caps at 4000 characters. Real seasonal calendars are nowhere near
+// this (a season's whole timeline is a few dozen entries at most), so this is a safety net, not a
+// real chunking system -- if a section ever legitimately overflows it, truncate with a "+N more"
+// note rather than risk the whole message failing to send.
+const SECTION_CHAR_BUDGET = 3800;
 
 // An "All Season" event has no fixed end date of its own -- it runs until the Battle Pass ends
 // (see the rangeText logic below), so an ongoing event only counts as "ended" once bpEnd has both
 // been set AND passed. If bpEnd hasn't been configured yet, treat it as still active rather than
-// guessing.
+// guessing. A `dateOnly` entry (a draw auto-merged in from newDraws/returningDraws with no explicit
+// calendar row -- see getDrawSectionEntries below) has no range at all, so it's simply "ended" once
+// its own release date has passed.
 function isEventEnded(event, seasonalDoc, nowMs) {
+    if (event.dateOnly) return new Date(event.date).getTime() <= nowMs;
     if (event.isOngoing) {
         return Boolean(seasonalDoc.bpEnd) && new Date(seasonalDoc.bpEnd).getTime() <= nowMs;
     }
     return new Date(event.endDate).getTime() <= nowMs;
 }
 
+// 3-section calendar redesign (2026-07-31 12:10 EDT). The Draws section auto-merges in anything
+// from newDraws/returningDraws that doesn't already have its own explicit `category: 'draw'`
+// calendar entry (fuzzy-matched by title, same fuzzyMatch() convention used everywhere else in
+// this bot) -- per Harkirat's own note, a draw with no admin-typed calendar range should still show
+// up here instead of being invisible just because it has no end date. A synthetic entry is tagged
+// `dateOnly: true` so it renders as a single "Releases <date>" line instead of a false date range.
+function getDrawSectionEntries(seasonalDoc) {
+    const explicitDraws = seasonalDoc.calendar.filter(e => e.category === 'draw');
+    const rawDraws = [...(seasonalDoc.newDraws || []), ...(seasonalDoc.returningDraws || [])];
+    const synthetic = rawDraws
+        .filter(draw => !explicitDraws.some(e => fuzzyMatch(draw.title, e.title)))
+        .map(draw => ({ title: draw.title, date: draw.date, dateOnly: true }));
+    return [...explicitDraws, ...synthetic];
+}
+
+function buildEntryLine(event, seasonalDoc) {
+    const startUnix = Math.floor(new Date(event.date).getTime() / 1000);
+    // Redesigned per calendar_update_ui.json: bold title line + a subtext date-range line below it,
+    // using the static "b1" bullet emoji and `D` (Long Date) style with the em-dash directly
+    // joining the two timestamps, no surrounding spaces.
+    let rangeText;
+    if (event.dateOnly) {
+        rangeText = `Releases <t:${startUnix}:D>`;
+    } else if (event.isOngoing) {
+        rangeText = seasonalDoc.bpEnd
+            ? `<t:${startUnix}:D>—<t:${Math.floor(new Date(seasonalDoc.bpEnd).getTime() / 1000)}:D>`
+            : `<t:${startUnix}:D>—Ongoing`;
+    } else {
+        rangeText = `<t:${startUnix}:D>—<t:${Math.floor(new Date(event.endDate).getTime() / 1000)}:D>`;
+    }
+    return `**✦ ${event.title}**\n-# ${emojis.b1} ${rangeText}`;
+}
+
+// One Text Display per section (heading + entries together) -- Discord renders visible vertical
+// margin BETWEEN components, not between lines inside one, so keeping heading+content in a single
+// component is what keeps a section visually tight instead of looking like two floating pieces.
+function buildSectionComponent(heading, entries, seasonalDoc) {
+    if (entries.length === 0) return null;
+    let body = entries.map(e => buildEntryLine(e, seasonalDoc)).join('\n');
+    if (body.length > SECTION_CHAR_BUDGET) {
+        body = body.slice(0, SECTION_CHAR_BUDGET) + `\n-# …and more (too many entries to show at once).`;
+    }
+    return { type: 10, content: `### ${heading}\n${body}` };
+}
+
 function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, isEphemeral = false, filterMode = 'all') {
     const seasonTitle = seasonalDoc.currentSeasonTitle || "Current Season";
-    const allEventsSorted = [...seasonalDoc.calendar].sort((a, b) => new Date(a.date) - new Date(b.date));
-    // "Active Events Only" hides anything that's already ended by wall-clock time -- computed fresh
-    // on every render (not cached), so an event silently drops out of this view the moment it ends
-    // without needing any admin action. isEventEnded() is computed once per event here and reused
-    // below for `hasEndedEvents` too, instead of re-running it a second time over the same list.
     const nowMs = Date.now();
-    const endedFlags = allEventsSorted.map(event => isEventEnded(event, seasonalDoc, nowMs));
-    const sortedEvents = filterMode === 'active'
-        ? allEventsSorted.filter((event, i) => !endedFlags[i])
-        : allEventsSorted;
+    const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+    const applyFilter = (entries) => filterMode === 'active'
+        ? entries.filter(e => !isEventEnded(e, seasonalDoc, nowMs))
+        : entries;
 
-    const totalChunks = Math.max(1, Math.ceil(sortedEvents.length / CHUNK_SIZE));
+    const allDrawEntries = getDrawSectionEntries(seasonalDoc).sort(sortByDate);
+    const allEventEntries = seasonalDoc.calendar.filter(e => e.category === 'event' || !e.category).sort(sortByDate);
+    const allPlaylistEntries = seasonalDoc.calendar.filter(e => e.category === 'playlist').sort(sortByDate);
+    const totalEntryCount = allDrawEntries.length + allEventEntries.length + allPlaylistEntries.length;
+
+    const drawEntries = applyFilter(allDrawEntries);
+    const eventEntries = applyFilter(allEventEntries);
+    const playlistEntries = applyFilter(allPlaylistEntries);
+
+    // 2 FIXED pages (Harkirat's explicit call, 2026-07-31 12:10 EDT): page 1 = Draws + Events, page 2 =
+    // Playlists/Modes -- not a variable chunk count like the old flat-list pagination. A real
+    // section-toggle-button nav (instead of Prev/Next) is deferred, see docs/db-deferred-list.md.
+    const totalChunks = 2;
     const safeSubPage = Math.min(Math.max(0, subPage), totalChunks - 1);
-    const chunk = sortedEvents.slice(safeSubPage * CHUNK_SIZE, (safeSubPage + 1) * CHUNK_SIZE);
 
     // Two-line title (season title on top, command header below) — shared pattern, see
     // utils/titleBlock.js.
@@ -73,46 +125,37 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
         { type: 14, spacing: 2, divider: true }
     ];
 
-    if (sortedEvents.length === 0) {
-        const emptyText = filterMode === 'active' && allEventsSorted.length > 0
-            ? `*No active or upcoming events right now — every event this season has already ended. Switch to "Show All Events" to see them.*`
-            : `*There are currently no events scheduled for this season.*`;
-        calendarComponents.push({ type: 10, content: emptyText });
+    const noneScheduledText = filterMode === 'active' && totalEntryCount > 0
+        ? `*No active or upcoming events right now — every event this season has already ended. Switch to "Show All Events" to see them.*`
+        : `*There are currently no events scheduled for this season.*`;
+
+    if (safeSubPage === 0) {
+        const drawSection = buildSectionComponent('Draws', drawEntries, seasonalDoc);
+        const eventSection = buildSectionComponent('Events', eventEntries, seasonalDoc);
+        if (!drawSection && !eventSection) {
+            calendarComponents.push({ type: 10, content: noneScheduledText });
+        } else {
+            if (drawSection) calendarComponents.push(drawSection);
+            if (drawSection && eventSection) calendarComponents.push({ type: 14, spacing: 1, divider: false });
+            if (eventSection) calendarComponents.push(eventSection);
+        }
     } else {
-        // Redesigned per calendar_update_ui.json: bold title line + a subtext date-range line below
-        // it (was a single combined line), using the new static "b1" bullet emoji and `D` (Long
-        // Date) style with the em-dash directly joining the two timestamps, no surrounding spaces.
-        const eventLines = chunk.map(event => {
-            const startUnix = Math.floor(new Date(event.date).getTime() / 1000);
-            // "All Season" events have no fixed end date of their own — they run until the Battle
-            // Pass ends, since that's what actually closes out the season. Fall back to showing
-            // "Ongoing" only if bpEnd hasn't been set yet (e.g. season just started, deadlines not
-            // configured via /update > Edit Season Deadlines).
-            let rangeText;
-            if (event.isOngoing) {
-                rangeText = seasonalDoc.bpEnd
-                    ? `<t:${startUnix}:D>—<t:${Math.floor(new Date(seasonalDoc.bpEnd).getTime() / 1000)}:D>`
-                    : `<t:${startUnix}:D>—Ongoing`;
-            } else {
-                rangeText = `<t:${startUnix}:D>—<t:${Math.floor(new Date(event.endDate).getTime() / 1000)}:D>`;
-            }
-            return `**✦ ${event.title}**\n-# ${emojis.b1} ${rangeText}`;
-        });
-        // Joined into a single Text Display component (not one push per event) — Discord adds
-        // visible vertical margin between separate components, which is what made the old
-        // one-component-per-event layout look so tall/spaced-out.
-        calendarComponents.push({ type: 10, content: eventLines.join('\n') });
+        const playlistSection = buildSectionComponent('Playlists / Modes', playlistEntries, seasonalDoc);
+        calendarComponents.push(playlistSection || { type: 10, content: noneScheduledText });
     }
 
-    // SUB-PAGE NAVIGATION: only shown if the event list exceeds one page (buildPaginationRow
-    // returns null otherwise). Stateless — the target chunk index is encoded directly in the
-    // custom_id, same pattern used by /draws. Shared row builder (utils/paginationRow.js) keeps
-    // this visually identical to /draws' own pagination.
+    // SUB-PAGE NAVIGATION: stateless — the target page index is encoded directly in the custom_id,
+    // same pattern used by /draws. Shared row builder (utils/paginationRow.js) keeps this visually
+    // identical to /draws' own pagination.
     const paginationRow = buildPaginationRow({
         totalChunks, currentPage: safeSubPage,
         makeCustomId: (p) => `calsubpage_${p}`,
         indicatorCustomId: 'calsubpage_indicator'
     });
+    // hasEndedEvents/endedFlags below need the FULL (unfiltered) entry set across all 3 buckets --
+    // the toggle must stay visible as long as anything anywhere has ended, not just on whichever
+    // page happens to be showing right now.
+    const endedFlags = [...allDrawEntries, ...allEventEntries, ...allPlaylistEntries].map(e => isEventEnded(e, seasonalDoc, nowMs));
     // VIEW TOGGLE: switches between "Show Active Events Only" and "Show All Events". Only shown
     // when there's actually at least one ENDED event to hide -- if every event this season ends in
     // the future, "Active Only" and "All" render identically, and a toggle that visibly does
@@ -131,9 +174,12 @@ function buildContainer(seasonalDoc, subPage = 0, accentColor = PRESET_ACCENT, i
             custom_id: filterMode === 'active' ? 'calendar_filter_all' : 'calendar_filter_active'
         };
         const controlsRow = { type: 1, components: paginationRow ? [...paginationRow.components, toggleButton] : [toggleButton] };
+        // Row sits BETWEEN two dividers, hint comes last -- same structure /draws and /draw prices
+        // already use for their own pagination rows (was hint-then-row here, the only outlier).
         calendarComponents.push({ type: 14, spacing: 2, divider: true });
-        calendarComponents.push({ type: 10, content: `-# Toggle every event vs. active/upcoming only (remembered for next time). (Tip: check out \`/settings\`)` });
         calendarComponents.push(controlsRow);
+        calendarComponents.push({ type: 14, spacing: 2, divider: true });
+        calendarComponents.push({ type: 10, content: `-# Toggle between **All Events** or **Active/Upcoming Events** only.` });
     } else if (paginationRow) {
         calendarComponents.push({ type: 14, spacing: 2, divider: true });
         calendarComponents.push(paginationRow);

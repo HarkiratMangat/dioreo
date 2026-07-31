@@ -123,6 +123,35 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   "Ongoing" label.** The Battle Pass ending is what actually closes out an all-season
   event; `calendar.js` only falls back to showing "Ongoing" text if `bpEnd` hasn't been
   set yet.
+- **`parseAdminDate` returns `null` on unparseable input, never a "now" fallback (fixed 2026-07-31
+  12:10 EDT).** It used to silently return `new Date()` when chrono couldn't parse the text — a typo
+  like "TDB" for "TBD" became the literal current instant, which read as a real, intentional date
+  (and on 2026-07-31 landed almost exactly on Aug 1 00:00 UTC, corrupting all 3 season-end dates in
+  one submit). Every caller now treats `null` as "not a valid date": the season titles/deadlines
+  modals (live + draft) leave that field untouched and report which one was skipped; calendar/draw
+  add/edit modals reject the submission outright; both bulk parsers (`parseBulkDrawList`/
+  `parseBulkEvents`) skip just the malformed line instead of importing a wrong date.
+- **`/calendar` is a 3-section page (Draws/Events/Playlists), not a flat event list (redesigned
+  2026-07-31 12:10 EDT).** Each `calendar[]` entry carries a `category` (see `.claude/rules/models.md`),
+  set via the bulk parser's `d•`/`p•`/`e•` prefix (Harkirat's own `calendar_bulk.txt` convention —
+  `adminParser.js`'s `parseBulkEvents`, rewritten with a lookahead regex since the prefix letter sits
+  BEFORE the bullet it belongs to and a naive `.split('•')` left it dangling on the wrong entry) or the
+  single add/edit modal's Category field (`normalizeCalendarCategory`, accepts a letter or full word,
+  blank defaults to `'event'`). **The Draws section auto-merges in anything from `newDraws`/
+  `returningDraws` that has no explicit `category: 'draw'` calendar entry**, fuzzy-matched by title
+  (`utils/search.js`'s `fuzzyMatch`) so a draw someone ALSO typed as a `d•` bulk line doesn't double up
+  — an auto-merged entry is tagged `dateOnly: true` and renders as a single "Releases \<date\>" line
+  instead of a false date range. Navigation stays the pre-existing left/right pagination on Harkirat's
+  explicit call (page 1 = Draws + Events, page 2 = Playlists/Modes) rather than switching to
+  section-toggle buttons — that's filed in `docs/db-deferred-list.md`'s Queued section for its own pass
+  since it's new UI worth seeing first, not a wiring change. Section heading is `### `.
+- **Patch notes' layout reordered (2026-07-31 12:10 EDT, notes L181):** the release-timestamp line
+  moved from directly under the title to directly under the image carousel (same visual "section" as
+  the images now), and a permanent `-# NOTE: Final patch notes are subject to change` disclaimer was
+  added to the Additional Info block. The divider between the title and Additional Info is
+  CONDITIONAL — it only appears when `description` actually has content; with nothing typed, the
+  disclaimer rides directly under the title with no divider, since dividing up just one disclaimer
+  line on its own read as visually pointless (Harkirat's own call).
 - **The most recent `patchNotes[]` entry's title stays synced to `currentSeasonTitle`.**
   Older patch note entries keep their own historical title forever (so a past season's
   patch notes don't get renamed retroactively), but the entry representing the

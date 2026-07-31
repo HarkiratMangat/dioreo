@@ -85,8 +85,8 @@ const emojis = {
     // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:`
     // token in the additional-info text gets swapped for these at render time (patchnotes.js's
     // applyInfoAliases()). Harkirat-uploaded, not animated.
-    buff: '<:buff:1532528904210743376>',
-    nerf: '<:nerf:1532528903028084826>',
+    buff: '<:Buff:1532771212172984401>',
+    nerf: '<:Nerf:1532771213271892089>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

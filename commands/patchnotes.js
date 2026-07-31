@@ -72,21 +72,34 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     // the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering
     // "Balance Changes — Balance Changes for...".
     const cleanTitle = displayTitle(activePatch);
+    // Layout reordered per notes L181 (2026-07-31 12:10 EDT): the release-timestamp line moved from
+    // right under the title to right under the images (same "section" as the carousel now), and a
+    // permanent "subject to change" disclaimer was added to the Additional Info section. Dividing up
+    // JUST that disclaimer alone when nothing else was typed felt wrong (Harkirat's own call), so the
+    // divider before Additional Info is conditional on real typed info existing -- with none, the
+    // disclaimer rides directly under the title with no divider of its own.
+    const SUBJECT_TO_CHANGE_DISCLAIMER = '-# NOTE: Final patch notes are subject to change';
+    const hasInfo = activePatch.description && activePatch.description.trim().length > 0;
+
     const components = [
         // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
         // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
-        buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2),
-        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` }
+        buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2)
     ];
 
-    // Optional additional info section — completely omitted (no placeholder text) when blank
-    if (activePatch.description && activePatch.description.trim().length > 0) {
-        components.push({ type: 10, content: applyInfoAliases(activePatch.description) });
+    if (hasInfo) {
+        components.push(
+            { type: 14, spacing: 2, divider: true },
+            { type: 10, content: `${applyInfoAliases(activePatch.description)}\n${SUBJECT_TO_CHANGE_DISCLAIMER}` }
+        );
+    } else {
+        components.push({ type: 10, content: SUBJECT_TO_CHANGE_DISCLAIMER });
     }
 
     components.push(
         { type: 14, spacing: 2, divider: true },
         { type: 12, items: carouselItems }, // NATIVE MEDIA CAROUSEL INJECTION
+        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` },
         { type: 14, spacing: 2, divider: true },
         { type: 10, content: `-# Select from the list below to view previous balance changes` }
     );

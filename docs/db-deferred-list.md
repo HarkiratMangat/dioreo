@@ -200,6 +200,26 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
+- `[P2 · M]` **`/calendar` banner image.** *Filed 2026-07-31 12:10 EDT from notes L184.* "Add a banner
+  image to the calendar page. Like a season banner." Needs: a new `bannerUrl` field on `SeasonalData`
+  (+ `draft.bannerUrl` for the staging area), a Cloudinary upload step in `/manage`'s calendar page
+  (same caching pattern as draw thumbnails/patch images — see `.claude/rules/loadout-images-and-metadata.md`),
+  and a Media Gallery (type 12) component in `calendar.js`'s title area. Not started.
+- `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
+  2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
+  from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.
+  `/calendar` already has most of this (the Active/All toggle + `isEventEnded()` in `calendar.js`, tied
+  to each event's own end date or `bpEnd` for "All Season" entries) — the real gap is **`/draws` has NO
+  equivalent mechanism at all**, confirmed by grep (verified 2026-07-31 12:10 EDT — zero hits for
+  expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
+  means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
+  gets its own Active/All toggle like `/calendar`'s or something simpler.
+- `[P2 · M]` **Bulk-import format helper/template.** *Filed 2026-07-31 12:10 EDT from notes L189.*
+  "I lowkey also forget what the bulk input formatting is. I need a template... or some way where I can
+  provide raw data and get the bulk import format (maybe via gemini? Idk)." Harkirat's own uncertainty
+  ("idk") means this needs a design pass, not a guess: could be as simple as a static placeholder/help
+  text improvement on each bulk modal, or as involved as an actual raw-text → bulk-format converter
+  (possibly LLM-assisted, per his "via gemini" aside). Scope this out before building.
 - `[P1 · M · Sonnet5-M]` **User-data deletion path — the privacy policy now publicly promises it.**
   *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
   automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
@@ -211,6 +231,12 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records
   untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** —
   they currently describe the manual process as the only route.
+- `[P2 · M]` **`/calendar`: replace Prev/Next pagination with section-toggle buttons.** *Filed
+  2026-07-31 12:10 EDT during the 3-section calendar redesign (notes L195).* Harkirat explicitly asked
+  for left/right pagination to stay for now (page 1 = Draws+Events, page 2 = Playlists/Modes) but wants
+  buttons that jump straight to a named section eventually, since that's more discoverable than
+  Prev/Next once there are 3 real sections. Needs a mockup/UI pass before building — not just a wiring
+  change.
 - `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
   from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
   sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a

@@ -64,7 +64,13 @@ const SeasonalDataSchema = new mongoose.Schema({
         title: { type: String },
         date: { type: Date }, // start date
         endDate: { type: Date }, // optional — null/absent when isOngoing is true
-        isOngoing: { type: Boolean, default: false } // true for "All Season" bulk entries
+        isOngoing: { type: Boolean, default: false }, // true for "All Season" bulk entries
+        // 3-section calendar redesign (2026-07-31 12:10 EDT) -- draw/event/playlist, set via the bulk parser's
+        // d•/p•/e• prefix (adminParser.js's parseBulkEvents) or the single add/edit modal. Defaults
+        // to 'event' so every pre-existing un-prefixed entry keeps rendering in the same section it
+        // always has. calendar.js also synthesizes 'draw' entries at RENDER time from newDraws/
+        // returningDraws for anything with no explicit calendar row -- those are never saved here.
+        category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
     }],
 
     // Next-season staging area (added 2026-07-30 22:24 EDT) -- lets the admin prep an entire upcoming season
@@ -102,7 +108,8 @@ const SeasonalDataSchema = new mongoose.Schema({
             title: { type: String },
             date: { type: Date },
             endDate: { type: Date },
-            isOngoing: { type: Boolean, default: false }
+            isOngoing: { type: Boolean, default: false },
+            category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
         }]
     }
 });

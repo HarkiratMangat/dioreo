@@ -181,7 +181,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.45.0 — 2026-07-30 22:24 EDT (#59) — Six v2 launch bugs: a lowercased "V", a comment line stored as a fake weapon, and a real staging area for next season
+## v2.45.0 — 2026-07-30 22:24 EDT (#59 · `ee3b0cd`) — Six v2 launch bugs: a lowercased "V", a comment line stored as a fake weapon, and a real staging area for next season
 
 Six items pulled off the notes file (lines 191/192/197/199/200/201), all picked because they're
 launch-blocking for the new season, not "nice to have":

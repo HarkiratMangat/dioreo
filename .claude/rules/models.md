@@ -21,7 +21,10 @@ the same change**, or it will not actually save.
   `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`, `bpEnd`/`rankEnd`/`dmzEnd`,
   `patchNotes[]` (title = season # & name, NOT "Balance Changes for..." — see
   patchnotes.js), `newDraws[]`/`returningDraws[]`, `calendar[]` (with `endDate`/
-  `isOngoing` for "All Season" events).
+  `isOngoing` for "All Season" events, plus **`category`** — `'draw'|'event'|'playlist'`,
+  default `'event'`, added 2026-07-31 12:10 EDT for the 3-section calendar redesign; set via the
+  bulk parser's `d•`/`p•`/`e•` prefix or the single add/edit modal's Category field — see
+  `.claude/rules/design-decisions.md`).
   - **`draft` (added 2026-07-30 22:24 EDT)** — a next-season staging sub-document mirroring
     `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`/`bpEnd`/`rankEnd`/`dmzEnd`/`newDraws[]`/
     `returningDraws[]`/`calendar[]` (no `patchNotes` — that already has its own overlap-safe "Add New
