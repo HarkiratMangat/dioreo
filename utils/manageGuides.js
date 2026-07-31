@@ -183,7 +183,7 @@ function buildGuideContainer(topicKey) {
     const sections = TOPIC_SECTIONS[safeKey]();
 
     const components = [
-        { type: 10, content: `# ${emojis.database} Bulk Format Guide\n## ${topic.rawEmoji} ${topic.label}` },
+        { type: 10, content: `# ${emojis.guide} Bulk Format Guide\n## ${topic.rawEmoji} ${topic.label}` },
         divider(),
         ...sections.flatMap((s, i) => i === 0 ? [s] : [divider(), s]),
         divider(),

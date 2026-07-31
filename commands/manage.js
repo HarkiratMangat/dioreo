@@ -139,7 +139,7 @@ function buildPagesTable() {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -201,7 +201,7 @@ function buildPagesTable() {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -260,7 +260,7 @@ function buildPagesTable() {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngInfo} Field Format Guide\n-# Release date, URLs, and Additional Info -- what's literal vs. auto-formatted.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Field Format Guide\n-# Release date, URLs, and Additional Info -- what's literal vs. auto-formatted.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -311,7 +311,7 @@ function buildPagesTable() {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Same formats as the live pages -- get a rich, structured reference.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Same formats as the live pages -- get a rich, structured reference.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -411,7 +411,7 @@ function loadoutsPageDef(mode, headerLabel, icon) {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngInfo} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -803,7 +803,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: # Weapon, Attachment, n:/b: text, ... — new weapon = new line. See Guide button.').setValue(currentEntry?.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b: text, n: text...\nb:/n: = buff/nerf emojis (See Guide button)').setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
         // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
@@ -842,7 +842,7 @@ function buildPatchAddSeasonModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: # Weapon, Attachment, n:/b: text, ... — new weapon = new line. See Guide button.').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b: text, n: text...\nb:/n: = buff/nerf emojis (See Guide button)').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
     );
@@ -858,7 +858,7 @@ function buildPatchEditSeasonModal(entry, userTimezone) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: # Weapon, Attachment, n:/b: text, ... — new weapon = new line. See Guide button.').setValue(entry.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b: text, n: text...\nb:/n: = buff/nerf emojis (See Guide button)').setValue(entry.description || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
     );
@@ -968,7 +968,12 @@ module.exports = {
             { name: 'DMZ Loadouts', value: 'loadouts_dmz' },
             { name: 'Patch Notes', value: 'patchnotes' },
             { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' },
-            { name: 'Season: Next Season Draft', value: 'seasondraft' }
+            { name: 'Season: Next Season Draft', value: 'seasondraft' },
+            // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a
+            // normal data-entry page -- added 2026-07-31 17:20 EDT, Harkirat's direct request. Not a
+            // key in PAGES (same reason Season's two entries above aren't), so it's special-cased in
+            // execute() below the same way those are.
+            { name: 'Bulk Format Guide', value: 'guide' }
         ))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
 
@@ -1012,6 +1017,15 @@ module.exports = {
         const argPrivate = interaction.options.getBoolean('hidden');
         const isEphemeral = argPrivate === null ? true : argPrivate;
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
+
+        // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide
+        // panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal
+        // page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's
+        // no page context to infer a topic from when jumping straight here via the slash option.
+        if (section === 'guide') {
+            const { buildGuideContainer } = require('../utils/manageGuides');
+            return sendV2Payload(interaction, buildGuideContainer('draws'));
+        }
 
         // Patch Notes' "Past Seasons" dropdown needs a live DB read to build its options -- every
         // other page renders from PAGES alone. Only fetched when actually landing on that page.
