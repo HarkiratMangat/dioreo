@@ -519,14 +519,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    indicator visibly tears away from its old position, necks, and reforms on the
    new one — instead of a rigid pill sliding along a rail.
 
-   ⚠️ THE BLOBS ARE UNTINTED, and that is a measured decision, not an oversight.
-   Tinting each blob with its own page's accent would have put both colours in
-   one shape mid-flight — but the active tab's label sits directly on this fill
-   in --accent-t, and ANY tint fails WCAG AA there. Measured across all six
-   accents in both themes: untinted the tightest pair is violet-on-dark at 4.60;
-   at a 6% tint it is already 4.28, and 16% gives 3.76. The label is .66rem, so
-   the large-text 3.0 threshold does not apply. Colour travels in the glow below
-   instead, which sits outside the text's background. Re-measure if you touch it.
+   ⚠️ EACH PIECE CARRIES ONE SOLID ACCENT, and the colour is per PIECE rather
+   than one ramp across the control. A single track-wide gradient was why the
+   colour appeared to lag: a blob sitting on the destination still carried some
+   of the origin's hue until the move ended. Now the piece being built is its
+   own colour from the first frame it exists, the residue keeps the old one, and
+   only the neck between them is a transition.
+   The route NOT taken was a --paper (untinted) pill: the active tab's label
+   sits directly on this fill, and on --paper the tightest pair is
+   violet-on-dark at 4.60, dropping to 4.28 at a 6% tint and 3.76 at 16% — so
+   any tint at all failed AA and the colour had to live somewhere else. A SOLID
+   accent with the label inverted to near-black passes everywhere instead:
+   worst pair 5.07 across all six accents and every mid-gradient blend. The
+   label is .66rem, so the large-text 3.0 threshold does not apply.
+   Re-measure if you touch either the fill or --accent-t.
 
    (The goo is an SVG filter rather than the CSS blur/contrast recipe the
    reference implementation uses. CSS contrast() crushes the COLOUR channels, so
@@ -568,11 +574,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
   border-radius:50%;background:var(--pc);opacity:0;pointer-events:none;
   animation:ptFly var(--t) var(--d) cubic-bezier(.32,.72,.36,1) both}
+/* ⚠️ --y2 is READ here, and it did not used to be: the last two stops were
+   pinned to y=0, so every droplet landed on the pill's centre line and the
+   arrival looked like a row of dots sliding into a slot. The reference's
+   particles converge on a small RADIUS around the destination, which is what
+   makes the new shape look built out of them rather than filled in. Keep the
+   endpoint scale small — a droplet that is still large when it lands does not
+   get absorbed by the alpha crush, it reads as a stray dot beside the pill. */
 @keyframes ptFly{
   0%{opacity:0;transform:translate(var(--x0),var(--y0)) scale(.15)}
-  30%{opacity:1;transform:translate(var(--x1),var(--y1)) scale(1)}
-  74%{opacity:1;transform:translate(var(--x2),0) scale(.82)}
-  100%{opacity:0;transform:translate(var(--x2),0) scale(.1)}
+  26%{opacity:1;transform:translate(var(--x1),var(--y1)) scale(1)}
+  78%{opacity:1;transform:translate(var(--x2),var(--y2)) scale(.8)}
+  100%{opacity:0;transform:translate(var(--x2),var(--y2)) scale(.1)}
 }
 @media (prefers-reduced-motion:reduce){ .pt{display:none} }
 .goodef{position:absolute;width:0;height:0;overflow:hidden}
@@ -998,9 +1011,9 @@ html{scroll-behavior:smooth}
 <svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
  x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
-<feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur"/>
+<feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
- values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 32 -15"/>
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
 </filter></svg>
 
 <div class="bar">
@@ -1197,130 +1210,130 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
     var srcX=0,srcW=0,dstX=0,dstW=0;
     var p=1, t0=0, raf=0, sweep=0, litT=0;
     var cFrom=cols[idx], cTo=cols[idx];
-    /* 720ms, not the ~200ms this ran at before. The reference travels its pill
-       over TWO seconds, which is the only reason its break is legible at all —
-       at 200ms the tail had dissolved before the head arrived and there was
-       nothing on screen to see. This is the single most important number here. */
-    var DUR=720;
+    /* 760ms, not the ~200ms this ran at originally. The reference travels its
+       pill over TWO seconds, which is the only reason its break is legible at
+       all — at 200ms the tail had dissolved before the head arrived and there
+       was nothing on screen to see. This is the most important number here. */
+    var DUR=760;
 
     function H(){ return ink.clientHeight||26; }
     function box(i){ return [tabs[i].offsetLeft, tabs[i].offsetWidth]; }
-    function ease(x){ return 1-Math.pow(1-x,3); }
-    /* Slight overshoot on the head, so it arrives with weight and settles back
-       rather than easing politely into place. */
-    function back(x){ var c=1.28, u=x-1; return 1+(c+1)*u*u*u+c*u*u; }
     function band(a,b,x){ x=Math.max(0,Math.min(1,(x-a)/(b-a))); return x*x*(3-2*x); }
+    function rgbOf(c){ return 'rgb('+hex(c).join(',')+')'; }
+    function tween(t){ return 'rgb('+mix(cFrom,cTo,Math.max(0,Math.min(1,t))).join(',')+')'; }
 
-    /* The colour ramp spans only the MOVE, from the tab being left to the tab
-       being entered — not the whole track. Spanning the track meant the pill sat
-       at some arbitrary midpoint of the ramp once it landed, so when the ramp
-       later collapsed to a flat colour the pill visibly changed hue. Anchoring
-       the ramp to the move puts the destination exactly at one end of it. */
-    function span(){
-      var lo=Math.min(srcX,dstX), hi=Math.max(srcX+srcW,dstX+dstW);
-      var fwd=dstX>=srcX;
-      return [lo, Math.max(1,hi-lo), fwd?cFrom:cTo, fwd?cTo:cFrom];
-    }
-    function sampleAt(x){
-      var s=span(), t=Math.max(0,Math.min(1,(x-s[0])/s[1]));
-      var a=s[2]===cFrom?cFrom:cTo, b=s[3];
-      return 'rgb('+mix(a,b,t).join(',')+')';
-    }
+    /* THE PILL COMES APART, it does not slide.
+       The source shrinks away by 55% and the destination does not start forming
+       until 28%, so around the middle of the move there is barely any pill on
+       screen at all and the droplets are the only thing carrying the shape.
+       That deliberate near-absence is the effect — an indicator that travels
+       intact reads as a marker being repositioned, which is what this was. */
     function paint(){
-      var e=back(p), g=ease(p);
-      var hx=srcX+(dstX-srcX)*e;
-      var hw=srcW*0.34+(dstW-srcW*0.34)*g;
-      /* The tail holds its ground, then lets go. It is still ~80% of its width
-         a third of the way through the move, which is what produces the "part
-         of it is clinging to the tab I came from" reading. */
-      var tx=srcX, tw=srcW*(1-band(0.14,0.74,p));
-      B.style.transform='translateX('+hx+'px)'; B.style.width=Math.max(0,hw)+'px';
-      A.style.transform='translateX('+tx+'px)'; A.style.width=Math.max(0,tw)+'px';
-      /* The neck spans the gap between the two and thins to nothing before the
-         head lands, so the connection pinches off rather than being cut. */
-      var l=Math.min(tx+tw,hx+hw), r=Math.max(tx,hx);
+      var aw=srcW*(1-band(0.04,0.55,p));
+      var bw=dstW*band(0.28,1,p);
+      A.style.transform='translateX('+srcX+'px)';
+      A.style.width=Math.max(0,aw)+'px';
+      /* Grows from its own centre, so it inflates into place rather than
+         unrolling from one edge. */
+      B.style.transform='translateX('+(dstX+(dstW-bw)/2)+'px)';
+      B.style.width=Math.max(0,bw)+'px';
+      /* The neck exists only while the mass is tearing. Past 40% the droplets
+         are the only bridge, which is what makes the break read as a break. */
+      var l=Math.min(srcX+aw,dstX), r=Math.max(srcX,dstX);
       C.style.transform='translate('+l+'px,-50%)';
       C.style.width=Math.max(0,r-l)+'px';
-      C.style.height=Math.max(0,H()*0.58*(1-band(0.12,0.8,p)))+'px';
-      var s=span(), grad='linear-gradient(90deg,'+s[2]+' 0%,'+s[3]+' 100%)';
-      [[A,tx],[C,l],[B,hx]].forEach(function(q){
-        q[0].style.backgroundImage=grad;
-        q[0].style.backgroundSize=s[1]+'px 100%';
-        q[0].style.backgroundPosition=(s[0]-q[1])+'px 0';
-      });
+      C.style.height=Math.max(0,H()*0.5*(1-band(0.02,0.4,p)))+'px';
+      /* Colour is per PIECE and solid, not one ramp across the whole control.
+         The ramp was why the colour lagged: a piece sitting on the destination
+         still carried some of the origin's hue until the move ended. Now the
+         new pill is its own colour from the first frame it exists, the residue
+         keeps the old one, and only the parts in between are a transition. */
+      A.style.backgroundImage='none'; A.style.background=rgbOf(cFrom);
+      B.style.backgroundImage='none'; B.style.background=rgbOf(cTo);
+      var fwd=dstX>=srcX;
+      C.style.backgroundImage='linear-gradient(90deg,'
+        +rgbOf(fwd?cFrom:cTo)+','+rgbOf(fwd?cTo:cFrom)+')';
+      C.style.backgroundSize='100% 100%';
+      C.style.backgroundPosition='0 0';
     }
     function step(now){
       p=Math.min(1,(now-t0)/DUR);
-      /* Collapse the ramp the instant the move completes. Without this the
-         settled pill kept a gradient running from the accent of whichever tab
-         was hovered last, so leaving the bar left the current page's pill
-         wearing another page's colour. */
+      /* Drop the goo the instant the move settles. A Gaussian blur erodes a
+         curve in proportion to its curvature, so thresholding a resting stadium
+         flattens its caps into a rounded rectangle — see the .seg-ink note. */
       if(p>=1){ cFrom=cTo; seg.classList.remove('morph'); }
       paint();
       raf = p<1 ? requestAnimationFrame(step) : 0;
     }
 
-    /* The droplet spray, the part that makes the shape look ASSEMBLED rather
-       than moved. Same principle as the reference's 15-particle burst: circles
-       that scale up out of nothing, arc across, and scale away — all inside the
-       goo layer, so they fuse with the pill instead of reading as loose dots. */
+    /* The droplets, and the reason they behave the way the reference's do.
+       Its particles START on a wide radius and END on a tight one — they fly
+       INWARD and the pill scales up as they arrive, so the shape looks
+       assembled out of them. Ours additionally have somewhere to go, so each
+       one leaves the pill being broken, is flung out on its own angle, and then
+       converges into the centre of the pill being built. */
     function spray(){
       clearTimeout(sweep);
       [].slice.call(ink.querySelectorAll('.pt')).forEach(function(n){ n.remove(); });
       if(still) return;
-      var n=9, h=H(), max=0;
+      var n=14, h=H(), max=0;
+      var sc=srcX+srcW/2, dc=dstX+dstW/2, run=dc-sc;
       for(var i=0;i<n;i++){
         var el=document.createElement('i');
         el.className='pt';
-        var x0=srcX+srcW*(0.2+0.6*Math.random());
-        var x2=dstX+dstW*(0.12+0.76*Math.random());
-        var x1=x0+(x2-x0)*(0.3+0.4*Math.random());
-        var y1=(Math.random()<0.5?-1:1)*(h*0.26+Math.random()*h*0.4);
-        var dur=420+Math.random()*300, del=i*16;
-        max=Math.max(max,dur+del);
-        el.style.cssText='--w:'+(4+Math.random()*6).toFixed(1)+'px;'
-          +'--x0:'+x0.toFixed(1)+'px;--y0:0px;'
+        var a=(i/n)*Math.PI*2+Math.random()*0.6;
+        var x0=srcX+srcW*(0.08+0.84*Math.random());
+        var y0=(Math.random()-0.5)*h*0.55;
+        var t=0.22+0.56*Math.random();
+        var x1=sc+run*t+Math.cos(a)*20;
+        var y1=Math.sin(a)*(h*0.26+Math.random()*h*0.34);
+        var x2=dc+Math.cos(a)*(3+Math.random()*9);
+        var y2=Math.sin(a)*(2+Math.random()*5);
+        var dur=Math.round(DUR*(0.6+Math.random()*0.32));
+        var del=Math.round(i*DUR*0.014+Math.random()*44);
+        if(dur+del>max) max=dur+del;
+        el.style.cssText='--w:'+(7+Math.random()*9).toFixed(1)+'px;'
+          +'--x0:'+x0.toFixed(1)+'px;--y0:'+y0.toFixed(1)+'px;'
           +'--x1:'+x1.toFixed(1)+'px;--y1:'+y1.toFixed(1)+'px;'
-          +'--x2:'+x2.toFixed(1)+'px;'
-          +'--t:'+dur.toFixed(0)+'ms;--d:'+del+'ms;'
-          +'--pc:'+sampleAt(x2);
+          +'--x2:'+x2.toFixed(1)+'px;--y2:'+y2.toFixed(1)+'px;'
+          +'--t:'+dur+'ms;--d:'+del+'ms;'
+          +'--pc:'+tween(run?(x1-sc)/run:1);
         ink.appendChild(el);
       }
       sweep=setTimeout(function(){
         [].slice.call(ink.querySelectorAll('.pt')).forEach(function(n){ n.remove(); });
-      }, max+120);
+      }, max+140);
     }
 
     function aim(i,snap){
       var b=box(i);
       if(snap||still){
         idx=i; srcX=dstX=b[0]; srcW=dstW=b[1]; p=1;
-        cFrom=cTo=cols[i]; lit(i); paint(); return;
+        cFrom=cTo=cols[i]; seg.classList.remove('morph'); lit(i); paint(); return;
       }
       if(i===idx&&p>=1) return;
-      /* Break from where the head actually IS, not from the tab it originally
-         set out from, so redirecting mid-flight tears from the current shape. */
-      var e=back(p), g=ease(p);
-      var hx=srcX+(dstX-srcX)*e, hw=srcW*0.34+(dstW-srcW*0.34)*g;
-      cFrom=sampleAt(hx+hw/2);
-      srcX=hx; srcW=Math.max(hw,10);
+      /* Break from where the pill actually IS. Mid-flight the destination is
+         the only piece with real size, so that is what the next move tears. */
+      var bw=dstW*band(0.28,1,p);
+      if(bw>6){ srcX=dstX+(dstW-bw)/2; srcW=bw; cFrom=cTo; }
+      else { srcW=Math.max(srcW*(1-band(0.04,0.55,p)),10); }
       idx=i; dstX=b[0]; dstW=b[1]; cTo=cols[i];
       p=0; t0=performance.now();
       seg.classList.add('morph');
-      lit(i,DUR*0.38); spray();
+      lit(i,DUR*0.8); spray();
       if(!raf) raf=requestAnimationFrame(step);
     }
-    /* The inverted label is only correct while the pill is actually UNDER it.
-       A group you are not in keeps its indicator hidden until you point at it,
-       so applying .lit there painted "Contributing" near-black on the dark bar
-       and the label disappeared completely. Visibility, not index, is the test. */
     /* The inverted label is only correct while the pill is actually UNDER it,
        and that is true in TWO senses. It must not apply to a group whose
        indicator is hidden — that painted "Contributing" near-black on the dark
        bar and the label vanished. And it must not apply the instant a move
-       STARTS: flipping the destination label immediately left it near-black on
-       the bar for a third of a second before its pill got there. So the swap is
-       held until the head has largely arrived, and both labels change at once. */
+       STARTS, because the destination pill does not exist until 28%.
+       0.8, not 0.4: the destination pill's width is dstW*band(0.28,1,p), so at
+       p=0.4 it is 11px behind a 79px label and at p=0.65 still only 41px. The
+       label was going near-black while more than half of it sat on the dark bar,
+       which is the same defect as the vanished "Contributing" in a slower form.
+       band reaches ~0.9 at p=0.81, so the swap waits until the pill is actually
+       under the word it is inverting. */
     function lit(i,delay){
       clearTimeout(litT);
       var vis = home!==null || seg.classList.contains('hot');
@@ -1329,7 +1342,8 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
     }
     function rest(){
       seg.classList.remove('hot');
-      if(home===null){ tabs.forEach(function(a){ a.classList.remove('lit'); }); return; }
+      if(home===null){ clearTimeout(litT);
+        tabs.forEach(function(a){ a.classList.remove('lit'); }); return; }
       aim(home,false);
     }
 
