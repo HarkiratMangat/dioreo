@@ -954,14 +954,27 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    its own height, so shrinking the box changed nothing: at 1440x900, scrolled to the
    bottom of Terms, the rail still sat 126px inside the footer. The real fix is
    structural and lives in .cols — see the markup comment above it. Keeping this note
-   because "the CSS looks like it should work" is exactly how the bug survived a fix. */
+   because "the CSS looks like it should work" is exactly how the bug survived a fix. *//* ⚠️ NO SECOND SCROLLBAR. The rail is taller than the viewport on every one of
+   these documents, so it has to scroll — but a visible bar beside the page's own
+   bar reads as two independent things to operate, and the reader has no reason
+   to operate this one: the script below keeps the tracked section in view, so
+   the rail follows the page rather than waiting to be dragged. The bar is
+   removed, not the scrolling.
+   The mask is what stops that being a lie. With the bar gone, a hard crop at the
+   top and bottom edges says "this list ends here"; a 2rem fade says it continues,
+   which is true. mask-image, not a gradient overlay, because the rail sits on the
+   page background and an overlay would need to know that colour. */
 
 
 
-.rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 2rem;
-  max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:thin}
-.rail::-webkit-scrollbar{width:3px}
-.rail::-webkit-scrollbar-thumb{background:var(--rule2)}
+
+.rail{position:sticky;top:76px;align-self:start;padding:2.6rem 0 3.4rem;
+  max-height:calc(100vh - 96px);overflow-y:auto;scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 2rem,
+    #000 calc(100% - 2rem),transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 2rem,
+    #000 calc(100% - 2rem),transparent 100%)}
+.rail::-webkit-scrollbar{width:0;height:0}
 .rail>.lab{display:block;margin-bottom:1rem;padding-left:.85rem}/* The tracked-section readout is a MOBILE affordance only. paint() fills it on
    every viewport, so on desktop it rendered as a bare text node welded to the
    label with no separator — "SECTIONSWHO IS RESPONSIBLE FOR YOUR DATA". The
@@ -1554,6 +1567,7 @@ html{scroll-behavior:smooth}
   var prog=document.getElementById('prog');
   var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
   var slots=[].slice.call(document.querySelectorAll('.slot'));
+  var rail=document.querySelector('.rail'), lastId=null;
   /* The section index is rendered TWICE — once in the desktop rail, once in the
      mobile control — and exactly one of the two is display:none at any width.
      So tracking has to key on the section ID, not on a position in this array:
@@ -1594,6 +1608,29 @@ html{scroll-behavior:smooth}
     var curId=cur>=0?ids[cur]:null;
     for(var j=0;j<slots.length;j++){
       slots[j].classList.toggle('on', slots[j].getAttribute('href').slice(1)===curId);
+    }
+    /* Keep the tracked slot inside the rail's own scroll box, so the rail
+       travels with the page instead of needing to be scrolled separately.
+       scrollTop is set directly rather than through scrollIntoView: that call
+       walks every scrollable ancestor and will move the PAGE when the element
+       is not fully in the viewport, which on a sticky rail means the page
+       scrolling itself in response to being scrolled. Only fires when the
+       tracked section actually changes — this function runs on every frame of
+       scroll, and a per-frame smooth scroll never converges. */
+    if(rail&&curId&&curId!==lastId){
+      lastId=curId;
+      var sEl=rail.querySelector('.slot[href="#'+curId+'"]');
+      if(sEl){
+        var pad=56, et=sEl.offsetTop, eh=sEl.offsetHeight, want=null;
+        if(et<rail.scrollTop+pad) want=Math.max(0,et-pad);
+        else if(et+eh>rail.scrollTop+rail.clientHeight-pad)
+          want=et+eh-rail.clientHeight+pad;
+        if(want!==null){
+          if(rail.scrollTo) rail.scrollTo({top:want,
+            behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+          else rail.scrollTop=want;
+        }
+      }
     }
     // Mirror the tracked section into the mobile opener. On desktop the rail
     // shows position by itself; on mobile the list is collapsed, so without this
