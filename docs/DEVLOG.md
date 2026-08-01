@@ -96,6 +96,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache
 - 2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document
 - 2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common
+- 2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3309,6 +3310,36 @@ dedicated animated emoji for every guide heading instead of reusing the generic 
 
 ---
 
+## 2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click
+
+*(v2.47.0, #61.)*
+
+The nav had been "buggy" for days without a cause. It turned out to be the drag gesture: a
+`pointerdown` anywhere on the track started one, and a capture-phase handler then cancelled the
+link's navigation whenever the pointer had travelled more than 3px before release. The fallback that
+was supposed to catch that only navigated if the **rounded** settled index had changed, which three
+pixels never does. So the failure was invisible from the source — every line looked deliberate — and
+invisible at runtime, because nothing threw.
+
+The lesson that cost the most here was about **how a reproduction can be fake**. The first one used a
+drag tool and "confirmed" the bug; instrumenting the page showed that tool fires only `pointerdown`,
+never `pointerup` or `click`, so it had exercised nothing at all and the confirmation was worthless.
+Both the buggy and the fixed build would have "reproduced" identically. The real test — dispatching a
+full pointer sequence and asking whether the click reached the anchor — gave a clean split: reached at
+0px of drift, never reached at 6px. A reproduction that cannot distinguish the broken build from the
+fixed one is not evidence, and it is easy to mistake one for evidence when it agrees with you.
+
+Three separate things went wrong the same way afterwards, all of them cases of a value resolving
+somewhere other than where it is written. `--accent-t: var(--accent)` computes on `:root` and
+inherits the finished colour, so per-row accents never took. `transform-origin` set only in a hover
+rule reverts on release, so the plus icon unwound from a different pivot than it wound around.
+`.cpy-f` and `.cpy` carry equal specificity, and the override was written **above** the base, so the
+base silently won and squeezed a button's contents to zero width. None of the three throws; all three
+are only findable by measuring the rendered result.
+
+Gate 1 also earned its keep again: a copy button's "Copy" label sat between a code block and the prose
+after it and split three source runs. I had written the comment warning about exactly that hazard in
+the same commit, and then walked into it anyway — the check caught what the author did not.
 
 # Part B — Lessons Ledger (thematic)
 

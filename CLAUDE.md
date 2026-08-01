@@ -385,6 +385,13 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 ### Records & workflow (outside the rules system)
 - **`LICENSE` / `CONTRIBUTING.md` / `CONTRIBUTORS.md`** (repo root) — licence terms + CLA, the
   contributor guide, and the credit ledger. See the licensing block above.
+- **`SECURITY.md`** (repo root, **deliberately NOT published to the site**) — the vulnerability
+  reporting route, the §4.11 testing limits restated, scope, and an explicit "no SLA" statement.
+  It stays repo-only because GitHub's private "Report a vulnerability" flow reads it from there;
+  the route is published to readers via the `/security` redirect, which points at the Contributing
+  page's security section. **If you add a stored field, a new host, or a new third-party service,
+  re-check its Scope section** — an out-of-scope list that silently goes stale invites reports
+  against infrastructure that is not ours to test.
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
 - **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
   gate.** `--list` prints the current roster; it covers the records: doc map · cross-references · version coverage across all three

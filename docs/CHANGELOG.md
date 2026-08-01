@@ -181,7 +181,268 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.46.0 — 2026-07-31 23:50 EDT (#60 · ) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
+## v2.47.0 — 2026-08-01 03:05 EDT (#61 · ) — A nav that swallowed its own clicks, and a design pass over the legal site
+
+The site's navigation had been unusable and nobody could say why. Fixing it turned into a pass over
+most of the surface Harkirat had flagged from live testing.
+
+**The nav swallowed clicks, and the cause was its drag gesture.**
+- The switcher began a drag on **every** `pointerdown` anywhere on the track, and a capture-phase
+  handler cancelled the link's navigation whenever the pointer had moved more than 3px between press
+  and release. Its own fallback then only navigated if the **rounded** settled index differed from the
+  starting one — which a few pixels of hand drift never changes. So an ordinary click with a little
+  movement was swallowed whole: no navigation, no error, nothing in the console.
+- Demonstrated in Chrome against the deployed build rather than argued from the source: identical
+  synthetic click sequences reached the link at 0px of drift and never reached it at 6px. After the
+  rebuild, 0/6/20/40px all reach it. The drag is gone entirely; tabs are plain links again.
+- ⚠️ A first "reproduction" was **invalid** and was retracted — the drag tool used fires only
+  `pointerdown`, never `pointerup` or `click`, so it exercised nothing. The real demonstration
+  came from dispatching the full pointer sequence and watching whether the click reached the anchor.
+
+**Desktop and mobile navigation are now separate controls.**
+- Sharing one control across breakpoints was the source of most of the mobile breakage: an indicator
+  that has to be a horizontal pointer track **and** a vertical thumb-follower does neither well, and
+  every hover rule it carried latched on first tap. Both previously-shipped mobile variants (the
+  two-tab rail and the bottom sheet) are retired for one plain disclosure holding all six pages plus
+  the section index — 48px rows, no gesture, no indicator.
+- Every hover rule on the site now sits inside `(hover:hover) and (pointer:fine)`. A latched
+  `:hover` after a tap is why buttons appeared "stuck mid-phase" on a phone.
+- The indicator tears apart and reforms through an **SVG metaball filter**. Deliberately not the CSS
+  `blur/contrast` recipe the reference implementation uses: that crushes the colour channels, which
+  is why it needs monochrome blobs on a black bed plus a blend mode and a duplicated copy of the label
+  to stay readable. An alpha-only `feColorMatrix` leaves RGB untouched, so both themes work with no
+  inversion and no second copy of the text. It runs only during a move — thresholding a blurred
+  stadium flattens its caps, so at rest the pill was a rounded rectangle inside a stadium track.
+
+**Two content defects in the published instruments.**
+- The orphaned `these documents are published on (the "Site")` fragment under the masthead on Terms
+  **and** Privacy was a parser bug, not a typo: those head fields are wrapped across two source lines
+  and the strip that removes them used `.*# Changelog (Detailed)
+
+Dior's Builds' own "release notes" — tracks what shipped, when, and why. See
+[CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md) for a plain-language version of the same timeline.
+
+**Versioning:**
+- **v1.0.0** (`b225785`) — the actual first working version of the bot. There is no "v0.x" — the
+  very first commit was already a real (if tiny) release, not a pre-release draft.
+- **v1.x** — the pre-collaboration era: solo-built, Excel-backed MP loadouts, classic Discord
+  Embeds. Runs through `cbf2106` (the original `/timestamp` command).
+- **v2.0.0** (`63cebb1`, "Pre-release") — the Components V2 rewrite. This is also where Harkirat
+  started working on the bot together with Claude, so everything from here on has much more
+  detailed reasoning behind it than the entries above.
+- **Three-part `vMAJOR.MODERATE.MINOR`** (restructured 2026-07-12). `MAJOR` (whole-number, e.g.
+  v2 → v3) = a major overhaul or major new functionality — only bumped deliberately, with Harkirat's
+  confirmation. `MODERATE` (middle field) = a significant PR: a new feature, a real design change,
+  several large bug fixes, or a bundle of adjustments — bumping it resets `MINOR` to 0. `MINOR` (last
+  field) = a small adjustment/fix/correction. `MODERATE` can climb past 9 (v2.10.x, v2.11.x, …)
+  indefinitely; reaching double digits is NOT a reason to bump `MAJOR`.
+- **Notation — now uniform three-part throughout (normalized 2026-07-21).** Entries v2.7.1 and earlier
+  were originally written in a condensed **two-decimal** notation (the trailing MINOR digit crammed onto
+  the MODERATE field, no second dot — e.g. `v2.71` meant v2.7.1, `v2.51` meant v2.5.1, `v1.61` meant
+  v1.6.1; a single-decimal `v2.7` meant v2.7.0). At Harkirat's request these were retroactively renumbered
+  to explicit `vMAJOR.MODERATE.MINOR` so the whole file reads in one consistent scheme — no bot code or git
+  tags were affected (pre-`v2.17.3` versions were never tagged; see the version-tagging note in
+  `docs/reference/deployment-and-ops.md`).
+  Fixing the notation also surfaced and corrected one pre-existing ordering slip (v2.7.1, a `.1` follow-up,
+  had sat below v2.7.0 — now above it, matching every other pair and the newest-first order).
+- **The unit that earns a version number changed 2026-07-24 12:24 EDT: "push-that-went-live" →
+  "merged PR."** Under the new Branch → Commit → Push → PR → Merge → Deploy workflow (see
+  `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md` + memory `project_git_workflow.md`),
+  each merged PR squashes to ONE commit on `main` and gets ONE version number + one git tag on that squash
+  commit — not per raw commit, not per push of a feature branch. Everything through v2.32.0 above was
+  numbered under the old "one push, one number" rule; that history is left as-is, only the *going-forward*
+  unit changed.
+- **Entry citation format + the lagged hash backfill (adopted 2026-07-27 21:27 EDT).** A heading reads
+  `## vX.Y.Z — YYYY-MM-DD HH:MM EDT (#PR · `sha`) — <title>`. Because a commit cannot contain its own
+  hash, the two halves are written at different times: the **PR number** is written on the branch as the
+  final pre-merge checkpoint (with the `package.json` bump, so it folds into the squash commit), and the
+  **hash is backfilled one release later**, on the *next* release's branch. So **the newest entry always
+  lacks a hash — that is correct, not drift.** The backfill is additive-only (insert `` · `sha` ``, touch
+  nothing else, never edit the timestamp) and is an ordinary edit in a later commit — **never an
+  `--amend`, never a force-push.**
+  ⚠️ **Most of v2.33.0–v2.35.15 were tagged on a separate `chore(release): finalize …` commit, not on
+  their squash commit** — the old convention cited the squash hash inline, which forced that second
+  commit. Measured 2026-07-27 21:27 EDT across the 25 hash-citing entries: **16 cite the tag's parent**
+  (the 2-commit shape — v2.33.5, v2.33.6, v2.34.0, v2.34.1, v2.35.4–v2.35.15) and **9 cite the tag
+  itself** (v2.33.0–v2.33.4, v2.35.0–v2.35.3), so the old pattern was the majority but never universal.
+  Those 16 tags are correct as they stand (the finalize commit is where `package.json` reads the tagged
+  version); don't "fix" them. **Entries from v2.36.0 on follow the new shape**: one commit, one tag, on
+  the squash commit. Full design: `docs/superpowers/specs/2026-07-24-git-branch-pr-workflow-design.md`
+  §3, §5, §10.
+- **Entries before v2.33.0 (v2.26.0–v2.32.0) cite a hash only, with no `#PR`** — they predate the PR
+  workflow entirely (PR #1 *is* v2.33.0), so there is no PR to cite. Accurate history, not a gap.
+
+Only merged PRs get a permanent version number — see **Unreleased** at the bottom of this file for
+work still on an open branch/PR.
+
+**Detailed vs. summary coverage:** every merged PR gets an entry here, including purely internal
+housekeeping (repo/tooling changes, nothing a player would notice). [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)
+**represents every version number too — no number is skipped** (Harkirat's rule, 2026-07-21: "easier to
+delete than to add"). It stays player-focused, so trivial/internal/docs-only point releases aren't given
+their own prose write-up — instead they're folded into a neighbouring entry's version range (e.g.
+`v2.18.0–v2.18.3`) or noted in one line (e.g. "*v2.22.1 was a docs-only point release*"), so a reader can
+still see the version existed. Only genuinely user-facing changes get a real bullet.
+
+---
+
+# 🔮 Planned & Upcoming (not shipped yet)
+Ideas, committed work, and known small gaps — nothing in this section has shipped. Roughly ordered by
+how committed we are. Items graduate into a numbered version entry below once they actually ship.
+
+### 🛠️ Planned — intend to build
+- **Real "search + multi-select" admin flow** — for "Delete Multiple" (all entities) and Loadouts'
+  "Replace Multiple": search first, then tick which matches to act on. Today these are placeholder
+  paste-a-list-of-names flows; this is the genuinely new interaction they're meant to become.
+- **General bot/code housekeeping session** (added 2026-07-15) — one dedicated cleanup pass instead of
+  piecemeal mid-feature tidying: delete leftover `*.bak-*` config backups, sweep for any stale absolute
+  paths left over from the 2026-07-14 repo relocation (the known ones are already fixed; prefer
+  relative/dynamic paths so a future move can't rot them), dead-code/stale-comment/unused-dependency
+  review, and decide whether `/patch notes`' media carousel needs component-count chunking.
+- **Write a user-friendly bot/ops guide** (added 2026-07-18) — a rich but noob-friendly how-to for
+  operating the bot end-to-end (the GCP VM, hosting, deploy flow, checking status/logs), so Harkirat can
+  maintain it himself. Distinct from CLAUDE.md and the terse VM command card — a human operator's guide.
+
+#### Remaining v2 polish batch (filed 2026-07-14/15 from the plan-notes file)
+Ships to `main`/live as normal `v2.x` pushes, in parallel with v3 pre-release work. Most of this batch has
+already shipped and graduated into the numbered list below: **8 items in v2.21.0** (`/timestamp`
+`format`→`view`, `/settings` `hidden` option, mobile description trim, short/partial loadout search, admin
+override + reworded action-blocked message, View Colors download buttons, `/manage` `section`→`data_for`),
+plus **`/manage` loadout data-entry UX** (v2.23.0), **`/manage` per-page accent colors** (v2.24.0),
+**webhook alerting heavy-half** (v2.26.0 — per-alert IDs, `/alerts`, text-log export, legibility fixes), and
+**pagination loop-back** (v2.28.0, with its 2-page crash fixed in v2.30.2). Still open from this batch:
+- **View Colors: wider colour variety** — a real avatar returned 6 of 8 requested colours and missed a
+  useful yellow. Minimal images correctly returning 2-4 on one page must NOT be padded out to a quota.
+  Needs its own focused session — determinism is a hard constraint (Refresh's change-detection).
+- **View Colors: humour pages for unset Display Name / Nameplate / Deco** instead of hiding them.
+- **Richer in-bot diagnostic logging** (filed 2026-07-18) — so a failure points at exactly which component
+  broke and why (distinct from the webhook alerting heavy-half, now shipped, and the v3 DB-change audit log).
+- **Admin `/status` command** (filed 2026-07-18) — VM health/metrics (gateway state, RAM/CPU, restart count)
+  surfaced in-bot, built on `scripts/vmstatus.sh` / `vmpeaks.sh`. **Un-bundled from the webhook work
+  2026-07-20** (Harkirat's call — unsure of its usability right now); still deferred as its own session.
+
+#### v3 (next MAJOR — pre-release track)
+Built on a `v3-pre-release` branch, logged here as `Pre-Release v3.x.x`, kept out of the summary
+changelog until v3 actually launches.
+- **`/manage` → `/admin`**, keeping the dashboard panel but adding slash-driven actions
+  (`/admin command:{x} action:{y}`), with `action` choices scoped to the chosen command. Plus an
+  internal DB-change logging/tracking system.
+- **`/meta`** — browse every weapon marked Meta, paginated, category-switchable, per-category accent.
+- **Draw cost calculator** — cost to finish a draw from region + attempts done/remaining + CP balance,
+  with a suggested top-up package.
+- **Consolidate MP loadout commands into one `/loadout`** (with a meta subcommand — overlaps `/meta`
+  above; pick one shape at design time). `/dmz` stays as-is.
+- **`/settings` jump-to options** and **detaching `/colors`' visibility** from settings.
+- **`/help`** detailing commands/features, referenced from the bot's Discord description — must include
+  a way to contact Harkirat (his Discord) for bug reports/requests.
+- A **personality pass** ("bully people who are broke") sprinkled through, starting with the humour
+  pages and the reworded block message.
+- **Announcement feature** — post an announcement from `/manage`; each user sees it once (as a follow-up
+  embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.
+- **Easy bot sharing / `/invite`** — a share path that works even in servers where user-apps are blocked
+  (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.
+- **Privacy Policy / Terms of Service** — needed for Discord compliance, especially once verified/past
+  100 servers (same threshold as the MESSAGE CONTENT intent below). Should cover the usage-analytics
+  item below if that ships first.
+- **Richer usage analytics** — who ran what command, when, how often, and how people actually navigate a
+  feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure
+  attribution, this is usage telemetry).
+- **`/define` (Urban Dictionary integration)** — pure fun, not CODM-related, low priority.
+- **Extend the passive auto-disable pattern** beyond `/settings` (which shipped it in v2.22.0) to
+  draws/calendar/drawprices/loadouts, which currently have none — mechanical (reuse
+  `utils/passiveExpiry.js`), open question is whether 10 minutes is the right window everywhere.
+
+### 💭 Considering — ideas, not committed
+- Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused.
+- Possibly promote the View Colors / accent-personalization system to a **`v3.0.0`** milestone rather
+  than leaving it inside the v2 line — Harkirat's call (a MAJOR bump is never made without his OK).
+- **v4 — guild install + text/prefix commands** (`d b ak117`), with a settable per-server prefix and
+  server-exclusive commands. ⚠️ This reverses the bot's user-installed-only architecture and needs Dev
+  Portal changes: Guild Install enabled, `setIntegrationTypes([0, 1])`, and the **privileged MESSAGE
+  CONTENT intent** (which needs Discord approval past 100 servers).
+- **v4 — user-submitted loadouts**, gated behind manual review (deny / accept / accept-with-edit).
+- **v5 — generate the gunsmith image + share code ourselves**, removing the manual-screenshot step:
+  teach the code structure + layout, supply per-weapon base pages, store output in Cloudinary.
+- **v5 — user-built custom gunsmiths in-bot** (depends on the above), plus a "my builds" command that
+  merges a user's own builds into `/loadout` results, visually distinct from official ones.
+
+### 🐛 Known issues / small fixes — deferred, mostly cosmetic
+- **View Colors heading isn't vertically centered** against its thumbnail — Components V2 has no
+  vertical-align control; a workaround was tried and reverted. Purely cosmetic.
+- **Decoration & nameplate previews show as static posters, not animated** — a genuine Discord-client
+  limitation, not a bug here; the real fix (re-encoding to GIF per render) was rejected as not worth
+  the per-render latency for a cosmetic nicety.
+- **Cloudinary folder organization — verify** (added 2026-07-18) — confirm draw thumbnails actually land in
+  `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as designed; Harkirat noticed assets that
+  look like they're in the main folder + secondary-weapon files not following the old naming. Read-only
+  check; escalate to a real bug only if a genuine discrepancy is confirmed.
+- **`/patch notes` media carousel has no component-count chunking** yet, unlike `/draws`/`/calendar`
+  — untested at scale; likely fine (few screenshots per entry) but not empirically verified.
+- **`ffmpeg` is an unverified production dependency** — used for decoration still-frames; confirmed on
+  the local Mac, not guaranteed on Render's container. If decoration color extraction ever breaks in
+  production only, check for `ffmpeg` on the deployed image first.
+- **Pagination/toggle clicks pay a structural double network round-trip** (`deferUpdate()` then a
+  separate `PATCH` to update the message) — not a CPU/DB bug this time, just the current architecture.
+  Real fix is switching to a single direct `UPDATE_MESSAGE` response; touches every paginated command,
+  deferred as its own future pass rather than bundled into v2.18.0.
+- ~~Disabling expired buttons — a reactive "friendly message but buttons stay live" gap~~ — **SHIPPED
+  for `/settings` in v2.22.0** as a genuinely PASSIVE, no-click auto-disable (a held interaction token
+  + `setTimeout` PATCHes the message on its own after 10 idle minutes) — see that entry below for the
+  mechanism, and CLAUDE.md's "Passive idle-timeout auto-disable" section for the full design. This
+  entry itself went through two rounds of correction before landing there: first wrongly claimed
+  disabling was impossible at all, then wrongly claimed a proactive zero-click update specifically was
+  impossible — both wrong, see CLAUDE.md's "Known open issues" for the full trail. Still open: the same
+  pattern for draws/calendar/drawprices/loadouts (see the v3 roadmap list above).
+- **Global profile only, never per-server "Server Profile" overrides** (confirmed 2026-07-18) — every
+  avatar/banner/deco/nameplate read uses the user's global Discord profile; a user with a different
+  avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install
+  pivot (Harkirat's call, 2026-07-18) rather than solving now, since v4 already changes how guild-member
+  context is available to the bot.
+
+---
+
+, which stops at the first newline. It read like a
+  paragraph cut in half because it was one. The same helper feeds `build()` and `verify()`, so one
+  fix corrects both and the content gate cannot drift from what is rendered.
+- LICENSE clause numbers sat 13.3px above the sentence they label — an empty heading was still
+  generating a 14.5px box plus a margin, pushing the text down while the number stayed pinned.
+
+**Footer, rebuilt to the annotated layout.** Notice left, links top-right, sign-off beneath them. The
+sign-off is **first in the DOM and last on screen**, which is load-bearing: on the warm pages that line
+runs on from the closing paragraph, so putting the nav labels between them lands five links inside that
+sentence and correctly fails gate 1. Grid placement moves it visually without moving it in the document.
+
+**Added.** A back-to-top control whose ring is the scroll position, driven from the same handler as the
+progress bar and section rail so the three cannot disagree · download buttons for the plain-text LICENSE
+and NOTICE, placed in the note that explains why those files govern · copy buttons on every code block.
+
+**The warm pages.** "Ways to contribute" was three thin blocks with a fourth stranded underneath —
+`auto-fit` fits three tracks at that width, so four parallel lanes were laid out as 3+1; now a 2x2 of
+equal tiles · the CLA's 26px bordered circles read as radio buttons on the one page explaining what you
+are agreeing to, and are now bare direction marks with the row carrying the edge · the contributors wall
+stretched its single plate across the whole card, which was most of why that page read as lifeless.
+
+**The landing page was off centre, and this pass caused it.** The goo filter's `<svg>` was injected
+into all three templates but its collapsing style lived in the switcher stylesheet, which the landing
+page does not include — so it kept its intrinsic 300x150 and took part in layout (measured 480px of
+margin against 180px). The style is inline on the element now. Also: the 01/02 numbers all hovered
+orange because a custom property resolves where it is **declared**, not where it is used, so
+`--accent-t:var(--accent)` computed once on `:root` and inherited that finished value · the plus icon
+swung back from the wrong pivot because `transform-origin` was set only in the hover rule · the ticket
+notches were discs filled with the page colour, which does not match a page carrying a radial glow, and
+are now masked out of the card.
+
+**Verification.** All six build gates green. **Gate 1 caught a real defect mid-work**: a copy button's
+"Copy" label landed between a code block and the prose after it and split three source runs, so the
+control is now text-free with a CSS-drawn mark. Motion itself could **not** be verified automatically —
+Chrome throttles `requestAnimationFrame` in a background tab and the preview pane runs zero frames —
+so geometry, colour, endpoints and contrast were measured by taking manual control of the animation
+clock and inspecting specific frames. Contrast was re-derived from scratch: a tinted indicator fails
+WCAG AA at **any** tint (violet-on-dark 4.60 untinted, 4.28 at 6%), which is what drove the solid pill
+with an inverted near-black label (worst pair 5.07 across all six accents and every mid-gradient blend).
+
+**Still open:** the indicator's break-up-and-reassemble rewrite, and the moon shape in the theme toggle.
+
+## v2.46.0 — 2026-07-31 23:50 EDT (#60 · `a4b17d6`) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
 
 The full follow-up to v2.45.0's launch-bug pass: the calendar redesign notes L184-197 asked for,
 plus everything live-testing turned up once it actually shipped.

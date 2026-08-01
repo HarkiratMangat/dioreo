@@ -26,6 +26,17 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.47.0 — August 1, 2026
+- **The legal site's navigation buttons often did nothing when you clicked them.** Fixed — a leftover
+  drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.
+- **The menu on phones is one simple list now** instead of two competing ones, and buttons no longer
+  get stuck looking "pressed" after you tap them.
+- **The opening line on Terms and Privacy read like a sentence cut in half.** It was — fixed.
+- **A "back to top" button** on the long documents, with a ring showing how far through you are.
+- **Download buttons** for the plain-text licence and notice.
+- **Copy buttons** on every code block in the contributing guide.
+- **The home page was off centre.** Fixed, along with a pass over its hover effects and spacing.
+
 ## v2.46.0 — July 31, 2026
 - **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch
   between them, and Draws is further split into New/Returning sections.
