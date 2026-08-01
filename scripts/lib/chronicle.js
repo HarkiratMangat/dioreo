@@ -18,20 +18,34 @@
  * obligation or the grammar of welcome. That is the same argument that keeps the
  * first two apart, applied once more.
  *
- * ─── why ONE family with three VOICES, and not three templates ───────────────
+ * ─── THREE ARCHITECTURES, not three tints of one ────────────────────────────
  *
- * The three sources differ in REGISTER, not in STRUCTURE. Every one of them is a
- * reverse-chronological list of dated entries with a heading and a body:
+ * ⚠️ The first version of this file was one layout with three colour schemes, and
+ * Harkirat rejected it on sight — correctly. Every page had the legal shell's
+ * masthead stack, its document column and its rail, so "three identities" amounted
+ * to an accent swap. Colour is the weakest possible carrier of identity: it is the
+ * one thing a reader stops noticing after two seconds.
  *
- *   CHANGELOG-SUMMARY.md  →  broadcast   what changed, for the people using it
- *   CHANGELOG.md          →  record      what shipped and why, for whoever maintains it
- *   DEVLOG.md             →  notebook    what it was like, and what it taught us
+ * What separates these three now is the GRID — what an entry physically is, where
+ * the date lives, and what the eye does going down the page:
  *
- * Three unrelated templates would mean three copies of the same entry-spine bug
- * waiting to be fixed three times. So there is one skeleton, and the voice changes
- * type, density, colour, corner treatment and how an entry heading is drawn —
- * which is what makes moving between them read as a genuine shift of register
- * rather than a re-skin. Harkirat asked for the shift to be the point; it is.
+ *   CHANGELOG-SUMMARY.md  broadcast  a NOTICE BOARD. The newest release is a hero
+ *                                    panel; everything older is a two-column deck
+ *                                    of compact cards. You scan, you do not read.
+ *   CHANGELOG.md          record     a LEDGER. Each entry is a row: a fixed
+ *                                    monospace key column (version · date · PR ·
+ *                                    commit) beside the prose. Reads like a log.
+ *   DEVLOG.md             notebook   a TIMELINE. A literal spine down the page
+ *                                    with a node per entry, dates in the margin,
+ *                                    lessons pushed out to the opposite side.
+ *
+ * They still share the bar, the nav and the footer, because that is what makes the
+ * site one site and lets a reader cross between all nine pages — that part was in
+ * the brief. Everything below the bar is each page's own.
+ *
+ * A voice therefore supplies its own masthead(), its own compose(), and its own
+ * CSS. The skeleton below is deliberately thin: it owns the <head>, the chrome and
+ * the scroll tracker, and nothing about layout.
  *
  * ─── the notebook voice is deliberately the quiet one ────────────────────────
  *
@@ -233,14 +247,18 @@ const VOICES = {
     broadcast: {
         name: 'broadcast',
         rail: false,
+        /* ⚠️ The version is drawn ONCE, at display size, and it IS the heading.
+           The first version of this had a big translucent version numeral as a
+           watermark AND a small h2 repeating it, so every card read "v2.47.0
+           v2.47.0 August 1, 2026" — the same duplicated-label mistake the nav
+           indicator is documented for, arrived at from the opposite direction.
+           Making the numeral itself the h2 removes the duplicate and is the more
+           poster-like answer anyway: on this page the version IS the headline. */
         entryHead: (e, C) => `
           <div class="cxh cxh-b">
-            <span class="cxv" aria-hidden="true">${C.esc(e.version || '')}</span>
-            <div class="cxht">
-              <h2 id="${e.id}">${C.esc(e.version ? e.version : e.title)}</h2>
-              ${e.date ? `<span class="cxd">${C.esc(e.date)}</span>` : ''}
-              ${e.version && e.title ? `<span class="cxsub">${C.esc(e.title)}</span>` : ''}
-            </div>
+            <h2 id="${e.id}" class="cxbig">${C.esc(e.version || e.title)}</h2>
+            ${e.date ? `<span class="cxd">${C.esc(e.date)}</span>` : ''}
+            ${e.version && e.title ? `<span class="cxsub">${C.esc(e.title)}</span>` : ''}
           </div>`,
         css: `
 /* One card per release. The numeral is a watermark rather than a label: it sits
@@ -251,20 +269,22 @@ const VOICES = {
   background:color-mix(in srgb,var(--card) 82%,transparent);overflow:hidden}
 .cxe::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;
   background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--glow) 70%,transparent))}
-.cxh-b{display:flex;align-items:flex-start;gap:1rem;margin:0 0 .85rem}
-.cxv{position:absolute;top:-.35rem;right:.6rem;font-family:var(--mono);
-  font-size:clamp(2.6rem,7vw,4.1rem);font-weight:800;letter-spacing:-.04em;line-height:1;
-  color:color-mix(in srgb,var(--accent) 13%,transparent);pointer-events:none;user-select:none}
-.cxht{min-width:0}
-.cxht h2{margin:0;font-size:1.16rem;letter-spacing:-.01em}
-.cxd{display:inline-block;margin:.3rem .6rem 0 0;font-family:var(--mono);font-size:.62rem;
+.cxh-b{margin:0 0 1rem}
+/* The version at display size. Monospace because a version number is a token, not
+   a word, and the tabular figures keep a column of them optically aligned as you
+   scroll — which is most of what makes the page scan as a series. */
+.cxbig{margin:0;font-family:var(--mono);font-size:clamp(1.7rem,4.4vw,2.5rem);
+  font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--accent)}
+.cxd{display:inline-block;margin:.5rem .6rem 0 0;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.cxsub{display:block;margin:.3rem 0 0;color:var(--ink2);font-size:.95rem}
+.cxsub{display:block;margin:.35rem 0 0;color:var(--ink);font-size:1rem;font-weight:600}
 .cxe:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--rule))}
 /* The "Coming soon" block leads the page and is not a release, so it is drawn as
-   a forecast rather than a card: dashed, unfilled, explicitly not-yet. */
+   a forecast rather than a card: dashed, unfilled, explicitly not-yet. Its heading
+   is prose rather than a version, so it drops to prose size too. */
 .cxe.cxe-soon{border-style:dashed;background:transparent}
-.cxe.cxe-soon .cxv{display:none}
+.cxe.cxe-soon .cxbig{font-family:inherit;font-size:1.25rem;letter-spacing:-.01em;
+  font-weight:700;color:var(--ink)}
 `,
     },
 
@@ -323,12 +343,17 @@ const VOICES = {
             <h2 id="${e.id}">${C.esc(e.title || e.date || '')}</h2>
           </div>`,
         css: `
-/* Ruled paper, one line per text line. It is a real repeating gradient rather than
-   a background image so it survives both themes and costs nothing, and it is very
-   low contrast on purpose — a notebook rule you actually notice is a novelty page. */
-.cxdoc{background-image:repeating-linear-gradient(180deg,
-    transparent 0 calc(1.85rem - 1px),
-    color-mix(in srgb,var(--ink) 4%,transparent) calc(1.85rem - 1px) 1.85rem)}
+/* A notebook's MARGIN rule, not its horizontal ones.
+   ⚠️ Ruled horizontal lines were tried first and removed after looking at them.
+   A repeating gradient has one fixed interval; the prose line-height is ~1.74rem
+   and the headings, lists and code blocks are all something else, so the rules
+   drifted out of phase within a screen and struck through the text instead of
+   sitting under it. No single interval can align across mixed leading, so the
+   whole idea is unsound rather than mistuned — a vertical margin rule carries the
+   same "written, not published" signal and has nothing to stay in phase with. */
+.cxdoc{padding-left:clamp(0px,2.2vw,1.6rem);
+  border-left:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+@media (max-width:980px){.cxdoc{border-left:0;padding-left:0}}
 .cxe{margin:0 0 3rem;padding:0 0 .5rem}
 .cxh-n{margin:0 0 1rem;padding:0 0 .55rem;border-bottom:1px solid var(--rule)}
 .cxdate{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;

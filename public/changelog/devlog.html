@@ -1018,15 +1018,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .slot.on i{color:var(--accent)}@media (hover:hover) and (pointer:fine){
 .slot:hover{color:var(--ink)}}
 .slot-p{margin-top:.6rem;color:var(--ink2);font-weight:600}
-@media (max-width:980px){.rail{display:none}}/* Ruled paper, one line per text line. It is a real repeating gradient rather than
-   a background image so it survives both themes and costs nothing, and it is very
-   low contrast on purpose — a notebook rule you actually notice is a novelty page. */
+@media (max-width:980px){.rail{display:none}}/* A notebook's MARGIN rule, not its horizontal ones.
+   ⚠️ Ruled horizontal lines were tried first and removed after looking at them.
+   A repeating gradient has one fixed interval; the prose line-height is ~1.74rem
+   and the headings, lists and code blocks are all something else, so the rules
+   drifted out of phase within a screen and struck through the text instead of
+   sitting under it. No single interval can align across mixed leading, so the
+   whole idea is unsound rather than mistuned — a vertical margin rule carries the
+   same "written, not published" signal and has nothing to stay in phase with. */
 
 
 
-.cxdoc{background-image:repeating-linear-gradient(180deg,
-    transparent 0 calc(1.85rem - 1px),
-    color-mix(in srgb,var(--ink) 4%,transparent) calc(1.85rem - 1px) 1.85rem)}
+.cxdoc{padding-left:clamp(0px,2.2vw,1.6rem);
+  border-left:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+@media (max-width:980px){.cxdoc{border-left:0;padding-left:0}}
 .cxe{margin:0 0 3rem;padding:0 0 .5rem}
 .cxh-n{margin:0 0 1rem;padding:0 0 .55rem;border-bottom:1px solid var(--rule)}
 .cxdate{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;

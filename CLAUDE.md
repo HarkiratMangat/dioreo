@@ -282,18 +282,57 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
 
 ### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
-`public/legal/*.html` is **build output**, deployed to Cloudflare Pages so the
+`public/**/*.html` is **build output**, deployed to Cloudflare Pages so the
 Discord Developer Portal has stable public URLs that survive the repo flipping private. The sources are
-`docs/legal/*.md` plus the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
-`CONTRIBUTORS.md`); the HTML is produced by **`node scripts/buildLegalPages.js`**.
-**Run `node scripts/buildLegalPages.js && dior legal deploy` after editing ANY of those six sources** —
+`docs/legal/*.md`, the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`), **and the three records `docs/CHANGELOG-SUMMARY.md`, `docs/CHANGELOG.md`,
+`docs/DEVLOG.md`**; the HTML is produced by **`npm run site`** (which is
+`node --check` on both scripts, then `node scripts/buildLegalPages.js`).
+**Run `npm run site && dior legal deploy` after editing ANY of those nine sources** —
 nothing else republishes the site, and `dior legal check` compares live bytes against the local build.
-- **Two page classes, and the distinction is deliberate** (expanded 2026-07-29 22:17 EDT). `PAGES` is the
+Editing a source and re-running the build is the ENTIRE update path; no HTML is ever touched by hand.
+⚠️ The script is still called `buildLegalPages.js` but now builds the whole site, `public/legal/` **and**
+`public/changelog/`. The name is kept because `dior legal deploy`/`check` in the CLI repo, the rules
+file, and this section all reference it; renaming it is a separate change that has to move all four.
+- **THREE page classes, and the distinctions are deliberate** (third added 2026-08-01 16:40 EDT). `PAGES` is the
   numbered legal set (terms · privacy · license · notice) rendered by `shell()`: squared corners,
   hairline rules, cold graphite, a numbered margin index, and the `01/02/03` series on the landing page.
   `EXTRA_PAGES` is contributing + contributors rendered by `warmShell()`: rounded, warm radial wash,
   glow, **no numbers anywhere**. The number series is what tells a reader "these bind you", so an
   invitation must never enter it. Don't collapse the two templates.
+  `CHRONICLE_PAGES` is the record — What's New · Changelog · Devlog — rendered by
+  **`scripts/lib/chronicle.js`**, which is neither an instrument nor an invitation and so takes its own
+  family. It is **one skeleton with three VOICES**, because those three sources differ in *register*,
+  not in *structure* (all are reverse-chronological dated entries): `broadcast` (orchid, poster, one
+  card per release, the version drawn once at display size AS the heading), `record` (spring green,
+  dense, a monospace version·date·PR·commit strip, version rail), `notebook` (near-achromatic + one
+  ochre, long-form, `### Lesson` blocks lifted into callouts).
+  ⚠️ **The devlog deliberately takes NO seventh accent.** Six were already in play; restraint only
+  reads as restraint next to colour, and a seventh hue makes the site a swatch library. Don't "fix"
+  this by giving it one.
+  ⚠️ **Horizontal ruled-paper lines were tried on the notebook voice and REMOVED.** A repeating
+  gradient has one interval; prose leading is ~1.74rem and headings/lists/code are all something else,
+  so the rules drift out of phase within a screen and strike through the text. The idea is unsound, not
+  mistuned — the margin rule replaces it. Don't reintroduce horizontal rules.
+- **`chronicle.js` never imports from `buildLegalPages.js`** — every shared piece (tokens, component
+  CSS, switcher, nav, footer, parser) is passed in as the `CHROME` bundle, one way. That was chosen over
+  extracting ~2,000 lines out of a file that had just absorbed 27 commits. `requireChrome()` throws on a
+  missing key, because a page rendered without its header would still pass the content gate.
+- ⚠️ **Two output directories now, and `dir` carries it.** Pages default to `dir:'legal'`; the three
+  chronicle pages set `dir:'changelog'`. Never write a bare `./name.html` nav link again — use
+  **`hrefTo(target, from)`**, because two pages are now called `index.html` and a bare name no longer
+  identifies one. That is also why the nav helpers take a `{out, dir}` page rather than a filename.
+  `PAGE_ALIASES` maps a source name to a different output name (`CHANGELOG-SUMMARY.md` → `index.html`);
+  without it every cross-reference between the three records goes inert with **nothing reporting it** —
+  `linkAudit` has no href to resolve and `crossRefAudit` resolves by basename against the deploy tree,
+  where `changelog-summary.html` legitimately does not exist.
+- ⚠️ **The desktop breakpoint staging was RE-DERIVED for three groups, not shifted.** It is now
+  1240 (tighter tabs) → 1100 (groups you are not in collapse to a labelled **chip that still links**) →
+  980 (mobile strip). The old rule hid the group you were not in; with three groups that hides **two**,
+  taking two thirds of the site out of the bar. The chip is real markup, not a `::before` — a
+  pseudo-element cannot be a link, and the link surviving is the whole point of the tier. It carries no
+  `tabindex="-1"`: `display:none` already removes it from the tab order, and the attribute would still
+  apply at the one width where the chip IS the only keyboard route to that group.
 - ⚠️ **The nav is TWO controls — a desktop switcher and a mobile menu — and they must stay separate**
   (rebuilt 2026-07-31 23:55 EDT). Sharing one control across breakpoints is what broke it: a
   pointer-driven indicator that has to be a horizontal track AND a vertical thumb-follower does neither
@@ -345,6 +384,16 @@ nothing else republishes the site, and `dior legal check` compares live bytes ag
 - **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
   the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
   an empty build command, so nothing has to run on their side.
+- **`secretScan()` gates the published output against credential-SHAPED strings** (added with the
+  chronicle family). `DEVLOG.md` is published in full and is the one source written candidly for us
+  rather than for a reader — it discusses tokens, hosts and a past incident. It was clean when published
+  (measured: 0 tokens, 0 Discord IDs, 0 emails); this gate is what keeps that true as it grows. It
+  matches **shapes, never names** — `BOT_TOKEN` as a name is discussed throughout and is not a secret,
+  and a name-matching gate would fire constantly, get muted, and then catch nothing.
+- **`chronicleStructAudit()` catches RENDERER-side entry loss; `docs:audit`'s `summary-orphan` catches
+  SOURCE-side loss. They are not redundant** — proven, because the obvious test confused them: deleting
+  a heading from the source left the struct audit green (source and rendered counts both fell), and it
+  only fires when the *parser* drops an entry. That distinction is why both exist.
 - The build **verifies itself**: it re-reads its own output and asserts every multi-word run from the
   source survived rendering, then reports a percentage. It is not a "it didn't crash" check — treat
   anything below 100% as lost content, but confirm against the source before believing it, because

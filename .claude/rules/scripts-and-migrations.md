@@ -19,9 +19,20 @@ the subsystem rule it belongs to:*
   matched by name) → `docs/reference/deployment-and-ops.md` + memory `project_local_dev_bot`
 - `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot`
   → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
-- `buildLegalPages.js` → CLAUDE.md's **`public/` — the built legal site** section (renders
-  `docs/legal/*.md` → `public/legal/*.html` for Cloudflare Pages). Not a migration: a **generator**,
-  and the only script here whose output is committed. It deliberately hand-rolls its Markdown parsing
+- `buildLegalPages.js` (+ **`scripts/lib/chronicle.js`**) → CLAUDE.md's **`public/` — the built legal site**
+  section. Renders `docs/legal/*.md` and four root documents → `public/legal/*.html`, **and the three
+  records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` → `public/changelog/*.html`**, for
+  Cloudflare Pages. Not a migration: a **generator**, and the only script here whose output is committed.
+  Run it with **`npm run site`** (syntax-checks both files first, then builds).
+  ⚠️ **The name is now narrower than the job** — it builds the whole site, not just the legal pages.
+  Kept deliberately: `dior legal deploy`/`check` in the CLI repo, this line, and CLAUDE.md all name it,
+  so a rename is a four-place change and its own commit.
+  ⚠️ **`chronicle.js` receives everything it shares via the one-way `CHROME` bundle** — it imports
+  nothing from `buildLegalPages.js`. Add a key to `CHROME_KEYS` when you pass a new one; `requireChrome()`
+  throws on a missing key rather than rendering a page with a hole a content gate would not notice.
+  ⚠️ **Two output directories.** Every nav/footer link goes through `hrefTo(target, from)`, never a bare
+  `./name.html` — two pages are called `index.html` now. New page in a new directory ⇒ set `dir`, and add
+  it to `PUBLISHED_TARGETS` (and `PAGE_ALIASES` if its output name differs from its source name). It deliberately hand-rolls its Markdown parsing
   rather than adding a dependency — `NOTICE` §3 commits to a copyleft-free tree that gets re-audited on
   every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you
   touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
