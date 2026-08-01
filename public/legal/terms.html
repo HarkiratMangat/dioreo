@@ -68,7 +68,23 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#F2994A;--glow:#6B4E7D}/* ── shared reset for the label buttons ───────────────────────────────
+:root{--accent:#F2994A;--glow:#6B4E7D}/* ── skip link ────────────────────────────────────────────────────────
+   WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
+   the bar carries nine nav tabs plus the source, install and theme controls, so
+   a keyboard or switch user tabbed through about thirteen widgets before
+   reaching a word of the document — on every page, every time.
+
+   Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
+   which remove an element from the focus order entirely and would make this a
+   link nobody can ever reach. It is the first focusable thing in the body. */
+
+
+.skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
+  padding:.55rem .9rem;border-radius:6px;
+  background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
+  clip-path:inset(50%);white-space:nowrap}
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
@@ -1227,6 +1243,7 @@ html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
  x="-60%" y="-260%" width="220%" height="620%" color-interpolation-filters="sRGB">
@@ -1340,7 +1357,7 @@ html{scroll-behavior:smooth}
       <div class="slots" id="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who you're dealing with</span></a><a href="#s-2" class="slot"><i>2</i><span>Agreement to these Terms</span></a><a href="#s-3" class="slot"><i>3</i><span>Eligibility</span></a><a href="#s-4" class="slot"><i>4</i><span>What the Bot does</span></a><a href="#s-5" class="slot"><i>5</i><span>Accuracy — please read this one</span></a><a href="#s-6" class="slot"><i>6</i><span>Acceptable use</span></a><a href="#s-7" class="slot"><i>7</i><span>Intellectual property</span></a><a href="#s-8" class="slot"><i>8</i><span>AI disclosure</span></a><a href="#s-9" class="slot"><i>9</i><span>Third-party services</span></a><a href="#s-10" class="slot"><i>10</i><span>Availability and changes</span></a><a href="#s-11" class="slot"><i>11</i><span>Force majeure</span></a><a href="#s-12" class="slot"><i>12</i><span>Export control and sanctions</span></a><a href="#s-13" class="slot"><i>13</i><span>Suspension and termination</span></a><a href="#s-14" class="slot"><i>14</i><span>Disclaimer of warranties</span></a><a href="#s-15" class="slot"><i>15</i><span>Limitation of liability</span></a><a href="#s-16" class="slot"><i>16</i><span>Indemnity</span></a><a href="#s-17" class="slot"><i>17</i><span>Governing law and disputes</span></a><a href="#s-18" class="slot"><i>18</i><span>General</span></a><a href="#s-19" class="slot"><i>19</i><span>Changes to these Terms</span></a><a href="#s-20" class="slot"><i>20</i><span>Contact</span></a><a href="#appendix-change-history" class="slot"><i>—</i><span>Appendix — Change history</span></a></div>
     </aside>
 
-    <main class="doc">
+    <main class="doc" id="main" tabindex="-1">
       <header class="mast">
         <span class="lab">Agreement</span>
         <h1>Terms of Service</h1>

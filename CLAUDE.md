@@ -407,6 +407,14 @@ file, and this section all reference it; renaming it is a separate change that h
 - **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
   the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
   an empty build command, so nothing has to run on their side.
+- **Every page carries a skip link as its first focusable element, and `a11yAudit()` enforces it.**
+  WCAG 2.4.1 Bypass Blocks is Level A and the site failed it everywhere until 2026-08-01 20:05 EDT: nine nav tabs
+  plus three controls meant ~13 tab stops before the document, on every page. The link is hidden by
+  **clipping**, never `display:none`/`visibility:hidden` — those remove it from the focus order and
+  make it unreachable. Its target carries **`tabindex="-1"`**, because a plain `<main>` is not
+  focusable and a fragment jump then scrolls without moving focus. The gate also asserts one `<h1>`
+  per page. It exists because the first attempt HALF applied — both warm pages got the link and
+  neither got the target, shipping a control that jumped nowhere, which is worse than no link.
 - ⚠️ **Each chronicle voice carries TWO signal values, and `sigLight` is not optional.** The terminal
   signals are tuned for a near-black console and are close to invisible on the daylight variant —
   measured 1.50 / 1.16 / 1.47 against a 4.5:1 minimum, covering the version numerals, the dates and the

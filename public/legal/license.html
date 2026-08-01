@@ -68,7 +68,23 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#9B6BE3;--glow:#6B4E7D}/* ── shared reset for the label buttons ───────────────────────────────
+:root{--accent:#9B6BE3;--glow:#6B4E7D}/* ── skip link ────────────────────────────────────────────────────────
+   WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
+   the bar carries nine nav tabs plus the source, install and theme controls, so
+   a keyboard or switch user tabbed through about thirteen widgets before
+   reaching a word of the document — on every page, every time.
+
+   Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
+   which remove an element from the focus order entirely and would make this a
+   link nobody can ever reach. It is the first focusable thing in the body. */
+
+
+.skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
+  padding:.55rem .9rem;border-radius:6px;
+  background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
+  clip-path:inset(50%);white-space:nowrap}
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
@@ -1227,6 +1243,7 @@ html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
  x="-60%" y="-260%" width="220%" height="620%" color-interpolation-filters="sRGB">
@@ -1340,7 +1357,7 @@ html{scroll-behavior:smooth}
       <div class="slots" id="slots"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a></div>
     </aside>
 
-    <main class="doc">
+    <main class="doc" id="main" tabindex="-1">
       <header class="mast">
         <span class="lab">Licence</span>
         <h1>Source-Available License</h1>

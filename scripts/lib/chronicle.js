@@ -899,6 +899,7 @@ ${voice.css}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 ${C.GOO_SVG}
 ${voice.name === 'record' ? '<div class="lg-scan" aria-hidden="true"></div>' : ''}
 
@@ -922,7 +923,7 @@ ${C.mobileNav(cur, railSlots)}
       <span class="lab">${esc(page.railLabel || 'Index')}</span>
       <div class="slots" id="slots">${railSlots}</div>
     </aside>` : ''}
-    <main class="${wrap}">
+    <main class="${wrap}" id="main" tabindex="-1">
       ${voice.masthead(page, stats, C)}
       ${preambleHtml}
       ${body}

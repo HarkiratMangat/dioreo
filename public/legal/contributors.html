@@ -68,7 +68,23 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#5AA9FF;--glow:#9BCBFF}/* ── shared reset for the label buttons ───────────────────────────────
+:root{--accent:#5AA9FF;--glow:#9BCBFF}/* ── skip link ────────────────────────────────────────────────────────
+   WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
+   the bar carries nine nav tabs plus the source, install and theme controls, so
+   a keyboard or switch user tabbed through about thirteen widgets before
+   reaching a word of the document — on every page, every time.
+
+   Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
+   which remove an element from the focus order entirely and would make this a
+   link nobody can ever reach. It is the first focusable thing in the body. */
+
+
+.skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
+  padding:.55rem .9rem;border-radius:6px;
+  background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
+  clip-path:inset(50%);white-space:nowrap}
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
@@ -1279,6 +1295,7 @@ html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
  x="-60%" y="-260%" width="220%" height="620%" color-interpolation-filters="sRGB">
@@ -1372,7 +1389,7 @@ html{scroll-behavior:smooth}
     <h1>Contributors</h1>
     <p class="lede">Everyone who has made this better, credited under the name they chose.</p>
   </header>
-  <main class="card"><div class="lead"><p>Everyone who has contributed to Dior's Builds, credited by the name or handle they asked to be credited under.</p>
+  <main class="card" id="main" tabindex="-1"><div class="lead"><p>Everyone who has contributed to Dior's Builds, credited by the name or handle they asked to be credited under.</p>
 <p>If your work ships, your name goes here and in the changelog entry for the release it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the <a href="../LICENSE">LICENSE</a> requires it.</p></div>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p class="wall-l">Name &middot; Role</p><div class="wall"><div class="plate"><span class="plate-n"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</span><span class="plate-r">Creator and maintainer</span></div></div></div></section>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><a class="plate ghost" href="./contributing.html"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></a></div>

@@ -1336,6 +1336,22 @@ const emailReveal = `<details class="rev">
 </details>`;
 
 const COMPONENT_CSS = `
+/* ── skip link ────────────────────────────────────────────────────────
+   WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
+   the bar carries nine nav tabs plus the source, install and theme controls, so
+   a keyboard or switch user tabbed through about thirteen widgets before
+   reaching a word of the document — on every page, every time.
+
+   Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
+   which remove an element from the focus order entirely and would make this a
+   link nobody can ever reach. It is the first focusable thing in the body. */
+.skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
+  padding:.55rem .9rem;border-radius:6px;
+  background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
+  clip-path:inset(50%);white-space:nowrap}
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}
+
 /* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
@@ -3002,7 +3018,7 @@ html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
-${GOO_SVG}
+<a class="skip" href="#main">Skip to content</a>\n${GOO_SVG}
 
 <div class="bar">
   ${wordmark('./', cur)}
@@ -3041,7 +3057,7 @@ ${mobileNav(cur, slots)}
       <div class="slots" id="slots">${slots}</div>
     </aside>
 
-    <main class="doc">
+    <main class="doc" id="main" tabindex="-1">
       <header class="mast">
         <span class="lab">${esc(kicker)}</span>
         <h1>${esc(title)}</h1>
@@ -3943,7 +3959,7 @@ html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
-${GOO_SVG}
+<a class="skip" href="#main">Skip to content</a>\n${GOO_SVG}
 
 <div class="bar">
   ${wordmark('./', cur)}
@@ -3965,7 +3981,7 @@ ${mobileNav(cur, '')}
     <h1>${esc(title)}</h1>
     <p class="lede">${esc(lede)}</p>
   </header>
-  <main class="card${spine ? ' spine' : ''}">${body}</main>
+  <main class="card${spine ? ' spine' : ''}" id="main" tabindex="-1">${body}</main>
   <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
        the SOURCE file ends with, lifted out of the body by warmCompose so it
        shows once; DIOR_SIG is the fallback when a source carries no closing line.
@@ -4252,7 +4268,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   display:flex;align-items:center;gap:.7rem}
 .tray .lab{margin-right:auto}
 </style></head><body>
-<div class="wrap">
+<a class="skip" href="#main">Skip to content</a>\n<main class="wrap" id="main" tabindex="-1">
   <div class="top">
     ${wordmark(null)}
     ${repoBtn}
@@ -4279,7 +4295,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
   <p class="disc fine">Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
-</div>
+</main>
 <script>${THEME_JS}</script>
 </body></html>`;
 }
@@ -4944,6 +4960,63 @@ function chronicleStructAudit(results) {
 }
 
 /**
+ * Gate: the structural accessibility guarantees hold on every page.
+ *
+ * Three things, all Level A or close to it, all trivially checkable and none
+ * visible to any other gate:
+ *
+ *  · a skip link exists, is the FIRST focusable element in the body, and its
+ *    target id actually exists on the page. WCAG 2.4.1 Bypass Blocks — this site
+ *    failed it everywhere until now: the bar carries nine nav tabs plus three
+ *    controls, so a keyboard user tabbed through ~13 widgets before the document.
+ *  · exactly one h1 per page.
+ *  · the skip target is focusable (tabindex="-1"), because a plain <main> is not,
+ *    and browsers have historically differed on whether a fragment jump moves
+ *    focus there or only scrolls — which makes the link work visually and do
+ *    nothing for a screen reader.
+ *
+ * Added because the first attempt at the skip link HALF applied: both warm pages
+ * got the link and neither got the target, so two pages shipped a control that
+ * jumped nowhere. A link to a missing anchor is worse than no link at all.
+ */
+function a11yAudit(built) {
+    const bad = [];
+    const pages = [...built.map(outPath), path.join(OUT, 'index.html')];
+    for (const file of pages) {
+        const name = path.relative(path.join(ROOT, 'public'), file);
+        const html = fs.readFileSync(file, 'utf8');
+
+        const skip = html.match(/<a class="skip" href="#([\w-]+)"/);
+        if (!skip) { bad.push(`${name}: no skip link (WCAG 2.4.1)`); continue; }
+
+        const target = skip[1];
+        const targetTag = html.match(new RegExp(`<[^>]*id="${target}"[^>]*>`));
+        if (!targetTag) {
+            bad.push(`${name}: skip link points at #${target}, which does not exist on the page`);
+        } else if (!/tabindex="-1"/.test(targetTag[0])) {
+            bad.push(`${name}: skip target #${target} is not focusable (needs tabindex="-1")`);
+        }
+
+        // FIRST focusable: nothing that can take focus may precede it in the body.
+        const body = (html.match(/<body[^>]*>([\s\S]*)/) || [, ''])[1];
+        const before = body.slice(0, body.indexOf('<a class="skip"'));
+        if (/<(?:a\s|button|input|select|textarea|details)/.test(before)) {
+            bad.push(`${name}: something focusable precedes the skip link, so it is not the first stop`);
+        }
+
+        const h1s = (html.match(/<h1[\s>]/g) || []).length;
+        if (h1s !== 1) bad.push(`${name}: ${h1s} <h1> elements; expected exactly 1`);
+    }
+    if (bad.length) {
+        console.error('  ✗ accessibility:');
+        bad.forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    console.log(`  ✓ all ${pages.length} pages: skip link first + target focusable, one h1`);
+    return true;
+}
+
+/**
  * Gate: the text colours a page ships actually meet WCAG AA in BOTH themes.
  *
  * Added after measuring the chronicle pages and finding that every signal colour
@@ -5149,6 +5222,8 @@ console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
 const hoverOk = hoverGuardAudit(guardedPages);
 console.log('\nChecking every source entry became an entry on the page:');
 const chronOk = chronicleStructAudit(chronicleResults);
+console.log('\nChecking structural accessibility (skip link, landmarks, headings):');
+const a11yOk = a11yAudit(built);
 console.log('\nChecking text contrast meets WCAG AA in both themes:');
 const contrastOk = contrastAudit(built);
 console.log('\nChecking shared-parser markup is styled on every template that emits it:');
@@ -5156,7 +5231,7 @@ const parserOk = parserStyleAudit(built);
 console.log('\nScanning published output for credential-shaped strings:');
 const secretOk = secretScan(built);
 const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
-    && chronOk && parserOk && contrastOk && secretOk;
+    && chronOk && parserOk && a11yOk && contrastOk && secretOk;
 // Names each property that was actually checked, rather than one word that reads
 // as "the output is correct". Each gate tests a different thing, and a pass on
 // one has already been mistaken for a pass on another once. Read this roster
@@ -5164,6 +5239,6 @@ const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && ho
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
       + 'cross-refs live · warm structure applied · class names distinct · '
-      + 'hover guard clean · every source entry rendered · parser markup styled · contrast AA · no credentials published.'
+      + 'hover guard clean · every source entry rendered · parser markup styled · skip links land · contrast AA · no credentials published.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);
