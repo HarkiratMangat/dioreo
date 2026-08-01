@@ -704,7 +704,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 @keyframes ptFly{
   0%{opacity:0;transform:rotate(0deg) translate(var(--x0),var(--y0)) scale(.15)}
   26%{opacity:1;transform:rotate(calc(var(--rot) * .5)) translate(var(--x1),var(--y1)) scale(1)}
-  72%{opacity:1;background:var(--pc);transform:rotate(calc(var(--rot) * .9)) translate(var(--x2),var(--y2)) scale(1)}
+  72%{opacity:1;background:var(--pc);transform:rotate(calc(var(--rot) * .9)) translate(var(--x2),var(--y2)) scale(.9)}
   100%{opacity:0;background:var(--pc2);transform:rotate(0deg) translate(var(--x3),0px) scale(.8)}
 }/* ⚠️ THE LAST STOP MERGES — INSIDE the pill, and it must not PARK there.
    Two wrong versions preceded this one and each looked wrong in a different way,
@@ -1883,7 +1883,16 @@ html{scroll-behavior:smooth}
         var x1=sc+run*t+Math.cos(a)*22;
         var y1=Math.sin(a)*(h*0.12+Math.random()*h*0.22);
         var x2=dc+Math.cos(a)*(4+Math.random()*10);
-        var y2=Math.sin(a)*(1+Math.random()*4);
+        /* ⚠️ THE ARRIVAL IS ALMOST ON THE CENTRE LINE, and that is not fussiness.
+           The pill is 25px tall, so its half-height is 12.5. A droplet is up to
+           19px across — 9.5px of radius — and it reaches this stop at full scale
+           and full opacity. At the old ±4px of vertical offset that is 13.5px
+           from the centre: the droplet stuck out past the top or bottom edge of
+           a pill that had already finished forming, and read as a stray ball
+           parked on it. ±2px keeps every droplet inside (9.5 + 2 < 12.5).
+           Variety at the arrival is carried HORIZONTALLY by x2, where the pill is
+           49px wide and there is room for it. */
+        var y2=Math.sin(a)*(0.5+Math.random()*1.5);
         var dur=Math.round(DUR*(0.6+Math.random()*0.32));
         var del=Math.round(i*DUR*0.014+Math.random()*44);
         if(dur+del>max) max=dur+del;
