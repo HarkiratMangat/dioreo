@@ -539,6 +539,45 @@ check(
   }
 );
 
+/* --------------------------- summary-orphan ------------------------- */
+check(
+  "summary-orphan",
+  "ERROR",
+  "every CHANGELOG-SUMMARY version has a real heading in CHANGELOG",
+  () => {
+    // The MIRROR of summary-coverage, and it exists because that check runs one way only.
+    // v2.44.0 was released, tagged, and given its summary entry -- and its CHANGELOG heading was
+    // later deleted by an unrelated merge, welding 55 surviving body lines onto the end of the
+    // v2.45.0 entry. Every other check stayed green: the words were all still present, no link
+    // moved, the hash chain skipped it because it had no heading to have a PR on, and
+    // summary-coverage only ever asks "does each CHANGELOG version reach the SUMMARY".
+    //
+    // Deliberately tested at HEADING strictness rather than by substring. The failure mode is a
+    // surviving body under a missing heading, so "the version string appears somewhere in the
+    // file" is exactly the test that would have been satisfied by the damage in a slightly
+    // different form -- a body that still named its own version in prose would have passed.
+    const ch = read("docs/CHANGELOG.md");
+    const su = read("docs/CHANGELOG-SUMMARY.md");
+    if (ch === null || su === null) return [{ msg: "CHANGELOG.md or CHANGELOG-SUMMARY.md is missing." }];
+
+    const headings = new Set([...ch.matchAll(/^## (v\d+\.\d+\.\d+)/gm)].map((m) => m[1]));
+    // Only the SUMMARY's own individual headings. A legacy range heading covers versions it never
+    // names in full, so expanding one here would invent expectations rather than read them.
+    const claimed = [...su.matchAll(/^## (v\d+\.\d+\.\d+)(?!\s*[–—-]\s*v)/gm)].map((m) => m[1]);
+
+    const out = [];
+    for (const v of claimed) {
+      if (headings.has(v)) continue;
+      out.push({
+        msg: `${v} has its own CHANGELOG-SUMMARY heading but NO "## ${v}" heading in CHANGELOG.md. ` +
+          `A released version is missing its detailed entry — check whether the entry is absent ` +
+          `outright or whether its heading was dropped and the body absorbed into the entry above it.`,
+      });
+    }
+    return { findings: out, examined: claimed.length };
+  }
+);
+
 /* ----------------------------- hash-chain --------------------------- */
 check(
   "hash-chain",

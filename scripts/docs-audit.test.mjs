@@ -267,6 +267,30 @@ provesSilent("a LEGACY range heading (pre-v2.19.0), still allowed", "summary-cov
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
 });
 
+proves("a released version whose CHANGELOG heading was deleted", "summary-orphan", (root) => {
+  // The real shape of the v2.44.0 damage: the heading goes, the BODY stays and welds itself onto
+  // the entry above. A substring test on the version number would still fail here, which is why
+  // the body below deliberately does not name its own version -- exactly like the real one did not.
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2) — two\n\nbody of two\n\nthe absorbed body of the lost entry\n");
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — July 1, 2026\n\n## v2.32.0 — June 1, 2026\n");
+});
+
+provesSilent("a LEGACY range heading in the SUMMARY, which names versions it need not head", "summary-orphan", (root) => {
+  // Ranges cover versions they never give an individual heading to. Expanding one into per-version
+  // expectations would manufacture findings out of a convention that is retired but still valid.
+  //
+  // ⚠️ The modern v2.33.0 pair is here so the corpus is NOT empty. A legacy-only fixture made this
+  // check examine 0 items and the audit's own vacuous-pass detector reported it as firing — which is
+  // that detector working, not a false positive. Keeping a real heading in the fixture proves the
+  // stronger thing anyway: ranges are skipped WHILE individual headings are still being checked.
+  write(
+    root,
+    "docs/CHANGELOG.md",
+    "# Changelog\n\n## v2.33.0 — 2026-08-01 (#3) — c\n\n## v2.18.3 — 2026-07-16 (#2) — b\n\n## v2.18.0 — 2026-07-14 (#1) — a\n"
+  );
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — August 1, 2026\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
+});
+
 proves("a non-newest changelog entry with no commit hash", "hash-chain", (root) => {
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2) — two\n\n## v2.32.0 — 2026-06-01 (#1) — one\n");
 });

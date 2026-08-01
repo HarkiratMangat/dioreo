@@ -58,6 +58,9 @@
 
 const fs = require('fs');
 const path = require('path');
+// The third page family. See the header of that file for why it is a separate
+// family and why the dependency runs one way (this file hands it CHROME).
+const { parseChronicle, chronicleShell } = require('./lib/chronicle');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'docs', 'legal');
@@ -93,7 +96,20 @@ const BRAND = {
     // (between teal and violet), and both are far brighter and more saturated
     // than anything in the legal four, which separates them by value as well.
     lime: '#B6E24A',
-    azure: '#5AA9FF'
+    azure: '#5AA9FF',
+
+    // The chronicle family (changelog / devlog). Same argument a third time: the
+    // six hues above occupy amber ~28°, lime ~74°, teal ~180°, azure ~211°,
+    // violet ~268° and rose ~345°, which leaves exactly two wide gaps on the wheel
+    // — around 150° and around 310°. These take them, so no chronicle page reads as
+    // a shade of a page it is not related to.
+    orchid: '#E86FD8',    // What's New   — the announcement
+    spring: '#3ED598',    // Changelog    — the record
+    // The devlog takes NO seventh hue. Seven accents on one site is a swatch
+    // library, not an identity, and the devlog's whole visual argument is that it
+    // is the quiet page — near-achromatic, a single muted ochre. Restraint only
+    // reads as restraint next to colour, which is why this one is last.
+    ochre: '#C9A227'
 };
 
 
@@ -167,6 +183,78 @@ const EXTRA_PAGES = [
     }
 ];
 
+/**
+ * The THIRD page family: the release history and the devlog.
+ *
+ * Rendered by scripts/lib/chronicle.js, which explains at length why this is a new
+ * family rather than a reuse of either existing one, and why the three pages share
+ * one skeleton with three voices. The short version: a record of what happened is
+ * neither an instrument (PAGES) nor an invitation (EXTRA_PAGES), and the three
+ * sources differ in register rather than in structure.
+ *
+ * These render into public/changelog/ rather than public/legal/, which is what the
+ * `dir` field carries. Everything else on the site is one flat directory, so `dir`
+ * defaults to 'legal' and only these three set it — see hrefTo().
+ *
+ * `docs: true` means the source sits in docs/ rather than docs/legal/ or the repo
+ * root, which is the third and last source location sourcePath() has to know about.
+ */
+const CHRONICLE_PAGES = [
+    {
+        file: 'CHANGELOG-SUMMARY.md', kind: 'md', docs: true, dir: 'changelog',
+        out: 'index.html', voice: 'broadcast',
+        title: "What's New", short: "What's New", kicker: 'Releases',
+        accent: BRAND.orchid, glow: '#FFB3EE',
+        lede: 'Every update to the bot, in plain language — what changed and when.',
+        railLabel: 'Releases',
+        blurb: 'What changed in each release of Dior’s Builds, in plain language.'
+    },
+    {
+        file: 'CHANGELOG.md', kind: 'md', docs: true, dir: 'changelog',
+        out: 'detailed.html', voice: 'record',
+        title: 'Changelog', short: 'Changelog', kicker: 'The record',
+        accent: BRAND.spring, glow: '#8CF2C4',
+        lede: 'The full technical history: one entry per merged pull request, with the reasoning kept in.',
+        railLabel: 'Versions',
+        blurb: 'The detailed, developer-facing release history.'
+    },
+    {
+        file: 'DEVLOG.md', kind: 'md', docs: true, dir: 'changelog',
+        out: 'devlog.html', voice: 'notebook',
+        title: 'Devlog', short: 'Devlog', kicker: 'The journey',
+        accent: BRAND.ochre, glow: '#E8D9A8',
+        lede: 'The story behind the bot — the bugs, the dead ends, and what each one taught us.',
+        railLabel: 'Entries',
+        blurb: 'Discoveries, real root causes, the things we walked back, and the lessons.'
+    }
+];
+
+/* Every page on the site, in nav order. Several places need "all of them" and each
+   used to spell out its own [...PAGES, ...EXTRA_PAGES], which is how a new family
+   ends up wired into four of five places. */
+const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...CHRONICLE_PAGES];
+
+const dirOf = p => p.dir || 'legal';
+
+/**
+ * A relative href from one page to another.
+ *
+ * Every link on the site used to be `./name.html`, which was correct while there
+ * was exactly one output directory. There are two now. Relative rather than
+ * root-absolute on purpose: the local preview (`python3 -m http.server --directory
+ * public`) and any `file://` spot-check both keep working, and Cloudflare Pages
+ * serves the tree as-is either way. linkAudit() resolves every one of these against
+ * the real deploy tree, so a mistake here fails the build rather than the site.
+ */
+const hrefTo = (target, from) => {
+    const a = dirOf(from), b = dirOf(target);
+    // The landing page of a directory is addressed as the directory itself, so the
+    // published URL is /changelog/ rather than /changelog/index.html.
+    const leaf = target.out === 'index.html' && b !== a ? '' : target.out;
+    if (a === b) return './' + (target.out === 'index.html' ? '' : target.out);
+    return '../' + b + '/' + leaf;
+};
+
 /* ─────────────────────────── inline formatting ─────────────────────────── */
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -178,6 +266,29 @@ const PUBLISHED_TARGETS = new Set([
     'terms.html', 'privacy.html', 'license.html', 'notice.html', 'index.html', '',
     'contributing.html', 'contributors.html',
     '../LICENSE', '../NOTICE',
+    // The chronicle family, as addressed from a page inside changelog/ …
+    'detailed.html', 'devlog.html',
+    // … and from a page inside legal/.
+    '../changelog/', '../changelog/detailed.html', '../changelog/devlog.html',
+]);
+
+/**
+ * Source filename → published filename, for the pages whose output is not simply
+ * the source name with a new extension.
+ *
+ * The three chronicle sources cross-reference each other by their real filenames
+ * ("see [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md)"), and the .md→.html rewrite
+ * turns those into CHANGELOG-SUMMARY.html — which is not what gets written, because
+ * the summary is that directory's landing page. Without this map every one of those
+ * references degrades to inert text, and NOTHING reports it: linkAudit() has no href
+ * to resolve, and crossRefAudit() resolves by basename against the deploy tree, where
+ * CHANGELOG-SUMMARY.html legitimately does not exist. That is the same silent failure
+ * mode that left Terms' and Privacy's references to each other dead on the live site.
+ */
+const PAGE_ALIASES = new Map([
+    ['changelog-summary.html', 'index.html'],
+    ['changelog.html', 'detailed.html'],
+    ['devlog.html', 'devlog.html'],
 ]);
 // Case-insensitive lookup that returns the CORRECTLY-CASED published name.
 //
@@ -191,7 +302,14 @@ const PUBLISHED_TARGETS = new Set([
 const PUBLISHED_MAP = new Map([...PUBLISHED_TARGETS].map(t => [t.toLowerCase(), t]));
 const resolvePublished = href => {
     const [p, hash] = href.split('#');
-    const hit = PUBLISHED_MAP.get(p.toLowerCase());
+    // Aliases first: a source name that renders to a DIFFERENT output name must be
+    // translated before the allowlist is consulted, or it misses and goes inert.
+    // Applied on the basename so it works from either directory.
+    const lower = p.toLowerCase();
+    const aliased = PAGE_ALIASES.has(lower.replace(/^.*\//, ''))
+        ? lower.replace(/[^/]+$/, PAGE_ALIASES.get(lower.replace(/^.*\//, '')))
+        : lower;
+    const hit = PUBLISHED_MAP.get(aliased);
     return hit === undefined ? null : hit + (hash ? '#' + hash : '');
 };
 
@@ -1001,8 +1119,11 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
  * already there) — and there it deliberately gets no animation either, so that
  * "moves" and "is clickable" keep meaning the same thing across the site.
  */
-const wordmark = (href, out) => {
-    const here = out ? [...PAGES, ...EXTRA_PAGES].find(p => p.out === out) : null;
+// `cur` is the page being rendered ({out, dir}), or null on the landing page.
+// It was a bare filename until the site gained a second directory — two pages now
+// share the name index.html, so a filename alone no longer identifies a page.
+const wordmark = (href, cur) => {
+    const here = cur ? ALL_PAGES.find(p => p.out === cur.out && dirOf(p) === dirOf(cur)) : null;
     const body = `<span class="tile" aria-hidden="true">D</span>
     <span class="mk-s">
       <span class="wm">Dior&#8217;s Builds</span>
@@ -1085,11 +1206,13 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
  * A group you are not currently inside has data-at="-1": its indicator is hidden
  * until you point at it, so exactly one indicator is ever "yours".
  */
-const NAV_GROUPS = [PAGES, EXTRA_PAGES];
+const NAV_GROUPS = [PAGES, EXTRA_PAGES, CHRONICLE_PAGES];
 
-/* What each group is called once it is stacked in the mobile menu, where the two
-   pills are no longer side by side to make the distinction for themselves. */
-const NAV_GROUP_LABELS = ['Documents', 'Community'];
+/* What each group is called once it is stacked in the mobile menu, where the
+   pills are no longer side by side to make the distinction for themselves. The
+   labels are also what the collapsed desktop chips show between 981 and 1100px —
+   see SWITCHER_CSS, where the staging is re-derived for three groups. */
+const NAV_GROUP_LABELS = ['Documents', 'Community', 'Releases'];
 
 /**
  * DESKTOP navigation — the segmented switcher in the bar.
@@ -1107,15 +1230,27 @@ const NAV_GROUP_LABELS = ['Documents', 'Community'];
  * assuming every tab is 1/n of the track. That is what lets the pill fit
  * "Contributing" and "Notice" correctly, and it is why nothing here sets --n.
  */
-const navSwitcher = out => `<div class="navwrap">${navGroups(out)}</div>`;
+const navSwitcher = cur => `<div class="navwrap">${navGroups(cur)}</div>`;
 
-const navGroups = out => NAV_GROUPS.map(grp => {
-    const at = grp.findIndex(p => p.out === out);
-    return `<div class="seg" data-at="${at}">
+const isHere = (p, cur) => cur && p.out === cur.out && dirOf(p) === dirOf(cur);
+
+const navGroups = (cur, i0 = 0) => NAV_GROUPS.map((grp, gi) => {
+    const at = grp.findIndex(p => isHere(p, cur));
+    /* ⚠️ THE COLLAPSED CHIP IS REAL MARKUP, NOT A ::before.
+       Between 981 and 1100px the groups you are not in give up their tabs (nine
+       tabs do not fit beside the wordmark). With two groups the old rule simply
+       hid the other one and the footer carried the loss; with three it would hide
+       TWO, taking two thirds of the site out of the bar. So a hidden group leaves
+       a labelled chip that still links to its first page. A pseudo-element could
+       have drawn the label but cannot be a link, and the link surviving is the
+       entire point of the tier. */
+    const first = grp[0];
+    return `<div class="seg" data-at="${at}" data-label="${esc(NAV_GROUP_LABELS[gi])}">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      ${grp.map(p => `<a class="tab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
+      <a class="segchip" href="${hrefTo(first, cur || first)}">${esc(NAV_GROUP_LABELS[gi])}</a>
+      ${grp.map(p => `<a class="tab${isHere(p, cur) ? ' on' : ''}" href="${hrefTo(p, cur || p)}"` +
         ` data-accent="${p.accent}"` +
-        `${p.out === out ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}
+        `${isHere(p, cur) ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}
     </div>`;
 }).join('<span class="seg-gap" aria-hidden="true"></span>');
 
@@ -1133,14 +1268,14 @@ const navGroups = out => NAV_GROUPS.map(grp => {
  * apart was the complaint that started this. `slots` is the section index, which
  * only the legal template has; the warm pages simply omit that group.
  */
-const mobileNav = (out, slots) => {
+const mobileNav = (cur, slots) => {
     /* One scrollable row, no disclosure. Nothing to open means the current page
        and its neighbours are always on screen, which is the whole point — the
        previous three attempts all hid the answer behind a tap. The hairline
        between the groups is the SAME distinction the numbered/unnumbered page
        classes make: four instruments that bind you, then two invitations. */
-    const tab = p => `<a class="mtab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
-        `${p.out === out ? ' aria-current="page"' : ''} style="--row:${p.accent}">` +
+    const tab = p => `<a class="mtab${isHere(p, cur) ? ' on' : ''}" href="${hrefTo(p, cur || p)}"` +
+        `${isHere(p, cur) ? ' aria-current="page"' : ''} style="--row:${p.accent}">` +
         `${esc(p.short)}</a>`;
     /* .mbar and .mstrip are two elements on purpose — see the CSS. The
        indicator has to sit outside the scroller, which is why it is a sibling
@@ -1169,12 +1304,12 @@ const mobileNav = (out, slots) => {
  * does not do its job. NOTICE §2 remains the authoritative version; this is the
  * short form.
  */
-const pageFoot = (out, sig) => `<footer class="foot">
+const pageFoot = (cur, sig) => `<footer class="foot">
     <p class="sig">${sig || DIOR_SIG}</p>
     <p class="disc">Dior&#8217;s Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, or Discord Inc.</p>
-    <nav class="endnav">${[...PAGES, ...EXTRA_PAGES]
-        .filter(p => p.out !== out)
-        .map(p => `<a href="./${p.out}">${esc(p.short)}</a>`)
+    <nav class="endnav">${ALL_PAGES
+        .filter(p => !isHere(p, cur))
+        .map(p => `<a href="${hrefTo(p, cur || p)}">${esc(p.short)}</a>`)
         .join('<span>&middot;</span>')}</nav>
   </footer>`;
 
@@ -2270,20 +2405,44 @@ const SWITCHER_CSS = `
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
 .seg-gap{width:.45rem;flex:0 0 auto}
 
-/* Six tabs in two groups is a lot of bar, so it gives way in stages rather
-   than push the wordmark off the edge.
-     1180  tighter tabs
-     1000  the group you are NOT in collapses away; the one you are in stays,
-           because that is the one showing you where you are
-      980  the desktop switcher goes entirely and .mnav takes over */
+/* NINE tabs in THREE groups, and the staging below was re-derived for that —
+   not inherited from the two-group version, which would have broken.
+     1240  tighter tabs
+     1100  the groups you are NOT in collapse to a labelled CHIP that still links
+      980  the desktop switcher goes entirely and .mnav takes over
+
+   ⚠️ Why a chip and not the old rule. The two-group version hid the whole seg —
+   display:none on .seg[data-at="-1"] and on .seg-gap, i.e. "hide the group you are
+   not in" — and it cost you one group in a 20px band, recoverable from the footer. With
+   three groups the same rule hides TWO, so two thirds of the site leaves the bar
+   at once. Collapsing to a chip keeps every group one click away at every width
+   above the mobile handoff, which is the property that actually matters. The band
+   was also far too narrow at 20px to be worth a rule; it is 120px now, which is
+   where nine tabs genuinely stop fitting beside the wordmark and the four buttons. */
 .navwrap{display:flex;align-items:center}
 
-@media (max-width:1180px){
+/* The chip only exists between 981 and 1100. Above that the group shows its tabs;
+   below it the whole switcher is gone. No tabindex is needed to keep it out of the
+   tab order in the meantime — a display:none element is not focusable — and adding
+   tabindex="-1" would have been actively wrong, since it would still apply at the
+   one width where the chip IS the only way to reach that group by keyboard. */
+.segchip{display:none;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);text-decoration:none;
+  padding:.42rem .55rem;border-radius:7px;white-space:nowrap}
+.segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+@media (max-width:1240px){
   .tab{padding:.42rem .5rem;font-size:.62rem;letter-spacing:.07em}
   .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1000px){
-  .seg[data-at="-1"],.seg-gap{display:none}
+@media (min-width:981px) and (max-width:1100px){
+  /* A group you are not in shows its chip instead of its tabs. The indicator goes
+     with them — .seg-ink measures real tab boxes, and there are none to measure. */
+  .seg[data-at="-1"] .tab{display:none}
+  .seg[data-at="-1"] .seg-ink{display:none}
+  .seg[data-at="-1"] .segchip{display:inline-block}
+  .seg[data-at="-1"]{padding:0}
 }
 
 /* Desktop shows no mobile menu. */
@@ -2545,7 +2704,10 @@ const THEME_BOOT = '<script>try{var t=localStorage.getItem(\'db-theme\');'
 // inferred from the title. The previous `short === 'Terms' ? ... : 'privacy'`
 // test silently assumed there would only ever be two pages, and quietly marked
 // anything else as Privacy.
-function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '' }) {
+function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir }) {
+    // The nav helpers identify a page by directory AND filename now — two pages on
+    // the site are called index.html, so a bare name no longer picks one out.
+    const cur = { out, dir };
     const slots = toc.filter(t => !t.sub).map(t =>
         `<a href="#${t.id}" class="slot"><i>${t.num ? esc(t.num) : '—'}</i><span>${esc(t.text)}</span></a>`
     ).join('');
@@ -2829,16 +2991,16 @@ html{scroll-behavior:smooth}
 ${GOO_SVG}
 
 <div class="bar">
-  ${wordmark('./', out)}
+  ${wordmark('./', cur)}
   <nav>
-    ${navSwitcher(out)}
+    ${navSwitcher(cur)}
     ${repoBtn}
     ${installBtn()}
     ${themeBtn()}
   </nav>
 </div>
 <div id="prog"></div>
-${mobileNav(out, slots)}
+${mobileNav(cur, slots)}
 
 <div class="page">
   <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
@@ -2880,7 +3042,7 @@ ${mobileNav(out, slots)}
        Notice, so the hand-added ../NOTICE link that used to sit here produced two
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
-  ${pageFoot(out)}
+  ${pageFoot(cur)}
 </div>
 
 <!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
@@ -3339,8 +3501,14 @@ function warmCompose(blocks, out) {
  */
 function classCollisionAudit() {
     const bad = [];
-    for (const f of fs.readdirSync(OUT).filter(n => n.endsWith('.html'))) {
-        const html = fs.readFileSync(path.join(OUT, f), 'utf8');
+    // Both output directories. Reading only OUT would have left the entire third
+    // page family unchecked by this gate while it still reported a pass.
+    const files = [OUT, path.join(ROOT, 'public', 'changelog')]
+        .filter(d => fs.existsSync(d))
+        .flatMap(d => fs.readdirSync(d).filter(n => n.endsWith('.html')).map(n => path.join(d, n)));
+    for (const full of files) {
+        const f = path.relative(path.join(ROOT, 'public'), full);
+        const html = fs.readFileSync(full, 'utf8');
         const grab = re => {
             const set = new Set();
             for (const m of html.matchAll(re)) {
@@ -3430,7 +3598,9 @@ const WARM_JS = `
   Array.prototype.forEach.call(secs,function(s){io.observe(s)});
 })();`;
 
-function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine }) {
+function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine, dir }) {
+    // See the same note in shell(): a page is identified by directory AND filename.
+    const cur = { out, dir };
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -3762,19 +3932,19 @@ html{scroll-behavior:smooth}
 ${GOO_SVG}
 
 <div class="bar">
-  ${wordmark('./', out)}
+  ${wordmark('./', cur)}
   <!-- The same two-group switcher the legal pages carry, so the navigation never
        changes shape as you move around the site. It replaces the old "‹ Legal"
        back button, which could only ever go one place. -->
   <nav>
-    ${navSwitcher(out)}
+    ${navSwitcher(cur)}
     ${repoBtn}
     ${installBtn()}
     ${themeBtn()}
   </nav>
 </div>
 
-${mobileNav(out, '')}
+${mobileNav(cur, '')}
 <div class="wrap">
   <header class="hero">
     <span class="chip">${esc(badge)}</span>
@@ -3788,7 +3958,7 @@ ${mobileNav(out, '')}
        No bottom theme tray: the header already has the switch, and offering the
        same control twice on one screen is clutter. (The landing page is the
        exception — it has no fixed header, so its switch lives at the foot.) -->
-  ${pageFoot(out, sig)}
+  ${pageFoot(cur, sig)}
 </div>
 <script>${THEME_JS}${NAV_JS}${WARM_JS}</script>
 </body>
@@ -3824,8 +3994,14 @@ function indexPage(built) {
             + '<line class="ln" x1="2" y1="7" x2="8.4" y2="7"/>'
             + '<line class="ln" x1="2" y1="10.4" x2="5.6" y2="10.4"/></svg>'
     };
-    const invites = EXTRA_PAGES.map(p => `
-      <a class="inv" href="${p.out}" style="--ia:${p.accent}">
+    // ⚠️ hrefTo, not a bare p.out. The chronicle pages live in a different
+    // directory AND one of them is called index.html — the same name as this page.
+    // A bare href would have pointed the site's biggest new section at the page the
+    // reader is already on, and linkAudit() could not have caught it: the target
+    // resolves perfectly, it is simply the wrong file.
+    const here = { out: 'index.html', dir: 'legal' };
+    const invRow = list => list.map(p => `
+      <a class="inv" href="${hrefTo(p, here)}" style="--ia:${p.accent}">
         <span class="inv-b">
           <span class="inv-h">
             <span class="inv-m" aria-hidden="true">${marks[p.out] || ''}</span>
@@ -3839,6 +4015,13 @@ function indexPage(built) {
           <span class="arw"><i aria-hidden="true"></i></span>
         </span>
       </a>`).join('');
+
+    const invites = invRow(EXTRA_PAGES);
+    // The record gets its own row rather than joining the invitations. Reading what
+    // changed is not the same act as being asked to contribute, and the landing page
+    // is the one place the whole site is visible at once — so it is also the place
+    // the three families have to stay legible as three.
+    const chronicle = invRow(CHRONICLE_PAGES);
 
     const n = built.length;
     const count = ['no', 'One', 'Two', 'Three', 'Four', 'Five'][n] || String(n);
@@ -4043,6 +4226,11 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   .inv:hover .inv-m .ln{transform:none;opacity:1}
 }
 
+/* A section label between the two invite rows. Without it the six cards read as
+   one undifferentiated grid, which is exactly the collapse the three page families
+   exist to avoid. */
+.lab-sec{display:block;margin:1.9rem 0 .7rem}
+
 /* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
    the top of the screen. */
@@ -4061,6 +4249,8 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <p class="lede">${esc(lede)}</p>
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
+  <span class="lab lab-sec">The record</span>
+  <div class="invite">${chronicle}</div>
   <div class="foot">
     <p class="contact">Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
     ${emailReveal}
@@ -4086,9 +4276,21 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 // repo root. One helper so build() and verify() can never disagree about where a
 // page's source is — they read it independently, and a mismatch there would make
 // the verifier compare a page against the wrong file and still report 100%.
+// Three source locations now: docs/legal/ (the default), the repo root (`root`),
+// and docs/ (`docs`, the three chronicle records).
 const sourcePath = page => page.root
     ? path.join(ROOT, page.file)
-    : path.join(SRC, page.file);
+    : page.docs
+        ? path.join(ROOT, 'docs', page.file)
+        : path.join(SRC, page.file);
+
+// Two output directories now: public/legal/ and public/changelog/. Everything that
+// reads a built page goes through this rather than joining OUT, so a page in the
+// new directory cannot be silently skipped by a gate that only knows the old one.
+const outDirFor = page => dirOf(page) === 'legal'
+    ? OUT
+    : path.join(ROOT, 'public', dirOf(page));
+const outPath = page => path.join(outDirFor(page), page.out);
 
 // Both strips are shared with verify() for the same reason: whatever build()
 // removes from the body, the verifier must not expect to find in it.
@@ -4125,6 +4327,28 @@ const stripTextHead = txt => {
 // warmStructAudit() — kept outside build() so the gate cannot be handed a fresh
 // empty object and report a clean pass on nothing.
 const warmResults = {};
+
+// Same idea for the chronicle pages: what each one actually rendered, read back by
+// chronicleStructAudit(). Populated by build(), declared out here so the gate can
+// never be handed a fresh empty object and report a clean pass on nothing.
+const chronicleResults = {};
+
+/**
+ * Everything scripts/lib/chronicle.js needs from this file, handed over explicitly.
+ *
+ * The dependency runs ONE WAY on purpose. Sharing these by moving them into a
+ * common module would have meant lifting roughly two thousand lines out of the file
+ * that had just absorbed 27 commits of change — a refactor with real regression
+ * surface, bought for no benefit the parameter does not already provide. chronicle.js
+ * asserts every key is present before it renders anything (requireChrome), so a
+ * missing piece fails the build naming the piece, rather than producing a page with
+ * a blank header that would still pass the content gate.
+ */
+const CHROME = {
+    esc, parseBlocks, linkifyRefs, slug,
+    TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
+    wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
+};
 
 function build() {
     fs.mkdirSync(OUT, { recursive: true });
@@ -4217,8 +4441,38 @@ function build() {
         console.log(`  ✓ ${page.out}  ${parsed.toc.filter(t => !t.sub).length} sections · ${(html.length / 1024).toFixed(1)} KB · ${applied}`);
     }
 
+    // The chronicle family. Same Markdown parser again, a third template, and the
+    // pages are appended to `built` so every gate covers them exactly like the
+    // rest — an unverified page is the one that quietly rots.
+    fs.mkdirSync(path.join(ROOT, 'public', 'changelog'), { recursive: true });
+    for (const page of CHRONICLE_PAGES) {
+        const md = fs.readFileSync(sourcePath(page), 'utf8');
+        LINK_BASE = '';
+        const parsed = parseChronicle(stripMdHead(md), CHROME);
+        const stats = `${parsed.entries.length} entries` +
+            (parsed.parts.length ? ` · ${parsed.parts.length} parts` : '');
+        const res = chronicleShell({ page, parsed, C: CHROME, stats });
+        writePage(outPath(page), res.html);
+        chronicleResults[page.out] = {
+            entries: res.entries, parts: res.parts, lessons: res.lessons,
+            sourceEntries: (md.match(/^## /gm) || []).length,
+            // Expectations read from the SOURCE, evidence read from the written
+            // FILE. Neither side comes from the renderer, so a renderer that drops
+            // a heading cannot also erase the expectation that it should not have.
+            headings: (md.match(/^#{1,2} .*$/gm) || []).map(h => h.replace(/^#+\s*/, '')),
+            rendered: ' ' + fs.readFileSync(outPath(page), 'utf8')
+                .replace(/<script[\s\S]*?<\/script>/g, ' ')
+                .replace(/<style[\s\S]*?<\/style>/g, ' ')
+                .replace(/<[^>]+>/g, ' ')
+                .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() + ' ',
+        };
+        built.push({ ...page, sections: parsed.entries.length, chronicle: true });
+        console.log(`  ✓ ${dirOf(page)}/${page.out}  ${res.entries} entries · ` +
+            `${res.parts} parts · ${res.lessons} lessons · ${(res.html.length / 1024).toFixed(1)} KB`);
+    }
+
     // Only the numbered legal set goes in the numbered list.
-    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra)));
+    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra && !p.chronicle)));
     console.log('  ✓ index.html');
     buildCompanions();
     return built;
@@ -4269,8 +4523,13 @@ function buildCompanions() {
     fs.writeFileSync(path.join(root, '_redirects'),
         '/ /legal/ 302\n'
         + '/security /legal/contributing#security-vulnerabilities 302\n'
+        // The chronicle family's landing page. Pages already serves the directory
+        // index, so this exists for the bare, no-slash form a person types or a
+        // Discord message carries — /changelog, not /changelog/.
+        + '/changelog /changelog/ 302\n'
         + `/install ${INSTALL_URL} 302\n`);
-    console.log('  ✓ _redirects (/ → /legal/, /security → contributing#security, /install → Discord)');
+    console.log('  ✓ _redirects (/ → /legal/, /security → contributing#security, '
+        + '/changelog → /changelog/, /install → Discord)');
 
     // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via
     // EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason
@@ -4303,7 +4562,7 @@ function verify(built) {
     const RUN = 8;
 
     for (const page of built) {
-        const out = fs.readFileSync(path.join(OUT, page.out), 'utf8');
+        const out = fs.readFileSync(outPath(page), 'utf8');
         const rendered = ' ' + words(out
             .replace(/<script[\s\S]*?<\/script>/g, ' ')
             .replace(/<style[\s\S]*?<\/style>/g, ' ')
@@ -4327,10 +4586,19 @@ function verify(built) {
             // yet: every one is a single character that words() would reduce to a
             // separator anyway (`&eacute;` → é → ' ', exactly as the source side
             // reduces it), so a future `&hellip;` cannot silently revive this bug.
+            //
+            // ⚠️ ORDER: `&amp;` is decoded LAST, and the named catch-all skips it.
+            // A source that DISCUSSES an entity writes it literally — DEVLOG explains
+            // this very bug with `&middot;` inside a code span — and that renders as
+            // `&amp;middot;`, which a reader sees as the visible text "&middot;".
+            // Decoding &amp; first turned it into a real `&middot;` that the catch-all
+            // below then deleted, so a word the page genuinely displays was scored as
+            // missing. Decoding it last leaves the literal text intact, and a real
+            // `&middot;` in the output still reduces to a separator exactly as before.
             .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
             .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-            .replace(/&\w+;/g, ' ')
+            .replace(/&(?!amp;)\w+;/g, ' ')
+            .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
             // Symmetry: URLs are stripped from the source side below, so they must
             // go from here too. The plain-text licence prints a bare URL in its
             // contact block, which stays visible after tag-stripping and split an
@@ -4375,14 +4643,45 @@ function verify(built) {
             cleaned = cleaned.replace(/^\s*```+\s*[\w-]*\s*$/gm, ' ');
         }
 
-        const srcWords = words(cleaned);
+        // A chronicle page DECOMPOSES its entry headings. "## v2.47.0 — 2026-08-01
+        // 03:05 EDT (#61) — Title" is rendered as a title plus separate metadata
+        // chips, in a different order and with the punctuation gone; the devlog's
+        // h1 dividers move too. Every word still reaches the page — but a run that
+        // straddles a heading no longer matches, exactly as the legal masthead's
+        // fields do not, which is why stripMdHead() removes those from this side.
+        // Same principle, same place: whatever build() moves, verify() must not
+        // expect to find in its original position.
+        //
+        // This does NOT leave headings unchecked. chronicleStructAudit() asserts
+        // every source heading produced an entry AND that its text reached the page
+        // — a different property, in its own gate, rather than a hole in this one.
+        // SEGMENTS, not one flat stream. Everything except a chronicle page is a
+        // single segment, which is byte-for-byte the behaviour this check has always
+        // had — the legal pages must stay at 100% and this must not be what moves them.
+        //
+        // A chronicle page is segmented at its entry boundaries because its headings
+        // are removed just above. Without the split, the tail of one release ran
+        // straight into the head of the next in the SOURCE while the page still had
+        // the heading between them, manufacturing ~96 "missing" runs that no reader
+        // would ever miss. Segmenting also makes the check stricter than the flat
+        // version was: a run can no longer straddle two releases and match on text
+        // that happens to sit next to it.
+        const segments = page.chronicle
+            ? cleaned.split(/^#{1,2}\s+.*$/gm).map(s => s.trim()).filter(Boolean)
+            : [cleaned];
 
         const missing = [];
-        const total = Math.max(1, Math.floor(srcWords.length / RUN));
-        for (let i = 0; i + RUN <= srcWords.length; i += RUN) {
-            const run = srcWords.slice(i, i + RUN).join(' ');
-            if (!rendered.includes(' ' + run + ' ')) missing.push(run);
+        let total = 0;
+        for (const seg of segments) {
+            const srcWords = words(seg);
+            total += Math.floor(srcWords.length / RUN);
+            for (let i = 0; i + RUN <= srcWords.length; i += RUN) {
+                const run = srcWords.slice(i, i + RUN).join(' ');
+                if (!rendered.includes(' ' + run + ' ')) missing.push(run);
+            }
         }
+        total = Math.max(1, total);
+        const srcWords = words(cleaned);
         const pct = ((1 - missing.length / total) * 100).toFixed(1);
         if (missing.length) {
             bad++;
@@ -4460,7 +4759,7 @@ function structureAudit(built) {
     let bad = 0;
 
     for (const page of built.filter(p => p.kind === 'text')) {
-        const html = fs.readFileSync(path.join(OUT, page.out), 'utf8');
+        const html = fs.readFileSync(outPath(page), 'utf8');
         const inPre = new Set(
             [...html.matchAll(/<pre[^>]*>([\s\S]*?)<\/pre>/g)]
                 .flatMap(m => m[1].replace(/<[^>]+>/g, '').split('\n'))
@@ -4509,7 +4808,8 @@ function crossRefAudit(built) {
 
     for (const page of built.filter(p => p.kind === 'md')) {
         const src = fs.readFileSync(sourcePath(page), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
-        const html = fs.readFileSync(path.join(OUT, page.out), 'utf8');
+        const html = fs.readFileSync(outPath(page), 'utf8');
+        const pageOut = outDirFor(page);
 
         const want = new Set();
         for (const m of src.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
@@ -4540,7 +4840,11 @@ function crossRefAudit(built) {
             const deployRoot = path.join(ROOT, 'public');
             let found = null;
             for (const cand of [rel, '../' + rel]) {
-                const dir = path.resolve(OUT, path.dirname(cand));
+                // Resolved against the page's OWN output directory, not a hardcoded
+                // OUT — the chronicle pages render into public/changelog/, and
+                // resolving their links from public/legal/ would ask the wrong
+                // directory whether the target exists.
+                const dir = path.resolve(pageOut, path.dirname(cand));
                 // MUST stay inside the deploy tree. Without this guard the lifted
                 // candidate walked out of public/ and matched the repo's own
                 // models/UserPreference.js, reporting a correctly-inert reference
@@ -4574,7 +4878,101 @@ function crossRefAudit(built) {
     return bad === 0;
 }
 
-console.log('Building legal pages →', path.relative(ROOT, OUT));
+/**
+ * Gate: every entry in a chronicle SOURCE became an entry on the page.
+ *
+ * The other gates cannot see this failure. verify() compares words, and a heading
+ * that stops being parsed as a heading still contributes all of its words to the
+ * body — that is precisely how v2.44.0's changelog entry lost its heading and was
+ * absorbed into the entry above it with every content check still green. linkAudit
+ * and crossRefAudit look at hrefs; structureAudit only looks at the plain-text
+ * pages. So: count `## ` in the source, count entries rendered, and require them
+ * to agree.
+ *
+ * The expectation comes from the SOURCE rather than from a re-run of the parser,
+ * for the same reason WARM_STRUCT is declared rather than sniffed: a check that
+ * derives its expectations from the code under test cannot fail.
+ */
+function chronicleStructAudit(results) {
+    const bad = [];
+    for (const [out, r] of Object.entries(results)) {
+        // The heading half. verify() no longer looks at heading lines on these
+        // pages (it cannot — they are decomposed and reordered), so the words in
+        // them are checked HERE instead of nowhere. Compared on the same
+        // letters-and-digits reduction verify() uses, so punctuation and the
+        // rearranged order are not mistaken for loss.
+        const flat = r.rendered;
+        for (const h of r.headings) {
+            const want = h.replace(/[^a-z0-9]+/gi, ' ').trim().toLowerCase();
+            if (!want) continue;
+            if (!want.split(' ').every(w => flat.includes(' ' + w + ' '))) {
+                bad.push(`changelog/${out}: heading "${h.slice(0, 60)}" did not reach the page`);
+            }
+        }
+        if (r.entries !== r.sourceEntries) {
+            bad.push(`changelog/${out}: source has ${r.sourceEntries} "## " headings but ` +
+                `${r.entries} entries rendered — an entry was dropped or two were merged`);
+        }
+        if (r.entries === 0) {
+            bad.push(`changelog/${out}: rendered ZERO entries — the heading matcher is broken, ` +
+                `not the document`);
+        }
+    }
+    if (bad.length) {
+        console.error('  ✗ chronicle structure:');
+        bad.forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    const line = Object.entries(results)
+        .map(([o, r]) => `${o} ${r.entries}/${r.sourceEntries}`).join(' · ');
+    console.log(`  ✓ every source entry rendered (${line})`);
+    return true;
+}
+
+/**
+ * Gate: no live credential reached a published page.
+ *
+ * DEVLOG.md is published in full at Harkirat's decision, and it is the one source
+ * on this site written candidly for us rather than for a reader — it discusses
+ * tokens, env vars, hosts and a past security incident. It is clean today, and that
+ * was measured rather than assumed (zero tokens, zero Discord IDs, zero emails).
+ * The value of a gate here is that it stays true as the file GROWS: a future session
+ * pasting a real connection string into a devlog entry would otherwise publish it.
+ *
+ * Patterns, deliberately, not a word list. `BOT_TOKEN` as a NAME is discussed
+ * throughout and is not a secret; a Discord token's actual shape is. Matching names
+ * would fire constantly, get muted, and then catch nothing.
+ */
+const SECRET_PATTERNS = [
+    [/mongodb(?:\+srv)?:\/\/[^\s"'<]*:[^\s"'<@]+@/i, 'a MongoDB URI carrying credentials'],
+    [/\b[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}\b/, 'a Discord bot token'],
+    [/\bsk-[A-Za-z0-9]{20,}\b/, 'an OpenAI-style secret key'],
+    [/\bAIza[0-9A-Za-z_-]{35}\b/, 'a Google API key'],
+    [/cloudinary:\/\/\d+:[^\s"'<@]+@/i, 'a Cloudinary URL with its API secret'],
+    [/\bghp_[A-Za-z0-9]{36}\b/, 'a GitHub personal access token'],
+];
+
+function secretScan(built) {
+    const bad = [];
+    let scanned = 0;
+    for (const page of built) {
+        const html = fs.readFileSync(outPath(page), 'utf8');
+        scanned++;
+        for (const [re, what] of SECRET_PATTERNS) {
+            const m = html.match(re);
+            if (m) bad.push(`${dirOf(page)}/${page.out}: looks like ${what} — "${m[0].slice(0, 24)}…"`);
+        }
+    }
+    if (bad.length) {
+        console.error('  ✗ possible credential in published output:');
+        bad.forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    console.log(`  ✓ no credential-shaped strings in ${scanned} published pages`);
+    return true;
+}
+
+console.log('Building the site →', path.relative(ROOT, path.join(ROOT, 'public')));
 const built = build();
 console.log('\nVerifying rendered output against source:');
 const contentOk = verify(built);
@@ -4590,7 +4988,12 @@ console.log('\nChecking layout and content class names do not overlap:');
 const classOk = classCollisionAudit();
 console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
 const hoverOk = hoverGuardAudit(guardedPages);
-const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk;
+console.log('\nChecking every source entry became an entry on the page:');
+const chronOk = chronicleStructAudit(chronicleResults);
+console.log('\nScanning published output for credential-shaped strings:');
+const secretOk = secretScan(built);
+const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
+    && chronOk && secretOk;
 // Names each property that was actually checked, rather than one word that reads
 // as "the output is correct". Each gate tests a different thing, and a pass on
 // one has already been mistaken for a pass on another once. Read this roster
@@ -4598,6 +5001,6 @@ const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && ho
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
       + 'cross-refs live · warm structure applied · class names distinct · '
-      + 'hover guard clean.'
+      + 'hover guard clean · every source entry rendered · no credentials published.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);

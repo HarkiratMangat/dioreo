@@ -725,7 +725,12 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 @media (prefers-reduced-motion:reduce){@media (hover:hover) and (pointer:fine){
   .inv:hover .arw i{transform:none}}@media (hover:hover) and (pointer:fine){
   .inv:hover .inv-m .ln{transform:none;opacity:1}}
-}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+}/* A section label between the two invite rows. Without it the six cards read as
+   one undifferentiated grid, which is exactly the collapse the three page families
+   exist to avoid. */
+
+
+.lab-sec{display:block;margin:1.9rem 0 .7rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
    the top of the screen. */
 
@@ -794,7 +799,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
         <em>9 sections</em>
       </a></div>
   <div class="invite">
-      <a class="inv" href="contributing.html" style="--ia:#B6E24A">
+      <a class="inv" href="./contributing.html" style="--ia:#B6E24A">
         <span class="inv-b">
           <span class="inv-h">
             <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/><line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg></span>
@@ -808,7 +813,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
           <span class="arw"><i aria-hidden="true"></i></span>
         </span>
       </a>
-      <a class="inv" href="contributors.html" style="--ia:#5AA9FF">
+      <a class="inv" href="./contributors.html" style="--ia:#5AA9FF">
         <span class="inv-b">
           <span class="inv-h">
             <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ln" x1="2" y1="3.6" x2="12" y2="3.6"/><line class="ln" x1="2" y1="7" x2="8.4" y2="7"/><line class="ln" x1="2" y1="10.4" x2="5.6" y2="10.4"/></svg></span>
@@ -819,6 +824,50 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
         </span>
         <span class="inv-s" aria-hidden="true">
           <span class="inv-sw">Contributors</span>
+          <span class="arw"><i aria-hidden="true"></i></span>
+        </span>
+      </a></div>
+  <span class="lab lab-sec">The record</span>
+  <div class="invite">
+      <a class="inv" href="../changelog/" style="--ia:#E86FD8">
+        <span class="inv-b">
+          <span class="inv-h">
+            <span class="inv-m" aria-hidden="true"></span>
+            <span class="ik">Releases</span>
+          </span>
+          <h3>What's New</h3>
+          <p>What changed in each release of Dior’s Builds, in plain language.</p>
+        </span>
+        <span class="inv-s" aria-hidden="true">
+          <span class="inv-sw">What's New</span>
+          <span class="arw"><i aria-hidden="true"></i></span>
+        </span>
+      </a>
+      <a class="inv" href="../changelog/detailed.html" style="--ia:#3ED598">
+        <span class="inv-b">
+          <span class="inv-h">
+            <span class="inv-m" aria-hidden="true"></span>
+            <span class="ik">The record</span>
+          </span>
+          <h3>Changelog</h3>
+          <p>The detailed, developer-facing release history.</p>
+        </span>
+        <span class="inv-s" aria-hidden="true">
+          <span class="inv-sw">Changelog</span>
+          <span class="arw"><i aria-hidden="true"></i></span>
+        </span>
+      </a>
+      <a class="inv" href="../changelog/devlog.html" style="--ia:#C9A227">
+        <span class="inv-b">
+          <span class="inv-h">
+            <span class="inv-m" aria-hidden="true"></span>
+            <span class="ik">The journey</span>
+          </span>
+          <h3>Devlog</h3>
+          <p>Discoveries, real root causes, the things we walked back, and the lessons.</p>
+        </span>
+        <span class="inv-s" aria-hidden="true">
+          <span class="inv-sw">Devlog</span>
           <span class="arw"><i aria-hidden="true"></i></span>
         </span>
       </a></div>

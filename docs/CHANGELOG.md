@@ -237,10 +237,9 @@ most of the surface Harkirat had flagged from live testing.
   The pattern now consumes any following line that is not blank, another `**field**`, a rule, a
   heading or a quote: exactly the wrapped remainder and nothing past the head block. Verified
   against both files — 47 and 36 characters removed, and §1.1's operative definition of the
-  Site untouched.
-, which stops at the first newline. It read like a
-  paragraph cut in half because it was one. The same helper feeds `build()` and `verify()`, so one
-  fix corrects both and the content gate cannot drift from what is rendered.
+  Site untouched. It read like a paragraph cut in half because it was one. The same helper feeds
+  `build()` and `verify()`, so one fix corrects both and the content gate cannot drift from what
+  is rendered.
 - LICENSE clause numbers sat 13.3px above the sentence they label — an empty heading was still
   generating a 14.5px box plus a margin, pushing the text down while the number stayed pinned.
 
@@ -471,6 +470,10 @@ launch-blocking for the new season, not "nice to have":
 of line 191) is a style question, not a bug — the buff/nerf alias covers the concrete, checkable part
 of the ask. Lines 193–196, 198 are extra-feature requests Harkirat explicitly deferred, not part of
 this pass.
+
+---
+
+## v2.44.0 — 2026-07-30 00:40 EDT (#58 · `93aaec2`) — Two pages that stopped reading like a Markdown dump, and a sticky rail that was never actually fixed
 **The legal site's two warm pages get real structure, and a fifth build gate to keep it.** No bot code
 changed; nothing here touches the VM.
 

@@ -720,22 +720,46 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
-.seg-gap{width:.45rem;flex:0 0 auto}/* Six tabs in two groups is a lot of bar, so it gives way in stages rather
-   than push the wordmark off the edge.
-     1180  tighter tabs
-     1000  the group you are NOT in collapses away; the one you are in stays,
-           because that is the one showing you where you are
-      980  the desktop switcher goes entirely and .mnav takes over */
+.seg-gap{width:.45rem;flex:0 0 auto}/* NINE tabs in THREE groups, and the staging below was re-derived for that —
+   not inherited from the two-group version, which would have broken.
+     1240  tighter tabs
+     1100  the groups you are NOT in collapse to a labelled CHIP that still links
+      980  the desktop switcher goes entirely and .mnav takes over
+
+   ⚠️ Why a chip and not the old rule. The two-group version hid the whole seg —
+   display:none on .seg[data-at="-1"] and on .seg-gap, i.e. "hide the group you are
+   not in" — and it cost you one group in a 20px band, recoverable from the footer. With
+   three groups the same rule hides TWO, so two thirds of the site leaves the bar
+   at once. Collapsing to a chip keeps every group one click away at every width
+   above the mobile handoff, which is the property that actually matters. The band
+   was also far too narrow at 20px to be worth a rule; it is 120px now, which is
+   where nine tabs genuinely stop fitting beside the wordmark and the four buttons. */
 
 
-.navwrap{display:flex;align-items:center}
+.navwrap{display:flex;align-items:center}/* The chip only exists between 981 and 1100. Above that the group shows its tabs;
+   below it the whole switcher is gone. No tabindex is needed to keep it out of the
+   tab order in the meantime — a display:none element is not focusable — and adding
+   tabindex="-1" would have been actively wrong, since it would still apply at the
+   one width where the chip IS the only way to reach that group by keyboard. */
 
-@media (max-width:1180px){
+
+.segchip{display:none;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);text-decoration:none;
+  padding:.42rem .55rem;border-radius:7px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
+.segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
+.segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+@media (max-width:1240px){
   .tab{padding:.42rem .5rem;font-size:.62rem;letter-spacing:.07em}
   .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1000px){
-  .seg[data-at="-1"],.seg-gap{display:none}
+@media (min-width:981px) and (max-width:1100px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
+     with them — .seg-ink measures real tab boxes, and there are none to measure. */
+  
+  .seg[data-at="-1"] .tab{display:none}
+  .seg[data-at="-1"] .seg-ink{display:none}
+  .seg[data-at="-1"] .segchip{display:inline-block}
+  .seg[data-at="-1"]{padding:0}
 }/* Desktop shows no mobile menu. */
 
 
@@ -1206,12 +1230,18 @@ html{scroll-behavior:smooth}
     <span class="go" aria-hidden="true">&#8250;</span>
   </a>
   <nav>
-    <div class="navwrap"><div class="seg" data-at="3">
+    <div class="navwrap"><div class="seg" data-at="3" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
+      <a class="segchip" href="./terms.html">Documents</a>
       <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab on" href="./notice.html" data-accent="#E8657F" aria-current="page">Notice</a>
-    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1">
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
+      <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab" href="./contributing.html" data-accent="#B6E24A">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Releases">
+      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
+      <a class="segchip" href="../changelog/">Releases</a>
+      <a class="tab" href="../changelog/" data-accent="#E86FD8">What's New</a><a class="tab" href="../changelog/detailed.html" data-accent="#3ED598">Changelog</a><a class="tab" href="../changelog/devlog.html" data-accent="#C9A227">Devlog</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
   data-spot title="View the source on GitHub">
@@ -1261,7 +1291,7 @@ html{scroll-behavior:smooth}
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab on" href="./notice.html" aria-current="page" style="--row:#E8657F">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#B6E24A">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#5AA9FF">Contributors</a>
+      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab on" href="./notice.html" aria-current="page" style="--row:#E8657F">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#B6E24A">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#5AA9FF">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../changelog/" style="--row:#E86FD8">What's New</a><a class="mtab" href="../changelog/detailed.html" style="--row:#3ED598">Changelog</a><a class="mtab" href="../changelog/devlog.html" style="--row:#C9A227">Devlog</a>
     </nav>
   </div>
   <details class="msecd">
@@ -1449,7 +1479,7 @@ Claude(TM), Anthropic(R)
   <footer class="foot">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <b>dior</b></p>
     <p class="disc">Dior&#8217;s Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, or Discord Inc.</p>
-    <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
+    <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a><span>&middot;</span><a href="../changelog/">What's New</a><span>&middot;</span><a href="../changelog/detailed.html">Changelog</a><span>&middot;</span><a href="../changelog/devlog.html">Devlog</a></nav>
   </footer>
 </div>
 
