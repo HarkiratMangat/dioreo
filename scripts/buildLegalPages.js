@@ -96,6 +96,7 @@ const BRAND = {
     azure: '#5AA9FF'
 };
 
+
 // `kind` selects the parser: 'md' for the Markdown sources in docs/legal, 'text'
 // for the plain-text legal instruments at the repo root. `root: true` means the
 // source sits at the repo root rather than in docs/legal.
@@ -769,6 +770,11 @@ const TOKENS = `
      keep --accent; only glyphs and type use this. */
   --accent-t:var(--accent);
   --shadow:0 24px 60px -28px rgba(0,0,0,.85);
+  /* The gooey nav's own easing, taken from the reference implementation. It
+     overshoots to 1.274 and settles through four decaying bounces, which no
+     cubic-bezier can express — a bezier can overshoot once and only once. The
+     pill assembling under it is what stops the effect reading as a fade. */
+  --spring:linear(0, 0.068, 0.19 2.7%, 0.804 8.1%, 1.037, 1.199 13.2%, 1.245, 1.27 15.8%, 1.274, 1.272 17.4%, 1.249 19.1%, 0.996 28%, 0.949, 0.928 33.3%, 0.926, 0.933 36.8%, 1.001 45.6%, 1.013, 1.019 50.8%, 1.018 54.4%, 1 63.1%, 0.995 68%, 1.001 85%, 1);
   --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
@@ -826,14 +832,17 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
  */
 const HOVER_Q = '@media (hover:hover) and (pointer:fine)';
 
-/* Split a selector list on top-level commas only: :is(a,b) and :not(a,b) hold
-   commas that are not selector boundaries. */
+/* Split a selector list on top-level commas only. :is(a,b) and :not(a,b) hold
+   commas that are not selector boundaries, and so does an attribute value like
+   [title="a, b"] — quotes have to be tracked as well as parens. */
 const splitSel = sel => {
-    const out = []; let d = 0, cur = '';
+    const out = []; let d = 0, q = '', cur = '';
     for (const ch of sel) {
-        if (ch === '(') d++;
+        if (q) { cur += ch; if (ch === q) q = ''; continue; }
+        if (ch === '"' || ch === "'") q = ch;
+        else if (ch === '(') d++;
         else if (ch === ')') d--;
-        if (ch === ',' && d === 0) { out.push(cur); cur = ''; continue; }
+        else if (ch === ',' && d === 0) { out.push(cur); cur = ''; continue; }
         cur += ch;
     }
     out.push(cur);
@@ -841,23 +850,31 @@ const splitSel = sel => {
 };
 
 let guarded = 0;
+/* ⚠️ COMMENTS ARE NEVER PART OF THE PRELUDE. They used to be buffered along with
+ * the selector, and the first comment containing a COMMA was then split as if it
+ * were a selector list — which wrote the rewritten rule into the middle of the
+ * comment and left the :hover half sitting outside its guard with a stray brace
+ * after it. Eight rules in the built output were destroyed that way, silently,
+ * while the transform reported having guarded them. The output gate below now
+ * re-parses the built CSS rather than trusting this function's own count.
+ */
 const guardCss = css => {
-    let out = '', buf = '', i = 0;
+    let out = '', com = '', sel = '', i = 0;
     const stack = [];                       // open at-rule preludes
     const inGuard = () => stack.some(p => /hover\s*:\s*hover/.test(p));
     while (i < css.length) {
         const c = css[i];
         if (c === '/' && css[i + 1] === '*') {           // comments pass through
             const e = css.indexOf('*/', i + 2), k = e < 0 ? css.length : e + 2;
-            buf += css.slice(i, k); i = k; continue;
+            com += css.slice(i, k); i = k; continue;
         }
-        if (c === '"' || c === "'") {                    // strings pass through
+        if (c === '"' || c === "'") {                    // strings stay in the selector
             let j = i + 1;
             while (j < css.length && css[j] !== c) { if (css[j] === '\\') j++; j++; }
-            buf += css.slice(i, j + 1); i = j + 1; continue;
+            sel += css.slice(i, j + 1); i = j + 1; continue;
         }
         if (c === '{') {
-            const prelude = buf; buf = ''; i++;
+            const prelude = sel; out += com; com = ''; sel = ''; i++;
             if (/^\s*@/.test(prelude)) { stack.push(prelude); out += prelude + '{'; continue; }
             let d = 1, j = i;                            // a style rule: take its body whole
             while (j < css.length && d > 0) {
@@ -876,15 +893,65 @@ const guardCss = css => {
             out += HOVER_Q + '{' + hov.join(',') + '{' + decls + '}}';
             continue;
         }
-        if (c === '}') { stack.pop(); out += buf + '}'; buf = ''; i++; continue; }
-        buf += c; i++;
+        if (c === '}') { stack.pop(); out += com + sel + '}'; com = ''; sel = ''; i++; continue; }
+        sel += c; i++;
     }
-    return out + buf;
+    return out + com + sel;
 };
 
-/* Every page goes through here, so a stylesheet cannot reach disk unguarded. */
-const writePage = (dest, html) => fs.writeFileSync(dest,
-    html.replace(/<style>([\s\S]*?)<\/style>/g, (m, css) => '<style>' + guardCss(css) + '</style>'));
+/* The gate for the above. It parses what actually reached disk — a transform
+ * that reports its own success is not a check, which is the whole lesson of the
+ * bug it exists to catch. Three properties, because they fail independently:
+ * every :hover rule is behind the guard, the braces still balance, and no rule
+ * text ended up inside a comment. */
+const hoverGuardAudit = pages => {
+    let ok = true;
+    for (const [name, html] of pages) {
+        const css = (html.match(/<style>([\s\S]*?)<\/style>/) || [])[1] || '';
+        const bad = [];
+        let depth = 0, bal = 0, i = 0, sel = '';
+        const stack = [];
+        while (i < css.length) {
+            const c = css[i];
+            if (c === '/' && css[i + 1] === '*') {
+                const e = css.indexOf('*/', i + 2), k = e < 0 ? css.length : e + 2;
+                const body = css.slice(i, k);
+                if (/[{}]/.test(body)) bad.push('brace inside comment: ' + body.slice(0, 60).replace(/\s+/g, ' '));
+                i = k; continue;
+            }
+            if (c === '{') {
+                bal++;
+                if (/^\s*@/.test(sel)) { stack.push(sel); sel = ''; i++; depth++; continue; }
+                let d = 1, j = i + 1;
+                while (j < css.length && d > 0) { if (css[j] === '{') d++; else if (css[j] === '}') d--; if (d > 0) j++; }
+                if (/:hover/.test(sel) && !stack.some(p => /hover\s*:\s*hover/.test(p)))
+                    bad.push('unguarded :hover — ' + sel.trim().replace(/\s+/g, ' ').slice(0, 70));
+                i = j + 1; bal--; sel = ''; continue;
+            }
+            if (c === '}') { bal--; depth--; stack.pop(); sel = ''; i++; continue; }
+            sel += c; i++;
+        }
+        if (bal !== 0) bad.push('unbalanced braces (' + bal + ')');
+        if (bad.length) {
+            ok = false;
+            console.log('  ✗ ' + name + ':');
+            bad.slice(0, 8).forEach(b => console.log('      ' + b));
+            if (bad.length > 8) console.log('      … and ' + (bad.length - 8) + ' more');
+        }
+    }
+    if (ok) console.log('  ✓ every :hover rule is behind (hover:hover), braces balance, comments intact');
+    return ok;
+};
+
+/* Every page goes through here, so a stylesheet cannot reach disk unguarded.
+   What it wrote is kept so hoverGuardAudit can re-read it at the end. */
+const guardedPages = [];
+const writePage = (dest, html) => {
+    const outHtml = html.replace(/<style>([\s\S]*?)<\/style>/g,
+        (m, css) => '<style>' + guardCss(css) + '</style>');
+    guardedPages.push([path.basename(dest), outHtml]);
+    fs.writeFileSync(dest, outHtml);
+};
 
 /* ─────────────── shared components: wordmark, repo, theme switch ───────── */
 
@@ -1075,11 +1142,16 @@ const mobileNav = (out, slots) => {
     const tab = p => `<a class="mtab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
         `${p.out === out ? ' aria-current="page"' : ''} style="--row:${p.accent}">` +
         `${esc(p.short)}</a>`;
+    /* .mbar and .mstrip are two elements on purpose — see the CSS. The
+       indicator has to sit outside the scroller, which is why it is a sibling
+       of the strip rather than a child of it. */
     return `<aside class="mnav" id="mnav">
-  <nav class="mstrip" id="mstrip" aria-label="Pages">
-    <span class="ms-ink" id="msink" aria-hidden="true"><i class="ms-pill"></i></span>
-    ${NAV_GROUPS.map(grp => grp.map(tab).join('')).join('<span class="ms-sep" aria-hidden="true"></span>')}
-  </nav>
+  <div class="mbar">
+    <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
+    <nav class="mstrip" id="mstrip" aria-label="Pages">
+      ${NAV_GROUPS.map(grp => grp.map(tab).join('')).join('<span class="ms-sep" aria-hidden="true"></span>')}
+    </nav>
+  </div>
   ${slots ? `<details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
     <div class="mp-list msec">${slots}</div>
@@ -1161,6 +1233,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transition:transform .42s cubic-bezier(.34,1.18,.44,1),border-radius .42s}
 
 .mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}
+/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
+   this it kept its full 90px of text inside a 31px box and simply drew across
+   the buttons beside it — the "too tight" header was really this one missing
+   rule. Truncation is the honest failure mode for a flexible label. */
+.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
   line-height:1.16;position:relative;background-image:linear-gradient(100deg,
   var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
@@ -1285,7 +1362,32 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    route altogether, whereas the install label is recoverable from the icon plus
    the accessible name. */
 @media (max-width:620px){
-  .bar{gap:.7rem;padding:0 .8rem}
+  /* ⚠️ .bar.bar, not .bar — and the doubled class is load-bearing.
+     The base .bar rule lives in the SHELLS, which are concatenated after
+     COMPONENT_CSS, so at equal specificity the desktop values won no matter
+     what this media query said. The whole block was dead: measured at 375px it
+     was still reporting gap:1.5rem and padding:1rem, which is why the wordmark
+     was being squeezed until it painted over the repo button. Doubling the class
+     makes this override immune to where the file happens to concatenate it. */
+  .bar.bar{gap:.6rem;padding:0 .75rem}
+  .bar.bar nav{gap:.5rem}
+  /* The context line goes. It names the page you are on, and directly beneath it
+     the strip names the page you are on with a filled pill — saying it twice in
+     54px of header is what made the mark fight the buttons for width.
+     The wordmark also drops a step, because at 1.02rem it still truncated to
+     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
+     slightly smaller whole one. */
+  .mk-ctx.mk-ctx{display:none}
+  .wm{font-size:.85rem}
+  /* 19px of the mark's width was its own padding — a hover affordance, on a
+     surface that has no hover. Reclaiming it is what actually gives the wordmark
+     room; every other lever here was worth 2-4px and would have been pixel
+     chasing. */
+  .mark.mark{padding:0}
+  /* The little travel arrow is a hover-reveal, and it was costing the wordmark
+     19px (itself plus its gap) on a surface where it can never be revealed.
+     That 19px is exactly what "Dior's Buil..." was short of. */
+  .mark .go{display:none}
   /* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
      .ins height:37px while this one set only width:32px, so on a phone the
      Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
@@ -1869,76 +1971,82 @@ const NAV_JS = `
      It plays on PAGE LOAD, not only on tap. Each tab is a real link to a real
      document, so a tap tears the page down mid-animation and you would never
      see it; arriving is the moment that has time for it. */
-  var strip=document.getElementById('mstrip'), ink=document.getElementById('msink');
-  if(strip&&ink){
-    var pill=ink.querySelector('.ms-pill');
+  var strip=document.getElementById('mstrip'), gw=document.getElementById('mgw');
+  if(strip&&gw){
+    var goo=gw.firstElementChild;
     var mtabs=[].slice.call(strip.querySelectorAll('.mtab'));
     var cur=mtabs.indexOf(strip.querySelector('.mtab.on'));
     if(cur<0) cur=0;
     var mstill=matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var burstT=0, offT=0;
+    var bar=gw.parentNode;
 
     function noise(n){ return n/2 - Math.random()*n; }
-    /* Same polar walk the reference uses — each particle keeps ONE angle and
-       travels along it, which is what makes the swarm read as converging on a
-       point rather than swirling. y is squashed because a phone strip is about
-       52px tall and an unsquashed radius would throw particles clean out of it,
-       the same mistake the desktop spray made before it was constrained. */
+    /* One angle per particle, walked outward-to-inward along it — that is what
+       makes the swarm read as converging on a point rather than swirling around
+       one. y is squashed for the clipping reason given in the CSS. */
     function xy(dist,i,total){
       var a=((360+noise(8))/total*i)*Math.PI/180;
-      /* 0.34, not 0.46: the strip sets overflow-x, which forces overflow-y to
-         compute as non-visible too, so anything thrown past the band is CLIPPED
-         rather than merely untidy. At radius 54 this keeps the excursion inside
-         the 44px ink box. */
       return [dist*Math.cos(a), dist*Math.sin(a)*0.34];
+    }
+
+    /* The indicator lives OUTSIDE the scroller (the blend needs it to), so its
+       x has to be tracked by hand. That is the whole price of keeping
+       mix-blend-mode working, and it is cheaper than the alternative, which is
+       no effect at all.
+       ⚠️ Measured from RECTS, not from offsetLeft minus scrollLeft. The
+       arithmetic version was correct at the instant it ran and wrong 17px later:
+       scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
+       cached scrollLeft was stale before the first paint. A rect difference is
+       whatever is true right now and cannot go stale. */
+    function follow(){
+      var t=mtabs[cur]; if(!t) return;
+      gw.style.transform='translateX('
+        +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
     }
 
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
-      pill.style.transform='translateX('+t.offsetLeft+'px)';
-      pill.style.width=t.offsetWidth+'px';
-      pill.style.background=t.style.getPropertyValue('--row')||'';
-      ink.style.width=strip.scrollWidth+'px';
-      if(!animate||mstill){
-        strip.classList.remove('burst');
-        pill.style.scale='1'; pill.style.opacity='1'; return;
-      }
-      /* ⚠️ Do NOT paint the pill at full size first. It used to be placed solid,
-         then re-animated from zero 220ms later, so on arrival you saw the pill,
-         then saw it vanish, then saw it grow — which is the whole of the "glitchy"
-         complaint. The keyframes own scale and opacity during a burst (fill both,
-         with a delay), so the inline values are cleared and the pill simply is
-         not there until it starts building. */
-      pill.style.scale=''; pill.style.opacity='';
-      ink.style.setProperty('--cx',(t.offsetLeft+t.offsetWidth/2)+'px');
-      pill.style.animation='none'; void pill.offsetWidth;
-      pill.style.animation='';
-      strip.classList.remove('burst'); void strip.offsetWidth;
-      strip.classList.add('burst');
-      spray(t.style.getPropertyValue('--row'));
-      clearTimeout(offT);
-      offT=setTimeout(function(){ strip.classList.remove('burst'); },1700);
+      cur=i; follow();
+      gw.style.width=t.offsetWidth+'px';
+      gw.style.top=t.offsetTop+'px';
+      gw.style.height=t.offsetHeight+'px';
+      gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
+      if(!animate||mstill){ goo.classList.add('on'); return; }
+      /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
+         pill first and re-animating it a moment later is what made the old
+         version look glitchy: you saw the pill, saw it vanish, saw it grow. */
+      goo.classList.remove('on');
+      [].slice.call(goo.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
+      /* The forced reflow is what restarts the animation, and it is enough on
+         its own. Arming the pill inside requestAnimationFrame instead looked
+         equivalent and was not: rAF does not run in a backgrounded tab, so a
+         page loaded in one came forward with no indicator at all. Nothing here
+         needs to wait for a frame. */
+      void goo.offsetWidth;
+      spray();
+      goo.classList.add('on');
     }
 
-    function spray(col){
-      clearTimeout(burstT);
-      [].slice.call(ink.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
+    function spray(){
       var N=15;
       for(var i=0;i<N;i++){
-        var a=xy(54,N-i,N), b=xy(9+noise(6),N-i,N);
-        var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
-        var el=document.createElement('i'); el.className='mpt';
-        var dot=document.createElement('b'); dot.className='mpd';
-        el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
-          +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
-          +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
-          +'--w:'+(14+Math.random()*8).toFixed(1)+'px;'
-          +'--t:'+Math.round(1200+noise(600))+'ms;--pc:'+col;
-        el.appendChild(dot); ink.appendChild(el);
+        (function(i){
+          var t=Math.round(1200+noise(600));
+          var a=xy(90,N-i,N), b=xy(10+noise(7),N-i,N);
+          var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
+          var el=document.createElement('i'); el.className='mpt';
+          var dot=document.createElement('b'); dot.className='mpd';
+          /* White, always. The wrapper's filter is what puts the accent back —
+             a coloured particle would be crushed to a primary by contrast(20)
+             long before anyone saw the colour. */
+          el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
+            +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
+            +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
+            +'--t:'+t+'ms';
+          el.appendChild(dot); goo.appendChild(el);
+          setTimeout(function(){ el.remove(); },t);
+        })(i);
       }
-      burstT=setTimeout(function(){
-        [].slice.call(ink.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
-      },1700);
     }
 
     /* Keep where you are on screen without yanking the page around it. */
@@ -1948,7 +2056,16 @@ const NAV_JS = `
     }
     function live(){ return getComputedStyle(strip).display!=='none'; }
 
-    if(live()){ reveal(); place(cur,true); }
+    /* Listener FIRST: reveal() scrolls the strip, and a listener attached after
+       that has already missed the event it exists for. The two timers catch the
+       snap settling afterwards — deliberately timers and not rAF, because rAF
+       does not run in a backgrounded tab and this has to be right when the tab
+       is first looked at, not when it is first painted. */
+    strip.addEventListener('scroll',follow,{passive:true});
+    if(live()){
+      reveal(); place(cur,true);
+      setTimeout(follow,0); setTimeout(follow,160);
+    }
     addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
     /* A tap moves the indicator immediately even though the page is about to be
        replaced: on a slow connection that is the only feedback the tap landed. */
@@ -2154,13 +2271,26 @@ const SWITCHER_CSS = `
     background:var(--accent)}
   .mnav{display:block;position:sticky;top:54px;z-index:40}
 
-  .mstrip{position:relative;display:flex;align-items:stretch;gap:.3rem;
+  /* ⚠️ THE BAR AND THE SCROLLER ARE TWO ELEMENTS, AND THEY HAVE TO STAY APART.
+     The indicator below is a metaball layer: it paints an opaque black bed and
+     erases the bed with mix-blend-mode. A blend needs two things a scroller
+     cannot give it — an OPAQUE backdrop to blend against, and no scroll
+     container between it and that backdrop. Put the layer inside the strip and
+     the blend is dropped and you get a black rectangle instead; that was
+     measured in the prototype before it was measured here.
+     The background is OPAQUE on purpose. It used to be color-mix(paper 96%)
+     with a backdrop-filter, and the blend formula weights the source by
+     (1 - backdrop alpha), so a 4%-transparent backdrop is a 4% black wash
+     across the whole bar. Deterministic beats pretty here.
+     overflow:hidden clips the swarm to the bar, which is also deliberate — see
+     the y-squash note on the particles. */
+  .mbar{position:relative;isolation:isolate;overflow:hidden;
+    background:var(--paper);
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
-    padding:.42rem .75rem;
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
-    background:color-mix(in srgb,var(--paper) 96%,transparent);
-    backdrop-filter:blur(12px);
+    padding:.5rem .75rem;
     scrollbar-width:none}
   .mstrip::-webkit-scrollbar{display:none}
 
@@ -2174,59 +2304,121 @@ const SWITCHER_CSS = `
      accent is far too light to carry accent-coloured text, and near-black on
      the six accents bottoms out at 5.07 which clears AA. */
   .mtab.on{color:#120E1C;font-weight:700}
+  /* The crisp resting pill. The goo layer draws a pill of its own — that is what
+     the particles fuse into — but thresholding a blurred stadium erodes its caps
+     a little, and this is the shape you are left looking at for the rest of the
+     page. Same box, same colour, painted unfiltered on top, so the fluid reads
+     as assembling into it rather than as a second object. */
+  /* inset 4px, not 0: the tap target stays the full 44px the guideline asks
+     for, but the pill you actually see is 36px. Filling the target edge to edge
+     made the indicator read as a block rather than a marker. */
+  .mtab::after{content:"";position:absolute;inset:4px 0;z-index:-1;border-radius:999px;
+    background:var(--row);scale:0;opacity:0}
+  .mtab.on::after{animation:mgPill 2s var(--spring) .2s both}
   .mtab:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
   .ms-sep{flex:0 0 1px;align-self:center;height:20px;background:var(--rule2);
     margin:0 .3rem}
 
-  /* The indicator layer. The goo runs ONLY during a burst, for the reason the
-     desktop one does: thresholding a blurred stadium erodes its caps far more
-     than its straight edges, so a resting pill comes out a rounded rectangle. */
-  .ms-ink{position:absolute;left:0;top:.42rem;bottom:.42rem;width:100%;
-    z-index:0;pointer-events:none}
-  .mstrip.burst .ms-ink{filter:url(#dbgoo)}
-  .ms-pill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
-    background:var(--accent);transform-origin:center;
-    scale:1;opacity:1}
-  /* The delay is what lets the particles arrive FIRST. The pill assembling out
-     of a swarm that is already there is the effect; the pill appearing and then
-     being decorated is not. */
-  .mstrip.burst .ms-pill{animation:msPill 620ms 190ms cubic-bezier(.34,1.3,.44,1) both}
-  @keyframes msPill{ from{scale:0;opacity:0} to{scale:1;opacity:1} }
+  /* ── the indicator: a metaball layer ──────────────────────────────────
+     Two elements and two SHORT filter chains, and they cannot be merged. .mgo
+     blurs a field of white discs and crushes it to a hard two-tone image;
+     .mgw recolours the finished result. Written as one seven-function chain on
+     one element, iOS applied the blur and the contrast and silently DROPPED the
+     four colour functions after them — the fluid came out white while the tab's
+     own pill, which is never filtered, stayed accent-coloured. That is what the
+     split buys.
+     There is no SVG filter here, also deliberately. An SVG filter's region is a
+     percentage of the element's box; the swarm spawns at radius 90 around a box
+     about 90x44, and everything outside the region paints UNFILTERED — which is
+     exactly what made the particles read as hard circles instead of liquid.
+     Chrome expands the region to cover overflow, Safari honours what you wrote.
+     A CSS chain has no region at all. */
+  .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
+    pointer-events:none;mix-blend-mode:lighten}
+  .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}
+  /* The bed. contrast() thresholds colour, not alpha, so the discs need
+     something opaque behind them or there is nothing to threshold. Black,
+     and large: the plate below has to sit entirely within the bed's OPAQUE
+     core, and blur(7px) softens the bed's own edge over about 21px. */
+  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:#000}
+  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:#fff;
+    border-radius:100vw;scale:0;opacity:0}
+  .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
+  @keyframes mgPill{to{scale:1;opacity:1}}
 
-  /* Two nested elements because the travel and the swelling need DIFFERENT
-     timing functions, and one element cannot carry two. This is the reference
-     implementation's own split, kept for the same reason. */
-  .mpt{position:absolute;top:50%;left:var(--cx,50%);width:0;height:0;
-    animation:mptFly var(--t) ease both}
-  .mpd{display:block;width:var(--w);height:var(--w);
-    margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
-    border-radius:50%;background:var(--pc);opacity:0;
-    animation:mptPop var(--t) ease both}
-  /* Wide radius in, tight radius out: the particles CONVERGE. That direction
-     is the whole effect — outward would read as an explosion leaving, inward
-     reads as a shape being gathered into existence. */
-  @keyframes mptFly{
-    0%{transform:rotate(0deg) translate(var(--sx),var(--sy))}
-    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2))}
-    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey))}
-    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5))}
+  /* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
+     The first recoloured the crushed white image with a fitted
+     sepia/saturate/hue-rotate/brightness chain. Composed on paper it lands every
+     accent exactly; rendered, it does not, and the error is large enough to see
+     (a difference-blend test against the true accent glowed on four of the six).
+     Filter chains clamp somewhere the arithmetic does not model, so the whole
+     approach was fitting a curve to a function nobody has the real form of.
+     A blend needs no model. multiply(white, accent) IS accent and
+     multiply(black, accent) IS black, exactly, for every accent that will ever
+     exist — so a plain accent plate multiplied over the crushed image colours
+     the blobs and leaves the bed alone. .mgw carries mix-blend-mode, which makes
+     it a stacking context, which makes it an isolation group: the plate blends
+     with the goo INSIDE it and the finished group blends with the bar outside.
+     The one trap, and the reason an earlier attempt at this was abandoned: the
+     plate must stay inside the bed's opaque core. Blending against a
+     partly-transparent backdrop leaves the plate's own colour showing, which
+     reads as an accent-coloured square around the whole effect. -80 inside
+     -110 is well clear of the blurred edge. */
+  .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
+    mix-blend-mode:multiply;pointer-events:none}
+
+  /* ⚠️ LIGHT MODE IS NOT THE SAME TRICK, and it cannot be.
+     lighten erases the black bed only because the backdrop is darker than the
+     blobs. On near-white paper it erases the BLOBS instead and the bar stays
+     empty. So light mode inverts the crushed image — the bed comes out white,
+     which is the identity for multiply — and the plate switches to screen,
+     whose identities are the mirror image: screen(white, accent) is white and
+     screen(black, accent) is accent. Same two exact rules, read the other way
+     up. */
+  :root[data-theme=light] .mgw{mix-blend-mode:multiply}
+  :root[data-theme=light] .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
+  :root[data-theme=light] .mtint{mix-blend-mode:screen}
+  @media (prefers-color-scheme:light){
+    :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
+    :root:not([data-theme=dark]) .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
+    :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
   }
-  /* ⚠️ Full size by 30%, not 65%. The alpha crush behind the goo needs a disc of
-     roughly 8px before it renders anything at all: 22a-8 does not reach opacity
-     until a=0.36, and a 14px dot at 0.25 scale is 3.5px, whose blurred peak alpha
-     is about 0.07. Scaling up WHILE converging therefore meant every particle was
-     mathematically invisible until it had already reached the pill, which is why
-     the burst read as a tiny cluster hugging one edge. They reach full size while
-     still spread out now, and hold it through the flight. */
+
+  /* Particle geometry is the reference implementation's, unchanged: fifteen
+     20px discs spawning on a radius of 90 and converging INWARD to 10, each
+     running 1200±300ms and started 350ms in so they are already mid-flight on
+     the first frame. Two nested elements because the travel and the swelling
+     need different timing functions and one element carries only one.
+     The single deviation is the y squash. .mbar has to clip (an unclipped bed
+     paints black wherever there is no opaque backdrop under it), and a circular
+     radius-90 swarm in a 60px bar would spend most of its flight outside the
+     clip. Squashing y keeps the whole swarm on screen; x is untouched, and x is
+     the axis the pill actually grows along. */
+  .mpt{position:absolute;top:calc(50% - 8px);left:calc(50% - 8px);
+    display:block;width:20px;height:20px;border-radius:100%;opacity:0;
+    transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
+  .mpd{display:block;width:20px;height:20px;border-radius:100%;
+    background:#fff;opacity:1;transform-origin:center;
+    animation:mptPop var(--t) ease 1 -350ms}
+  @keyframes mptFly{
+    0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
+      animation-timing-function:cubic-bezier(.55,0,1,.45)}
+    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2));
+      opacity:1;animation-timing-function:ease}
+    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey));opacity:1}
+    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5));
+      opacity:1}
+  }
   @keyframes mptPop{
-    0%{scale:0;opacity:0}
-    16%{opacity:1}
-    30%{scale:var(--sc);opacity:1}
-    82%{scale:var(--sc);opacity:1}
-    100%{scale:calc(var(--sc) * .35);opacity:0}
+    0%{scale:0;opacity:0;animation-timing-function:cubic-bezier(.55,0,1,.45)}
+    25%{scale:calc(var(--sc) * .25)}
+    38%{opacity:1}
+    65%{scale:var(--sc);opacity:1;animation-timing-function:ease}
+    85%{scale:var(--sc);opacity:1}
+    100%{scale:0;opacity:0}
   }
   @media (prefers-reduced-motion:reduce){
-    .mstrip.burst .ms-pill{animation:none}
+    .mgo.on::after,.mtab.on::after{animation:none;scale:1;opacity:1}
     .mpt{display:none}
   }
 
@@ -4321,12 +4513,16 @@ console.log('\nChecking the warm pages kept their structure:');
 const warmOk = warmStructAudit(warmResults);
 console.log('\nChecking layout and content class names do not overlap:');
 const classOk = classCollisionAudit();
-const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk;
+console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
+const hoverOk = hoverGuardAudit(guardedPages);
+const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk;
 // Names each property that was actually checked, rather than one word that reads
-// as "the output is correct". Six gates test six different things, and a pass on
-// one has already been mistaken for a pass on another once.
+// as "the output is correct". Each gate tests a different thing, and a pass on
+// one has already been mistaken for a pass on another once. Read this roster
+// rather than a count written down somewhere — it grows.
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
-      + 'cross-refs live · warm structure applied · class names distinct.'
+      + 'cross-refs live · warm structure applied · class names distinct · '
+      + 'hover guard clean.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);
