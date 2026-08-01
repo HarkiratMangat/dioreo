@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-nav="merged">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -408,23 +408,38 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    The knob does not jump between tabs: it eases toward the pointer and stretches
    slightly in the direction it is travelling, so it reads as one soft object
    being pulled rather than a marker being repositioned. */
-.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+/* ── segmented page switcher (desktop only) ───────────────────────────
+   Two pills: the four instruments that bind you, and the two invitations.
+
+   It has to READ as a control. "I literally thought they were just normal
+   text" was the complaint, and the answer is structural rather than
+   decorative: the track is a sunken field with a visible inset shadow, the
+   tabs are divided by hairlines while the control is at rest, the cursor is
+   a pointer (it used to be "grab", promising a drag that no longer exists),
+   and the tab you are on always carries a filled indicator.
+
+   The hairlines fade out the moment you point at the control, so the morph
+   travels across clean ground instead of over a set of fixed dividers. The
+   control looks like segments when idle and like one fluid object in use.
+
+   --c1 is the page you are ON, --c2 the page you are pointing AT, --m how
+   far between them, --cm the interpolated colour JS computes for the edge
+   and the glow. Width and position come from JS in pixels; there is no --n
+   and no --i any more, because the indicator measures the real tabs. */
+.seg{position:relative;display:flex;align-items:center;
   border-radius:999px;border:1px solid var(--rule2);padding:3px;
-  background:color-mix(in srgb,var(--ink) 7%,transparent);isolation:isolate;
-  --c1:var(--accent);--m:0;--sx:1;touch-action:pan-y;cursor:grab}
-.seg.drag{cursor:grabbing}
-.seg-ink{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;overflow:hidden;
-  width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--paper);
-  border:1px solid color-mix(in srgb,var(--cm,var(--c1)) 60%,transparent);
-  box-shadow:0 2px 9px -4px rgba(0,0,0,.55),
-    0 0 14px -6px color-mix(in srgb,var(--cm,var(--c1)) 70%,transparent);
-  transform:translateX(calc(var(--i) * 100%)) scaleX(var(--sx));
-  transition:transform .34s cubic-bezier(.22,.9,.24,1)}
-/* Straight to the finger while dragging; eased at every other time. */
-.seg.drag .seg-ink,.seg.live .seg-ink{transition:none}
-/* The mesh: two soft lobes per colour, cross-faded by --m. Both colours are on
-   screen at once mid-hover, which is the whole point — you see the page you are
-   leaving bleeding into the one you are about to open. */
+  background:color-mix(in srgb,var(--ink) 9%,transparent);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.26);
+  isolation:isolate;--c1:var(--accent);--m:0}
+.seg-ink{position:absolute;z-index:0;left:0;top:2px;bottom:2px;width:0;
+  border-radius:999px;overflow:hidden;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--cm,var(--c1)) 62%,transparent);
+  box-shadow:0 2px 10px -4px rgba(0,0,0,.6),
+    0 0 16px -6px color-mix(in srgb,var(--cm,var(--c1)) 75%,transparent);
+  will-change:transform,width}
+/* The mesh: two soft lobes per colour, cross-faded by --m. Both colours are
+   on screen at once mid-hover, which is the whole point — you see the page
+   you are leaving bleeding into the one you are about to open. */
 .seg-ink::before,.seg-ink::after{content:"";position:absolute;inset:-45%;
   transition:opacity .3s linear}
 .seg-ink::before{opacity:calc(1 - var(--m));background:
@@ -433,144 +448,110 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .seg-ink::after{opacity:var(--m);background:
   radial-gradient(42% 62% at 30% 74%,color-mix(in srgb,var(--c2,var(--c1)) 62%,transparent),transparent 72%),
   radial-gradient(48% 68% at 70% 22%,color-mix(in srgb,var(--c2,var(--c1)) 34%,transparent),transparent 74%)}
-.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-  text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
-  text-align:center;border-radius:999px;transition:color .2s}
-.tab:hover{color:var(--ink)}
+
+.tab{position:relative;z-index:1;display:block;white-space:nowrap;cursor:pointer;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;text-decoration:none;color:var(--ink2);
+  padding:.42rem .85rem;border-radius:999px;transition:color .22s ease}
 .tab.on{color:var(--accent-t);font-weight:700}
-@media (max-width:640px){
-  .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Segment dividers — the affordance at rest. Drawn on the tab rather than the
+   track so they land in the gaps whatever each label measures. */
+.tab+.tab::before{content:"";position:absolute;left:0;top:50%;width:1px;height:13px;
+  margin-top:-6.5px;background:var(--rule2);opacity:.6;transition:opacity .25s ease}
+.tab.on::before,.tab.on+.tab::before,.seg.hot .tab::before{opacity:0}
+@media (hover:hover) and (pointer:fine){
+  .tab:hover{color:var(--ink)}
 }
 /* A group you are not currently inside shows no indicator until you point at
    it, so exactly one indicator on screen is ever "yours". */
-.seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s,transform .34s cubic-bezier(.22,.9,.24,1)}
+.seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
 .seg-gap{width:.45rem;flex:0 0 auto}
 
-/* Six tabs in two groups is 812px of navigation at full size — nearly twice what
-   the old single four-tab control took — so it has to give way in stages rather
-   than push the wordmark off the bar. Measured at 1280: nav 812px, total ~990px,
-   which clears 1024 and nothing below it.
+/* Six tabs in two groups is a lot of bar, so it gives way in stages rather
+   than push the wordmark off the edge.
      1180  tighter tabs
-     1000  the group you are NOT in collapses away; the one you are in remains,
-           because that is the one showing you where you are. Measured: at 900px
-           with both groups shown the bar still overflowed even with tight tabs,
-           so this threshold is set from the measurement, not from a round number
-      620  the switcher goes entirely — every one of these links is in the page
-           footer, and on those widths the section rail is the primary navigation */
+     1000  the group you are NOT in collapses away; the one you are in stays,
+           because that is the one showing you where you are
+      980  the desktop switcher goes entirely and .mnav takes over */
 .navwrap{display:flex;align-items:center}
 
 @media (max-width:1180px){
-  .tab{padding:.4rem .58rem;font-size:.62rem;letter-spacing:.07em}
+  .tab{padding:.42rem .6rem;font-size:.62rem;letter-spacing:.07em}
 }
-/* Bounded BELOW as well: under 620px the sheet takes over and wants both groups
-   in it. An unbounded max-width rule here would hide the legal group inside the
-   mobile sheet, which is the one place there is room for it. */
-@media (min-width:621px) and (max-width:1000px){
+@media (min-width:981px) and (max-width:1000px){
   .seg[data-at="-1"],.seg-gap{display:none}
 }
 
-/* Desktop shows neither mobile variant. */
-.navtrig,.scrim,.nsheet,.nt-grip,.mnav{display:none}
+/* Desktop shows no mobile menu. */
+.mnav{display:none}
 
-/* ── mobile VARIANT B: the bottom sheet ───────────────────────────────
-   A trigger in the thumb zone at the bottom edge, naming the page you are on
-   rather than hiding behind an anonymous icon, opening a sheet that carries the
-   same vertical fluid track. */
-@media (max-width:980px){
-  [data-nav=sheet] .navtrig{display:flex;align-items:center;gap:.5rem;position:fixed;z-index:62;
-    left:50%;transform:translateX(-50%);
-    bottom:.75rem;
-    bottom:calc(.75rem + env(safe-area-inset-bottom,0px));
-    min-height:42px;padding:0 .95rem 0 .8rem;border-radius:999px;cursor:pointer;
-    -webkit-appearance:none;appearance:none;
-    font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;
-    color:var(--ink);border:1px solid var(--rule2);
-    background:color-mix(in srgb,var(--paper) 92%,transparent);
-    backdrop-filter:blur(14px) saturate(1.3);
-    box-shadow:0 10px 30px -10px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06);
-    transition:opacity .26s,transform .3s cubic-bezier(.2,.85,.25,1)}
-  [data-nav=sheet] .nt-d{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:0 0 7px}
-  [data-nav=sheet] .nt-c{width:0;height:0;flex:0 0 auto;
-    border-left:4px solid transparent;border-right:4px solid transparent;
-    border-bottom:5px solid var(--ink3)}
-  [data-nav=sheet] .navtrig[aria-expanded=true]{opacity:0;pointer-events:none;
-    transform:translateX(-50%) translateY(8px)}
+/* ── mobile navigation ────────────────────────────────────────────────
+   ONE disclosure holding every destination on the site: both page groups and,
+   on the legal pages, the section index — because they answer the same
+   question, and two collapsing menus a thumb-width apart was the complaint
+   that started this.
 
-  [data-nav=sheet] .scrim{display:block;position:fixed;inset:0;z-index:60;
-    background:rgba(10,8,14,.55);backdrop-filter:blur(2px);
-    opacity:0;pointer-events:none;transition:opacity .3s}
-  [data-nav=sheet] .scrim.open{opacity:1;pointer-events:auto}
+   Deliberately plain. No indicator, no gesture, no hover state — those three
+   are what made the previous two attempts feel broken on a phone. A latched
+   :hover after a tap is why buttons appeared "stuck mid-phase", so every
+   hover rule on this site is now inside a (hover:hover) query and touch gets
+   :active instead, which releases on its own.
 
-  [data-nav=sheet] .nsheet{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:61;
-    flex-direction:column;align-items:stretch;gap:.55rem;
-    padding:.6rem clamp(1rem,4vw,1.4rem) 1rem;
-    padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px));
-    border-radius:20px 20px 0 0;
-    background:color-mix(in srgb,var(--desk) 97%,transparent);
-    backdrop-filter:blur(16px) saturate(1.3);
-    border:1px solid var(--rule);border-bottom:0;
-    box-shadow:0 -18px 50px -20px rgba(0,0,0,.8);
-    transform:translateY(102%);pointer-events:none;
-    transition:transform .38s cubic-bezier(.2,.85,.25,1)}
-  [data-nav=sheet] .nsheet.open{transform:none;pointer-events:auto}
-  [data-nav=sheet] .nsheet.dragging{transition:none}
-  [data-nav=sheet] .nt-grip{display:block;width:38px;height:4px;border-radius:999px;
-    background:var(--rule2);margin:.15rem auto .5rem;cursor:grab}
-  [data-nav=sheet] .nsheet .seg{grid-auto-flow:row;grid-auto-columns:auto;width:100%;
-    touch-action:none;cursor:default}
-  [data-nav=sheet] .nsheet .seg-ink{left:3px;right:3px;top:3px;bottom:auto;width:auto;
-    height:calc((100% - 6px)/var(--n));
-    transform:translateY(calc(var(--i) * 100%)) scaleY(var(--sx))}
-  [data-nav=sheet] .nsheet .tab{display:flex;align-items:center;min-height:44px;
-    padding:0 .95rem;font-size:.68rem;letter-spacing:.1em;text-align:left}
-  [data-nav=sheet] .nsheet .seg-gap{display:none}
-  /* In sheet mode the sticky control goes back to being Sections-only. */
-  [data-nav=sheet] #mt-p,[data-nav=sheet] #mp-p{display:none}
-}
-
-/* ── mobile: navigation folds into ONE control ────────────────────────
-   Below 980 the bar's switcher gives way to .mnav, the sticky control that was
-   already there for the section index. It gains a Pages tab; the section list
-   becomes the Sections tab. One object, one mental model, and the phone ends up
-   with fewer controls than before rather than a second menu beside the first.
-
-   Inside a panel the same .seg becomes a VERTICAL track: the ink travels down
-   it, stretches along Y instead of X, and follows a thumb drag.
-   touch-action:none is required there, or the browser claims the gesture for
-   page scrolling before the pointer handlers ever see it. */
+   Rows are 48px, clearing the 44px minimum (WCAG 2.5.5) with enough margin
+   for a thumb that is not aimed precisely. */
 @media (max-width:980px){
   .bar .navwrap{display:none}
-  [data-nav=merged] .mnav,[data-nav=sheet] .mnav{display:block}
+  .mnav{display:block;position:sticky;top:54px;z-index:40}
 
-  .mnav-h{display:flex;align-items:center;gap:.4rem;padding:.42rem .5rem;
-    border:1px solid var(--rule);background:var(--paper)}
-  .mtab{-webkit-appearance:none;appearance:none;cursor:pointer;
-    min-height:34px;padding:0 .8rem;border-radius:999px;
-    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--ink2);background:transparent;border:1px solid transparent;
-    transition:color .2s,border-color .2s,background .2s}
-  .mtab[aria-expanded=true]{color:var(--accent-t);border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+  .mtrig{display:flex;width:100%;align-items:center;gap:.55rem;
+    -webkit-appearance:none;appearance:none;cursor:pointer;
+    min-height:48px;padding:0 .9rem;text-align:left;
+    border:1px solid var(--rule);border-left:0;border-right:0;
+    background:color-mix(in srgb,var(--paper) 96%,transparent);
+    backdrop-filter:blur(12px);
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink)}
+  .mt-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:0 0 7px}
+  .mt-now{font-weight:700}
+  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
+    color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42%}
+  .mt-chev{flex:0 0 auto;width:7px;height:7px;margin-left:.45rem;
+    border-right:1.5px solid var(--ink2);border-bottom:1.5px solid var(--ink2);
+    transform:translateY(-2px) rotate(45deg);
+    transition:transform .3s cubic-bezier(.22,.9,.24,1)}
+  .mtrig[aria-expanded=true] .mt-chev{transform:translateY(1px) rotate(225deg)}
+
+  /* max-height rather than a height animation: the panel's content varies from
+     6 rows to nearly 30, and nothing here needs to measure it. */
+  .mpanel{max-height:0;overflow:hidden;background:var(--paper);
+    border-bottom:0 solid var(--rule);
+    transition:max-height .34s cubic-bezier(.22,.9,.24,1)}
+  .mpanel.open{max-height:min(70vh,560px);overflow-y:auto;border-bottom-width:1px}
+
+  .mp-h{margin:0;padding:.8rem .9rem .3rem;font-family:var(--mono);font-size:.56rem;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+  .mp-list{padding-bottom:.3rem}
+
+  .mrow{display:flex;align-items:center;gap:.6rem;min-height:48px;padding:0 .9rem;
+    text-decoration:none;color:var(--ink2);
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
+    border-left:2px solid transparent}
+  .mr-b{width:6px;height:6px;border-radius:50%;flex:0 0 6px;
+    background:var(--row,var(--ink3));opacity:.45}
+  .mrow.on{color:var(--ink);border-left-color:var(--row,var(--accent));
+    background:color-mix(in srgb,var(--row,var(--accent)) 10%,transparent)}
+  .mrow.on .mr-b{opacity:1}
+  .mrow:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
+
+  /* The section index reuses the .slot markup the desktop rail uses, resized
+     for a thumb. It is the same list, so the scrollspy highlights both. */
+  .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
+    padding:0 .9rem;border-left:2px solid transparent}
+  .msec .slot.on{border-left-color:var(--accent);
     background:color-mix(in srgb,var(--accent) 10%,transparent)}
-  .mnav-h .cur{display:block;margin-left:auto;padding-right:.3rem;
-    font-family:var(--mono);font-size:.62rem;letter-spacing:.03em;color:var(--ink3);
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46%}
-
-  .mpan{display:none;border:1px solid var(--rule);border-top:0;background:var(--paper);
-    max-height:min(56vh,420px);overflow-y:auto}
-  .mpan.open{display:block}
-  #mp-p{padding:.55rem}
-  #mp-p .seg{grid-auto-flow:row;grid-auto-columns:auto;width:100%;
-    touch-action:none;cursor:default}
-  #mp-p .seg+.seg{margin-top:.5rem}
-  #mp-p .seg-ink{left:3px;right:3px;top:3px;bottom:auto;width:auto;
-    height:calc((100% - 6px)/var(--n));
-    transform:translateY(calc(var(--i) * 100%)) scaleY(var(--sx))}
-  /* 44px minimum touch target (WCAG 2.5.5), set explicitly so a later type
-     change cannot silently shrink it — padding alone had given 34px. */
-  #mp-p .tab{display:flex;align-items:center;min-height:44px;padding:0 .95rem;
-    font-size:.68rem;letter-spacing:.1em;text-align:left}
-  #mp-p .seg-gap{display:none}
+  .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
 }
 
 
@@ -799,7 +780,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    document and the nav's hairline sits below it, separating site chrome from the
    letter rather than cutting the letter off from its own last line. */
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ghb,.ins,.cpy,.node,.mnav,.navtrig,.scrim,.nsheet{display:none!important}
+@media print{.bar,.thm,.ghb,.ins,.cpy,.node,.mnav{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
   .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -819,10 +800,10 @@ html{scroll-behavior:smooth}
        changes shape as you move around the site. It replaces the old "‹ Legal"
        back button, which could only ever go one place. -->
   <nav>
-    <div class="navwrap"><div class="seg" data-at="-1" style="--n:4;--i:0">
+    <div class="navwrap"><div class="seg" data-at="-1">
       <span class="seg-ink" aria-hidden="true"></span>
       <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
-    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" style="--n:2;--i:0">
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0">
       <span class="seg-ink" aria-hidden="true"></span>
       <a class="tab on" href="./contributing.html" data-accent="#B6E24A" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
     </div></div>
@@ -868,38 +849,21 @@ html{scroll-behavior:smooth}
   </nav>
 </div>
 
-<button class="navtrig" id="navbtn" aria-expanded="false" aria-controls="nsheet"
-  aria-label="Open navigation. Current page: Contributing">
-  <span class="nt-d" aria-hidden="true"></span>
-  <span class="nt-l">Contributing</span>
-  <span class="nt-c" aria-hidden="true"></span>
-</button>
-<span class="scrim" id="scrim" aria-hidden="true"></span>
-<div class="nsheet" id="nsheet">
-  <span class="nt-grip" aria-hidden="true"></span>
-  <div class="seg" data-at="-1" style="--n:4;--i:0">
-      <span class="seg-ink" aria-hidden="true"></span>
-      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
-    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" style="--n:2;--i:0">
-      <span class="seg-ink" aria-hidden="true"></span>
-      <a class="tab on" href="./contributing.html" data-accent="#B6E24A" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
-    </div>
-</div>
 <div class="wrap">
   <aside class="mnav" id="mnav">
-  <div class="mnav-h">
-    <button class="mtab" id="mt-p" aria-expanded="false" aria-controls="mp-p">Pages</button>
+  <button class="mtrig" id="mtrig" aria-expanded="false" aria-controls="mpanel">
+    <span class="mt-dot" aria-hidden="true"></span>
+    <span class="mt-now">Contributing</span>
+    <span class="mt-at" id="railcur"></span>
+    <span class="mt-chev" aria-hidden="true"></span>
+  </button>
+  <div class="mpanel" id="mpanel">
+    <p class="mp-h">Documents</p>
+    <div class="mp-list"><a class="mrow" href="./terms.html" style="--row:#F2994A"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Terms</span></a><a class="mrow" href="./privacy.html" style="--row:#17A2A2"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Privacy</span></a><a class="mrow" href="./license.html" style="--row:#9B6BE3"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">License</span></a><a class="mrow" href="./notice.html" style="--row:#E8657F"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Notice</span></a></div>
+    <p class="mp-h">Community</p>
+    <div class="mp-list"><a class="mrow on" href="./contributing.html" aria-current="page" style="--row:#B6E24A"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Contributing</span></a><a class="mrow" href="./contributors.html" style="--row:#5AA9FF"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Contributors</span></a></div>
     
-    <span class="cur" id="railcur"></span>
   </div>
-  <div class="mpan" id="mp-p"><div class="seg" data-at="-1" style="--n:4;--i:0">
-      <span class="seg-ink" aria-hidden="true"></span>
-      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
-    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" style="--n:2;--i:0">
-      <span class="seg-ink" aria-hidden="true"></span>
-      <a class="tab on" href="./contributing.html" data-accent="#B6E24A" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
-    </div></div>
-  
 </aside>
   <header class="hero">
     <span class="chip">Open to anyone</span>
@@ -992,9 +956,11 @@ NODE_ENV=development</code></pre>
   });
 })();
 (function(){
-  var segs=[].slice.call(document.querySelectorAll('.seg'));
-  if(!segs.length) return;
   var still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  /* Hover behaviour is bound only where hover exists. On a touch screen a
+     :hover state latches on first tap and stays until you tap elsewhere, which
+     is what left buttons "stuck mid-phase" all over the mobile site. */
+  var fine=matchMedia('(hover:hover) and (pointer:fine)');
   var hex=function(c){ c=c.replace('#','');
     return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]; };
   var blend=function(a,b,t){ var A=hex(a),B=hex(b);
@@ -1002,225 +968,117 @@ NODE_ENV=development</code></pre>
                 +Math.round(A[1]+(B[1]-A[1])*t)+','
                 +Math.round(A[2]+(B[2]-A[2])*t)+')'; };
 
-  segs.forEach(function(seg){
+  [].slice.call(document.querySelectorAll('.seg')).forEach(function(seg){
     var tabs=[].slice.call(seg.querySelectorAll('.tab'));
-    var n=tabs.length; if(!n) return;
+    var ink=seg.querySelector('.seg-ink');
+    var n=tabs.length; if(!n||!ink) return;
     var cols=tabs.map(function(a){ return a.getAttribute('data-accent'); });
     /* home is the tab for the page you are ON, or null for the other group */
     var home=parseInt(seg.getAttribute('data-at'),10);
     if(isNaN(home)||home<0) home=null;
-    var base=home===null?0:home;
-    var pos=base, m=0, tgt=base, mTgt=0, prev=base, raf=0;
-    var dragging=false, moved=false, x0=0, unit=1;
-    var clamp=function(v){ return Math.max(0,Math.min(n-1,v)); };
-    /* The same control is horizontal in the bar and vertical in the mobile sheet.
-       Rather than track a breakpoint in script — which would then have to agree
-       with the media query forever — the axis is READ from the layout the CSS
-       actually applied. */
-    var vert=function(){ return getComputedStyle(seg).gridAutoFlow.indexOf('row')===0; };
-    var unitOf=function(){ var r=seg.getBoundingClientRect();
-      return ((vert()?r.height:r.width)-6)/n; };
-    var at=function(e){ return vert()?e.clientY:e.clientX; };
-    var edge=function(){ var r=seg.getBoundingClientRect();
-      return vert()?r.top:r.left; };
 
-    function apply(){
-      seg.style.setProperty('--i',pos);
-      var near=clamp(Math.round(pos));
-      seg.style.setProperty('--c2',cols[near]);
+    var L=0,R=0,tL=0,tR=0,m=0,mTgt=0,raf=0,idx=home===null?0:home;
+
+    /* Real measured geometry, not 1/n of the track. offsetLeft and an absolutely
+       positioned left:0 are both measured from .seg's padding box, so the two
+       agree exactly and the pill fits "Contributing" as well as "Notice". */
+    function box(i){ var a=tabs[i]; return [a.offsetLeft, a.offsetLeft+a.offsetWidth]; }
+    function paint(){
+      ink.style.transform='translateX('+L+'px)';
+      ink.style.width=Math.max(0,R-L)+'px';
+      seg.style.setProperty('--c2',cols[idx]);
       if(home===null){
         /* No page of yours in this group, so there is nothing to blend FROM —
            the indicator simply wears the colour of whatever you point at. */
-        seg.style.setProperty('--c1',cols[near]);
+        seg.style.setProperty('--c1',cols[idx]);
         seg.style.setProperty('--m',0);
-        seg.style.setProperty('--cm',cols[near]);
+        seg.style.setProperty('--cm',cols[idx]);
       }else{
         seg.style.setProperty('--m',m);
-        seg.style.setProperty('--cm',blend(cols[home],cols[near],m));
+        seg.style.setProperty('--cm',blend(cols[home],cols[idx],m));
       }
     }
+    /* The morph. An edge opening the pill moves fast; an edge closing it lags.
+       Travelling right, the right edge runs ahead while the left edge trails, so
+       the pill elongates into the gap and then catches up behind itself. */
     function frame(){
-      pos+=(tgt-pos)*0.19;
+      var FAST=0.32, SLOW=0.15;
+      L+=(tL-L)*(tL<L?FAST:SLOW);
+      R+=(tR-R)*(tR>R?FAST:SLOW);
       m+=(mTgt-m)*0.16;
-      var v=Math.abs(pos-prev); prev=pos;
-      seg.style.setProperty('--sx',(1+Math.min(v*1.7,0.22)).toFixed(3));
-      apply();
-      if(Math.abs(tgt-pos)>0.001||Math.abs(mTgt-m)>0.004||v>0.001){
+      paint();
+      if(Math.abs(tL-L)>0.4||Math.abs(tR-R)>0.4||Math.abs(mTgt-m)>0.004){
         raf=requestAnimationFrame(frame);
-      }else{
-        pos=tgt; m=mTgt; seg.style.setProperty('--sx',1); apply(); raf=0;
-      }
+      }else{ L=tL; R=tR; m=mTgt; paint(); raf=0; }
     }
-    function run(){
-      if(still){ pos=tgt; m=mTgt; apply(); return; }
+    function aim(i,snap){
+      idx=i;
+      var b=box(i); tL=b[0]; tR=b[1];
+      mTgt=home===null?0:(i===home?0:1);
+      if(snap||still){ L=tL; R=tR; m=mTgt; paint(); return; }
       if(!raf) raf=requestAnimationFrame(frame);
     }
-    function aim(c){
-      var p=(c-edge()-3)/unitOf();
-      var idx=clamp(Math.round(p-0.5));
-      /* Magnetic: it settles ON a tab but leans toward the cursor inside it, so
-         it genuinely tracks your hand instead of stepping between slots. */
-      tgt=idx+Math.max(-0.34,Math.min(0.34,(p-0.5)-idx))*0.42;
-      mTgt=home===null?0:Math.min(1,Math.abs(idx-home));
+    function rest(){
+      seg.classList.remove('hot');
+      aim(home===null?idx:home,false);
     }
 
-    seg.addEventListener('pointermove',function(e){
-      if(dragging){
-        var dx=at(e)-x0;
-        if(Math.abs(dx)>3) moved=true;
-        pos=tgt=clamp(base+dx/unit);
-        mTgt=m=home===null?0:Math.min(1,Math.abs(Math.round(pos)-home));
-        apply();
-        return;
-      }
-      /* Touch drives the vertical sheet — that is the whole point of it — but
-         must not fire hover behaviour on the desktop bar. */
-      if(e.pointerType==='touch'&&!vert()) return;
-      seg.classList.add('hot'); aim(at(e)); run();
-    });
-    seg.addEventListener('pointerleave',function(){
-      if(dragging) return;
-      seg.classList.remove('hot');
-      tgt=base; mTgt=0; run();
-    });
-    seg.addEventListener('pointerdown',function(e){
-      if(e.button||n<2) return;
-      dragging=true; moved=false; x0=at(e); unit=unitOf(); base=pos;
-      seg.classList.add('drag','hot');
-      try{ seg.setPointerCapture(e.pointerId); }catch(err){}
-    });
-    var release=function(){
-      if(!dragging) return;
-      dragging=false; seg.classList.remove('drag');
-      var t=clamp(Math.round(pos));
-      base=home===null?0:home;
-      tgt=t; mTgt=home===null?0:Math.min(1,Math.abs(t-home)); run();
-      if(moved&&t!==home) location.href=tabs[t].getAttribute('href');
-    };
-    seg.addEventListener('pointerup',release);
-    seg.addEventListener('pointercancel',release);
-    /* A drag that ends over a tab must not also fire that tab's click. */
-    seg.addEventListener('click',function(e){
-      if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; }
-    },true);
-    tabs.forEach(function(a,idx){
-      a.addEventListener('focus',function(){
-        if(dragging) return;
-        seg.classList.add('hot'); tgt=idx;
-        mTgt=home===null?0:Math.min(1,Math.abs(idx-home)); run();
+    tabs.forEach(function(a,i){
+      a.addEventListener('mouseenter',function(){
+        if(!fine.matches) return;
+        seg.classList.add('hot'); aim(i,false);
       });
+      a.addEventListener('focus',function(){ seg.classList.add('hot'); aim(i,false); });
       a.addEventListener('blur',function(){
-        if(dragging||seg.contains(document.activeElement)) return;
-        seg.classList.remove('hot'); tgt=base; mTgt=0; run();
+        if(!seg.contains(document.activeElement)) rest();
       });
+      /* Arrows move FOCUS along the group — the standard behaviour for a set of
+         related links. The old handler navigated on keydown, so pressing an
+         arrow while reading the bar loaded a different document. */
       a.addEventListener('keydown',function(e){
         var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
         if(!d) return;
         e.preventDefault();
-        location.href=tabs[(idx+d+n)%n].getAttribute('href');
+        tabs[(i+d+n)%n].focus();
       });
     });
-    apply();
+    seg.addEventListener('mouseleave',function(){ if(fine.matches) rest(); });
+
+    /* First paint snaps: an animation from zero width would read as a glitch. */
+    aim(home===null?0:home,true);
+    addEventListener('resize',function(){ aim(idx,true); });
   });
 
-  /* The sheet. aria-expanded is the single source of truth for both the open
-     state and the icon, so they cannot disagree. */
-  /* The mobile control: two tabs, one panel open at a time. aria-expanded on
-     each tab is the single source of truth for both the open state and the
-     styling, so they cannot disagree. */
-  var mnav=document.getElementById('mnav');
-  if(mnav){
-    var tabsM=[].slice.call(mnav.querySelectorAll('.mtab'));
-    var panelOf=function(t){ return document.getElementById(t.getAttribute('aria-controls')); };
-    var shut=function(){
-      tabsM.forEach(function(t){
-        t.setAttribute('aria-expanded','false');
-        var p=panelOf(t); if(p){ p.classList.remove('open'); p.setAttribute('inert',''); }
-      });
-    };
-    shut();
-    tabsM.forEach(function(t){
-      t.addEventListener('click',function(){
-        var wasOpen=t.getAttribute('aria-expanded')==='true';
-        shut();
-        if(!wasOpen){
-          t.setAttribute('aria-expanded','true');
-          var p=panelOf(t);
-          if(p){ p.classList.add('open'); p.removeAttribute('inert'); }
-        }
-      });
-    });
-    document.addEventListener('keydown',function(e){
-      if(e.key==='Escape') shut();
-    });
-    /* Choosing a destination closes the control. */
-    mnav.addEventListener('click',function(e){
-      if(e.target.closest('a')) shut();
-    });
-  }
-
-  /* ── variant B: the bottom sheet ──────────────────────────────────── */
-  var btn=document.getElementById('navbtn'),
-      sheet=document.getElementById('nsheet'),
-      scrim=document.getElementById('scrim'),
-      grip=sheet&&sheet.querySelector('.nt-grip');
-  if(btn&&sheet){
-    /* Is the sheet layout in force? Read from the layout the CSS actually
+  /* ── the mobile menu ──────────────────────────────────────────────────
+     One button, one panel, no gesture and no indicator. aria-expanded is the
+     single source of truth for the open state, the chevron and the panel, so
+     they cannot disagree; inert keeps a closed panel out of the tab order and
+     the accessibility tree. */
+  var trig=document.getElementById('mtrig'),
+      panel=document.getElementById('mpanel');
+  if(trig&&panel){
+    var open=false;
+    /* Is the mobile layout in force? Read from the layout the CSS actually
        applied, so script and media query can never disagree. */
-    var live=function(){ return getComputedStyle(btn).display!=='none'; };
-    var up=false;
-    var setUp=function(v){
-      up=v;
-      btn.setAttribute('aria-expanded',v?'true':'false');
-      sheet.classList.toggle('open',v);
-      if(scrim) scrim.classList.toggle('open',v);
-      /* inert keeps a closed sheet out of the tab order and the accessibility
-         tree — the property actually wanted, and correct mid-transition too. */
-      sheet.toggleAttribute('inert',live()&&!v);
-      if(v){ var f=sheet.querySelector('.tab'); if(f) f.focus({preventScroll:true}); }
+    var live=function(){ return getComputedStyle(trig).display!=='none'; };
+    var set=function(v){
+      open=v;
+      trig.setAttribute('aria-expanded',v?'true':'false');
+      panel.classList.toggle('open',v);
+      panel.toggleAttribute('inert',live()&&!v);
     };
-    setUp(false);
-    addEventListener('resize',function(){
-      if(!live()){ sheet.removeAttribute('inert'); sheet.classList.remove('open');
-        if(scrim) scrim.classList.remove('open');
-        btn.setAttribute('aria-expanded','false'); up=false; }
-      else setUp(up);
-    });
-    btn.addEventListener('click',function(){ setUp(!up); });
-    if(scrim) scrim.addEventListener('click',function(){ setUp(false); btn.focus(); });
+    set(false);
+    trig.addEventListener('click',function(){ set(!open); });
+    panel.addEventListener('click',function(e){ if(e.target.closest('a')) set(false); });
     document.addEventListener('keydown',function(e){
-      if(e.key==='Escape'&&up){ setUp(false); btn.focus(); }
+      if(e.key==='Escape'&&open){ set(false); trig.focus(); }
     });
-    sheet.addEventListener('click',function(e){ if(e.target.closest('a')) setUp(false); });
-
-    /* Drag the grip down to dismiss. Past a third of the sheet's height, or on a
-       quick flick, it closes; anything short of that springs back — the standard
-       bottom-sheet contract, and why a hesitant drag never loses your place. */
-    if(grip){
-      var y0=0, dy=0, t0=0, sliding=false;
-      grip.addEventListener('pointerdown',function(e){
-        if(!up) return;
-        sliding=true; y0=e.clientY; dy=0; t0=Date.now();
-        sheet.classList.add('dragging');
-        try{ grip.setPointerCapture(e.pointerId); }catch(err){}
-      });
-      grip.addEventListener('pointermove',function(e){
-        if(!sliding) return;
-        dy=Math.max(0,e.clientY-y0);
-        sheet.style.transform='translateY('+dy+'px)';
-      });
-      var drop=function(){
-        if(!sliding) return;
-        sliding=false;
-        sheet.classList.remove('dragging');
-        sheet.style.transform='';
-        if(dy>sheet.getBoundingClientRect().height/3||((Date.now()-t0)<300&&dy>40)){
-          setUp(false); btn.focus();
-        }
-      };
-      grip.addEventListener('pointerup',drop);
-      grip.addEventListener('pointercancel',drop);
-    }
+    document.addEventListener('click',function(e){
+      if(open&&!e.target.closest('#mnav')) set(false);
+    });
+    addEventListener('resize',function(){
+      if(!live()) panel.removeAttribute('inert'); else set(open);
+    });
   }
 })();
 (function(){

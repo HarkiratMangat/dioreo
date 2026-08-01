@@ -294,6 +294,20 @@ nothing else republishes the site, and `dior legal check` compares live bytes ag
   `EXTRA_PAGES` is contributing + contributors rendered by `warmShell()`: rounded, warm radial wash,
   glow, **no numbers anywhere**. The number series is what tells a reader "these bind you", so an
   invitation must never enter it. Don't collapse the two templates.
+- ⚠️ **The nav is TWO controls — a desktop switcher and a mobile menu — and they must stay separate**
+  (rebuilt 2026-07-31 23:55 EDT). Sharing one control across breakpoints is what broke it: a
+  pointer-driven indicator that has to be a horizontal track AND a vertical thumb-follower does neither
+  well, and every hover rule it carried latched on first tap on a touch screen. **There is no drag
+  gesture and nothing may intercept a tab's click.** The retired version began a drag on every
+  `pointerdown` and a capture-phase handler cancelled the navigation whenever the pointer moved >3px
+  between press and release — so an ordinary click with a little hand drift was swallowed silently.
+  Demonstrated in Chrome against the live build: identical synthetic clicks reached the link at 0px of
+  drift and never reached it at 6px. The desktop indicator morphs by tracking its two edges on
+  asymmetric springs (an expanding edge moves ~2x faster than a contracting one); it measures real tab
+  boxes, so nothing sets `--n`/`--i` and the pill cannot exceed the track.
+- ⚠️ **Every hover rule belongs inside `@media (hover:hover) and (pointer:fine)`.** On touch, `:hover`
+  latches until you tap elsewhere, which is what left buttons "stuck mid-phase" on the phone. Touch
+  feedback goes through `:active`, which releases itself.
 - **The site's only repo link is the header button, and that is on purpose.** A citation inside a legal
   document must resolve (repo visibility can change — TERMS §7.1), so in-prose repo references still
   degrade to inert text via `PUBLISHED_TARGETS`. A nav button that 404s is a dead button, not a
@@ -314,7 +328,11 @@ nothing else republishes the site, and `dior legal check` compares live bytes ag
   It now decodes numeric/hex/named entities; that is safe because an entity resolves to exactly one
   character, so decoding can only *remove* a fabricated word, never supply a source word the page
   doesn't render.
-- **There are FIVE gates now, not three.** `warmStructAudit()` (added 2026-07-30 00:40 EDT) asserts every
+- **The build prints its gate roster on every run — read that output, don't trust a count written here.**
+  A number in prose is a copy of state nothing updates: this line said "THREE", then "FIVE", and was
+  wrong within a day both times (`classCollisionAudit()` made it six on 2026-07-30). Each gate tests a
+  DIFFERENT property and passing one proves nothing about the others.
+- `warmStructAudit()` (added 2026-07-30 00:40 EDT) asserts every
   treatment each warm page **declares** in `WARM_STRUCT` actually fired. The warm treatments key off
   source heading text, so renaming a heading in `CONTRIBUTING.md` would silently drop that section back
   to plain prose — and **no other gate can see it**: all words still present, no links changed, no aligned

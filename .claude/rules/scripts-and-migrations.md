@@ -36,7 +36,9 @@ the subsystem rule it belongs to:*
   example row. Without the strip the comment rendered as visible content and the live credits page
   listed a **fabricated contributor** (`@example`) as though it were real.
 
-  ⚠️ **It has THREE independent gates and passing one proves nothing about the others** (learned the hard
+  ⚠️ **Its gates are INDEPENDENT and passing one proves nothing about the others** (learned the hard
+  way; the roster is printed on every run — read it there rather than from a count in prose, which said
+  "THREE" here and "FIVE" in CLAUDE.md and was stale both times). Historically (learned the hard
   way 2026-07-29 18:55 EDT, v2.43.1; third added 2026-07-29 22:17 EDT). `verify()` checks that every
   multi-word run of source survived into the HTML; `linkAudit()` resolves every internal href against the
   deploy tree; `structureAudit()` asserts every column-aligned source line landed inside a `<pre>` or a
