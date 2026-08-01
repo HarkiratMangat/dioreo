@@ -789,6 +789,25 @@ ${C.COMPONENT_CSS}
 
 ${C.SWITCHER_CSS}
 
+/* ── print ────────────────────────────────────────────────────────────────
+   COMPONENT_CSS already hides the bar, rail, mobile nav and back-to-top. These
+   are this family's own decorative layers, and every one of them prints badly:
+   the scanline overlay lays grey stripes across the whole page, the boot panel
+   would cover it entirely if a print began mid-sequence, and the timeline spine
+   and its glow become stray rules down the margin. A changelog is a plausible
+   thing to print or save as a PDF, so it should come out as the document rather
+   than as a photograph of a screen. Reveal-armed entries are forced visible too:
+   printing does not scroll, so an unrevealed entry would print blank. */
+@media print{
+  .lg-scan,.boot,.tl-line,.tl-node,.tl-node-b{display:none!important}
+  .rv-armed [data-rv]{opacity:1!important;transform:none!important}
+  .tl{padding-left:0}
+  .tl-date{position:static;width:auto;text-align:left;margin:0 0 .2rem}
+  .cxfold-b{max-height:none;overflow:visible}
+  .pn-hero,.pn-card,.pn-soon,.cxfold{border-color:#999;background:none}
+  .pn-hero::after{display:none}
+}
+
 /* ── styles for markup the SHARED parser emits ────────────────────────────
    parseBlocks() and linkifyRefs() emit .anchor and .xref on every page they
    render, but the rules for them live inside shell()'s own template, not in
