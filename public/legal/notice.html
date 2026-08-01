@@ -6,6 +6,7 @@
 <title>Notices &amp; Attributions — Dior's Builds</title>
 <meta name="description" content="Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
+<script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <meta property="og:title" content="Notices &amp; Attributions — Dior's Builds">
 <meta property="og:description" content="Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta property="og:type" content="website">
@@ -19,7 +20,12 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
-  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#6E6782;
+  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
+  /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
+     paper the same values measured 1.0-2.0:1 — the active tab label, the status
+     chips and the ticket stubs were effectively invisible. Borders and fills
+     keep --accent; only glyphs and type use this. */
+  --accent-t:var(--accent);
   --shadow:0 24px 60px -28px rgba(0,0,0,.85);
   --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
@@ -35,14 +41,16 @@
 :root[data-theme=light]{
   --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
   --rule:#CBC3B4; --rule2:#A39A8B;
-  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
     --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
     --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
     --shadow:0 20px 50px -30px rgba(40,32,50,.3);
   }
 }
@@ -94,7 +102,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
 .mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
   background-position:-30% 0}
-.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
 .mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 .mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
@@ -151,7 +159,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   text-decoration:none;padding:0 .5rem 0 .35rem;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
   text-transform:uppercase;font-weight:700;
-  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  color:#141021;background:var(--accent);border:1px solid var(--accent);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.34),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
   transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -347,8 +355,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    so it never becomes a grey slab. */
 .foot{border-top:1px solid var(--rule);padding:2.2rem 0 3.4rem;
   display:flex;flex-direction:column;align-items:center;gap:1.4rem;text-align:center}
-.disc{margin:0;font-family:var(--mono);font-size:.58rem;line-height:1.85;
-  letter-spacing:.05em;color:var(--ink3);opacity:.72;max-width:60ch}
+/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
+   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+.disc{margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
+  letter-spacing:.05em;color:var(--ink3);max-width:60ch}
 /* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 .endnav{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
@@ -368,7 +378,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .sig{margin:2.6rem 0 0;text-align:center;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
 .sig b{color:var(--ink2);font-weight:600}
-.hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
+.hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
 
@@ -429,7 +439,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
   text-align:center;border-radius:999px;transition:color .2s}
 .tab:hover{color:var(--ink)}
-.tab.on{color:var(--accent);font-weight:700}
+.tab.on{color:var(--accent-t);font-weight:700}
 @media (max-width:640px){
   .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
 }
@@ -542,7 +552,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
     color:var(--ink2);background:transparent;border:1px solid transparent;
     transition:color .2s,border-color .2s,background .2s}
-  .mtab[aria-expanded=true]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+  .mtab[aria-expanded=true]{color:var(--accent-t);border-color:color-mix(in srgb,var(--accent) 45%,transparent);
     background:color-mix(in srgb,var(--accent) 10%,transparent)}
   .mnav-h .cur{display:block;margin-left:auto;padding-right:.3rem;
     font-family:var(--mono);font-size:.62rem;letter-spacing:.03em;color:var(--ink3);
@@ -608,7 +618,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .slot:hover{border-left-color:var(--ink3)}
 .slot:hover span{color:var(--ink)}
 .slot.on{border-left-color:var(--accent)}
-.slot.on i{color:var(--accent)}
+.slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
@@ -635,7 +645,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
 .doc h2:first-child,.doc h3:first-child{margin-top:0}
-.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent);
+.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
 @media (min-width:1120px){
@@ -645,7 +655,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
   opacity:0;transition:opacity .15s}
 .doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
-.anchor:hover{color:var(--accent)}
+.anchor:hover{color:var(--accent-t)}
 /* On a touch device there is no hover to reveal it, so a per-heading ¶ is either
    permanently invisible or permanent clutter. Neither is worth the space. */
 @media (hover:none){.anchor{display:none}}
@@ -662,7 +672,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}
 .doc a:hover{text-decoration-color:var(--accent)}
 /* The signature: live cross-references, set apart from ordinary links. */
-.xref{font-family:var(--mono);font-size:.86em;color:var(--accent)!important;
+.xref{font-family:var(--mono);font-size:.86em;color:var(--accent-t)!important;
   text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
   padding-bottom:1px;white-space:nowrap}
 .xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
@@ -685,7 +695,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .authoritative a{color:var(--ink)}
 h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
   font-size:1rem;font-weight:700}
-h3.clause .idx{color:var(--accent);margin:0;flex:0 0 auto;font-size:.76rem}
+h3.clause .idx{color:var(--accent-t);margin:0;flex:0 0 auto;font-size:.76rem}
 @media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
   text-align:right;width:3.2rem}}
 h3.clause .ht:empty{display:none}
@@ -745,7 +755,7 @@ pre.aligned a{color:var(--ink)}
    longer exists. It spans the full .page width simply by being a block child of it. */
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.navtrig,.scrim,.nsheet,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -1044,7 +1054,19 @@ Claude(TM), Anthropic(R)
 (function(){
   var prog=document.getElementById('prog');
   var slots=[].slice.call(document.querySelectorAll('.slot'));
-  var heads=slots.map(function(a){return document.getElementById(a.getAttribute('href').slice(1))});
+  /* The section index is rendered TWICE — once in the desktop rail, once in the
+     mobile control — and exactly one of the two is display:none at any width.
+     So tracking has to key on the section ID, not on a position in this array:
+     the old code highlighted slots[cur] out of a flat list of 44, which meant
+     whichever copy sat later in the DOM won and the other never lit up. On a
+     phone that was the visible one — the Sections list never showed where you
+     were, while the hidden desktop rail was faithfully highlighting itself. */
+  var ids=[],seen={};
+  slots.forEach(function(a){
+    var id=a.getAttribute('href').slice(1);
+    if(!seen[id]){ seen[id]=1; ids.push(id); }
+  });
+  var heads=ids.map(function(id){return document.getElementById(id)});
   var queued=false;
   function paint(){
     var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
@@ -1064,13 +1086,16 @@ Claude(TM), Anthropic(R)
        Clamping to the last section at scroll end is what makes the rail agree
        with what is actually on screen. */
     if(max>0&&h.scrollTop>=max-2) cur=heads.length-1;
-    for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
+    var curId=cur>=0?ids[cur]:null;
+    for(var j=0;j<slots.length;j++){
+      slots[j].classList.toggle('on', slots[j].getAttribute('href').slice(1)===curId);
+    }
     // Mirror the tracked section into the mobile opener. On desktop the rail
     // shows position by itself; on mobile the list is collapsed, so without this
     // there is no positional cue anywhere on a 22-section document.
     var curEl=document.getElementById('railcur');
     if(curEl){
-      var t=cur>=0?slots[cur].querySelector('span'):null;
+      var t=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
       curEl.textContent=t?t.textContent:'';
     }
     queued=false;

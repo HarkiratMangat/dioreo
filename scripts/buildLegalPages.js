@@ -762,7 +762,12 @@ const TOKENS = `
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
-  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#6E6782;
+  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
+  /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
+     paper the same values measured 1.0-2.0:1 — the active tab label, the status
+     chips and the ticket stubs were effectively invisible. Borders and fills
+     keep --accent; only glyphs and type use this. */
+  --accent-t:var(--accent);
   --shadow:0 24px 60px -28px rgba(0,0,0,.85);
   --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
@@ -778,14 +783,16 @@ const TOKENS = `
 :root[data-theme=light]{
   --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
   --rule:#CBC3B4; --rule2:#A39A8B;
-  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
     --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
     --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
     --shadow:0 20px 50px -30px rgba(40,32,50,.3);
   }
 }
@@ -1082,7 +1089,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
 .mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
   background-position:-30% 0}
-.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
 .mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 .mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
@@ -1139,7 +1146,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   text-decoration:none;padding:0 .5rem 0 .35rem;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
   text-transform:uppercase;font-weight:700;
-  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
+  color:#141021;background:var(--accent);border:1px solid var(--accent);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.34),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
   transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -1335,8 +1342,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    so it never becomes a grey slab. */
 .foot{border-top:1px solid var(--rule);padding:2.2rem 0 3.4rem;
   display:flex;flex-direction:column;align-items:center;gap:1.4rem;text-align:center}
-.disc{margin:0;font-family:var(--mono);font-size:.58rem;line-height:1.85;
-  letter-spacing:.05em;color:var(--ink3);opacity:.72;max-width:60ch}
+/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
+   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+.disc{margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
+  letter-spacing:.05em;color:var(--ink3);max-width:60ch}
 /* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 .endnav{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
@@ -1356,7 +1365,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .sig{margin:2.6rem 0 0;text-align:center;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
 .sig b{color:var(--ink2);font-weight:600}
-.hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
+.hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
 `;
@@ -1696,7 +1705,7 @@ const SWITCHER_CSS = `
   text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
   text-align:center;border-radius:999px;transition:color .2s}
 .tab:hover{color:var(--ink)}
-.tab.on{color:var(--accent);font-weight:700}
+.tab.on{color:var(--accent-t);font-weight:700}
 @media (max-width:640px){
   .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
 }
@@ -1809,7 +1818,7 @@ const SWITCHER_CSS = `
     font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
     color:var(--ink2);background:transparent;border:1px solid transparent;
     transition:color .2s,border-color .2s,background .2s}
-  .mtab[aria-expanded=true]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+  .mtab[aria-expanded=true]{color:var(--accent-t);border-color:color-mix(in srgb,var(--accent) 45%,transparent);
     background:color-mix(in srgb,var(--accent) 10%,transparent)}
   .mnav-h .cur{display:block;margin-left:auto;padding-right:.3rem;
     font-family:var(--mono);font-size:.62rem;letter-spacing:.03em;color:var(--ink3);
@@ -1833,6 +1842,19 @@ const SWITCHER_CSS = `
 }
 `;
 
+/**
+ * Applies the stored theme before the document paints.
+ *
+ * THEME_JS runs at the end of <body> — measured at character 105,831 of a
+ * 116,587-character page — so a reader who had chosen light mode watched the
+ * entire page render dark and then flip, on every single navigation. The switch
+ * itself has to stay at the end (it binds a button), but READING the preference
+ * has to happen in <head>, and it is deliberately tiny and dependency-free so it
+ * cannot become a render-blocking cost of its own.
+ */
+const THEME_BOOT = '<script>try{var t=localStorage.getItem(\'db-theme\');'
+    + 'if(t)document.documentElement.setAttribute(\'data-theme\',t);}catch(e){}<\/script>';
+
 /* ──────────────────────────────── template ─────────────────────────────── */
 
 // `out` identifies the current page so the active nav tab is DERIVED rather than
@@ -1852,6 +1874,7 @@ function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', 
 <title>${esc(title)} — Dior's Builds</title>
 <meta name="description" content="${esc(title)} for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
+${THEME_BOOT}
 <meta property="og:title" content="${esc(title)} — Dior's Builds">
 <meta property="og:description" content="${esc(title)} for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta property="og:type" content="website">
@@ -1912,7 +1935,7 @@ ${SWITCHER_CSS}
 .slot:hover{border-left-color:var(--ink3)}
 .slot:hover span{color:var(--ink)}
 .slot.on{border-left-color:var(--accent)}
-.slot.on i{color:var(--accent)}
+.slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
@@ -1939,7 +1962,7 @@ ${SWITCHER_CSS}
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
 .doc h2:first-child,.doc h3:first-child{margin-top:0}
-.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent);
+.idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
 @media (min-width:1120px){
@@ -1949,7 +1972,7 @@ ${SWITCHER_CSS}
 .anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
   opacity:0;transition:opacity .15s}
 .doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
-.anchor:hover{color:var(--accent)}
+.anchor:hover{color:var(--accent-t)}
 /* On a touch device there is no hover to reveal it, so a per-heading ¶ is either
    permanently invisible or permanent clutter. Neither is worth the space. */
 @media (hover:none){.anchor{display:none}}
@@ -1966,7 +1989,7 @@ ${SWITCHER_CSS}
   text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}
 .doc a:hover{text-decoration-color:var(--accent)}
 /* The signature: live cross-references, set apart from ordinary links. */
-.xref{font-family:var(--mono);font-size:.86em;color:var(--accent)!important;
+.xref{font-family:var(--mono);font-size:.86em;color:var(--accent-t)!important;
   text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
   padding-bottom:1px;white-space:nowrap}
 .xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
@@ -1989,7 +2012,7 @@ ${SWITCHER_CSS}
 .authoritative a{color:var(--ink)}
 h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
   font-size:1rem;font-weight:700}
-h3.clause .idx{color:var(--accent);margin:0;flex:0 0 auto;font-size:.76rem}
+h3.clause .idx{color:var(--accent-t);margin:0;flex:0 0 auto;font-size:.76rem}
 @media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
   text-align:right;width:3.2rem}}
 h3.clause .ht:empty{display:none}
@@ -2049,7 +2072,7 @@ pre.aligned a{color:var(--ink)}
    longer exists. It spans the full .page width simply by being a block child of it. */
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.navtrig,.scrim,.nsheet,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -2132,7 +2155,19 @@ ${navSheet(out)}
 (function(){
   var prog=document.getElementById('prog');
   var slots=[].slice.call(document.querySelectorAll('.slot'));
-  var heads=slots.map(function(a){return document.getElementById(a.getAttribute('href').slice(1))});
+  /* The section index is rendered TWICE — once in the desktop rail, once in the
+     mobile control — and exactly one of the two is display:none at any width.
+     So tracking has to key on the section ID, not on a position in this array:
+     the old code highlighted slots[cur] out of a flat list of 44, which meant
+     whichever copy sat later in the DOM won and the other never lit up. On a
+     phone that was the visible one — the Sections list never showed where you
+     were, while the hidden desktop rail was faithfully highlighting itself. */
+  var ids=[],seen={};
+  slots.forEach(function(a){
+    var id=a.getAttribute('href').slice(1);
+    if(!seen[id]){ seen[id]=1; ids.push(id); }
+  });
+  var heads=ids.map(function(id){return document.getElementById(id)});
   var queued=false;
   function paint(){
     var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
@@ -2152,13 +2187,16 @@ ${navSheet(out)}
        Clamping to the last section at scroll end is what makes the rail agree
        with what is actually on screen. */
     if(max>0&&h.scrollTop>=max-2) cur=heads.length-1;
-    for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
+    var curId=cur>=0?ids[cur]:null;
+    for(var j=0;j<slots.length;j++){
+      slots[j].classList.toggle('on', slots[j].getAttribute('href').slice(1)===curId);
+    }
     // Mirror the tracked section into the mobile opener. On desktop the rail
     // shows position by itself; on mobile the list is collapsed, so without this
     // there is no positional cue anywhere on a 22-section document.
     var curEl=document.getElementById('railcur');
     if(curEl){
-      var t=cur>=0?slots[cur].querySelector('span'):null;
+      var t=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
       curEl.textContent=t?t.textContent:'';
     }
     queued=false;
@@ -2582,6 +2620,7 @@ function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, s
 <title>${esc(title)} — Dior's Builds</title>
 <meta name="description" content="${esc(lede)}">
 <meta name="color-scheme" content="dark light">
+${THEME_BOOT}
 <meta property="og:title" content="${esc(title)} — Dior's Builds">
 <meta property="og:description" content="${esc(lede)}">
 <meta property="og:type" content="website">
@@ -2614,7 +2653,7 @@ body{min-height:100vh;background:
 
 .hero{text-align:center;margin-bottom:clamp(2.4rem,7vh,3.6rem)}
 .chip{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.63rem;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent-t);
   border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);border-radius:999px;
   padding:.32rem .8rem;background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .chip::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);
@@ -2642,7 +2681,7 @@ body{min-height:100vh;background:
 .card strong{color:var(--ink);font-weight:600}
 .card ul,.card ol{margin:0 0 1.15rem;padding-left:1.3rem}
 .card li{margin:.42rem 0}
-.card li::marker{color:var(--accent)}
+.card li::marker{color:var(--accent-t)}
 .card a{color:var(--ink);text-decoration:underline;text-underline-offset:.18em;
   text-decoration-color:color-mix(in srgb,var(--accent) 65%,transparent)}
 .card a:hover{text-decoration-color:var(--accent)}
@@ -2731,7 +2770,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .ldg-m{grid-column:1;grid-row:1/span 2;width:26px;height:26px;border-radius:50%;
   display:grid;place-items:center;font-family:var(--mono);font-size:.78rem;line-height:1;
   margin-top:.1rem}
-.ldg-r[data-d=out] .ldg-m{color:var(--accent);
+.ldg-r[data-d=out] .ldg-m{color:var(--accent-t);
   background:color-mix(in srgb,var(--accent) 15%,transparent);
   border:1px solid color-mix(in srgb,var(--accent) 36%,transparent)}
 .ldg-r[data-d=hold] .ldg-m,.ldg-r[data-d=check] .ldg-m{color:var(--ink);
@@ -2755,7 +2794,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .cpy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
   min-height:44px;padding:0 1.05rem;border-radius:999px;cursor:pointer;
   font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,transparent);
+  color:var(--accent-t);background:color-mix(in srgb,var(--accent) 13%,transparent);
   border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);
   transition:background .2s,color .2s,border-color .2s}
 .cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
@@ -2823,7 +2862,7 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    document and the nav's hairline sits below it, separating site chrome from the
    letter rather than cutting the letter off from its own last line. */
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
-@media print{.bar,.thm,.ghb,.ins,.cpy,.node{display:none!important}
+@media print{.bar,.thm,.ghb,.ins,.cpy,.node,.mnav,.navtrig,.scrim,.nsheet{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
   .plate,.opt,.prom,.slip,.ldg{box-shadow:none;animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -2925,6 +2964,7 @@ function indexPage(built) {
 <title>Legal — Dior's Builds</title>
 <meta name="description" content="${esc(built.map(p => p.title).join(', '))} for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
+${THEME_BOOT}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23F2994A'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
 ${TOKENS}
@@ -2948,7 +2988,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .entry:hover::before{width:3px}
 .entry i{font-family:var(--mono);font-style:normal;font-size:.7rem;color:var(--ink3);
   letter-spacing:.1em;font-variant-numeric:tabular-nums}
-.entry:hover i{color:var(--accent)}
+.entry:hover i{color:var(--accent-t)}
 .entry h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.025em;
   margin:0 0 .35rem;color:var(--ink)}
 .entry p{font-family:var(--serif);font-size:.98rem;line-height:1.65;color:var(--ink2);margin:0;max-width:44ch}
@@ -2986,9 +3026,13 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
    No overflow:hidden on .inv — the notches have to straddle the card edge to
    read as bitten out of it. That is why the stub carries its own right-hand
    radius instead of relying on the parent to clip it. */
+:root[data-theme=light] .inv{--ia-t:color-mix(in srgb,var(--ia) 38%,#120E1C)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .inv{--ia-t:color-mix(in srgb,var(--ia) 38%,#120E1C)}
+}
 .invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(286px,1fr));gap:1.1rem;
   margin-top:clamp(2.2rem,6vh,3rem)}
-.inv{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 46px;
+.inv{--ia-t:var(--ia);position:relative;display:grid;grid-template-columns:minmax(0,1fr) 46px;
   text-decoration:none;color:inherit;border-radius:14px;background:var(--paper);
   border:1px solid var(--rule);
   transition:transform .38s cubic-bezier(.16,.84,.28,1),box-shadow .38s,border-color .38s}
@@ -3006,7 +3050,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .inv-s::after{bottom:-7px}
 .inv-sw{writing-mode:vertical-rl;transform:rotate(180deg);
   font-family:var(--mono);font-size:.57rem;letter-spacing:.24em;text-transform:uppercase;
-  color:color-mix(in srgb,var(--ia) 72%,var(--ink3))}
+  color:color-mix(in srgb,var(--ia-t) 72%,var(--ink3))}
 .inv:hover,.inv:focus-visible{transform:translateY(-4px) rotate(-.35deg);
   border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
   box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}
@@ -3034,13 +3078,13 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 @keyframes roll{0%,100%{opacity:.35}45%{opacity:1}}
 
 .inv .ik{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;
-  text-transform:uppercase;color:var(--ia)}
+  text-transform:uppercase;color:var(--ia-t)}
 .inv h3{font-family:var(--display);font-size:1.24rem;font-weight:750;letter-spacing:-.025em;
   color:var(--ink);margin:.75rem 0 .4rem}
 .inv p{font-family:var(--serif);font-size:.95rem;line-height:1.62;color:var(--ink2);margin:0}
 /* The arrow lives in the stub now, where the thumb would go. */
 .inv .arw{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
-  color:var(--ia);background:color-mix(in srgb,var(--ia) 14%,transparent);
+  color:var(--ia-t);background:color-mix(in srgb,var(--ia) 14%,transparent);
   transition:background .3s}
 .inv .arw i{font-style:normal;font-size:.78rem;line-height:1;
   transition:transform .3s cubic-bezier(.16,.84,.28,1)}
