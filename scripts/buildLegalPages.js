@@ -3298,10 +3298,19 @@ function buildCompanions() {
     // wrong. The published Contributing page already carries the full section,
     // so this points at it rather than duplicating the text into a second place
     // that could then drift.
+    // /install is a shareable route for the Discord authorization link — short
+    // enough to say out loud, and stable even if the OAuth URL gains or loses
+    // parameters later. It is built FROM INSTALL_URL rather than written out
+    // again, so the redirect and every install button on the site can never
+    // disagree about the client id.
+    //
+    // 302, not 301: a permanent redirect gets cached hard by browsers, and this
+    // one points at a third party whose URL shape is not ours to fix forever.
     fs.writeFileSync(path.join(root, '_redirects'),
         '/ /legal/ 302\n'
-        + '/security /legal/contributing#security-vulnerabilities 302\n');
-    console.log('  ✓ _redirects (/ → /legal/, /security → contributing#security)');
+        + '/security /legal/contributing#security-vulnerabilities 302\n'
+        + `/install ${INSTALL_URL} 302\n`);
+    console.log('  ✓ _redirects (/ → /legal/, /security → contributing#security, /install → Discord)');
 
     // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via
     // EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason
