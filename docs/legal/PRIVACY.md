@@ -1,8 +1,9 @@
 # Privacy Policy — Dior's Builds
 
-**Effective date:** 29 July 2026
-**Version:** 1.1
-**Applies to:** the Dior's Builds Discord application (the "Bot")
+**Effective date:** 31 July 2026
+**Version:** 1.2
+**Applies to:** the Dior's Builds Discord application (the "Bot") and this
+documentation website (the "Site")
 
 ---
 
@@ -17,6 +18,9 @@ unused.
 
 **Your data is stored in Canada.** No advertising, no analytics, no tracking, no
 cookies, no profiling, and nothing is sold or shared for marketing.
+
+**This website stores exactly one thing on your device:** whether you chose light
+or dark mode. It never leaves your browser and identifies nobody — see §2.6.
 
 You can have everything deleted by emailing **harkirat117@gmail.com** — see §9.
 
@@ -139,6 +143,40 @@ Service, and the Bot's behaviour do not depend on that setting** — they apply
 identically either way, and these documents remain published at their permanent
 public URLs regardless.
 
+### 2.6 This website, and the one thing it stores on your device
+
+These documents are served as a static website. It has no accounts, no forms, no
+analytics, no third-party scripts, and no server-side session of any kind — the
+hosting provider serves files and nothing else.
+
+It stores **one** item in your browser's local storage:
+
+| Name | Value | Purpose | Expires |
+|---|---|---|---|
+| `db-theme` | `light` or `dark` | Remembers the appearance you picked, so the site does not reset to dark every time you open a page | Never — it stays until you clear it |
+
+Three things follow from that, and they are the whole of it:
+
+- **It is not a cookie.** Cookies are transmitted to the server with every
+  request; local storage never leaves your browser. The provider serving this
+  site never receives it, and neither do we.
+- **It identifies nobody.** The value is one of two words. It contains no
+  identifier, is not combined with anything else, and cannot distinguish you from
+  any other reader who prefers the same appearance.
+- **It is only written if you ask for it.** Nothing is stored until you press the
+  light/dark switch. If you never touch it, nothing is written at all.
+
+**Why there is no consent banner.** Consent rules for storing things on your
+device are technology-neutral — they cover local storage, not only cookies, so
+"it isn't a cookie" would not on its own be a defence. The reason no banner is
+required is that storage which is strictly necessary to provide something you
+explicitly asked for is exempt from consent, and a display preference you set by
+pressing a switch is precisely that. It is not used for analytics, advertising,
+measurement, or tracking of any kind, so no other basis is needed.
+
+**To remove it:** clear site data for this domain in your browser settings, or
+use private browsing. Removing it costs you nothing but the appearance setting.
+
 ---
 
 ## 3. What we do NOT collect
@@ -154,7 +192,7 @@ public URLs regardless.
 | **Payment information** | The Bot is free and has no payment feature. |
 | **A list of your servers** | Not collected or stored. |
 | **Analytics or tracking data** | No analytics SDK, no telemetry, no tracking pixel, no ad network, no fingerprinting. |
-| **Cookies** | There is no website. The Bot runs entirely inside Discord and sets no cookies or similar storage on your device. |
+| **Cookies** | None, anywhere. The Bot runs inside Discord and has no web surface at all. This documentation website sets no cookies either; it stores a single light/dark preference in your browser, which is described in full in §2.6 and is never transmitted. |
 | **Voice data, location, contacts, or biometrics** | Not applicable, not collected. |
 
 We do **no** profiling, no behavioural advertising, and **no automated
@@ -505,6 +543,7 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.2 | 31 July 2026 | Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds §2.6 describing that item in full, extends the scope line to cover the Site, and corrects the §3 and Appendix C entries. **No change to what the Bot collects, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to versions 1.0 and 1.1. |
 | 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
 | 1.0 | 28 July 2026 | First published version. |
 
@@ -552,12 +591,19 @@ paraphrasing it, so it can be checked line-by-line against the software itself. 
 you have access to the repository you can verify it directly; if you don't, ask and
 we will show you the relevant file.
 
+**Stored on your device, not on ours:** the documentation website additionally
+keeps a single `db-theme` entry in your own browser's local storage, holding
+`light` or `dark`. It is listed here for completeness only — it never reaches our
+database or any server, and it is described in full in §2.6.
+
 ---
 
 ## Appendix B — Change history
 
 | Version | Date | Change |
 |---|---|---|
+| **1.2** | 31 July 2026 | Documented the Site's single `db-theme` local-storage item (§2.6); corrected the "there is no website" statement in §3. |
+| **1.1** | 29 July 2026 | Added the controller's `diorswrld` alias. |
 | **1.0** | 28 July 2026 | Initial policy. |
 
 Future revisions will be listed here. The complete drafting history is kept in the
@@ -585,7 +631,8 @@ against the running software rather than asserted, and this table records how.
 | Admin commands are locked to one account | `ALLOWED_ADMIN_ID` guards in `commands/manage.js`, `commands/autobuild.js`, and the central interaction router. |
 | **There is no automated deletion** | Searched for every `deleteOne` / `deleteMany` / `findOneAndDelete` in the codebase. **None operates on `UserPreference`.** This is why §7.1 discloses a shortcoming instead of claiming a capability. |
 | `/settings` has no reset or delete | Searched `commands/settings.js` for reset/restore-default handling. None exists — it only overwrites individual values. |
-| No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. |
+| No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for `document.cookie` — no occurrences. |
+| One local-storage item on the Site | Searched the site generator for `localStorage` and `sessionStorage`: the only key written is `db-theme`, holding `light` or `dark`, in `THEME_JS` and `THEME_BOOT` in `scripts/buildLegalPages.js`. Nothing else is stored, and nothing is sent anywhere. |
 
 **Where we could not verify something, we said so rather than guessing** — see the
 backup-retention caveat in §9.4 and the honest limits stated in §5.2, §7.1, and §8.

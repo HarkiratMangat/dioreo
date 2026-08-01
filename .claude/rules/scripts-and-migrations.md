@@ -11,6 +11,12 @@ the subsystem rule it belongs to:*
 - `migrateBuildsToMongo.js`, `applyBadgesBulk.js`, `createPlaceholderLoadouts.js` → `.claude/rules/loadouts.md`
 - `backfillLoadoutMetadata.js`, `backfillPatchMetadata.js`, `createCloudinaryMetadataFields.js` → `.claude/rules/loadout-images-and-metadata.md`
 - `backfillLoadoutSlots.js`, `test-vertex-extract.js` → `.claude/rules/autobuild.md`
+- `backfillCalendarCategories.js` (one-time backfill of the `category` field for calendar entries
+  that pre-date the 3-section redesign) and `calendarDedup.test.js` (regression test for
+  `utils/search.js`'s `isSameDrawTitle()`, built from real seasonal titles) →
+  `.claude/rules/design-decisions.md` + `commands/calendar.js`
+- `syncMissingDevEmojis.js` (uploads any `utils/emojiMap.js` emoji the DEV application is missing,
+  matched by name) → `docs/reference/deployment-and-ops.md` + memory `project_local_dev_bot`
 - `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot`
   → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
 - `buildLegalPages.js` → CLAUDE.md's **`public/` — the built legal site** section (renders
