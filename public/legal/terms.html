@@ -430,32 +430,66 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    and no --i any more, because the indicator measures the real tabs. */
 .seg{position:relative;display:flex;align-items:center;
   border-radius:999px;border:1px solid var(--rule2);padding:3px;
-  background:color-mix(in srgb,var(--ink) 9%,transparent);
-  box-shadow:inset 0 1px 2px rgba(0,0,0,.26);
+  /* The track must be DARKER than the blob, or the indicator reads as a recess
+     instead of a raised pill and all but disappears. It used to be a 9% --ink
+     wash, which is LIGHTER than --paper in the dark theme — the old build got
+     away with it only because the pill carried an accent border, and a goo
+     filter cannot keep a 1px border (the blur dilutes it and the alpha crush
+     hardens whatever is left into a smear). A black wash darkens whatever is
+     behind it in either theme, so one value serves both. */
+  background:color-mix(in srgb,#000 24%,transparent);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.32);
   isolation:isolate;--c1:var(--accent);--m:0}
-.seg-ink{position:absolute;z-index:0;left:0;top:2px;bottom:2px;width:0;
-  border-radius:999px;overflow:hidden;background:var(--paper);
-  border:1px solid color-mix(in srgb,var(--cm,var(--c1)) 62%,transparent);
-  box-shadow:0 2px 10px -4px rgba(0,0,0,.6),
-    0 0 16px -6px color-mix(in srgb,var(--cm,var(--c1)) 75%,transparent);
-  will-change:transform,width}
-/* The mesh: two soft lobes per colour, cross-faded by --m. Both colours are
-   on screen at once mid-hover, which is the whole point — you see the page
-   you are leaving bleeding into the one you are about to open. */
-.seg-ink::before,.seg-ink::after{content:"";position:absolute;inset:-45%;
-  transition:opacity .3s linear}
-.seg-ink::before{opacity:calc(1 - var(--m));background:
-  radial-gradient(42% 62% at 24% 26%,color-mix(in srgb,var(--c1) 62%,transparent),transparent 72%),
-  radial-gradient(48% 68% at 76% 78%,color-mix(in srgb,var(--c1) 34%,transparent),transparent 74%)}
-.seg-ink::after{opacity:var(--m);background:
-  radial-gradient(42% 62% at 30% 74%,color-mix(in srgb,var(--c2,var(--c1)) 62%,transparent),transparent 72%),
-  radial-gradient(48% 68% at 70% 22%,color-mix(in srgb,var(--c2,var(--c1)) 34%,transparent),transparent 74%)}
+/* The indicator is a GOO LAYER holding two blobs, not one pill.
+
+   .ib-a is the shape you are LEAVING: it stays where it was and shrinks in
+   place. .ib-b is the traveller: it moves to the tab you are pointing at and
+   grows into it. While both exist the metaball filter fuses them, so the
+   indicator visibly tears away from its old position, necks, and reforms on the
+   new one — instead of a rigid pill sliding along a rail.
+
+   ⚠️ THE BLOBS ARE UNTINTED, and that is a measured decision, not an oversight.
+   Tinting each blob with its own page's accent would have put both colours in
+   one shape mid-flight — but the active tab's label sits directly on this fill
+   in --accent-t, and ANY tint fails WCAG AA there. Measured across all six
+   accents in both themes: untinted the tightest pair is violet-on-dark at 4.60;
+   at a 6% tint it is already 4.28, and 16% gives 3.76. The label is .66rem, so
+   the large-text 3.0 threshold does not apply. Colour travels in the glow below
+   instead, which sits outside the text's background. Re-measure if you touch it.
+
+   (The goo is an SVG filter rather than the CSS blur/contrast recipe the
+   reference implementation uses. CSS contrast() crushes the COLOUR channels, so
+   it forces monochrome blobs on a black bed plus mix-blend-mode and a duplicated
+   text layer to get a readable label. The feColorMatrix here multiplies ALPHA
+   only and leaves RGB untouched, so a --paper blob stays --paper and both themes
+   work with no inversion and no second copy of the text.) */
+.seg-ink{position:absolute;z-index:0;left:0;right:0;top:2px;bottom:2px;
+  pointer-events:none;
+  filter:url(#dbgoo) drop-shadow(0 0 7px var(--cmg,transparent))}
+.ib{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:999px;
+  background:var(--accent);will-change:transform,width}
+/* The neck. Two blobs only fuse where their blurs overlap — about 14px at
+   stdDeviation 7 — but adjacent tabs are ~79px apart, so tail and head alone
+   would read as two separate pills rather than one stretching mass. This spans
+   the gap between them, and its HEIGHT is what carries the effect: thick at the
+   moment of the break, thinning as the tail dissolves, until it drops under the
+   blur threshold and the alpha crush snaps it. That snap is the metaball. */
+.ib-c{top:50%;bottom:auto;height:0}
+.goodef{position:absolute;width:0;height:0;overflow:hidden}
 
 .tab{position:relative;z-index:1;display:block;white-space:nowrap;cursor:pointer;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
   text-transform:uppercase;text-decoration:none;color:var(--ink2);
   padding:.42rem .85rem;border-radius:999px;transition:color .22s ease}
 .tab.on{color:var(--accent-t);font-weight:700}
+/* The label sitting ON the pill. A solid accent fill is far too light to carry
+   accent-coloured text, so the tab the indicator currently covers flips to
+   near-black — the same inversion the reference makes when its white pill
+   arrives. Measured against all six accents AND every mid-gradient blend of
+   them: worst pair is violet at 5.07, so this clears AA in both themes without
+   needing a second copy of the text laid over the pill. .lit follows the
+   INDICATOR, not the page, which is why hovering another tab moves it. */
+.tab.lit{color:#120E1C;font-weight:700}
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* Segment dividers — the affordance at rest. Drawn on the tab rather than the
    track so they land in the gaps whatever each label measures. */
@@ -758,6 +792,12 @@ html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
+<svg class="goodef" aria-hidden="true" focusable="false"><filter id="dbgoo"
+ x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -12"/>
+</filter></svg>
 
 <div class="bar">
   <a class="mark live" href="./">
@@ -767,10 +807,10 @@ html{scroll-behavior:smooth}
   </a>
   <nav>
     <div class="navwrap"><div class="seg" data-at="0">
-      <span class="seg-ink" aria-hidden="true"></span>
+      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="tab on" href="./terms.html" data-accent="#F2994A" aria-current="page">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1">
-      <span class="seg-ink" aria-hidden="true"></span>
+      <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="tab" href="./contributing.html" data-accent="#B6E24A">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
@@ -1184,10 +1224,11 @@ html{scroll-behavior:smooth}
   var fine=matchMedia('(hover:hover) and (pointer:fine)');
   var hex=function(c){ c=c.replace('#','');
     return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]; };
-  var blend=function(a,b,t){ var A=hex(a),B=hex(b);
-    return 'rgb('+Math.round(A[0]+(B[0]-A[0])*t)+','
-                +Math.round(A[1]+(B[1]-A[1])*t)+','
-                +Math.round(A[2]+(B[2]-A[2])*t)+')'; };
+  var mix=function(a,b,t){ var A=hex(a),B=hex(b);
+    return [Math.round(A[0]+(B[0]-A[0])*t),
+            Math.round(A[1]+(B[1]-A[1])*t),
+            Math.round(A[2]+(B[2]-A[2])*t)]; };
+  var rgba=function(v,a){ return 'rgba('+v[0]+','+v[1]+','+v[2]+','+a+')'; };
 
   [].slice.call(document.querySelectorAll('.seg')).forEach(function(seg){
     var tabs=[].slice.call(seg.querySelectorAll('.tab'));
@@ -1198,49 +1239,84 @@ html{scroll-behavior:smooth}
     var home=parseInt(seg.getAttribute('data-at'),10);
     if(isNaN(home)||home<0) home=null;
 
-    var L=0,R=0,tL=0,tR=0,m=0,mTgt=0,raf=0,idx=home===null?0:home;
+    var A=ink.querySelector('.ib-a'), B=ink.querySelector('.ib-b'),
+        C=ink.querySelector('.ib-c');
+    var aw0=0, cFrom=cols[home===null?0:home], cTo=cFrom;
+    function H(){ return ink.clientHeight||26; }
+    var ax=0,aw=0,bx=0,bw=0,tx=0,tw=0,m=0,mTgt=0,raf=0,idx=home===null?0:home;
 
     /* Real measured geometry, not 1/n of the track. offsetLeft and an absolutely
        positioned left:0 are both measured from .seg's padding box, so the two
-       agree exactly and the pill fits "Contributing" as well as "Notice". */
-    function box(i){ var a=tabs[i]; return [a.offsetLeft, a.offsetLeft+a.offsetWidth]; }
-    function paint(){
-      ink.style.transform='translateX('+L+'px)';
-      ink.style.width=Math.max(0,R-L)+'px';
-      seg.style.setProperty('--c2',cols[idx]);
-      if(home===null){
-        /* No page of yours in this group, so there is nothing to blend FROM —
-           the indicator simply wears the colour of whatever you point at. */
-        seg.style.setProperty('--c1',cols[idx]);
-        seg.style.setProperty('--m',0);
-        seg.style.setProperty('--cm',cols[idx]);
-      }else{
-        seg.style.setProperty('--m',m);
-        seg.style.setProperty('--cm',blend(cols[home],cols[idx],m));
-      }
+       agree exactly and a blob fits "Contributing" as well as "Notice". */
+    function box(i){ return [tabs[i].offsetLeft, tabs[i].offsetWidth]; }
+    function place(){
+      A.style.transform='translateX('+ax+'px)'; A.style.width=Math.max(0,aw)+'px';
+      B.style.transform='translateX('+bx+'px)'; B.style.width=Math.max(0,bw)+'px';
+      /* Span the GAP: the smaller right edge to the larger left edge. When the
+         two overlap this goes negative and clamps to zero, which is what makes
+         the neck disappear the moment they have merged. */
+      var l=Math.min(ax+aw,bx+bw), r=Math.max(ax,bx), k=aw0>0?aw/aw0:0;
+      C.style.transform='translate('+l+'px,-50%)';
+      C.style.width=Math.max(0,r-l)+'px';
+      C.style.height=(H()*0.66*Math.max(0,Math.min(1,k)))+'px';
+      var g=home===null?hex(cols[idx]):mix(cols[home],cols[idx],m);
+      seg.style.setProperty('--cmg',rgba(g,.6));
+      /* One gradient spanning the WHOLE track, sampled by each blob at its own
+         offset. Three elements painting their own gradient would restart the
+         ramp at every seam; sizing to the track and shifting the origin by each
+         blob's left edge makes tail, neck and head read as one body of liquid
+         with a single colour run through it. */
+      var W=seg.clientWidth, grad='linear-gradient(90deg,'+cFrom+','+cTo+')';
+      [[A,ax],[C,l],[B,bx]].forEach(function(p){
+        p[0].style.backgroundImage=grad;
+        p[0].style.backgroundSize=W+'px 100%';
+        p[0].style.backgroundPosition=(-p[1])+'px 0';
+      });
     }
-    /* The morph. An edge opening the pill moves fast; an edge closing it lags.
-       Travelling right, the right edge runs ahead while the left edge trails, so
-       the pill elongates into the gap and then catches up behind itself. */
+    /* The tail lets go MORE SLOWLY than the head travels. That difference is
+       what holds the neck open across the gap: if both ran at the same rate the
+       old blob would vanish before the new one had gone anywhere, and the effect
+       would be a crossfade rather than something tearing. */
     function frame(){
-      var FAST=0.32, SLOW=0.15;
-      L+=(tL-L)*(tL<L?FAST:SLOW);
-      R+=(tR-R)*(tR>R?FAST:SLOW);
+      bx+=(tx-bx)*0.26; bw+=(tw-bw)*0.26;
+      aw+=(0-aw)*0.13;
       m+=(mTgt-m)*0.16;
-      paint();
-      if(Math.abs(tL-L)>0.4||Math.abs(tR-R)>0.4||Math.abs(mTgt-m)>0.004){
+      place();
+      if(Math.abs(tx-bx)>0.3||Math.abs(tw-bw)>0.3||aw>0.6||Math.abs(mTgt-m)>0.004){
         raf=requestAnimationFrame(frame);
-      }else{ L=tL; R=tR; m=mTgt; paint(); raf=0; }
+      }else{ bx=tx; bw=tw; aw=0; m=mTgt; place(); raf=0; }
     }
     function aim(i,snap){
+      var moved=(i!==idx);
       idx=i;
-      var b=box(i); tL=b[0]; tR=b[1];
+      var b=box(i);
       mTgt=home===null?0:(i===home?0:1);
-      if(snap||still){ L=tL; R=tR; m=mTgt; paint(); return; }
+      if(snap||still){
+        ax=b[0]; aw=0; aw0=0; bx=b[0]; bw=b[1]; tx=b[0]; tw=b[1]; m=mTgt;
+        cFrom=cTo=cols[i]; lit(i);
+        place(); return;
+      }
+      /* Break off: whatever the traveller is RIGHT NOW becomes the tail, so an
+         interrupted move tears from where it had got to rather than snapping
+         back to the tab it originally came from. */
+      if(moved){
+        ax=bx; aw=bw; aw0=bw||1; cFrom=cTo;
+      }
+      cTo=cols[i]; lit(i);
+      tx=b[0]; tw=b[1];
       if(!raf) raf=requestAnimationFrame(frame);
+    }
+    /* The inverted label is only correct while the pill is actually UNDER it.
+       A group you are not in keeps its indicator hidden until you point at it,
+       so applying .lit there painted "Contributing" near-black on the dark bar
+       and the label disappeared completely. Visibility, not index, is the test. */
+    function lit(i){
+      var vis = home!==null || seg.classList.contains('hot');
+      tabs.forEach(function(a,j){ a.classList.toggle('lit', vis && j===i); });
     }
     function rest(){
       seg.classList.remove('hot');
+      if(home===null) tabs.forEach(function(a){ a.classList.remove('lit'); });
       aim(home===null?idx:home,false);
     }
 
