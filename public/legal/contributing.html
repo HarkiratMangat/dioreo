@@ -957,6 +957,17 @@ NODE_ENV=development</code></pre>
       (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
   }
   function sync(){ if(btn) btn.setAttribute('aria-checked', resolved()==='light'?'true':'false'); }
+  /* Until the switch is pressed, NOTHING is stored and the OS setting is the
+     source of truth — which means it can change while the page is open. The CSS
+     follows that live through the media query, but aria-checked would not, so a
+     screen reader would announce "off" on a page that had just gone light. Only
+     re-syncs while no explicit choice exists; once one is stored it must win. */
+  try{
+    var mq=matchMedia('(prefers-color-scheme:dark)');
+    var onSystemChange=function(){ if(!d.getAttribute('data-theme')) sync(); };
+    if(mq.addEventListener) mq.addEventListener('change',onSystemChange);
+    else if(mq.addListener) mq.addListener(onSystemChange);
+  }catch(e){}
   // Theme choice is per-browser and deliberately never sent anywhere.
   try{ var s=localStorage.getItem('db-theme'); if(s) d.setAttribute('data-theme',s); }catch(e){}
   sync();
