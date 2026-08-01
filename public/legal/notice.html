@@ -1792,7 +1792,22 @@ Claude(TM), Anthropic(R)
          height as the width goes lets it die like a droplet instead. The head
          gets the same treatment so it emerges as a blob rather than unrolling
          from a full-height sliver. */
-      var sy = w => Math.max(0.14, Math.min(1, w/26));
+      /* ⚠️ THE DILATION IS TWO-DIMENSIONAL. An earlier pass compensated only the
+         WIDTH and the x-position and left the height alone, which fixed nothing
+         visible: measured frame-by-frame off a 2x capture, the settled pill was
+         54px tall while the filter was attached and 49px the frame after it
+         detached, and jumped back to 54 the frame a move began. 5 device px is
+         2.5 CSS px is 1.25 per side — the dilation, in the one axis that was
+         never corrected. That step IS the "snaps into shape abruptly, and then
+         when the motion starts it increases in size".
+         The pill's height is the ink box less its 3px insets, so shrinking it by
+         the same 1.26px per side is a scaleY factor. Folded into the taper below
+         rather than done in CSS because .ib-c shares the .ib class and a
+         .seg.morph .ib rule setting top would out-specify the neck's own
+         top:50% and knock it off the centre line. */
+      var ph = Math.max(1, H() - 6);
+      var vcomp = (ph - 2*dil) / ph;
+      var sy = w => Math.max(0.14, Math.min(1, w/26)) * vcomp;
       A.style.transform='translateX('+(tailX+dil)+'px) scaleY('+sy(aw).toFixed(3)+')';
       A.style.width=Math.max(0,aw-2*dil)+'px';
       /* Grows from its own centre, so it inflates into place rather than
