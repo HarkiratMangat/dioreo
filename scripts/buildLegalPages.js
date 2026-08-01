@@ -83,7 +83,17 @@ const BRAND = {
     // These two are separated by hue, not lightness: amber ~28°, teal ~180°,
     // violet ~268°, rose ~345°. Four clearly distinct positions on the wheel.
     violet: '#9B6BE3',
-    rose: '#E8657F'
+    rose: '#E8657F',
+
+    // The same argument again, one level out. The two warm pages first used
+    // emerald and gold, which are neighbours of the teal and amber already taken
+    // by privacy and terms — so the invitation pages read as more of the legal
+    // set rather than as something else. These sit in the two genuinely empty
+    // arcs of the wheel: lime ~74° (between amber and teal) and azure ~211°
+    // (between teal and violet), and both are far brighter and more saturated
+    // than anything in the legal four, which separates them by value as well.
+    lime: '#B6E24A',
+    azure: '#5AA9FF'
 };
 
 // `kind` selects the parser: 'md' for the Markdown sources in docs/legal, 'text'
@@ -141,7 +151,7 @@ const EXTRA_PAGES = [
     {
         file: 'CONTRIBUTING.md', kind: 'md', root: true, out: 'contributing.html',
         title: 'Contributing', short: 'Contributing',
-        kicker: 'Join in', accent: BRAND.emerald, glow: BRAND.teal,
+        kicker: 'Join in', accent: BRAND.lime, glow: '#E4F291',
         lede: 'Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.',
         badge: 'Open to anyone',
         blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.'
@@ -149,7 +159,7 @@ const EXTRA_PAGES = [
     {
         file: 'CONTRIBUTORS.md', kind: 'md', root: true, out: 'contributors.html',
         title: 'Contributors', short: 'Contributors',
-        kicker: 'Credit', accent: BRAND.gold, glow: BRAND.amber,
+        kicker: 'Credit', accent: BRAND.azure, glow: '#9BCBFF',
         lede: 'Everyone who has made this better, credited under the name they chose.',
         badge: 'Your name goes here',
         blurb: 'Who helped build this, and how credit works. Bug reports count.'
@@ -809,8 +819,9 @@ const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=149147487177
 // guessed or scaled by hand.
 const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg>`;
 
+// data-spot opts the control into the cursor-tracked highlight in THEME_JS.
 const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INSTALL_URL}"
-  target="_blank" rel="noopener noreferrer">
+  target="_blank" rel="noopener noreferrer" data-spot>
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
   <span class="ins-t">${big ? 'Add to Discord' : 'Install'}</span>
@@ -848,7 +859,7 @@ const wordmark = href => href
 // not a defective legal instrument. TERMS §20 still deliberately withholds the
 // repo as a *contact* route, which this does not change.
 const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"
-  title="View the source on GitHub">
+  data-spot title="View the source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>`;
@@ -892,6 +903,66 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
     </span>
   </span>
 </button>`;
+
+/**
+ * The page switcher, carried by EVERY page so the navigation never changes shape
+ * as you move around the site.
+ *
+ * TWO groups, not one list: the four legal instruments in one pill, the two
+ * invitation pages in another. That split is the same distinction the whole site
+ * is built on — documents that bind you versus an offer — and putting all six in
+ * a single track would quietly say they are the same kind of thing.
+ *
+ * A group you are not currently inside has data-at="-1": its indicator is hidden
+ * until you point at it, so exactly one indicator is ever "yours".
+ */
+const NAV_GROUPS = [PAGES, EXTRA_PAGES];
+
+/**
+ * One DOM, two layouts. The same .seg controls are laid out horizontally in the
+ * bar on desktop and vertically inside a sheet on mobile — not duplicated per
+ * breakpoint, because two copies would put every nav link in the accessibility
+ * tree twice and would let the two drift apart.
+ *
+ * The sheet is what the hamburger opens. On a phone the horizontal track is only
+ * ~40px per tab, which is below the 44px touch target and far too tight to drag
+ * along; stacked, each row is a comfortable target and the indicator follows the
+ * thumb DOWN the list instead of across it.
+ */
+const navSwitcher = out => `<button class="burger" id="burger" aria-expanded="false"
+    aria-controls="navwrap" aria-label="Open navigation">
+    <i></i><i></i><i></i>
+  </button>
+  <div class="navwrap" id="navwrap">${navGroups(out)}</div>`;
+
+const navGroups = out => NAV_GROUPS.map(grp => {
+    const at = grp.findIndex(p => p.out === out);
+    return `<div class="seg" data-at="${at}" style="--n:${grp.length};--i:${at < 0 ? 0 : at}">
+      <span class="seg-ink" aria-hidden="true"></span>
+      ${grp.map(p => `<a class="tab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
+        ` data-accent="${p.accent}"` +
+        `${p.out === out ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}
+    </div>`;
+}).join('<span class="seg-gap" aria-hidden="true"></span>');
+
+/**
+ * The site footer, shared by all three templates so the links, the separators and
+ * the sign-off are identical everywhere.
+ *
+ * The affiliation disclaimer rides along on every page. It is a trademark notice,
+ * and a reader can arrive on any one of these pages directly from a search
+ * result — a notice that only appears on the page you happened not to land on
+ * does not do its job. NOTICE §2 remains the authoritative version; this is the
+ * short form.
+ */
+const pageFoot = (out, sig) => `<p class="sig">${sig || DIOR_SIG}</p>
+  <footer class="foot">
+    <p class="disc">Dior&#8217;s Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, or Discord Inc.</p>
+    <nav class="endnav">${[...PAGES, ...EXTRA_PAGES]
+        .filter(p => p.out !== out)
+        .map(p => `<a href="./${p.out}">${esc(p.short)}</a>`)
+        .join('<span>&middot;</span>')}</nav>
+  </footer>`;
 
 /**
  * Discord-first contact, with the email behind a reveal.
@@ -968,51 +1039,84 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    squared repo/install buttons contradicted the rule the rest of the site is
    built on. Every interactive control in the bar is now a pill; only document
    chrome stays squared. */
-.ghb,.ins{border-radius:999px;height:30px}
+/* Every control in the bar is 32px tall so the icons, the switcher and the
+   switch sit on one optical line. The old 30px height with a 30px icon plate
+   inside a 1px border left the plate 2px wider than the content box, so the
+   GitHub mark was pushed off-centre and clipped by overflow:hidden — that is the
+   whole "logo is not properly aligned" bug, and it is why the plate is now sized
+   from the CONTENT box rather than matched to the outer height. */
+.ghb,.ins{border-radius:999px;height:32px;position:relative;isolation:isolate}
 
-/* repo — icon-only, opening on hover. The label is revealed by a clip, and the
-   icon holds still. It used to spin 360°, which is the stock "look, animation"
-   move and reads as filler. */
+/* repo — a capsule that opens. The mark holds still on its plate and the label
+   is uncovered as the capsule grows past it. */
 .ghb{display:inline-flex;align-items:center;justify-content:flex-start;
   overflow:hidden;text-decoration:none;color:var(--ink2);
   border:1px solid var(--rule2);background:transparent;
-  width:30px;padding:0;transition:width .38s cubic-bezier(.16,.84,.28,1),
-  color .22s,border-color .22s,background .22s}
-.ghb-ic{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px}
+  width:32px;padding:0;transition:width .42s cubic-bezier(.16,.84,.28,1),
+  color .22s,border-color .22s}
+.ghb-ic{position:relative;z-index:1;display:grid;place-items:center;
+  width:30px;height:30px;flex:0 0 30px}
 .ghb-ic svg{width:15px;height:15px;display:block}
-.ghb-t{overflow:hidden;padding-right:.85rem}
+.ghb-t{position:relative;z-index:1;overflow:hidden;padding-right:.9rem}
 .ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
   letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
   transform:translateX(-8px);opacity:0;
-  transition:transform .38s cubic-bezier(.16,.84,.28,1),opacity .3s}
-.ghb:hover,.ghb:focus-visible{width:106px;color:var(--ink);border-color:var(--ink3);
-  background:color-mix(in srgb,var(--ink) 7%,transparent)}
+  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}
+.ghb:hover,.ghb:focus-visible{width:108px;color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
 .ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+/* the cursor-tracked light */
+.ghb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
+    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
+    transparent 72%)}
+.ghb:hover::after,.ghb:focus-visible::after{opacity:1}
 
-/* install — the one filled control on the site. Motion on hover only: the fill
-   brightens from the leading edge and the arrow steps out. No idle sheen loop
-   and no pulsing ring; two ambient loops on a single button was the clearest
-   case of decoration competing with the theme switch for attention. */
-.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;
-  overflow:hidden;text-decoration:none;padding:0 .95rem;
+/* install — the one filled control on the site, and the only place a second
+   ambient effect is justified. Three things happen and each has a reason: the
+   fill is lit from the cursor, a single edge-light passes once on hover (not a
+   loop — an idle sheen competes with the theme switch), and the mark sits in a
+   recessed disc so the button reads as a physical key rather than a coloured
+   rectangle with a logo dropped on it. */
+.ins{display:inline-flex;align-items:center;gap:.55rem;overflow:hidden;
+  text-decoration:none;padding:0 .5rem 0 .35rem;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
   text-transform:uppercase;font-weight:700;
   color:var(--desk);background:var(--accent);border:1px solid var(--accent);
-  transition:box-shadow .3s,filter .22s}
-.ins-ic{display:grid;place-items:center;width:16px;height:16px;flex:0 0 16px;
-  position:relative;z-index:1}
-.ins-ic svg{width:16px;height:auto;display:block}
-.ins-t,.ins-ar{position:relative;z-index:1}
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),
+    0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
+  transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
+.ins-ic{position:relative;z-index:2;display:grid;place-items:center;
+  width:22px;height:22px;flex:0 0 22px;border-radius:50%;
+  background:color-mix(in srgb,var(--desk) 20%,transparent);
+  box-shadow:inset 0 1px 2px color-mix(in srgb,var(--desk) 34%,transparent);
+  transition:transform .34s cubic-bezier(.3,1.5,.5,1)}
+.ins-ic svg{width:13px;height:auto;display:block}
+.ins-t,.ins-ar{position:relative;z-index:2}
 .ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
   transition:opacity .26s,width .26s,transform .26s}
-.ins-gl{position:absolute;inset:0;z-index:0;opacity:0;
-  background:radial-gradient(120% 180% at 0% 50%,rgba(255,255,255,.5),transparent 62%);
-  transition:opacity .3s}
-.ins:hover,.ins:focus-visible{filter:brightness(1.06);
-  box-shadow:0 5px 20px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
+/* the cursor-tracked light, over the fill */
+.ins-gl{position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .3s;
+  background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
+    rgba(255,255,255,.62),transparent 68%)}
+/* the single pass of edge-light */
+.ins::after{content:"";position:absolute;z-index:1;top:-60%;bottom:-60%;width:36px;
+  left:-60px;transform:skewX(-18deg);pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+.ins:hover::after,.ins:focus-visible::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}
+@keyframes swipe{to{left:118%}}
+.ins:hover,.ins:focus-visible{transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.44),
+    0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}
 .ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
+.ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}
 .ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
-.ins:active{filter:brightness(.97)}
+.ins:active{transform:translateY(0) scale(.98)}
+@media (prefers-reduced-motion:reduce){
+  .ins:hover::after,.ins:focus-visible::after{animation:none}
+  .ins:hover,.ins:focus-visible,.ins:active{transform:none}
+  .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:none}
+}
 
 /* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
    This is the one place the design spends its boldness, so it is the one place
@@ -1026,71 +1130,94 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    track border and focus ring follow the accent.
    Hovering PEEKS: the knob leans toward the far side and the destination's
    furniture fades up, so the control shows you what pressing it will do. */
+/* Geometry, stated once because it was wrong before: the track is 60x32 with a
+   1px border, so the CONTENT box is 58x30. The knob is 26px inset 2px, which
+   leaves exactly 2px on every side and gives a travel of 58-2-26-2 = 28px. The
+   previous knob was inset 3px inside a 28px content box, so it had 3px above and
+   1px below — that is the "moon/sun aren't properly aligned" bug. Any change to
+   the track size has to re-derive the travel or the knob stops at the wrong end. */
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
   cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
-.thm-tr{display:block;position:relative;width:56px;height:30px;border-radius:999px;
+.thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
-  background:linear-gradient(165deg,#1B1830,#2A2340);
+  background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
   transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
 .thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
   box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
 .thm-sky{position:absolute;inset:0}
 
-/* stars — dark only */
+/* stars — dark only, in the half the knob is not occupying */
 .thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
   opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
-.thm-st i:nth-child(1){left:34px;top:7px}
-.thm-st i:nth-child(2){left:43px;top:14px;animation-delay:.6s}
-.thm-st i:nth-child(3){left:47px;top:6px;width:1.5px;height:1.5px;animation-delay:1.2s}
-.thm-st i:nth-child(4){left:38px;top:21px;width:1.5px;height:1.5px;animation-delay:1.8s}
-.thm-st i:nth-child(5){left:49px;top:19px;width:1.5px;height:1.5px;animation-delay:2.4s}
+.thm-st i:nth-child(1){left:36px;top:8px}
+.thm-st i:nth-child(2){left:45px;top:15px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:49px;top:7px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:40px;top:22px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:51px;top:20px;width:1.5px;height:1.5px;animation-delay:2.4s}
 @keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
 .thm-st{transition:opacity .4s}
 
-/* clouds — light only. Two soft lozenges, drifting slowly. */
+/* clouds — light only. Each cloud is one element plus two box-shadow lobes, so
+   it has an actual cloud silhouette instead of reading as a rounded bar. */
 .thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
-.thm-cl i{position:absolute;background:#fff;border-radius:999px;opacity:.92}
-.thm-cl i:nth-child(1){left:7px;top:17px;width:16px;height:6px;
-  box-shadow:5px -4px 0 -1px #fff;animation:drift 7s ease-in-out infinite}
-.thm-cl i:nth-child(2){left:5px;top:8px;width:10px;height:4px;opacity:.6;
-  animation:drift 9s ease-in-out infinite reverse}
-@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px}
+.thm-cl i:nth-child(1){left:6px;top:18px;width:17px;height:7px;opacity:.95;
+  box-shadow:4px -4px 0 -1px #fff,10px -2px 0 -1.5px #fff;
+  animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:7px;width:11px;height:5px;opacity:.55;
+  box-shadow:5px -2px 0 -1px #fff;
+  animation:drift 9.5s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
 
-.thm-kn{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+/* The knob is a real plate now — a circle with its own edge and shadow — and the
+   sun or moon is an icon sitting ON it, rather than the bare celestial body
+   floating in the track with nothing to hold it. */
+.thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
   display:grid;place-items:center;
+  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.20),rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:0 2px 6px -1px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.28);
   transform:translateX(0);
-  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32)}
-.thm-kn svg{width:22px;height:22px;overflow:visible}
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
+    background .5s,border-color .5s,box-shadow .5s}
+.thm-kn svg{width:16px;height:16px;overflow:visible}
 /* moon */
-.thm-kn .orb{fill:#CFD8EA}
-.thm-kn .craters{fill:#A8B3CC;opacity:1;transition:opacity .3s}
+.thm-kn .orb{fill:#DCE4F7}
+.thm-kn .craters{fill:#9FADCC;opacity:1;transition:opacity .3s}
 .thm-kn .cut{transform:translate(7.4px,-7.4px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .rays{stroke:#F6C560;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+.thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
   transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
 
-/* the hover peek — leans toward the destination and previews its furniture */
+/* The hover peek leans the knob toward where it is going. It no longer fades the
+   clouds up behind the moon: clouds belong to the daytime sky, and previewing
+   them at night just put weather behind a moon for no reason. */
 .thm:hover .thm-kn{transform:translateX(5px)}
-.thm:hover .thm-cl{opacity:.28}
 
-/* LIGHT: knob crosses, mask occluder is pushed clear so the disc fills, rays fan
-   out, the orb warms to a sun, craters go, clouds replace stars. */
-:root[data-theme=light] .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
-:root[data-theme=light] .thm-kn{transform:translateX(26px)}
-:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(21px)}
+/* LIGHT: knob crosses, the mask occluder is pushed clear so the disc fills, rays
+   fan out, the orb warms to a sun, craters go, clouds replace stars. */
+:root[data-theme=light] .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
+:root[data-theme=light] .thm-kn{transform:translateX(28px);
+  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+  border-color:rgba(255,255,255,.95);
+  box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
-:root[data-theme=light] .thm-kn .orb{fill:#F6C560}
+:root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
 :root[data-theme=light] .thm-kn .craters{opacity:0}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
 :root[data-theme=light] .thm-cl{opacity:1}
 :root[data-theme=light] .thm:hover .thm-st{opacity:.35}
 @media (prefers-color-scheme:light){
-  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
-  :root:not([data-theme=dark]) .thm-kn{transform:translateX(26px)}
-  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(21px)}
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(28px);
+    background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+    border-color:rgba(255,255,255,.95);
+    box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
-  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F6C560}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
   :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
@@ -1100,6 +1227,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 @media (prefers-reduced-motion:reduce){
   .thm-st i,.thm-cl i{animation:none}
   .thm:hover .thm-kn{transform:translateX(0)}
+  :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(28px)}
 }
 
 /* ── Discord handle + email reveal ──────────────────────────────────── */
@@ -1126,6 +1254,42 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 @keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
   to{opacity:1;clip-path:inset(0 0 0 0)}}
 @media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
+
+/* ── the shared page footer ───────────────────────────────────────────
+   One definition for all three templates. It used to be three, which is how the
+   legal pages ended up with a plainer footer than the warm ones for no reason
+   anybody chose.
+
+   The affiliation disclaimer is deliberately the QUIETEST thing on the page: it
+   is a notice that has to be present, not something anyone is meant to read on
+   the way past. Small, wide-tracked, --ink3, and capped to a comfortable measure
+   so it never becomes a grey slab. */
+.foot{border-top:1px solid var(--rule);padding:2.2rem 0 3.4rem;
+  display:flex;flex-direction:column;align-items:center;gap:1.4rem;text-align:center}
+.disc{margin:0;font-family:var(--mono);font-size:.58rem;line-height:1.85;
+  letter-spacing:.05em;color:var(--ink3);opacity:.72;max-width:60ch}
+/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
+   the one you are pointing at. */
+.endnav{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+  gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase}
+.endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+  border-bottom:1px solid transparent;
+  transition:color .22s,border-color .22s}
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+.endnav span{color:var(--ink3);opacity:.45}
+/* The sign-off sits ABOVE the footer rule and OUTSIDE .foot on purpose. It is
+   the closing line of the document, not site chrome, and on the warm pages it is
+   lifted straight out of the source — where it runs on from the last paragraph
+   ("Thanks for being here — genuinely. / ♡ Made with love by dior"). Put it below
+   the link row and five nav labels land inside that sentence: verify() reports
+   the run missing, correctly, because a reader meets the nav mid-sentence too. */
+.sig{margin:2.6rem 0 0;text-align:center;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
+.sig b{color:var(--ink2);font-weight:600}
+.hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}
 `;
 
 // One implementation, used by both templates. `aria-checked` is kept in step with
@@ -1148,7 +1312,337 @@ const THEME_JS = `
     try{ localStorage.setItem('db-theme',next); }catch(e){}
     sync();
   });
+
+  /* Cursor-tracked highlight on the action controls. The light source is where
+     your pointer actually is, so the control looks lit rather than merely
+     recoloured — a fixed hover gradient is the tell that nothing is really
+     responding to you. Pure enhancement: --px/--py have defaults in CSS, so
+     without this script the controls simply light from their centre. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(el){
+    el.addEventListener('pointermove',function(e){
+      var r=el.getBoundingClientRect();
+      el.style.setProperty('--px',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+      el.style.setProperty('--py',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+    });
+  });
 })();`;
+
+/**
+ * The switcher behaviour, shared by every template.
+ *
+ * The tabs stay ordinary links, so keyboard, middle-click, "open in new tab" and
+ * no-JS all behave exactly as they did; this only adds pointer behaviour on top.
+ * Point at the track and the indicator eases toward the tab under your cursor,
+ * stretching slightly along its direction of travel, while the mesh cross-fades
+ * from the colour of the page you are on to the colour of the page you are
+ * pointing at. Drag it and it tracks your finger 1:1, then snaps and navigates.
+ *
+ * There is deliberately NO load-time entrance animation any more. The old one
+ * slid the indicator in from the previous page's index, which needed a class on
+ * the control, a sessionStorage read before first paint, and animation-fill-mode
+ * both — and that class was what collided with .go and made the entire switcher
+ * invisible. The hover behaviour communicates far more than the entrance did,
+ * and it costs none of that machinery.
+ */
+const NAV_JS = `
+(function(){
+  var segs=[].slice.call(document.querySelectorAll('.seg'));
+  if(!segs.length) return;
+  var still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var hex=function(c){ c=c.replace('#','');
+    return [parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16)]; };
+  var blend=function(a,b,t){ var A=hex(a),B=hex(b);
+    return 'rgb('+Math.round(A[0]+(B[0]-A[0])*t)+','
+                +Math.round(A[1]+(B[1]-A[1])*t)+','
+                +Math.round(A[2]+(B[2]-A[2])*t)+')'; };
+
+  segs.forEach(function(seg){
+    var tabs=[].slice.call(seg.querySelectorAll('.tab'));
+    var n=tabs.length; if(!n) return;
+    var cols=tabs.map(function(a){ return a.getAttribute('data-accent'); });
+    /* home is the tab for the page you are ON, or null for the other group */
+    var home=parseInt(seg.getAttribute('data-at'),10);
+    if(isNaN(home)||home<0) home=null;
+    var base=home===null?0:home;
+    var pos=base, m=0, tgt=base, mTgt=0, prev=base, raf=0;
+    var dragging=false, moved=false, x0=0, unit=1;
+    var clamp=function(v){ return Math.max(0,Math.min(n-1,v)); };
+    /* The same control is horizontal in the bar and vertical in the mobile sheet.
+       Rather than track a breakpoint in script — which would then have to agree
+       with the media query forever — the axis is READ from the layout the CSS
+       actually applied. */
+    var vert=function(){ return getComputedStyle(seg).gridAutoFlow.indexOf('row')===0; };
+    var unitOf=function(){ var r=seg.getBoundingClientRect();
+      return ((vert()?r.height:r.width)-6)/n; };
+    var at=function(e){ return vert()?e.clientY:e.clientX; };
+    var edge=function(){ var r=seg.getBoundingClientRect();
+      return vert()?r.top:r.left; };
+
+    function apply(){
+      seg.style.setProperty('--i',pos);
+      var near=clamp(Math.round(pos));
+      seg.style.setProperty('--c2',cols[near]);
+      if(home===null){
+        /* No page of yours in this group, so there is nothing to blend FROM —
+           the indicator simply wears the colour of whatever you point at. */
+        seg.style.setProperty('--c1',cols[near]);
+        seg.style.setProperty('--m',0);
+        seg.style.setProperty('--cm',cols[near]);
+      }else{
+        seg.style.setProperty('--m',m);
+        seg.style.setProperty('--cm',blend(cols[home],cols[near],m));
+      }
+    }
+    function frame(){
+      pos+=(tgt-pos)*0.19;
+      m+=(mTgt-m)*0.16;
+      var v=Math.abs(pos-prev); prev=pos;
+      seg.style.setProperty('--sx',(1+Math.min(v*1.7,0.22)).toFixed(3));
+      apply();
+      if(Math.abs(tgt-pos)>0.001||Math.abs(mTgt-m)>0.004||v>0.001){
+        raf=requestAnimationFrame(frame);
+      }else{
+        pos=tgt; m=mTgt; seg.style.setProperty('--sx',1); apply(); raf=0;
+      }
+    }
+    function run(){
+      if(still){ pos=tgt; m=mTgt; apply(); return; }
+      if(!raf) raf=requestAnimationFrame(frame);
+    }
+    function aim(c){
+      var p=(c-edge()-3)/unitOf();
+      var idx=clamp(Math.round(p-0.5));
+      /* Magnetic: it settles ON a tab but leans toward the cursor inside it, so
+         it genuinely tracks your hand instead of stepping between slots. */
+      tgt=idx+Math.max(-0.34,Math.min(0.34,(p-0.5)-idx))*0.42;
+      mTgt=home===null?0:Math.min(1,Math.abs(idx-home));
+    }
+
+    seg.addEventListener('pointermove',function(e){
+      if(dragging){
+        var dx=at(e)-x0;
+        if(Math.abs(dx)>3) moved=true;
+        pos=tgt=clamp(base+dx/unit);
+        mTgt=m=home===null?0:Math.min(1,Math.abs(Math.round(pos)-home));
+        apply();
+        return;
+      }
+      /* Touch drives the vertical sheet — that is the whole point of it — but
+         must not fire hover behaviour on the desktop bar. */
+      if(e.pointerType==='touch'&&!vert()) return;
+      seg.classList.add('hot'); aim(at(e)); run();
+    });
+    seg.addEventListener('pointerleave',function(){
+      if(dragging) return;
+      seg.classList.remove('hot');
+      tgt=base; mTgt=0; run();
+    });
+    seg.addEventListener('pointerdown',function(e){
+      if(e.button||n<2) return;
+      dragging=true; moved=false; x0=at(e); unit=unitOf(); base=pos;
+      seg.classList.add('drag','hot');
+      try{ seg.setPointerCapture(e.pointerId); }catch(err){}
+    });
+    var release=function(){
+      if(!dragging) return;
+      dragging=false; seg.classList.remove('drag');
+      var t=clamp(Math.round(pos));
+      base=home===null?0:home;
+      tgt=t; mTgt=home===null?0:Math.min(1,Math.abs(t-home)); run();
+      if(moved&&t!==home) location.href=tabs[t].getAttribute('href');
+    };
+    seg.addEventListener('pointerup',release);
+    seg.addEventListener('pointercancel',release);
+    /* A drag that ends over a tab must not also fire that tab's click. */
+    seg.addEventListener('click',function(e){
+      if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; }
+    },true);
+    tabs.forEach(function(a,idx){
+      a.addEventListener('focus',function(){
+        if(dragging) return;
+        seg.classList.add('hot'); tgt=idx;
+        mTgt=home===null?0:Math.min(1,Math.abs(idx-home)); run();
+      });
+      a.addEventListener('blur',function(){
+        if(dragging||seg.contains(document.activeElement)) return;
+        seg.classList.remove('hot'); tgt=base; mTgt=0; run();
+      });
+      a.addEventListener('keydown',function(e){
+        var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+        if(!d) return;
+        e.preventDefault();
+        location.href=tabs[(idx+d+n)%n].getAttribute('href');
+      });
+    });
+    apply();
+  });
+
+  /* The sheet. aria-expanded is the single source of truth for both the open
+     state and the icon, so they cannot disagree. */
+  var burger=document.getElementById('burger'), wrap=document.getElementById('navwrap');
+  if(burger&&wrap){
+    var sheet=function(){ return getComputedStyle(burger).display!=='none'; };
+    var setOpen=function(v){
+      burger.setAttribute('aria-expanded',v?'true':'false');
+      wrap.classList.toggle('open',v);
+      /* inert keeps a closed sheet out of the tab order and the accessibility
+         tree. Only while it IS a sheet — on desktop the same element is the
+         always-visible bar nav and must never be inert. */
+      wrap.toggleAttribute('inert',sheet()&&!v);
+    };
+    addEventListener('resize',function(){
+      if(!sheet()){ wrap.removeAttribute('inert'); wrap.classList.remove('open');
+        burger.setAttribute('aria-expanded','false'); }
+      else setOpen(burger.getAttribute('aria-expanded')==='true');
+    });
+    setOpen(false);
+    burger.addEventListener('click',function(){
+      setOpen(burger.getAttribute('aria-expanded')!=='true');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'&&burger.getAttribute('aria-expanded')==='true'){
+        setOpen(false); burger.focus();
+      }
+    });
+    /* A tap outside closes it. Pointerdown rather than click so it beats the
+       sheet's own drag handling. */
+    document.addEventListener('pointerdown',function(e){
+      if(burger.getAttribute('aria-expanded')!=='true') return;
+      if(wrap.contains(e.target)||burger.contains(e.target)) return;
+      setOpen(false);
+    });
+  }
+})();`;
+
+const SWITCHER_CSS = `
+/* ── segmented page switcher ──────────────────────────────────────────
+   Was three bordered boxes, which read as inert. Now one segmented control
+   with an indicator that slides. Because these are separate documents and not
+   an SPA, the slide happens on LOAD: the indicator animates in from the
+   previous tab's position, so arriving on a page shows you the move you just
+   made. --i is the active index, --n the tab count, both known at build time,
+   so no measuring in JS and nothing to go wrong on first paint. */
+/* A pill group, matching the other action controls. Three things were wrong
+   before: the inactive labels sat on --ink3 (the faintest ink token) so they
+   genuinely were close to invisible; the active marker was a 15%-alpha tint that
+   barely registered; and each tab carried an 01/02 number chip that duplicated
+   the landing page's numbering inside an already-crowded bar.
+   Now: inactive labels on --ink2, the active tab is a raised pill with an accent
+   border and accent text, and the numbers are gone. */
+/* --c1 is the page you are ON, --c2 the page you are pointing AT, --m how far
+   between them, --cm the interpolated colour JS computes for the edge and glow.
+   The knob does not jump between tabs: it eases toward the pointer and stretches
+   slightly in the direction it is travelling, so it reads as one soft object
+   being pulled rather than a marker being repositioned. */
+.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  border-radius:999px;border:1px solid var(--rule2);padding:3px;
+  background:color-mix(in srgb,var(--ink) 7%,transparent);isolation:isolate;
+  --c1:var(--accent);--m:0;--sx:1;touch-action:pan-y;cursor:grab}
+.seg.drag{cursor:grabbing}
+.seg-ink{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;overflow:hidden;
+  width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--cm,var(--c1)) 60%,transparent);
+  box-shadow:0 2px 9px -4px rgba(0,0,0,.55),
+    0 0 14px -6px color-mix(in srgb,var(--cm,var(--c1)) 70%,transparent);
+  transform:translateX(calc(var(--i) * 100%)) scaleX(var(--sx));
+  transition:transform .34s cubic-bezier(.22,.9,.24,1)}
+/* Straight to the finger while dragging; eased at every other time. */
+.seg.drag .seg-ink,.seg.live .seg-ink{transition:none}
+/* The mesh: two soft lobes per colour, cross-faded by --m. Both colours are on
+   screen at once mid-hover, which is the whole point — you see the page you are
+   leaving bleeding into the one you are about to open. */
+.seg-ink::before,.seg-ink::after{content:"";position:absolute;inset:-45%;
+  transition:opacity .3s linear}
+.seg-ink::before{opacity:calc(1 - var(--m));background:
+  radial-gradient(42% 62% at 24% 26%,color-mix(in srgb,var(--c1) 62%,transparent),transparent 72%),
+  radial-gradient(48% 68% at 76% 78%,color-mix(in srgb,var(--c1) 34%,transparent),transparent 74%)}
+.seg-ink::after{opacity:var(--m);background:
+  radial-gradient(42% 62% at 30% 74%,color-mix(in srgb,var(--c2,var(--c1)) 62%,transparent),transparent 72%),
+  radial-gradient(48% 68% at 70% 22%,color-mix(in srgb,var(--c2,var(--c1)) 34%,transparent),transparent 74%)}
+.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
+  text-align:center;border-radius:999px;transition:color .2s}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--accent);font-weight:700}
+@media (max-width:640px){
+  .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
+}
+/* A group you are not currently inside shows no indicator until you point at
+   it, so exactly one indicator on screen is ever "yours". */
+.seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s,transform .34s cubic-bezier(.22,.9,.24,1)}
+.seg[data-at="-1"].hot .seg-ink{opacity:1}
+.seg-gap{width:.45rem;flex:0 0 auto}
+
+/* Six tabs in two groups is 812px of navigation at full size — nearly twice what
+   the old single four-tab control took — so it has to give way in stages rather
+   than push the wordmark off the bar. Measured at 1280: nav 812px, total ~990px,
+   which clears 1024 and nothing below it.
+     1180  tighter tabs
+     1000  the group you are NOT in collapses away; the one you are in remains,
+           because that is the one showing you where you are. Measured: at 900px
+           with both groups shown the bar still overflowed even with tight tabs,
+           so this threshold is set from the measurement, not from a round number
+      620  the switcher goes entirely — every one of these links is in the page
+           footer, and on those widths the section rail is the primary navigation */
+.navwrap{display:flex;align-items:center}
+.burger{display:none}
+
+@media (max-width:1180px){
+  .tab{padding:.4rem .58rem;font-size:.62rem;letter-spacing:.07em}
+}
+/* Bounded BELOW as well: under 620px the sheet takes over and wants both groups
+   in it. An unbounded max-width rule here would hide the legal group inside the
+   mobile sheet, which is the one place there is room for it. */
+@media (min-width:621px) and (max-width:1000px){
+  .seg[data-at="-1"],.seg-gap{display:none}
+}
+
+/* ── mobile: the sheet ────────────────────────────────────────────────
+   The bar keeps only the wordmark and the controls; navigation moves behind the
+   hamburger. Inside the sheet the same .seg becomes a vertical track: the ink
+   travels down it, stretches along Y instead of X, and follows a thumb drag.
+   touch-action:none is required on the vertical track or the browser claims the
+   gesture for page scrolling before the pointer handlers ever see it. */
+@media (max-width:620px){
+  .burger{display:grid;place-content:center;gap:4px;width:32px;height:32px;padding:0;
+    -webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;
+    border:1px solid var(--rule2);border-radius:999px;color:inherit}
+  .burger i{display:block;width:14px;height:1.5px;border-radius:2px;background:var(--ink2);
+    transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s,background .2s}
+  .burger[aria-expanded=true]{border-color:var(--accent)}
+  .burger[aria-expanded=true] i{background:var(--accent)}
+  .burger[aria-expanded=true] i:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+  .burger[aria-expanded=true] i:nth-child(2){opacity:0}
+  .burger[aria-expanded=true] i:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+
+  .navwrap{position:fixed;top:54px;left:0;right:0;z-index:59;
+    flex-direction:column;align-items:stretch;gap:.55rem;
+    padding:.85rem clamp(1rem,4vw,1.4rem) 1.1rem;
+    background:color-mix(in srgb,var(--desk) 96%,transparent);
+    backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule);
+    /* Closed state is opacity + pointer-events, with the inert attribute set
+       from script. It was visibility:hidden, swapped deliberately: inert removes
+       the closed sheet from the tab order AND the accessibility tree, which is
+       the property actually wanted here, and it stays correct mid-transition when
+       opacity is part-way. visibility would also have worked; inert is simply the
+       better tool for "this whole subtree is not currently available". */
+    transform:translateY(-14px);opacity:0;pointer-events:none;
+    transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .26s}
+  .navwrap.open{transform:none;opacity:1;pointer-events:auto}
+
+  .seg{grid-auto-flow:row;grid-auto-columns:auto;width:100%;
+    touch-action:none;cursor:default}
+  .seg-ink{left:3px;right:3px;top:3px;bottom:auto;width:auto;
+    height:calc((100% - 6px)/var(--n));
+    transform:translateY(calc(var(--i) * 100%)) scaleY(var(--sx))}
+  /* 44px minimum touch target (WCAG 2.5.5). Padding alone gave 34px here, which
+     would have made the sheet fail the very requirement it exists to satisfy —
+     min-height is set explicitly so a later type change cannot silently shrink it. */
+  .tab{display:flex;align-items:center;min-height:44px;padding:0 .95rem;
+    font-size:.68rem;letter-spacing:.1em;text-align:left}
+  .seg-gap{display:none}
+}
+`;
 
 /* ──────────────────────────────── template ─────────────────────────────── */
 
@@ -1160,13 +1654,6 @@ function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '' }
     const slots = toc.filter(t => !t.sub).map(t =>
         `<a href="#${t.id}" class="slot"><i>${t.num ? esc(t.num) : '—'}</i><span>${esc(t.text)}</span></a>`
     ).join('');
-
-    const active = Math.max(0, PAGES.findIndex(p => p.out === out));
-    // Default: no travel. The real starting position comes from sessionStorage in
-    // the inline script below, because only the browser knows which page you came
-    // from — inventing a direction at build time would animate the wrong way for
-    // half of all navigations.
-    const from = active;
 
     return `<!doctype html>
 <html lang="en">
@@ -1192,43 +1679,7 @@ ${COMPONENT_CSS}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
 #prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}
 
-/* ── segmented page switcher ──────────────────────────────────────────
-   Was three bordered boxes, which read as inert. Now one segmented control
-   with an indicator that slides. Because these are separate documents and not
-   an SPA, the slide happens on LOAD: the indicator animates in from the
-   previous tab's position, so arriving on a page shows you the move you just
-   made. --i is the active index, --n the tab count, both known at build time,
-   so no measuring in JS and nothing to go wrong on first paint. */
-/* A pill group, matching the other action controls. Three things were wrong
-   before: the inactive labels sat on --ink3 (the faintest ink token) so they
-   genuinely were close to invisible; the active marker was a 15%-alpha tint that
-   barely registered; and each tab carried an 01/02 number chip that duplicated
-   the landing page's numbering inside an already-crowded bar.
-   Now: inactive labels on --ink2, the active tab is a raised pill with an accent
-   border and accent text, and the numbers are gone. */
-.seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
-  border-radius:999px;border:1px solid var(--rule2);padding:3px;
-  background:color-mix(in srgb,var(--ink) 7%,transparent);isolation:isolate}
-.seg-ink{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;
-  width:calc((100% - 6px)/var(--n));border-radius:999px;background:var(--paper);
-  border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);
-  box-shadow:0 2px 9px -4px rgba(0,0,0,.55);
-  transform:translateX(calc(var(--i) * 100%))}
-/* Only animates once JS has supplied a real previous index — see the inline
-   script under the switcher. Without JS the indicator is simply already correct. */
-.seg.go .seg-ink{animation:segIn .5s cubic-bezier(.2,.85,.2,1) both}
-@keyframes segIn{
-  from{transform:translateX(calc(var(--from) * 100%))}
-  to{transform:translateX(calc(var(--i) * 100%))}
-}
-.tab{position:relative;z-index:1;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-  text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:.4rem .8rem;
-  text-align:center;border-radius:999px;transition:color .2s}
-.tab:hover{color:var(--ink)}
-.tab.on{color:var(--accent);font-weight:700}
-@media (max-width:640px){
-  .tab{padding:.4rem .45rem;font-size:.6rem;letter-spacing:.05em}
-}
+${SWITCHER_CSS}
 
 /* ── layout ──────────────────────────────────────────────────────── */
 /* .page centres and bounds; .cols is the grid. The footer sits in .page and OUTSIDE
@@ -1254,6 +1705,14 @@ ${COMPONENT_CSS}
 .rail::-webkit-scrollbar{width:3px}
 .rail::-webkit-scrollbar-thumb{background:var(--rule2)}
 .rail>.lab{display:block;margin-bottom:1rem;padding-left:.85rem}
+/* The tracked-section readout is a MOBILE affordance only. paint() fills it on
+   every viewport, so on desktop it rendered as a bare text node welded to the
+   label with no separator — "SECTIONSWHO IS RESPONSIBLE FOR YOUR DATA". The
+   desktop rail already shows position by highlighting the slot itself, so the
+   readout is redundant there as well as broken. Hidden in CSS rather than
+   guarded in JS: a viewport check in script would have to be re-run on resize
+   and can disagree with the media query that actually governs the layout. */
+.rail>.lab .cur{display:none}
 .slot{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;gap:.15rem;
   padding:.34rem 0 .34rem .8rem;text-decoration:none;border-left:2px solid var(--rule);
   transition:border-color .18s,color .18s}
@@ -1283,7 +1742,7 @@ ${COMPONENT_CSS}
     width:100%;-webkit-appearance:none;appearance:none;text-align:left;
     font-family:var(--mono);font-size:.63rem;letter-spacing:.16em;
     text-transform:uppercase;color:var(--ink3)}
-  .rail>.lab .cur{margin-left:auto;color:var(--ink2);letter-spacing:.04em;
+  .rail>.lab .cur{display:block;margin-left:auto;color:var(--ink2);letter-spacing:.04em;
     text-transform:none;font-size:.68rem;overflow:hidden;text-overflow:ellipsis;
     white-space:nowrap;max-width:52%}
   .rail>.lab::after{content:"+";font-size:.95rem;color:var(--accent);flex:0 0 auto;
@@ -1423,11 +1882,6 @@ pre.cols a{color:var(--ink)}
 /* No grid-column here any more: the footer left the grid when .cols was introduced,
    so grid-column:1/-1 had become an inert declaration describing a layout that no
    longer exists. It spans the full .page width simply by being a block child of it. */
-.foot{border-top:1px solid var(--rule);padding:2rem 0 3.5rem;
-  display:flex;flex-wrap:wrap;gap:.7rem 2rem;align-items:baseline}
-.foot p{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.7;
-  letter-spacing:.04em;color:var(--ink3);max-width:60ch}
-.foot a{color:var(--ink2)}
 
 @media print{
   .bar,#prog,.rail,.anchor,.thm,.ghb{display:none!important}
@@ -1456,28 +1910,12 @@ html{scroll-behavior:smooth}
 <div class="bar">
   ${wordmark('./')}
   <nav>
-    <div class="seg" style="--n:${PAGES.length};--i:${active};--from:${from}">
-      <span class="seg-ink" aria-hidden="true"></span>
-      ${PAGES.map(p => `<a class="tab${p.out === out ? ' on' : ''}" href="./${p.out}"` +
-        `${p.out === out ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('\n      ')}
-    </div>
+    ${navSwitcher(out)}
     ${repoBtn}
     ${installBtn()}
     ${themeBtn()}
   </nav>
 </div>
-<script>
-/* Runs during parse, before first paint, so setting --from can't flash. Only the
-   browser knows which tab you were on last, hence sessionStorage rather than a
-   build-time guess. */
-(function(){
-  var seg=document.querySelector('.seg');
-  if(!seg) return;
-  var i=${active}, prev=null;
-  try{ prev=sessionStorage.getItem('db-tab'); sessionStorage.setItem('db-tab',i); }catch(e){}
-  if(prev!==null&&prev!==''&&+prev!==i){ seg.style.setProperty('--from',+prev); seg.classList.add('go'); }
-})();
-</script>
 <div id="prog"></div>
 
 <div class="page">
@@ -1516,15 +1954,11 @@ html{scroll-behavior:smooth}
     </main>
   </div>
 
-  <footer class="foot">
-    <p>Dior's Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, or Discord Inc.</p>
-    <!-- PAGES already contains Notice, so the hand-added ../NOTICE link that used
-         to sit here produced two "Notice" entries side by side. The email is gone
-         too: it belongs on the landing page and in the Privacy Policy, and
-         repeating it in every page footer is just noise. -->
-    <p>${PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join(' · ')}
-      · ${EXTRA_PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join(' · ')}</p>
-  </footer>
+  <!-- Same footer as every other page: see pageFoot(). PAGES already contains
+       Notice, so the hand-added ../NOTICE link that used to sit here produced two
+       "Notice" entries side by side. The email stays off it — that belongs on the
+       landing page and in the Privacy Policy. -->
+  ${pageFoot(out)}
 </div>
 
 <script>
@@ -1536,8 +1970,21 @@ html{scroll-behavior:smooth}
   function paint(){
     var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
     prog.style.width=(max>0?h.scrollTop/max*100:0)+'%';
-    var cur=-1, y=h.scrollTop+130;
-    for(var i=0;i<heads.length;i++){ if(heads[i]&&heads[i].offsetTop<=y) cur=i; }
+    var cur=-1;
+    /* Viewport-relative, not offsetTop. offsetTop is measured from the nearest
+       POSITIONED ancestor, and the headings sit inside .doc, which is
+       position:relative — so it was being compared against a document-space
+       scroll value and every heading read low by the masthead's height. */
+    for(var i=0;i<heads.length;i++){
+      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+    }
+    /* At the bottom of the document the last headings can never cross the 130px
+       line — the page simply runs out of scroll before they get there — so the
+       final section could never highlight and the rail stayed stuck on whichever
+       one did cross it (Contact, on Privacy, with Appendix A unreachable).
+       Clamping to the last section at scroll end is what makes the rail agree
+       with what is actually on screen. */
+    if(max>0&&h.scrollTop>=max-2) cur=heads.length-1;
     for(var j=0;j<slots.length;j++) slots[j].classList.toggle('on', j===cur);
     // Mirror the tracked section into the mobile opener. On desktop the rail
     // shows position by itself; on mobile the list is collapsed, so without this
@@ -1563,6 +2010,7 @@ html{scroll-behavior:smooth}
 
 })();
 ${THEME_JS}
+${NAV_JS}
 </script>
 </body>
 </html>`;
@@ -1941,12 +2389,8 @@ ${COMPONENT_CSS}
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
-.back{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.66rem;
-  letter-spacing:.11em;text-transform:uppercase;text-decoration:none;color:var(--ink3);
-  border:1px solid var(--rule2);height:28px;padding:0 .6rem;transition:color .2s,border-color .2s}
-.back:hover{color:var(--ink);border-color:var(--ink3)}
-.back i{font-style:normal;transition:transform .24s}
-.back:hover i{transform:translateX(-3px)}
+
+${SWITCHER_CSS}
 
 /* The warm wash. This is the single strongest signal that you have left the
    legal set — those pages sit on flat graphite with no colour behind them. */
@@ -1954,7 +2398,13 @@ body{min-height:100vh;background:
   radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 62%),
   radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 12%,transparent),transparent 55%),
   var(--desk)}
-.wrap{max-width:760px;margin:0 auto;padding:calc(54px + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 4rem}
+/* 760px wasted most of a desktop window, and it was also what forced the footer
+   nav to wrap "Contributors" onto a line of its own with half the row empty. The
+   structured blocks (tiles, ledger, plates, promise cards) all want the extra
+   width — they are auto-fit grids and simply gain a column. Running PROSE does
+   not, so it is capped below; the ragged right on paragraphs is deliberate and
+   is what keeps a 950px card readable. */
+.wrap{max-width:950px;margin:0 auto;padding:calc(54px + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 4rem}
 
 .hero{text-align:center;margin-bottom:clamp(2.4rem,7vh,3.6rem)}
 .chip{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.63rem;
@@ -1980,7 +2430,8 @@ body{min-height:100vh;background:
 .card h2:first-child{margin-top:0}
 .card h3{font-family:var(--display);font-size:1.02rem;font-weight:700;
   letter-spacing:-.01em;color:var(--ink);margin:1.9rem 0 .6rem}
-.card p,.card li{font-family:var(--serif);font-size:1.04rem;line-height:1.76;color:var(--ink2)}
+.card p,.card li{font-family:var(--serif);font-size:1.04rem;line-height:1.76;color:var(--ink2);
+  max-width:68ch}
 .card p{margin:0 0 1.05rem}
 .card strong{color:var(--ink);font-weight:600}
 .card ul,.card ol{margin:0 0 1.15rem;padding-left:1.3rem}
@@ -2165,18 +2616,6 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 /* The sign-off now comes FIRST (see the markup), so it carries the gap away from the
    document and the nav's hairline sits below it, separating site chrome from the
    letter rather than cutting the letter off from its own last line. */
-.sig{margin:2.7rem 0 0;text-align:center;font-family:var(--mono);font-size:.68rem;
-  letter-spacing:.05em;color:var(--ink3)}
-.foot{margin-top:1.5rem;padding-top:1.4rem;border-top:1px solid var(--rule);
-  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.1rem .6rem;
-  font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase}
-.foot a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
-  border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
-.foot a:hover{color:var(--ink);border-bottom-color:var(--accent)}
-.foot span{color:var(--ink3);opacity:.5}
-.sig b{color:var(--ink2);font-weight:600}
-.hrt{color:var(--accent);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
 @media print{.bar,.thm,.ghb,.ins,.cpy,.node{display:none!important}
   body{background:#fff;color:#000}.card{border:0;box-shadow:none;border-radius:0}
@@ -2190,8 +2629,11 @@ html{scroll-behavior:smooth}
 
 <div class="bar">
   ${wordmark('./')}
+  <!-- The same two-group switcher the legal pages carry, so the navigation never
+       changes shape as you move around the site. It replaces the old "‹ Legal"
+       back button, which could only ever go one place. -->
   <nav>
-    <a class="back" href="./"><i>&#8249;</i> Legal</a>
+    ${navSwitcher(out)}
     ${repoBtn}
     ${installBtn()}
     ${themeBtn()}
@@ -2205,30 +2647,15 @@ html{scroll-behavior:smooth}
     <p class="lede">${esc(lede)}</p>
   </header>
   <main class="card${spine ? ' spine' : ''}">${body}</main>
-  <!-- No bottom theme tray here. The header on this template already carries the
-       switch, and offering the same control twice on one screen is just clutter.
-       (The landing page is the exception: it has no fixed header, so its switch
-       lives at the foot.) The four legal pages are listed by name rather than
-       collapsed behind "Legal documents" — there are only four, so a group label
-       hides more than it saves. The email is deliberately absent: it is on the
-       landing page and in the Privacy Policy, which is enough. -->
-  <!-- The sign-off is the one the source file itself ends with, lifted out of the
-       body by warmCompose so it appears once. DIOR_SIG is the fallback for a warm
-       page whose source carries no closing line.
-
-       IT MUST PRECEDE THE NAV. It is the closing line of the DOCUMENT, not site
-       chrome, and the source has it running straight on from the last paragraph
-       ("Thanks for being here — genuinely. / ♡ Made with love by dior"). Placing it
-       below the nav put five link labels inside that source run and verify() reported
-       it missing — correctly, since a reader met the nav mid-sentence too. A letter
-       signs off before the site's footer, not after it. -->
-  <p class="sig">${sig || DIOR_SIG}</p>
-  <nav class="foot">
-    ${PAGES.map(p => `<a href="./${p.out}">${esc(p.short)}</a>`).join('<span>·</span>')}
-    ${EXTRA_PAGES.filter(p => p.out !== out).map(p => `<span>·</span><a href="./${p.out}">${esc(p.short)}</a>`).join('')}
-  </nav>
+  <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
+       the SOURCE file ends with, lifted out of the body by warmCompose so it
+       shows once; DIOR_SIG is the fallback when a source carries no closing line.
+       No bottom theme tray: the header already has the switch, and offering the
+       same control twice on one screen is clutter. (The landing page is the
+       exception — it has no fixed header, so its switch lives at the foot.) -->
+  ${pageFoot(out, sig)}
 </div>
-<script>${THEME_JS}${WARM_JS}</script>
+<script>${THEME_JS}${NAV_JS}${WARM_JS}</script>
 </body>
 </html>`;
 }
@@ -2260,13 +2687,18 @@ function indexPage(built) {
     };
     const invites = EXTRA_PAGES.map(p => `
       <a class="inv" href="${p.out}" style="--ia:${p.accent}">
-        <span class="inv-h">
-          <span class="inv-m" aria-hidden="true">${marks[p.out] || ''}</span>
-          <span class="ik">${esc(p.kicker)}</span>
+        <span class="inv-b">
+          <span class="inv-h">
+            <span class="inv-m" aria-hidden="true">${marks[p.out] || ''}</span>
+            <span class="ik">${esc(p.kicker)}</span>
+          </span>
+          <h3>${esc(p.title)}</h3>
+          <p>${esc(p.blurb)}</p>
         </span>
-        <h3>${esc(p.title)}</h3>
-        <p>${esc(p.blurb)}</p>
-        <span class="arw">Open <i>&#8594;</i></span>
+        <span class="inv-s" aria-hidden="true">
+          <span class="inv-sw">${esc(p.short)}</span>
+          <span class="arw"><i>&#8594;</i></span>
+        </span>
       </a>`).join('');
 
     const n = built.length;
@@ -2318,40 +2750,62 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   .entry{grid-template-columns:2.2rem 1fr;gap:1rem}
   .entry em{display:none}
 }
-.foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem}
-.foot p{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;letter-spacing:.04em;
-  color:var(--ink3);max-width:62ch}
-.foot a{color:var(--ink2)}
+/* The landing page keeps a left-aligned, borderless footer: it is a block of
+   contact information, not the end of a document. Every property the shared
+   .foot sets is overridden explicitly rather than left to cascade order. */
+.foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
+  align-items:flex-start;text-align:left;border-top:0;padding:0}
+.foot .disc{max-width:66ch}
+.contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
+  letter-spacing:.04em;color:var(--ink3);max-width:62ch}
+.contact a{color:var(--ink2)}
 /* ── invitation cards: contributing / contributors ────────────────────
    Deliberately NOT rows in the numbered list above. The 01/02/03 series means
    "documents that bind you"; these are an offer. So: rounded where those are
    squared, warm where those are cold, and side by side rather than stacked in a
    ledger. The visual grammar carries the distinction on its own. */
-.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1rem;
-  margin-top:clamp(2.2rem,6vh,3rem)}
-.inv{position:relative;display:block;text-decoration:none;color:inherit;
-  border-radius:16px;padding:1.45rem 1.5rem 1.35rem;background:var(--paper);
-  border:1px solid var(--rule);
-  transition:transform .34s cubic-bezier(.16,.84,.28,1),box-shadow .34s}
+/* ── invitation TICKETS ───────────────────────────────────────────────
+   These are not cards with a hover effect bolted on; they are a different kind
+   of object from the numbered rows above, and the form says so. A ticket has a
+   torn stub, so each one is split by a perforation with the notches punched
+   through it, and the stub carries the destination's name turned on its side.
 
-/* ONE effect, not four. The previous card stacked a lift, a border-gradient
-   fade, a diagonal light sweep and a coloured shadow — four things firing at once,
-   which is what made it read as effects-for-their-own-sake rather than a design.
-   What remains is a single conic gradient rotating slowly around the card edge,
-   masked to a 1px ring. It is the same "live readout" idea as the wordmark's
-   slots, and it belongs to the card's own accent so the two cards never animate
-   identically. */
-.inv::before{content:"";position:absolute;inset:-1px;border-radius:17px;padding:1.4px;
-  background:conic-gradient(from var(--a,0deg),transparent 0deg,
-    color-mix(in srgb,var(--ia) 92%,white) 42deg,transparent 96deg,transparent 360deg);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
-  opacity:0;transition:opacity .34s;animation:orbit 3.6s linear infinite paused}
-.inv:hover,.inv:focus-visible{transform:translateY(-3px);
-  box-shadow:0 20px 44px -26px color-mix(in srgb,var(--ia) 55%,transparent)}
-.inv:hover::before,.inv:focus-visible::before{opacity:1;animation-play-state:running}
-@property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
-@keyframes orbit{to{--a:360deg}}
+   The tear is also a cross-reference: the Contributing page's CLA line — the one
+   thing on this whole site a reader physically takes away — is rendered as a
+   slip with the same dashed edge. Paper you tear off and carry, as against the
+   engraved plates on the Contributors page. Two materials, two meanings.
+
+   No overflow:hidden on .inv — the notches have to straddle the card edge to
+   read as bitten out of it. That is why the stub carries its own right-hand
+   radius instead of relying on the parent to clip it. */
+.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(286px,1fr));gap:1.1rem;
+  margin-top:clamp(2.2rem,6vh,3rem)}
+.inv{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 46px;
+  text-decoration:none;color:inherit;border-radius:14px;background:var(--paper);
+  border:1px solid var(--rule);
+  transition:transform .38s cubic-bezier(.16,.84,.28,1),box-shadow .38s,border-color .38s}
+.inv-b{padding:1.35rem 1.4rem 1.3rem;min-width:0}
+.inv-s{position:relative;border-radius:0 13px 13px 0;
+  display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:center;
+  padding:.9rem 0 .8rem;
+  border-left:2px dashed color-mix(in srgb,var(--ia) 40%,var(--rule));
+  background:color-mix(in srgb,var(--ia) 6%,transparent);
+  transition:background .38s}
+/* the punched notches — background-coloured, straddling the top and bottom edge */
+.inv-s::before,.inv-s::after{content:"";position:absolute;left:-7px;width:12px;height:12px;
+  border-radius:50%;background:var(--desk)}
+.inv-s::before{top:-7px}
+.inv-s::after{bottom:-7px}
+.inv-sw{writing-mode:vertical-rl;transform:rotate(180deg);
+  font-family:var(--mono);font-size:.57rem;letter-spacing:.24em;text-transform:uppercase;
+  color:color-mix(in srgb,var(--ia) 72%,var(--ink3))}
+.inv:hover,.inv:focus-visible{transform:translateY(-4px) rotate(-.35deg);
+  border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
+  box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}
+.inv:hover .inv-s,.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent)}
+@media (prefers-reduced-motion:reduce){
+  .inv:hover,.inv:focus-visible{transform:none}
+}
 
 .inv-h{display:flex;align-items:center;gap:.6rem}
 /* A small mark per card, animated in a way that means something: the plus draws
@@ -2376,13 +2830,16 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .inv h3{font-family:var(--display);font-size:1.24rem;font-weight:750;letter-spacing:-.025em;
   color:var(--ink);margin:.75rem 0 .4rem}
 .inv p{font-family:var(--serif);font-size:.95rem;line-height:1.62;color:var(--ink2);margin:0}
-.inv .arw{display:inline-flex;align-items:center;gap:.4rem;margin-top:.95rem;
-  font-family:var(--mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ia)}
-.inv .arw i{font-style:normal;transition:transform .3s cubic-bezier(.16,.84,.28,1)}
-.inv:hover .arw i{transform:translateX(5px)}
+/* The arrow lives in the stub now, where the thumb would go. */
+.inv .arw{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  color:var(--ia);background:color-mix(in srgb,var(--ia) 14%,transparent);
+  transition:background .3s}
+.inv .arw i{font-style:normal;font-size:.78rem;line-height:1;
+  transition:transform .3s cubic-bezier(.16,.84,.28,1)}
+.inv:hover .arw{background:color-mix(in srgb,var(--ia) 26%,transparent)}
+.inv:hover .arw i{transform:translateX(3px)}
 @media (prefers-reduced-motion:reduce){
-  .inv::before{animation:none}
+  .inv:hover .arw i{transform:none}
   .inv:hover .inv-m .d{animation:none;opacity:1}
 }
 
@@ -2405,8 +2862,8 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
   <div class="foot">
-    <p>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
-    <p>Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
+    <p class="disc">Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+    <p class="contact">Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
     ${emailReveal}
   </div>
   <div class="tray">
