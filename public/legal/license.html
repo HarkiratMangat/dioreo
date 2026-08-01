@@ -770,13 +770,30 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    same colour — which is precisely the condition (a) failed to meet. */
 
 @media (prefers-reduced-motion:reduce){ .pt{display:none} }
-.goodef{position:absolute;width:0;height:0;overflow:hidden}
+.goodef{position:absolute;width:0;height:0;overflow:hidden}/* ⚠️ ONE WEIGHT FOR EVERY TAB, always. The active tab used to jump to 700 the
+   instant the pill's class landed, which read as the text changing font
+   mid-animation — and font-weight cannot tween between discrete values, so
+   there was no way to soften it. The pill IS the emphasis; it does not need
+   the label to shout as well. It also means a label never changes width, so
+   the geometry the indicator measures stays put. */
+
 
 .tab{position:relative;z-index:1;display:block;white-space:nowrap;cursor:pointer;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
-  text-transform:uppercase;text-decoration:none;color:var(--ink2);
-  padding:.42rem .85rem;border-radius:999px;transition:color .3s ease}
-.tab.on{color:var(--accent-t);font-weight:700}/* The label sitting ON the pill. A solid accent fill is far too light to carry
+  text-transform:uppercase;text-decoration:none;
+  padding:.42rem .85rem;border-radius:999px;
+  /* --cov is written every frame by paint(): 0 = no pill over me, 1 = fully
+     covered. --rest is what this tab looks like with no pill on it. */
+  --cov:0; --rest:var(--ink2);
+  color:color-mix(in srgb,#120E1C calc(var(--cov) * 100%),var(--rest));
+  transition:color .2s ease}/* ⚠️ NO TRANSITION WHILE MOVING. --cov already changes every frame, so an eased
+   transition on top of it is not smoothing — it is pure lag, and it would land
+   the label's colour a fifth of a second after the pill settles. The transition
+   exists only for the jump when a group you are not in shows or hides its
+   indicator, which is not a per-frame change. */
+
+.seg.morph .tab{transition:none}
+.tab.on{--rest:var(--accent-t)}/* The label sitting ON the pill. A solid accent fill is far too light to carry
    accent-coloured text, so the tab the indicator currently covers flips to
    near-black — the same inversion the reference makes when its white pill
    arrives. Measured against all six accents AND every mid-gradient blend of
@@ -792,10 +809,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    The three-class selector cannot lose that race.
    ⚠️ .tab.on ALONE keeps the accent colour, and must: mid-morph the pill travels
    away from the current tab, and a dark label with nothing behind it would
-   vanish into the bar. Dark is for -a pill is under me-, not for -I am current-. */
+   vanish into the bar. Dark is for -a pill is under me-, not for -I am current-. *//* ⚠️ .lit NO LONGER STYLES ANYTHING BY DEFAULT — it is kept as the fallback for
+   engines without color-mix(), where --cov cannot be interpolated and the label
+   would otherwise sit light-on-accent. There the old discrete behaviour is
+   strictly better than nothing. lit() itself stays load-bearing: it is what
+   clears the marker when a group you are not in goes cold. */
 
 
-.tab.on.lit,.tab.lit{color:#120E1C;font-weight:700}
+
+@supports not (color:color-mix(in srgb,#000 50%,#fff)){
+  .tab.on.lit,.tab.lit{color:#120E1C}
+}
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* Segment dividers — the affordance at rest. Drawn on the tab rather than the
    track so they land in the gaps whatever each label measures. *//* No dividers. Spacing separates the tabs instead, which also gives the
    indicator somewhere to travel — with the tabs touching it had to stretch
@@ -2063,7 +2087,22 @@ html{scroll-behavior:smooth}
          is actually stretching, and nothing left by p=0.5 — after which the
          droplets are the only bridge, which is what they are for. */
       var bell=Math.sin(Math.PI*band(0,0.5,p));
-      C.style.height=Math.max(0,H()*0.5*bell*(1-reach))+'px';
+      /* ⚠️ THE EXPONENT IS WHAT LETS A LONG MOVE COME APART, and it is set against
+         the crush threshold rather than by eye. #dbgoo blurs at stdDeviation 3.6
+         and thresholds alpha at 8/22 = 0.364, so a horizontal bar only survives
+         the crush above about 3.4px tall. Traced frame by frame in Chrome on a
+         Terms-to-Notice move, the neck peaked at 7.7px while spanning a 183px
+         gap — a ribbon twice as thick as it needed to be to stay welded, held
+         for ~350ms. The droplets were all there (14 of them, the whole time);
+         they were simply strung on a wire, which is why it never read as
+         breaking apart.
+         The power drops the peak to ~2.7px at reach 0.5 — a long move, which
+         now parts — while leaving reach 0.048 (neighbouring tabs) at 0.88 of
+         its old height. Those sit 9px apart and SHOULD merge: two metaballs
+         that close genuinely are one blob, and forcing a break there would be
+         the effect lying about distance.
+         ⚠️ Re-derive if stdDeviation or the crush matrix changes. */
+      C.style.height=Math.max(0,H()*0.5*bell*Math.pow(1-reach,2.5))+'px';
       /* Colour is per PIECE and solid, not one ramp across the whole control.
          The ramp was why the colour lagged: a piece sitting on the destination
          still carried some of the origin's hue until the move ended. Now the
@@ -2076,6 +2115,41 @@ html{scroll-behavior:smooth}
         +rgbOf(fwd?cFrom:cTo)+','+rgbOf(fwd?cTo:cFrom)+')';
       C.style.backgroundSize='100% 100%';
       C.style.backgroundPosition='0 0';
+
+      /* ⚠️ THE LABEL FOLLOWS THE PILL'S GEOMETRY, NOT A DELAYED CLASS, and this
+         replaces lit()'s styling entirely. The old scheme toggled .lit at
+         DUR*0.8 — 608ms into a 760ms move — so for the first four fifths the
+         arriving label sat at --ink2 (a light lavender grey) ON TOP of a solid
+         accent pill, and then flipped to near-black and 700 weight in a single
+         frame. Three complaints, one cause: "why is the text white", "the
+         weight snaps from thin to medium", and "on Terms it stays orange then
+         switches to black at the end". A discrete state cannot describe a
+         continuous one.
+
+         Coverage is the honest quantity: how much of this tab's box the pill
+         actually covers right now, taking whichever of the two pieces covers it
+         more. band() then biases the crossover so the label commits quickly
+         around the halfway point instead of spending the move as a mid grey —
+         a single colour can never be right for a glyph run that is half on the
+         pill, so the goal is to be wrong for as few frames as possible.
+
+         Read nothing from layout here. box() is offsetLeft/offsetWidth, which
+         the browser has cached since the last reflow; the pill's own extent is
+         already in hand as tailX/aw and dstX/bw. */
+      var shown = home!==null || seg.classList.contains('hot');
+      var piece = [[tailX,aw],[dstX,bw]];
+      for(var q=0;q<n;q++){
+        var tb=box(q), cov=0;
+        if(shown && tb[1]>0){
+          for(var k=0;k<2;k++){
+            var s=piece[k][0], w=piece[k][1];
+            if(w<=0) continue;
+            var ov=Math.min(tb[0]+tb[1], s+w) - Math.max(tb[0], s);
+            if(ov>0) cov=Math.max(cov, ov/tb[1]);
+          }
+        }
+        tabs[q].style.setProperty('--cov', band(0.22,0.72,cov).toFixed(3));
+      }
     }
     function step(now){
       p=Math.min(1,(now-t0)/DUR);
