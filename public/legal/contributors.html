@@ -413,7 +413,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}
 .totop.on{opacity:1;transform:none;pointer-events:auto}
 .totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.tt-ring{position:absolute;inset:0;width:46px;height:46px;transform:rotate(-90deg)}
+/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+   PADDING box, which is 44px inside this button's 1px border — but the svg is
+   46px, so it hung 1px down and right and its ring stopped being concentric with
+   the border it sits in. Covering the border box instead puts both circles on one
+   centre, which is the only way a ring around a button reads as a single object. */
+.tt-ring{position:absolute;inset:-1px;width:46px;height:46px;transform:rotate(-90deg)}
 .tt-trk{fill:none;stroke:var(--rule);stroke-width:1.5}
 /* dasharray is 2*pi*r at r=20; the script writes the offset from scroll */
 .tt-bar{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-linecap:round;
@@ -740,11 +745,47 @@ pre.code{position:relative;margin:1.3rem 0;padding:1rem 1.15rem;border-radius:10
   background:var(--raised);border:1px solid var(--rule);overflow-x:auto}
 pre.code code{display:block;font-family:var(--mono);font-size:.8rem;line-height:1.75;
   color:var(--ink);white-space:pre;background:none;border:0;padding:0}
-pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;right:.75rem;
+pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;left:1.15rem;
   font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;
   color:var(--ink3)}
 .card .ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
   border-bottom:1px dotted var(--rule)}
+/* The code block and its copy control. The control sits OUTSIDE the pre so it
+   cannot scroll away with a long line, and so its own label never becomes part of
+   what gets copied. */
+.cw{position:relative}
+.cw pre.code[data-lang]{padding-top:1.75rem}
+/* ⚠️ min-height:0 is required. The base .cpy is a labelled pill with
+   min-height:44px for its touch target, and that MIN wins over a plain height —
+   so this came out 30px wide by 44px tall: a vertical oval with the mark riding
+   high in it. An icon-only control has to reset the floor before it can be
+   square. The 44px target returns on coarse pointers, where it is the thing that
+   actually matters and the button is always visible rather than hover-revealed. */
+/* ⚠️ .cpy.cpy-f, not .cpy-f — these two selectors carry the SAME specificity and
+   this block is defined ABOVE the base .cpy, so a single class lost on source
+   order and the base won silently. That left min-height:44px and 1.05rem of
+   horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
+   the padding squeezed the drawn mark to ZERO width inside it. Measured, not
+   guessed. An icon-only control has to beat the labelled pill it derives from. */
+.cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
+  padding:0;gap:0;min-height:0;width:34px;height:34px}
+/* The 44px target returns where it actually matters — a coarse pointer, where
+   this control is always visible rather than revealed on hover. */
+@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}
+/* The copy mark: two offset sheets, becoming a tick once the text is on the
+   clipboard. Drawn, not typed — see the note in withCopyButtons(). */
+.cpy-g{position:relative;display:block;width:12.5px;height:13px}
+.cpy-g::before,.cpy-g::after{content:"";position:absolute;box-sizing:border-box;
+  border:1.4px solid currentColor;border-radius:2px;transition:opacity .18s ease}
+.cpy-g::before{left:0;top:0;width:8.5px;height:9.5px}
+.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--raised)}
+.cpy-f[data-done] .cpy-g::before{opacity:0}
+.cpy-f[data-done] .cpy-g::after{left:1px;top:2px;width:10px;height:5.5px;
+  border-width:0 0 1.7px 1.7px;border-radius:0;background:none;transform:rotate(-45deg)}
+@media (hover:hover) and (pointer:fine){
+  .cw .cpy-f{opacity:0;transition:opacity .22s ease}
+  .cw:hover .cpy-f,.cw .cpy-f:focus-visible{opacity:1}
+}
 .card blockquote.callout{margin:1.5rem 0;padding:1.05rem 1.25rem;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 8%,var(--raised));
   border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule))}
@@ -792,8 +833,13 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 
 /* ── ways to contribute: four parallel lanes, so tiles rather than a run of
       subheadings a reader has to read through to choose between ───────────── */
-.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:.85rem;
+/* ⚠️ TWO fixed columns, not auto-fit. auto-fit with a 228px minimum fits THREE
+   tracks at this card's width, so the four lanes came out as three thin blocks
+   with a single stranded tile underneath — an arrangement that implies the last
+   one is different when all four are parallel. Four items want 2x2. */
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem;
   margin:1.3rem 0}
+@media (max-width:640px){.opts{grid-template-columns:1fr}}
 .opt{border:1px solid var(--rule);border-radius:14px;padding:1.1rem 1.2rem;
   background:color-mix(in srgb,var(--raised) 62%,transparent);
   transition:border-color .25s,transform .25s}
@@ -812,15 +858,21 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .ldg-r{background:var(--paper);padding:1.15rem 1.3rem 1.05rem;
   display:grid;grid-template-columns:26px 1fr;column-gap:.85rem}
 .ldg-r[data-d=out]{background:color-mix(in srgb,var(--accent) 7%,var(--paper))}
-.ldg-m{grid-column:1;grid-row:1/span 2;width:26px;height:26px;border-radius:50%;
-  display:grid;place-items:center;font-family:var(--mono);font-size:.78rem;line-height:1;
-  margin-top:.1rem}
-.ldg-r[data-d=out] .ldg-m{color:var(--accent-t);
-  background:color-mix(in srgb,var(--accent) 15%,transparent);
-  border:1px solid color-mix(in srgb,var(--accent) 36%,transparent)}
-.ldg-r[data-d=hold] .ldg-m,.ldg-r[data-d=check] .ldg-m{color:var(--ink);
-  background:var(--raised);border:1px solid var(--rule2)}
-.ldg-r[data-d=none] .ldg-m{color:var(--ink3);border:1px dashed var(--rule2)}
+/* ⚠️ NOT a circle, and not a filled chip. A 26px bordered circle at the head of
+   every row of an agreement reads as a radio button — something to click, confirm
+   or fill in — which is precisely the wrong signal on the page explaining what you
+   are agreeing to. The mark is bare now: the glyph alone in the direction's
+   colour, with the row carrying an edge instead. Nothing here is interactive. */
+.ldg-m{grid-column:1;grid-row:1/span 2;width:20px;height:22px;
+  display:grid;place-items:center;font-family:var(--mono);font-size:.95rem;line-height:1;
+  margin-top:.08rem;background:none;border:0;border-radius:0}
+.ldg-r{border-left:2px solid transparent}
+.ldg-r[data-d=out] .ldg-m{color:var(--accent-t)}
+.ldg-r[data-d=out]{border-left-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.ldg-r[data-d=hold] .ldg-m,.ldg-r[data-d=check] .ldg-m{color:var(--ink2)}
+.ldg-r[data-d=hold],.ldg-r[data-d=check]{border-left-color:var(--rule2)}
+.ldg-r[data-d=none] .ldg-m{color:var(--ink3)}
+.ldg-r[data-d=none]{border-left-color:color-mix(in srgb,var(--ink3) 45%,transparent)}
 .card .ldg-r>h3{grid-column:2;grid-row:1;margin:0 0 .45rem;font-size:1rem}
 .ldg-r>div{grid-column:2;grid-row:2}
 .ldg-r>div>:last-child{margin-bottom:0}
@@ -854,8 +906,22 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
       name in display type. The ghost plate is the page's actual argument — the
       empty space is the offer, so it is drawn as a reserved object rather than
       apologised for in italics. */
-.wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.9rem;
-  margin:1.4rem 0}
+/* ⚠️ auto-FILL with a capped track, not auto-FIT with 1fr. With a single real
+   contributor, auto-fit collapses the empty tracks and stretches that one plate
+   across the entire card — a name floating in a wide grey band, which is most of
+   why this page read as lifeless. Capping the track keeps a plate plate-sized and
+   lets the wall grow into an actual wall as names arrive. */
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,268px));
+  gap:.9rem;margin:1.4rem 0;justify-content:start}
+@media (max-width:560px){.wall{grid-template-columns:1fr}}
+@media (hover:hover) and (pointer:fine){
+  .plate:not(.ghost){transition:transform .3s cubic-bezier(.22,.9,.24,1),
+    border-color .3s ease,box-shadow .3s ease}
+  .plate:not(.ghost):hover{transform:translateY(-3px);
+    border-color:color-mix(in srgb,var(--accent) 48%,var(--rule));
+    box-shadow:inset 0 1px 0 color-mix(in srgb,white 16%,transparent),
+      0 22px 40px -22px rgba(0,0,0,.85)}
+}
 .plate{position:relative;border-radius:14px;padding:1.15rem 1.25rem;overflow:hidden;
   display:flex;flex-direction:column;gap:.45rem;
   background:linear-gradient(158deg,color-mix(in srgb,var(--accent) 10%,var(--raised)),
@@ -875,7 +941,15 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   -webkit-text-fill-color:transparent;animation:plate 6s ease-in-out infinite}
 @keyframes plate{0%,70%{background-position:120% 0}100%{background-position:-20% 0}}
 .plate.ghost{background:none;box-shadow:none;border-style:dashed;
+  text-decoration:none;color:inherit;cursor:pointer;
   animation:wait 5s ease-in-out infinite}
+.plate.ghost:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media (hover:hover) and (pointer:fine){
+  .plate.ghost{transition:border-color .3s ease,background .3s ease,transform .3s cubic-bezier(.22,.9,.24,1)}
+  .plate.ghost:hover{transform:translateY(-3px);border-style:solid;
+    border-color:color-mix(in srgb,var(--accent) 55%,transparent);
+    background:color-mix(in srgb,var(--accent) 7%,transparent);animation-play-state:paused}
+}
 /* The waiting slot's label lives here rather than in the DOM — see asPlates(). */
 .plate.ghost .plate-n{color:var(--ink3)}
 .plate.ghost .plate-n::before{content:"Your name"}
@@ -1006,7 +1080,7 @@ html{scroll-behavior:smooth}
   <main class="card"><div class="lead"><p>Everyone who has contributed to Dior's Builds, credited by the name or handle they asked to be credited under.</p>
 <p>If your work ships, your name goes here and in the changelog entry for the release it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the <a href="../LICENSE">LICENSE</a> requires it.</p></div>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p class="wall-l">Name &middot; Role</p><div class="wall"><div class="plate"><span class="plate-n"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</span><span class="plate-r">Creator and maintainer</span></div></div></div></section>
-<section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><div class="plate ghost"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></div></div>
+<section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><a class="plate ghost" href="./contributing.html"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></a></div>
 <p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p></div></section>
 <section class="sec" data-t="promises"><span class="node" aria-hidden="true"></span><h2 id="how-credit-works" class="plain"><span class="ht">How credit works</span><a class="anchor" href="#how-credit-works" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="proms"><article class="prom"><h4>You choose the name.</h4><p>GitHub handle, display name, or anything reasonable — tell us in the pull request.</p></article><article class="prom"><h4>Credit appears in two places:</h4><p>this file, and the <code>docs/CHANGELOG.md</code> entry for the release your work ships in.</p></article><article class="prom"><h4>Credit survives.</h4><p>It stays even if the code is later refactored or replaced.</p></article><article class="prom"><h4>If a contribution is removed entirely</h4><p>, we'll remove the credit on request — or leave it, if you'd rather keep it.</p></article></div>
 <p>Thanks to everyone who has taken the time to make this better.</p></div></section></main>
@@ -1288,20 +1362,24 @@ html{scroll-behavior:smooth}
   }
 })();
 (function(){
-  var b=document.querySelector('.cpy');
-  if(b&&navigator.clipboard){
-    var s=document.querySelector('.cpy-s'),t=b.querySelector('.cpy-t');
+  /* EVERY copy control, not just the first. This was a single querySelector, so
+     adding buttons to the code blocks would have left all but one of them inert —
+     a control that looks live and silently does nothing. */
+  Array.prototype.forEach.call(document.querySelectorAll('.cpy'),function(b){
+    if(!navigator.clipboard){ b.parentNode.removeChild(b); return; }
+    var t=b.querySelector('.cpy-t');
+    var s=b.parentNode.querySelector('.cpy-s');
     b.addEventListener('click',function(){
       var el=document.getElementById(b.getAttribute('data-copy'));
       if(!el)return;
       navigator.clipboard.writeText(el.textContent.trim()).then(function(){
-        b.setAttribute('data-done','');t.textContent='Copied';
+        b.setAttribute('data-done','');if(t)t.textContent='Copied';
         if(s)s.textContent='Copied to clipboard';
-        setTimeout(function(){b.removeAttribute('data-done');t.textContent='Copy';
+        setTimeout(function(){b.removeAttribute('data-done');if(t)t.textContent='Copy';
           if(s)s.textContent='';},2400);
       });
     });
-  } else if(b){b.parentNode.removeChild(b);}
+  });
   var secs=document.querySelectorAll('.spine .sec');
   if(!secs.length)return;
   var on=function(el){el.classList.add('on')};
