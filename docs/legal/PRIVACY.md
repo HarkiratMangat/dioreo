@@ -177,6 +177,20 @@ measurement, or tracking of any kind, so no other basis is needed.
 **To remove it:** clear site data for this domain in your browser settings, or
 use private browsing. Removing it costs you nothing but the appearance setting.
 
+**Before you press the switch, nothing is stored at all** — the Site simply
+follows whatever light or dark setting your operating system or browser is
+already using. That happens through an ordinary CSS media query: your browser
+applies one set of colours or the other while drawing the page. We are not told
+which it chose. There is no server-side component that could be told — these are
+static files.
+
+The one place the Site reads that setting in code, it does so only to keep the
+switch's on/off state honest for screen readers, in your own browser. **It is
+never stored, never written to a log, never combined with anything else, and
+never sent anywhere.** We mention it because a colour-scheme preference is one of
+the signals that *can* be used to help fingerprint a browser when it is collected
+and transmitted, and we would rather state plainly that this one is not.
+
 ---
 
 ## 3. What we do NOT collect
@@ -543,7 +557,7 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
-| 1.2 | 31 July 2026 | Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds §2.6 describing that item in full, extends the scope line to cover the Site, and corrects the §3 and Appendix C entries. **No change to what the Bot collects, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to versions 1.0 and 1.1. |
+| 1.2 | 31 July 2026 | Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds §2.6 describing that item in full — including how the Site behaves *before* you touch the switch, when it simply follows your operating system's light/dark setting and stores nothing at all — extends the scope line to cover the Site, and corrects the §3 and Appendix C entries. **No change to what the Bot collects, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to versions 1.0 and 1.1. |
 | 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
 | 1.0 | 28 July 2026 | First published version. |
 
