@@ -159,7 +159,7 @@ const EXTRA_PAGES = [
     {
         file: 'CONTRIBUTORS.md', kind: 'md', root: true, out: 'contributors.html',
         title: 'Contributors', short: 'Contributors',
-        kicker: 'Credit', accent: BRAND.azure, glow: '#9BCBFF',
+        kicker: 'Roll call', accent: BRAND.azure, glow: '#9BCBFF',
         lede: 'Everyone who has made this better, credited under the name they chose.',
         badge: 'Your name goes here',
         blurb: 'Who helped build this, and how credit works. Bug reports count.'
@@ -1142,6 +1142,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.34),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
   transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
+/* Taller, heavier and wider than the repo capsule beside it. These two were the
+   same 32px pill, which gave the primary action on the site exactly as much
+   presence as a link to the source. */
+.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.95rem}
+.ins .ins-t{font-size:.7rem}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
   background:color-mix(in srgb,var(--desk) 20%,transparent);
@@ -1985,7 +1990,13 @@ const SWITCHER_CSS = `
  * blur on a 26px-tall element is clipped by the default box and that shears the
  * top and bottom off the merged shape.
  */
-const GOO_SVG = `<svg class="goodef" aria-hidden="true" focusable="false"><filter id="dbgoo"
+// ⚠️ The collapsing style is INLINE, not in a stylesheet. .goodef lived in
+// SWITCHER_CSS, which the landing page does not include — so on that page the svg
+// kept its intrinsic 300x150 and took part in layout, shoving the whole document
+// sideways. A fragment injected into three templates with three different CSS
+// compositions cannot depend on any one of them having styled it.
+const GOO_SVG = `<svg class="goodef" aria-hidden="true" focusable="false"
+ style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
  x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
 <feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
@@ -3244,10 +3255,14 @@ function indexPage(built) {
         'contributing.html': '<svg viewBox="0 0 14 14" aria-hidden="true">'
             + '<line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/>'
             + '<line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg>',
+        // Three ruled lines of unequal length — a credits list — which extend to
+        // meet each other on hover: entries being filled in. The three dots this
+        // replaces read as a loading spinner, which is the one thing this page is
+        // not doing. The bars are also the site's own wordmark motif.
         'contributors.html': '<svg viewBox="0 0 14 14" aria-hidden="true">'
-            + '<circle class="d" cx="2.4" cy="7" r="1.7"/>'
-            + '<circle class="d" cx="7" cy="7" r="1.7"/>'
-            + '<circle class="d" cx="11.6" cy="7" r="1.7"/></svg>'
+            + '<line class="ln" x1="2" y1="3.6" x2="12" y2="3.6"/>'
+            + '<line class="ln" x1="2" y1="7" x2="8.4" y2="7"/>'
+            + '<line class="ln" x1="2" y1="10.4" x2="5.6" y2="10.4"/></svg>'
     };
     const invites = EXTRA_PAGES.map(p => `
       <a class="inv" href="${p.out}" style="--ia:${p.accent}">
@@ -3261,7 +3276,7 @@ function indexPage(built) {
         </span>
         <span class="inv-s" aria-hidden="true">
           <span class="inv-sw">${esc(p.short)}</span>
-          <span class="arw"><i>&#8594;</i></span>
+          <span class="arw"><i aria-hidden="true"></i></span>
         </span>
       </a>`).join('');
 
@@ -3296,13 +3311,31 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
   max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}
 .list{border-top:1px solid var(--rule)}
+/* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
+   linear the row snapped rather than moved — the whole page read as abrupt for
+   this reason, not because anything was missing. The rule wipes in from the top
+   rather than widening, which is the motion a marker being drawn actually makes. */
 .entry{display:grid;grid-template-columns:2.6rem 1fr auto;gap:1.4rem;align-items:baseline;
   padding:1.7rem .4rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--rule);
-  position:relative;transition:padding-left .22s}
-.entry::before{content:"";position:absolute;left:0;top:0;bottom:-1px;width:0;
-  background:var(--accent);transition:width .22s}
+  position:relative;
+  transition:padding-left .42s cubic-bezier(.22,.9,.24,1),background .42s ease}
+.entry:hover{background:linear-gradient(90deg,
+  color-mix(in srgb,var(--accent) 7%,transparent),transparent 42%)}
+.entry::before{content:"";position:absolute;left:0;top:0;bottom:-1px;width:3px;
+  background:var(--accent);transform:scaleY(0);transform-origin:top;
+  transition:transform .44s cubic-bezier(.22,.9,.24,1)}
+.entry:hover::before{transform:scaleY(1)}
+.entry i,.entry h2,.entry em{transition:color .34s ease}
 .entry:hover{padding-left:1.3rem}
-.entry:hover::before{width:3px}
+/* ⚠️ --accent-t must be REDECLARED here. Custom properties resolve where they are
+   DECLARED, not where they are used: --accent-t:var(--accent) computes on :root,
+   where --accent is amber, and inherits that finished value. Overriding --accent
+   per row therefore did nothing and every number hovered orange. */
+.entry{--accent-t:var(--accent)}
+:root[data-theme=light] .entry{--accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .entry{--accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C)}
+}
 .entry i{font-family:var(--mono);font-style:normal;font-size:.7rem;color:var(--ink3);
   letter-spacing:.1em;font-variant-numeric:tabular-nums}
 .entry:hover i{color:var(--accent-t)}
@@ -3321,6 +3354,8 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
   align-items:flex-start;text-align:left;border-top:0;padding:0}
 .foot .disc{max-width:66ch}
+.disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
+  letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
 .contact a{color:var(--ink2)}
@@ -3360,18 +3395,38 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   border-left:2px dashed color-mix(in srgb,var(--ia) 40%,var(--rule));
   background:color-mix(in srgb,var(--ia) 6%,transparent);
   transition:background .38s}
-/* the punched notches — background-coloured, straddling the top and bottom edge */
-.inv-s::before,.inv-s::after{content:"";position:absolute;left:-7px;width:12px;height:12px;
-  border-radius:50%;background:var(--desk)}
-.inv-s::before{top:-7px}
-.inv-s::after{bottom:-7px}
+/* ⚠️ The notches are MASKED OUT of the card, not painted over it. They used to be
+   discs filled with --desk, which only matches the page where the page is a flat
+   colour — and it is not: there is a radial glow behind these cards, so each notch
+   read as a dark disc stuck to the edge rather than a hole bitten out of it.
+   A mask removes the pixels, so whatever is behind shows through and it stays
+   correct in both themes and anywhere the backdrop changes. */
+.inv{--nx:calc(100% - 46px);
+  -webkit-mask:
+    radial-gradient(circle 7px at var(--nx) 0,transparent 98%,#000 100%),
+    radial-gradient(circle 7px at var(--nx) 100%,transparent 98%,#000 100%);
+  -webkit-mask-composite:source-in;
+  mask:
+    radial-gradient(circle 7px at var(--nx) 0,transparent 98%,#000 100%),
+    radial-gradient(circle 7px at var(--nx) 100%,transparent 98%,#000 100%);
+  mask-composite:intersect}
 .inv-sw{writing-mode:vertical-rl;transform:rotate(180deg);
   font-family:var(--mono);font-size:.57rem;letter-spacing:.24em;text-transform:uppercase;
   color:color-mix(in srgb,var(--ia-t) 72%,var(--ink3))}
 .inv:hover,.inv:focus-visible{transform:translateY(-4px) rotate(-.35deg);
   border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
   box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}
-.inv:hover .inv-s,.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent)}
+/* The stub lifts and skews away from the body along the perforation, so the card
+   reads as beginning to tear rather than simply rising. It stops well short of
+   detaching — a ticket half-torn is an invitation; a ticket in two pieces is a
+   used one. */
+.inv:hover .inv-s,.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
+  transform:translateX(3px) rotate(.7deg)}
+.inv-s{transform-origin:left center;
+  transition:background .42s ease,transform .42s cubic-bezier(.34,1.1,.44,1)}
+@media (prefers-reduced-motion:reduce){
+  .inv:hover .inv-s,.inv:focus-visible .inv-s{transform:none}
+}
 @media (prefers-reduced-motion:reduce){
   .inv:hover,.inv:focus-visible{transform:none}
 }
@@ -3385,14 +3440,23 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   background:color-mix(in srgb,var(--ia) 14%,transparent);
   border:1px solid color-mix(in srgb,var(--ia) 34%,transparent)}
 .inv-m svg{width:14px;height:14px;display:block;overflow:visible}
+/* ⚠️ transform-origin belongs on the BASE rule, not the hover rule. It was set
+   only while hovered, so on the way back the origin reverted to the default —
+   the centre of the line's own bounding box, not the centre of the mark — and
+   the stroke swung in from somewhere else entirely instead of unwinding. Both
+   ends of a reversible transition need the same pivot. */
 .inv-m .pv,.inv-m .ph{stroke:currentColor;stroke-width:2;stroke-linecap:round;
-  transition:transform .42s cubic-bezier(.16,.84,.28,1)}
-.inv:hover .inv-m .pv{transform:rotate(90deg);transform-origin:7px 7px}
-.inv-m .d{fill:currentColor;opacity:.35}
-.inv:hover .inv-m .d{animation:roll 1.4s ease-in-out infinite}
-.inv:hover .inv-m .d:nth-child(2){animation-delay:.18s}
-.inv:hover .inv-m .d:nth-child(3){animation-delay:.36s}
-@keyframes roll{0%,100%{opacity:.35}45%{opacity:1}}
+  transform-origin:7px 7px;
+  transition:transform .52s cubic-bezier(.34,1.12,.42,1)}
+.inv:hover .inv-m .pv{transform:rotate(90deg)}
+.inv-m .ln{stroke:currentColor;stroke-width:2;stroke-linecap:round;
+  transform-origin:2px 7px;opacity:.55;
+  transition:transform .5s cubic-bezier(.34,1.1,.44,1),opacity .4s ease}
+.inv-m .ln:nth-child(2){transition-delay:.06s}
+.inv-m .ln:nth-child(3){transition-delay:.12s}
+.inv:hover .inv-m .ln{opacity:1}
+.inv:hover .inv-m .ln:nth-child(2){transform:scaleX(1.5625)}
+.inv:hover .inv-m .ln:nth-child(3){transform:scaleX(2.7778)}
 
 .inv .ik{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;
   text-transform:uppercase;color:var(--ia-t)}
@@ -3403,13 +3467,20 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .inv .arw{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
   color:var(--ia-t);background:color-mix(in srgb,var(--ia) 14%,transparent);
   transition:background .3s}
-.inv .arw i{font-style:normal;font-size:.78rem;line-height:1;
-  transition:transform .3s cubic-bezier(.16,.84,.28,1)}
+/* Drawn rather than typed. The arrow glyph came in at whatever weight the mono
+   face had, which was far too thin beside the display type it sits under. */
+.inv .arw i{position:relative;display:block;width:11px;height:9px;
+  transition:transform .38s cubic-bezier(.34,1.1,.44,1)}
+.inv .arw i::before{content:"";position:absolute;left:0;top:3.6px;width:9.5px;height:1.9px;
+  border-radius:1px;background:currentColor}
+.inv .arw i::after{content:"";position:absolute;right:.5px;top:1.4px;width:6.2px;height:6.2px;
+  border-right:1.9px solid currentColor;border-top:1.9px solid currentColor;
+  border-radius:0 1px 0 0;transform:rotate(45deg)}
 .inv:hover .arw{background:color-mix(in srgb,var(--ia) 26%,transparent)}
 .inv:hover .arw i{transform:translateX(3px)}
 @media (prefers-reduced-motion:reduce){
   .inv:hover .arw i{transform:none}
-  .inv:hover .inv-m .d{animation:none;opacity:1}
+  .inv:hover .inv-m .ln{transform:none;opacity:1}
 }
 
 /* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
@@ -3418,7 +3489,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;align-items:center;gap:.7rem}
 .tray .lab{margin-right:auto}
-</style></head><body>${GOO_SVG}
+</style></head><body>
 <div class="wrap">
   <div class="top">
     ${wordmark(null)}
@@ -3431,7 +3502,6 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
   <div class="foot">
-    <p class="disc">Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <p class="contact">Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
     ${emailReveal}
   </div>
@@ -3439,6 +3509,12 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
     <span class="lab">Appearance</span>
     ${themeBtn()}
   </div>
+  <!-- The trademark notice sits last and reads quietest. It is an obligation, not
+       an invitation, and it was competing with the contact block for the end of
+       the page — which is the one place a reader is actually deciding what to do
+       next. Still on every page, still full opacity: quiet is a matter of size and
+       placement, never of contrast. -->
+  <p class="disc fine">Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
 </div>
 <script>${THEME_JS}</script>
 </body></html>`;
