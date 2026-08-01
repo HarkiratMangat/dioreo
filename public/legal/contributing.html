@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-nav="merged">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -437,7 +437,6 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
       620  the switcher goes entirely — every one of these links is in the page
            footer, and on those widths the section rail is the primary navigation */
 .navwrap{display:flex;align-items:center}
-.burger{display:none}
 
 @media (max-width:1180px){
   .tab{padding:.4rem .58rem;font-size:.62rem;letter-spacing:.07em}
@@ -449,50 +448,107 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .seg[data-at="-1"],.seg-gap{display:none}
 }
 
-/* ── mobile: the sheet ────────────────────────────────────────────────
-   The bar keeps only the wordmark and the controls; navigation moves behind the
-   hamburger. Inside the sheet the same .seg becomes a vertical track: the ink
-   travels down it, stretches along Y instead of X, and follows a thumb drag.
-   touch-action:none is required on the vertical track or the browser claims the
-   gesture for page scrolling before the pointer handlers ever see it. */
-@media (max-width:620px){
-  .burger{display:grid;place-content:center;gap:4px;width:32px;height:32px;padding:0;
-    -webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;
-    border:1px solid var(--rule2);border-radius:999px;color:inherit}
-  .burger i{display:block;width:14px;height:1.5px;border-radius:2px;background:var(--ink2);
-    transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s,background .2s}
-  .burger[aria-expanded=true]{border-color:var(--accent)}
-  .burger[aria-expanded=true] i{background:var(--accent)}
-  .burger[aria-expanded=true] i:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
-  .burger[aria-expanded=true] i:nth-child(2){opacity:0}
-  .burger[aria-expanded=true] i:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+/* Desktop shows neither mobile variant. */
+.navtrig,.scrim,.nsheet,.nt-grip,.mnav{display:none}
 
-  .navwrap{position:fixed;top:54px;left:0;right:0;z-index:59;
+/* ── mobile VARIANT B: the bottom sheet ───────────────────────────────
+   A trigger in the thumb zone at the bottom edge, naming the page you are on
+   rather than hiding behind an anonymous icon, opening a sheet that carries the
+   same vertical fluid track. */
+@media (max-width:980px){
+  [data-nav=sheet] .navtrig{display:flex;align-items:center;gap:.5rem;position:fixed;z-index:62;
+    left:50%;transform:translateX(-50%);
+    bottom:.75rem;
+    bottom:calc(.75rem + env(safe-area-inset-bottom,0px));
+    min-height:42px;padding:0 .95rem 0 .8rem;border-radius:999px;cursor:pointer;
+    -webkit-appearance:none;appearance:none;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink);border:1px solid var(--rule2);
+    background:color-mix(in srgb,var(--paper) 92%,transparent);
+    backdrop-filter:blur(14px) saturate(1.3);
+    box-shadow:0 10px 30px -10px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06);
+    transition:opacity .26s,transform .3s cubic-bezier(.2,.85,.25,1)}
+  [data-nav=sheet] .nt-d{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:0 0 7px}
+  [data-nav=sheet] .nt-c{width:0;height:0;flex:0 0 auto;
+    border-left:4px solid transparent;border-right:4px solid transparent;
+    border-bottom:5px solid var(--ink3)}
+  [data-nav=sheet] .navtrig[aria-expanded=true]{opacity:0;pointer-events:none;
+    transform:translateX(-50%) translateY(8px)}
+
+  [data-nav=sheet] .scrim{display:block;position:fixed;inset:0;z-index:60;
+    background:rgba(10,8,14,.55);backdrop-filter:blur(2px);
+    opacity:0;pointer-events:none;transition:opacity .3s}
+  [data-nav=sheet] .scrim.open{opacity:1;pointer-events:auto}
+
+  [data-nav=sheet] .nsheet{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:61;
     flex-direction:column;align-items:stretch;gap:.55rem;
-    padding:.85rem clamp(1rem,4vw,1.4rem) 1.1rem;
-    background:color-mix(in srgb,var(--desk) 96%,transparent);
-    backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule);
-    /* Closed state is opacity + pointer-events, with the inert attribute set
-       from script. It was visibility:hidden, swapped deliberately: inert removes
-       the closed sheet from the tab order AND the accessibility tree, which is
-       the property actually wanted here, and it stays correct mid-transition when
-       opacity is part-way. visibility would also have worked; inert is simply the
-       better tool for "this whole subtree is not currently available". */
-    transform:translateY(-14px);opacity:0;pointer-events:none;
-    transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .26s}
-  .navwrap.open{transform:none;opacity:1;pointer-events:auto}
-
-  .seg{grid-auto-flow:row;grid-auto-columns:auto;width:100%;
+    padding:.6rem clamp(1rem,4vw,1.4rem) 1rem;
+    padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px));
+    border-radius:20px 20px 0 0;
+    background:color-mix(in srgb,var(--desk) 97%,transparent);
+    backdrop-filter:blur(16px) saturate(1.3);
+    border:1px solid var(--rule);border-bottom:0;
+    box-shadow:0 -18px 50px -20px rgba(0,0,0,.8);
+    transform:translateY(102%);pointer-events:none;
+    transition:transform .38s cubic-bezier(.2,.85,.25,1)}
+  [data-nav=sheet] .nsheet.open{transform:none;pointer-events:auto}
+  [data-nav=sheet] .nsheet.dragging{transition:none}
+  [data-nav=sheet] .nt-grip{display:block;width:38px;height:4px;border-radius:999px;
+    background:var(--rule2);margin:.15rem auto .5rem;cursor:grab}
+  [data-nav=sheet] .nsheet .seg{grid-auto-flow:row;grid-auto-columns:auto;width:100%;
     touch-action:none;cursor:default}
-  .seg-ink{left:3px;right:3px;top:3px;bottom:auto;width:auto;
+  [data-nav=sheet] .nsheet .seg-ink{left:3px;right:3px;top:3px;bottom:auto;width:auto;
     height:calc((100% - 6px)/var(--n));
     transform:translateY(calc(var(--i) * 100%)) scaleY(var(--sx))}
-  /* 44px minimum touch target (WCAG 2.5.5). Padding alone gave 34px here, which
-     would have made the sheet fail the very requirement it exists to satisfy —
-     min-height is set explicitly so a later type change cannot silently shrink it. */
-  .tab{display:flex;align-items:center;min-height:44px;padding:0 .95rem;
+  [data-nav=sheet] .nsheet .tab{display:flex;align-items:center;min-height:44px;
+    padding:0 .95rem;font-size:.68rem;letter-spacing:.1em;text-align:left}
+  [data-nav=sheet] .nsheet .seg-gap{display:none}
+  /* In sheet mode the sticky control goes back to being Sections-only. */
+  [data-nav=sheet] #mt-p,[data-nav=sheet] #mp-p{display:none}
+}
+
+/* ── mobile: navigation folds into ONE control ────────────────────────
+   Below 980 the bar's switcher gives way to .mnav, the sticky control that was
+   already there for the section index. It gains a Pages tab; the section list
+   becomes the Sections tab. One object, one mental model, and the phone ends up
+   with fewer controls than before rather than a second menu beside the first.
+
+   Inside a panel the same .seg becomes a VERTICAL track: the ink travels down
+   it, stretches along Y instead of X, and follows a thumb drag.
+   touch-action:none is required there, or the browser claims the gesture for
+   page scrolling before the pointer handlers ever see it. */
+@media (max-width:980px){
+  .bar .navwrap{display:none}
+  [data-nav=merged] .mnav,[data-nav=sheet] .mnav{display:block}
+
+  .mnav-h{display:flex;align-items:center;gap:.4rem;padding:.42rem .5rem;
+    border:1px solid var(--rule);background:var(--paper)}
+  .mtab{-webkit-appearance:none;appearance:none;cursor:pointer;
+    min-height:34px;padding:0 .8rem;border-radius:999px;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink2);background:transparent;border:1px solid transparent;
+    transition:color .2s,border-color .2s,background .2s}
+  .mtab[aria-expanded=true]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+    background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .mnav-h .cur{display:block;margin-left:auto;padding-right:.3rem;
+    font-family:var(--mono);font-size:.62rem;letter-spacing:.03em;color:var(--ink3);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46%}
+
+  .mpan{display:none;border:1px solid var(--rule);border-top:0;background:var(--paper);
+    max-height:min(56vh,420px);overflow-y:auto}
+  .mpan.open{display:block}
+  #mp-p{padding:.55rem}
+  #mp-p .seg{grid-auto-flow:row;grid-auto-columns:auto;width:100%;
+    touch-action:none;cursor:default}
+  #mp-p .seg+.seg{margin-top:.5rem}
+  #mp-p .seg-ink{left:3px;right:3px;top:3px;bottom:auto;width:auto;
+    height:calc((100% - 6px)/var(--n));
+    transform:translateY(calc(var(--i) * 100%)) scaleY(var(--sx))}
+  /* 44px minimum touch target (WCAG 2.5.5), set explicitly so a later type
+     change cannot silently shrink it — padding alone had given 34px. */
+  #mp-p .tab{display:flex;align-items:center;min-height:44px;padding:0 .95rem;
     font-size:.68rem;letter-spacing:.1em;text-align:left}
-  .seg-gap{display:none}
+  #mp-p .seg-gap{display:none}
 }
 
 
@@ -741,11 +797,7 @@ html{scroll-behavior:smooth}
        changes shape as you move around the site. It replaces the old "‹ Legal"
        back button, which could only ever go one place. -->
   <nav>
-    <button class="burger" id="burger" aria-expanded="false"
-    aria-controls="navwrap" aria-label="Open navigation">
-    <i></i><i></i><i></i>
-  </button>
-  <div class="navwrap" id="navwrap"><div class="seg" data-at="-1" style="--n:4;--i:0">
+    <div class="navwrap"><div class="seg" data-at="-1" style="--n:4;--i:0">
       <span class="seg-ink" aria-hidden="true"></span>
       <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" style="--n:2;--i:0">
@@ -793,7 +845,39 @@ html{scroll-behavior:smooth}
   </nav>
 </div>
 
+<button class="navtrig" id="navbtn" aria-expanded="false" aria-controls="nsheet"
+  aria-label="Open navigation. Current page: Contributing">
+  <span class="nt-d" aria-hidden="true"></span>
+  <span class="nt-l">Contributing</span>
+  <span class="nt-c" aria-hidden="true"></span>
+</button>
+<span class="scrim" id="scrim" aria-hidden="true"></span>
+<div class="nsheet" id="nsheet">
+  <span class="nt-grip" aria-hidden="true"></span>
+  <div class="seg" data-at="-1" style="--n:4;--i:0">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" style="--n:2;--i:0">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab on" href="./contributing.html" data-accent="#B6E24A" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
+    </div>
+</div>
 <div class="wrap">
+  <aside class="mnav" id="mnav">
+  <div class="mnav-h">
+    <button class="mtab" id="mt-p" aria-expanded="false" aria-controls="mp-p">Pages</button>
+    
+    <span class="cur" id="railcur"></span>
+  </div>
+  <div class="mpan" id="mp-p"><div class="seg" data-at="-1" style="--n:4;--i:0">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
+    </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" style="--n:2;--i:0">
+      <span class="seg-ink" aria-hidden="true"></span>
+      <a class="tab on" href="./contributing.html" data-accent="#B6E24A" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
+    </div></div>
+  
+</aside>
   <header class="hero">
     <span class="chip">Open to anyone</span>
     <h1>Contributing</h1>
@@ -1007,38 +1091,102 @@ NODE_ENV=development</code></pre>
 
   /* The sheet. aria-expanded is the single source of truth for both the open
      state and the icon, so they cannot disagree. */
-  var burger=document.getElementById('burger'), wrap=document.getElementById('navwrap');
-  if(burger&&wrap){
-    var sheet=function(){ return getComputedStyle(burger).display!=='none'; };
-    var setOpen=function(v){
-      burger.setAttribute('aria-expanded',v?'true':'false');
-      wrap.classList.toggle('open',v);
-      /* inert keeps a closed sheet out of the tab order and the accessibility
-         tree. Only while it IS a sheet — on desktop the same element is the
-         always-visible bar nav and must never be inert. */
-      wrap.toggleAttribute('inert',sheet()&&!v);
+  /* The mobile control: two tabs, one panel open at a time. aria-expanded on
+     each tab is the single source of truth for both the open state and the
+     styling, so they cannot disagree. */
+  var mnav=document.getElementById('mnav');
+  if(mnav){
+    var tabsM=[].slice.call(mnav.querySelectorAll('.mtab'));
+    var panelOf=function(t){ return document.getElementById(t.getAttribute('aria-controls')); };
+    var shut=function(){
+      tabsM.forEach(function(t){
+        t.setAttribute('aria-expanded','false');
+        var p=panelOf(t); if(p){ p.classList.remove('open'); p.setAttribute('inert',''); }
+      });
     };
-    addEventListener('resize',function(){
-      if(!sheet()){ wrap.removeAttribute('inert'); wrap.classList.remove('open');
-        burger.setAttribute('aria-expanded','false'); }
-      else setOpen(burger.getAttribute('aria-expanded')==='true');
-    });
-    setOpen(false);
-    burger.addEventListener('click',function(){
-      setOpen(burger.getAttribute('aria-expanded')!=='true');
+    shut();
+    tabsM.forEach(function(t){
+      t.addEventListener('click',function(){
+        var wasOpen=t.getAttribute('aria-expanded')==='true';
+        shut();
+        if(!wasOpen){
+          t.setAttribute('aria-expanded','true');
+          var p=panelOf(t);
+          if(p){ p.classList.add('open'); p.removeAttribute('inert'); }
+        }
+      });
     });
     document.addEventListener('keydown',function(e){
-      if(e.key==='Escape'&&burger.getAttribute('aria-expanded')==='true'){
-        setOpen(false); burger.focus();
-      }
+      if(e.key==='Escape') shut();
     });
-    /* A tap outside closes it. Pointerdown rather than click so it beats the
-       sheet's own drag handling. */
-    document.addEventListener('pointerdown',function(e){
-      if(burger.getAttribute('aria-expanded')!=='true') return;
-      if(wrap.contains(e.target)||burger.contains(e.target)) return;
-      setOpen(false);
+    /* Choosing a destination closes the control. */
+    mnav.addEventListener('click',function(e){
+      if(e.target.closest('a')) shut();
     });
+  }
+
+  /* ── variant B: the bottom sheet ──────────────────────────────────── */
+  var btn=document.getElementById('navbtn'),
+      sheet=document.getElementById('nsheet'),
+      scrim=document.getElementById('scrim'),
+      grip=sheet&&sheet.querySelector('.nt-grip');
+  if(btn&&sheet){
+    /* Is the sheet layout in force? Read from the layout the CSS actually
+       applied, so script and media query can never disagree. */
+    var live=function(){ return getComputedStyle(btn).display!=='none'; };
+    var up=false;
+    var setUp=function(v){
+      up=v;
+      btn.setAttribute('aria-expanded',v?'true':'false');
+      sheet.classList.toggle('open',v);
+      if(scrim) scrim.classList.toggle('open',v);
+      /* inert keeps a closed sheet out of the tab order and the accessibility
+         tree — the property actually wanted, and correct mid-transition too. */
+      sheet.toggleAttribute('inert',live()&&!v);
+      if(v){ var f=sheet.querySelector('.tab'); if(f) f.focus({preventScroll:true}); }
+    };
+    setUp(false);
+    addEventListener('resize',function(){
+      if(!live()){ sheet.removeAttribute('inert'); sheet.classList.remove('open');
+        if(scrim) scrim.classList.remove('open');
+        btn.setAttribute('aria-expanded','false'); up=false; }
+      else setUp(up);
+    });
+    btn.addEventListener('click',function(){ setUp(!up); });
+    if(scrim) scrim.addEventListener('click',function(){ setUp(false); btn.focus(); });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'&&up){ setUp(false); btn.focus(); }
+    });
+    sheet.addEventListener('click',function(e){ if(e.target.closest('a')) setUp(false); });
+
+    /* Drag the grip down to dismiss. Past a third of the sheet's height, or on a
+       quick flick, it closes; anything short of that springs back — the standard
+       bottom-sheet contract, and why a hesitant drag never loses your place. */
+    if(grip){
+      var y0=0, dy=0, t0=0, sliding=false;
+      grip.addEventListener('pointerdown',function(e){
+        if(!up) return;
+        sliding=true; y0=e.clientY; dy=0; t0=Date.now();
+        sheet.classList.add('dragging');
+        try{ grip.setPointerCapture(e.pointerId); }catch(err){}
+      });
+      grip.addEventListener('pointermove',function(e){
+        if(!sliding) return;
+        dy=Math.max(0,e.clientY-y0);
+        sheet.style.transform='translateY('+dy+'px)';
+      });
+      var drop=function(){
+        if(!sliding) return;
+        sliding=false;
+        sheet.classList.remove('dragging');
+        sheet.style.transform='';
+        if(dy>sheet.getBoundingClientRect().height/3||((Date.now()-t0)<300&&dy>40)){
+          setUp(false); btn.focus();
+        }
+      };
+      grip.addEventListener('pointerup',drop);
+      grip.addEventListener('pointercancel',drop);
+    }
   }
 })();
 (function(){
