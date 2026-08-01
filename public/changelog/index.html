@@ -2119,7 +2119,24 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
             Math.round(A[2]+(B[2]-A[2])*t)]; };
   var rgba=function(v,a){ return 'rgba('+v[0]+','+v[1]+','+v[2]+','+a+')'; };
 
-  [].slice.call(document.querySelectorAll('.seg')).forEach(function(seg){
+  /* The goo blur, ramped rather than switched.
+     There is ONE filter element shared by every group, so each group reports the
+     blur it wants and the largest wins for that frame — with a single group
+     morphing at a time (you can only point at one) that is exact, and if two are
+     mid-move the stronger blur simply covers both. Reporting 0 and having every
+     group report 0 leaves the filter harmless rather than needing to be removed. */
+  var GOO_SD = 3.6;                     // must match GOO_SVG's feGaussianBlur
+  var gooEl = document.querySelector('#dbgoo feGaussianBlur');
+  var gooWant = {};
+  function gooBlur(key, v){
+    if(!gooEl) return;
+    gooWant[key] = v;
+    var mx = 0;
+    for(var k in gooWant) if(gooWant[k] > mx) mx = gooWant[k];
+    gooEl.setAttribute('stdDeviation', mx.toFixed(2));
+  }
+
+  [].slice.call(document.querySelectorAll('.seg')).forEach(function(seg, segIx){
     var tabs=[].slice.call(seg.querySelectorAll('.tab'));
     var ink=seg.querySelector('.seg-ink');
     var n=tabs.length; if(!n||!ink) return;
@@ -2163,6 +2180,11 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        That deliberate near-absence is the effect — an indicator that travels
        intact reads as a marker being repositioned, which is what this was. */
     function paint(){
+      /* Blur in over the first 8% and out over the last 10%, so the filter is at
+         zero strength on the frame it is attached and on the frame it is dropped.
+         Every droplet has landed by 0.90 of the move (see spray()), so the fade
+         never catches one mid-flight and turns it into a hard dot. */
+      gooBlur(segIx, GOO_SD * band(0,0.08,p) * (1 - band(0.90,1,p)));
       var aw=srcW*(1-band(0.04,0.55,p));
       var bw=dstW*spr(band(0.28,1,p));
       /* ⚠️ The tail collapses toward the edge FACING the destination. It used
@@ -2171,19 +2193,25 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          whole thing read as the old pill fleeing rather than being drawn
          across. The head already grew from its centre; the tail did not. */
       var tailX = dstX>=srcX ? srcX+srcW-aw : srcX;
-      /* ⚠️ COMPENSATE FOR THE FILTER'S DILATION while it is attached.
-         The alpha crush thresholds the blurred alpha at 8/22 = 0.364. At the edge
-         of a solid region the blurred alpha is 0.5, so the painted contour sits
-         OUTSIDE the true edge, by d where 0.5*erfc(d/(s*sqrt2)) = 0.364 — that is
-         d = 0.247 * 3.6 * sqrt2 = 1.26px on every side. The pill therefore renders
-         about 10% taller and 5% wider while morphing, with its caps flattened, and
-         detaching the filter at the end of the move snapped it back to its true
-         size: "the pill is a larger size and then switches to its final size
-         rather than it being all 1 fluid motion".
-         Drawing it 1.26px smaller per side while filtered makes the PAINTED size
-         equal the resting size, so removing the filter changes nothing. If
-         stdDeviation or the 22/-8 crush ever change, recompute this. */
-      var dil = seg.classList.contains('morph') ? 1.26 : 0;
+      /* ⚠️ THE DILATION IS CANCELLED BY RAMPING THE BLUR, NOT BY RESIZING.
+         The filter inflates every edge: the crush thresholds blurred alpha at
+         8/22 = 0.364 while a solid edge blurs to 0.5, so the painted contour sits
+         outside the true edge and the pill renders fatter with flattened caps.
+         Attaching that on the first frame of a move and dropping it on the last
+         is what made the pill "increase in size" as motion started and "snap into
+         shape" as it ended.
+         Two attempts at correcting the GEOMETRY by a derived constant (1.26px per
+         side) both failed: first only the width was corrected, which changed
+         nothing visible, and then correcting the height over-shot and the pill
+         snapped by EXPANDING instead of shrinking. The lesson is that the exact
+         dilation depends on the whole filter chain and on how the browser
+         rasterises it, and a number derived on paper is not it — the same trap
+         recorded for the accent-colour fitting in reference_goo_metaball_recipe.
+         So the blur is ramped 0 -> full -> 0 across the move instead. The
+         dilation is a function of the blur, so it goes to zero on its own at both
+         ends and the attach/detach are no-ops WITHOUT anyone needing to know what
+         the constant is. See gooBlur() above. */
+      var dil = 0;
       /* ⚠️ The tail collapses in BOTH dimensions. It used to lose width while
          keeping the pill's full height, so it ended as a narrow full-height bar
          that the goo dilated into a standing capsule — a fragment left hanging
@@ -2345,7 +2373,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            droplet's own delay so del+dur can never exceed the move itself. */
         var del=Math.round(i*DUR*0.010+Math.random()*30);
         var dur=Math.round(Math.max(DUR*0.34,
-                  Math.min(DUR*(0.55+Math.random()*0.30), DUR*0.97-del)));
+                  Math.min(DUR*(0.55+Math.random()*0.30), DUR*0.90-del)));
         if(dur+del>max) max=dur+del;
         var rot=(Math.random()-0.5)*2; rot = (rot>0 ? rot+0.35 : rot-0.35)*26;
         /* ⚠️ CLAMP THE ROTATION AGAINST THE TRAVEL DISTANCE. This is the actual
