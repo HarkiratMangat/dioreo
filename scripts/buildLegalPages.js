@@ -98,18 +98,17 @@ const BRAND = {
     lime: '#B6E24A',
     azure: '#5AA9FF',
 
-    // The chronicle family (changelog / devlog). Same argument a third time: the
-    // six hues above occupy amber ~28°, lime ~74°, teal ~180°, azure ~211°,
-    // violet ~268° and rose ~345°, which leaves exactly two wide gaps on the wheel
-    // — around 150° and around 310°. These take them, so no chronicle page reads as
-    // a shade of a page it is not related to.
-    orchid: '#E86FD8',    // What's New   — the announcement
-    spring: '#3ED598',    // Changelog    — the record
-    // The devlog takes NO seventh hue. Seven accents on one site is a swatch
-    // library, not an identity, and the devlog's whole visual argument is that it
-    // is the quiet page — near-achromatic, a single muted ochre. Restraint only
-    // reads as restraint next to colour, which is why this one is last.
-    ochre: '#C9A227'
+    // ── the chronicle family: NOT part of this palette ──────────────────────
+    // These three are the Armory Terminal's signal colours, and they deliberately
+    // sit OUTSIDE the brand system above. That was Harkirat's own call in the
+    // original changelog design (memory `project_changelog_redesign`): the record
+    // is a different world — a gunmetal ordnance terminal — and picking its colours
+    // from the bot's palette is exactly what would have made it read as another
+    // legal page in a new accent. They live here only so the nav tabs, the landing
+    // page cards and the page itself cannot disagree about a page's signal.
+    tracer: '#FF9E3D',    // What's New  — PATCH NOTES operator (the original signal)
+    phosphor: '#7CE38B',  // Changelog   — FIELD ENGINEER operator
+    ice: '#8FB8FF'        // Devlog      — LOG KEEPER operator
 };
 
 
@@ -204,7 +203,7 @@ const CHRONICLE_PAGES = [
         file: 'CHANGELOG-SUMMARY.md', kind: 'md', docs: true, dir: 'changelog',
         out: 'index.html', voice: 'broadcast',
         title: "What's New", short: "What's New", kicker: 'Releases',
-        accent: BRAND.orchid, glow: '#FFB3EE',
+        accent: BRAND.tracer, glow: '#FFD9A8',
         lede: 'Every update to the bot, in plain language — what changed and when.',
         railLabel: 'Releases',
         blurb: 'What changed in each release of Dior’s Builds, in plain language.'
@@ -213,7 +212,7 @@ const CHRONICLE_PAGES = [
         file: 'CHANGELOG.md', kind: 'md', docs: true, dir: 'changelog',
         out: 'detailed.html', voice: 'record',
         title: 'Changelog', short: 'Changelog', kicker: 'The record',
-        accent: BRAND.spring, glow: '#8CF2C4',
+        accent: BRAND.phosphor, glow: '#BFF5CC',
         lede: 'The full technical history: one entry per merged pull request, with the reasoning kept in.',
         railLabel: 'Versions',
         blurb: 'The detailed, developer-facing release history.'
@@ -222,7 +221,7 @@ const CHRONICLE_PAGES = [
         file: 'DEVLOG.md', kind: 'md', docs: true, dir: 'changelog',
         out: 'devlog.html', voice: 'notebook',
         title: 'Devlog', short: 'Devlog', kicker: 'The journey',
-        accent: BRAND.ochre, glow: '#E8D9A8',
+        accent: BRAND.ice, glow: '#C9DDFF',
         lede: 'The story behind the bot — the bugs, the dead ends, and what each one taught us.',
         railLabel: 'Entries',
         blurb: 'Discoveries, real root causes, the things we walked back, and the lessons.'
@@ -4930,6 +4929,65 @@ function chronicleStructAudit(results) {
 }
 
 /**
+ * Gate: markup the SHARED parser emits is styled by whatever template renders it.
+ *
+ * `parseBlocks()`, `inline()` and `linkifyRefs()` emit the same handful of classes
+ * on every page, but each template carries its own stylesheet. When the chronicle
+ * family was added, `.anchor` and `.xref` had rules only inside `shell()` — so the
+ * new pages shipped every heading pilcrow permanently visible in the browser's
+ * default link purple, and every §-cross-reference as a raw UA link.
+ *
+ * No existing gate could see it. The content was all present, the links all
+ * resolved, the cross-references were live, the classes did not collide, and the
+ * hover guard was clean. It was found by opening the page — which is exactly the
+ * kind of thing that should not require someone to remember to look.
+ *
+ * The class list is DECLARED, not sniffed from the stylesheets, for the same reason
+ * WARM_STRUCT is: a check that reads its expectations out of the thing it is testing
+ * cannot fail. A class only has to be styled on a page that actually USES it.
+ *
+ * ⚠️ WHAT IT DOES NOT CATCH, stated so nobody trusts it further than it goes: it
+ * asks only whether the template's stylesheet mentions the selector AT ALL. A class
+ * that is styled but styled WRONGLY, or styled for one state and not another, passes
+ * cleanly. It catches "this template forgot this class entirely" — which is the
+ * failure that actually shipped — and nothing finer. Proven by removing every
+ * `.anchor` rule from chronicle.js and watching all three pages fail; removing just
+ * one of the four `.anchor` rules does NOT fail, and that is a real limit, not an
+ * oversight.
+ */
+// Only classes that are MEANINGLESS unstyled belong here. `.ht` is deliberately
+// absent: it is a structural hook that warmCompose() and headingInner() match on,
+// it is an inline span that inherits its heading's type, and the warm pages have
+// rendered correctly without a rule for it since they shipped. Listing it made the
+// gate fire on three healthy pages on its first run — a check that flags working
+// output gets muted, and a muted check catches nothing.
+const PARSER_CLASSES = ['anchor', 'xref', 'ref'];
+
+function parserStyleAudit(built) {
+    const bad = [];
+    let checked = 0;
+    for (const page of built) {
+        const html = fs.readFileSync(outPath(page), 'utf8');
+        const css = (html.match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
+        for (const cls of PARSER_CLASSES) {
+            // Used in the MARKUP (a class attribute), not merely mentioned anywhere.
+            if (!new RegExp(`class="[^"]*\\b${cls}\\b`).test(html)) continue;
+            checked++;
+            if (!new RegExp(`\\.${cls}\\b`).test(css)) {
+                bad.push(`${dirOf(page)}/${page.out}: emits .${cls} but its stylesheet never styles it`);
+            }
+        }
+    }
+    if (bad.length) {
+        console.error('  ✗ parser-emitted markup left unstyled:');
+        bad.forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    console.log(`  ✓ all ${checked} uses of shared-parser markup are styled by their template`);
+    return true;
+}
+
+/**
  * Gate: no live credential reached a published page.
  *
  * DEVLOG.md is published in full at Harkirat's decision, and it is the one source
@@ -4990,10 +5048,12 @@ console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
 const hoverOk = hoverGuardAudit(guardedPages);
 console.log('\nChecking every source entry became an entry on the page:');
 const chronOk = chronicleStructAudit(chronicleResults);
+console.log('\nChecking shared-parser markup is styled on every template that emits it:');
+const parserOk = parserStyleAudit(built);
 console.log('\nScanning published output for credential-shaped strings:');
 const secretOk = secretScan(built);
 const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
-    && chronOk && secretOk;
+    && chronOk && parserOk && secretOk;
 // Names each property that was actually checked, rather than one word that reads
 // as "the output is correct". Each gate tests a different thing, and a pass on
 // one has already been mistaken for a pass on another once. Read this roster
@@ -5001,6 +5061,6 @@ const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && ho
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
       + 'cross-refs live · warm structure applied · class names distinct · '
-      + 'hover guard clean · every source entry rendered · no credentials published.'
+      + 'hover guard clean · every source entry rendered · parser markup styled · no credentials published.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);

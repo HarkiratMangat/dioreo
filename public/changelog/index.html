@@ -10,7 +10,8 @@
 <meta property="og:title" content="What's New — Dior's Builds">
 <meta property="og:description" content="What changed in each release of Dior’s Builds, in plain language.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='6' width='20' height='4' rx='2' fill='%23E86FD8'/%3E%3Crect x='6' y='14' width='20' height='4' rx='2' fill='%236E6782'/%3E%3Crect x='6' y='22' width='13' height='4' rx='2' fill='%236E6782'/%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="../assets/martian-mono-700.woff2" crossorigin>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C100E'/%3E%3Crect x='5' y='14' width='22' height='3' fill='%23FF9E3D'/%3E%3Ccircle cx='16' cy='8' r='3' fill='%23FF9E3D'/%3E%3C/svg%3E">
 <style>
 
 :root{
@@ -68,7 +69,55 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#E86FD8;--glow:#FFB3EE}/* ── shared reset for the label buttons ───────────────────────────────
+
+@font-face{font-family:'Martian Mono';font-style:normal;font-weight:400;font-display:swap;
+  src:url(../assets/martian-mono-400.woff2) format('woff2')}
+@font-face{font-family:'Martian Mono';font-style:normal;font-weight:700;font-display:swap;
+  src:url(../assets/martian-mono-700.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400;font-display:swap;
+  src:url(../assets/instrument-sans-400.woff2) format('woff2')}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;
+  src:url(../assets/instrument-sans-600.woff2) format('woff2')}
+
+:root{
+  --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#6B7A6D;
+  --rule:#1E2A22;
+  --mono:'Martian Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
+  --serif:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#63705F;
+  --rule:#C2C7B8;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#63705F;
+    --rule:#C2C7B8;
+  }
+}
+body{font-family:var(--sans);background:var(--desk);color:var(--ink)}
+h1,h2,h3,h4{font-family:var(--sans)}
+code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default and shown by script, so a reader with
+   JavaScript off gets the page immediately instead of a black rectangle — the
+   sequence is decoration and must never be load-bearing. */
+
+
+.boot{display:none;position:fixed;inset:0;z-index:200;background:var(--desk);
+  align-items:center;justify-content:center}
+.boot.go{display:flex}
+.boot-in{font-family:var(--mono);font-size:.72rem;line-height:2;color:var(--sig);
+  min-width:min(30rem,80vw)}
+.boot-in b{display:block;font-weight:400;white-space:pre;opacity:0}
+.boot-cur{display:inline-block;width:.55em;height:1em;vertical-align:-.12em;
+  background:var(--sig);animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.boot{display:none!important}}/* Every page in this world gets the signal colour as its accent, so the shared
+   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. */
+
+
+
+:root{--accent:#FF9E3D;--glow:#FF9E3D;--sig:#FF9E3D}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
@@ -553,7 +602,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   gap:1.5rem;padding:0 clamp(1rem,3vw,2rem);background:color-mix(in srgb,var(--desk) 88%,transparent);
   backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--rule)}
 .bar nav{margin-left:auto;display:flex;align-items:center;gap:.6rem}
-#prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--accent)}/* ── segmented page switcher ──────────────────────────────────────────
+#prog{position:fixed;top:53px;left:0;height:2px;width:0;z-index:61;background:var(--sig)}/* ── segmented page switcher ──────────────────────────────────────────
    Was three bordered boxes, which read as inert. Now one segmented control
    with an indicator that slides. Because these are separate documents and not
    an SPA, the slide happens on LOAD: the indicator animates in from the
@@ -959,92 +1008,150 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .msec .slot.on{border-left-color:var(--accent);
     background:color-mix(in srgb,var(--accent) 10%,transparent)}
   .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-}/* ── the chronicle skeleton, shared by all three voices ─────────────────
-   Same two-part layout discipline as shell(): .page is only the centred
-   wrapper and .cxcols carries the grid, with the footer inside .page but
-   OUTSIDE the grid. A sticky element is bounded by its containing block, not
-   by its own height, so a footer left inside the grid lets the rail travel
-   across it — measured at 236px past the document on the legal pages before
-   that was fixed. Do not fold these back together here either. */
+}/* ── styles for markup the SHARED parser emits ────────────────────────────
+   parseBlocks() and linkifyRefs() emit .anchor and .xref on every page they
+   render, but the rules for them live inside shell()'s own template, not in
+   COMPONENT_CSS. So these pages were emitting both completely unstyled: the
+   heading pilcrow showed permanently in the browser's default link purple
+   instead of appearing on hover, and every cross-reference link rendered as a
+   raw UA link. Caught by looking at the page, not by any gate — content
+   presence and link resolution were both green the whole time. *//* Ordinary prose links. shell() styles these with a .doc a selector, and these pages
+   have no .doc for it to match — so every Markdown link in all three records was
+   rendering in the browser's default link purple. Same underline treatment as the
+   legal pages, since a link is a link everywhere here; only the colour changes. */
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
-.cxcols{display:grid;grid-template-columns:minmax(0,1fr);
-  gap:clamp(1.5rem,4vw,3.2rem);align-items:start}
-@media (max-width:980px){.cxcols{grid-template-columns:1fr;gap:0}}
-.cxdoc{position:relative;min-width:0;max-width:82ch;
-  padding:clamp(2rem,6vh,3.4rem) 0 3rem}
-.cxdoc{margin:0 auto}/* Masthead. Deliberately NOT the legal masthead: no clause number, no revision,
-   no jurisdiction line. A record is dated, not effective. */
+
+.pn-cb a,.pn-hero-b a,.lg-b a,.tl-body a,.clede a,.pn-soon a{
+  color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
+  text-decoration-thickness:1px;
+  text-decoration-color:color-mix(in srgb,var(--sig) 60%,transparent)}@media (hover:hover) and (pointer:fine){
+.pn-cb a:hover,.pn-hero-b a:hover,.lg-b a:hover,.tl-body a:hover,.clede a:hover,
+.pn-soon a:hover{text-decoration-color:var(--sig)}}
+
+.anchor{margin-left:.5rem;color:var(--ink3);text-decoration:none;font-size:.75em;
+  opacity:0;transition:opacity .15s}@media (hover:hover) and (pointer:fine){
+h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:fine){
+.anchor:hover{color:var(--sig)}}/* No hover to reveal it on touch, so it is either permanently invisible or
+   permanent clutter. Neither earns the space. */
+
+@media (hover:none){.anchor{display:none}}
+.xref{color:var(--sig);text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb,var(--sig) 35%,transparent)}@media (hover:hover) and (pointer:fine){
+.xref:hover{border-bottom-color:var(--sig)}}/* ── the folded in-document index ─────────────────────────────────────── */
 
 
-.cxmast{margin:0 0 2.2rem}
-.cxmast .lab{display:block;font-family:var(--mono);font-size:.58rem;letter-spacing:.22em;
-  text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
-.cxmast h1{margin:0;font-size:clamp(1.8rem,4.4vw,2.6rem);letter-spacing:-.03em;line-height:1.1}
-.cxmast .cxlede-t{margin:.8rem 0 0;color:var(--ink2);max-width:56ch}
-.cxcount{margin:1rem 0 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ink3)}
-
-.cxlede{margin:0 0 2.4rem;color:var(--ink2)}
-.cxlede p{font-size:.95rem}/* The folded in-document index — see foldIndex(). */
-
-
-.cxfold{margin:1.4rem 0;border:1px solid var(--rule);border-radius:12px;
-  background:color-mix(in srgb,var(--card) 55%,transparent)}
-.cxfold > summary{cursor:pointer;padding:.7rem 1rem;font-family:var(--mono);font-size:.62rem;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);list-style:none}
-.cxfold > summary::-webkit-details-marker{display:none}
-.cxfold > summary::after{content:"+";float:right;color:var(--accent)}
-.cxfold[open] > summary::after{content:"−"}@media (hover:hover) and (pointer:fine){
-.cxfold > summary:hover{color:var(--ink)}}
-.cxfold-b{padding:0 1rem 1rem;max-height:60vh;overflow:auto}
-.cxfold-b li{font-size:.84rem}/* The rail. Same mechanics as the legal rail, and the same JS drives it — the
-   slot markup is identical on purpose so one implementation tracks both. */
+.clede{margin:0 0 2.4rem;color:var(--ink2);max-width:70ch}
+.clede p{font-size:.95rem}
+.cfold{margin:1.4rem 0;border:1px solid var(--rule);border-radius:3px;background:var(--card)}
+.cfold > summary{cursor:pointer;padding:.7rem 1rem;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink2);list-style:none}
+.cfold > summary::-webkit-details-marker{display:none}
+.cfold > summary::after{content:"+";float:right;color:var(--sig)}
+.cfold[open] > summary::after{content:"–"}@media (hover:hover) and (pointer:fine){
+.cfold > summary:hover{color:var(--ink)}}
+.cfold-b{padding:0 1rem 1rem;max-height:58vh;overflow:auto}
+.cfold-b li{font-size:.82rem}/* ── the ordnance belt ────────────────────────────────────────────────────
+   The version rail from the reference design: a milestone release is a filled
+   round, a patch is a hollow tick, and the one you are inside lights up. It is
+   the same .slot markup the legal rail uses so ONE scroll tracker drives both. */
 
 
 .rail{position:sticky;top:74px;max-height:calc(100vh - 96px);overflow:auto;
-  padding:clamp(2rem,6vh,3.4rem) 0 2rem}
-.rail .lab{display:block;font-family:var(--mono);font-size:.56rem;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--ink3);margin:0 0 .7rem}
-.slot{display:flex;gap:.5rem;padding:.3rem .45rem;border-radius:6px;text-decoration:none;
-  color:var(--ink3);font-size:.76rem;line-height:1.35;border-left:2px solid transparent}
-.slot i{flex:0 0 auto;font-style:normal;font-family:var(--mono);font-size:.62rem;
-  color:var(--ink3);opacity:.8}
+  padding:calc(54px + clamp(2rem,6vh,3.4rem)) .4rem 2rem 0}
+.rail .lab{display:block;font-family:var(--mono);font-size:.52rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink3);margin:0 0 .8rem}
+.slot{position:relative;display:flex;gap:.5rem;align-items:baseline;padding:.26rem 0 .26rem 1.1rem;
+  text-decoration:none;color:var(--ink3);font-size:.72rem;line-height:1.35}
+.slot::before{content:"";position:absolute;left:0;top:.55em;width:5px;height:5px;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--ink) 34%,transparent);transition:all .25s}
+.slot.slot-m::before{width:9px;height:9px;left:-2px;background:color-mix(in srgb,var(--ink) 34%,transparent)}
+.slot i{flex:0 0 auto;font-style:normal;font-family:var(--mono);font-size:.58rem;color:var(--ink3)}
 .slot span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.slot.on{color:var(--ink);border-left-color:var(--accent);
-  background:color-mix(in srgb,var(--accent) 8%,transparent)}
-.slot.on i{color:var(--accent)}@media (hover:hover) and (pointer:fine){
+.slot.on{color:var(--ink)}
+.slot.on i{color:var(--sig)}
+.slot.on::before{border-color:var(--sig);background:var(--sig);
+  box-shadow:0 0 9px color-mix(in srgb,var(--sig) 80%,transparent)}@media (hover:hover) and (pointer:fine){
 .slot:hover{color:var(--ink)}}
-.slot-p{margin-top:.6rem;color:var(--ink2);font-weight:600}
-@media (max-width:980px){.rail{display:none}}/* One card per release. The numeral is a watermark rather than a label: it sits
-   behind the heading at low contrast, so the eye gets the version without the
-   version getting a line of its own. */
+.slot-p{margin-top:.7rem;color:var(--ink2)}
+@media (max-width:980px){.rail{display:none}}/* ── layout shell ─────────────────────────────────────────────────────────
+   .cols carries the grid and the footer sits OUTSIDE it, inside .page. A sticky
+   element is bounded by its containing block, not its own height, so a footer left
+   inside the grid lets the rail travel across it — measured at 236px past the
+   document on the legal pages before that split was made. Do not fold them back. */
 
 
+.page{margin:0 auto}
+.cols{display:grid;grid-template-columns:minmax(0,1fr);
+  gap:clamp(1rem,3vw,2rem);align-items:start;max-width:1400px;margin:0 auto;
+  padding:0 clamp(1rem,3vw,2rem)}
+@media (max-width:980px){.cols{grid-template-columns:1fr;gap:0;padding:0}}/* Reveal-on-scroll. The class is added by script; without JS the content is simply
+   visible, which is why the hidden state lives on .rv-armed and not on the element
+   itself. Nothing on this site may depend on script to be readable. */
 
-.cxe{position:relative;margin:0 0 1.15rem;padding:1.5rem clamp(1.1rem,3vw,2rem) 1.35rem;
-  border:1px solid var(--rule);border-radius:18px;
-  background:color-mix(in srgb,var(--card) 82%,transparent);overflow:hidden}
-.cxe::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;
-  background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--glow) 70%,transparent))}
-.cxh-b{margin:0 0 1rem}/* The version at display size. Monospace because a version number is a token, not
-   a word, and the tabular figures keep a column of them optically aligned as you
-   scroll — which is most of what makes the page scan as a series. */
 
-.cxbig{margin:0;font-family:var(--mono);font-size:clamp(1.7rem,4.4vw,2.5rem);
-  font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--accent)}
-.cxd{display:inline-block;margin:.5rem .6rem 0 0;font-family:var(--mono);font-size:.62rem;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.cxsub{display:block;margin:.35rem 0 0;color:var(--ink);font-size:1rem;font-weight:600}@media (hover:hover) and (pointer:fine){
-.cxe:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--rule))}}/* The "Coming soon" block leads the page and is not a release, so it is drawn as
-   a forecast rather than a card: dashed, unfilled, explicitly not-yet. Its heading
-   is prose rather than a version, so it drops to prose size too. */
+.rv-armed [data-rv]{opacity:0;transform:translateY(14px)}
+.rv-armed [data-rv].rv-in{opacity:1;transform:none;
+  transition:opacity .55s cubic-bezier(.2,.7,.3,1),transform .55s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion:reduce){
+  .rv-armed [data-rv]{opacity:1;transform:none}
+}
 
-.cxe.cxe-soon{border-style:dashed;background:transparent}
-.cxe.cxe-soon .cxbig{font-family:inherit;font-size:1.25rem;letter-spacing:-.01em;
-  font-weight:700;color:var(--ink)}
+
+.pn-wrap{max-width:1100px;margin:0 auto;padding:calc(54px + clamp(2rem,7vh,4rem)) clamp(1rem,4vw,2rem) 5rem}
+.pn-mast{margin:0 0 2.6rem}
+.pn-op{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.22em;color:var(--sig);margin:0 0 .9rem}
+.pn-dot{width:7px;height:7px;border-radius:50%;background:var(--sig);
+  box-shadow:0 0 0 0 color-mix(in srgb,var(--sig) 70%,transparent);animation:pnp 2.4s ease-out infinite}
+@keyframes pnp{70%{box-shadow:0 0 0 11px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.pn-mast h1{margin:0;font-size:clamp(2.2rem,6.5vw,4rem);letter-spacing:-.035em;line-height:.98;
+  font-weight:600}
+.pn-lede{margin:1rem 0 0;max-width:44ch;color:var(--ink2);font-size:1.02rem;line-height:1.6}
+.pn-tick{display:flex;gap:1rem;margin:1.4rem 0 0;padding:.6rem 0 0;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.pn-clk{margin-left:auto;color:var(--sig)}/* INCOMING — dashed, unfilled, explicitly not-yet. It is a forecast, not a release,
+   so it must not look like one. */
+
+
+.pn-soon{margin:0 0 2.4rem;padding:1.4rem clamp(1rem,3vw,1.8rem);border:1px dashed var(--rule);
+  border-radius:3px;background:transparent}
+.pn-soon-l{font-family:var(--mono);font-size:.56rem;letter-spacing:.22em;color:var(--ink3);margin:0 0 .5rem}
+.pn-soon h2{margin:0 0 .8rem;font-size:1.15rem;font-weight:600}/* The hero. The version is set at poster scale and IS the heading — an earlier
+   version had a big translucent numeral behind a small h2 repeating it, so every
+   card read the version twice. */
+
+
+.pn-hero{position:relative;margin:0 0 2.2rem;padding:clamp(1.4rem,4vw,2.4rem);
+  border:1px solid color-mix(in srgb,var(--sig) 34%,var(--rule));border-radius:3px;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--sig) 9%,var(--card)),var(--card) 60%);
+  overflow:hidden}
+.pn-hero::after{content:"";position:absolute;inset:auto -30% -60% auto;width:60%;aspect-ratio:1;
+  border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--sig) 18%,transparent),transparent 70%);
+  pointer-events:none}
+.pn-hero-t{font-family:var(--mono);font-size:.56rem;letter-spacing:.24em;color:var(--sig);margin:0 0 .6rem}
+.pn-v{margin:0;font-family:var(--mono);font-weight:700;letter-spacing:-.045em;line-height:.9;
+  font-size:clamp(2.4rem,8vw,4.6rem);color:var(--ink)}
+.pn-d{margin:.55rem 0 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
+.pn-hero-b{margin:1.4rem 0 0;max-width:62ch}
+.pn-hero-b p:first-child{margin-top:0}/* The deck. Two columns on a wide screen, and the cards are equal-height blocks
+   rather than a masonry flow, because a ragged bottom edge on a wall of releases
+   reads as broken rather than as designed. */
+
+
+.pn-deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem}
+.pn-card{padding:1.2rem 1.3rem;border:1px solid var(--rule);border-radius:3px;background:var(--card);
+  transition:border-color .25s,transform .25s}@media (hover:hover) and (pointer:fine){
+.pn-card:hover{border-color:color-mix(in srgb,var(--sig) 45%,var(--rule));transform:translateY(-2px)}}
+.pn-cv{margin:0;font-family:var(--mono);font-size:1.5rem;font-weight:700;letter-spacing:-.03em;
+  color:var(--sig);line-height:1}
+.pn-cb{margin:.9rem 0 0;font-size:.92rem;color:var(--ink2)}
+.pn-cb p{margin:0 0 .6rem}
+.pn-cb li{font-size:.9rem}
+.pn-cb strong{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){@media (hover:hover) and (pointer:fine){.pn-card:hover{transform:none}}.pn-dot{animation:none}}
 
 </style>
 </head>
@@ -1056,6 +1163,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 <feColorMatrix in="blur" type="matrix"
  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
 </filter></svg>
+
+
+<div class="boot" id="boot" aria-hidden="true"><div class="boot-in" id="bootin"></div></div>
 
 <div class="bar">
   <a class="mark live" href="../legal/">
@@ -1078,7 +1188,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" data-label="Releases">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./">Releases</a>
-      <a class="tab on" href="./" data-accent="#E86FD8" aria-current="page">What's New</a><a class="tab" href="./detailed.html" data-accent="#3ED598">Changelog</a><a class="tab" href="./devlog.html" data-accent="#C9A227">Devlog</a>
+      <a class="tab on" href="./" data-accent="#FF9E3D" aria-current="page">What's New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF">Devlog</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
   data-spot title="View the source on GitHub">
@@ -1128,641 +1238,547 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="../legal/terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="../legal/privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="../legal/license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="../legal/notice.html" style="--row:#E8657F">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../legal/contributing.html" style="--row:#B6E24A">Contributing</a><a class="mtab" href="../legal/contributors.html" style="--row:#5AA9FF">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab on" href="./" aria-current="page" style="--row:#E86FD8">What's New</a><a class="mtab" href="./detailed.html" style="--row:#3ED598">Changelog</a><a class="mtab" href="./devlog.html" style="--row:#C9A227">Devlog</a>
+      <a class="mtab" href="../legal/terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="../legal/privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="../legal/license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="../legal/notice.html" style="--row:#E8657F">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../legal/contributing.html" style="--row:#B6E24A">Contributing</a><a class="mtab" href="../legal/contributors.html" style="--row:#5AA9FF">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab on" href="./" aria-current="page" style="--row:#FF9E3D">What's New</a><a class="mtab" href="./detailed.html" style="--row:#7CE38B">Changelog</a><a class="mtab" href="./devlog.html" style="--row:#8FB8FF">Devlog</a>
     </nav>
   </div>
-  
+  <details class="msecd">
+    <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
+    <div class="mp-list msec"><a href="#coming-soon" class="slot"><i>—</i><span>🔜 Coming soon</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>August 1, 2026</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>July 31, 2026</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>July 30, 2026</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>July 30, 2026</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>July 29, 2026</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>July 29, 2026</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>July 29, 2026</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>July 29, 2026</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>July 29, 2026</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>July 28, 2026</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>July 28, 2026</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>July 28, 2026</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>July 28, 2026</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>July 28, 2026</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>July 28, 2026</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>July 28, 2026</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>July 28, 2026</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>July 28, 2026</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>July 28, 2026</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>July 28, 2026</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>July 28, 2026</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>July 28, 2026</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>July 28, 2026</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>July 27, 2026</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>July 27, 2026</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>July 27, 2026</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>July 27, 2026</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>July 27, 2026</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>July 27, 2026</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>July 27, 2026</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>July 27, 2026</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>July 27, 2026</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>July 27, 2026</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>July 27, 2026</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>July 27, 2026</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>July 27, 2026</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>July 27, 2026</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>July 27, 2026</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>July 27, 2026</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>July 27, 2026</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>July 26, 2026</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>July 26, 2026</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>July 26, 2026</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>July 26, 2026</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>July 26, 2026</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>July 26, 2026</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>July 26, 2026</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>July 26, 2026</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>July 26, 2026</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>July 26, 2026</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>July 25, 2026</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>July 25, 2026</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>July 24, 2026</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>July 24, 2026</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>July 22, 2026</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>July 21, 2026</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>July 21, 2026</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>July 21, 2026</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>July 21, 2026</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>July 21, 2026</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>July 21, 2026</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>July 20, 2026</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>July 20, 2026</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>July 20, 2026</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>July 18, 2026</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>July 18, 2026</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>July 18, 2026</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>July 17, 2026</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>July 17, 2026</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>July 14–16, 2026</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>July 13, 2026</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>July 13, 2026</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>July 13, 2026</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>July 13, 2026</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>July 12, 2026</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>July 12, 2026</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>July 9, 2026</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>July 9, 2026</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>July 9, 2026</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>July 8, 2026</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>July 8, 2026</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>July 8, 2026</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>July 8, 2026</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>July 7, 2026</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>July 7, 2026</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>July 7, 2026</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>July 7, 2026</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>July 7, 2026</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>July 6, 2026</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>July 4, 2026</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>May 17, 2026</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>April 8, 2026</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>April 8, 2026</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>April 8, 2026</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>April 8, 2026</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>April 8, 2026</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>April 8, 2026</span></a></div>
+  </details>
 </aside>
 
 <div class="page">
-  <div class="cxcols">
+  <div class="cols">
     
-
-    <main class="cxdoc">
-      <header class="cxmast">
-        <span class="lab">Releases</span>
+    <main class="pn-wrap">
+      
+      <header class="pn-mast">
+        <div class="pn-op"><span class="pn-dot" aria-hidden="true"></span>OPERATOR // PATCH NOTES</div>
         <h1>What's New</h1>
-        <p class="cxlede-t">Every update to the bot, in plain language — what changed and when.</p>
-        <p class="cxcount">98 entries</p>
+        <p class="pn-lede">Every update to the bot, in plain language — what changed and when.</p>
+        <div class="pn-tick"><span>98 entries</span><span class="pn-clk" id="clk"></span></div>
       </header>
-      <div class="cxlede"><p>The short version. For the full technical write-up, see <a href="detailed.html">CHANGELOG.md</a>.</p></div>
-<article class="cxe cxe-soon">
-          <div class="cxh cxh-b">
-            <h2 id="coming-soon" class="cxbig">🔜 Coming soon</h2>
-            
-            
-          </div><p>A peek at what's planned (not built yet):</p>
+      <div class="clede"><p>The short version. For the full technical write-up, see <a href="detailed.html">CHANGELOG.md</a>.</p></div>
+      
+      <section class="pn-soon" data-entry id="coming-soon-w">
+        <div class="pn-soon-l">INCOMING</div>
+        <h2 id="coming-soon">🔜 Coming soon</h2>
+        <p>A peek at what's planned (not built yet):</p>
 <ul><li><strong>Faster, safer bulk editing</strong> in the admin panel — search for items and pick them from a list instead of pasting names.</li><li><strong>Reliability polish</strong> so the bot never double-responds or drops a click.</li><li><strong>Snappier page-switching</strong> in busier commands (like flipping between New/Returning draws).</li><li><strong>Richer colour extraction</strong> — more variety pulled from your avatar, so a standout colour doesn't get missed.</li></ul>
 <h3 id="further-out" class="plain"><span class="ht">Further out</span><a class="anchor" href="#further-out" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>A <code>/help</code> command</strong> explaining everything the bot can do, with a way to reach Dior directly for bug reports or requests.</li><li><strong><code>/meta</code></strong> — see every weapon currently marked Meta, in one place.</li><li><strong>A draw cost calculator</strong> — tells you what it'll cost to finish a draw from where you are, and which top-up you'd need.</li><li><strong>In-bot announcements</strong> — a heads-up message (e.g. "sorry the bot was down — we've moved to a better host") shown once the next time you use any command.</li><li><strong>An easier way to add &amp; share the bot</strong>, including where user-installed apps are blocked.</li><li><strong>A <code>/define</code> command</strong> (Urban Dictionary lookup) — just for fun.</li><li>Eventually: <strong>text commands</strong> (like <code>d b ak117</code>) with a custom prefix per server, <strong>submitting your own loadouts</strong> for review, and further out still, <strong>building your own gunsmith right in the bot</strong>.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-47-0" class="cxbig">v2.47.0</h2>
-            
-            <span class="cxsub">August 1, 2026</span>
-          </div><ul><li><strong>The legal site's navigation buttons often did nothing when you clicked them.</strong> Fixed — a leftover drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.</li><li><strong>The menu on phones is a swipeable row of tabs</strong> — every page on one line, the one you are reading always visible, and no menu to open first. Tapping one makes the highlight assemble itself out of a swarm of droplets. Buttons no longer get stuck looking "pressed" after you tap them.</li><li><strong>The header on phones stopped overlapping itself.</strong> "Dior's Builds" was being drawn straight across the buttons beside it; there is room for everything now, and the Discord button says INSTALL rather than being a bare circle that looked like a sign-in.</li><li><strong>The section list beside long documents no longer has its own scrollbar.</strong> It follows the page as you read, so you never have to scroll it separately.</li><li><strong>The menu label stopped going unreadable while you hover.</strong> The word turned dark up to half a second before the highlight arrived underneath it, leaving dark text on a dark bar.</li><li><strong>The opening line on Terms and Privacy read like a sentence cut in half.</strong> It was — fixed.</li><li><strong>A "back to top" button</strong> on the long documents, with a ring showing how far through you are.</li><li><strong>Download buttons</strong> for the plain-text licence and notice.</li><li><strong>Copy buttons</strong> on every code block in the contributing guide.</li><li><strong>The home page was off centre.</strong> Fixed, along with a pass over its hover effects and spacing.</li><li><strong>The highlight behind the menu now breaks apart and rebuilds itself</strong> when you move between pages, instead of sliding along as one piece.</li><li><strong>The moon on the dark/light switch is a proper thin crescent</strong> — it used to be an almost-full moon.</li><li><strong>The highlight keeps its colour properly now.</strong> Each page has its own accent, and on phones the effect that draws it was washing every one of them out.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-46-0" class="cxbig">v2.46.0</h2>
-            
-            <span class="cxsub">July 31, 2026</span>
-          </div><ul><li><strong><code>/calendar</code> is now 3 pages — Draws, Events, and Playlists &amp; Modes</strong> — with buttons to switch between them, and Draws is further split into New/Returning sections.</li><li><strong>A season-end date typo could corrupt every other date on the page.</strong> Fixed — a bad date is now rejected instead of silently guessing "right now."</li><li><strong>Calendar pages can show a banner image</strong>, set per page. Admin-side.</li><li><strong>Draws admin panel is smarter about thumbnails</strong> — if you leave the image blank, it'll now reuse a cached one even from a slightly different or typo'd title, not just an exact match.</li><li><strong>Patch notes' "Additional Info" can auto-format into a real weapons/attachments/changes layout</strong> — admin-side, opt-in, doesn't change anything for existing notes.</li><li><strong>Behind the scenes: the admin panel's bulk-paste help got a real rewrite</strong> — a proper reference guide instead of a plain-text reply, reachable from every relevant page.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-45-0" class="cxbig">v2.45.0</h2>
-            
-            <span class="cxsub">July 30, 2026</span>
-          </div><ul><li><strong>A draw title with a "/" in it no longer gets half-lowercased.</strong> "Jupiter Cannon/Void Implosion Draw" was showing up as "Jupiter Cannon/void Implosion Draw" — fixed.</li><li><strong>Draws can now carry a short note.</strong> Admin-side only — lets a "-# comment" line be added to a draw's item list without it getting mistaken for an actual weapon or character name.</li><li><strong>Patch notes' extra info can now show buff/nerf icons.</strong> Admin-side — typing <code>b:</code> or <code>n:</code> swaps in the buff/nerf icon automatically.</li><li><strong>Behind the scenes: a proper way to prep next season ahead of time</strong>, so it's not stuck sharing the same live data as the season that's still running.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-44-0" class="cxbig">v2.44.0</h2>
-            
-            <span class="cxsub">July 30, 2026</span>
-          </div><ul><li><strong>The "Contributing" and "Contributors" pages on the public site got a proper redesign.</strong> They used to be plain walls of text in a box. Now the contributing guide reads as a path you follow, the line you need to agree to the contributor terms has its own copy button, and the credits page shows a real nameplate — with an empty one beside it waiting for the next person's name.</li><li><strong>The site briefly went down and is back up.</strong> A publish step silently uploaded nothing; the pages kept answering for a while from a cached copy, so it looked fine from the outside. It's fixed, and the checker now tests the front page too, which is what caught it.</li><li><em>No changes to the bot itself.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-43-2" class="cxbig">v2.43.2</h2>
-            
-            <span class="cxsub">July 29, 2026</span>
-          </div><ul><li><em>Internal only — notes for Dior's own future reference about how the legal-page builder works and one lesson learned from it. Nothing players see, and no change to the bot.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-43-1" class="cxbig">v2.43.1</h2>
-            
-            <span class="cxsub">July 29, 2026</span>
-          </div><ul><li><strong>The Terms and Privacy pages are now live and public</strong>, at <a href="https://diors-builds-legal.pages.dev" target="_blank" rel="noopener noreferrer">diors-builds-legal.pages.dev</a>. You can read them any time — no Discord account, no GitHub, nothing to sign in to.</li><li>Fixed a batch of links inside those pages that pointed nowhere. If a document says "see the licence," that link should actually take you to the licence — so the licence is published too now.</li><li><em>Everything else here is internal tooling. No changes to the bot itself.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-43-0" class="cxbig">v2.43.0</h2>
-            
-            <span class="cxsub">July 29, 2026</span>
-          </div><ul><li><strong>The bot now has a Terms of Service and a Privacy Policy</strong>, and you can read both as proper web pages. The privacy policy lists <em>every single thing</em> the bot stores about you — field by field — where it's kept, and how long for. Short version: your timestamp preference, your region, your colour settings, and a few counters. <strong>The bot cannot read your messages</strong>; it isn't technically able to.</li><li><strong>Your data is stored in Canada.</strong> Nothing about you is sent to any AI system.</li><li><strong>Want your data deleted?</strong> Email harkirat117@gmail.com and it'll be done. Honest note: there's no self-serve button for this yet — it's a manual request for now, and building the automatic version is already on the to-do list.</li><li><strong>The bot's source code now has a proper licence.</strong> You're welcome to read it, study it, audit it for security problems, and run it locally for yourself. You can't deploy your own copy for other people to use, or use it commercially.</li><li>Credit where it's due: some of the custom emoji you see come from <strong>tofooo</strong> on emoji.gg.</li><li><em>Nothing about the bot itself changed in this release — no new commands, no fixes, no behaviour differences. It's paperwork, and it's the kind you should be able to actually read.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-42-2" class="cxbig">v2.42.2</h2>
-            
-            <span class="cxsub">July 29, 2026</span>
-          </div><ul><li><em>Internal only — fixed a filing mistake in Dior's own development journal (some entries had ended up in the wrong section) and added an automatic check so it can't happen again quietly. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-42-1" class="cxbig">v2.42.1</h2>
-            
-            <span class="cxsub">July 29, 2026</span>
-          </div><ul><li><em>Internal only — tidied up Dior's own repository bookkeeping and wrote down a maintenance task for a future update. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-42-0" class="cxbig">v2.42.0</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — added an automatic checker that catches Dior's own documentation going out of date, and fixed a place where the notes claimed something couldn't be checked when it could. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-41-4" class="cxbig">v2.41.4</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — recovered some configuration work that was accidentally discarded, and wrote down how to avoid repeating it. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-41-3" class="cxbig">v2.41.3</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — corrected an inaccurate figure in Dior's own developer notes. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-41-2" class="cxbig">v2.41.2</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — tidied up how Dior's own development journal is indexed so entries can actually be found. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-41-1" class="cxbig">v2.41.1</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — added an automatic check so Dior's own notes and documentation can't quietly fall out of date when the bot's code changes. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-41-0" class="cxbig">v2.41.0</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — Dior can now see exactly when something went wrong and which version of the bot was running at the time, and the health check finally counts real errors instead of routine reconnects. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-40-0" class="cxbig">v2.40.0</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — Dior's project notes now get written up automatically-checked, so the behind-the-scenes record stops falling behind. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-39-2" class="cxbig">v2.39.2</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — wrote up the behind-the-scenes notes for the previous update. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-39-1" class="cxbig">v2.39.1</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — fixed two out-of-date notes in Dior's own documentation. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-39-0" class="cxbig">v2.39.0</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — the safety checks that keep Dior's build process honest are now saved with the project itself, so they can't get lost. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-38-3" class="cxbig">v2.38.3</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — wrote up the behind-the-scenes notes for the two previous updates. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-38-2" class="cxbig">v2.38.2</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — removed two unused access keys for old hosting services Dior no longer uses. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-38-1" class="cxbig">v2.38.1</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — removed a stray empty file. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-38-0" class="cxbig">v2.38.0</h2>
-            
-            <span class="cxsub">July 28, 2026</span>
-          </div><ul><li><em>Internal only — Dior's project notes were being kept in a folder the tools had stopped looking in, and were found only because a reminder pointed the way each time. They've been moved to the folder that gets checked automatically. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-37-0" class="cxbig">v2.37.0</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal tooling-only — the groundwork branch for the bot's next big version now keeps itself up to date automatically. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-36-3" class="cxbig">v2.36.3</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — added an automatic safety check to Dior's own release tooling. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-36-2" class="cxbig">v2.36.2</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — a verification pass over Dior's own project records. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-36-1" class="cxbig">v2.36.1</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — housekeeping on Dior's own code branches. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-36-0" class="cxbig">v2.36.0</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — tidied up how Dior's own release history is recorded, so each update is now a single clean entry in the project's history instead of two. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-15" class="cxbig">v2.35.15</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — automated a check over Dior's own project records and fixed an instruction that had never matched what actually happens. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-14" class="cxbig">v2.35.14</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><p>Behind-the-scenes only — nothing changes for you.</p>
-<p>The bot's old backup host (which it moved off of back on July 17) has now been shut down for good, after checking the current server had been running cleanly. The bot itself wasn't touched or restarted — it kept running the whole time.</p>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-13" class="cxbig">v2.35.13</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal ops-only — checked the server hosting the bot is healthy and worked out exactly what a pending bit of housekeeping needs. Nothing players see; the bot was not restarted.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-12" class="cxbig">v2.35.12</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — tidied Dior's own planning notes so the same to-do can't quietly exist in two places with two different answers. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-11" class="cxbig">v2.35.11</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — a developer note that had gone out of date the same day it was written. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-10" class="cxbig">v2.35.10</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — developer notes brought in line with how the next big version will be built. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-9" class="cxbig">v2.35.9</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal safety fix — Dior's test copy of the bot could accidentally change or delete the real bot's saved images. It can't anymore. Nothing changes for you, but your loadout and patch-note images are safer.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-8" class="cxbig">v2.35.8</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal tooling-only — the bot's code now gets automatically checked for errors every time a change is proposed. Nothing players see, but it makes broken updates less likely to reach you.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-7" class="cxbig">v2.35.7</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — a note-to-self about finishing setup on Dior's private planning board. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-6" class="cxbig">v2.35.6</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal planning-only — wrote down how the next big version of the bot will be built without disturbing the one you're using. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-5" class="cxbig">v2.35.5</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li><em>Internal docs-only — corrected a wrong file count in the developer notes and wrote down a cosmetic GitHub issue to look at later. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-4" class="cxbig">v2.35.4</h2>
-            
-            <span class="cxsub">July 27, 2026</span>
-          </div><ul><li>Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered — it now correctly reflects the time you typed.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-3" class="cxbig">v2.35.3</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><em>Internal tooling-only — a maintenance script for Dior's test copy of the bot. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-2" class="cxbig">v2.35.2</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><p>Behind-the-scenes only — nothing changes for you.</p>
-<p>Tidied up the bot's startup messages and trimmed a tool it only needs for maintenance out of what it installs to run.</p>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-1" class="cxbig">v2.35.1</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><em>Internal docs-only — jotted down a list of developer tools to look at later. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-35-0" class="cxbig">v2.35.0</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><p>Behind-the-scenes only — nothing changes for you.</p>
-<p>The bot now refuses to start a second copy of itself by accident, so a leftover test run can't sneak in and cause the bot to act inconsistently.</p>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-34-1" class="cxbig">v2.34.1</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><em>Internal docs-only — kept Dior's own developer notes pointing at the right bits of code after the last update renamed a couple of them. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-34-0" class="cxbig">v2.34.0</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><p>Behind-the-scenes only — nothing changes for you.</p>
-<p>Dior's Builds now has a <strong>private test copy of itself</strong> that runs on Dior's own computer. Changes can be tried out there first, instead of going straight to the bot you use. Fewer surprises, faster fixes.</p>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-6" class="cxbig">v2.33.6</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><em>Internal docs-only — wrote down how Dior's own code changes get labelled, so the project's history stays consistent and machine-readable. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-5" class="cxbig">v2.33.5</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><strong><code>/draw prices</code> — the Advanced Double Legendary page is a little cleaner.</strong> The NOTE about Regular purchases being cheaper than a Normal Draw is gone; the important warning (THE TRAP) stays exactly where it was.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-4" class="cxbig">v2.33.4</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><em>Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed a few stale references left over from the last reorg. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-3" class="cxbig">v2.33.3</h2>
-            
-            <span class="cxsub">July 26, 2026</span>
-          </div><ul><li><em>Internal docs-only — finished the to-do-list reorganization v2.33.2 started, and moved the old archives out of the way. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-2" class="cxbig">v2.33.2</h2>
-            
-            <span class="cxsub">July 25, 2026</span>
-          </div><ul><li><em>Internal docs-only — reorganized where Dior's own to-do/tech-debt list lives. Nothing players see.</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-1" class="cxbig">v2.33.1</h2>
-            
-            <span class="cxsub">July 25, 2026</span>
-          </div><ul><li><em>Internal/admin-only — an options tweak to Dior's private build-import tool. Nothing players see.</em></li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-33-0" class="cxbig">v2.33.0</h2>
-            
-            <span class="cxsub">July 24, 2026</span>
-          </div><ul><li><em>Internal only — nothing players see or interact with changed.</em> Switched how updates get built and released (proper git branches + review before anything goes live), and fixed a behind-the-scenes data gap in how admin loadout edits sync to Cloudinary.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-32-0" class="cxbig">v2.32.0</h2>
-            
-            <span class="cxsub">July 24, 2026</span>
-          </div><ul><li><strong>Patch notes now span multiple seasons.</strong> Dior can start a fresh season's patch notes (with past seasons kept editable) and set a placeholder season title when notes go out before the new season's name is announced — so the patch notes you see always show a sensible title. <em>(Mostly an admin-side tool; the player-visible effect is simply correctly-titled, up-to-date patch notes.)</em></li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-31-0" class="cxbig">v2.31.0</h2>
-            
-            <span class="cxsub">July 22, 2026</span>
-          </div><ul><li><em>Internal only — nothing players see or interact with changed.</em> Reorganized the project's own developer documentation (the giant <code>CLAUDE.md</code> was split into focused, on-demand files) so future work stays fast and well-organized. Also added behind-the-scenes cost tracking for the AI image-reading used by <code>/autobuild</code> (a log line per call, so spend is easy to audit) — invisible to players; no commands, draws, loadouts, or on-screen behaviour changed.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-30-2" class="cxbig">v2.30.2</h2>
-            
-            <span class="cxsub">July 21, 2026</span>
-          </div><ul><li><strong>Fixed a crash that could break whole commands.</strong> On pages with exactly two sub-pages, the ◀ ▶ arrows could make Discord reject the entire message — so <code>/settings</code>, <code>/draws</code>, <code>/calendar</code>, the colour panel and <code>/alerts</code> could fail to open. They work again (on a 2-page view the arrows simply grey out at the ends).</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-30-1" class="cxbig">v2.30.1</h2>
-            
-            <span class="cxsub">July 21, 2026</span>
-          </div><ul><li><strong>Small <code>/draw prices</code> fix.</strong> Tidied the Advanced Double Legendary page to match the intended layout — removed a few extra divider lines and corrected the "Strategy" heading.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-30-0" class="cxbig">v2.30.0</h2>
-            
-            <span class="cxsub">July 21, 2026</span>
-          </div><ul><li><strong><code>/draw prices</code> got a visual refresh.</strong> The Advanced Double Legendary Weapon Draw page is redesigned to a cleaner layout — three clearly-labelled purchase modes, the "note" and "trap" tips called out, and the strategy guide broken into its own easy-to-read lines (both CP regions).</li><li><strong>Every draw's heading is now in FULL CAPS</strong> (the lines with the legendary/mythic icon), so the whole <code>/draw prices</code> list reads consistently.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-29-0" class="cxbig">v2.29.0</h2>
-            
-            <span class="cxsub">July 21, 2026</span>
-          </div><ul><li><strong>Fixed swapped loadout pictures</strong> — the L-CAR 9 and Crossbow builds were showing each other's screenshots; they now show the right ones.</li><li>Behind the scenes: another round of fixes to the admin <code>/autobuild</code> tool (reads the weapon name and attachments more accurately) and some loadout data tidy-up. Nothing else players interact with directly.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-28-0" class="cxbig">v2.28.0</h2>
-            
-            <span class="cxsub">July 21, 2026</span>
-          </div><ul><li><strong>New in <code>/draw prices</code>: the Advanced Double Legendary Weapon Draw.</strong> A full breakdown for both CP regions of the three ways to spin it — <strong>Regular Purchase</strong>, <strong>Advanced Purchase</strong>, and the "Trap" — with per-pull costs, running totals, and a strategy guide for getting all 4 items, just the 2 Legendaries, or 1 random Legendary at the lowest CP. It's on its own page — page through with the ◀ ▶ arrows.</li><li><strong>Pagination arrows now loop.</strong> Anywhere the bot has ◀ ▶ page arrows (draws, calendar, draw prices, settings, colours, loadout builds), pressing Next on the last page now wraps around to the first instead of doing nothing — and Prev on the first page jumps to the last.</li><li>Behind the scenes: a round of fixes to the admin <code>/autobuild</code> tool and richer Cloudinary image organisation (nothing players interact with directly).</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-27-0" class="cxbig">v2.27.0</h2>
-            
-            <span class="cxsub">July 21, 2026</span>
-          </div><ul><li>Backend/ops only — nothing changes for players. Quieted the routine "reconnecting to Discord" status pings in Dior's private alert channel (they still get logged, just no longer posted) so a real problem stands out. Listed here only so no version number is skipped.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-26-0" class="cxbig">v2.26.0</h2>
-            
-            <span class="cxsub">July 20, 2026</span>
-          </div><ul><li><strong>New admin tool: <code>/alerts</code>.</strong> The bot already messages Dior privately when something goes wrong (a crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a short ID (like <code>Jul20-03</code>), and <code>/alerts</code> lets Dior browse recent ones, download the full log as a file, and read a plain-language guide to what each colour (🟢🟡🟠🔴) means.</li><li><strong>Clearer alerts.</strong> "Bot online" now says whether it was a deliberate deploy/restart or an automatic recovery; the "reconnecting" alert makes clear the bot didn't crash (just the connection blipped); and how-long-it's-been-running reads naturally now (e.g. <code>2D 22H</code> instead of a raw minute count).</li><li>Admin-only — nothing changes for players.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-25-0" class="cxbig">v2.25.0</h2>
-            
-            <span class="cxsub">July 20, 2026</span>
-          </div><ul><li><strong>New admin tool: near-1-click loadout adding.</strong> Submit a build screenshot and the bot reads off the weapon name, Gunsmith code, and attachments automatically instead of typing each one by hand — shows a review screen first (edit or cancel before anything saves), then uploads the image and creates the real loadout entry. Built, deployed, and live — Dior hasn't run the real end-to-end test in Discord yet, so treat this as "should work" rather than "confirmed working" until he has.</li><li>Behind the scenes: switched the image-reading AI from a separate paid Google AI Studio balance (which ran dry) to billing against the same Google Cloud account that already runs the bot's hosting — no visible change, just a billing fix so the feature can actually run.</li></ul>
-<hr></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-24-0" class="cxbig">v2.24.0</h2>
-            
-            <span class="cxsub">July 20, 2026</span>
-          </div><ul><li><strong>Fixed <code>/patch notes</code>' broken images.</strong> The current season's screenshots had gone dark (the original hosting link expired) — replaced with fresh, permanently-hosted copies, so they display reliably for everyone instead of only looking fine to whoever happened to still have cached access.</li><li>Behind-the-scenes Cloudinary cleanup — tidied up file organization so everything shows up properly grouped in the admin dashboard.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-23-0" class="cxbig">v2.23.0</h2>
-            
-            <span class="cxsub">July 18, 2026</span>
-          </div><ul><li><strong>The admin panel's weapon-build page is finally clear about images.</strong> It now explains right there that build screenshots have to be uploaded to Cloudinary separately (not through the bot), and that whatever name Cloudinary gives the file has to be typed in exactly. Adding or editing a build now also warns right away if that image can't be found yet, instead of silently saving a broken picture you'd only discover later.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-22-0" class="cxbig">v2.22.0</h2>
-            <span class="cxd">&amp; v2.22.1</span>
-            <span class="cxsub">July 18, 2026</span>
-          </div><ul><li><strong><code>/settings</code> now goes quietly inactive after 10 minutes of no use</strong> — leave the panel open and forget about it, and its buttons/dropdowns just stop responding on their own (no error message, nothing to click). Actively using it — clicking around, changing a setting — keeps it alive indefinitely; it's only a full 10 minutes of silence that puts it to sleep. Just run <code>/settings</code> again for a fresh one.</li><li><em>(v2.22.1 was a docs-only point release — no bot changes.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-21-0" class="cxbig">v2.21.0</h2>
-            <span class="cxd">&amp; v2.21.1</span>
-            <span class="cxsub">July 18, 2026</span>
-          </div><ul><li><strong><code>/settings</code> finally has a hide option</strong> — just like every other command, so you can keep your settings panel private if you want.</li><li><strong>Better weapon search</strong> — typing a short or partial name (like <code>loc</code>) now works instead of just failing; if it could mean more than one weapon, the bot tells you which ones instead of guessing.</li><li><strong>Command descriptions are tidier</strong> so they don't get cut off on mobile anymore.</li><li><strong>Download your avatar or banner in full resolution</strong> straight from the color menu, right next to the Refresh Colors button.</li><li><strong>Dior can no longer get accidentally locked out</strong> of someone else's settings/color panel while helping out — without ever seeing or changing that person's own data.</li><li>Friendlier, clearer messages when an action gets blocked.</li><li><code>/timestamp</code>'s <code>format</code> option renamed to <code>view</code> — clearer about what it actually controls.</li><li><strong>Smarter weapon search</strong> — typing a weapon-class word like "pistol", "smg", or "assault rifle" now shows every matching weapon in that category, not just ones whose own name happens to contain that word. (<code>/secondaries</code> stays exactly as its own command — we just made it easier to find.)</li><li><em>(v2.21.1 was a docs/ops-only point release — no bot changes.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-20-0" class="cxbig">v2.20.0</h2>
-            
-            <span class="cxsub">July 17, 2026</span>
-          </div><ul><li><strong>Fixed the admin Edit tool.</strong> Editing an existing loadout (or draw/calendar entry) from the <code>/manage</code> panel was silently failing with a "didn't respond in time" error — now it opens the edit form correctly.</li><li><strong>The bot keeps a closer eye on itself.</strong> On top of the instant crash/outage alerts, it now sends a quiet daily "still healthy" check-in (uptime, servers, latency, memory), and its new-home server now tracks memory usage over time — so a slow problem gets noticed early, not just a sudden one.</li><li><strong>Clearer health alerts</strong> (admin-side): colour-coded by real severity and timestamped, so a routine self-recovering blip is easy to tell apart from an actual problem.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-19-0" class="cxbig">v2.19.0</h2>
-            
-            <span class="cxsub">July 17, 2026</span>
-          </div><ul><li><strong>The bot is much more reliable now.</strong> It moved to a new, always-on home (Google Cloud) after the old free host kept dropping its connection to Discord — which is what caused those "application did not respond" errors. On the new host it connects in seconds and stays up.</li><li>Behind the scenes: the bot now watches its own health and alerts Dior instantly if anything goes wrong, so outages get caught fast instead of going unnoticed.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-18-0" class="cxbig">v2.18.0</h2>
-            
-            <span class="cxsub">July 14–16, 2026</span>
-          </div><ul><li><strong>The admin panel (<code>/manage</code>) is now locked down to Dior only</strong> — no one else can press its buttons anymore, even if the panel ends up visible to others.</li><li><strong><code>/settings</code> is now locked to whoever ran it</strong>, and the panel now expires after 15 minutes so an old, forgotten-about settings screen can't be clicked later.</li><li>The <strong>"Share Publicly" button is now "Show Everyone"</strong>, with a new custom icon.</li><li><strong><code>/timestamp</code> can now show plain, copyable text</strong> instead of the usual styled panel — add <code>format: Text</code> when using the command.</li><li><em>(v2.18.1–v2.18.2 were docs/tooling point releases; v2.18.3 added admin-side connection diagnostics — nothing players interact with directly.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-17-0" class="cxbig">v2.17.0</h2>
-            
-            <span class="cxsub">July 13, 2026</span>
-          </div><ul><li>Fixed "This interaction failed" errors that could hit any command — the new color panel was overloading the bot's free hosting and making unrelated commands time out. It's now much lighter.</li><li>The color panel's Banner, Display Name, and Nameplate previews are now sized consistently.</li><li><em>(v2.17.2 was a small memory optimization; v2.17.3 was docs-only.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-16-0" class="cxbig">v2.16.0</h2>
-            
-            <span class="cxsub">July 13, 2026</span>
-          </div><ul><li><strong>New <code>/colors</code> command</strong> (and a "View Colors" button in <code>/settings</code>): see the real colors pulled from your avatar, banner, display name, nameplate, and decoration, each with a tap-to-copy hex code.</li><li>Two new accent-color styles you can pick in <code>/settings</code>: your Nitro <strong>display-name gradient</strong>, or a <strong>random one</strong> from your profile each time.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-14-0" class="cxbig">v2.14.0</h2>
-            
-            <span class="cxsub">July 13, 2026</span>
-          </div><ul><li>Patch-notes screenshots no longer break when the original image link dies — they're backed up now.</li><li>Accent colors pulled from your avatar/banner look richer and truer to the image.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-13-0" class="cxbig">v2.13.0</h2>
-            
-            <span class="cxsub">July 13, 2026</span>
-          </div><ul><li>Loadout cards got a <strong>"Browse other builds"</strong> dropdown so you can jump between weapons without re-running the command.</li><li><code>/all</code> now lists weapons in alphabetical order.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-12-0" class="cxbig">v2.12.0</h2>
-            
-            <span class="cxsub">July 12, 2026</span>
-          </div><ul><li>Fresh color scheme across the seasonal commands (Calendar, Draws, Draw Prices, Patch Notes, Season End) and clearer, more consistent command wording.</li><li>Fixed a crash when editing an item in the admin panel.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-10-0" class="cxbig">v2.10.0</h2>
-            
-            <span class="cxsub">July 12, 2026</span>
-          </div><ul><li>Big redesign of <strong><code>/draw prices</code></strong> (cleaner per-draw breakdowns, 2 pages), the <strong><code>/manage</code></strong> admin panel (safer edits with confirm/undo steps), and <strong><code>/settings</code></strong> (2 pages, more preferences).</li><li>Draw images are now backed up so they don't break when the original link dies.</li><li><em>(v2.11.1 was a follow-up polish pass across those same commands.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-9-0" class="cxbig">v2.9.0</h2>
-            
-            <span class="cxsub">July 9, 2026</span>
-          </div><ul><li>The admin <code>/update</code> command was folded into <code>/manage</code>, so there's one admin command instead of two.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-8-0" class="cxbig">v2.8.0</h2>
-            <span class="cxd">&amp; v2.8.1</span>
-            <span class="cxsub">July 9, 2026</span>
-          </div><ul><li>DMZ builds can now show range-based rank badges (Best/Top Close Range, Best/Top Mid-Long Range).</li><li><em>(v2.8.1 was a small fix to how those DMZ badges are scoped.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-7-0" class="cxbig">v2.7.0</h2>
-            <span class="cxd">&amp; v2.7.1</span>
-            <span class="cxsub">July 9, 2026</span>
-          </div><ul><li>Fixed DMZ loadouts showing a fake "Gunsmith Code" that couldn't actually be used in-game.</li><li>Added a big batch of real weapon data: full DMZ builds for the first time ever (SO-14, Type 19, AS VAL, AK117, Fennec, J358, Outlaw), extra builds for PKM and SKS, and several new Secondaries (Machine Pistol, Crossbow, Dobvra, Shorty) plus a new Shotgun (R9-0).</li><li>Fixed two weapons that had the wrong name saved: "GS50" is actually <strong>.50 GS</strong>, and "LCAR" is actually <strong>L-CAR 9</strong>.</li><li><em>(v2.7.1 was an internal repo change only.)</em></li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-6-0" class="cxbig">v2.6.0</h2>
-            
-            <span class="cxsub">July 8, 2026</span>
-          </div><ul><li>7 weapons that only had a badge (no real build yet) now show up in the bot with a "Coming Soon" placeholder instead of not appearing at all.</li><li>Added this very changelog system.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-5-1" class="cxbig">v2.5.1</h2>
-            
-            <span class="cxsub">July 8, 2026</span>
-          </div><ul><li>Added a new <strong>"Toxic"</strong> badge for unbalanced/cheese weapon builds.</li><li>Badges added in bulk to 28 weapons across every category.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-5-0" class="cxbig">v2.5.0</h2>
-            
-            <span class="cxsub">July 8, 2026</span>
-          </div><ul><li>Behind-the-scenes speed and stability improvements. Nothing visually different.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-4-0" class="cxbig">v2.4.0</h2>
-            
-            <span class="cxsub">July 8, 2026</span>
-          </div><ul><li>Badge system got smarter — categories aren't stuck at "Top 3" anymore, some can go up to Top 5+.</li><li>Editing a weapon's badges now updates ALL builds of that weapon, not just one.</li><li>Search got more forgiving — typos and missing spaces (like "dlq" for "DL Q33") now still find the right weapon.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-3-1" class="cxbig">v2.3.1</h2>
-            
-            <span class="cxsub">July 7, 2026</span>
-          </div><ul><li>Wrote up the previous update's design decisions for the record. No user-facing change.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-3-0" class="cxbig">v2.3.0</h2>
-            
-            <span class="cxsub">July 7, 2026</span>
-          </div><ul><li>Big redesign of the weapon loadout card: weapon name front and center, new badges shown under it, a new "Copy Attachments" button, and cleaner section headings.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-2-1" class="cxbig">v2.2.1</h2>
-            
-            <span class="cxsub">July 7, 2026</span>
-          </div><ul><li>Weapon categories (AR, SMG, Sniper, etc.) each got their own accent color.</li><li>Groundwork laid for a future <code>/secondaries</code> command.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-2-0" class="cxbig">v2.2.0</h2>
-            
-            <span class="cxsub">July 7, 2026</span>
-          </div><ul><li>Fixed a couple of real crashes that could take the bot offline.</li><li>Fixed "Share Publicly" not working in some servers.</li><li>General visual cleanup across several commands.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-1-0" class="cxbig">v2.1.0</h2>
-            
-            <span class="cxsub">July 7, 2026</span>
-          </div><ul><li>Fixed the bot not showing up at all when DMed directly or added as a personal app — it now works everywhere it's supposed to.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v2-0-0" class="cxbig">v2.0.0</h2>
-            
-            <span class="cxsub">July 6, 2026</span>
-          </div><ul><li>Complete visual overhaul of the entire bot using Discord's newest UI system.</li><li>Weapon loadouts moved to a proper database instead of a spreadsheet.</li><li>This is the point Harkirat started building the bot together with Claude.</li></ul>
 <hr>
-<h3 id="earlier-history-solo-built" class="plain"><span class="ht">Earlier history (solo-built)</span><a class="anchor" href="#earlier-history-solo-built" aria-label="Link to this section">¶</a></h3></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-7-0" class="cxbig">v1.7.0</h2>
-            
-            <span class="cxsub">July 4, 2026</span>
-          </div><ul><li>Added the <code>/timestamp</code> command for converting dates/times across timezones.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-6-0" class="cxbig">v1.6.0</h2>
-            
-            <span class="cxsub">May 17, 2026</span>
-          </div><ul><li>Fixed the bot going to sleep on its free hosting plan.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-5-0" class="cxbig">v1.5.0</h2>
-            
-            <span class="cxsub">April 8, 2026</span>
-          </div><ul><li>Added screenshots for weapon loadouts.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-4-0" class="cxbig">v1.4.0</h2>
-            
-            <span class="cxsub">April 8, 2026</span>
-          </div><ul><li>Big bug-fix pass, plus fuzzy search, inline fields, and a green Copy button. The point the bot felt like a real, usable release.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-3-0" class="cxbig">v1.3.0</h2>
-            
-            <span class="cxsub">April 8, 2026</span>
-          </div><ul><li>Built out the original embed-design system the bot used before Components V2 existed.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-2-0" class="cxbig">v1.2.0</h2>
-            
-            <span class="cxsub">April 8, 2026</span>
-          </div><ul><li>Added autocomplete, fuzzy search, and per-category weapon commands, plus follow-up bug fixes.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-1-0" class="cxbig">v1.1.0</h2>
-            
-            <span class="cxsub">April 8, 2026</span>
-          </div><ul><li>Added most of the weapon loadout data, stored in a spreadsheet.</li></ul></article>
-<article class="cxe">
-          <div class="cxh cxh-b">
-            <h2 id="v1-0-0" class="cxbig">v1.0.0</h2>
-            
-            <span class="cxsub">April 8, 2026</span>
-          </div><ul><li>Original bot launch: just one weapon (LOCUS), to prove the bot worked at all.</li></ul></article>
+      </section>
+      <section class="pn-hero" data-entry data-rv>
+        <div class="pn-hero-t">LATEST</div>
+        <h2 id="v2-47-0" class="pn-v">v2.47.0</h2>
+        
+        <div class="pn-hero-b"><ul><li><strong>The legal site's navigation buttons often did nothing when you clicked them.</strong> Fixed — a leftover drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.</li><li><strong>The menu on phones is a swipeable row of tabs</strong> — every page on one line, the one you are reading always visible, and no menu to open first. Tapping one makes the highlight assemble itself out of a swarm of droplets. Buttons no longer get stuck looking "pressed" after you tap them.</li><li><strong>The header on phones stopped overlapping itself.</strong> "Dior's Builds" was being drawn straight across the buttons beside it; there is room for everything now, and the Discord button says INSTALL rather than being a bare circle that looked like a sign-in.</li><li><strong>The section list beside long documents no longer has its own scrollbar.</strong> It follows the page as you read, so you never have to scroll it separately.</li><li><strong>The menu label stopped going unreadable while you hover.</strong> The word turned dark up to half a second before the highlight arrived underneath it, leaving dark text on a dark bar.</li><li><strong>The opening line on Terms and Privacy read like a sentence cut in half.</strong> It was — fixed.</li><li><strong>A "back to top" button</strong> on the long documents, with a ring showing how far through you are.</li><li><strong>Download buttons</strong> for the plain-text licence and notice.</li><li><strong>Copy buttons</strong> on every code block in the contributing guide.</li><li><strong>The home page was off centre.</strong> Fixed, along with a pass over its hover effects and spacing.</li><li><strong>The highlight behind the menu now breaks apart and rebuilds itself</strong> when you move between pages, instead of sliding along as one piece.</li><li><strong>The moon on the dark/light switch is a proper thin crescent</strong> — it used to be an almost-full moon.</li><li><strong>The highlight keeps its colour properly now.</strong> Each page has its own accent, and on phones the effect that draws it was washing every one of them out.</li></ul></div>
+      </section><div class="pn-deck">
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-46-0" class="pn-cv">v2.46.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong><code>/calendar</code> is now 3 pages — Draws, Events, and Playlists &amp; Modes</strong> — with buttons to switch between them, and Draws is further split into New/Returning sections.</li><li><strong>A season-end date typo could corrupt every other date on the page.</strong> Fixed — a bad date is now rejected instead of silently guessing "right now."</li><li><strong>Calendar pages can show a banner image</strong>, set per page. Admin-side.</li><li><strong>Draws admin panel is smarter about thumbnails</strong> — if you leave the image blank, it'll now reuse a cached one even from a slightly different or typo'd title, not just an exact match.</li><li><strong>Patch notes' "Additional Info" can auto-format into a real weapons/attachments/changes layout</strong> — admin-side, opt-in, doesn't change anything for existing notes.</li><li><strong>Behind the scenes: the admin panel's bulk-paste help got a real rewrite</strong> — a proper reference guide instead of a plain-text reply, reachable from every relevant page.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-45-0" class="pn-cv">v2.45.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>A draw title with a "/" in it no longer gets half-lowercased.</strong> "Jupiter Cannon/Void Implosion Draw" was showing up as "Jupiter Cannon/void Implosion Draw" — fixed.</li><li><strong>Draws can now carry a short note.</strong> Admin-side only — lets a "-# comment" line be added to a draw's item list without it getting mistaken for an actual weapon or character name.</li><li><strong>Patch notes' extra info can now show buff/nerf icons.</strong> Admin-side — typing <code>b:</code> or <code>n:</code> swaps in the buff/nerf icon automatically.</li><li><strong>Behind the scenes: a proper way to prep next season ahead of time</strong>, so it's not stuck sharing the same live data as the season that's still running.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-44-0" class="pn-cv">v2.44.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The "Contributing" and "Contributors" pages on the public site got a proper redesign.</strong> They used to be plain walls of text in a box. Now the contributing guide reads as a path you follow, the line you need to agree to the contributor terms has its own copy button, and the credits page shows a real nameplate — with an empty one beside it waiting for the next person's name.</li><li><strong>The site briefly went down and is back up.</strong> A publish step silently uploaded nothing; the pages kept answering for a while from a cached copy, so it looked fine from the outside. It's fixed, and the checker now tests the front page too, which is what caught it.</li><li><em>No changes to the bot itself.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-43-2" class="pn-cv">v2.43.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — notes for Dior's own future reference about how the legal-page builder works and one lesson learned from it. Nothing players see, and no change to the bot.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-43-1" class="pn-cv">v2.43.1</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The Terms and Privacy pages are now live and public</strong>, at <a href="https://diors-builds-legal.pages.dev" target="_blank" rel="noopener noreferrer">diors-builds-legal.pages.dev</a>. You can read them any time — no Discord account, no GitHub, nothing to sign in to.</li><li>Fixed a batch of links inside those pages that pointed nowhere. If a document says "see the licence," that link should actually take you to the licence — so the licence is published too now.</li><li><em>Everything else here is internal tooling. No changes to the bot itself.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-43-0" class="pn-cv">v2.43.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The bot now has a Terms of Service and a Privacy Policy</strong>, and you can read both as proper web pages. The privacy policy lists <em>every single thing</em> the bot stores about you — field by field — where it's kept, and how long for. Short version: your timestamp preference, your region, your colour settings, and a few counters. <strong>The bot cannot read your messages</strong>; it isn't technically able to.</li><li><strong>Your data is stored in Canada.</strong> Nothing about you is sent to any AI system.</li><li><strong>Want your data deleted?</strong> Email harkirat117@gmail.com and it'll be done. Honest note: there's no self-serve button for this yet — it's a manual request for now, and building the automatic version is already on the to-do list.</li><li><strong>The bot's source code now has a proper licence.</strong> You're welcome to read it, study it, audit it for security problems, and run it locally for yourself. You can't deploy your own copy for other people to use, or use it commercially.</li><li>Credit where it's due: some of the custom emoji you see come from <strong>tofooo</strong> on emoji.gg.</li><li><em>Nothing about the bot itself changed in this release — no new commands, no fixes, no behaviour differences. It's paperwork, and it's the kind you should be able to actually read.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-42-2" class="pn-cv">v2.42.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — fixed a filing mistake in Dior's own development journal (some entries had ended up in the wrong section) and added an automatic check so it can't happen again quietly. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-42-1" class="pn-cv">v2.42.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — tidied up Dior's own repository bookkeeping and wrote down a maintenance task for a future update. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-42-0" class="pn-cv">v2.42.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — added an automatic checker that catches Dior's own documentation going out of date, and fixed a place where the notes claimed something couldn't be checked when it could. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-41-4" class="pn-cv">v2.41.4</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — recovered some configuration work that was accidentally discarded, and wrote down how to avoid repeating it. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-41-3" class="pn-cv">v2.41.3</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — corrected an inaccurate figure in Dior's own developer notes. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-41-2" class="pn-cv">v2.41.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — tidied up how Dior's own development journal is indexed so entries can actually be found. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-41-1" class="pn-cv">v2.41.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — added an automatic check so Dior's own notes and documentation can't quietly fall out of date when the bot's code changes. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-41-0" class="pn-cv">v2.41.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — Dior can now see exactly when something went wrong and which version of the bot was running at the time, and the health check finally counts real errors instead of routine reconnects. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-40-0" class="pn-cv">v2.40.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — Dior's project notes now get written up automatically-checked, so the behind-the-scenes record stops falling behind. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-39-2" class="pn-cv">v2.39.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — wrote up the behind-the-scenes notes for the previous update. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-39-1" class="pn-cv">v2.39.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — fixed two out-of-date notes in Dior's own documentation. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-39-0" class="pn-cv">v2.39.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — the safety checks that keep Dior's build process honest are now saved with the project itself, so they can't get lost. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-38-3" class="pn-cv">v2.38.3</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — wrote up the behind-the-scenes notes for the two previous updates. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-38-2" class="pn-cv">v2.38.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — removed two unused access keys for old hosting services Dior no longer uses. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-38-1" class="pn-cv">v2.38.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — removed a stray empty file. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-38-0" class="pn-cv">v2.38.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — Dior's project notes were being kept in a folder the tools had stopped looking in, and were found only because a reminder pointed the way each time. They've been moved to the folder that gets checked automatically. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-37-0" class="pn-cv">v2.37.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal tooling-only — the groundwork branch for the bot's next big version now keeps itself up to date automatically. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-36-3" class="pn-cv">v2.36.3</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — added an automatic safety check to Dior's own release tooling. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-36-2" class="pn-cv">v2.36.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — a verification pass over Dior's own project records. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-36-1" class="pn-cv">v2.36.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — housekeeping on Dior's own code branches. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-36-0" class="pn-cv">v2.36.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — tidied up how Dior's own release history is recorded, so each update is now a single clean entry in the project's history instead of two. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-15" class="pn-cv">v2.35.15</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — automated a check over Dior's own project records and fixed an instruction that had never matched what actually happens. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-14" class="pn-cv">v2.35.14</h2>
+          
+          <div class="pn-cb"><p>Behind-the-scenes only — nothing changes for you.</p>
+<p>The bot's old backup host (which it moved off of back on July 17) has now been shut down for good, after checking the current server had been running cleanly. The bot itself wasn't touched or restarted — it kept running the whole time.</p>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-13" class="pn-cv">v2.35.13</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal ops-only — checked the server hosting the bot is healthy and worked out exactly what a pending bit of housekeeping needs. Nothing players see; the bot was not restarted.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-12" class="pn-cv">v2.35.12</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — tidied Dior's own planning notes so the same to-do can't quietly exist in two places with two different answers. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-11" class="pn-cv">v2.35.11</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — a developer note that had gone out of date the same day it was written. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-10" class="pn-cv">v2.35.10</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — developer notes brought in line with how the next big version will be built. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-9" class="pn-cv">v2.35.9</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal safety fix — Dior's test copy of the bot could accidentally change or delete the real bot's saved images. It can't anymore. Nothing changes for you, but your loadout and patch-note images are safer.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-8" class="pn-cv">v2.35.8</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal tooling-only — the bot's code now gets automatically checked for errors every time a change is proposed. Nothing players see, but it makes broken updates less likely to reach you.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-7" class="pn-cv">v2.35.7</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — a note-to-self about finishing setup on Dior's private planning board. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-6" class="pn-cv">v2.35.6</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal planning-only — wrote down how the next big version of the bot will be built without disturbing the one you're using. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-5" class="pn-cv">v2.35.5</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — corrected a wrong file count in the developer notes and wrote down a cosmetic GitHub issue to look at later. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-4" class="pn-cv">v2.35.4</h2>
+          
+          <div class="pn-cb"><ul><li>Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered — it now correctly reflects the time you typed.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-3" class="pn-cv">v2.35.3</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal tooling-only — a maintenance script for Dior's test copy of the bot. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-2" class="pn-cv">v2.35.2</h2>
+          
+          <div class="pn-cb"><p>Behind-the-scenes only — nothing changes for you.</p>
+<p>Tidied up the bot's startup messages and trimmed a tool it only needs for maintenance out of what it installs to run.</p>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-1" class="pn-cv">v2.35.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — jotted down a list of developer tools to look at later. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-35-0" class="pn-cv">v2.35.0</h2>
+          
+          <div class="pn-cb"><p>Behind-the-scenes only — nothing changes for you.</p>
+<p>The bot now refuses to start a second copy of itself by accident, so a leftover test run can't sneak in and cause the bot to act inconsistently.</p>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-34-1" class="pn-cv">v2.34.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — kept Dior's own developer notes pointing at the right bits of code after the last update renamed a couple of them. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-34-0" class="pn-cv">v2.34.0</h2>
+          
+          <div class="pn-cb"><p>Behind-the-scenes only — nothing changes for you.</p>
+<p>Dior's Builds now has a <strong>private test copy of itself</strong> that runs on Dior's own computer. Changes can be tried out there first, instead of going straight to the bot you use. Fewer surprises, faster fixes.</p>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-6" class="pn-cv">v2.33.6</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — wrote down how Dior's own code changes get labelled, so the project's history stays consistent and machine-readable. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-5" class="pn-cv">v2.33.5</h2>
+          
+          <div class="pn-cb"><ul><li><strong><code>/draw prices</code> — the Advanced Double Legendary page is a little cleaner.</strong> The NOTE about Regular purchases being cheaper than a Normal Draw is gone; the important warning (THE TRAP) stays exactly where it was.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-4" class="pn-cv">v2.33.4</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed a few stale references left over from the last reorg. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-3" class="pn-cv">v2.33.3</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — finished the to-do-list reorganization v2.33.2 started, and moved the old archives out of the way. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-2" class="pn-cv">v2.33.2</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal docs-only — reorganized where Dior's own to-do/tech-debt list lives. Nothing players see.</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-1" class="pn-cv">v2.33.1</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal/admin-only — an options tweak to Dior's private build-import tool. Nothing players see.</em></li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-33-0" class="pn-cv">v2.33.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — nothing players see or interact with changed.</em> Switched how updates get built and released (proper git branches + review before anything goes live), and fixed a behind-the-scenes data gap in how admin loadout edits sync to Cloudinary.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-32-0" class="pn-cv">v2.32.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Patch notes now span multiple seasons.</strong> Dior can start a fresh season's patch notes (with past seasons kept editable) and set a placeholder season title when notes go out before the new season's name is announced — so the patch notes you see always show a sensible title. <em>(Mostly an admin-side tool; the player-visible effect is simply correctly-titled, up-to-date patch notes.)</em></li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-31-0" class="pn-cv">v2.31.0</h2>
+          
+          <div class="pn-cb"><ul><li><em>Internal only — nothing players see or interact with changed.</em> Reorganized the project's own developer documentation (the giant <code>CLAUDE.md</code> was split into focused, on-demand files) so future work stays fast and well-organized. Also added behind-the-scenes cost tracking for the AI image-reading used by <code>/autobuild</code> (a log line per call, so spend is easy to audit) — invisible to players; no commands, draws, loadouts, or on-screen behaviour changed.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-30-2" class="pn-cv">v2.30.2</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Fixed a crash that could break whole commands.</strong> On pages with exactly two sub-pages, the ◀ ▶ arrows could make Discord reject the entire message — so <code>/settings</code>, <code>/draws</code>, <code>/calendar</code>, the colour panel and <code>/alerts</code> could fail to open. They work again (on a 2-page view the arrows simply grey out at the ends).</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-30-1" class="pn-cv">v2.30.1</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Small <code>/draw prices</code> fix.</strong> Tidied the Advanced Double Legendary page to match the intended layout — removed a few extra divider lines and corrected the "Strategy" heading.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-30-0" class="pn-cv">v2.30.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong><code>/draw prices</code> got a visual refresh.</strong> The Advanced Double Legendary Weapon Draw page is redesigned to a cleaner layout — three clearly-labelled purchase modes, the "note" and "trap" tips called out, and the strategy guide broken into its own easy-to-read lines (both CP regions).</li><li><strong>Every draw's heading is now in FULL CAPS</strong> (the lines with the legendary/mythic icon), so the whole <code>/draw prices</code> list reads consistently.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-29-0" class="pn-cv">v2.29.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Fixed swapped loadout pictures</strong> — the L-CAR 9 and Crossbow builds were showing each other's screenshots; they now show the right ones.</li><li>Behind the scenes: another round of fixes to the admin <code>/autobuild</code> tool (reads the weapon name and attachments more accurately) and some loadout data tidy-up. Nothing else players interact with directly.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-28-0" class="pn-cv">v2.28.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>New in <code>/draw prices</code>: the Advanced Double Legendary Weapon Draw.</strong> A full breakdown for both CP regions of the three ways to spin it — <strong>Regular Purchase</strong>, <strong>Advanced Purchase</strong>, and the "Trap" — with per-pull costs, running totals, and a strategy guide for getting all 4 items, just the 2 Legendaries, or 1 random Legendary at the lowest CP. It's on its own page — page through with the ◀ ▶ arrows.</li><li><strong>Pagination arrows now loop.</strong> Anywhere the bot has ◀ ▶ page arrows (draws, calendar, draw prices, settings, colours, loadout builds), pressing Next on the last page now wraps around to the first instead of doing nothing — and Prev on the first page jumps to the last.</li><li>Behind the scenes: a round of fixes to the admin <code>/autobuild</code> tool and richer Cloudinary image organisation (nothing players interact with directly).</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-27-0" class="pn-cv">v2.27.0</h2>
+          
+          <div class="pn-cb"><ul><li>Backend/ops only — nothing changes for players. Quieted the routine "reconnecting to Discord" status pings in Dior's private alert channel (they still get logged, just no longer posted) so a real problem stands out. Listed here only so no version number is skipped.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-26-0" class="pn-cv">v2.26.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>New admin tool: <code>/alerts</code>.</strong> The bot already messages Dior privately when something goes wrong (a crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a short ID (like <code>Jul20-03</code>), and <code>/alerts</code> lets Dior browse recent ones, download the full log as a file, and read a plain-language guide to what each colour (🟢🟡🟠🔴) means.</li><li><strong>Clearer alerts.</strong> "Bot online" now says whether it was a deliberate deploy/restart or an automatic recovery; the "reconnecting" alert makes clear the bot didn't crash (just the connection blipped); and how-long-it's-been-running reads naturally now (e.g. <code>2D 22H</code> instead of a raw minute count).</li><li>Admin-only — nothing changes for players.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-25-0" class="pn-cv">v2.25.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>New admin tool: near-1-click loadout adding.</strong> Submit a build screenshot and the bot reads off the weapon name, Gunsmith code, and attachments automatically instead of typing each one by hand — shows a review screen first (edit or cancel before anything saves), then uploads the image and creates the real loadout entry. Built, deployed, and live — Dior hasn't run the real end-to-end test in Discord yet, so treat this as "should work" rather than "confirmed working" until he has.</li><li>Behind the scenes: switched the image-reading AI from a separate paid Google AI Studio balance (which ran dry) to billing against the same Google Cloud account that already runs the bot's hosting — no visible change, just a billing fix so the feature can actually run.</li></ul>
+<hr></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-24-0" class="pn-cv">v2.24.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Fixed <code>/patch notes</code>' broken images.</strong> The current season's screenshots had gone dark (the original hosting link expired) — replaced with fresh, permanently-hosted copies, so they display reliably for everyone instead of only looking fine to whoever happened to still have cached access.</li><li>Behind-the-scenes Cloudinary cleanup — tidied up file organization so everything shows up properly grouped in the admin dashboard.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-23-0" class="pn-cv">v2.23.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The admin panel's weapon-build page is finally clear about images.</strong> It now explains right there that build screenshots have to be uploaded to Cloudinary separately (not through the bot), and that whatever name Cloudinary gives the file has to be typed in exactly. Adding or editing a build now also warns right away if that image can't be found yet, instead of silently saving a broken picture you'd only discover later.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-22-0" class="pn-cv">v2.22.0</h2>
+          <div class="pn-d">&amp; v2.22.1</div>
+          <div class="pn-cb"><ul><li><strong><code>/settings</code> now goes quietly inactive after 10 minutes of no use</strong> — leave the panel open and forget about it, and its buttons/dropdowns just stop responding on their own (no error message, nothing to click). Actively using it — clicking around, changing a setting — keeps it alive indefinitely; it's only a full 10 minutes of silence that puts it to sleep. Just run <code>/settings</code> again for a fresh one.</li><li><em>(v2.22.1 was a docs-only point release — no bot changes.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-21-0" class="pn-cv">v2.21.0</h2>
+          <div class="pn-d">&amp; v2.21.1</div>
+          <div class="pn-cb"><ul><li><strong><code>/settings</code> finally has a hide option</strong> — just like every other command, so you can keep your settings panel private if you want.</li><li><strong>Better weapon search</strong> — typing a short or partial name (like <code>loc</code>) now works instead of just failing; if it could mean more than one weapon, the bot tells you which ones instead of guessing.</li><li><strong>Command descriptions are tidier</strong> so they don't get cut off on mobile anymore.</li><li><strong>Download your avatar or banner in full resolution</strong> straight from the color menu, right next to the Refresh Colors button.</li><li><strong>Dior can no longer get accidentally locked out</strong> of someone else's settings/color panel while helping out — without ever seeing or changing that person's own data.</li><li>Friendlier, clearer messages when an action gets blocked.</li><li><code>/timestamp</code>'s <code>format</code> option renamed to <code>view</code> — clearer about what it actually controls.</li><li><strong>Smarter weapon search</strong> — typing a weapon-class word like "pistol", "smg", or "assault rifle" now shows every matching weapon in that category, not just ones whose own name happens to contain that word. (<code>/secondaries</code> stays exactly as its own command — we just made it easier to find.)</li><li><em>(v2.21.1 was a docs/ops-only point release — no bot changes.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-20-0" class="pn-cv">v2.20.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Fixed the admin Edit tool.</strong> Editing an existing loadout (or draw/calendar entry) from the <code>/manage</code> panel was silently failing with a "didn't respond in time" error — now it opens the edit form correctly.</li><li><strong>The bot keeps a closer eye on itself.</strong> On top of the instant crash/outage alerts, it now sends a quiet daily "still healthy" check-in (uptime, servers, latency, memory), and its new-home server now tracks memory usage over time — so a slow problem gets noticed early, not just a sudden one.</li><li><strong>Clearer health alerts</strong> (admin-side): colour-coded by real severity and timestamped, so a routine self-recovering blip is easy to tell apart from an actual problem.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-19-0" class="pn-cv">v2.19.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The bot is much more reliable now.</strong> It moved to a new, always-on home (Google Cloud) after the old free host kept dropping its connection to Discord — which is what caused those "application did not respond" errors. On the new host it connects in seconds and stays up.</li><li>Behind the scenes: the bot now watches its own health and alerts Dior instantly if anything goes wrong, so outages get caught fast instead of going unnoticed.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-18-0" class="pn-cv">v2.18.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The admin panel (<code>/manage</code>) is now locked down to Dior only</strong> — no one else can press its buttons anymore, even if the panel ends up visible to others.</li><li><strong><code>/settings</code> is now locked to whoever ran it</strong>, and the panel now expires after 15 minutes so an old, forgotten-about settings screen can't be clicked later.</li><li>The <strong>"Share Publicly" button is now "Show Everyone"</strong>, with a new custom icon.</li><li><strong><code>/timestamp</code> can now show plain, copyable text</strong> instead of the usual styled panel — add <code>format: Text</code> when using the command.</li><li><em>(v2.18.1–v2.18.2 were docs/tooling point releases; v2.18.3 added admin-side connection diagnostics — nothing players interact with directly.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-17-0" class="pn-cv">v2.17.0</h2>
+          
+          <div class="pn-cb"><ul><li>Fixed "This interaction failed" errors that could hit any command — the new color panel was overloading the bot's free hosting and making unrelated commands time out. It's now much lighter.</li><li>The color panel's Banner, Display Name, and Nameplate previews are now sized consistently.</li><li><em>(v2.17.2 was a small memory optimization; v2.17.3 was docs-only.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-16-0" class="pn-cv">v2.16.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>New <code>/colors</code> command</strong> (and a "View Colors" button in <code>/settings</code>): see the real colors pulled from your avatar, banner, display name, nameplate, and decoration, each with a tap-to-copy hex code.</li><li>Two new accent-color styles you can pick in <code>/settings</code>: your Nitro <strong>display-name gradient</strong>, or a <strong>random one</strong> from your profile each time.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-14-0" class="pn-cv">v2.14.0</h2>
+          
+          <div class="pn-cb"><ul><li>Patch-notes screenshots no longer break when the original image link dies — they're backed up now.</li><li>Accent colors pulled from your avatar/banner look richer and truer to the image.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-13-0" class="pn-cv">v2.13.0</h2>
+          
+          <div class="pn-cb"><ul><li>Loadout cards got a <strong>"Browse other builds"</strong> dropdown so you can jump between weapons without re-running the command.</li><li><code>/all</code> now lists weapons in alphabetical order.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-12-0" class="pn-cv">v2.12.0</h2>
+          
+          <div class="pn-cb"><ul><li>Fresh color scheme across the seasonal commands (Calendar, Draws, Draw Prices, Patch Notes, Season End) and clearer, more consistent command wording.</li><li>Fixed a crash when editing an item in the admin panel.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-10-0" class="pn-cv">v2.10.0</h2>
+          
+          <div class="pn-cb"><ul><li>Big redesign of <strong><code>/draw prices</code></strong> (cleaner per-draw breakdowns, 2 pages), the <strong><code>/manage</code></strong> admin panel (safer edits with confirm/undo steps), and <strong><code>/settings</code></strong> (2 pages, more preferences).</li><li>Draw images are now backed up so they don't break when the original link dies.</li><li><em>(v2.11.1 was a follow-up polish pass across those same commands.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-9-0" class="pn-cv">v2.9.0</h2>
+          
+          <div class="pn-cb"><ul><li>The admin <code>/update</code> command was folded into <code>/manage</code>, so there's one admin command instead of two.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-8-0" class="pn-cv">v2.8.0</h2>
+          <div class="pn-d">&amp; v2.8.1</div>
+          <div class="pn-cb"><ul><li>DMZ builds can now show range-based rank badges (Best/Top Close Range, Best/Top Mid-Long Range).</li><li><em>(v2.8.1 was a small fix to how those DMZ badges are scoped.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-7-0" class="pn-cv">v2.7.0</h2>
+          <div class="pn-d">&amp; v2.7.1</div>
+          <div class="pn-cb"><ul><li>Fixed DMZ loadouts showing a fake "Gunsmith Code" that couldn't actually be used in-game.</li><li>Added a big batch of real weapon data: full DMZ builds for the first time ever (SO-14, Type 19, AS VAL, AK117, Fennec, J358, Outlaw), extra builds for PKM and SKS, and several new Secondaries (Machine Pistol, Crossbow, Dobvra, Shorty) plus a new Shotgun (R9-0).</li><li>Fixed two weapons that had the wrong name saved: "GS50" is actually <strong>.50 GS</strong>, and "LCAR" is actually <strong>L-CAR 9</strong>.</li><li><em>(v2.7.1 was an internal repo change only.)</em></li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-6-0" class="pn-cv">v2.6.0</h2>
+          
+          <div class="pn-cb"><ul><li>7 weapons that only had a badge (no real build yet) now show up in the bot with a "Coming Soon" placeholder instead of not appearing at all.</li><li>Added this very changelog system.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-5-1" class="pn-cv">v2.5.1</h2>
+          
+          <div class="pn-cb"><ul><li>Added a new <strong>"Toxic"</strong> badge for unbalanced/cheese weapon builds.</li><li>Badges added in bulk to 28 weapons across every category.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-5-0" class="pn-cv">v2.5.0</h2>
+          
+          <div class="pn-cb"><ul><li>Behind-the-scenes speed and stability improvements. Nothing visually different.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-4-0" class="pn-cv">v2.4.0</h2>
+          
+          <div class="pn-cb"><ul><li>Badge system got smarter — categories aren't stuck at "Top 3" anymore, some can go up to Top 5+.</li><li>Editing a weapon's badges now updates ALL builds of that weapon, not just one.</li><li>Search got more forgiving — typos and missing spaces (like "dlq" for "DL Q33") now still find the right weapon.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-3-1" class="pn-cv">v2.3.1</h2>
+          
+          <div class="pn-cb"><ul><li>Wrote up the previous update's design decisions for the record. No user-facing change.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-3-0" class="pn-cv">v2.3.0</h2>
+          
+          <div class="pn-cb"><ul><li>Big redesign of the weapon loadout card: weapon name front and center, new badges shown under it, a new "Copy Attachments" button, and cleaner section headings.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-2-1" class="pn-cv">v2.2.1</h2>
+          
+          <div class="pn-cb"><ul><li>Weapon categories (AR, SMG, Sniper, etc.) each got their own accent color.</li><li>Groundwork laid for a future <code>/secondaries</code> command.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-2-0" class="pn-cv">v2.2.0</h2>
+          
+          <div class="pn-cb"><ul><li>Fixed a couple of real crashes that could take the bot offline.</li><li>Fixed "Share Publicly" not working in some servers.</li><li>General visual cleanup across several commands.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-1-0" class="pn-cv">v2.1.0</h2>
+          
+          <div class="pn-cb"><ul><li>Fixed the bot not showing up at all when DMed directly or added as a personal app — it now works everywhere it's supposed to.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-0-0" class="pn-cv">v2.0.0</h2>
+          
+          <div class="pn-cb"><ul><li>Complete visual overhaul of the entire bot using Discord's newest UI system.</li><li>Weapon loadouts moved to a proper database instead of a spreadsheet.</li><li>This is the point Harkirat started building the bot together with Claude.</li></ul>
+<hr>
+<h3 id="earlier-history-solo-built" class="plain"><span class="ht">Earlier history (solo-built)</span><a class="anchor" href="#earlier-history-solo-built" aria-label="Link to this section">¶</a></h3></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-7-0" class="pn-cv">v1.7.0</h2>
+          
+          <div class="pn-cb"><ul><li>Added the <code>/timestamp</code> command for converting dates/times across timezones.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-6-0" class="pn-cv">v1.6.0</h2>
+          
+          <div class="pn-cb"><ul><li>Fixed the bot going to sleep on its free hosting plan.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-5-0" class="pn-cv">v1.5.0</h2>
+          
+          <div class="pn-cb"><ul><li>Added screenshots for weapon loadouts.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-4-0" class="pn-cv">v1.4.0</h2>
+          
+          <div class="pn-cb"><ul><li>Big bug-fix pass, plus fuzzy search, inline fields, and a green Copy button. The point the bot felt like a real, usable release.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-3-0" class="pn-cv">v1.3.0</h2>
+          
+          <div class="pn-cb"><ul><li>Built out the original embed-design system the bot used before Components V2 existed.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-2-0" class="pn-cv">v1.2.0</h2>
+          
+          <div class="pn-cb"><ul><li>Added autocomplete, fuzzy search, and per-category weapon commands, plus follow-up bug fixes.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-1-0" class="pn-cv">v1.1.0</h2>
+          
+          <div class="pn-cb"><ul><li>Added most of the weapon loadout data, stored in a spreadsheet.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v1-0-0" class="pn-cv">v1.0.0</h2>
+          
+          <div class="pn-cb"><ul><li>Original bot launch: just one weapon (LOCUS), to prove the bot worked at all.</li></ul></div>
+        </article></div>
     </main>
   </div>
-
   <footer class="foot">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <b>dior</b></p>
     <p class="disc">Dior&#8217;s Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, or Discord Inc.</p>
@@ -1778,16 +1794,91 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   <span class="tt-ar" aria-hidden="true"><i></i><i></i></span>
 </button>
 
+<script src="../assets/motion.min.js"></script>
 <script>
 (function(){
-  /* The same progress/rail tracker the legal pages run. It keys on section id
-     rather than on an index into a flat list, because the index is rendered twice
-     (desktop rail + mobile panel) and exactly one copy is visible at any width —
-     an index-based version highlighted whichever copy sat later in the DOM. */
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ── boot sequence ───────────────────────────────────────────────────
+     Decoration, and it is treated as such: it only ever runs when script is
+     available AND motion is welcome, it is skipped on any repeat visit within
+     the session, and it can never be the reason content is not on screen. */
+  (function boot(){
+    if(reduce) return;
+    try{ if(sessionStorage.getItem('db-booted')) return; }catch(e){ return; }
+    var box=document.getElementById('boot'), inn=document.getElementById('bootin');
+    if(!box||!inn) return;
+    var lines=["DIOR/BUILDS ORDNANCE TERMINAL","auth .............. ok","record ............ changelog-summary.md","operator .......... PATCH NOTES","mounting log ......"];
+    box.classList.add('go');
+    inn.innerHTML=lines.map(function(l){return '<b>'+l+'</b>'}).join('')
+      +'<span class="boot-cur"></span>';
+    var els=[].slice.call(inn.querySelectorAll('b')), i=0;
+    var iv=setInterval(function(){
+      if(i<els.length){ els[i].style.opacity=1; i++; return; }
+      clearInterval(iv);
+      setTimeout(function(){
+        box.style.transition='opacity .45s'; box.style.opacity=0;
+        setTimeout(function(){ box.classList.remove('go'); },460);
+      },260);
+    },130);
+    try{ sessionStorage.setItem('db-booted','1'); }catch(e){}
+  })();
+
+  /* ── reveal on scroll ────────────────────────────────────────────────
+     Motion One's inView where available, IntersectionObserver otherwise, and
+     nothing at all if neither exists — in which case .rv-armed is never added
+     and every entry is simply visible. */
+  (function reveal(){
+    if(reduce) return;
+    var items=[].slice.call(document.querySelectorAll('[data-rv]'));
+    if(!items.length||!('IntersectionObserver' in window)) return;
+    document.body.classList.add('rv-armed');
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(en){
+        if(!en.isIntersecting) return;
+        var el=en.target;
+        io.unobserve(el);
+        if(window.Motion&&window.Motion.animate){
+          window.Motion.animate(el,{opacity:[0,1],transform:['translateY(14px)','none']},
+            {duration:.55,easing:[.2,.7,.3,1]});
+          el.classList.add('rv-in');
+        } else { el.classList.add('rv-in'); }
+      });
+    },{rootMargin:'0px 0px -8% 0px',threshold:.04});
+    items.forEach(function(el){ io.observe(el); });
+    /* Anything already above the fold at load is revealed immediately — waiting
+       for a scroll that may never come is how a hero ends up invisible. */
+    requestAnimationFrame(function(){
+      items.forEach(function(el){
+        if(el.getBoundingClientRect().top<innerHeight){ el.classList.add('rv-in'); io.unobserve(el); }
+      });
+    });
+  })();
+
+  /* ── live UTC clock ──────────────────────────────────────────────────
+     The reference design's own detail. Rendered by script only, so it never
+     ships a stale time in the HTML. */
+  (function clock(){
+    var el=document.getElementById('clk');
+    if(!el) return;
+    function t(){
+      var d=new Date();
+      el.textContent=d.toISOString().slice(11,19)+' UTC';
+    }
+    t(); setInterval(t,1000);
+  })();
+
+  /* ── scroll tracking: progress bar, rail, spine, back-to-top ─────────
+     Keys on section id rather than an index into a flat list, because the index
+     is rendered twice (desktop rail + mobile panel) and exactly one copy is
+     visible at any width — an index-based version highlighted whichever copy sat
+     later in the DOM, which on a phone was the wrong one. */
   var prog=document.getElementById('prog');
   var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
   var slots=[].slice.call(document.querySelectorAll('.slot'));
   var rail=document.querySelector('.rail'), lastId=null;
+  var fill=document.getElementById('tlfill');
+  var tlItems=[].slice.call(document.querySelectorAll('.tl-item'));
   var ids=[],seen={};
   slots.forEach(function(a){
     var id=a.getAttribute('href').slice(1);
@@ -1812,6 +1903,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     for(var j=0;j<slots.length;j++){
       slots[j].classList.toggle('on', slots[j].getAttribute('href').slice(1)===curId);
     }
+    /* The spine fills to the lowest node that has crossed the reading line. */
+    if(fill&&tlItems.length){
+      var last=null;
+      for(var k=0;k<tlItems.length;k++){
+        if(tlItems[k].getBoundingClientRect().top<=160) last=tlItems[k];
+        tlItems[k].classList.toggle('on', tlItems[k]===last);
+      }
+      var wrapEl=document.querySelector('.tl');
+      if(last&&wrapEl){
+        var y=last.getBoundingClientRect().top-wrapEl.getBoundingClientRect().top+8;
+        fill.style.height=Math.max(0,y)+'px';
+      } else { fill.style.height='0px'; }
+    }
     if(rail&&curId&&curId!==lastId){
       lastId=curId;
       var sEl=rail.querySelector('.slot[href="#'+curId+'"]');
@@ -1821,16 +1925,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
         else if(et+eh>rail.scrollTop+rail.clientHeight-pad)
           want=et+eh-rail.clientHeight+pad;
         if(want!==null){
-          if(rail.scrollTo) rail.scrollTo({top:want,
-            behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});
+          if(rail.scrollTo) rail.scrollTo({top:want,behavior:reduce?'auto':'smooth'});
           else rail.scrollTop=want;
         }
       }
     }
     var curEl=document.getElementById('railcur');
     if(curEl){
-      var t=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
-      curEl.textContent=t?t.textContent:'';
+      var t2=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
+      curEl.textContent=t2?t2.textContent:'';
     }
     queued=false;
   }
@@ -1839,8 +1942,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
       top.classList.remove('fire');
       void top.offsetWidth;
       top.classList.add('fire');
-      var slow=matchMedia('(prefers-reduced-motion:reduce)').matches;
-      scrollTo({top:0,behavior:slow?'auto':'smooth'});
+      scrollTo({top:0,behavior:reduce?'auto':'smooth'});
     });
     top.addEventListener('animationend',function(){ top.classList.remove('fire'); });
   }
