@@ -2926,13 +2926,36 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       });
     },{rootMargin:'0px 0px -8% 0px',threshold:.04});
     items.forEach(function(el){ io.observe(el); });
-    /* Anything already above the fold at load is revealed immediately — waiting
-       for a scroll that may never come is how a hero ends up invisible. */
-    requestAnimationFrame(function(){
+
+    function sweep(){
       items.forEach(function(el){
+        if(el.classList.contains('rv-in')) return;
         if(el.getBoundingClientRect().top<innerHeight){ el.classList.add('rv-in'); io.unobserve(el); }
       });
+    }
+    /* Anything already above the fold at load is revealed immediately — waiting
+       for a scroll that may never come is how a hero ends up invisible. */
+    requestAnimationFrame(sweep);
+    /* A page loaded in a BACKGROUND tab gets throttled frames and fires no
+       intersection callbacks at all, so the sweep above can be skipped entirely;
+       run it again when the page is actually looked at. */
+    document.addEventListener('visibilitychange',function(){
+      if(!document.hidden) sweep();
     });
+
+    /* ⚠️ SAFETY NET, and it is the important line in this block.
+       Everything above hides content first and reveals it on a signal. If that
+       signal never arrives — a hidden container, a throttled frame, an observer
+       that never fires, a script error later in the file — the reader is left
+       with a page of invisible entries and no way to recover. An animation is
+       never worth that risk, so the armed state simply expires: after 2.5s the
+       hiding class is dropped wholesale and anything still unrevealed becomes
+       visible. Items already revealed keep their transition and look unchanged.
+       The worst case is now "it appeared without animating", never "it is gone".
+       This is deliberately NOT verified by the preview pane, which cannot fire
+       intersection callbacks while hidden — it exists precisely because that
+       failure mode cannot be tested away. */
+    setTimeout(function(){ document.body.classList.remove('rv-armed'); },2500);
   })();
 
   /* ── live UTC clock ──────────────────────────────────────────────────
