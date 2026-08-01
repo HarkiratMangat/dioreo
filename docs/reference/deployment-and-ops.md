@@ -269,12 +269,12 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   (`journalctl -u google-cloud-ops-agent-opentelemetry-collector | grep -i denied`) before suspecting the
   query. **Still deferred:** guest disk-usage peaks in `vmpeaks.sh` (the agent now provides the metric).
 
-## Local dev bot — `Dio (Dev)` (built 2026-07-26 13:45 EDT, first-ever local instance)
+## Local dev bot — `Dioreo (Dev)` (built 2026-07-26 13:45 EDT, first-ever local instance)
 *Authoritative setup reference. The one-paragraph invariant version lives in the root `CLAUDE.md`.*
 
 Before 2026-07-26 13:45 EDT there was **no way to try a change before it hit prod** — every visual/behavioural
 check meant merging, deploying to the VM, and eyeballing the live bot Harkirat's own users were using.
-`Dio (Dev)` closes that: a **second, fully separate Discord application** that runs the same codebase
+`Dioreo (Dev)` closes that: a **second, fully separate Discord application** that runs the same codebase
 against isolated local data, so any branch or PR can be exercised live in Discord first.
 
 **Run it:**
@@ -294,7 +294,7 @@ node --watch --env-file=.env.dev index.js
 **What's separate from prod, and what's shared:**
 | Thing | Dev | Note |
 |---|---|---|
-| Discord application | `Dio (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
+| Discord application | `Dioreo (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
 | Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). Seeded by `mongodump` (read-only on prod) → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'` |
 | Alert webhook | its own `LOG_WEBHOOK_URL`, own channel | must NOT be prod's — see the dotenv trap below |
 | Emojis | its own 72 application-emoji copies | same names, different ids — see below |
@@ -328,7 +328,7 @@ before deploying" rule only ever applied to same-token runs.
 `scripts/devCommands.js` (added 2026-07-26 21:47 EDT).** Slash-command registration is stored on
 Discord's side against the **application**, not the process: `index.js` writes it once per boot with
 `rest.put(Routes.applicationCommands(client.user.id), …)` and Discord keeps it indefinitely. Because the
-bot is user-installed, `Dio (Dev)`'s full command list therefore follows Harkirat into every server and DM,
+bot is user-installed, `Dioreo (Dev)`'s full command list therefore follows Harkirat into every server and DM,
 duplicating prod's identical list, whether or not anything is running. Picking one just yields
 "The application did not respond" after the 3s interaction timeout.
 
@@ -349,8 +349,8 @@ token via the backfill behavior described above), and it aborts if `.env.dev`'s 
 > change involved. It happened to be 20 on 2026-07-26; treat any figure written down as a snapshot and
 > re-derive from the running app. (This is why "20 commands" used to appear as a standing fact here.)
 
-`Dior's Builds` instead of `Dio (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
-`Dio (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
+`Dior's Builds` instead of `Dioreo (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
+`Dioreo (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
 
 **Secrets hygiene:** `.env.dev` is covered by `.gitignore`'s `.env.*` glob, by a `.git/info/exclude`
 entry (so it stays ignored even on branches that predate that glob), and by the `block-env-staging`

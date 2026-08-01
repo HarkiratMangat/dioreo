@@ -26,6 +26,19 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.46.0 — July 31, 2026
+- **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch
+  between them, and Draws is further split into New/Returning sections.
+- **A season-end date typo could corrupt every other date on the page.** Fixed — a bad date is now
+  rejected instead of silently guessing "right now."
+- **Calendar pages can show a banner image**, set per page. Admin-side.
+- **Draws admin panel is smarter about thumbnails** — if you leave the image blank, it'll now reuse a
+  cached one even from a slightly different or typo'd title, not just an exact match.
+- **Patch notes' "Additional Info" can auto-format into a real weapons/attachments/changes layout** —
+  admin-side, opt-in, doesn't change anything for existing notes.
+- **Behind the scenes: the admin panel's bulk-paste help got a real rewrite** — a proper reference
+  guide instead of a plain-text reply, reachable from every relevant page.
+
 ## v2.45.0 — July 30, 2026
 - **A draw title with a "/" in it no longer gets half-lowercased.** "Jupiter Cannon/Void Implosion
   Draw" was showing up as "Jupiter Cannon/void Implosion Draw" — fixed.

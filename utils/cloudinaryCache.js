@@ -142,9 +142,80 @@ async function resolveThumbnail(title, providedUrl) {
         return { url: providedUrl.trim(), cached: false, error: result.error, reused: false };
     }
 
-    const cachedUrl = await getCachedUrl(title);
-    if (cachedUrl) return { url: cachedUrl, cached: true, error: null, reused: true };
+    // Fuzzy fallback (added 2026-07-31 17:20 EDT, Harkirat's request) -- an exact-slug miss no longer
+    // means "nothing cached," it means "try a near-match first." A typo or a slight rewording of the
+    // same draw's title (e.g. re-typing it in a later bulk paste) used to silently fail this lookup
+    // and force a fresh Cloudinary upload of the exact same image under a second public_id.
+    const match = await getCachedUrlFuzzy(title);
+    if (match) return { url: match.url, cached: true, error: null, reused: true, matchedTitle: match.exact ? null : match.matchedTitle };
     return { url: null, cached: false, error: 'No URL provided and no cached image found for this draw name.', reused: false };
+}
+
+// Character-level similarity (Levenshtein-based), NOT utils/search.js's word-overlap isSameDrawTitle
+// -- that one is built for reworded/extra-word title variants of the SAME draw ("same content,
+// different wording"), which is the wrong tool for "same title, off by a typo or a small tweak."
+// Plain iterative Levenshtein (no recursion, no external dep) is plenty fast at title-length strings.
+function levenshteinDistance(a, b) {
+    const m = a.length, n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    let prevRow = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+        const currRow = [i];
+        for (let j = 1; j <= n; j++) {
+            currRow[j] = a[i - 1] === b[j - 1]
+                ? prevRow[j - 1]
+                : 1 + Math.min(prevRow[j - 1], prevRow[j], currRow[j - 1]);
+        }
+        prevRow = currRow;
+    }
+    return prevRow[n];
+}
+
+function titleSimilarity(a, b) {
+    const maxLen = Math.max(a.length, b.length) || 1;
+    return 1 - levenshteinDistance(a, b) / maxLen;
+}
+
+// "~90%... or something similar as per your judgement" (Harkirat's own framing) -- 0.75 rather than
+// a literal 0.9, since "slightly adjust it" (his own example) reads as more than single-character
+// typo tolerance: a short added/removed word on a longer title already drops below 90% similarity on
+// a plain edit-distance ratio, and this is matching against the ADMIN'S OWN prior title, a low-risk
+// surface (worst case on a false match is reusing the wrong-but-still-real cached thumbnail, not
+// corrupting data) -- worth erring toward matching over missing.
+const FUZZY_SIMILARITY_THRESHOLD = 0.75;
+
+// Best-effort near-match against everything currently cached under temp_draws/ -- only runs on an
+// exact-slug miss (getCachedUrl already covers the common case with a single direct lookup, no need
+// to list-scan every time). Never throws; a Cloudinary listing hiccup here degrades to "no match"
+// exactly like a real miss, same fail-open philosophy as every other lookup in this file.
+async function getCachedUrlFuzzy(title) {
+    const exactUrl = await getCachedUrl(title);
+    if (exactUrl) return { url: exactUrl, matchedTitle: title, exact: true };
+
+    try {
+        const targetSlug = slugify(title);
+        const assets = await listCachedAssets();
+        let best = null;
+        let bestScore = 0;
+        for (const asset of assets) {
+            const assetSlug = asset.public_id.slice(FOLDER.length + 1); // strip "temp_draws/"
+            const score = titleSimilarity(targetSlug, assetSlug);
+            if (score > bestScore) { bestScore = score; best = asset; }
+        }
+        if (best && bestScore >= FUZZY_SIMILARITY_THRESHOLD) {
+            return {
+                url: best.secure_url,
+                matchedTitle: best.public_id.slice(FOLDER.length + 1).replace(/-/g, ' '),
+                exact: false,
+                score: bestScore
+            };
+        }
+        return null;
+    } catch (err) {
+        console.error(`Cloudinary fuzzy thumbnail lookup failed for "${title}": ${safeErrorMessage(err)}`);
+        return null;
+    }
 }
 
 // Lists every asset currently sitting in temp_draws/ -- paginates via next_cursor since Cloudinary

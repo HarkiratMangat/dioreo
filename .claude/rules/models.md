@@ -18,10 +18,17 @@ the same change**, or it will not actually save.
 
 ## Data models (`models/`)
 - `SeasonalData.js` — one global document (`docType: 'global'`). Holds
-  `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`, `bpEnd`/`rankEnd`/`dmzEnd`,
+  `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`, `bpEnd`/`rankEnd`/`dmzEnd` (each paired with
+  a `${field}TBD` boolean, live + draft — added 2026-07-31 14:00 EDT, see design-decisions.md),
   `patchNotes[]` (title = season # & name, NOT "Balance Changes for..." — see
   patchnotes.js), `newDraws[]`/`returningDraws[]`, `calendar[]` (with `endDate`/
-  `isOngoing` for "All Season" events).
+  `isOngoing` for "All Season" events, plus **`category`** — `'draw'|'event'|'playlist'`,
+  default `'event'`, added 2026-07-31 12:10 EDT for the 3-section calendar redesign; set via the
+  bulk parser's `d•`/`p•`/`e•` prefix or the single add/edit modal's Category field — see
+  `.claude/rules/design-decisions.md`), and `drawsBannerUrl`/`eventsBannerUrl`/`playlistsBannerUrl`
+  (added 2026-07-31 17:20 EDT — one optional per-page banner image for `/calendar`, re-hosted via
+  `utils/calendarBannerCache.js`, blank = show nothing; see that file + `commands/manage.js`'s
+  "Banners" action).
   - **`draft` (added 2026-07-30 22:24 EDT)** — a next-season staging sub-document mirroring
     `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`/`bpEnd`/`rankEnd`/`dmzEnd`/`newDraws[]`/
     `returningDraws[]`/`calendar[]` (no `patchNotes` — that already has its own overlap-safe "Add New
@@ -35,9 +42,10 @@ the same change**, or it will not actually save.
   together (Option A design decision — see `.claude/rules/design-decisions.md`). `timestampVisibility`,
   `settingsVisibility`, `defaultRegion`, `loadoutVisibility` are each independent.
   `calendarEventFilter` (`'active'|'all'`, default `'all'`) backs `/calendar`'s
-  "Show Active Events Only"/"Show All Events" toggle — deliberately NOT exposed in
-  `/settings` (Harkirat's request); `/calendar`'s own button reads/writes it directly,
-  it's the only place this field is ever touched. `accentColorStyle`
+  "Show Active Events Only"/"Show All Events" filter — **moved to `/settings`' Preferences page
+  entirely 2026-07-31 14:00 EDT** (reverses the original "deliberately NOT exposed in /settings"
+  call from the same session's earlier 3-section redesign); `/calendar` just reads it, `/settings`'
+  toggle is the only place it's ever written now. `accentColorStyle`
   (`'avatar'|'banner'|'preset'`, default `'avatar'`; `'default'` is the old value name
   for `'preset'`, still treated identically) plus the independently-cached
   `avatarColorHex`/`avatarColorSource` and `bannerColorHex`/`bannerColorSource` pairs

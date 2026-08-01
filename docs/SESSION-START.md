@@ -74,7 +74,7 @@ New session on Dior's Builds. Before anything else:
        version. We never commit directly to `main` anymore (a rare direct-to-`main` hotfix commit is
        the one exception, still gated like a push).
      - **Test** = running the branch on the **local dev bot** (`node --watch --env-file=.env.dev index.js`)
-       and exercising it live in Discord. Free, no approval — added 2026-07-26 13:45 EDT when `Dio (Dev)`
+       and exercising it live in Discord. Free, no approval — added 2026-07-26 13:45 EDT when `Dioreo (Dev)`
        was built. **This is now the default before asking to push/merge anything user-visible**, instead
        of shipping untested or asking Harkirat to eyeball prod. `--watch` auto-restarts on every save and
        branch switch. Setup + caveats: `docs/reference/deployment-and-ops.md`.
@@ -96,7 +96,7 @@ New session on Dior's Builds. Before anything else:
        ready`/handleBotReady are the real "connected" proof, not just "process up") → confirm exactly
        ONE instance is running **on the PROD token** (the VM is it — stop any local run that uses prod's
        `.env`). ⚠️ Corrected 2026-07-26 13:45 EDT: this rule is **per-token**, not per-machine. The local
-       dev bot (`Dio (Dev)`, its own application + token, run via `node --watch --env-file=.env.dev index.js`)
+       dev bot (`Dioreo (Dev)`, its own application + token, run via `node --watch --env-file=.env.dev index.js`)
        does NOT conflict and does NOT need stopping — running it alongside prod is the intended setup.
        **Separate
        and optional per merge** — a merged version can sit undeployed indefinitely (docs-only being the

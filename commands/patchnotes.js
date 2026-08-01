@@ -51,6 +51,85 @@ function applyInfoAliases(text) {
         .replace(/(^|[\s\n])n:/gi, (_, pre) => `${pre}${emojis.nerf}`);
 }
 
+// Additional Info auto-formatting (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply;
+// PARSER REWRITTEN same day, direct correction) -- renders into Harkirat's decided output structure
+// (his own reference screenshot, `local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): a
+// `### Additional Changes` heading, `__**Weapon**__` per weapon, its attachment name(s) as plain
+// lines, and each change as `> {buff/nerf emoji} details`.
+//
+// The FIRST version of this parser required every weapon/attachment/change on its OWN physical
+// line -- which directly caused a real submission mistake (a comma-separated one-liner got read as
+// a single giant weapon name). Harkirat's direct correction: match the SAME comma-delimited mental
+// model draws/calendar bulk imports already use -- one weapon's ENTIRE block is one line, comma-
+// separated; only a NEW weapon needs its own line.
+//
+// OPT-IN, not a format change to every entry -- only triggers when the admin actually uses the new
+// `# Weapon Name` line marker. With no `#` line anywhere, this is a no-op beyond the existing b:/n:
+// alias, so every pre-existing free-typed entry (most of them are just a one-line blurb) keeps
+// rendering exactly as it always has.
+//
+// Grammar, once at least one `#` line is present:
+//   `# Weapon, Attachment, n:/b: text, n:/b: text2, Attachment2, n:/b: text3` -- ONE line, comma-
+//   separated. First segment (after `#`) is the weapon name. Every segment after that is EITHER a
+//   new attachment name, or -- if it starts with `b:`/`n:` -- a change line under whichever
+//   attachment came most recently in THIS line. A new plain (non-b:/n:) segment always starts a new
+//   attachment, so any number of attachments/changes can ride on one weapon's line.
+//   A plain NEWLINE (a new `# ` line) starts the next weapon -- weapons are never comma-joined with
+//   each other. Lines typed BEFORE the first `#` marker are kept as free prose above the structured
+//   block, not discarded.
+function formatAdditionalInfo(text) {
+    const raw = (text || '').trim();
+    if (!raw) return '';
+    const lines = raw.split('\n');
+    const hasWeaponMarker = lines.some(l => /^#\s*\S/.test(l.trim()));
+    if (!hasWeaponMarker) return applyInfoAliases(raw);
+
+    const preambleLines = [];
+    const weaponBlocks = [];
+    let seenWeapon = false;
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) continue;
+
+        const weaponMatch = line.match(/^#\s*(.+)$/);
+        if (!weaponMatch) {
+            if (!seenWeapon) { preambleLines.push(line); continue; }
+            // A stray non-`#` line after weapons have already started -- graceful degradation
+            // (kept verbatim, alias-applied) rather than dropped or crashed on.
+            weaponBlocks.push(applyInfoAliases(line));
+            continue;
+        }
+        seenWeapon = true;
+
+        const segments = weaponMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+        const weaponName = segments.shift();
+        const attachments = []; // { name, changes: [] }
+        let currentAttachment = null;
+        for (const seg of segments) {
+            const changeMatch = seg.match(/^(b|n):\s*(.+)$/i);
+            if (changeMatch && currentAttachment) {
+                const emoji = changeMatch[1].toLowerCase() === 'b' ? emojis.buff : emojis.nerf;
+                currentAttachment.changes.push(`> ${emoji} ${changeMatch[2].trim()}`);
+                continue;
+            }
+            // Anything else (including a stray b:/n: segment with no attachment yet -- graceful
+            // degradation, not a crash: it just becomes an oddly-named attachment the admin will
+            // immediately notice and fix) starts a new attachment under this weapon.
+            currentAttachment = { name: seg, changes: [] };
+            attachments.push(currentAttachment);
+        }
+
+        const attachmentLines = attachments.map(a => [a.name, ...a.changes].join('\n')).join('\n');
+        weaponBlocks.push(`__**${weaponName}**__\n${attachmentLines}`);
+    }
+
+    const parts = [];
+    if (preambleLines.length) parts.push(applyInfoAliases(preambleLines.join('\n')));
+    parts.push(`### Additional Changes\n${weaponBlocks.join('\n')}`);
+    return parts.join('\n\n');
+}
+
 function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT, isEphemeral = false) {
     // Array Trimming: Prevent dropdown menu overload by grabbing only the 5 most recent records
     const recentPatches = seasonalDoc.patchNotes.slice(-5).reverse();
@@ -72,23 +151,36 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     // the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering
     // "Balance Changes — Balance Changes for...".
     const cleanTitle = displayTitle(activePatch);
+    // Layout reordered per notes L181 (2026-07-31 12:10 EDT): the release-timestamp line moved from
+    // right under the title to right under the images (same "section" as the carousel now), and a
+    // permanent "subject to change" disclaimer was added to the Additional Info section. Dividing up
+    // JUST that disclaimer alone when nothing else was typed felt wrong (Harkirat's own call), so the
+    // divider before Additional Info is conditional on real typed info existing -- with none, the
+    // disclaimer rides directly under the title with no divider of its own.
+    const SUBJECT_TO_CHANGE_DISCLAIMER = '-# NOTE: Final patch notes are subject to change';
+    const hasInfo = activePatch.description && activePatch.description.trim().length > 0;
+
     const components = [
         // headingLevel 2 (`## `, was `# `) for design consistency with /draw prices' own drop --
         // 2026-07-12, Harkirat's request to keep all seasonal command titles at the same size.
-        buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2),
-        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` }
+        buildTitleBlock(cleanTitle, emojis.patchNotes, 'Balance Changes', 2)
     ];
 
-    // Optional additional info section — completely omitted (no placeholder text) when blank
-    if (activePatch.description && activePatch.description.trim().length > 0) {
-        components.push({ type: 10, content: applyInfoAliases(activePatch.description) });
+    if (hasInfo) {
+        components.push(
+            { type: 14, spacing: 2, divider: true },
+            { type: 10, content: `${formatAdditionalInfo(activePatch.description)}\n${SUBJECT_TO_CHANGE_DISCLAIMER}` }
+        );
+    } else {
+        components.push({ type: 10, content: SUBJECT_TO_CHANGE_DISCLAIMER });
     }
 
     components.push(
         { type: 14, spacing: 2, divider: true },
         { type: 12, items: carouselItems }, // NATIVE MEDIA CAROUSEL INJECTION
+        { type: 10, content: `-# Patch notes released on <t:${releaseUnix}:f>` },
         { type: 14, spacing: 2, divider: true },
-        { type: 10, content: `-# Select from the list below to view previous balance changes` }
+        { type: 10, content: `-# Select from the list below to view **previous balance changes**` }
     );
 
     const containerPayload = {
@@ -123,6 +215,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
 module.exports = {
     cleanPatchTitle,
     displayTitle,
+    formatAdditionalInfo,
 
     // COMMAND DEFINITION: Base 'patch', Subcommand 'notes'
     data: new SlashCommandBuilder()

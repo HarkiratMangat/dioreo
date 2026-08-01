@@ -3,7 +3,7 @@
 // Why this exists: slash-command registration lives on Discord's servers, attached to the
 // APPLICATION, not to the running process. `index.js` writes it once per boot with
 // `rest.put(Routes.applicationCommands(client.user.id), { body: payload })` and Discord keeps it
-// forever after — so killing the dev bot does NOT remove `Dio (Dev)`'s commands from the `/` picker.
+// forever after — so killing the dev bot does NOT remove `Dioreo (Dev)`'s commands from the `/` picker.
 // Since it's a user-installed app (`setIntegrationTypes([1])`), those duplicates follow Harkirat into
 // every server and DM, sitting right next to prod's identical command list. This script empties the
 // dev app's registry so the picker is clean while he isn't testing.
@@ -86,7 +86,7 @@ async function main() {
     const rest = new REST({ version: '10' }).setToken(devToken);
 
     // Identify the app from the token rather than hardcoding an id, and print it before doing
-    // anything destructive -- if this ever says "Dior's Builds" instead of "Dio (Dev)", stop.
+    // anything destructive -- if this ever says "Dior's Builds" instead of "Dioreo (Dev)", stop.
     const app = await rest.get(Routes.currentApplication());
     console.log(`🤖 Application: ${app.name} (${app.id})`);
 

@@ -1,6 +1,6 @@
 {
   "name": "diors-builds",
-  "version": "2.45.0",
+  "version": "2.46.0",
   "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
   "private": true,
@@ -8,7 +8,7 @@
     "check": "find . -name \"*.js\" -not -path \"./node_modules/*\" -print0 | xargs -0 -n1 node --check",
     "docs:audit": "node scripts/docs-audit.mjs",
     "docs:audit:test": "node scripts/docs-audit.test.mjs",
-    "test": "npm run check && npm run docs:audit:test"
+    "test": "npm run check && npm run docs:audit:test && node scripts/calendarDedup.test.js"
   },
   "engines": {
     "node": ">=24"

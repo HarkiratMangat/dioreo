@@ -85,8 +85,15 @@ const emojis = {
     // Patch notes "additional info" aliasing (2026-07-30 22:24 EDT) -- typing a standalone `b:`/`n:`
     // token in the additional-info text gets swapped for these at render time (patchnotes.js's
     // applyInfoAliases()). Harkirat-uploaded, not animated.
-    buff: '<:buff:1532528904210743376>',
-    nerf: '<:nerf:1532528903028084826>',
+    buff: '<:Buff:1532771212172984401>',
+    nerf: '<:Nerf:1532771213271892089>',
+    // Section heading icons for the 3-section calendar redesign's Events/Playlists pages
+    // (2026-07-31 14:00 EDT) -- Draws reuses the existing newDraws/returningDraws emojis above.
+    events: '<a:Events:1532830530108653659>',
+    modes: '<a:Modes:1532809521305489610>',
+    // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide
+    // panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
+    guide: '<a:Guide:1532894836301238477>',
 };
 
 const DEV_OVERRIDE_FILE = path.join(__dirname, 'emojiMap.dev.json');

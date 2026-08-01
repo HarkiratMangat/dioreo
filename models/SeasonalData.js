@@ -16,6 +16,16 @@ const SeasonalDataSchema = new mongoose.Schema({
     bpEnd: { type: Date },
     rankEnd: { type: Date },
     dmzEnd: { type: Date },
+    // TBD state (added 2026-07-31 14:00 EDT) -- typing the literal word "TBD" into a deadline field
+    // now sets this flag + nulls the Date, instead of silently corrupting the date (the L194 bug --
+    // see adminParser.js's parseAdminDate). Distinct from "not set yet" (both fields default
+    // false/undefined): TBD means "known to be undecided," so seasonend.js shows "TBD" rather than
+    // "Date has not been set yet," and anything checking whether the season/an "All Season" calendar
+    // event has ended (calendar.js's isEventEnded) treats a TBD end as indefinitely running rather
+    // than comparing against a null date.
+    bpEndTBD: { type: Boolean, default: false },
+    rankEndTBD: { type: Boolean, default: false },
+    dmzEndTBD: { type: Boolean, default: false },
 
     // /patchnotes
     patchNotes: [{
@@ -64,8 +74,22 @@ const SeasonalDataSchema = new mongoose.Schema({
         title: { type: String },
         date: { type: Date }, // start date
         endDate: { type: Date }, // optional — null/absent when isOngoing is true
-        isOngoing: { type: Boolean, default: false } // true for "All Season" bulk entries
+        isOngoing: { type: Boolean, default: false }, // true for "All Season" bulk entries
+        // 3-section calendar redesign (2026-07-31 12:10 EDT) -- draw/event/playlist, set via the bulk parser's
+        // d•/p•/e• prefix (adminParser.js's parseBulkEvents) or the single add/edit modal. Defaults
+        // to 'event' so every pre-existing un-prefixed entry keeps rendering in the same section it
+        // always has. calendar.js also synthesizes 'draw' entries at RENDER time from newDraws/
+        // returningDraws for anything with no explicit calendar row -- those are never saved here.
+        category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
     }],
+
+    // Per-page /calendar banners (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- ONE banner per page
+    // (Draws/Events/Playlists), independently settable via /manage's Calendar "Banners" action.
+    // Re-hosted through utils/calendarBannerCache.js (same Cloudinary caching philosophy as draw
+    // thumbnails/patch images). Blank/'' = show nothing for that page, not a placeholder.
+    drawsBannerUrl: { type: String, default: '' },
+    eventsBannerUrl: { type: String, default: '' },
+    playlistsBannerUrl: { type: String, default: '' },
 
     // Next-season staging area (added 2026-07-30 22:24 EDT) -- lets the admin prep an entire upcoming season
     // (title/deadlines/draws/calendar) WITHOUT it going live, then flip it live in one shot via
@@ -86,6 +110,9 @@ const SeasonalDataSchema = new mongoose.Schema({
         bpEnd: { type: Date },
         rankEnd: { type: Date },
         dmzEnd: { type: Date },
+        bpEndTBD: { type: Boolean, default: false },
+        rankEndTBD: { type: Boolean, default: false },
+        dmzEndTBD: { type: Boolean, default: false },
         newDraws: [{
             title: { type: String },
             date: { type: Date },
@@ -102,8 +129,12 @@ const SeasonalDataSchema = new mongoose.Schema({
             title: { type: String },
             date: { type: Date },
             endDate: { type: Date },
-            isOngoing: { type: Boolean, default: false }
-        }]
+            isOngoing: { type: Boolean, default: false },
+            category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
+        }],
+        drawsBannerUrl: { type: String, default: '' },
+        eventsBannerUrl: { type: String, default: '' },
+        playlistsBannerUrl: { type: String, default: '' }
     }
 });
 

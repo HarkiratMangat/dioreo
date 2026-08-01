@@ -132,6 +132,15 @@ function buildPagesTable() {
                     { id: 'exportnew', label: 'Export New Draws', style: 2 },
                     { id: 'exportreturning', label: 'Export Returning Draws', style: 2 }
                 ]
+            },
+            // Bulk Format Guide -- last section on every page that has one (2026-07-31 17:20 EDT,
+            // direct correction: was mid-page, wrong). Ordering convention across every page now:
+            // single-item management > bulk management > purge > export > guide.
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                ]
             }
         ]
     },
@@ -155,23 +164,34 @@ function buildPagesTable() {
                 ]
             },
             {
+                // Page Banners folded in as a 4th button here (2026-07-31 17:20 EDT, direct
+                // correction -- it was its own separate inline group before, which put it visually
+                // out of step with the Guide button's inline placement for no real reason). One
+                // modal, 3 independently-clearable fields (same shape as Season Titles & Deadlines'
+                // 3-related-lines-one-modal pattern) -- each page's banner is still independently
+                // settable/clearable, just reached from this group instead of its own.
                 blocks: [
                     `### ${emojis.mngBulkAdd} Add Multiple Events\n-# Add multiple events at once. Additive — doesn't affect existing events.`,
                     `### ${emojis.mngBulkReplace} Replace Multiple Events\n-# Updates existing events by matching title, or adds them if they don't exist yet. Events not included in the paste are left untouched — use Purge below for a full wipe.`,
-                    `### ${emojis.mngBulkDelete} Delete Multiple Events\n-# Remove multiple events at once by pasting their titles. Only removes what's matched by search.`
+                    `### ${emojis.mngBulkDelete} Delete Multiple Events\n-# Remove multiple events at once by pasting their titles. Only removes what's matched by search.`,
+                    `### ${emojis.mngUrls} Page Banners\n-# Set a banner image for the Draws, Events, and Playlists pages independently. Leave a field blank to show nothing for that page.`
                 ],
                 buttons: [
                     { id: 'addmultiple', label: 'Add', style: 3 },
                     { id: 'replacemultiple', label: 'Replace', style: 1 },
-                    { id: 'deletemultiple', label: 'Delete', style: 4 }
+                    { id: 'deletemultiple', label: 'Delete', style: 4 },
+                    { id: 'banners', label: 'Banners', style: 1 }
                 ]
             },
-            // Export and Purge split into their own separate groups (2026-07-12, Harkirat's
-            // request) -- buildManagePage already puts a divider BETWEEN every group, so this alone
-            // gives them the requested separator. Each renders as a `style: 'inline'` group --
-            // a Section with the button as a side accessory (same pattern /settings' visibility
-            // toggles use) instead of the block-list-then-shared-button-row layout every other
-            // group on this page uses.
+            // Purge, then Export, then Guide -- ordering convention across every page now: single-item
+            // management > bulk management > purge > export > guide (2026-07-31 17:20 EDT, direct
+            // correction -- Export used to sit above Purge here).
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
+                ]
+            },
             {
                 style: 'inline',
                 items: [
@@ -181,7 +201,7 @@ function buildPagesTable() {
             {
                 style: 'inline',
                 items: [
-                    { text: `### ${emojis.mngPurge} Purge All Events\n-# Permanently erase all calendar events to start fresh for a new season.`, button: { id: 'purge', label: 'Purge', style: 4 } }
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -232,6 +252,16 @@ function buildPagesTable() {
             {
                 blocks: [`### ${emojis.mngPurge} Purge All Patch Notes\n-# Permanently erase the release date, additional info, and URL history to start fresh for a new season.`],
                 buttons: [{ id: 'purge', label: 'Purge', style: 4 }]
+            },
+            // Guide (added 2026-07-31 17:20 EDT) -- this page has no bulk PASTE format, but the
+            // Release Date / URLs / Additional Info fields have real syntax rules admins get
+            // confused by (a real submission mistake on Additional Info's auto-formatting is what
+            // prompted this whole guide rewrite) -- worth its own reference just like every other page.
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.guide} Field Format Guide\n-# Release date, URLs, and Additional Info -- what's literal vs. auto-formatted.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                ]
             }
         ]
     },
@@ -273,6 +303,15 @@ function buildPagesTable() {
                 buttons: [
                     { id: 'promote', label: 'Promote to Live', style: 3 },
                     { id: 'discard', label: 'Discard Draft', style: 4 }
+                ]
+            },
+            // Guide (added 2026-07-31 17:20 EDT) -- same paste formats as the live Draws/Calendar
+            // pages, plus the TBD-deadline convention; worth its own quick pointer rather than
+            // assuming that carries over obviously.
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Same formats as the live pages -- get a rich, structured reference.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
                 ]
             }
         ]
@@ -367,6 +406,13 @@ function loadoutsPageDef(mode, headerLabel, icon) {
                     { id: 'exportall', label: 'All', style: 2 }
                 ]
                 // No Purge here — see PURGE_LABELS comment above.
+            },
+            // Guide -- last section, matching every other page's convention (2026-07-31 17:20 EDT).
+            {
+                style: 'inline',
+                items: [
+                    { text: `### ${emojis.guide} Bulk Format Guide\n-# Forget the paste format? Get a rich, structured reference + example.`, button: { id: 'formatguide', label: 'Guide', style: 2 } }
+                ]
             }
         ]
     };
@@ -593,8 +639,13 @@ function buildCalendarBulkModal(mode) {
     // mode: 'add' (additive — NEW, appends) | 'replace' (existing wholesale-replace behavior)
     const modal = new ModalBuilder().setCustomId(`modal_calendar_bulk_${mode}`).setTitle(mode === 'add' ? 'Add Multiple Calendar Events' : 'Replace Calendar Events');
     modal.addComponents(
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Bulleted Event List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("• 7/2 - 8/5 | Throwable Frenzy MP Mode • 7/10 - All Season | Shadow and Shade Mythic Drop").setRequired(true))
+        // Optional d•/p•/e• prefix (draw/playlist/event) added for the 3-section calendar redesign
+        // (2026-07-31 12:10/12:40 EDT) — matches Harkirat's own calendar_bulk.txt convention. No
+        // prefix auto-detects from the title's own wording (adminParser.js's
+        // guessCalendarCategory) -- only needed to override an ambiguous title (e.g. a bare map
+        // name with no "mode"/"playlist" in it).
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Bulleted List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder("7/2 - 8/5 | Throwable Frenzy MP Mode\n7/6 - 7/19 | Nuketown Dedicated Playlist\n7/10 - All Season | Shadow and Shade Mythic Drop\np• 8/6 - 8/19 | Krai BR (prefix to override the guess)").setRequired(true))
     );
     return modal;
 }
@@ -612,7 +663,24 @@ function buildCalendarAddModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setRequired(true)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 2').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setPlaceholder('e.g. August 5').setRequired(false)),
+        // Added for the 3-section calendar redesign (2026-07-31 12:10 EDT) -- blank auto-detects
+        // from the title's own wording (adminParser.js's guessCalendarCategory), same as an
+        // un-prefixed bulk-import line.
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setPlaceholder('blank = auto-detect from title').setRequired(false))
+    );
+    return modal;
+}
+
+// Page Banners (added 2026-07-31 17:20 EDT) -- one modal, 3 independently-clearable Short URL
+// fields. Pre-filled from whatever's currently saved so re-submitting to change just one field
+// doesn't blank out the other two.
+function buildCalendarBannersModal(seasonalDoc) {
+    const modal = new ModalBuilder().setCustomId('modal_calendar_banners').setTitle('Calendar: Page Banners');
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('draws_banner').setLabel('Draws Page Banner URL (blank = none)').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.drawsBannerUrl || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('events_banner').setLabel('Events Page Banner URL (blank = none)').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.eventsBannerUrl || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('playlists_banner').setLabel('Playlists Page Banner URL (blank = none)').setStyle(TextInputStyle.Short).setValue(seasonalDoc?.playlistsBannerUrl || '').setRequired(false))
     );
     return modal;
 }
@@ -622,7 +690,8 @@ function buildEditCalendarModal(targetEvent, targetId) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('title').setLabel('Event Title').setStyle(TextInputStyle.Short).setValue(targetEvent.title)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('start_date').setLabel('Start Date').setStyle(TextInputStyle.Short).setValue(formatAdminDate(targetEvent.date))),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false))
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('end_date').setLabel('End Date (blank = All Season)').setStyle(TextInputStyle.Short).setValue(targetEvent.isOngoing ? '' : formatAdminDate(targetEvent.endDate)).setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('category').setLabel('Section (draw / event / playlist)').setStyle(TextInputStyle.Short).setValue(targetEvent.category || 'event').setRequired(false))
     );
     return modal;
 }
@@ -734,7 +803,7 @@ function buildPatchDateInfoModal(currentEntry, userTimezone) {
     const modal = new ModalBuilder().setCustomId('modal_patch_dateinfo').setTitle('Patch Notes: Date & Info');
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setValue(currentEntry ? formatReleaseDateTime(currentEntry.releaseDate, userTimezone) : '').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: type b: or n: for the buff/nerf icon').setValue(currentEntry?.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b: text, n: text...\nb:/n: = buff/nerf emojis (See Guide button)').setValue(currentEntry?.description || '').setRequired(false)),
         // Manual title override (2026-07-24) -- for when patch notes release before the new season's
         // real title is finalized/announced. Blank reverts to the auto-synced title (currentSeasonTitle,
         // via the Season Titles/Dates modal) -- see index.js's modal_patch_dateinfo submit handler.
@@ -773,7 +842,7 @@ function buildPatchAddSeasonModal() {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setPlaceholder('Leave blank to use the Season Titles/Dates title').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setPlaceholder('e.g. July 15, or July 15 7:20 AM (your local time)').setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: type b: or n: for the buff/nerf icon').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b: text, n: text...\nb:/n: = buff/nerf emojis (See Guide button)').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setRequired(false))
     );
@@ -789,7 +858,7 @@ function buildPatchEditSeasonModal(entry, userTimezone) {
     modal.addComponents(
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('season_title').setLabel('Season Title (blank = use current)').setStyle(TextInputStyle.Short).setValue(entry.titleOverride || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('release_date').setLabel('Release Date').setStyle(TextInputStyle.Short).setValue(formatReleaseDateTime(entry.releaseDate, userTimezone)).setRequired(true)),
-        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Tip: type b: or n: for the buff/nerf icon').setValue(entry.description || '').setRequired(false)),
+        new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Additional Info (optional)').setStyle(TextInputStyle.Paragraph).setPlaceholder('Per-line: # Weapon, Attachment, b: text, n: text...\nb:/n: = buff/nerf emojis (See Guide button)').setValue(entry.description || '').setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls1').setLabel('URLs 1 (one per line, up to 5)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(0, 5).join('\n')).setRequired(false)),
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('urls2').setLabel('URLs 2 (one per line, up to 5 more)').setStyle(TextInputStyle.Paragraph).setValue((entry.images || []).slice(5, 10).join('\n')).setRequired(false))
     );
@@ -899,7 +968,12 @@ module.exports = {
             { name: 'DMZ Loadouts', value: 'loadouts_dmz' },
             { name: 'Patch Notes', value: 'patchnotes' },
             { name: 'Season: Titles & Deadlines', value: 'season_titlesdeadlines' },
-            { name: 'Season: Next Season Draft', value: 'seasondraft' }
+            { name: 'Season: Next Season Draft', value: 'seasondraft' },
+            // Jumps straight to the rich Bulk Format Guide (utils/manageGuides.js) instead of a
+            // normal data-entry page -- added 2026-07-31 17:20 EDT, Harkirat's direct request. Not a
+            // key in PAGES (same reason Season's two entries above aren't), so it's special-cased in
+            // execute() below the same way those are.
+            { name: 'Bulk Format Guide', value: 'guide' }
         ))
         .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this panel. False = everyone in the chat can see it. (default: True)')),
 
@@ -911,7 +985,7 @@ module.exports = {
     buildPastSeasonsOptions,
     buildSearchModal,
     buildBulkBothDrawsModal, buildBulkRemoveDrawsModal, buildAddDrawModal, buildEditDrawModal,
-    buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal,
+    buildCalendarBulkModal, buildCalendarBulkRemoveModal, buildCalendarAddModal, buildEditCalendarModal, buildCalendarBannersModal,
     buildLoadoutsBulkAddModal, buildLoadoutsBulkRemoveModal, buildAddLoadoutModal, buildEditLoadoutModal,
     buildLoadoutsExportUpTo5Modal, buildLoadoutsExportCategoryModal,
     buildPatchDateInfoModal, buildPatchUrlsModal, buildPatchAddSeasonModal, buildPatchEditSeasonModal,
@@ -943,6 +1017,15 @@ module.exports = {
         const argPrivate = interaction.options.getBoolean('hidden');
         const isEphemeral = argPrivate === null ? true : argPrivate;
         await interaction.deferReply({ flags: isEphemeral ? 64 : 0 });
+
+        // Bulk Format Guide, reached directly (2026-07-31 17:20 EDT) -- sends the SAME rich guide
+        // panel the in-page "Guide" buttons open (utils/manageGuides.js), skipping the normal
+        // page-panel render entirely. Defaults to the Draws topic (first in the dropdown) -- there's
+        // no page context to infer a topic from when jumping straight here via the slash option.
+        if (section === 'guide') {
+            const { buildGuideContainer } = require('../utils/manageGuides');
+            return sendV2Payload(interaction, buildGuideContainer('draws'));
+        }
 
         // Patch Notes' "Past Seasons" dropdown needs a live DB read to build its options -- every
         // other page renders from PAGES alone. Only fetched when actually landing on that page.

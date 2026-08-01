@@ -200,6 +200,28 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
+- `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
+  2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
+  from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.
+  `/calendar` already has most of this (the Active/All toggle + `isEventEnded()` in `calendar.js`, tied
+  to each event's own end date or `bpEnd` for "All Season" entries) — the real gap is **`/draws` has NO
+  equivalent mechanism at all**, confirmed by grep (verified 2026-07-31 12:10 EDT — zero hits for
+  expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
+  means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
+  gets its own Active/All toggle like `/calendar`'s or something simpler.
+- `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
+  "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
+  shard error" alert live and had "absolutely no clue what it meant," and separately has no
+  indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related
+  gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`,
+  `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a
+  plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves,
+  what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert
+  to close the loop after a disruption alert fires, so a one-off blip reads as an open question
+  forever. See `utils/alertStore.js` + the alert-tier design referenced in
+  `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
+  mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
+  before scoping the actual build.
 - `[P1 · M · Sonnet5-M]` **User-data deletion path — the privacy policy now publicly promises it.**
   *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
   automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
@@ -211,6 +233,12 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records
   untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** —
   they currently describe the manual process as the only route.
+- `[P2 · M]` **`/calendar`: replace Prev/Next pagination with section-toggle buttons.** *Filed
+  2026-07-31 12:10 EDT during the 3-section calendar redesign (notes L195).* Harkirat explicitly asked
+  for left/right pagination to stay for now (page 1 = Draws+Events, page 2 = Playlists/Modes) but wants
+  buttons that jump straight to a named section eventually, since that's more discoverable than
+  Prev/Next once there are 3 real sections. Needs a mockup/UI pass before building — not just a wiring
+  change.
 - `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
   from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
   sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a

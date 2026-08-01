@@ -41,7 +41,7 @@ function resolveTier(shorthand) {
     const clean = shorthand.toLowerCase().trim();
     if (['m', 'mythic'].includes(clean)) return 'mythic';
     if (['l', 'leggy', 'legendary'].includes(clean)) return 'legendary';
-    if (['ll', 'lega', 'legacy'].includes(clean)) return 'legacy';
+    if (['lg', 'lega', 'legacy'].includes(clean)) return 'legacy';
     if (['e', 'epic'].includes(clean)) return 'epic';
     return toTitleCase(shorthand);
 }
@@ -77,7 +77,12 @@ function parseAdminDate(dateStr) {
     // interpret the input AS IF it's already UTC-0, matching the actual admin workflow (dates are
     // always typed in UTC-0), and removes any dependency on the host machine's local settings.
     const parsedResult = chrono.parseDate(cleanStr, new Date(), { timezone: 0 });
-    if (!parsedResult) return new Date();
+    // Returns null (not a "now" fallback) on unparseable input -- a typo like "TDB" used to silently
+    // become the literal current instant, which on 2026-07-31 landed almost exactly on Aug 1 00:00
+    // UTC (Harkirat's local evening crossing the UTC day boundary) and read as a real, intentional
+    // date. Every caller must now treat null as "not a valid date" -- either leave the field
+    // untouched (same as blank input) or reject the submission, never write it silently.
+    if (!parsedResult) return null;
 
     // Normalize to midnight UTC on the parsed calendar day — deadlines/events are date-only,
     // no specific time-of-day is collected from the admin. Use the UTC getters here (not the
@@ -107,8 +112,10 @@ function parseReleaseDateTime(dateStr, userTimezone = 'America/Toronto') {
 
     const parsedComponents = parseResults[0].start;
     if (!parsedComponents.isCertain('hour')) {
-        // No time typed -- same UTC-midnight, date-only convention as parseAdminDate.
-        return parseAdminDate(cleanStr);
+        // No time typed -- same UTC-midnight, date-only convention as parseAdminDate. chrono.parse
+        // already matched cleanStr above, so parseAdminDate's own chrono.parseDate call practically
+        // always succeeds too; the `|| new Date()` is just a safety net, not the new bug's fallback.
+        return parseAdminDate(cleanStr) || new Date();
     }
 
     // A time was typed -- treat the literal date/time numbers as Harkirat's own local clock
@@ -174,6 +181,7 @@ function parseBulkDrawList(bulkText) {
             dateStr = `${parts.pop()}, ${dateStr}`;
         }
         const parsedDate = parseAdminDate(dateStr);
+        if (!parsedDate) continue; // Unparseable date -- skip this line rather than import a wrong one
 
         // Extract Items (everything left in the middle)
         const items = parts.slice(1).map(parseItemLine);
@@ -199,11 +207,80 @@ function parseBulkDrawList(bulkText) {
  * survive that copy, but the bullet characters do).
  * Dates are assumed to be UTC-0, same as parseAdminDate.
  */
-function parseBulkEvents(bulkText) {
-    const entries = bulkText.split('•').map(e => e.trim()).filter(e => e.length > 0);
-    const parsedEvents = [];
+// Optional single-letter category prefix directly touching the bullet ("d•"/"p•"/"e•" -- draw/
+// playlist/event), added for the 3-section calendar redesign (2026-07-31 12:10 EDT) to match
+// Harkirat's own convention from his calendar_bulk.txt reference paste. Still the highest-priority
+// signal -- it's how an admin overrides the keyword guess below for a genuinely ambiguous title
+// (Harkirat's own bulk file explicitly prefixes bare map names like "Krai BR" for exactly this).
+const CALENDAR_CATEGORY_PREFIX = { d: 'draw', p: 'playlist', e: 'event' };
+const CALENDAR_CATEGORY_TO_PREFIX = { draw: 'd', playlist: 'p', event: 'e' };
 
-    for (const entry of entries) {
+// Keyword-based fallback classification (added 2026-07-31 12:40/12:55 EDT, per Harkirat's explicit
+// request to not have to prefix every line by hand -- then tightened the same session when he asked
+// for real word-form handling: "draw" vs "draws", "gamemode" vs "game mode", etc). Only consulted
+// when there's NO explicit prefix/typed category. Word-boundaried (`\b`) with optional plural
+// suffixes rather than a plain .includes() -- a bare substring check would both MISS "Armories"
+// against a literal "armory" keyword, and FALSE-POSITIVE on an unrelated word that merely contains
+// one (e.g. "Roadmap Update" containing "map"). `gamemode` is the one deliberate exception: it's a
+// single fused word with no natural boundary between "game" and "mode" to anchor `\bmodes?\b` on, so
+// it needs its own unboundaried pattern. Checked in this order (draw, then playlist) because a title
+// can plausibly contain both an event-ish and a draw-ish word; draw/playlist are the more specific
+// signals, so they win, and "event" is never actually matched against -- it's just wherever nothing
+// else hits, exactly as Harkirat asked ("otherwise just default unknown things to the event section").
+const DRAW_KEYWORDS = [
+    /\bdraws?\b/i,             // Draw, Draws
+    /\barmor(?:y|ies|ed)?\b/i, // Armory, Armories, Armored
+    /\bit goes two\b/i,
+    /\bredux\b/i,
+    /\bmythic drops?\b/i       // Mythic Drop, Mythic Drops
+];
+const PLAYLIST_KEYWORDS = [
+    /\bmodes?\b/i,     // Mode, Modes ("MP Mode", "Game Mode" -- any spaced form)
+    /gamemode/i,       // fused compound with no word boundary to anchor \bmodes?\b on
+    /\bplaylists?\b/i, // Playlist, Playlists
+    /\bmaps?\b/i,      // Map, Maps -- boundaried so "Roadmap"/"Mapping" don't false-positive
+    // Standalone "MP"/"BR" (added 2026-07-31 13:05 EDT, Harkirat's direct correction -- "Krai BR" and
+    // "Rebirth Island BR" are unambiguous mode names to him even with no "mode"/"playlist" word at
+    // all, the same way "Nuketown MP" would be). Both are 2-letter tokens, so `\b` on both sides is
+    // load-bearing here specifically -- without it "MP"/"BR" would match as substrings of unrelated
+    // words constantly.
+    /\bmp\b/i,
+    /\bbr\b/i
+];
+
+function guessCalendarCategory(title) {
+    const t = title || '';
+    if (DRAW_KEYWORDS.some(re => re.test(t))) return 'draw';
+    if (PLAYLIST_KEYWORDS.some(re => re.test(t))) return 'playlist';
+    return 'event';
+}
+
+// Shared by the single add/edit calendar-event modals (index.js) -- accepts a full word
+// ("draw"/"playlist"/"event") or a single letter (d/p/e), case-insensitive. Blank/unrecognized falls
+// through to the keyword guess above against `title` (2nd arg) instead of a flat 'event' default.
+function normalizeCalendarCategory(raw, title) {
+    const cleaned = (raw || '').trim().toLowerCase();
+    if (!cleaned) return guessCalendarCategory(title);
+    if (CALENDAR_CATEGORY_PREFIX[cleaned]) return CALENDAR_CATEGORY_PREFIX[cleaned];
+    if (['draw', 'event', 'playlist'].includes(cleaned)) return cleaned;
+    return guessCalendarCategory(title);
+}
+
+function parseBulkEvents(bulkText) {
+    // Can't just bulkText.split('•') anymore -- the prefix letter sits BEFORE the bullet it belongs
+    // to, so a naive split leaves it dangling on the END of the PREVIOUS entry's content instead of
+    // tagging the entry that follows. This regex's non-greedy content group stops as early as
+    // possible, which is always right at the next real "[dpe]?•" boundary -- verified against
+    // legacy unprefixed text too (no prefix character = zero-width match, same split points as the
+    // old bulkText.split('•') behavior).
+    const entryRegex = /([dpe])?•\s*([\s\S]*?)(?=[dpe]?•|$)/g;
+    const parsedEvents = [];
+    let match;
+
+    while ((match = entryRegex.exec(bulkText)) !== null) {
+        const entry = match[2].trim();
+        if (!entry) continue;
+
         const pipeIndex = entry.indexOf('|');
         if (pipeIndex === -1) continue; // Skip malformed entries missing the "| Title" portion
 
@@ -211,6 +288,8 @@ function parseBulkEvents(bulkText) {
         // Title is preserved EXACTLY as typed (no toTitleCase) — event names routinely include
         // acronyms like "MP"/"BR"/"DMZ" that title-casing would mangle into "Mp"/"Br"/"Dmz".
         const title = entry.slice(pipeIndex + 1).trim();
+        // Explicit prefix wins; no prefix falls through to the keyword guess against the title.
+        const category = CALENDAR_CATEGORY_PREFIX[match[1]] || guessCalendarCategory(title);
 
         const dashIndex = dateRange.indexOf('-');
         if (dashIndex === -1) continue; // Skip malformed entries missing the "start - end" portion
@@ -219,24 +298,29 @@ function parseBulkEvents(bulkText) {
         const endStr = dateRange.slice(dashIndex + 1).trim();
 
         const startDate = parseAdminDate(startStr);
+        if (!startDate) continue; // Unparseable start date -- skip this entry rather than import a wrong one
         // "All Season" means the event runs through the rest of the season with no fixed end date
         const isOngoing = /all season/i.test(endStr);
         const endDate = isOngoing ? null : parseAdminDate(endStr);
+        if (!isOngoing && !endDate) continue; // Unparseable end date -- same skip
 
-        parsedEvents.push({ title, startDate, endDate, isOngoing });
+        parsedEvents.push({ title, startDate, endDate, isOngoing, category });
     }
 
     return parsedEvents;
 }
 
 // Reverse of resolveTier's shorthand->full-word mapping, used to reconstruct the compact bulk-add
-// tier token ("m"/"l"/"ll"/"e") from what's actually stored in the DB ("mythic"/"legendary"/
-// "legacy"/"epic"). Falls back to the stored value itself for anything unrecognized (shouldn't
-// happen from data that went through resolveTier, but keeps this from ever throwing).
+// tier token ("m"/"l"/"lg"/"e") from what's actually stored in the DB ("mythic"/"legendary"/
+// "legacy"/"epic"). `lg` was `ll` until 2026-07-31 17:20 EDT (Harkirat's direct request) -- changed
+// here only, no back-compat kept for the old token, since it's purely an admin-typed shorthand with
+// no stored data depending on it (the DB always stores the full word "legacy"). Falls back to the
+// stored value itself for anything unrecognized (shouldn't happen from data that went through
+// resolveTier, but keeps this from ever throwing).
 // 'comment' isn't a real tier -- it's the free-text "-# note" item type (see parseItemLine below) --
 // but it goes through this same reverse map when reconstructing bulk-add/edit text, so it needs an
 // entry too or a comment line round-trips back out as the literal word "comment" instead of "-#".
-const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'll', epic: 'e', comment: '-#' };
+const TIER_SHORTHAND = { mythic: 'm', legendary: 'l', legacy: 'lg', epic: 'e', comment: '-#' };
 
 /**
  * Reconstructs the bulk-add text format (see parseBulkDrawList) from Draw documents already in
@@ -547,7 +631,8 @@ function formatCalendarAsBulkText(calendar) {
     return calendar.map(event => {
         const startStr = dayjs.utc(event.date).format('M/D');
         const endStr = event.isOngoing ? 'All Season' : dayjs.utc(event.endDate).format('M/D');
-        return `• ${startStr} - ${endStr} | ${event.title}`;
+        const prefix = CALENDAR_CATEGORY_TO_PREFIX[event.category] || 'e';
+        return `${prefix}• ${startStr} - ${endStr} | ${event.title}`;
     }).join('\n');
 }
 
@@ -592,4 +677,4 @@ function formatLoadoutsAsBulkText(loadouts) {
     }).join('\n\n');
 }
 
-module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot };
+module.exports = { toTitleCase, resolveTier, parseAdminDate, parseReleaseDateTime, parseItemLine, parseBulkDrawList, parseBulkEvents, formatDrawsAsBulkText, formatAdminDate, formatReleaseDateTime, parseLoadoutBadges, parseBulkLoadoutList, splitTitleDate, formatCalendarAsBulkText, formatPatchNotesAsText, formatLoadoutsAsBulkText, correctGunsmithCode, correctAttachmentName, normalizeWeaponName, orderAttachmentsBySlot, normalizeCalendarCategory, guessCalendarCategory };
