@@ -151,16 +151,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
   letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
   transform:translateX(-8px);opacity:0;
-  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}
-.ghb:hover,.ghb:focus-visible{width:108px;color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}
-.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}.ghb:focus-visible{width:108px;color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
+.ghb:hover{width:108px;color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}@media (hover:hover) and (pointer:fine){
+.ghb:hover .ghb-t b{transform:translateX(0);opacity:1}}
 /* the cursor-tracked light */
 .ghb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
   opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
     var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
-    transparent 72%)}
-.ghb:hover::after,.ghb:focus-visible::after{opacity:1}
+    transparent 72%)}.ghb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
+.ghb:hover::after{opacity:1}}
 
 /* install — the one filled control on the site, and the only place a second
    ambient effect is justified. Three things happen and each has a reason: the
@@ -197,20 +198,22 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 /* the single pass of edge-light */
 .ins::after{content:"";position:absolute;z-index:1;top:-60%;bottom:-60%;width:36px;
   left:-60px;transform:skewX(-18deg);pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
-.ins:hover::after,.ins:focus-visible::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}
-@keyframes swipe{to{left:118%}}
-.ins:hover,.ins:focus-visible{transform:translateY(-1px);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}.ins:focus-visible::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}@media (hover:hover) and (pointer:fine){
+.ins:hover::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}
+@keyframes swipe{to{left:118%}}.ins:focus-visible{transform:translateY(-1px);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.44),
-    0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}
-.ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
-.ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}
-.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
+    0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}@media (hover:hover) and (pointer:fine){
+.ins:hover{transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.44),
+    0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}}.ins:focus-visible .ins-gl{opacity:1}@media (hover:hover) and (pointer:fine){
+.ins:hover .ins-gl{opacity:1}}.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}@media (hover:hover) and (pointer:fine){
+.ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}@media (hover:hover) and (pointer:fine){
+.ins:hover .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}}
 .ins:active{transform:translateY(0) scale(.98)}
-@media (prefers-reduced-motion:reduce){
-  .ins:hover::after,.ins:focus-visible::after{animation:none}
-  .ins:hover,.ins:focus-visible,.ins:active{transform:none}
-  .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:none}
+@media (prefers-reduced-motion:reduce){.ins:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
+  .ins:hover::after{animation:none}}.ins:focus-visible,.ins:active{transform:none}@media (hover:hover) and (pointer:fine){
+  .ins:hover{transform:none}}.ins:focus-visible .ins-ic{transform:none}@media (hover:hover) and (pointer:fine){
+  .ins:hover .ins-ic{transform:none}}
 }
 /* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
    + three controls — so the theme switch sat past the right edge with the padding
@@ -221,13 +224,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    the accessible name. */
 @media (max-width:620px){
   .bar{gap:.7rem;padding:0 .8rem}
-  /* ⚠️ ONE rule, BOTH axes. The desktop rule gives .ins height:37px while this
-     one set only width:32px, so on a phone the Discord button rendered as a
-     32x37 egg. That is a specificity trap, not a drawing mistake — the height
-     came from a rule nobody was looking at. 38px square, and the expand-on-
-     hover behaviour is dropped here because there is no hover to expand on. */
-  .ghb,.ins{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
-  .ins-t,.ins-ar{display:none}
+  /* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
+     .ins height:37px while this one set only width:32px, so on a phone the
+     Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
+     mistake: the height came from a rule nobody was looking at.
+     .ins keeps its LABEL here. A bare circular Discord glyph reads as a sign-in
+     or an avatar, which is the opposite of what it does — it is an outbound
+     install link, and the word is what says so. The repo button stays a circle
+     because it is secondary and its mark is self-explanatory. */
+  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+    justify-content:center}
+  .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
+  .ins-ar{display:none}
 }
 
 /* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
@@ -253,9 +262,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
   background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
-  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
-.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}@media (hover:hover) and (pointer:fine){
+.thm:hover .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}}
 .thm-sky{position:absolute;inset:0}
 
 /* stars — dark only, in the half the knob is not occupying */
@@ -292,7 +302,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
-.thm-kn svg{width:16px;height:16px;overflow:visible}
+.thm-kn svg{width:17px;height:17px;overflow:visible}
 /* moon */
 .thm-kn .orb{fill:#DCE4F7}
 /* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
@@ -307,24 +317,32 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
    disc reads as a full sun with nothing bitten out of it. */
 /* ⚠️ The lune's CENTROID is not the disc's centre, and that is the "moon looks
-   off-centre in its circle" bug. The remaining shape runs from -R to (D-r)
-   along the axis, so its midpoint sits (R + D - r)/2 - R away from the middle,
-   i.e. 5.2 units down-left here — the thinner it gets, the further off it
-   drifts. The orb is translated back by that amount so the crescent is optically
-   centred, and returns to nothing in light mode so the SUN stays concentric.
-   Width is R + D - r = 4.4 of a 14.8 diameter (30%); at 3.1 it was too thin to
-   carry at 16px. Horn tips land at ±68 degrees. */
-.thm-kn .orb{transform:translate(3.68px,-3.68px);
+   off-centre in its circle" bug. The remaining shape runs from -R to (D-r) along
+   the axis, so its midpoint sits (R + D - r)/2 - R from the middle — 4.7 units
+   down-left here, and the THINNER the crescent the further out it drifts. The
+   whole moon group is translated back by exactly that, and returns to zero in
+   light mode so the sun stays concentric.
+   Width is R + D - r = 5.4 of a 14.8 diameter (36%). It has been 3.1 and 4.4 on
+   the way here and both read as a cheap sliver at 16px; horn tips at ±65 deg.
+
+   THE EARTHSHINE DISC is the added element, and it is the reason this reads as a
+   MOON rather than a banana: the unlit limb is faintly lit by light bouncing off
+   the earth, so the full circle is always dimly visible behind the bright part.
+   It is a filled disc rather than an outline on purpose — a 0.5-unit stroke is a
+   third of a pixel once the svg renders at 16px, which is the same size trap that
+   killed the craters. Fill survives at any size; hairlines do not. */
+.thm-kn .moon{transform:translate(3.32px,-3.32px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .cut{transform:translate(2.83px,-2.83px);
+.thm-kn .limb{fill:#DCE4F7;opacity:.2;transition:opacity .4s}
+.thm-kn .cut{transform:translate(3.54px,-3.54px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
   transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
 
 /* The hover peek leans the knob toward where it is going. It no longer fades the
-   clouds up behind the moon: clouds belong to the daytime sky, and previewing
+   clouds up behind the moon: clouds belong to the daytime sky{transform:translateX(5px)}@media (hover:hover) and (pointer:fine){ and previewing
    them at night just put weather behind a moon for no reason. */
-.thm:hover .thm-kn{transform:translateX(5px)}
+.thm:hover .thm-kn{transform:translateX(5px)}}
 
 /* LIGHT: knob crosses, the mask occluder is pushed clear so the disc fills, rays
    fan out, the orb fills from a crescent to a sun, clouds replace stars. */
@@ -332,34 +350,36 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 :root[data-theme=light] .thm-kn{transform:translateX(28px);
   background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
   border-color:rgba(255,255,255,.95);
-  box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
-:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
+  box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
-:root[data-theme=light] .thm-kn .orb{transform:none}
+:root[data-theme=light] .thm-kn .moon{transform:none}
+:root[data-theme=light] .thm-kn .limb{opacity:0}
 :root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
-:root[data-theme=light] .thm-cl{opacity:1}
-:root[data-theme=light] .thm:hover .thm-st{opacity:.35}
+:root[data-theme=light] .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}}
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
   :root:not([data-theme=dark]) .thm-kn{transform:translateX(28px);
     background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
     border-color:rgba(255,255,255,.95);
-    box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
-  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
+    box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
-  :root:not([data-theme=dark]) .thm-kn .orb{transform:none}
+  :root:not([data-theme=dark]) .thm-kn .moon{transform:none}
+  :root:not([data-theme=dark]) .thm-kn .limb{opacity:0}
   :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
-  :root:not([data-theme=dark]) .thm-cl{opacity:1}
-  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}}
 }
 @media (prefers-reduced-motion:reduce){
-  .thm-st i,.thm-cl i{animation:none}
-  .thm:hover .thm-kn{transform:translateX(0)}
-  :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(28px)}
+  .thm-st i,.thm-cl i{animation:none}@media (hover:hover) and (pointer:fine){
+  .thm:hover .thm-kn{transform:translateX(0)}}@media (hover:hover) and (pointer:fine){
+  :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(28px)}}
 }
 
 /* ── Discord handle + email reveal ──────────────────────────────────── */
@@ -369,15 +389,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rev{margin-top:.7rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
 .rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
   color:var(--ink3);list-style:none;transition:color .2s}
-.rev summary::-webkit-details-marker{display:none}
-.rev summary:hover{color:var(--ink)}
+.rev summary::-webkit-details-marker{display:none}@media (hover:hover) and (pointer:fine){
+.rev summary:hover{color:var(--ink)}}
 .rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
   border:1px solid var(--rule2);border-radius:3px}
 .rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
   transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
-.rev[open] .rv-i::after{transform:translateX(101%)}
-.rev summary:hover .rv-i::after{transform:translateX(48%)}
-.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+.rev[open] .rv-i::after{transform:translateX(101%)}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-i::after{transform:translateX(48%)}}@media (hover:hover) and (pointer:fine){
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}}
 .rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
   border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
   background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
@@ -417,8 +437,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   text-transform:uppercase}
 .endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
   border-bottom:1px solid transparent;
-  transition:color .22s,border-color .22s}
-.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+  transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
 .endnav span{color:var(--ink3);opacity:.45}
 /* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
    is deliberate. On the warm pages this line is lifted straight out of the
@@ -646,12 +666,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* Segment dividers — the affordance at rest. Drawn on the tab rather than the
    track so they land in the gaps whatever each label measures. */
-/* No dividers. Spacing separates the tabs instead, which also gives the
+/* No dividers. Spacing separates the tabs instead{
+  .tab:hover{color:var(--ink)}
+}@media (hover:hover) and (pointer:fine){ which also gives the
    indicator somewhere to travel — with the tabs touching it had to stretch
    directly across a neighbouring label. */
 @media (hover:hover) and (pointer:fine){
   .tab:hover{color:var(--ink)}
-}
+}}
 /* A group you are not currently inside shows no indicator until you point at
    it, so exactly one indicator on screen is ever "yours". */
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
@@ -678,12 +700,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .mnav{display:none}
 
 /* ── mobile navigation: a swipeable strip ─────────────────────────────
-   Every page in one scrollable row, nothing to open. The three previous
-   attempts (two-tab rail, bottom sheet, disclosure) all put the answer to
-   "where am I and what else is there" behind a tap; this states it.
-
-   No hover rules live in here AT ALL. On touch a :hover latches until you tap
-   something else, which is what made every earlier version feel stuck. Touch
+   Every page in one scrollable row, which is what made every earlier version feel stuck. Touch
    feedback is :active, which releases itself.
 
    Tabs are 44px tall inside a 52px band, clearing WCAG 2.5.5. */
@@ -730,7 +747,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ms-pill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
     background:var(--accent);transform-origin:center;
     scale:1;opacity:1}
-  .mstrip.burst .ms-pill{animation:msPill 640ms cubic-bezier(.34,1.3,.44,1) both}
+  /* The delay is what lets the particles arrive FIRST. The pill assembling out
+     of a swarm that is already there is the effect; the pill appearing and then
+     being decorated is not. */
+  .mstrip.burst .ms-pill{animation:msPill 620ms 190ms cubic-bezier(.34,1.3,.44,1) both}
   @keyframes msPill{ from{scale:0;opacity:0} to{scale:1;opacity:1} }
 
   /* Two nested elements because the travel and the swelling need DIFFERENT
@@ -751,13 +771,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey))}
     100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5))}
   }
+  /* ⚠️ Full size by 30%, not 65%. The alpha crush behind the goo needs a disc of
+     roughly 8px before it renders anything at all: 22a-8 does not reach opacity
+     until a=0.36, and a 14px dot at 0.25 scale is 3.5px, whose blurred peak alpha
+     is about 0.07. Scaling up WHILE converging therefore meant every particle was
+     mathematically invisible until it had already reached the pill, which is why
+     the burst read as a tiny cluster hugging one edge. They reach full size while
+     still spread out now, and hold it through the flight. */
   @keyframes mptPop{
     0%{scale:0;opacity:0}
-    25%{scale:calc(var(--sc) * .25)}
-    38%{opacity:1}
-    65%{scale:var(--sc);opacity:1}
-    85%{scale:var(--sc);opacity:1}
-    100%{scale:0;opacity:0}
+    16%{opacity:1}
+    30%{scale:var(--sc);opacity:1}
+    82%{scale:var(--sc);opacity:1}
+    100%{scale:calc(var(--sc) * .35);opacity:0}
   }
   @media (prefers-reduced-motion:reduce){
     .mstrip.burst .ms-pill{animation:none}
@@ -788,7 +814,122 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .msec .slot.on{border-left-color:var(--accent);
     background:color-mix(in srgb,var(--accent) 10%,transparent)}
   .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-}
+}@media (hover:hover) and (pointer:fine){ nothing to open. The three previous
+   attempts (two-tab rail, bottom sheet, disclosure) all put the answer to
+   "where am I and what else is there" behind a tap; this states it.
+
+   No hover rules live in here AT ALL. On touch a :hover latches until you tap
+   something else{
+  .bar .navwrap{display:none}
+  .mk-ctx{display:flex;align-items:center;gap:.34rem;min-width:0;
+    font-family:var(--mono);font-size:.53rem;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--ink3);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mk-ctx i{flex:0 0 auto;width:5px;height:5px;border-radius:50%;
+    background:var(--accent)}
+  .mnav{display:block;position:sticky;top:54px;z-index:40}
+
+  .mstrip{position:relative;display:flex;align-items:stretch;gap:.3rem;
+    overflow-x:auto;overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    padding:.42rem .75rem;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    background:color-mix(in srgb,var(--paper) 96%,transparent);
+    backdrop-filter:blur(12px);
+    scrollbar-width:none}
+  .mstrip::-webkit-scrollbar{display:none}
+
+  .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
+    display:flex;align-items:center;min-height:44px;padding:0 .8rem;
+    border-radius:999px;text-decoration:none;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink2);
+    transition:color .28s ease}
+  /* Same inversion the desktop pill uses, and measured the same way: a solid
+     accent is far too light to carry accent-coloured text, and near-black on
+     the six accents bottoms out at 5.07 which clears AA. */
+  .mtab.on{color:#120E1C;font-weight:700}
+  .mtab:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .ms-sep{flex:0 0 1px;align-self:center;height:20px;background:var(--rule2);
+    margin:0 .3rem}
+
+  /* The indicator layer. The goo runs ONLY during a burst, for the reason the
+     desktop one does: thresholding a blurred stadium erodes its caps far more
+     than its straight edges, so a resting pill comes out a rounded rectangle. */
+  .ms-ink{position:absolute;left:0;top:.42rem;bottom:.42rem;width:100%;
+    z-index:0;pointer-events:none}
+  .mstrip.burst .ms-ink{filter:url(#dbgoo)}
+  .ms-pill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+    background:var(--accent);transform-origin:center;
+    scale:1;opacity:1}
+  /* The delay is what lets the particles arrive FIRST. The pill assembling out
+     of a swarm that is already there is the effect; the pill appearing and then
+     being decorated is not. */
+  .mstrip.burst .ms-pill{animation:msPill 620ms 190ms cubic-bezier(.34,1.3,.44,1) both}
+  @keyframes msPill{ from{scale:0;opacity:0} to{scale:1;opacity:1} }
+
+  /* Two nested elements because the travel and the swelling need DIFFERENT
+     timing functions, and one element cannot carry two. This is the reference
+     implementation's own split, kept for the same reason. */
+  .mpt{position:absolute;top:50%;left:var(--cx,50%);width:0;height:0;
+    animation:mptFly var(--t) ease both}
+  .mpd{display:block;width:var(--w);height:var(--w);
+    margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
+    border-radius:50%;background:var(--pc);opacity:0;
+    animation:mptPop var(--t) ease both}
+  /* Wide radius in, tight radius out: the particles CONVERGE. That direction
+     is the whole effect — outward would read as an explosion leaving, inward
+     reads as a shape being gathered into existence. */
+  @keyframes mptFly{
+    0%{transform:rotate(0deg) translate(var(--sx),var(--sy))}
+    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2))}
+    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey))}
+    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5))}
+  }
+  /* ⚠️ Full size by 30%, not 65%. The alpha crush behind the goo needs a disc of
+     roughly 8px before it renders anything at all: 22a-8 does not reach opacity
+     until a=0.36, and a 14px dot at 0.25 scale is 3.5px, whose blurred peak alpha
+     is about 0.07. Scaling up WHILE converging therefore meant every particle was
+     mathematically invisible until it had already reached the pill, which is why
+     the burst read as a tiny cluster hugging one edge. They reach full size while
+     still spread out now, and hold it through the flight. */
+  @keyframes mptPop{
+    0%{scale:0;opacity:0}
+    16%{opacity:1}
+    30%{scale:var(--sc);opacity:1}
+    82%{scale:var(--sc);opacity:1}
+    100%{scale:calc(var(--sc) * .35);opacity:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .mstrip.burst .ms-pill{animation:none}
+    .mpt{display:none}
+  }
+
+  /* The section index is no longer in a menu with the pages — it is not the
+     same question. It sits with the document it indexes, closed by default. */
+  .msecd{border-bottom:1px solid var(--rule);
+    background:color-mix(in srgb,var(--paper) 96%,transparent)}
+  .msecd>summary{display:flex;align-items:center;gap:.5rem;min-height:44px;
+    padding:0 .9rem;cursor:pointer;list-style:none;
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink3)}
+  .msecd>summary::-webkit-details-marker{display:none}
+  .msecd>summary::after{content:"";flex:0 0 auto;width:7px;height:7px;
+    margin-left:.2rem;border-right:1.5px solid var(--ink2);
+    border-bottom:1.5px solid var(--ink2);transform:translateY(-2px) rotate(45deg);
+    transition:transform .3s cubic-bezier(.22,.9,.24,1)}
+  .msecd[open]>summary::after{transform:translateY(1px) rotate(225deg)}
+  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
+  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
+    color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    max-width:52%}
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;padding-bottom:.3rem}
+  .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
+    padding:0 .9rem;border-left:2px solid transparent}
+  .msec .slot.on{border-left-color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
+}}
 
 
 /* ── layout ──────────────────────────────────────────────────────── */
@@ -829,9 +970,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .slot i{font-family:var(--mono);font-style:normal;font-size:.68rem;color:var(--ink3);
   font-variant-numeric:tabular-nums}
 .slot span{font-family:var(--display);font-size:.8rem;line-height:1.35;color:var(--ink2);
-  font-weight:500;letter-spacing:-.005em}
-.slot:hover{border-left-color:var(--ink3)}
-.slot:hover span{color:var(--ink)}
+  font-weight:500;letter-spacing:-.005em}@media (hover:hover) and (pointer:fine){
+.slot:hover{border-left-color:var(--ink3)}}@media (hover:hover) and (pointer:fine){
+.slot:hover span{color:var(--ink)}}
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}
@@ -868,9 +1009,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .doc h3 .idx{left:-3.6rem;top:.28em}
 }
 .anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
-  opacity:0;transition:opacity .15s}
-.doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}
-.anchor:hover{color:var(--accent-t)}
+  opacity:0;transition:opacity .15s}@media (hover:hover) and (pointer:fine){
+.doc h2:hover .anchor,.doc h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:fine){
+.anchor:hover{color:var(--accent-t)}}
 /* On a touch device there is no hover to reveal it, so a per-heading ¶ is either
    permanently invisible or permanent clutter. Neither is worth the space. */
 @media (hover:none){.anchor{display:none}}
@@ -884,13 +1025,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .doc li{margin:.5rem 0}
 .doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
 .doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
-  text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-.doc a:hover{text-decoration-color:var(--accent)}
+  text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent)}@media (hover:hover) and (pointer:fine){
+.doc a:hover{text-decoration-color:var(--accent)}}
 /* The signature: live cross-references, set apart from ordinary links. */
 .xref{font-family:var(--mono);font-size:.86em;color:var(--accent-t)!important;
   text-decoration:none!important;border-bottom:1px dotted color-mix(in srgb,var(--accent) 55%,transparent);
-  padding-bottom:1px;white-space:nowrap}
-.xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}
+  padding-bottom:1px;white-space:nowrap}@media (hover:hover) and (pointer:fine){
+.xref:hover{border-bottom-style:solid;background:color-mix(in srgb,var(--accent) 12%,transparent)}}
 /* A reference to a repo file that is NOT published (see PUBLISHED_TARGETS). Styled
    as a named thing rather than a link, so it reads as deliberate instead of broken. */
 .ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
@@ -931,7 +1072,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .dl:hover .dl-i{animation:dlBob .62s ease}
 }
 @keyframes dlBob{0%{transform:translateY(0)}42%{transform:translateY(3px)}100%{transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){.dl:hover .dl-i{animation:none}}
+@media (prefers-reduced-motion:reduce){@media (hover:hover) and (pointer:fine){.dl:hover .dl-i{animation:none}}}
 h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
   font-size:1rem;font-weight:700}
 h3.clause .idx{color:var(--accent-t);margin:0;flex:0 0 auto;font-size:.76rem}
@@ -996,8 +1137,8 @@ pre.aligned a{color:var(--ink)}
 .doc th{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;
   color:var(--ink3);font-weight:500;white-space:nowrap;background:var(--paper)}
 .doc td{font-family:var(--serif);font-size:.95rem;line-height:1.6;color:var(--ink2)}
-.doc tbody tr:last-child td{border-bottom:0}
-.doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.doc tbody tr:last-child td{border-bottom:0}@media (hover:hover) and (pointer:fine){
+.doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}}
 
 /* ── footer ──────────────────────────────────────────────────────── */
 /* No grid-column here any more: the footer left the grid when .cols was introduced,
@@ -1029,7 +1170,7 @@ html{scroll-behavior:smooth}
 <body>
 <svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
- x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+ x="-60%" y="-260%" width="220%" height="620%" color-interpolation-filters="sRGB">
 <feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
@@ -1085,7 +1226,10 @@ html{scroll-behavior:smooth}
           <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
           <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
-        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        <g class="moon">
+          <circle class="limb" cx="12" cy="12" r="7.4"/>
+          <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        </g>
       </svg>
     </span>
   </span>
@@ -1699,7 +1843,11 @@ html{scroll-behavior:smooth}
        the same mistake the desktop spray made before it was constrained. */
     function xy(dist,i,total){
       var a=((360+noise(8))/total*i)*Math.PI/180;
-      return [dist*Math.cos(a), dist*Math.sin(a)*0.46];
+      /* 0.34, not 0.46: the strip sets overflow-x, which forces overflow-y to
+         compute as non-visible too, so anything thrown past the band is CLIPPED
+         rather than merely untidy. At radius 54 this keeps the excursion inside
+         the 44px ink box. */
+      return [dist*Math.cos(a), dist*Math.sin(a)*0.34];
     }
 
     function place(i,animate){
@@ -1708,7 +1856,17 @@ html{scroll-behavior:smooth}
       pill.style.width=t.offsetWidth+'px';
       pill.style.background=t.style.getPropertyValue('--row')||'';
       ink.style.width=strip.scrollWidth+'px';
-      if(!animate||mstill){ pill.style.scale='1'; pill.style.opacity='1'; return; }
+      if(!animate||mstill){
+        strip.classList.remove('burst');
+        pill.style.scale='1'; pill.style.opacity='1'; return;
+      }
+      /* ⚠️ Do NOT paint the pill at full size first. It used to be placed solid,
+         then re-animated from zero 220ms later, so on arrival you saw the pill,
+         then saw it vanish, then saw it grow — which is the whole of the "glitchy"
+         complaint. The keyframes own scale and opacity during a burst (fill both,
+         with a delay), so the inline values are cleared and the pill simply is
+         not there until it starts building. */
+      pill.style.scale=''; pill.style.opacity='';
       ink.style.setProperty('--cx',(t.offsetLeft+t.offsetWidth/2)+'px');
       pill.style.animation='none'; void pill.offsetWidth;
       pill.style.animation='';
@@ -1724,14 +1882,14 @@ html{scroll-behavior:smooth}
       [].slice.call(ink.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
       var N=15;
       for(var i=0;i<N;i++){
-        var a=xy(46,N-i,N), b=xy(8+noise(6),N-i,N);
+        var a=xy(54,N-i,N), b=xy(9+noise(6),N-i,N);
         var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
         var el=document.createElement('i'); el.className='mpt';
         var dot=document.createElement('b'); dot.className='mpd';
         el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
           +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
           +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
-          +'--w:'+(11+Math.random()*5).toFixed(1)+'px;'
+          +'--w:'+(14+Math.random()*8).toFixed(1)+'px;'
           +'--t:'+Math.round(1200+noise(600))+'ms;--pc:'+col;
         el.appendChild(dot); ink.appendChild(el);
       }
@@ -1747,8 +1905,7 @@ html{scroll-behavior:smooth}
     }
     function live(){ return getComputedStyle(strip).display!=='none'; }
 
-    if(live()){ reveal(); place(cur,false);
-      setTimeout(function(){ place(cur,true); },220); }
+    if(live()){ reveal(); place(cur,true); }
     addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
     /* A tap moves the indicator immediately even though the page is about to be
        replaced: on a slow connection that is the only feedback the tap landed. */

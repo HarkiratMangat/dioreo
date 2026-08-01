@@ -806,6 +806,86 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
   color:var(--ink3);font-weight:500}
 `;
 
+/* ─────────────── the hover guard ────────────────────────────────────────
+ * On a touch screen :hover LATCHES: it applies on tap and stays applied until
+ * you tap something else. That is why the Discord button was photographed mid
+ * "hover" on a phone -- glowing, icon scaled and rotated, lifted a pixel -- and
+ * why it then looked misaligned against the GitHub button beside it. The stuck
+ * state and the alignment complaint were one defect.
+ *
+ * This was previously handled by writing (hover:hover) queries BY HAND, and a
+ * comment claimed every rule was inside one. It was not: 60 rules were not, and
+ * a twelve-line script found them in a second. Hand discipline across a 3,700
+ * line generator is not a mechanism, so the guard is applied MECHANICALLY here,
+ * to the finished stylesheet, and audited afterwards on the built output.
+ *
+ * :focus-visible is deliberately left OUTSIDE the guard. Wrapping a combined
+ * "a:hover,a:focus-visible" rule whole would drop keyboard focus styling on any
+ * device that also has a touchscreen, which is most laptops now -- so the
+ * selector list is SPLIT and only the :hover half is moved.
+ */
+const HOVER_Q = '@media (hover:hover) and (pointer:fine)';
+
+/* Split a selector list on top-level commas only: :is(a,b) and :not(a,b) hold
+   commas that are not selector boundaries. */
+const splitSel = sel => {
+    const out = []; let d = 0, cur = '';
+    for (const ch of sel) {
+        if (ch === '(') d++;
+        else if (ch === ')') d--;
+        if (ch === ',' && d === 0) { out.push(cur); cur = ''; continue; }
+        cur += ch;
+    }
+    out.push(cur);
+    return out.filter(x => x.trim());
+};
+
+let guarded = 0;
+const guardCss = css => {
+    let out = '', buf = '', i = 0;
+    const stack = [];                       // open at-rule preludes
+    const inGuard = () => stack.some(p => /hover\s*:\s*hover/.test(p));
+    while (i < css.length) {
+        const c = css[i];
+        if (c === '/' && css[i + 1] === '*') {           // comments pass through
+            const e = css.indexOf('*/', i + 2), k = e < 0 ? css.length : e + 2;
+            buf += css.slice(i, k); i = k; continue;
+        }
+        if (c === '"' || c === "'") {                    // strings pass through
+            let j = i + 1;
+            while (j < css.length && css[j] !== c) { if (css[j] === '\\') j++; j++; }
+            buf += css.slice(i, j + 1); i = j + 1; continue;
+        }
+        if (c === '{') {
+            const prelude = buf; buf = ''; i++;
+            if (/^\s*@/.test(prelude)) { stack.push(prelude); out += prelude + '{'; continue; }
+            let d = 1, j = i;                            // a style rule: take its body whole
+            while (j < css.length && d > 0) {
+                if (css[j] === '{') d++;
+                else if (css[j] === '}') d--;
+                if (d > 0) j++;
+            }
+            const decls = css.slice(i, j);
+            i = j + 1;
+            if (!/:hover/.test(prelude) || inGuard()) { out += prelude + '{' + decls + '}'; continue; }
+            const parts = splitSel(prelude);
+            const hov = parts.filter(p => /:hover/.test(p));
+            const rest = parts.filter(p => !/:hover/.test(p));
+            guarded++;
+            if (rest.length) out += rest.join(',') + '{' + decls + '}';
+            out += HOVER_Q + '{' + hov.join(',') + '{' + decls + '}}';
+            continue;
+        }
+        if (c === '}') { stack.pop(); out += buf + '}'; buf = ''; i++; continue; }
+        buf += c; i++;
+    }
+    return out + buf;
+};
+
+/* Every page goes through here, so a stylesheet cannot reach disk unguarded. */
+const writePage = (dest, html) => fs.writeFileSync(dest,
+    html.replace(/<style>([\s\S]*?)<\/style>/g, (m, css) => '<style>' + guardCss(css) + '</style>'));
+
 /* ─────────────── shared components: wordmark, repo, theme switch ───────── */
 
 const REPO_URL = 'https://github.com/HarkiratMangat/diors-builds';
@@ -917,7 +997,10 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
           <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
           <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
-        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        <g class="moon">
+          <circle class="limb" cx="12" cy="12" r="7.4"/>
+          <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        </g>
       </svg>
     </span>
   </span>
@@ -1203,13 +1286,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    the accessible name. */
 @media (max-width:620px){
   .bar{gap:.7rem;padding:0 .8rem}
-  /* ⚠️ ONE rule, BOTH axes. The desktop rule gives .ins height:37px while this
-     one set only width:32px, so on a phone the Discord button rendered as a
-     32x37 egg. That is a specificity trap, not a drawing mistake — the height
-     came from a rule nobody was looking at. 38px square, and the expand-on-
-     hover behaviour is dropped here because there is no hover to expand on. */
-  .ghb,.ins{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
-  .ins-t,.ins-ar{display:none}
+  /* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
+     .ins height:37px while this one set only width:32px, so on a phone the
+     Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
+     mistake: the height came from a rule nobody was looking at.
+     .ins keeps its LABEL here. A bare circular Discord glyph reads as a sign-in
+     or an avatar, which is the opposite of what it does — it is an outbound
+     install link, and the word is what says so. The repo button stays a circle
+     because it is secondary and its mark is self-explanatory. */
+  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+    justify-content:center}
+  .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
+  .ins-ar{display:none}
 }
 
 /* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
@@ -1274,7 +1363,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
-.thm-kn svg{width:16px;height:16px;overflow:visible}
+.thm-kn svg{width:17px;height:17px;overflow:visible}
 /* moon */
 .thm-kn .orb{fill:#DCE4F7}
 /* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
@@ -1289,16 +1378,24 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
    disc reads as a full sun with nothing bitten out of it. */
 /* ⚠️ The lune's CENTROID is not the disc's centre, and that is the "moon looks
-   off-centre in its circle" bug. The remaining shape runs from -R to (D-r)
-   along the axis, so its midpoint sits (R + D - r)/2 - R away from the middle,
-   i.e. 5.2 units down-left here — the thinner it gets, the further off it
-   drifts. The orb is translated back by that amount so the crescent is optically
-   centred, and returns to nothing in light mode so the SUN stays concentric.
-   Width is R + D - r = 4.4 of a 14.8 diameter (30%); at 3.1 it was too thin to
-   carry at 16px. Horn tips land at ±68 degrees. */
-.thm-kn .orb{transform:translate(3.68px,-3.68px);
+   off-centre in its circle" bug. The remaining shape runs from -R to (D-r) along
+   the axis, so its midpoint sits (R + D - r)/2 - R from the middle — 4.7 units
+   down-left here, and the THINNER the crescent the further out it drifts. The
+   whole moon group is translated back by exactly that, and returns to zero in
+   light mode so the sun stays concentric.
+   Width is R + D - r = 5.4 of a 14.8 diameter (36%). It has been 3.1 and 4.4 on
+   the way here and both read as a cheap sliver at 16px; horn tips at ±65 deg.
+
+   THE EARTHSHINE DISC is the added element, and it is the reason this reads as a
+   MOON rather than a banana: the unlit limb is faintly lit by light bouncing off
+   the earth, so the full circle is always dimly visible behind the bright part.
+   It is a filled disc rather than an outline on purpose — a 0.5-unit stroke is a
+   third of a pixel once the svg renders at 16px, which is the same size trap that
+   killed the craters. Fill survives at any size; hairlines do not. */
+.thm-kn .moon{transform:translate(3.32px,-3.32px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .cut{transform:translate(2.83px,-2.83px);
+.thm-kn .limb{fill:#DCE4F7;opacity:.2;transition:opacity .4s}
+.thm-kn .cut{transform:translate(3.54px,-3.54px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
   transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
@@ -1317,7 +1414,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
 :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
-:root[data-theme=light] .thm-kn .orb{transform:none}
+:root[data-theme=light] .thm-kn .moon{transform:none}
+:root[data-theme=light] .thm-kn .limb{opacity:0}
 :root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
@@ -1331,7 +1429,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
   :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
-  :root:not([data-theme=dark]) .thm-kn .orb{transform:none}
+  :root:not([data-theme=dark]) .thm-kn .moon{transform:none}
+  :root:not([data-theme=dark]) .thm-kn .limb{opacity:0}
   :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
@@ -1787,7 +1886,11 @@ const NAV_JS = `
        the same mistake the desktop spray made before it was constrained. */
     function xy(dist,i,total){
       var a=((360+noise(8))/total*i)*Math.PI/180;
-      return [dist*Math.cos(a), dist*Math.sin(a)*0.46];
+      /* 0.34, not 0.46: the strip sets overflow-x, which forces overflow-y to
+         compute as non-visible too, so anything thrown past the band is CLIPPED
+         rather than merely untidy. At radius 54 this keeps the excursion inside
+         the 44px ink box. */
+      return [dist*Math.cos(a), dist*Math.sin(a)*0.34];
     }
 
     function place(i,animate){
@@ -1796,7 +1899,17 @@ const NAV_JS = `
       pill.style.width=t.offsetWidth+'px';
       pill.style.background=t.style.getPropertyValue('--row')||'';
       ink.style.width=strip.scrollWidth+'px';
-      if(!animate||mstill){ pill.style.scale='1'; pill.style.opacity='1'; return; }
+      if(!animate||mstill){
+        strip.classList.remove('burst');
+        pill.style.scale='1'; pill.style.opacity='1'; return;
+      }
+      /* ⚠️ Do NOT paint the pill at full size first. It used to be placed solid,
+         then re-animated from zero 220ms later, so on arrival you saw the pill,
+         then saw it vanish, then saw it grow — which is the whole of the "glitchy"
+         complaint. The keyframes own scale and opacity during a burst (fill both,
+         with a delay), so the inline values are cleared and the pill simply is
+         not there until it starts building. */
+      pill.style.scale=''; pill.style.opacity='';
       ink.style.setProperty('--cx',(t.offsetLeft+t.offsetWidth/2)+'px');
       pill.style.animation='none'; void pill.offsetWidth;
       pill.style.animation='';
@@ -1812,14 +1925,14 @@ const NAV_JS = `
       [].slice.call(ink.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
       var N=15;
       for(var i=0;i<N;i++){
-        var a=xy(46,N-i,N), b=xy(8+noise(6),N-i,N);
+        var a=xy(54,N-i,N), b=xy(9+noise(6),N-i,N);
         var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
         var el=document.createElement('i'); el.className='mpt';
         var dot=document.createElement('b'); dot.className='mpd';
         el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
           +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
           +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
-          +'--w:'+(11+Math.random()*5).toFixed(1)+'px;'
+          +'--w:'+(14+Math.random()*8).toFixed(1)+'px;'
           +'--t:'+Math.round(1200+noise(600))+'ms;--pc:'+col;
         el.appendChild(dot); ink.appendChild(el);
       }
@@ -1835,8 +1948,7 @@ const NAV_JS = `
     }
     function live(){ return getComputedStyle(strip).display!=='none'; }
 
-    if(live()){ reveal(); place(cur,false);
-      setTimeout(function(){ place(cur,true); },220); }
+    if(live()){ reveal(); place(cur,true); }
     addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
     /* A tap moves the indicator immediately even though the page is about to be
        replaced: on a slow connection that is the only feedback the tap landed. */
@@ -2075,7 +2187,10 @@ const SWITCHER_CSS = `
   .ms-pill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
     background:var(--accent);transform-origin:center;
     scale:1;opacity:1}
-  .mstrip.burst .ms-pill{animation:msPill 640ms cubic-bezier(.34,1.3,.44,1) both}
+  /* The delay is what lets the particles arrive FIRST. The pill assembling out
+     of a swarm that is already there is the effect; the pill appearing and then
+     being decorated is not. */
+  .mstrip.burst .ms-pill{animation:msPill 620ms 190ms cubic-bezier(.34,1.3,.44,1) both}
   @keyframes msPill{ from{scale:0;opacity:0} to{scale:1;opacity:1} }
 
   /* Two nested elements because the travel and the swelling need DIFFERENT
@@ -2096,13 +2211,19 @@ const SWITCHER_CSS = `
     85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey))}
     100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5))}
   }
+  /* ⚠️ Full size by 30%, not 65%. The alpha crush behind the goo needs a disc of
+     roughly 8px before it renders anything at all: 22a-8 does not reach opacity
+     until a=0.36, and a 14px dot at 0.25 scale is 3.5px, whose blurred peak alpha
+     is about 0.07. Scaling up WHILE converging therefore meant every particle was
+     mathematically invisible until it had already reached the pill, which is why
+     the burst read as a tiny cluster hugging one edge. They reach full size while
+     still spread out now, and hold it through the flight. */
   @keyframes mptPop{
     0%{scale:0;opacity:0}
-    25%{scale:calc(var(--sc) * .25)}
-    38%{opacity:1}
-    65%{scale:var(--sc);opacity:1}
-    85%{scale:var(--sc);opacity:1}
-    100%{scale:0;opacity:0}
+    16%{opacity:1}
+    30%{scale:var(--sc);opacity:1}
+    82%{scale:var(--sc);opacity:1}
+    100%{scale:calc(var(--sc) * .35);opacity:0}
   }
   @media (prefers-reduced-motion:reduce){
     .mstrip.burst .ms-pill{animation:none}
@@ -2138,6 +2259,17 @@ const SWITCHER_CSS = `
 /**
  * The metaball filter behind the navigation indicator.
  *
+ * ⚠️ THE REGION MUST CONTAIN THE DROPLETS, NOT JUST THE PILL. An SVG filter's
+ * region is a percentage of the filtered element's box, and anything outside it
+ * is not filtered at all — it paints as a raw, unblurred, unfused circle. The
+ * indicator layer is only ~32px tall, so the old y="-60%" height="220%" reached
+ * ±19px, and the desktop spray already travels ±19px: passing by luck. The
+ * mobile strip's swarm goes further. Chrome quietly expands the region to cover
+ * overflow, Safari honours what is declared, so this fails on a phone ONLY —
+ * which is exactly how it was found, with a CSS-filter version rendering
+ * correctly beside it on the same device. A CSS filter chain has no region;
+ * an SVG one does, and it has to be declared for the widest thing inside it.
+ *
  * Blur, then crush the alpha channel back to hard edges with a colour matrix.
  * Two separate shapes that come within a blur radius of each other fuse into one
  * silhouette with a pinched neck — which is the entire reason the indicator can
@@ -2158,7 +2290,7 @@ const SWITCHER_CSS = `
 // compositions cannot depend on any one of them having styled it.
 const GOO_SVG = `<svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
- x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+ x="-60%" y="-260%" width="220%" height="620%" color-interpolation-filters="sRGB">
 <feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
@@ -3787,7 +3919,7 @@ function build() {
             ids
         );
 
-        fs.writeFileSync(path.join(OUT, page.out), shell({
+        writePage(path.join(OUT, page.out), shell({
             ...page, body: html, toc: parsed.toc, meta
         }));
 
@@ -3810,7 +3942,7 @@ function build() {
         const comp = warmCompose(parsed.blocks, page.out);
         const html = linkifyRefs(comp.body, ids);
         warmResults[page.out] = comp.hits;
-        fs.writeFileSync(path.join(OUT, page.out), warmShell({
+        writePage(path.join(OUT, page.out), warmShell({
             ...page, body: html, sig: comp.sig, spine: comp.spine
         }));
         built.push({ ...page, sections: parsed.toc.filter(t => !t.sub).length, extra: true });
@@ -3819,7 +3951,7 @@ function build() {
     }
 
     // Only the numbered legal set goes in the numbered list.
-    fs.writeFileSync(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra)));
+    writePage(path.join(OUT, 'index.html'), indexPage(built.filter(p => !p.extra)));
     console.log('  ✓ index.html');
     buildCompanions();
     return built;
