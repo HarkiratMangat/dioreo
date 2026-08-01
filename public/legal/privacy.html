@@ -428,7 +428,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    far between them, --cm the interpolated colour JS computes for the edge
    and the glow. Width and position come from JS in pixels; there is no --n
    and no --i any more, because the indicator measures the real tabs. */
-.seg{position:relative;display:flex;align-items:center;
+.seg{position:relative;display:flex;align-items:center;gap:var(--gap);--gap:.5rem;
   border-radius:999px;border:1px solid var(--rule2);padding:3px;
   /* The track must be DARKER than the blob, or the indicator reads as a recess
      instead of a raised pill and all but disappears. It used to be a 9% --ink
@@ -464,8 +464,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    only and leaves RGB untouched, so a --paper blob stays --paper and both themes
    work with no inversion and no second copy of the text.) */
 .seg-ink{position:absolute;z-index:0;left:0;right:0;top:2px;bottom:2px;
-  pointer-events:none;
-  filter:url(#dbgoo) drop-shadow(0 0 7px var(--cmg,transparent))}
+  pointer-events:none;filter:url(#dbgoo)}
 .ib{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:999px;
   background:var(--accent);will-change:transform,width}
 /* The neck. Two blobs only fuse where their blurs overlap — about 14px at
@@ -475,12 +474,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    moment of the break, thinning as the tail dissolves, until it drops under the
    blur threshold and the alpha crush snaps it. That snap is the metaball. */
 .ib-c{top:50%;bottom:auto;height:0}
+/* The droplets. They live INSIDE the filtered layer, which is the whole point:
+   on their own they would be loose dots, but blurred and alpha-crushed together
+   with the pill they read as material being thrown off it and gathered back. */
+.pt{position:absolute;top:50%;left:0;width:var(--w);height:var(--w);
+  margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
+  border-radius:50%;background:var(--pc);opacity:0;pointer-events:none;
+  animation:ptFly var(--t) var(--d) cubic-bezier(.32,.72,.36,1) both}
+@keyframes ptFly{
+  0%{opacity:0;transform:translate(var(--x0),var(--y0)) scale(.15)}
+  30%{opacity:1;transform:translate(var(--x1),var(--y1)) scale(1)}
+  74%{opacity:1;transform:translate(var(--x2),0) scale(.82)}
+  100%{opacity:0;transform:translate(var(--x2),0) scale(.1)}
+}
+@media (prefers-reduced-motion:reduce){ .pt{display:none} }
 .goodef{position:absolute;width:0;height:0;overflow:hidden}
 
 .tab{position:relative;z-index:1;display:block;white-space:nowrap;cursor:pointer;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
   text-transform:uppercase;text-decoration:none;color:var(--ink2);
-  padding:.42rem .85rem;border-radius:999px;transition:color .22s ease}
+  padding:.42rem .85rem;border-radius:999px;transition:color .3s ease}
 .tab.on{color:var(--accent-t);font-weight:700}
 /* The label sitting ON the pill. A solid accent fill is far too light to carry
    accent-coloured text, so the tab the indicator currently covers flips to
@@ -493,8 +506,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* Segment dividers — the affordance at rest. Drawn on the tab rather than the
    track so they land in the gaps whatever each label measures. */
-.tab+.tab::before{content:"";position:absolute;left:0;top:50%;width:1px;height:13px;
-  margin-top:-6.5px;background:var(--rule2);opacity:.6;transition:opacity .25s ease}
+/* The divider sits in the MIDDLE of the gap, not against a tab edge, so it
+   reads as a separator between two segments rather than a rule attached to one.
+   The gap itself is what gives the morph somewhere to travel: with the tabs
+   touching, the neck had to stretch directly across a neighbouring label. */
+.tab+.tab::before{content:"";position:absolute;left:calc(var(--gap) / -2);top:50%;
+  width:1px;height:13px;margin-top:-6.5px;background:var(--rule2);opacity:.6;
+  transition:opacity .25s ease}
 .tab.on::before,.tab.on+.tab::before,.seg.hot .tab::before{opacity:0}
 @media (hover:hover) and (pointer:fine){
   .tab:hover{color:var(--ink)}
@@ -514,7 +532,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .navwrap{display:flex;align-items:center}
 
 @media (max-width:1180px){
-  .tab{padding:.42rem .6rem;font-size:.62rem;letter-spacing:.07em}
+  .tab{padding:.42rem .5rem;font-size:.62rem;letter-spacing:.07em}
+  .seg{--gap:.34rem}
 }
 @media (min-width:981px) and (max-width:1000px){
   .seg[data-at="-1"],.seg-gap{display:none}
@@ -1211,83 +1230,143 @@ html{scroll-behavior:smooth}
 
     var A=ink.querySelector('.ib-a'), B=ink.querySelector('.ib-b'),
         C=ink.querySelector('.ib-c');
-    var aw0=0, cFrom=cols[home===null?0:home], cTo=cFrom;
-    function H(){ return ink.clientHeight||26; }
-    var ax=0,aw=0,bx=0,bw=0,tx=0,tw=0,m=0,mTgt=0,raf=0,idx=home===null?0:home;
+    var idx=home===null?0:home;
+    var srcX=0,srcW=0,dstX=0,dstW=0;
+    var p=1, t0=0, raf=0, sweep=0, litT=0;
+    var cFrom=cols[idx], cTo=cols[idx];
+    /* 720ms, not the ~200ms this ran at before. The reference travels its pill
+       over TWO seconds, which is the only reason its break is legible at all —
+       at 200ms the tail had dissolved before the head arrived and there was
+       nothing on screen to see. This is the single most important number here. */
+    var DUR=720;
 
-    /* Real measured geometry, not 1/n of the track. offsetLeft and an absolutely
-       positioned left:0 are both measured from .seg's padding box, so the two
-       agree exactly and a blob fits "Contributing" as well as "Notice". */
+    function H(){ return ink.clientHeight||26; }
     function box(i){ return [tabs[i].offsetLeft, tabs[i].offsetWidth]; }
-    function place(){
-      A.style.transform='translateX('+ax+'px)'; A.style.width=Math.max(0,aw)+'px';
-      B.style.transform='translateX('+bx+'px)'; B.style.width=Math.max(0,bw)+'px';
-      /* Span the GAP: the smaller right edge to the larger left edge. When the
-         two overlap this goes negative and clamps to zero, which is what makes
-         the neck disappear the moment they have merged. */
-      var l=Math.min(ax+aw,bx+bw), r=Math.max(ax,bx), k=aw0>0?aw/aw0:0;
+    function ease(x){ return 1-Math.pow(1-x,3); }
+    /* Slight overshoot on the head, so it arrives with weight and settles back
+       rather than easing politely into place. */
+    function back(x){ var c=1.28, u=x-1; return 1+(c+1)*u*u*u+c*u*u; }
+    function band(a,b,x){ x=Math.max(0,Math.min(1,(x-a)/(b-a))); return x*x*(3-2*x); }
+
+    /* The colour ramp spans only the MOVE, from the tab being left to the tab
+       being entered — not the whole track. Spanning the track meant the pill sat
+       at some arbitrary midpoint of the ramp once it landed, so when the ramp
+       later collapsed to a flat colour the pill visibly changed hue. Anchoring
+       the ramp to the move puts the destination exactly at one end of it. */
+    function span(){
+      var lo=Math.min(srcX,dstX), hi=Math.max(srcX+srcW,dstX+dstW);
+      var fwd=dstX>=srcX;
+      return [lo, Math.max(1,hi-lo), fwd?cFrom:cTo, fwd?cTo:cFrom];
+    }
+    function sampleAt(x){
+      var s=span(), t=Math.max(0,Math.min(1,(x-s[0])/s[1]));
+      var a=s[2]===cFrom?cFrom:cTo, b=s[3];
+      return 'rgb('+mix(a,b,t).join(',')+')';
+    }
+    function paint(){
+      var e=back(p), g=ease(p);
+      var hx=srcX+(dstX-srcX)*e;
+      var hw=srcW*0.34+(dstW-srcW*0.34)*g;
+      /* The tail holds its ground, then lets go. It is still ~80% of its width
+         a third of the way through the move, which is what produces the "part
+         of it is clinging to the tab I came from" reading. */
+      var tx=srcX, tw=srcW*(1-band(0.14,0.74,p));
+      B.style.transform='translateX('+hx+'px)'; B.style.width=Math.max(0,hw)+'px';
+      A.style.transform='translateX('+tx+'px)'; A.style.width=Math.max(0,tw)+'px';
+      /* The neck spans the gap between the two and thins to nothing before the
+         head lands, so the connection pinches off rather than being cut. */
+      var l=Math.min(tx+tw,hx+hw), r=Math.max(tx,hx);
       C.style.transform='translate('+l+'px,-50%)';
       C.style.width=Math.max(0,r-l)+'px';
-      C.style.height=(H()*0.66*Math.max(0,Math.min(1,k)))+'px';
-      var g=home===null?hex(cols[idx]):mix(cols[home],cols[idx],m);
-      seg.style.setProperty('--cmg',rgba(g,.6));
-      /* One gradient spanning the WHOLE track, sampled by each blob at its own
-         offset. Three elements painting their own gradient would restart the
-         ramp at every seam; sizing to the track and shifting the origin by each
-         blob's left edge makes tail, neck and head read as one body of liquid
-         with a single colour run through it. */
-      var W=seg.clientWidth, grad='linear-gradient(90deg,'+cFrom+','+cTo+')';
-      [[A,ax],[C,l],[B,bx]].forEach(function(p){
-        p[0].style.backgroundImage=grad;
-        p[0].style.backgroundSize=W+'px 100%';
-        p[0].style.backgroundPosition=(-p[1])+'px 0';
+      C.style.height=Math.max(0,H()*0.58*(1-band(0.12,0.8,p)))+'px';
+      var s=span(), grad='linear-gradient(90deg,'+s[2]+' 0%,'+s[3]+' 100%)';
+      [[A,tx],[C,l],[B,hx]].forEach(function(q){
+        q[0].style.backgroundImage=grad;
+        q[0].style.backgroundSize=s[1]+'px 100%';
+        q[0].style.backgroundPosition=(s[0]-q[1])+'px 0';
       });
     }
-    /* The tail lets go MORE SLOWLY than the head travels. That difference is
-       what holds the neck open across the gap: if both ran at the same rate the
-       old blob would vanish before the new one had gone anywhere, and the effect
-       would be a crossfade rather than something tearing. */
-    function frame(){
-      bx+=(tx-bx)*0.26; bw+=(tw-bw)*0.26;
-      aw+=(0-aw)*0.13;
-      m+=(mTgt-m)*0.16;
-      place();
-      if(Math.abs(tx-bx)>0.3||Math.abs(tw-bw)>0.3||aw>0.6||Math.abs(mTgt-m)>0.004){
-        raf=requestAnimationFrame(frame);
-      }else{ bx=tx; bw=tw; aw=0; m=mTgt; place(); raf=0; }
+    function step(now){
+      p=Math.min(1,(now-t0)/DUR);
+      /* Collapse the ramp the instant the move completes. Without this the
+         settled pill kept a gradient running from the accent of whichever tab
+         was hovered last, so leaving the bar left the current page's pill
+         wearing another page's colour. */
+      if(p>=1) cFrom=cTo;
+      paint();
+      raf = p<1 ? requestAnimationFrame(step) : 0;
     }
+
+    /* The droplet spray, the part that makes the shape look ASSEMBLED rather
+       than moved. Same principle as the reference's 15-particle burst: circles
+       that scale up out of nothing, arc across, and scale away — all inside the
+       goo layer, so they fuse with the pill instead of reading as loose dots. */
+    function spray(){
+      clearTimeout(sweep);
+      [].slice.call(ink.querySelectorAll('.pt')).forEach(function(n){ n.remove(); });
+      if(still) return;
+      var n=9, h=H(), max=0;
+      for(var i=0;i<n;i++){
+        var el=document.createElement('i');
+        el.className='pt';
+        var x0=srcX+srcW*(0.2+0.6*Math.random());
+        var x2=dstX+dstW*(0.12+0.76*Math.random());
+        var x1=x0+(x2-x0)*(0.3+0.4*Math.random());
+        var y1=(Math.random()<0.5?-1:1)*(h*0.26+Math.random()*h*0.4);
+        var dur=420+Math.random()*300, del=i*16;
+        max=Math.max(max,dur+del);
+        el.style.cssText='--w:'+(4+Math.random()*6).toFixed(1)+'px;'
+          +'--x0:'+x0.toFixed(1)+'px;--y0:0px;'
+          +'--x1:'+x1.toFixed(1)+'px;--y1:'+y1.toFixed(1)+'px;'
+          +'--x2:'+x2.toFixed(1)+'px;'
+          +'--t:'+dur.toFixed(0)+'ms;--d:'+del+'ms;'
+          +'--pc:'+sampleAt(x2);
+        ink.appendChild(el);
+      }
+      sweep=setTimeout(function(){
+        [].slice.call(ink.querySelectorAll('.pt')).forEach(function(n){ n.remove(); });
+      }, max+120);
+    }
+
     function aim(i,snap){
-      var moved=(i!==idx);
-      idx=i;
       var b=box(i);
-      mTgt=home===null?0:(i===home?0:1);
       if(snap||still){
-        ax=b[0]; aw=0; aw0=0; bx=b[0]; bw=b[1]; tx=b[0]; tw=b[1]; m=mTgt;
-        cFrom=cTo=cols[i]; lit(i);
-        place(); return;
+        idx=i; srcX=dstX=b[0]; srcW=dstW=b[1]; p=1;
+        cFrom=cTo=cols[i]; lit(i); paint(); return;
       }
-      /* Break off: whatever the traveller is RIGHT NOW becomes the tail, so an
-         interrupted move tears from where it had got to rather than snapping
-         back to the tab it originally came from. */
-      if(moved){
-        ax=bx; aw=bw; aw0=bw||1; cFrom=cTo;
-      }
-      cTo=cols[i]; lit(i);
-      tx=b[0]; tw=b[1];
-      if(!raf) raf=requestAnimationFrame(frame);
+      if(i===idx&&p>=1) return;
+      /* Break from where the head actually IS, not from the tab it originally
+         set out from, so redirecting mid-flight tears from the current shape. */
+      var e=back(p), g=ease(p);
+      var hx=srcX+(dstX-srcX)*e, hw=srcW*0.34+(dstW-srcW*0.34)*g;
+      cFrom=sampleAt(hx+hw/2);
+      srcX=hx; srcW=Math.max(hw,10);
+      idx=i; dstX=b[0]; dstW=b[1]; cTo=cols[i];
+      p=0; t0=performance.now();
+      lit(i,DUR*0.38); spray();
+      if(!raf) raf=requestAnimationFrame(step);
     }
     /* The inverted label is only correct while the pill is actually UNDER it.
        A group you are not in keeps its indicator hidden until you point at it,
        so applying .lit there painted "Contributing" near-black on the dark bar
        and the label disappeared completely. Visibility, not index, is the test. */
-    function lit(i){
+    /* The inverted label is only correct while the pill is actually UNDER it,
+       and that is true in TWO senses. It must not apply to a group whose
+       indicator is hidden — that painted "Contributing" near-black on the dark
+       bar and the label vanished. And it must not apply the instant a move
+       STARTS: flipping the destination label immediately left it near-black on
+       the bar for a third of a second before its pill got there. So the swap is
+       held until the head has largely arrived, and both labels change at once. */
+    function lit(i,delay){
+      clearTimeout(litT);
       var vis = home!==null || seg.classList.contains('hot');
-      tabs.forEach(function(a,j){ a.classList.toggle('lit', vis && j===i); });
+      var set=function(){ tabs.forEach(function(a,j){ a.classList.toggle('lit', vis&&j===i); }); };
+      if(delay) litT=setTimeout(set,delay); else set();
     }
     function rest(){
       seg.classList.remove('hot');
-      if(home===null) tabs.forEach(function(a){ a.classList.remove('lit'); });
-      aim(home===null?idx:home,false);
+      if(home===null){ tabs.forEach(function(a){ a.classList.remove('lit'); }); return; }
+      aim(home,false);
     }
 
     tabs.forEach(function(a,i){
