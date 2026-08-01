@@ -2154,16 +2154,51 @@ ${SWITCHER_CSS}
   letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
   border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
   max-width:72ch}
+.authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
+  justify-content:space-between}
+.authoritative p{margin:0;flex:1 1 34ch}
 .authoritative a{color:var(--ink)}
+/* Download the instrument. The arrow is drawn rather than typed so it inherits
+   the button's colour in both themes and cannot fall back to a missing glyph. */
+.dl{display:inline-flex;align-items:center;gap:.55rem;flex:0 0 auto;min-height:38px;
+  padding:.45rem .95rem;border-radius:999px;border:1px solid var(--rule2);
+  background:color-mix(in srgb,var(--ink) 7%,transparent);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;transition:border-color .25s,background .25s}
+.dl-i{position:relative;width:9px;height:11px;flex:0 0 auto}
+.dl-i::before{content:"";position:absolute;left:3.6px;top:0;width:1.6px;height:7px;
+  background:currentColor}
+.dl-i::after{content:"";position:absolute;left:.6px;top:3.6px;width:6px;height:6px;
+  border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  transform:rotate(-45deg)}
+.dl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){
+  .dl:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent);
+    background:color-mix(in srgb,var(--accent) 13%,transparent)}
+  .dl:hover .dl-i{animation:dlBob .62s ease}
+}
+@keyframes dlBob{0%{transform:translateY(0)}42%{transform:translateY(3px)}100%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.dl:hover .dl-i{animation:none}}
 h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
   font-size:1rem;font-weight:700}
 h3.clause .idx{color:var(--accent-t);margin:0;flex:0 0 auto;font-size:.76rem}
-@media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
-  text-align:right;width:3.2rem}}
 h3.clause .ht:empty{display:none}
-/* A clause with no title phrase leaves only the index; without this its body
-   would start against the heading's bottom margin and read as orphaned. */
-h3.clause:has(.ht:empty){margin-bottom:.15rem}
+@media (min-width:1120px){
+  h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;text-align:right;width:3.2rem}
+  /* ⚠️ A clause with no title phrase is JUST a number, and the empty heading was
+     still generating a 14.5px box plus a bottom margin. That pushed the clause
+     text down while the number stayed pinned to the heading, leaving the number
+     stranded above the sentence it labels — measured at 13.3px, which reads as a
+     misalignment because it is one. Collapsing the box to zero puts the number on
+     the clause's own first line, which is where a margin index belongs.
+     Only inside this query: below 1120px the index is an in-flow flex item and
+     zero height would clip it. */
+  h3.clause:has(.ht:empty){height:0;margin:2.4rem 0 0}
+  h3.clause:has(.ht:empty) .anchor{display:none}
+}
+@media (max-width:1119px){
+  h3.clause:has(.ht:empty){margin-bottom:.15rem}
+}
 p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
   margin:0 0 .95rem;max-width:70ch}
 p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
@@ -3311,9 +3346,19 @@ const sourcePath = page => page.root
 
 // Both strips are shared with verify() for the same reason: whatever build()
 // removes from the body, the verifier must not expect to find in it.
+// ⚠️ The continuation clause is load-bearing. These fields are WRAPPED in the
+// source — "**Applies to:** ... and the website" / "these documents are published
+// on (the "Site")" is one logical line across two — and `.*$` stops at the first
+// newline, so the remainder survived the strip and rendered as an orphaned
+// sentence fragment directly under the masthead on both Terms and Privacy. It
+// read as though a paragraph had been cut in half, because it had been. The
+// trailing group consumes any following line that is not blank, another **field**,
+// a rule, a heading or a quote — i.e. exactly the wrapped remainder and nothing
+// past the head block. Verified against both files: 47 and 36 characters removed,
+// and §1.1's operative definition of the Site untouched.
 const stripMdHead = md => md
     .replace(/^#\s+.*$/m, '')
-    .replace(/^\*\*(Effective date|Version|Applies to):\*\*.*$/gm, '')
+    .replace(/^\*\*(?:Effective date|Version|Applies to):\*\*[^\n]*(?:\n(?![ \t]*$|\*\*|---|#|>)[^\n]*)*/gm, '')
     .trim();
 
 // Drops a plain-text document's own title block, which the masthead renders
@@ -3364,9 +3409,17 @@ function build() {
             // Named from page.file rather than hardcoded — this said "the
             // plain-text LICENSE" on the NOTICE page, pointing a reader at the
             // wrong document to resolve a discrepancy in the one they were reading.
-            note = `<p class="authoritative">This page is a formatted reading copy. ` +
+            // The download sits HERE rather than in the masthead because this is
+            // the one place that explains why the plain-text file matters: it is
+            // the instrument, and the page you are reading is not. A reader who
+            // needs to keep or quote the governing text wants it at that moment.
+            note = `<div class="authoritative">` +
+                `<p>This page is a formatted reading copy. ` +
                 `The <a href="../${page.file}">plain-text ${esc(page.file)}</a> is the ` +
-                `authoritative instrument, and governs if the two ever differ.</p>`;
+                `authoritative instrument, and governs if the two ever differ.</p>` +
+                `<a class="dl" href="../${page.file}" download="${esc(page.file)}.txt">` +
+                `<span class="dl-i" aria-hidden="true"></span>` +
+                `Download ${esc(page.file)}</a></div>`;
         } else {
             // Pull the metadata straight out of the document, so the page can never
             // advertise a version or date the source doesn't actually carry.

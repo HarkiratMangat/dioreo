@@ -800,16 +800,51 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
   border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
   max-width:72ch}
+.authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
+  justify-content:space-between}
+.authoritative p{margin:0;flex:1 1 34ch}
 .authoritative a{color:var(--ink)}
+/* Download the instrument. The arrow is drawn rather than typed so it inherits
+   the button's colour in both themes and cannot fall back to a missing glyph. */
+.dl{display:inline-flex;align-items:center;gap:.55rem;flex:0 0 auto;min-height:38px;
+  padding:.45rem .95rem;border-radius:999px;border:1px solid var(--rule2);
+  background:color-mix(in srgb,var(--ink) 7%,transparent);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;transition:border-color .25s,background .25s}
+.dl-i{position:relative;width:9px;height:11px;flex:0 0 auto}
+.dl-i::before{content:"";position:absolute;left:3.6px;top:0;width:1.6px;height:7px;
+  background:currentColor}
+.dl-i::after{content:"";position:absolute;left:.6px;top:3.6px;width:6px;height:6px;
+  border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  transform:rotate(-45deg)}
+.dl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){
+  .dl:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent);
+    background:color-mix(in srgb,var(--accent) 13%,transparent)}
+  .dl:hover .dl-i{animation:dlBob .62s ease}
+}
+@keyframes dlBob{0%{transform:translateY(0)}42%{transform:translateY(3px)}100%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.dl:hover .dl-i{animation:none}}
 h3.clause{display:flex;align-items:baseline;gap:.55rem;margin:2.5rem 0 .6rem;
   font-size:1rem;font-weight:700}
 h3.clause .idx{color:var(--accent-t);margin:0;flex:0 0 auto;font-size:.76rem}
-@media (min-width:1120px){h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;
-  text-align:right;width:3.2rem}}
 h3.clause .ht:empty{display:none}
-/* A clause with no title phrase leaves only the index; without this its body
-   would start against the heading's bottom margin and read as orphaned. */
-h3.clause:has(.ht:empty){margin-bottom:.15rem}
+@media (min-width:1120px){
+  h3.clause .idx{position:absolute;left:-4.2rem;top:.3em;text-align:right;width:3.2rem}
+  /* ⚠️ A clause with no title phrase is JUST a number, and the empty heading was
+     still generating a 14.5px box plus a bottom margin. That pushed the clause
+     text down while the number stayed pinned to the heading, leaving the number
+     stranded above the sentence it labels — measured at 13.3px, which reads as a
+     misalignment because it is one. Collapsing the box to zero puts the number on
+     the clause's own first line, which is where a margin index belongs.
+     Only inside this query: below 1120px the index is an in-flow flex item and
+     zero height would clip it. */
+  h3.clause:has(.ht:empty){height:0;margin:2.4rem 0 0}
+  h3.clause:has(.ht:empty) .anchor{display:none}
+}
+@media (max-width:1119px){
+  h3.clause:has(.ht:empty){margin-bottom:.15rem}
+}
 p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
   margin:0 0 .95rem;max-width:70ch}
 p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
@@ -997,7 +1032,7 @@ html{scroll-behavior:smooth}
         <div class="rule"></div>
         <div class="meta"><span>Ontario, Canada</span></div>
       </header>
-      <p class="authoritative">This page is a formatted reading copy. The <a href="../NOTICE">plain-text NOTICE</a> is the authoritative instrument, and governs if the two ever differ.</p><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
+      <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../NOTICE">plain-text NOTICE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../NOTICE" download="NOTICE.txt"><span class="dl-i" aria-hidden="true"></span>Download NOTICE</a></div><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
 <p>This file records (1) the third-party software Dior's Builds depends on and the licenses that govern it, (2) third-party trademarks referenced by the project, and (3) a disclosure of AI assistance in authoring the project.</p>
 <p>This file is required reading alongside LICENSE. Nothing in LICENSE restricts, enlarges, or otherwise varies your rights in any third-party component listed below — those components are licensed to you by their own licensors, on their own terms.</p>
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DIRECT DEPENDENCIES</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
