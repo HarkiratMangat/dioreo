@@ -4944,6 +4944,92 @@ function chronicleStructAudit(results) {
 }
 
 /**
+ * Gate: the text colours a page ships actually meet WCAG AA in BOTH themes.
+ *
+ * Added after measuring the chronicle pages and finding that every signal colour
+ * failed catastrophically in light theme — 1.50, 1.16 and 1.47 against a 4.5
+ * minimum, i.e. text a sighted reader cannot make out, covering the version
+ * numerals, the dates and the operator line. `--ink3` failed in BOTH themes
+ * (4.22 and 3.82) and carries most of the small monospace type on the site.
+ *
+ * None of this was visible to any other gate, and it was nearly missed by eye too:
+ * the washed-out light-theme heading looked like the reveal animation mid-fade.
+ * Contrast is arithmetic, so it should never have depended on noticing.
+ *
+ * Values are parsed from the BUILT stylesheet rather than from the constants that
+ * produced it — the point is what shipped. Both the dark `:root` block and the
+ * `:root[data-theme="light"]` override are checked, against that theme's own
+ * background.
+ */
+const CONTRAST_MIN = 4.5;
+
+function contrastAudit(built) {
+    const srgb = c => (c /= 255) <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    const lum = h => {
+        const [r, g, b] = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+        return 0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b);
+    };
+    const ratio = (a, b) => {
+        const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m);
+        return (x + 0.05) / (y + 0.05);
+    };
+    const norm = h => h.length === 4
+        ? '#' + [1, 2, 3].map(i => h[i] + h[i]).join('') : h.toLowerCase();
+
+    const bad = [];
+    let checked = 0;
+    for (const page of built) {
+        const css = (fs.readFileSync(outPath(page), 'utf8')
+            .match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
+        // Only pages that declare their own world are covered; the legal templates
+        // inherit the site tokens and are out of scope for this change.
+        // ⚠️ EVERY matching block, merged in document order — not the first one.
+        // The first version took `css.match(/:root\{...\}/)`, which is the legal
+        // site's TOKENS block; `--sig` is declared in a LATER :root block, so it was
+        // never read and the gate reported "63 pairs pass" while the light-theme
+        // signals were still at 1.47:1. Proven blind by reverting a known-bad value
+        // and watching it stay green, which is the only reason this was caught.
+        // Later declarations win, exactly as the cascade resolves them.
+        const merge = re => [...css.matchAll(re)].map(m => m[1]).join(';');
+        const themes = [
+            ['dark', merge(/:root\{([^}]*)\}/g)],
+            ['light', merge(/:root\[data-theme="light"\]\{([^}]*)\}/g)],
+        ];
+        let base = {};
+        for (const [name, block] of themes) {
+            const vars = {};
+            for (const m of block.matchAll(/--([\w-]+)\s*:\s*(#[0-9a-fA-F]{3,6})/g)) {
+                vars[m[1]] = norm(m[2]);
+            }
+            if (name === 'dark') base = vars;
+            const desk = vars.desk || base.desk;
+            const card = vars.card || base.card;
+            if (!desk) continue;
+            for (const fg of ['sig', 'ink', 'ink2', 'ink3']) {
+                const v = vars[fg] || base[fg];
+                if (!v) continue;
+                for (const [bgName, bg] of [['desk', desk], ['card', card]]) {
+                    if (!bg) continue;
+                    checked++;
+                    const r = ratio(v, bg);
+                    if (r < CONTRAST_MIN) {
+                        bad.push(`${dirOf(page)}/${page.out} [${name}]: --${fg} ${v} on --${bgName} ` +
+                            `${bg} is ${r.toFixed(2)}:1, below the ${CONTRAST_MIN}:1 AA minimum for small text`);
+                    }
+                }
+            }
+        }
+    }
+    if (bad.length) {
+        console.error('  ✗ contrast below WCAG AA:');
+        [...new Set(bad)].forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    console.log(`  ✓ all ${checked} text/background pairs meet ${CONTRAST_MIN}:1 in both themes`);
+    return true;
+}
+
+/**
  * Gate: markup the SHARED parser emits is styled by whatever template renders it.
  *
  * `parseBlocks()`, `inline()` and `linkifyRefs()` emit the same handful of classes
@@ -5063,12 +5149,14 @@ console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
 const hoverOk = hoverGuardAudit(guardedPages);
 console.log('\nChecking every source entry became an entry on the page:');
 const chronOk = chronicleStructAudit(chronicleResults);
+console.log('\nChecking text contrast meets WCAG AA in both themes:');
+const contrastOk = contrastAudit(built);
 console.log('\nChecking shared-parser markup is styled on every template that emits it:');
 const parserOk = parserStyleAudit(built);
 console.log('\nScanning published output for credential-shaped strings:');
 const secretOk = secretScan(built);
 const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
-    && chronOk && parserOk && secretOk;
+    && chronOk && parserOk && contrastOk && secretOk;
 // Names each property that was actually checked, rather than one word that reads
 // as "the output is correct". Each gate tests a different thing, and a pass on
 // one has already been mistaken for a pass on another once. Read this roster
@@ -5076,6 +5164,6 @@ const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && ho
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
       + 'cross-refs live · warm structure applied · class names distinct · '
-      + 'hover guard clean · every source entry rendered · parser markup styled · no credentials published.'
+      + 'hover guard clean · every source entry rendered · parser markup styled · contrast AA · no credentials published.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);

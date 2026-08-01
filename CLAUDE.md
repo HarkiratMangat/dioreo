@@ -407,6 +407,19 @@ file, and this section all reference it; renaming it is a separate change that h
 - **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
   the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
   an empty build command, so nothing has to run on their side.
+- ⚠️ **Each chronicle voice carries TWO signal values, and `sigLight` is not optional.** The terminal
+  signals are tuned for a near-black console and are close to invisible on the daylight variant —
+  measured 1.50 / 1.16 / 1.47 against a 4.5:1 minimum, covering the version numerals, the dates and the
+  operator line. `--ink3` failed in *both* themes too. **`contrastAudit()` re-measures every
+  text/background pair from the BUILT CSS on every run**, in both themes, against `--desk` *and*
+  `--card`. Tune a colour against the **harder** background of its theme: dark theme's `--card` is
+  *lighter* than its `--desk`, so a value tuned only against `--desk` still fails on cards — which is
+  exactly what happened.
+  ⚠️ **That gate shipped BLIND on its first version and passed 63 pairs while the signals were still at
+  1.47:1.** It matched only the *first* `:root{}` block, which is the legal `TOKENS` — `--sig` is
+  declared in a later block and was never read. It merges every matching block in document order now.
+  Caught only by reverting a known-bad value and watching it stay green: **prove a new gate against
+  broken input, every time.**
 - **`secretScan()` gates the published output against credential-SHAPED strings** (added with the
   chronicle family). `DEVLOG.md` is published in full and is the one source written candidly for us
   rather than for a reader — it discusses tokens, hosts and a past incident. It was clean when published

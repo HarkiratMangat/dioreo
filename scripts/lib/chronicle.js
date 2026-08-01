@@ -244,20 +244,25 @@ const WORLD = `
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;
   src:url(../assets/instrument-sans-600.woff2) format('woff2')}
 
+/* ⚠️ --ink3 was #6B7A6D dark / #63705F light, and BOTH failed WCAG AA for small
+   text (4.22:1 and 3.82:1 measured against their own backgrounds). It carries the
+   dates, the version stamps and the operator line — all small monospace, i.e. the
+   text that needs contrast MOST. Nudged to the nearest value that clears 4.5:1
+   keeping hue and saturation. Do not darken them back for looks. */
 :root{
-  --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#6B7A6D;
+  --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#778779;
   --rule:#1E2A22;
   --mono:'Martian Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --sans:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
   --serif:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
 }
 :root[data-theme="light"]{
-  --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#63705F;
+  --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#576253;
   --rule:#C2C7B8;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme="dark"]){
-    --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#63705F;
+    --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#576253;
     --rule:#C2C7B8;
   }
 }
@@ -302,6 +307,7 @@ const VOICES = {
         name: 'broadcast',
         operator: 'PATCH NOTES',
         sig: '#FF9E3D',
+        sigLight: '#994C00',
         rail: false,
 
         masthead: (page, stats, C) => `
@@ -409,6 +415,7 @@ const VOICES = {
         name: 'record',
         operator: 'FIELD ENGINEER',
         sig: '#7CE38B',
+        sigLight: '#176D24',
         rail: true,
 
         masthead: (page, stats, C) => `
@@ -528,6 +535,7 @@ const VOICES = {
         name: 'notebook',
         operator: 'LOG KEEPER',
         sig: '#8FB8FF',
+        sigLight: '#0052E1',
         rail: true,
 
         masthead: (page, stats, C) => `
@@ -758,7 +766,19 @@ ${C.THEME_BOOT}
 <style>
 ${C.TOKENS}
 ${WORLD}
+/* ⚠️ TWO signal values per voice, and the light one is NOT optional.
+   The three signals are tuned for a near-black terminal and are close to
+   invisible on the daylight variant — measured against #DCDDD4 they scored
+   1.50, 1.16 and 1.47 to 1, against a 4.5 minimum. That is not "a bit low", it
+   is text a sighted reader cannot make out, and it covers the version numerals,
+   the dates and the operator line. The light values keep each hue and its
+   saturation and only drop lightness until they clear 4.5:1. contrastAudit()
+   re-measures both themes from the built CSS on every run. */
 :root{--accent:${voice.sig};--glow:${voice.sig};--sig:${voice.sig}}
+:root[data-theme="light"]{--accent:${voice.sigLight};--glow:${voice.sigLight};--sig:${voice.sigLight}}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--accent:${voice.sigLight};--glow:${voice.sigLight};--sig:${voice.sigLight}}
+}
 ${C.COMPONENT_CSS}
 
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;

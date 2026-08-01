@@ -77,22 +77,27 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400;font-display:swap;
   src:url(../assets/instrument-sans-400.woff2) format('woff2')}
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;
-  src:url(../assets/instrument-sans-600.woff2) format('woff2')}
+  src:url(../assets/instrument-sans-600.woff2) format('woff2')}/* ⚠️ --ink3 was #6B7A6D dark / #63705F light, and BOTH failed WCAG AA for small
+   text (4.22:1 and 3.82:1 measured against their own backgrounds). It carries the
+   dates, the version stamps and the operator line — all small monospace, i.e. the
+   text that needs contrast MOST. Nudged to the nearest value that clears 4.5:1
+   keeping hue and saturation. Do not darken them back for looks. */
+
 
 :root{
-  --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#6B7A6D;
+  --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#778779;
   --rule:#1E2A22;
   --mono:'Martian Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --sans:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
   --serif:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
 }
 :root[data-theme="light"]{
-  --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#63705F;
+  --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#576253;
   --rule:#C2C7B8;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme="dark"]){
-    --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#63705F;
+    --desk:#DCDDD4; --card:#E9EAE1; --ink:#12180F; --ink2:#3C4A3D; --ink3:#576253;
     --rule:#C2C7B8;
   }
 }
@@ -113,11 +118,23 @@ code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default an
   background:var(--sig);animation:bl 1s steps(2) infinite}
 @keyframes bl{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.boot{display:none!important}}/* Every page in this world gets the signal colour as its accent, so the shared
-   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. */
+   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. *//* ⚠️ TWO signal values per voice, and the light one is NOT optional.
+   The three signals are tuned for a near-black terminal and are close to
+   invisible on the daylight variant — measured against #DCDDD4 they scored
+   1.50, 1.16 and 1.47 to 1, against a 4.5 minimum. That is not "a bit low", it
+   is text a sighted reader cannot make out, and it covers the version numerals,
+   the dates and the operator line. The light values keep each hue and its
+   saturation and only drop lightness until they clear 4.5:1. contrastAudit()
+   re-measures both themes from the built CSS on every run. */
 
 
 
-:root{--accent:#7CE38B;--glow:#7CE38B;--sig:#7CE38B}/* ── shared reset for the label buttons ───────────────────────────────
+
+:root{--accent:#7CE38B;--glow:#7CE38B;--sig:#7CE38B}
+:root[data-theme="light"]{--accent:#176D24;--glow:#176D24;--sig:#176D24}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--accent:#176D24;--glow:#176D24;--sig:#176D24}
+}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
