@@ -292,63 +292,162 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
   .ins-ar{display:none}
-}/* ── theme switch ────────────────────────────────────────────────────
-   Sized and bordered to MATCH .ghb exactly, because the bar's grammar is that
-   every control is a circle or a pill and this one used to be neither. The
-   cursor-tracked light is the same gradient .ghb uses, from the same --px/--py
-   THEME_JS writes, so the pair read as one family.
+}/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
+   This is the one place the design spends its boldness, so it is the one place
+   with real depth. It is a sky you carry the sun and moon across:
+     dark  — a cratered crescent, stars behind it
+     light — a rayed sun, clouds behind it
+   Both states are furnished; the first version left light mode as a plain white
+   disc with nothing in it.
+   The sun and moon carry their OWN colours (warm yellow, pale blue-grey) and
+   NOT the page accent — a violet moon read as an unidentifiable blob. Only the
+   track border and focus ring follow the accent.
+   Hovering PEEKS: the knob leans toward the far side and the destination's
+   furniture fades up, so the control shows you what pressing it will do. *//* Geometry, stated once because it was wrong before: the track is 60x32 with a
+   1px border, so the CONTENT box is 58x30. The knob is 26px inset 2px, which
+   leaves exactly 2px on every side and gives a travel of 58-2-26-2 = 28px. The
+   previous knob was inset 3px inside a 28px content box, so it had 3px above and
+   1px below — that is the "moon/sun aren't properly aligned" bug. Any change to
+   the track size has to re-derive the travel or the knob stops at the wrong end. */
 
-   The icons carry currentColor, not their own warm-yellow and blue-grey. Two
-   hand-picked colours in a bar where every other control follows the page accent
-   was the other half of what made the old switch read as a widget bolted on. */
 
 
-.thm{-webkit-appearance:none;appearance:none;padding:0;cursor:pointer;
-  flex:0 0 auto;width:32px;height:32px;border-radius:999px;position:relative;
-  isolation:isolate;display:grid;place-items:center;
-  border:1px solid var(--rule2);background:transparent;color:var(--ink2);
-  transition:color .22s,border-color .22s,transform .18s}.thm:focus-visible{color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
-.thm:hover{color:var(--ink);
-  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}
-.thm:active{transform:scale(.93)}
-.thm::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
-  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
-    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
-    transparent 72%)}.thm:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
-.thm:hover::after{opacity:1}}/* overflow:visible because the sun's rays reach to 21.6 of a 24 box and the
-   scale(1.16) hover push takes them past it. */
+.thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
+  cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
+.thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
+  border:1px solid var(--rule2);overflow:hidden;
+  background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}@media (hover:hover) and (pointer:fine){
+.thm:hover .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}}
+.thm-sky{position:absolute;inset:0}/* stars — dark only, in the half the knob is not occupying */
 
-.thm svg{position:relative;z-index:1;width:17px;height:17px;display:block;overflow:visible}/* transform-box:fill-box so the rotation pivots on each icon's OWN bounding box.
-   The default (view-box) would swing both around the corner of the 24x24 root,
-   which throws the icon off-screen rather than spinning it in place. */
 
-.thm .ic{transform-box:fill-box;transform-origin:center;
-  transition:opacity .3s ease,transform .46s cubic-bezier(.3,1.25,.4,1)}
-.thm .ic-sun{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
-.thm .ic-sun .core{fill:currentColor;stroke:none}
-.thm .ic-moon{fill:currentColor}/* DARK is the default state, so the MOON is what shows: the icon names the
-   theme you are in, not the one you are going to. That is the convention the
-   old switch also used (the knob sat on the night side in dark mode). */
+.thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
+  opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
+.thm-st i:nth-child(1){left:36px;top:8px}
+.thm-st i:nth-child(2){left:45px;top:15px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:49px;top:7px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:40px;top:22px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:51px;top:20px;width:1.5px;height:1.5px;animation-delay:2.4s}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.thm-st{transition:opacity .4s}/* clouds — light only. Each cloud is one element plus two box-shadow lobes, so
+   it has an actual cloud silhouette instead of reading as a rounded bar. */
 
-.thm .ic-sun{opacity:0;transform:rotate(-75deg) scale(.3)}
-.thm .ic-moon{opacity:1;transform:rotate(0) scale(1)}/* Hover nudges the visible icon up a touch — the only motion left, and it is the
-   same "this is pressable" signal every other control in the bar gives. */@media (hover:hover) and (pointer:fine){
 
-.thm:hover .ic-moon,.thm:hover .ic-sun{transform:rotate(0) scale(1.16)}}
-:root[data-theme=light] .thm .ic-sun{opacity:1;transform:rotate(0) scale(1)}
-:root[data-theme=light] .thm .ic-moon{opacity:0;transform:rotate(75deg) scale(.3)}@media (hover:hover) and (pointer:fine){
-:root[data-theme=light] .thm:hover .ic-moon{opacity:0;transform:rotate(75deg) scale(.3)}}@media (hover:hover) and (pointer:fine){
-:root[data-theme=light] .thm:hover .ic-sun{transform:rotate(0) scale(1.16)}}
+.thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px}
+.thm-cl i:nth-child(1){left:6px;top:18px;width:17px;height:7px;opacity:.95;
+  box-shadow:4px -4px 0 -1px #fff,10px -2px 0 -1.5px #fff;
+  animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:7px;width:11px;height:5px;opacity:.55;
+  box-shadow:5px -2px 0 -1px #fff;
+  animation:drift 9.5s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}/* The knob is a real plate now — a circle with its own edge and shadow — and the
+   sun or moon is an icon sitting ON it, rather than the bare celestial body
+   floating in the track with nothing to hold it. */
+
+
+.thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;
+  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.20),rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:0 2px 6px -1px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.28);
+  transform:translateX(0);
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
+    background .5s,border-color .5s,box-shadow .5s}
+.thm-kn svg{width:17px;height:17px;overflow:visible}/* moon */
+
+.thm-kn .orb{fill:#DCE4F7}/* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
+   which is the opposite of the intuition. What is left is a lune whose width
+   along the axis is R + D - r (orb radius, centre distance, cut radius). The
+   old values — R 7.4, r 6.6, D 10.46 — give 11.27 out of a 14.8 diameter, so
+   that shape was a gibbous with a bite taken out of it, not a crescent at all;
+   pushing the cut FURTHER out only makes the bite shallower. R 7.4, r 7, D 6.11
+   gives 6.5, a full-bodied crescent, with the horn tips landing at ±61.5 degrees
+   so they read as horns instead of wrapping into a ring.
+   D is 6.11 along the 45-degree diagonal, hence 6.11/sqrt(2) = 4.32 per axis.
+   Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
+   disc reads as a full sun with nothing bitten out of it. *//* ⚠️ THE OLD RE-CENTRING WAS THE MISALIGNMENT, not the cure for it, and it is
+   worth stating exactly how — because the reasoning was careful and still wrong.
+   It centred the lune on its AXIS MIDPOINT: the shape runs from -R to (D-r)
+   along the axis, so that midpoint sits 4.7 units down-left of the disc centre,
+   and the whole moon group was pushed back by 4.7 to compensate.
+
+   But the axis midpoint is not what an eye reads as the centre of a crescent —
+   the BOUNDING BOX is, and the bounding box was already centred, because it is
+   dominated by the outer arc, which is drawn around (12,12) by construction.
+   Measured for the shipped geometry: the lune spans x 4.60–19.09 and y
+   4.91–19.40, a box centred at (11.85, 12.15). It needed a 0.15 nudge. It was
+   given 3.32, which threw the moon into the top-right corner of its own knob.
+
+   So the translate is now 0.9: 0.15 of real bbox correction plus ~0.75 of
+   optical, since a crescent's ink all sits on the lower-left of its box and has
+   to move UP-RIGHT to feel centred. Light mode still returns it to zero so the
+   sun, which is a plain disc about (12,12), stays concentric.
+
+   Width is R + D - r = 7.4 + 6.11 - 7 = 6.5 of a 14.8 diameter (44%), up from
+   36%. Horn tips at ±61.5 degrees. 36% read as a fingernail at 17px; 3.1 and
+   4.4 were tried on the way here and read as cheaper still.
+
+   THE EARTHSHINE DISC is the added element, and it is the reason this reads as a
+   MOON rather than a banana: the unlit limb is faintly lit by light bouncing off
+   the earth, so the full circle is always dimly visible behind the bright part.
+   It is a filled disc rather than an outline on purpose — a 0.5-unit stroke is a
+   third of a pixel once the svg renders at 16px, which is the same size trap that
+   killed the craters. Fill survives at any size; hairlines do not. */
+
+
+.thm-kn .moon{transform:translate(.9px,-.9px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .limb{fill:#DCE4F7;opacity:.2;transition:opacity .4s}
+.thm-kn .cut{transform:translate(4.32px,-4.32px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}/* The hover peek leans the knob toward where it is going. It no longer fades the
+   clouds up behind the moon: clouds belong to the daytime sky, and previewing
+   them at night just put weather behind a moon for no reason. */@media (hover:hover) and (pointer:fine){
+
+
+.thm:hover .thm-kn{transform:translateX(5px)}}/* LIGHT: knob crosses, the mask occluder is pushed clear so the disc fills, rays
+   fan out, the orb fills from a crescent to a sun, clouds replace stars. */
+
+
+:root[data-theme=light] .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
+:root[data-theme=light] .thm-kn{transform:translateX(28px);
+  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+  border-color:rgba(255,255,255,.95);
+  box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}}
+:root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .moon{transform:none}
+:root[data-theme=light] .thm-kn .limb{opacity:0}
+:root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
+:root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
+:root[data-theme=light] .thm-st{opacity:0}
+:root[data-theme=light] .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}}
 @media (prefers-color-scheme:light){
-  :root:not([data-theme=dark]) .thm .ic-sun{opacity:1;transform:rotate(0) scale(1)}
-  :root:not([data-theme=dark]) .thm .ic-moon{opacity:0;transform:rotate(75deg) scale(.3)}@media (hover:hover) and (pointer:fine){
-  :root:not([data-theme=dark]) .thm:hover .ic-moon{opacity:0;transform:rotate(75deg) scale(.3)}}@media (hover:hover) and (pointer:fine){
-  :root:not([data-theme=dark]) .thm:hover .ic-sun{transform:rotate(0) scale(1.16)}}
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(28px);
+    background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+    border-color:rgba(255,255,255,.95);
+    box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}}
+  :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .moon{transform:none}
+  :root:not([data-theme=dark]) .thm-kn .limb{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
+  :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
+  :root:not([data-theme=dark]) .thm-st{opacity:0}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}}
 }
 @media (prefers-reduced-motion:reduce){
-  .thm .ic{transition:opacity .01s}@media (hover:hover) and (pointer:fine){
-  .thm:hover .ic-moon,.thm:hover .ic-sun{transform:none}}
+  .thm-st i,.thm-cl i{animation:none}@media (hover:hover) and (pointer:fine){
+  .thm:hover .thm-kn{transform:translateX(0)}}@media (hover:hover) and (pointer:fine){
+  :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(28px)}}
 }/* ── Discord handle + email reveal ──────────────────────────────────── */
 
 
@@ -1235,18 +1334,32 @@ html{scroll-behavior:smooth}
   <span class="ins-ar" aria-hidden="true">&#8599;</span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" aria-label="Switch between light and dark"
-  title="Switch between light and dark" data-spot>
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <g class="ic ic-moon"><path d="M20.24 14.45A8.6 8.6 0 1 1 9.55 3.76 7.8 7.8 0 0 0 20.24 14.45Z"/></g>
-    <g class="ic ic-sun">
-      <circle class="core" cx="12" cy="12" r="4.4"/>
-      <line x1="12" y1="19.4" x2="12" y2="21.6"/><line x1="12" y1="4.6" x2="12" y2="2.4"/>
-      <line x1="19.4" y1="12" x2="21.6" y2="12"/><line x1="4.6" y1="12" x2="2.4" y2="12"/>
-      <line x1="17.24" y1="17.24" x2="18.79" y2="18.79"/><line x1="6.76" y1="6.76" x2="5.21" y2="5.21"/>
-      <line x1="17.24" y1="6.76" x2="18.79" y2="5.21"/><line x1="6.76" y1="17.24" x2="5.21" y2="18.79"/>
-    </g>
-  </svg>
+  aria-checked="false" aria-label="Switch between light and dark">
+  <span class="thm-tr" aria-hidden="true">
+    <span class="thm-sky">
+      <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="thm-cl"><i></i><i></i></span>
+    </span>
+    <span class="thm-kn">
+      <svg viewBox="0 0 24 24">
+        <mask id="thm-cut">
+          <rect width="24" height="24" fill="#000"/>
+          <circle cx="12" cy="12" r="7.4" fill="#fff"/>
+          <circle class="cut" cx="12" cy="12" r="7" fill="#000"/>
+        </mask>
+        <g class="rays" stroke-width="1.8" stroke-linecap="round">
+          <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
+          <line x1="1.2" y1="12" x2="3.4" y2="12"/><line x1="20.6" y1="12" x2="22.8" y2="12"/>
+          <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
+          <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
+        </g>
+        <g class="moon">
+          <circle class="limb" cx="12" cy="12" r="7.4"/>
+          <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+        </g>
+      </svg>
+    </span>
+  </span>
 </button>
   </nav>
 </div>
