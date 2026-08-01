@@ -286,10 +286,23 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 Discord Developer Portal has stable public URLs that survive the repo flipping private. The sources are
 `docs/legal/*.md`, the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
 `CONTRIBUTORS.md`), **and the three records `docs/CHANGELOG-SUMMARY.md`, `docs/CHANGELOG.md`,
-`docs/DEVLOG.md`**; the HTML is produced by **`npm run site`** (which is
-`node --check` on both scripts, then `node scripts/buildLegalPages.js`).
-**Run `npm run site && dior legal deploy` after editing ANY of those nine sources** —
-nothing else republishes the site, and `dior legal check` compares live bytes against the local build.
+`docs/DEVLOG.md`**; the HTML is produced by `scripts/buildLegalPages.js`.
+**Run `dior legal build` (or `dior legal deploy`, which rebuilds and publishes) after editing ANY of
+those nine sources** — nothing else republishes the site, and `dior legal check` compares live bytes
+against the local build.
+- ⚠️ **THERE ARE TWO BUILD ENTRY POINTS AND THAT IS A KNOWN WART, not a design.** `npm run site` was
+  added 2026-08-01 22:20 EDT without checking that `dior legal build` already existed and ran the same builder,
+  and this section was rewritten to name the new one — demoting a working CLI command. Both call
+  `scripts/buildLegalPages.js`, so their **output cannot differ**. The one real difference:
+  `npm run site` runs `node --check` on both build scripts first; **`dior legal build`/`deploy` do
+  not.** That protection is therefore on the path that does *not* publish. Until consolidated, use
+  `dior legal *` as the normal path and `npm run site` when the CLI isn't available (CI, a fresh
+  clone, a worktree) or when you specifically want the syntax pre-check. Filed as `[P2 · M]` in
+  `/Applications/Claude Code/meta-deferred-list.md` → Cross-project / meta.
+- ⚠️ **Before adding any project-local script or npm command, check whether the `dior` CLI already
+  does it** (`dior help`, or `~/.config/dior/*.zsh`). The CLI wraps this project's dev/deploy/
+  observability workflow and is easy to forget because it lives outside the repo — see memory
+  `project_dior_cli_repo`. This wart is exactly what skipping that check produces.
 Editing a source and re-running the build is the ENTIRE update path; no HTML is ever touched by hand.
 ⚠️ The script is still called `buildLegalPages.js` but now builds the whole site, `public/legal/` **and**
 `public/changelog/`. The name is kept because `dior legal deploy`/`check` in the CLI repo, the rules
