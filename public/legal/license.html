@@ -1960,8 +1960,20 @@ html{scroll-behavior:smooth}
            Variety at the arrival is carried HORIZONTALLY by x2, where the pill is
            49px wide and there is room for it. */
         var y2=Math.sin(a)*(0.5+Math.random()*1.5);
-        var dur=Math.round(DUR*(0.6+Math.random()*0.32));
-        var del=Math.round(i*DUR*0.014+Math.random()*44);
+        /* ⚠️ EVERY DROPLET MUST LAND BEFORE THE PILL DOES. This is a hard cap,
+           not a tuning value, and the old numbers broke it arithmetically:
+           dur reached 0.92*DUR and del reached i*0.014*DUR + 44ms, which at i=13
+           is another 0.18*DUR — so the slowest droplet finished at 1.10*DUR,
+           about 120ms AFTER the pill had settled. Those stragglers were seen
+           dropping into a pill that was already sitting there, which is the
+           "delay/lag of the particles dropping into the pill from above/below"
+           at the end of the move.
+           The droplets are supposed to BUILD the pill, so the pill arriving is
+           the last thing that happens. dur is therefore clamped against this
+           droplet's own delay so del+dur can never exceed the move itself. */
+        var del=Math.round(i*DUR*0.010+Math.random()*30);
+        var dur=Math.round(Math.max(DUR*0.34,
+                  Math.min(DUR*(0.55+Math.random()*0.30), DUR*0.97-del)));
         if(dur+del>max) max=dur+del;
         var rot=(Math.random()-0.5)*2; rot = (rot>0 ? rot+0.35 : rot-0.35)*26;
         /* ⚠️ CLAMP THE ROTATION AGAINST THE TRAVEL DISTANCE. This is the actual
