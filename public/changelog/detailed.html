@@ -3249,7 +3249,8 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          zero strength on the frame it is attached and on the frame it is dropped.
          Every droplet has landed by 0.90 of the move (see spray()), so the fade
          never catches one mid-flight and turns it into a hard dot. */
-      gooBlur(segIx, GOO_SD * band(0,0.08,p) * (1 - band(0.90,1,p)));
+      var bl = GOO_SD * band(0,0.08,p) * (1 - band(0.90,1,p));
+      gooBlur(segIx, bl);
       var aw=srcW*(1-band(0.04,0.55,p));
       var bw=dstW*spr(band(0.28,1,p));
       /* ⚠️ The tail collapses toward the edge FACING the destination. It used
@@ -3275,8 +3276,47 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          So the blur is ramped 0 -> full -> 0 across the move instead. The
          dilation is a function of the blur, so it goes to zero on its own at both
          ends and the attach/detach are no-ops WITHOUT anyone needing to know what
-         the constant is. See gooBlur() above. */
-      var dil = 0;
+         the constant is. See gooBlur() above.
+
+         ⚠️ THE RAMP ALONE WAS NOT ENOUGH, and the reason is worth keeping. The
+         dilation is PROPORTIONAL to the blur, so ramping the blur down over the
+         last 10% of the move does not remove the size change — it spreads it over
+         those ~76ms. The pill still visibly shrinks at the end, and still visibly
+         grows over the first ~61ms, which is exactly what a snap looks like when
+         nothing else on screen is moving. Ramping made it smoother, not absent.
+         So the geometry is compensated by the CURRENT blur on every frame, which
+         holds the painted size constant at every point in the move AND collapses
+         to zero at both ends on its own.
+
+         ⚠️ THE DILATION IS ANISOTROPIC, and that is why three attempts failed.
+         Measured by rasterising THIS filter chain over a 100x25 rounded rect into
+         a canvas at 4x and reading the alpha extents (0.25px resolution):
+
+             stdDeviation   0.6   1.2   1.8   2.4   3.0   3.6
+             dW per side   0.25  0.25  0.25  0.50  0.50  0.50
+             dH per side   0.25  0.25  0.50  0.75  1.00  1.25
+
+         At full blur the height grows 2.5x as much as the width. A 25px-tall pill
+         is short relative to a 3.6 blur, so its caps — which are pure curvature —
+         dilate far more than its flanks do. Every earlier attempt assumed one
+         isotropic number: correcting only the width was invisible because width
+         barely moves, and then correcting the height BY THE WIDTH FIGURE (1.26,
+         derived from erfc) overshot and made it snap outward instead.
+         The constants below are not that table directly — they are SOLVED, by
+         feeding a pre-shrunk rect back through the same filter and searching for
+         the shrink that paints exactly 100x25 again:
+
+             stdDeviation   1.2    1.8    2.4    3.0    3.6
+             dH that lands  0.25   0.50   0.625  0.75   1.125
+
+         which is why dilH is two segments rather than one slope. Do not replace
+         any of this with a derivation — the erfc figure was 1.26 and the truth at
+         full blur is 1.125 vertically and 0.50 horizontally. Re-measure with the
+         canvas method if the blur, the crush matrix or the pill's height changes;
+         the measuring script is in the session log for 2026-08-01 17:05 EDT. */
+      var dilW = Math.min(0.50, 0.20 * bl);
+      var dilH = bl <= 3 ? 0.25 * bl : 0.75 + (bl - 3) * 0.625;
+      var dil = dilW;
       /* ⚠️ The tail collapses in BOTH dimensions. It used to lose width while
          keeping the pill's full height, so it ended as a narrow full-height bar
          that the goo dilated into a standing capsule — a fragment left hanging
@@ -3299,7 +3339,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          .seg.morph .ib rule setting top would out-specify the neck's own
          top:50% and knock it off the centre line. */
       var ph = Math.max(1, H() - 6);
-      var vcomp = (ph - 2*dil) / ph;
+      var vcomp = (ph - 2*dilH) / ph;
       var sy = w => Math.max(0.14, Math.min(1, w/26)) * vcomp;
       A.style.transform='translateX('+(tailX+dil)+'px) scaleY('+sy(aw).toFixed(3)+')';
       A.style.width=Math.max(0,aw-2*dil)+'px';
