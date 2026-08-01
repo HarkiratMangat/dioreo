@@ -98,6 +98,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common
 - 2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click
 - 2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen
+- 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3390,9 +3391,158 @@ enough to state: **a transform that reports its own success is not a check.** Bo
 the docs audit now re-parse what actually reached disk, and both new gates were proven by running them
 against the broken output — a gate that has never failed is a gate nobody has tested.
 
+## 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
+
+*(Unmerged as of writing. The changelog/devlog site, plus a long correction pass on the desktop nav.)*
+
+Two jobs, one long evening. The first was a changelog website. The second was supposed to be a quick
+polish of the nav indicator and instead took **four failed attempts and a fifth that worked**, which is
+the more useful half of the story.
+
+### The changelog site, built twice
+
+The brief was a third page family: `docs/CHANGELOG.md`, `CHANGELOG-SUMMARY.md` and `DEVLOG.md` as web
+pages, sharing the legal site's header, nav and footer. I built one skeleton with three "voices" —
+three accent colours, three entry treatments, same masthead, same column, same rail — and Harkirat
+rejected it the moment he saw it. Correctly. **Three colours of one page is not three identities**, and
+colour is the weakest carrier of identity there is: a reader stops seeing it in two seconds.
+
+Then he said the thing that mattered: *"don't forget the original changelogs website attempt and the
+reference designs."* There was a memory file — `project_changelog_redesign` — describing a design he
+had already commissioned and approved in July: **"The Armory Terminal"**, a gunmetal ordnance-terminal
+world with Martian Mono, a tracer-amber signal, an ordnance-belt version rail, and a concept hook of
+**two operators reading the same terminal**. It had the answer to the exact question I had just spent
+hours getting wrong, including the identity mechanism.
+
+I had not read it. The build I threw away was the cost of that. The second build implements the
+terminal, extends two operators to three because the devlog is now its own page, and separates the
+pages by **grid** — notice board, ledger, timeline — rather than by hue.
+
+*Lesson, and it is not "read memory" in the abstract: **before designing anything for a surface, read
+the project memory FOR THAT SURFACE.** The index line is one line; the file had a full spec.*
+
+### The nav indicator: four wrong fixes
+
+Harkirat reported the hover effect looked wrong. What followed is worth recording in full because the
+failures rhyme.
+
+**Attempt 0 — diagnosis from a screenshot.** I proposed that my new `.segchip` element had shifted the
+indicator's measurements. It had not; the indicator selects `.tab`, not children by index. A still
+frame cannot show an animation, and I nearly spent the evening on that theory.
+
+**What actually worked was frame extraction.** `ffmpeg` on his screen recordings, then contact sheets
+of *consecutive* frames — not a sparse sample, which missed a one-frame bump he then had to point at
+by hand. Sparse sampling of an animation is the visual equivalent of a happy-path test.
+
+**Attempt 1 — the droplets left the bar.** Real, and measured: 85px above and 100px below a 54px bar.
+The cause was not the y values, which are small. The keyframes apply `rotate(r)` **before**
+`translate(x,y)`, so the translation happens in a rotated frame and `sin(r)` converts horizontal
+distance into vertical. `--x1` scales with travel distance — up to ~350px — while `r` was a fixed
+±31°, so `sin(31°) × 350` is ~180px of vertical fling. **It got worse as the nav got longer**, which is
+why adding a third nav group surfaced it. Fixed by clamping each droplet's rotation against the offset
+it is actually rotating.
+
+**Attempt 2 — I over-corrected and deleted the effect.** Fixing that overflow I cut the count, the
+size, the vertical throw, the horizontal scatter *and* the neck, all in one change. The tear vanished
+and it read as one blob with a bump. **Five parameters changed to fix one problem.** The vertical
+budget really is tight — half the bar is 27px, a droplet is 9.5px of radius, the goo adds ~7px, leaving
+~10.5px — so the separation has to live *horizontally*, along the run, where nothing constrains it.
+
+**Attempts 3, 4, 5 — the size snap.** The pill visibly changed size at the start and end of every move.
+The goo filter dilates every edge, and it is attached only during a move, so attaching and detaching it
+steps the size. I then got the correction wrong three times in a row:
+
+- **corrected the width only** — invisible, because width barely moves;
+- **corrected the height by the width-derived number (1.26px, from `erfc`)** — overshot, and it snapped
+  outward instead of inward;
+- **ramped the blur to zero at both ends** — reasoning that dilation is a function of blur, so it would
+  self-cancel. It does not: the dilation is *proportional* to the blur, so ramping it down does not
+  remove the size change, it **spreads it over ~76ms**. Still a snap, just smoother.
+
+The fifth attempt stopped deriving and measured. I rasterised the actual filter chain over a 100×25
+rounded rect into a canvas at 4× and read the alpha extents:
+
+    stdDeviation   0.6   1.2   1.8   2.4   3.0   3.6
+    dW per side   0.25  0.25  0.25  0.50  0.50  0.50
+    dH per side   0.25  0.25  0.50  0.75  1.00  1.25
+
+**The dilation is anisotropic** — at full blur the height grows 2.5× as much as the width, because a
+25px pill is short relative to a 3.6 blur and its caps are pure curvature. Every earlier attempt had
+assumed one isotropic number. That single fact explains all three failures at once. The shipped
+constants are then *solved* rather than read off that table — feed a pre-shrunk rect back through the
+filter and search for the shrink that paints 100×25 again, which lands the height correction at 1.125,
+not 1.25. Verified across the blur range: worst error 0.50px, exactly 0 at full blur, against 2.5px
+uncorrected.
+
+### The failure mode underneath all of it
+
+Every wrong attempt had the same shape: **derive a number from theory, then "verify" it with a check
+that could not resolve the difference.** I compared two zoom captures by eye and called a 2.5px
+difference verified. It was not. Harkirat's frame-by-frame measurements broke the loop every time —
+and the tool that finally settled it, canvas rasterisation of the filter, was available from the first
+minute and measures the real renderer at 0.25px.
+
+This is the *third* time this exact trap has been recorded on this one filter. `reference_goo_metaball_recipe`
+already said, about accent colour: fitted chains are exact on paper and visibly wrong on screen,
+because browsers clamp unmodellably. I read that file, applied its conclusion to colour, and then
+re-derived a geometry constant from `erfc` anyway. **The lesson generalises past the specific
+quantity: do not model this filter, measure it.**
+
+### Also shipped, quietly
+
+- **`docs/CHANGELOG.md` was damaged and a build would have published it.** v2.44.0's heading had been
+  deleted by an unrelated merge, welding 55 surviving body lines onto the end of v2.45.0. Every check
+  was green: `summary-coverage` only runs CHANGELOG → SUMMARY, so a missing *detailed* entry is
+  invisible to it. New `summary-orphan` gate closes that direction.
+- **Light theme failed contrast catastrophically** — every signal colour between 1.16:1 and 1.70:1
+  against a 4.5 minimum. I nearly missed it by eye, because a washed-out heading looks like an
+  animation mid-fade. Contrast is arithmetic; it now has a gate that re-measures the built CSS.
+  ⚠️ That gate shipped **blind** first, reporting "63 pairs pass" while the signals were still failing,
+  because it matched only the first `:root{}` block — the legal tokens — and never read `--sig`. Caught
+  only by reverting a known-bad value and watching it stay green.
+- **The site failed WCAG 2.4.1 (Level A) on every page** — no skip link, so ~13 tab stops before the
+  document. The first fix half-applied: both warm pages got the link and neither got the target, which
+  is worse than no link. Gated now.
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
+
+### Measuring vs. modelling
+- **Do not model a filter chain — measure it.** Recorded three times now on the same SVG goo filter,
+  each time about a different quantity. Fitted colour chains were exact on paper and visibly
+  desaturated on screen; a geometry constant derived from `erfc` was 1.26px when the truth was 1.125px
+  vertically and 0.50px horizontally. **Rasterise the real thing**: build the same filter over a known
+  shape in a standalone SVG, draw it to a canvas at 4×, read the alpha extents. That is 0.25px
+  resolution, takes one tool call, and settles in seconds what argument cannot.
+- **Filter dilation is ANISOTROPIC on a short shape.** A blur erodes/dilates in proportion to
+  curvature, so a 25px-tall pill's caps spread ~2.5× more than its flanks at the same blur. Any
+  correction assuming one isotropic number will fix one axis and break the other — which is exactly how
+  three consecutive fixes failed.
+- **A correction proportional to a parameter does not vanish when you ramp that parameter.** Ramping
+  the goo blur to zero at both ends of a move looked like it should cancel the dilation; it only spread
+  the same size change over ~76ms. Smoother is not absent, and at the end of a move, when nothing else
+  is moving, the eye still reads it as a snap.
+- **Verify with a check that can RESOLVE the difference.** Comparing two zoom captures by eye and
+  calling a 2.5px difference "verified" is a soft check reported as a hard one. If the quantity is
+  2.5px, the check needs sub-pixel resolution, not a screenshot and an opinion.
+- **Extract CONSECUTIVE frames from a screen recording, not a sparse sample.** `ffmpeg -vsync 0` then a
+  contact sheet. Sampling every tenth frame of an animation missed a one-frame artifact that Harkirat
+  then had to point at by hand — the visual equivalent of only running the happy path. A still frame
+  can never show an animation at all; do not diagnose motion from one.
+- **Change ONE parameter at a time when tuning something you can only judge by eye.** Fixing an
+  overflow, I cut count, size, vertical throw, horizontal scatter and the connecting neck in a single
+  change and deleted the effect outright. The fix and the regression were indistinguishable afterwards.
+- **A bug that scales with a dimension gets worse when that dimension grows.** The droplets' vertical
+  fling was `sin(rotation) × travel distance`, invisible while the nav was short. Adding a third nav
+  group lengthened the possible travel and turned a bow into a launch. When adding to a system, ask
+  what in it was already proportional to the thing you are enlarging.
+
+### Reading what already exists
+- **Before designing anything for a surface, read the project memory FOR THAT SURFACE.** An entire
+  changelog-site design was built and thrown away because `project_changelog_redesign` — which held a
+  complete, already-approved design including its identity mechanism — went unread. The index line was
+  one line; the file was the spec.
 
 ### War stories / root causes
 - **Multiple instances of a single-token bot collide invisibly.** Discord routes each interaction to a

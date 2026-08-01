@@ -388,6 +388,31 @@ file, and this section all reference it; renaming it is a separate change that h
   is NOT a scroller (a scroll container composites its contents and drops the blend, leaving a black
   rectangle). Making the desktop header opaque to match would destroy the frosted bar; that trade was
   considered and refused.
+- ⚠️ **THE DESKTOP INDICATOR'S GEOMETRY IS MEASURED, NOT DERIVED — don't "simplify" its constants.**
+  The goo filter dilates every edge it paints, so attaching it at the start of a move and dropping it
+  at the end steps the pill's size. Four fixes failed before one worked (2026-08-01 21:40 EDT), and the
+  reason all three wrong ones were wrong is the same: **the dilation is ANISOTROPIC.** Measured by
+  rasterising `#dbgoo` over a 100×25 rounded rect into a canvas at 4×:
+
+      stdDeviation   0.6   1.2   1.8   2.4   3.0   3.6
+      dW per side   0.25  0.25  0.25  0.50  0.50  0.50
+      dH per side   0.25  0.25  0.50  0.75  1.00  1.25
+
+  At full blur the **height grows 2.5× as much as the width** — a 25px pill is short relative to a 3.6
+  blur, so its caps (pure curvature) spread far more than its flanks. Correcting only width is
+  invisible; correcting height by the width figure overshoots and snaps outward. **Ramping the blur
+  does NOT cancel it either** — the dilation is proportional to the blur, so ramping spreads the same
+  size change over ~76ms instead of removing it. The shipped constants are *solved* (feed a pre-shrunk
+  rect back through until it paints true size), which lands dH at 1.125, not the 1.25 the table reads
+  or the 1.26 an `erfc` derivation gives. **Re-measure with the canvas method if the blur, the crush
+  matrix or the pill height changes.** Full story: memory `feedback_measure_the_renderer_not_the_model`.
+- ⚠️ **Other bounded quantities in that animation, each of which caused a visible bug:** a droplet's
+  rotation is clamped against its travel distance (the keyframes `rotate()` *then* `translate()`, so
+  `sin(r) × distance` became vertical fling — 100px below a 54px bar, and it got worse as the nav grew);
+  the vertical throw is capped by the bar's half-height minus radius minus blur (~10.5px, so the
+  scatter that reads as "coming apart" must be HORIZONTAL); the arrival sits within 2px of the centre
+  line (or a droplet protrudes past a formed pill); and every droplet lands by 0.90 of the move (or
+  stragglers rain into a pill that has already settled).
 - ⚠️ **The indicator's accent comes from a BLEND, never a fitted filter chain.**
   `multiply(white, accent)` IS accent and `multiply(black, accent)` IS black, exactly, for any accent.
   An earlier version fitted `sepia/saturate/hue-rotate/brightness` per accent — exact on paper, visibly
