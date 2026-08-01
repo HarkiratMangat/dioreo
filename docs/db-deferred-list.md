@@ -468,6 +468,18 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
+- `[P2 · M · Sonnet5-H]` **The memory index `MEMORY.md` is close to its read limit and needs a
+  compaction pass.** Filed 2026-08-01 16:10 EDT at Harkirat's request, after the harness warned during
+  the changelog-site work. Measured then: **21.1KB against a 24.4KB read limit** — so it is not a
+  tidiness item, it is an approaching failure. Past the limit the index stops loading in full and a
+  session silently starts with an incomplete map of memory, which is exactly the class of failure
+  `project_memory_slug_migration` exists to prevent.
+  The fix is mechanical but must not lose anything: **one line per entry in the index**, detail pushed
+  down into the topic files themselves, and genuinely stale or superseded entries merged or deleted
+  (several already carry "SUPERSEDED"/"PARKED" markers). Target under 17.1KB.
+  ⚠️ **Do not do this as a side-quest inside another task.** It rewrites the file every future session
+  reads first; it wants its own session with Harkirat able to see the before/after, and the working
+  agreement's no-half-measures rule applies — every pointer that moves has to still resolve.
 - `[P2 · S · any model]` **`docs/DEVLOG.md`: a run of dated Part A entries physically sits AFTER the
   Part B ledger.** Found 2026-07-29 11:44 EDT while appending the v2.42.1 entry — I anchored on
   `# Part B — Lessons Ledger` believing it marked the end of Part A, and the TOC check failed on

@@ -704,9 +704,21 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 @keyframes ptFly{
   0%{opacity:0;transform:rotate(0deg) translate(var(--x0),var(--y0)) scale(.15)}
   26%{opacity:1;transform:rotate(calc(var(--rot) * .5)) translate(var(--x1),var(--y1)) scale(1)}
-  78%{opacity:1;transform:rotate(calc(var(--rot) * .9)) translate(var(--x2),var(--y2)) scale(.85)}
-  100%{opacity:0;transform:rotate(calc(var(--rot) * 1.2)) translate(var(--x2),var(--y2)) scale(.1)}
-}
+  78%{opacity:1;transform:rotate(calc(var(--rot) * .9)) translate(var(--x2),var(--y2)) scale(1)}
+  100%{opacity:1;transform:rotate(calc(var(--rot) * 1.2)) translate(var(--x3),0px) scale(.92)}
+}/* ⚠️ THE LAST STOP MERGES, IT DOES NOT EVAPORATE.
+   It used to end at scale(.1) and opacity 0 wherever the droplet happened to be.
+   The goo filter only paints a droplet once its blurred peak alpha clears the
+   threshold — about 10.6px of diameter — so shrinking to a tenth took every
+   droplet below that line while it was still OUTSIDE the pill. They dissolved on
+   the spot instead of being taken in, which is exactly the "melt away into
+   themselves rather than converging into the pill shape" complaint.
+   Now the final stop lands on the destination's CENTRE LINE at --x3, at full
+   opacity and near-full size, so the droplet is inside the pill's mass when the
+   alpha crush runs and the two fuse — the pill visibly absorbs it. The element is
+   removed a moment later by the sweep timeout, which is invisible precisely
+   because it is by then sitting inside a solid pill of its own colour. */
+
 @media (prefers-reduced-motion:reduce){ .pt{display:none} }
 .goodef{position:absolute;width:0;height:0;overflow:hidden}
 
@@ -1802,7 +1814,17 @@ html{scroll-behavior:smooth}
       var l=Math.min(tailX+aw,dstX), r=Math.max(tailX,dstX);
       C.style.transform='translate('+l+'px,-50%)';
       C.style.width=Math.max(0,r-l)+'px';
-      C.style.height=Math.max(0,H()*0.5*(1-band(0.02,0.4,p)))+'px';
+      /* ⚠️ The neck also thins with DISTANCE, not just with time.
+         It used to span src→dst whatever the gap, so a long move (Terms →
+         Contributing is four tabs) drew one continuous mass across half the bar
+         — the pill stopped reading as a pill and became a smear. A membrane that
+         long is not what a tearing droplet does anyway. Past about three pill
+         widths of separation the neck is gone entirely and the droplets carry the
+         connection, which is what they are FOR and what the comment above already
+         claims happens. Short hops between neighbours are unaffected. */
+      var span=Math.max(0,r-l);
+      var reach=Math.min(1,span/(Math.max(dstW,srcW,1)*3));
+      C.style.height=Math.max(0,H()*0.5*(1-band(0.02,0.4,p))*(1-reach))+'px';
       /* Colour is per PIECE and solid, not one ramp across the whole control.
          The ramp was why the colour lagged: a piece sitting on the destination
          still carried some of the origin's hue until the move ended. Now the
@@ -1836,23 +1858,56 @@ html{scroll-behavior:smooth}
       clearTimeout(sweep);
       [].slice.call(ink.querySelectorAll('.pt')).forEach(function(n){ n.remove(); });
       if(still) return;
-      var n=14, h=H(), max=0;
+      /* ⚠️ THE VERTICAL THROW IS BOUNDED ON PURPOSE — do not scale it back up.
+         This used to reach 0.60h from the centre line. h is the ink box (31px),
+         so that is 18.6px, and a droplet is up to 20px wide, and the goo filter
+         blurs it by about another 7px: roughly 36px from the centre of a bar
+         whose half-height is 27. The droplets therefore fell OUT of the bar and
+         hung over the page content — "particles exploding vertically all over
+         the place", which is exactly what it looked like.
+         The budget now: 0.28h (8.7px) of throw + an 8px radius + ~7px of blur =
+         ~24px, comfortably inside the 27px half-bar. Nothing is clipped, which
+         matters — clipping at the bar edge would slice droplets mid-flight and
+         draw a hard horizontal line, which reads worse than the overflow did.
+         If you change h, the pill height or the blur, re-do this arithmetic. */
+      var n=9, h=H(), max=0;
       var sc=srcX+srcW/2, dc=dstX+dstW/2, run=dc-sc;
       for(var i=0;i<n;i++){
         var el=document.createElement('i');
         el.className='pt';
         var a=(i/n)*Math.PI*2+Math.random()*0.6;
         var x0=srcX+srcW*(0.08+0.84*Math.random());
-        var y0=(Math.random()-0.5)*h*0.55;
+        var y0=(Math.random()-0.5)*h*0.30;
         var t=0.22+0.56*Math.random();
-        var x1=sc+run*t+Math.cos(a)*20;
-        var y1=Math.sin(a)*(h*0.26+Math.random()*h*0.34);
-        var x2=dc+Math.cos(a)*(3+Math.random()*9);
-        var y2=Math.sin(a)*(2+Math.random()*5);
+        var x1=sc+run*t+Math.cos(a)*12;
+        var y1=Math.sin(a)*(h*0.10+Math.random()*h*0.18);
+        var x2=dc+Math.cos(a)*(3+Math.random()*7);
+        var y2=Math.sin(a)*(1+Math.random()*3);
         var dur=Math.round(DUR*(0.6+Math.random()*0.32));
         var del=Math.round(i*DUR*0.014+Math.random()*44);
         if(dur+del>max) max=dur+del;
         var rot=(Math.random()-0.5)*2; rot = (rot>0 ? rot+0.35 : rot-0.35)*26;
+        /* ⚠️ CLAMP THE ROTATION AGAINST THE TRAVEL DISTANCE. This is the actual
+           cause of droplets "exploding vertically" far outside the bar, and it is
+           not the y values — those are small.
+           The keyframes apply rotate(r) then translate(x,y), in that order, so the
+           translation happens in the ROTATED frame and a horizontal offset is
+           converted into a vertical one by sin(r). --x1 grows with how far the
+           pill travels — up to ~350px across a four-tab group — while r was a
+           fixed ±31deg at the last stop. sin(31deg) x 350px is ~180px of purely
+           vertical displacement, which is how droplets ended up 100px BELOW a
+           54px bar, on top of the page. Measured before this clamp: 85px above
+           and 100px below.
+           So r is bounded per droplet by the offset it is actually rotating:
+           allow at most PERP px of perpendicular swing. Short hops keep the full
+           bow (the thing the rotation is for, see the keyframe note); long moves
+           get almost none, which is correct — nothing about a droplet crossing
+           the bar should send it out of the bar. Divided by 1.2 because the final
+           keyframe multiplies rot by that. */
+        var PERP=9;
+        var reach=Math.max(Math.abs(x1),Math.abs(x2),1);
+        var cap=Math.asin(Math.min(1,PERP/reach))*180/Math.PI/1.2;
+        rot=Math.max(-cap,Math.min(cap,rot));
         /* ⚠️ 11px minimum, not 7. The filter thresholds alpha at 22a-8, so a
            droplet only paints once its BLURRED peak alpha clears 0.364, and at
            stdDeviation 3.6 that needs a diameter of about 10.6px:
@@ -1860,10 +1915,17 @@ html{scroll-behavior:smooth}
            between 7 and 10.6px was mathematically invisible for its whole
            flight — a third of them, doing nothing but costing layout. The same
            arithmetic caught the same mistake in the mobile burst. */
-        el.style.cssText='--w:'+(11+Math.random()*9).toFixed(1)+'px;'
+        /* 11px stays the floor for the reason below; the CEILING comes down from
+           20 to 16. A 20px droplet is most of the pill's own height, so it read
+           as a second blob rather than as something shed by the pill. */
+        el.style.cssText='--w:'+(11+Math.random()*5).toFixed(1)+'px;'
           +'--x0:'+x0.toFixed(1)+'px;--y0:'+y0.toFixed(1)+'px;'
           +'--x1:'+x1.toFixed(1)+'px;--y1:'+y1.toFixed(1)+'px;'
           +'--x2:'+x2.toFixed(1)+'px;--y2:'+y2.toFixed(1)+'px;'
+          /* The merge point: the destination pill's own centre. See ptFly's last
+             keyframe — the droplet has to arrive INSIDE the pill for the alpha
+             crush to fuse them, not near it. */
+          +'--x3:'+dc.toFixed(1)+'px;'
           +'--rot:'+rot.toFixed(0)+'deg;'
           +'--t:'+dur+'ms;--d:'+del+'ms;'
           +'--pc:'+tween(run?(x1-sc)/run:1);
