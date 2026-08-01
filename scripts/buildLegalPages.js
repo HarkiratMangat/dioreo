@@ -3290,8 +3290,18 @@ function buildCompanions() {
     // 404 — confirmed live on the first deploy. A redirect is used rather than a
     // second copy of the index at the root, because two landing pages drift and
     // the pages' own nav ("Dior's Builds" → "./") already resolves to legal/.
-    fs.writeFileSync(path.join(root, '_redirects'), '/ /legal/ 302\n');
-    console.log('  ✓ _redirects (/ → /legal/)');
+    // /security is a memorable route that has to keep working even if the source
+    // repository goes private (TERMS §7.1 reserves exactly that). SECURITY.md is
+    // deliberately repo-only — it serves GitHub's "Report a vulnerability" flow,
+    // which needs a public repo to exist at all — but the REPORTING ROUTE must
+    // not depend on that, and a researcher needs it precisely when something is
+    // wrong. The published Contributing page already carries the full section,
+    // so this points at it rather than duplicating the text into a second place
+    // that could then drift.
+    fs.writeFileSync(path.join(root, '_redirects'),
+        '/ /legal/ 302\n'
+        + '/security /legal/contributing#security-vulnerabilities 302\n');
+    console.log('  ✓ _redirects (/ → /legal/, /security → contributing#security)');
 
     // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via
     // EXTRA_PAGES and warmShell. This reverses an earlier decision, so the reason
