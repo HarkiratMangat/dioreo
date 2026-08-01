@@ -648,11 +648,17 @@ function renderIndented(head, region) {
     if (g.length) groups.push(g);
 
     const isCols = grp => grp.some(l => /\S {2,}\S/.test(l));
+    // Class is "aligned", NOT "cols". It was "cols", which collided with the
+    // page LAYOUT grid of the same name in shell() — so every one of NOTICE's
+    // dependency and trademark blocks computed display:grid with a 200px first
+    // track and spilled its lines out of it. The three content gates could not
+    // see it: every word was present, every link resolved, and every aligned
+    // line was still inside a <pre>. Only measuring the rendered box caught it.
     const colsBlock = grp => {
         // Dedent to the group's own left edge so the block doesn't carry the
         // source file's absolute indentation into a narrower page column.
         const cut = Math.min(...grp.map(indentOf));
-        return `<pre class="cols">${grp.map(l => inlineText(l.slice(cut))).join('\n')}</pre>`;
+        return `<pre class="aligned">${grp.map(l => inlineText(l.slice(cut))).join('\n')}</pre>`;
     };
 
     const out = [];
@@ -821,7 +827,8 @@ const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path f
 
 // data-spot opts the control into the cursor-tracked highlight in THEME_JS.
 const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INSTALL_URL}"
-  target="_blank" rel="noopener noreferrer" data-spot>
+  target="_blank" rel="noopener noreferrer" data-spot
+  aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
   <span class="ins-t">${big ? 'Add to Discord' : 'Install'}</span>
@@ -1166,6 +1173,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .ins:hover::after,.ins:focus-visible::after{animation:none}
   .ins:hover,.ins:focus-visible,.ins:active{transform:none}
   .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:none}
+}
+/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+   + three controls — so the theme switch sat past the right edge with the padding
+   eaten. The install button collapses to its mark and the gap tightens, which
+   brings it to ~315px. The GitHub button deliberately survives instead: it is the
+   ONLY repo link on the entire site, so dropping it on mobile would remove that
+   route altogether, whereas the install label is recoverable from the icon plus
+   the accessible name. */
+@media (max-width:620px){
+  .bar{gap:.7rem;padding:0 .8rem}
+  .ins{width:32px;padding:0;justify-content:center}
+  .ins-t,.ins-ar{display:none}
 }
 
 /* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
@@ -1996,10 +2015,10 @@ pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--
 /* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
    IS the structure, so it must not wrap — hence its own horizontal scroll rather
    than letting the page body scroll, which is the rule for every wide element. */
-pre.cols{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
+pre.aligned{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
   background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
   margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
-pre.cols a{color:var(--ink)}
+pre.aligned a{color:var(--ink)}
 
 /* ── callouts ────────────────────────────────────────────────────── */
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
@@ -2447,6 +2466,53 @@ function warmCompose(blocks, out) {
  * links change), structureAudit() cannot see it (no aligned columns involved).
  * Different property, so: different gate.
  */
+/**
+ * GATE 6. No class name may be shared between a layout container and a content
+ * block in the same page.
+ *
+ * Born from a real defect that shipped: the parser emitted <pre class="cols">
+ * for NOTICE's aligned dependency tables, and shell()'s page layout used
+ * .cols{display:grid;grid-template-columns:200px minmax(0,1fr)} for the
+ * rail-plus-document grid. Same name, one stylesheet — so all twelve blocks
+ * computed display:grid with a 200px first track and spilled their lines out of
+ * it, on the live site.
+ *
+ * None of the content gates could see it. Every word was present (verify), every
+ * link resolved (linkAudit), every aligned line was still inside a <pre>
+ * (structureAudit), and no reference was inert (crossRefAudit). The document was
+ * intact; only its RENDERED BOX was wrong, and a static build cannot measure
+ * that. What a static build CAN do is refuse to let the two namespaces overlap,
+ * which is the condition that made the bug possible.
+ */
+function classCollisionAudit() {
+    const bad = [];
+    for (const f of fs.readdirSync(OUT).filter(n => n.endsWith('.html'))) {
+        const html = fs.readFileSync(path.join(OUT, f), 'utf8');
+        const grab = re => {
+            const set = new Set();
+            for (const m of html.matchAll(re)) {
+                m[1].trim().split(/\s+/).filter(Boolean).forEach(c => set.add(c));
+            }
+            return set;
+        };
+        const layout = grab(/<(?:div|aside|main|section|nav|footer|header)\b[^>]*\sclass="([^"]+)"/g);
+        const content = grab(/<(?:pre|code|table|blockquote)\b[^>]*\sclass="([^"]+)"/g);
+        for (const c of content) {
+            if (layout.has(c)) {
+                bad.push(`${f}: "${c}" is used by BOTH a layout container and a `
+                    + 'content block — one stylesheet, so their rules apply to each other');
+            }
+        }
+    }
+    if (bad.length) {
+        console.error('\n  ✗ class-name collisions:');
+        bad.forEach(b => console.error(`      ${b}`));
+        return false;
+    }
+    console.log('  ✓ no layout/content class-name collisions');
+    return true;
+}
+
 function warmStructAudit(results) {
     const bad = [];
     for (const [out, spec] of Object.entries(WARM_STRUCT)) {
@@ -3486,12 +3552,14 @@ console.log('\nChecking cross-references to published files are live:');
 const xrefOk = crossRefAudit(built);
 console.log('\nChecking the warm pages kept their structure:');
 const warmOk = warmStructAudit(warmResults);
-const ok = contentOk && linksOk && structOk && xrefOk && warmOk;
+console.log('\nChecking layout and content class names do not overlap:');
+const classOk = classCollisionAudit();
+const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk;
 // Names each property that was actually checked, rather than one word that reads
-// as "the output is correct". Five gates test five different things, and a pass
-// on one has already been mistaken for a pass on another once.
+// as "the output is correct". Six gates test six different things, and a pass on
+// one has already been mistaken for a pass on another once.
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
-      + 'cross-refs live · warm structure applied.'
+      + 'cross-refs live · warm structure applied · class names distinct.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);
