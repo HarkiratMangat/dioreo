@@ -1,8 +1,9 @@
 # Terms of Service — Dior's Builds
 
-**Effective date:** 29 July 2026
-**Version:** 1.1
-**Applies to:** the Dior's Builds Discord application (the "Bot")
+**Effective date:** 31 July 2026
+**Version:** 1.2
+**Applies to:** the Dior's Builds Discord application (the "Bot") and the website
+these documents are published on (the "Site")
 
 ---
 
@@ -38,6 +39,23 @@ Dior's Builds is operated by **Harkirat Mangat**, also known as **"dior"** or
 **Contact:** harkirat117@gmail.com
 
 There is no company behind this. It's one person, and support is best-effort.
+
+### 1.1 The Site
+
+These documents are published on a website (the **"Site"**). It is a set of static
+pages: no accounts, no forms, no analytics, and nothing to sign up for. The only
+thing it keeps is the light or dark appearance you pick, stored in your own
+browser and never transmitted — the Privacy Policy describes it in §2.6.
+
+Where these Terms would sensibly apply to it, they do: in particular the
+disclaimer of warranties (§14), the limitation of liability (§15), and the
+intellectual-property terms (§7) cover the Site and its contents as well as the
+Bot. Everything written about *using the Bot* — the eligibility, conduct,
+suspension and account provisions — applies to the Bot only, because there is
+nothing on the Site to use in that sense.
+
+**If the two ever conflict about a document's contents, the plain-text original
+governs**, as stated on each rendered page.
 
 ---
 
@@ -654,6 +672,7 @@ Kept here as well as in git, because the repository's visibility can change
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.2 | 31 July 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. |
 | 1.1 | 29 July 2026 | Added §7.3 (crossover and collaboration content — third-party IP featured in the game); noted the operator's `diorswrld` alias in §1 and §20; renumbered the former §7.3–§7.6 to §7.4–§7.7 to make room. **Clarifying additions only** — no reduction of your rights, no new data collected, no new obligation on you. |
 | 1.0 | 28 July 2026 | First published version. |
 

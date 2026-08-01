@@ -13,7 +13,7 @@ it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the
 
 | Name | Role |
 |---|---|
-| **Harkirat Mangat** (**dior**) | Creator and maintainer |
+| **Harkirat Mangat** (**dior**, **diorswrld**) | Creator and maintainer |
 
 ---
 
