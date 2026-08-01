@@ -75,35 +75,48 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    accent — and a light passes across the wordmark once. The only always-on
    movement is a single slow pulse on the top bar, because three staggered idle
    loops competed with everything else in the bar and read as noise. */
-.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
-  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
-  white-space:nowrap;position:relative;padding:.25rem 0}
-.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
-.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
-  transform-origin:left center;
-  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
-.glyph i:nth-child(1){width:100%;background:var(--accent)}
-.glyph i:nth-child(2){width:56%}
-.glyph i:nth-child(3){width:78%}
-.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
-@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
+.mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}
 
-/* The shine. A masked gradient swept across the letterforms — text, not a bar
-   under it, so the mark itself is what responds. */
-.wm{position:relative;background-image:linear-gradient(100deg,
+/* ⚠️ THE THREE STACKED BARS ARE GONE, and restyling them could not have fixed
+   the problem: three stacked lines IS the universal glyph for a menu, so the
+   shape itself was the defect. A reader tried to tap it expecting one to open.
+   A filled rounded SQUARE is the one form in this bar that is neither a circle
+   nor a pill — every control here is one of those two — so it cannot be read as
+   a control at all. It carries the page accent, so the mark changes colour with
+   the document the way the rest of the chrome does. */
+.tile{flex:0 0 auto;width:30px;height:30px;border-radius:9px;
+  background:var(--accent);color:#141018;display:grid;place-items:center;
+  font-family:var(--display);font-weight:800;font-size:.94rem;letter-spacing:-.04em;
+  transition:transform .42s cubic-bezier(.34,1.18,.44,1),border-radius .42s}
+
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}
+.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
+  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
   var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
   background-size:280% 100%;background-position:130% 0;
   -webkit-background-clip:text;background-clip:text;
   transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
-.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
-  background-position:-30% 0}
+
+/* The context line names the document you are in. It is hidden on desktop on
+   purpose — the switcher is right there saying the same thing, and a header
+   that states it twice is noise. Below 980 the switcher is gone. */
+.mk-ctx{display:none}
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
-.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
-.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
-.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
-.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
-.mark.live:hover .glyph i:nth-child(1){animation:none}
+
+/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
+   drop the keyboard focus styling on any device with a touchscreen, which is
+   most laptops now. Split, always. */
+.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+.mark.live:focus-visible .tile{transform:scale(1.07) rotate(-3deg);border-radius:12px}
+@media (hover:hover) and (pointer:fine){
+  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .go{opacity:1;transform:translateX(0)}
+  .mark.live:hover .tile{transform:scale(1.07) rotate(-3deg);border-radius:12px}
+}
+.mark.live:active .tile{transform:scale(.96)}
 
 /* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -203,7 +216,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    the accessible name. */
 @media (max-width:620px){
   .bar{gap:.7rem;padding:0 .8rem}
-  .ins{width:32px;padding:0;justify-content:center}
+  /* ⚠️ ONE rule, BOTH axes. The desktop rule gives .ins height:37px while this
+     one set only width:32px, so on a phone the Discord button rendered as a
+     32x37 egg. That is a specificity trap, not a drawing mistake — the height
+     came from a rule nobody was looking at. 38px square, and the expand-on-
+     hover behaviour is dropped here because there is no hover to expand on. */
+  .ghb,.ins{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
   .ins-t,.ins-ar{display:none}
 }
 
@@ -283,7 +301,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    D is 2.7 along the 45-degree diagonal, hence 2.7/sqrt(2) per axis.
    Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
    disc reads as a full sun with nothing bitten out of it. */
-.thm-kn .cut{transform:translate(1.91px,-1.91px);
+/* ⚠️ The lune's CENTROID is not the disc's centre, and that is the "moon looks
+   off-centre in its circle" bug. The remaining shape runs from -R to (D-r)
+   along the axis, so its midpoint sits (R + D - r)/2 - R away from the middle,
+   i.e. 5.2 units down-left here — the thinner it gets, the further off it
+   drifts. The orb is translated back by that amount so the crescent is optically
+   centred, and returns to nothing in light mode so the SUN stays concentric.
+   Width is R + D - r = 4.4 of a 14.8 diameter (30%); at 3.1 it was too thin to
+   carry at 16px. Horn tips land at ±68 degrees. */
+.thm-kn .orb{transform:translate(3.68px,-3.68px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .cut{transform:translate(2.83px,-2.83px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
   transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
@@ -302,6 +330,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
 :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .orb{transform:none}
 :root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
@@ -315,6 +344,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
   :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .orb{transform:none}
   :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
@@ -649,8 +679,11 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 <div class="wrap">
   <div class="top">
     <div class="mark">
-    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="wm">Dior&#8217;s Builds</span>
+    <span class="tile" aria-hidden="true">D</span>
+    <span class="mk-s">
+      <span class="wm">Dior&#8217;s Builds</span>
+      
+    </span>
   </div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
   data-spot title="View the source on GitHub">

@@ -80,35 +80,48 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    accent — and a light passes across the wordmark once. The only always-on
    movement is a single slow pulse on the top bar, because three staggered idle
    loops competed with everything else in the bar and read as noise. */
-.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
-  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
-  white-space:nowrap;position:relative;padding:.25rem 0}
-.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
-.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
-  transform-origin:left center;
-  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
-.glyph i:nth-child(1){width:100%;background:var(--accent)}
-.glyph i:nth-child(2){width:56%}
-.glyph i:nth-child(3){width:78%}
-.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
-@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
+.mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}
 
-/* The shine. A masked gradient swept across the letterforms — text, not a bar
-   under it, so the mark itself is what responds. */
-.wm{position:relative;background-image:linear-gradient(100deg,
+/* ⚠️ THE THREE STACKED BARS ARE GONE, and restyling them could not have fixed
+   the problem: three stacked lines IS the universal glyph for a menu, so the
+   shape itself was the defect. A reader tried to tap it expecting one to open.
+   A filled rounded SQUARE is the one form in this bar that is neither a circle
+   nor a pill — every control here is one of those two — so it cannot be read as
+   a control at all. It carries the page accent, so the mark changes colour with
+   the document the way the rest of the chrome does. */
+.tile{flex:0 0 auto;width:30px;height:30px;border-radius:9px;
+  background:var(--accent);color:#141018;display:grid;place-items:center;
+  font-family:var(--display);font-weight:800;font-size:.94rem;letter-spacing:-.04em;
+  transition:transform .42s cubic-bezier(.34,1.18,.44,1),border-radius .42s}
+
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}
+.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
+  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
   var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
   background-size:280% 100%;background-position:130% 0;
   -webkit-background-clip:text;background-clip:text;
   transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
-.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
-  background-position:-30% 0}
+
+/* The context line names the document you are in. It is hidden on desktop on
+   purpose — the switcher is right there saying the same thing, and a header
+   that states it twice is noise. Below 980 the switcher is gone. */
+.mk-ctx{display:none}
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
-.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
-.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
-.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
-.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
-.mark.live:hover .glyph i:nth-child(1){animation:none}
+
+/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
+   drop the keyboard focus styling on any device with a touchscreen, which is
+   most laptops now. Split, always. */
+.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+.mark.live:focus-visible .tile{transform:scale(1.07) rotate(-3deg);border-radius:12px}
+@media (hover:hover) and (pointer:fine){
+  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .go{opacity:1;transform:translateX(0)}
+  .mark.live:hover .tile{transform:scale(1.07) rotate(-3deg);border-radius:12px}
+}
+.mark.live:active .tile{transform:scale(.96)}
 
 /* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -208,7 +221,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    the accessible name. */
 @media (max-width:620px){
   .bar{gap:.7rem;padding:0 .8rem}
-  .ins{width:32px;padding:0;justify-content:center}
+  /* ⚠️ ONE rule, BOTH axes. The desktop rule gives .ins height:37px while this
+     one set only width:32px, so on a phone the Discord button rendered as a
+     32x37 egg. That is a specificity trap, not a drawing mistake — the height
+     came from a rule nobody was looking at. 38px square, and the expand-on-
+     hover behaviour is dropped here because there is no hover to expand on. */
+  .ghb,.ins{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
   .ins-t,.ins-ar{display:none}
 }
 
@@ -288,7 +306,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    D is 2.7 along the 45-degree diagonal, hence 2.7/sqrt(2) per axis.
    Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
    disc reads as a full sun with nothing bitten out of it. */
-.thm-kn .cut{transform:translate(1.91px,-1.91px);
+/* ⚠️ The lune's CENTROID is not the disc's centre, and that is the "moon looks
+   off-centre in its circle" bug. The remaining shape runs from -R to (D-r)
+   along the axis, so its midpoint sits (R + D - r)/2 - R away from the middle,
+   i.e. 5.2 units down-left here — the thinner it gets, the further off it
+   drifts. The orb is translated back by that amount so the crescent is optically
+   centred, and returns to nothing in light mode so the SUN stays concentric.
+   Width is R + D - r = 4.4 of a 14.8 diameter (30%); at 3.1 it was too thin to
+   carry at 16px. Horn tips land at ±68 degrees. */
+.thm-kn .orb{transform:translate(3.68px,-3.68px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .cut{transform:translate(2.83px,-2.83px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
   transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
@@ -307,6 +335,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
 :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
+:root[data-theme=light] .thm-kn .orb{transform:none}
 :root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
@@ -320,6 +349,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
   :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
+  :root:not([data-theme=dark]) .thm-kn .orb{transform:none}
   :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
@@ -647,66 +677,112 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 /* Desktop shows no mobile menu. */
 .mnav{display:none}
 
-/* ── mobile navigation ────────────────────────────────────────────────
-   ONE disclosure holding every destination on the site: both page groups and,
-   on the legal pages, the section index — because they answer the same
-   question, and two collapsing menus a thumb-width apart was the complaint
-   that started this.
+/* ── mobile navigation: a swipeable strip ─────────────────────────────
+   Every page in one scrollable row, nothing to open. The three previous
+   attempts (two-tab rail, bottom sheet, disclosure) all put the answer to
+   "where am I and what else is there" behind a tap; this states it.
 
-   Deliberately plain. No indicator, no gesture, no hover state — those three
-   are what made the previous two attempts feel broken on a phone. A latched
-   :hover after a tap is why buttons appeared "stuck mid-phase", so every
-   hover rule on this site is now inside a (hover:hover) query and touch gets
-   :active instead, which releases on its own.
+   No hover rules live in here AT ALL. On touch a :hover latches until you tap
+   something else, which is what made every earlier version feel stuck. Touch
+   feedback is :active, which releases itself.
 
-   Rows are 48px, clearing the 44px minimum (WCAG 2.5.5) with enough margin
-   for a thumb that is not aimed precisely. */
+   Tabs are 44px tall inside a 52px band, clearing WCAG 2.5.5. */
 @media (max-width:980px){
   .bar .navwrap{display:none}
+  .mk-ctx{display:flex;align-items:center;gap:.34rem;min-width:0;
+    font-family:var(--mono);font-size:.53rem;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--ink3);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mk-ctx i{flex:0 0 auto;width:5px;height:5px;border-radius:50%;
+    background:var(--accent)}
   .mnav{display:block;position:sticky;top:54px;z-index:40}
 
-  .mtrig{display:flex;width:100%;align-items:center;gap:.55rem;
-    -webkit-appearance:none;appearance:none;cursor:pointer;
-    min-height:48px;padding:0 .9rem;text-align:left;
-    border:1px solid var(--rule);border-left:0;border-right:0;
+  .mstrip{position:relative;display:flex;align-items:stretch;gap:.3rem;
+    overflow-x:auto;overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    padding:.42rem .75rem;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
     background:color-mix(in srgb,var(--paper) 96%,transparent);
     backdrop-filter:blur(12px);
-    font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--ink)}
-  .mt-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:0 0 7px}
-  .mt-now{font-weight:700}
-  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
-    color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42%}
-  .mt-chev{flex:0 0 auto;width:7px;height:7px;margin-left:.45rem;
-    border-right:1.5px solid var(--ink2);border-bottom:1.5px solid var(--ink2);
-    transform:translateY(-2px) rotate(45deg);
+    scrollbar-width:none}
+  .mstrip::-webkit-scrollbar{display:none}
+
+  .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
+    display:flex;align-items:center;min-height:44px;padding:0 .8rem;
+    border-radius:999px;text-decoration:none;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink2);
+    transition:color .28s ease}
+  /* Same inversion the desktop pill uses, and measured the same way: a solid
+     accent is far too light to carry accent-coloured text, and near-black on
+     the six accents bottoms out at 5.07 which clears AA. */
+  .mtab.on{color:#120E1C;font-weight:700}
+  .mtab:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+  .ms-sep{flex:0 0 1px;align-self:center;height:20px;background:var(--rule2);
+    margin:0 .3rem}
+
+  /* The indicator layer. The goo runs ONLY during a burst, for the reason the
+     desktop one does: thresholding a blurred stadium erodes its caps far more
+     than its straight edges, so a resting pill comes out a rounded rectangle. */
+  .ms-ink{position:absolute;left:0;top:.42rem;bottom:.42rem;width:100%;
+    z-index:0;pointer-events:none}
+  .mstrip.burst .ms-ink{filter:url(#dbgoo)}
+  .ms-pill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+    background:var(--accent);transform-origin:center;
+    scale:1;opacity:1}
+  .mstrip.burst .ms-pill{animation:msPill 640ms cubic-bezier(.34,1.3,.44,1) both}
+  @keyframes msPill{ from{scale:0;opacity:0} to{scale:1;opacity:1} }
+
+  /* Two nested elements because the travel and the swelling need DIFFERENT
+     timing functions, and one element cannot carry two. This is the reference
+     implementation's own split, kept for the same reason. */
+  .mpt{position:absolute;top:50%;left:var(--cx,50%);width:0;height:0;
+    animation:mptFly var(--t) ease both}
+  .mpd{display:block;width:var(--w);height:var(--w);
+    margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
+    border-radius:50%;background:var(--pc);opacity:0;
+    animation:mptPop var(--t) ease both}
+  /* Wide radius in, tight radius out: the particles CONVERGE. That direction
+     is the whole effect — outward would read as an explosion leaving, inward
+     reads as a shape being gathered into existence. */
+  @keyframes mptFly{
+    0%{transform:rotate(0deg) translate(var(--sx),var(--sy))}
+    70%{transform:rotate(calc(var(--rot) * .5)) translate(calc(var(--ex) * 1.2),calc(var(--ey) * 1.2))}
+    85%{transform:rotate(calc(var(--rot) * .66)) translate(var(--ex),var(--ey))}
+    100%{transform:rotate(calc(var(--rot) * 1.2)) translate(calc(var(--ex) * .5),calc(var(--ey) * .5))}
+  }
+  @keyframes mptPop{
+    0%{scale:0;opacity:0}
+    25%{scale:calc(var(--sc) * .25)}
+    38%{opacity:1}
+    65%{scale:var(--sc);opacity:1}
+    85%{scale:var(--sc);opacity:1}
+    100%{scale:0;opacity:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .mstrip.burst .ms-pill{animation:none}
+    .mpt{display:none}
+  }
+
+  /* The section index is no longer in a menu with the pages — it is not the
+     same question. It sits with the document it indexes, closed by default. */
+  .msecd{border-bottom:1px solid var(--rule);
+    background:color-mix(in srgb,var(--paper) 96%,transparent)}
+  .msecd>summary{display:flex;align-items:center;gap:.5rem;min-height:44px;
+    padding:0 .9rem;cursor:pointer;list-style:none;
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink3)}
+  .msecd>summary::-webkit-details-marker{display:none}
+  .msecd>summary::after{content:"";flex:0 0 auto;width:7px;height:7px;
+    margin-left:.2rem;border-right:1.5px solid var(--ink2);
+    border-bottom:1.5px solid var(--ink2);transform:translateY(-2px) rotate(45deg);
     transition:transform .3s cubic-bezier(.22,.9,.24,1)}
-  .mtrig[aria-expanded=true] .mt-chev{transform:translateY(1px) rotate(225deg)}
-
-  /* max-height rather than a height animation: the panel's content varies from
-     6 rows to nearly 30, and nothing here needs to measure it. */
-  .mpanel{max-height:0;overflow:hidden;background:var(--paper);
-    border-bottom:0 solid var(--rule);
-    transition:max-height .34s cubic-bezier(.22,.9,.24,1)}
-  .mpanel.open{max-height:min(70vh,560px);overflow-y:auto;border-bottom-width:1px}
-
-  .mp-h{margin:0;padding:.8rem .9rem .3rem;font-family:var(--mono);font-size:.56rem;
-    letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
-  .mp-list{padding-bottom:.3rem}
-
-  .mrow{display:flex;align-items:center;gap:.6rem;min-height:48px;padding:0 .9rem;
-    text-decoration:none;color:var(--ink2);
-    font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
-    border-left:2px solid transparent}
-  .mr-b{width:6px;height:6px;border-radius:50%;flex:0 0 6px;
-    background:var(--row,var(--ink3));opacity:.45}
-  .mrow.on{color:var(--ink);border-left-color:var(--row,var(--accent));
-    background:color-mix(in srgb,var(--row,var(--accent)) 10%,transparent)}
-  .mrow.on .mr-b{opacity:1}
-  .mrow:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-
-  /* The section index reuses the .slot markup the desktop rail uses, resized
-     for a thumb. It is the same list, so the scrollspy highlights both. */
+  .msecd[open]>summary::after{transform:translateY(1px) rotate(225deg)}
+  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
+  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
+    color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    max-width:52%}
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;padding-bottom:.3rem}
   .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
     padding:0 .9rem;border-left:2px solid transparent}
   .msec .slot.on{border-left-color:var(--accent);
@@ -961,8 +1037,11 @@ html{scroll-behavior:smooth}
 
 <div class="bar">
   <a class="mark live" href="./">
-    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="wm">Dior&#8217;s Builds</span>
+    <span class="tile" aria-hidden="true">D</span>
+    <span class="mk-s">
+      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="mk-ctx"><i aria-hidden="true"></i>Notices &amp; Attributions</span>
+    </span>
     <span class="go" aria-hidden="true">&#8250;</span>
   </a>
   <nav>
@@ -1014,24 +1093,18 @@ html{scroll-behavior:smooth}
   </nav>
 </div>
 <div id="prog"></div>
+<aside class="mnav" id="mnav">
+  <nav class="mstrip" id="mstrip" aria-label="Pages">
+    <span class="ms-ink" id="msink" aria-hidden="true"><i class="ms-pill"></i></span>
+    <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab on" href="./notice.html" aria-current="page" style="--row:#E8657F">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#B6E24A">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#5AA9FF">Contributors</a>
+  </nav>
+  <details class="msecd">
+    <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
+    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
+  </details>
+</aside>
 
 <div class="page">
-  <aside class="mnav" id="mnav">
-  <button class="mtrig" id="mtrig" aria-expanded="false" aria-controls="mpanel">
-    <span class="mt-dot" aria-hidden="true"></span>
-    <span class="mt-now">Notice</span>
-    <span class="mt-at" id="railcur"></span>
-    <span class="mt-chev" aria-hidden="true"></span>
-  </button>
-  <div class="mpanel" id="mpanel">
-    <p class="mp-h">Documents</p>
-    <div class="mp-list"><a class="mrow" href="./terms.html" style="--row:#F2994A"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Terms</span></a><a class="mrow" href="./privacy.html" style="--row:#17A2A2"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Privacy</span></a><a class="mrow" href="./license.html" style="--row:#9B6BE3"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">License</span></a><a class="mrow on" href="./notice.html" aria-current="page" style="--row:#E8657F"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Notice</span></a></div>
-    <p class="mp-h">Community</p>
-    <div class="mp-list"><a class="mrow" href="./contributing.html" style="--row:#B6E24A"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Contributing</span></a><a class="mrow" href="./contributors.html" style="--row:#5AA9FF"><span class="mr-b" aria-hidden="true"></span><span class="mr-t">Contributors</span></a></div>
-    <p class="mp-h">On this page</p>
-    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
-  </div>
-</aside>
   <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
        split is load-bearing and was measured, not guessed (2026-07-30).
 
@@ -1389,7 +1462,13 @@ Claude(TM), Anthropic(R)
     function paint(){
       var aw=srcW*(1-band(0.04,0.55,p));
       var bw=dstW*band(0.28,1,p);
-      A.style.transform='translateX('+srcX+'px)';
+      /* ⚠️ The tail collapses toward the edge FACING the destination. It used
+         to be pinned at srcX and only lose width, so on a left-to-right move
+         the leftover slid LEFT — away from where the eye was going — and the
+         whole thing read as the old pill fleeing rather than being drawn
+         across. The head already grew from its centre; the tail did not. */
+      var tailX = dstX>=srcX ? srcX+srcW-aw : srcX;
+      A.style.transform='translateX('+tailX+'px)';
       A.style.width=Math.max(0,aw)+'px';
       /* Grows from its own centre, so it inflates into place rather than
          unrolling from one edge. */
@@ -1397,7 +1476,7 @@ Claude(TM), Anthropic(R)
       B.style.width=Math.max(0,bw)+'px';
       /* The neck exists only while the mass is tearing. Past 40% the droplets
          are the only bridge, which is what makes the break read as a break. */
-      var l=Math.min(srcX+aw,dstX), r=Math.max(srcX,dstX);
+      var l=Math.min(tailX+aw,dstX), r=Math.max(tailX,dstX);
       C.style.transform='translate('+l+'px,-50%)';
       C.style.width=Math.max(0,r-l)+'px';
       C.style.height=Math.max(0,H()*0.5*(1-band(0.02,0.4,p)))+'px';
@@ -1531,35 +1610,89 @@ Claude(TM), Anthropic(R)
     addEventListener('resize',function(){ aim(idx,true); });
   });
 
-  /* ── the mobile menu ──────────────────────────────────────────────────
-     One button, one panel, no gesture and no indicator. aria-expanded is the
-     single source of truth for the open state, the chevron and the panel, so
-     they cannot disagree; inert keeps a closed panel out of the tab order and
-     the accessibility tree. */
-  var trig=document.getElementById('mtrig'),
-      panel=document.getElementById('mpanel');
-  if(trig&&panel){
-    var open=false;
-    /* Is the mobile layout in force? Read from the layout the CSS actually
-       applied, so script and media query can never disagree. */
-    var live=function(){ return getComputedStyle(trig).display!=='none'; };
-    var set=function(v){
-      open=v;
-      trig.setAttribute('aria-expanded',v?'true':'false');
-      panel.classList.toggle('open',v);
-      panel.toggleAttribute('inert',live()&&!v);
-    };
-    set(false);
-    trig.addEventListener('click',function(){ set(!open); });
-    panel.addEventListener('click',function(e){ if(e.target.closest('a')) set(false); });
-    document.addEventListener('keydown',function(e){
-      if(e.key==='Escape'&&open){ set(false); trig.focus(); }
-    });
-    document.addEventListener('click',function(e){
-      if(open&&!e.target.closest('#mnav')) set(false);
-    });
-    addEventListener('resize',function(){
-      if(!live()) panel.removeAttribute('inert'); else set(open);
+  /* ── the mobile strip ─────────────────────────────────────────────────
+     The indicator here is deliberately NOT the desktop morph. There is no
+     hover on a phone, so there is no "moving between two known points" to
+     animate — a tap is a single discrete event. So this clones the reference
+     implementation's choreography instead: particles appear on a WIDE radius
+     and converge INWARD while the pill scales up from nothing, which reads as
+     the shape being assembled rather than moved.
+
+     It plays on PAGE LOAD, not only on tap. Each tab is a real link to a real
+     document, so a tap tears the page down mid-animation and you would never
+     see it; arriving is the moment that has time for it. */
+  var strip=document.getElementById('mstrip'), ink=document.getElementById('msink');
+  if(strip&&ink){
+    var pill=ink.querySelector('.ms-pill');
+    var mtabs=[].slice.call(strip.querySelectorAll('.mtab'));
+    var cur=mtabs.indexOf(strip.querySelector('.mtab.on'));
+    if(cur<0) cur=0;
+    var mstill=matchMedia('(prefers-reduced-motion:reduce)').matches;
+    var burstT=0, offT=0;
+
+    function noise(n){ return n/2 - Math.random()*n; }
+    /* Same polar walk the reference uses — each particle keeps ONE angle and
+       travels along it, which is what makes the swarm read as converging on a
+       point rather than swirling. y is squashed because a phone strip is about
+       52px tall and an unsquashed radius would throw particles clean out of it,
+       the same mistake the desktop spray made before it was constrained. */
+    function xy(dist,i,total){
+      var a=((360+noise(8))/total*i)*Math.PI/180;
+      return [dist*Math.cos(a), dist*Math.sin(a)*0.46];
+    }
+
+    function place(i,animate){
+      var t=mtabs[i]; if(!t) return;
+      pill.style.transform='translateX('+t.offsetLeft+'px)';
+      pill.style.width=t.offsetWidth+'px';
+      pill.style.background=t.style.getPropertyValue('--row')||'';
+      ink.style.width=strip.scrollWidth+'px';
+      if(!animate||mstill){ pill.style.scale='1'; pill.style.opacity='1'; return; }
+      ink.style.setProperty('--cx',(t.offsetLeft+t.offsetWidth/2)+'px');
+      pill.style.animation='none'; void pill.offsetWidth;
+      pill.style.animation='';
+      strip.classList.remove('burst'); void strip.offsetWidth;
+      strip.classList.add('burst');
+      spray(t.style.getPropertyValue('--row'));
+      clearTimeout(offT);
+      offT=setTimeout(function(){ strip.classList.remove('burst'); },1700);
+    }
+
+    function spray(col){
+      clearTimeout(burstT);
+      [].slice.call(ink.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
+      var N=15;
+      for(var i=0;i<N;i++){
+        var a=xy(46,N-i,N), b=xy(8+noise(6),N-i,N);
+        var rot=noise(10); rot = rot>0 ? (rot+5)*10 : (rot-5)*10;
+        var el=document.createElement('i'); el.className='mpt';
+        var dot=document.createElement('b'); dot.className='mpd';
+        el.style.cssText='--sx:'+a[0].toFixed(1)+'px;--sy:'+a[1].toFixed(1)+'px;'
+          +'--ex:'+b[0].toFixed(1)+'px;--ey:'+b[1].toFixed(1)+'px;'
+          +'--rot:'+rot.toFixed(0)+'deg;--sc:'+(1+noise(0.2)).toFixed(2)+';'
+          +'--w:'+(11+Math.random()*5).toFixed(1)+'px;'
+          +'--t:'+Math.round(1200+noise(600))+'ms;--pc:'+col;
+        el.appendChild(dot); ink.appendChild(el);
+      }
+      burstT=setTimeout(function(){
+        [].slice.call(ink.querySelectorAll('.mpt')).forEach(function(n){ n.remove(); });
+      },1700);
+    }
+
+    /* Keep where you are on screen without yanking the page around it. */
+    function reveal(){
+      var t=mtabs[cur]; if(!t) return;
+      strip.scrollLeft = Math.max(0, t.offsetLeft + t.offsetWidth/2 - strip.clientWidth/2);
+    }
+    function live(){ return getComputedStyle(strip).display!=='none'; }
+
+    if(live()){ reveal(); place(cur,false);
+      setTimeout(function(){ place(cur,true); },220); }
+    addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
+    /* A tap moves the indicator immediately even though the page is about to be
+       replaced: on a slow connection that is the only feedback the tap landed. */
+    mtabs.forEach(function(a,i){
+      a.addEventListener('click',function(){ cur=i; place(i,true); });
     });
   }
 })();
