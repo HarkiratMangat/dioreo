@@ -1369,6 +1369,25 @@ html{scroll-behavior:smooth}
                                *** See <a class="xref" href="#s-2">Section&nbsp;2</a> — Apache-2.0 obligations ***
                                Not used at runtime; required only by
                                scripts/migrateBuildsToMongo.js.</pre>
+<p>Vendored web assets, served from public/assets/:</p>
+<p>These are not npm dependencies and do not appear in package.json. They are committed to this repository and served from our own origin by the published website. That is deliberate: the Privacy Policy is published on the same origin and states what is collected, and loading a font or a script from a third-party CDN would disclose every visitor's IP address to that third party without the policy saying so.</p>
+<pre class="aligned">Martian Mono                   SIL Open Font License 1.1
+                               Copyright (c) The Martian Mono Project Authors
+                               <a href="https://github.com/evilmartians/mono" target="_blank" rel="noopener noreferrer">https://github.com/evilmartians/mono</a>
+                               Used for version stamps and display type on
+                               the changelog and devlog pages.</pre>
+<pre class="aligned">Instrument Sans                SIL Open Font License 1.1
+                               Copyright (c) The Instrument Sans Project
+                               Authors
+                               <a href="https://github.com/Instrument/instrument-sans" target="_blank" rel="noopener noreferrer">https://github.com/Instrument/instrument-sans</a>
+                               Used for reading copy on the same pages.</pre>
+<pre class="aligned">Motion One 11                  MIT
+                               Copyright (c) Matt Perry
+                               <a href="https://motion.dev" target="_blank" rel="noopener noreferrer">https://motion.dev</a>
+                               Scroll-reveal animation on the changelog and
+                               devlog pages; the pages render and are fully
+                               readable without it.</pre>
+<p>The SIL OFL requires that the fonts be distributed with this notice and that they not be sold on their own; neither is affected by how they are used here. Both fonts are served as subset .woff2 files, unmodified.</p>
 <h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">APACHE LICENSE 2.0 OBLIGATIONS</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
 <p>discord.js and xlsx are licensed under the Apache License, Version 2.0. If you redistribute this project or any work containing those components, Apache-2.0 <a class="xref" href="#s-4">§4</a> requires you to:</p>
 <ul class="lettered"><li>(a) give recipients a copy of the Apache License 2.0;</li><li>(b) retain all copyright, patent, trademark, and attribution notices;</li><li>(c) state prominently that you changed any Apache-licensed file, if you did; and</li><li>(d) include the contents of any NOTICE file distributed with those works.</li></ul>

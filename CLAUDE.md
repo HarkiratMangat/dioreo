@@ -302,18 +302,31 @@ file, and this section all reference it; renaming it is a separate change that h
   invitation must never enter it. Don't collapse the two templates.
   `CHRONICLE_PAGES` is the record — What's New · Changelog · Devlog — rendered by
   **`scripts/lib/chronicle.js`**, which is neither an instrument nor an invitation and so takes its own
-  family. It is **one skeleton with three VOICES**, because those three sources differ in *register*,
-  not in *structure* (all are reverse-chronological dated entries): `broadcast` (orchid, poster, one
-  card per release, the version drawn once at display size AS the heading), `record` (spring green,
-  dense, a monospace version·date·PR·commit strip, version rail), `notebook` (near-achromatic + one
-  ochre, long-form, `### Lesson` blocks lifted into callouts).
-  ⚠️ **The devlog deliberately takes NO seventh accent.** Six were already in play; restraint only
-  reads as restraint next to colour, and a seventh hue makes the site a swatch library. Don't "fix"
-  this by giving it one.
-  ⚠️ **Horizontal ruled-paper lines were tried on the notebook voice and REMOVED.** A repeating
-  gradient has one interval; prose leading is ~1.74rem and headings/lists/code are all something else,
-  so the rules drift out of phase within a screen and strike through the text. The idea is unsound, not
-  mistuned — the margin rule replaces it. Don't reintroduce horizontal rules.
+  family. It implements **"The Armory Terminal"**, Harkirat's own changelog design from 2026-07-11
+  (memory `project_changelog_redesign`): a committed dark world — gunmetal `#0C100E`, phosphor
+  `#E9E7DE`, Martian Mono + Instrument Sans — that **deliberately does not use the bot's palette**,
+  which is precisely what stops it reading as a recoloured legal page. Its idea is the identity shift
+  Harkirat asked to keep: **not three websites, three OPERATORS at one terminal.** The world is
+  constant; who is at the console changes, and with them the type, density, signal and how much
+  machine detail is exposed.
+  - **PATCH NOTES** (What's New, tracer `#FF9E3D`) — a *notice board*: hero panel for the newest
+    release, card deck behind it, humanist type, **no** PR/commit detail.
+  - **FIELD ENGINEER** (Changelog, phosphor `#7CE38B`) — a *ledger*: fixed monospace key column
+    (version · date · PR · commit) beside the prose, the **ordnance-belt rail** (filled round for
+    `x.0`, hollow tick for a patch), the solo-era break, scanlines.
+  - **LOG KEEPER** (Devlog, ice `#8FB8FF`) — a *timeline*: a spine that fills on scroll, a node per
+    entry, dates in the margin, `### Lesson` blocks pushed out as debriefs.
+  ⚠️ **What separates the three is the GRID, never the palette.** The first attempt was the legal
+  shell in three accent colours and was rejected on sight: same masthead stack, same document column,
+  same rail. A reader stops seeing colour in two seconds. If a change makes all three share one entry
+  wrapper again, the identities are gone however many hues are in play.
+  ⚠️ **Horizontal ruled-paper lines were tried and REMOVED.** A repeating gradient has one interval;
+  prose leading is ~1.74rem and headings/lists/code are each something else, so the rules drift out of
+  phase within a screen and strike through the text. Unsound, not mistuned. Don't reintroduce them.
+- **Web assets are VENDORED into `public/assets/`, never CDN-linked** (fonts + Motion One). This is a
+  privacy obligation, not a preference: the Privacy Policy is served from this same origin, and a
+  third-party CDN would disclose every visitor's IP to a party the policy does not name. All three are
+  permissive (OFL / MIT) and attributed in `NOTICE` §1 — **add any new vendored asset there too.**
 - **`chronicle.js` never imports from `buildLegalPages.js`** — every shared piece (tokens, component
   CSS, switcher, nav, footer, parser) is passed in as the `CHROME` bundle, one way. That was chosen over
   extracting ~2,000 lines out of a file that had just absorbed 27 commits. `requireChrome()` throws on a
