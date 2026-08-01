@@ -36,6 +36,9 @@ A peek at what's planned (not built yet):
 - **Download buttons** for the plain-text licence and notice.
 - **Copy buttons** on every code block in the contributing guide.
 - **The home page was off centre.** Fixed, along with a pass over its hover effects and spacing.
+- **The highlight behind the menu now breaks apart and rebuilds itself** when you move between pages,
+  instead of sliding along as one piece.
+- **The moon on the dark/light switch is a proper thin crescent** — it used to be an almost-full moon.
 
 ## v2.46.0 — July 31, 2026
 - **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch

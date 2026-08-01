@@ -440,7 +440,33 @@ clock and inspecting specific frames. Contrast was re-derived from scratch: a ti
 WCAG AA at **any** tint (violet-on-dark 4.60 untinted, 4.28 at 6%), which is what drove the solid pill
 with an inverted near-black label (worst pair 5.07 across all six accents and every mid-gradient blend).
 
-**Still open:** the indicator's break-up-and-reassemble rewrite, and the moon shape in the theme toggle.
+**The indicator now comes apart instead of travelling.** The source pill shrinks away by 55% of the
+move, the destination does not begin forming until 28%, and the neck pinches off at 40% — so around the
+middle there is barely any pill on screen and fourteen droplets carry the shape across on their own arcs
+before converging into the destination's centre. Colour is per **piece** and solid; a single ramp across
+the whole control was why the colour appeared to lag behind the motion, because a blob already sitting on
+the destination still carried some of the origin's hue until the move ended.
+Two faults were in the filter rather than the geometry. The droplets were being erased **arithmetically**:
+a disc of radius *r* blurred at stdDeviation *s* peaks near `1-exp(-r²/2s²)` alpha, which at r=3.5 and
+s=4.5 is 0.26 — and the alpha crush `32α-15` does not reach opacity until 0.469, so every small droplet
+was deleted before it could render. Blur drops to 3.6, the threshold to `22α-8`, and droplets grow from
+3.5-10.5px to 7-16px. Long thin shapes survive a blur far better than small round ones, which is exactly
+why the neck stayed visible the whole time the droplets did not. Separately the spray reached `h*1.25` —
+about 40px on a 34px bar — so it left the header entirely and read as confetti.
+The label inversion also fired at 40% of the move, when the destination pill is 11px wide behind a 79px
+label: more than half the word went near-black while still on the dark bar. Held to 80%, where the pill
+is 64px and the existing 300ms colour ease covers the remainder.
+
+**The theme toggle's moon is a crescent now, and was not before.** What is left after subtracting one
+circle from another is a lune of width `R + D - r`. The old values — orb 7.4, cut 6.6, centres 10.46
+apart — give 11.27 of a 14.8 diameter, so that shape was a **gibbous with a bite out of it**; and because
+the width grows with *D*, pushing the cut further away only ever made the bite shallower. Cut radius 7 at
+a centre distance of 2.7 gives 3.1, about a fifth of the disc, with the horn tips landing at ±71° so they
+read as horns rather than closing into a ring. The three craters went with it: at that width the crescent
+renders about 2px across and every crater sat in the mass that is now cut away.
+
+**Still open:** mobile behaviour has only been checked at a 375px preview viewport, never on a real
+phone; and the contributors page remains thin by nature.
 
 ## v2.46.0 — 2026-07-31 23:50 EDT (#60 · `a4b17d6`) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
 

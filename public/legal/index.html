@@ -272,8 +272,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .thm-kn svg{width:16px;height:16px;overflow:visible}
 /* moon */
 .thm-kn .orb{fill:#DCE4F7}
-.thm-kn .craters{fill:#9FADCC;opacity:1;transition:opacity .3s}
-.thm-kn .cut{transform:translate(7.4px,-7.4px);
+/* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
+   which is the opposite of the intuition. What is left is a lune whose width
+   along the axis is R + D - r (orb radius, centre distance, cut radius). The
+   old values — R 7.4, r 6.6, D 10.46 — give 11.27 out of a 14.8 diameter, so
+   that shape was a gibbous with a bite taken out of it, not a crescent at all;
+   pushing the cut FURTHER out only makes the bite shallower. R 7.4, r 7, D 2.7
+   gives 3.1, a true sliver, with the horn tips landing at ±71 degrees so they
+   read as horns instead of wrapping into a ring.
+   D is 2.7 along the 45-degree diagonal, hence 2.7/sqrt(2) per axis.
+   Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
+   disc reads as a full sun with nothing bitten out of it. */
+.thm-kn .cut{transform:translate(1.91px,-1.91px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
   transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
@@ -284,7 +294,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .thm:hover .thm-kn{transform:translateX(5px)}
 
 /* LIGHT: knob crosses, the mask occluder is pushed clear so the disc fills, rays
-   fan out, the orb warms to a sun, craters go, clouds replace stars. */
+   fan out, the orb fills from a crescent to a sun, clouds replace stars. */
 :root[data-theme=light] .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
 :root[data-theme=light] .thm-kn{transform:translateX(28px);
   background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
@@ -293,7 +303,6 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
 :root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
-:root[data-theme=light] .thm-kn .craters{opacity:0}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
 :root[data-theme=light] .thm-cl{opacity:1}
@@ -307,7 +316,6 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
   :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
-  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
   :root:not([data-theme=dark]) .thm-cl{opacity:1}
@@ -748,7 +756,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
         <mask id="thm-cut">
           <rect width="24" height="24" fill="#000"/>
           <circle cx="12" cy="12" r="7.4" fill="#fff"/>
-          <circle class="cut" cx="12" cy="12" r="6.6" fill="#000"/>
+          <circle class="cut" cx="12" cy="12" r="7" fill="#000"/>
         </mask>
         <g class="rays" stroke-width="1.8" stroke-linecap="round">
           <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
@@ -757,7 +765,6 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
           <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
         <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
-        <g class="craters"><circle cx="10.4" cy="9.6" r="1.15"/><circle cx="8.7" cy="14.2" r=".8"/><circle cx="13" cy="13.6" r=".62"/></g>
       </svg>
     </span>
   </span>
