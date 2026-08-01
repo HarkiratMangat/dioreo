@@ -720,11 +720,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
-.seg-gap{width:.45rem;flex:0 0 auto}/* NINE tabs in THREE groups, and the staging below was re-derived for that —
-   not inherited from the two-group version, which would have broken.
-     1240  tighter tabs
-     1100  the groups you are NOT in collapse to a labelled CHIP that still links
+.seg-gap{width:.45rem;flex:0 0 auto}/* NINE tabs in THREE groups, and the staging below was MEASURED, not reasoned.
+     1460  tighter tabs
+     1260  the groups you are NOT in collapse to a labelled CHIP that still links
       980  the desktop switcher goes entirely and .mnav takes over
+
+   ⚠️ The first pass at this staging used 1240/1100 and was wrong at BOTH ends —
+   caught by measuring the bar in a browser rather than by reading the CSS, and it
+   would have shipped a nav that ran off the edge at two common laptop widths:
+     · at 1101px all nine tabs were shown and the bar overflowed by 18px, because
+       the chip tier had been set 140px lower than the width where nine tightened
+       tabs actually stop fitting;
+     · at 1280px the tabs had already reverted to FULL size (the tighter rule ended
+       at 1240) and overflowed by 33px — a tier boundary is only correct if BOTH
+       sides of it fit.
+   Measured on the devlog page, which carries the longest labels: nine tightened
+   tabs need 1240px exactly, and nine full-size tabs need ~1401px EXACTLY — a fit with zero spare beyond the
+   padding. The thresholds below sit clear of both, which matters more than it
+   looks: the webfonts load with font-display:swap, so the bar is laid out with
+   FALLBACK metrics first, and a boundary with no margin overflows during that
+   swap on every cold load.
 
    ⚠️ Why a chip and not the old rule. The two-group version hid the whole seg —
    display:none on .seg[data-at="-1"] and on .seg-gap, i.e. "hide the group you are
@@ -749,11 +764,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}}
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-@media (max-width:1240px){
+@media (max-width:1460px){
   .tab{padding:.42rem .5rem;font-size:.62rem;letter-spacing:.07em}
   .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1100px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
+@media (min-width:981px) and (max-width:1260px){/* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
   
   .seg[data-at="-1"] .tab{display:none}

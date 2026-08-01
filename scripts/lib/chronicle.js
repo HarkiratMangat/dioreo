@@ -639,6 +639,20 @@ const VOICES = {
  * same string a reader sees. It cannot silently half-apply: chronicleStructAudit()
  * counts what actually reached the page against a declared expectation.
  */
+/**
+ * Heading markup → plain label text.
+ *
+ * ⚠️ The permalink anchor must be removed as an ELEMENT, before tags are stripped.
+ * Stripping tags alone deletes the <a> and keeps its text, so the pilcrow survived
+ * into every label the two functions below build — the devlog's index summary read
+ * "TABLE OF CONTENTS¶" and each debrief "Lessons¶". A stray glyph, and also a
+ * fabricated character in a place the source never put one.
+ */
+const labelOf = headInner => headInner
+    .replace(/<a\b[^>]*class="[^"]*\banchor\b[^"]*"[\s\S]*?<\/a>/g, '')
+    .replace(/<[^>]*>/g, '')
+    .trim();
+
 function liftLessons(html) {
     let n = 0;
     const out = html.replace(
@@ -654,7 +668,7 @@ function liftLessons(html) {
             // ghost plate's label already hit on the warm pages. If a mark's meaning
             // is decorative, it belongs in the stylesheet.
             return `<div class="tl-lesson"><span class="tl-lesson-l">` +
-                headInner.replace(/<[^>]*>/g, '') + `</span>${body}</div>`;
+                labelOf(headInner) + `</span>${body}</div>`;
         }
     );
     return { html: out, count: n };
@@ -674,7 +688,7 @@ function foldIndex(html) {
         (whole, attrs, headInner, body) => {
             const text = headInner.replace(/<[^>]*>/g, '').toLowerCase();
             if (!/table of contents/.test(text)) return whole;
-            return `<details class="cfold"><summary>${headInner.replace(/<[^>]*>/g, '')}</summary>` +
+            return `<details class="cfold"><summary>${labelOf(headInner)}</summary>` +
                 `<div class="cfold-b">${body}</div></details>`;
         }
     );

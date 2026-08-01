@@ -339,13 +339,23 @@ file, and this section all reference it; renaming it is a separate change that h
   without it every cross-reference between the three records goes inert with **nothing reporting it** —
   `linkAudit` has no href to resolve and `crossRefAudit` resolves by basename against the deploy tree,
   where `changelog-summary.html` legitimately does not exist.
-- ⚠️ **The desktop breakpoint staging was RE-DERIVED for three groups, not shifted.** It is now
-  1240 (tighter tabs) → 1100 (groups you are not in collapse to a labelled **chip that still links**) →
-  980 (mobile strip). The old rule hid the group you were not in; with three groups that hides **two**,
-  taking two thirds of the site out of the bar. The chip is real markup, not a `::before` — a
-  pseudo-element cannot be a link, and the link surviving is the whole point of the tier. It carries no
-  `tabindex="-1"`: `display:none` already removes it from the tab order, and the attribute would still
-  apply at the one width where the chip IS the only keyboard route to that group.
+- ⚠️ **The desktop breakpoint staging was MEASURED for nine tabs, not reasoned.** It is
+  **1460** (tighter tabs) → **1260** (groups you are not in collapse to a labelled **chip that still
+  links**) → **980** (mobile strip). The old rule hid the group you were not in; with three groups that
+  hides **two**, taking two thirds of the site out of the bar. The chip is real markup, not a
+  `::before` — a pseudo-element cannot be a link, and the link surviving is the whole point of the
+  tier. It carries no `tabindex="-1"`: `display:none` already removes it from the tab order, and the
+  attribute would still apply at the one width where the chip IS the only keyboard route to that group.
+  ⚠️ **A first attempt at these numbers (1240/1100) was wrong at BOTH ends and was caught only by
+  measuring the bar in a browser** — reading the CSS could not have found it. At 1101px all nine tabs
+  showed and the bar overflowed by 18px; at 1280px the tabs had already reverted to full size and
+  overflowed by 33px. **A tier boundary is only correct if BOTH sides of it fit** — check the width
+  just above a boundary as well as the width just below. Measured on the devlog page (longest labels):
+  nine tightened tabs need 1240px, nine full-size tabs need 1401px exactly. The shipped thresholds sit
+  clear of both **because the webfonts use `font-display:swap`** — the bar lays out with fallback
+  metrics first, so a boundary with zero margin overflows on every cold load.
+  ⚠️ **`.bar nav` is `margin-left:auto`, so its right edge is ALWAYS flush** — "distance from the nav
+  to the viewport edge" measures nothing. Test overflow with `bar.scrollWidth > bar.clientWidth`.
 - ⚠️ **The nav is TWO controls — a desktop switcher and a mobile menu — and they must stay separate**
   (rebuilt 2026-07-31 23:55 EDT). Sharing one control across breakpoints is what broke it: a
   pointer-driven indicator that has to be a horizontal track AND a vertical thumb-follower does neither
