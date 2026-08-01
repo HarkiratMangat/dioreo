@@ -348,15 +348,23 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    is a notice that has to be present, not something anyone is meant to read on
    the way past. Small, wide-tracked, --ink3, and capped to a comfortable measure
    so it never becomes a grey slab. */
+/* Two columns: the notice on the left, the links top-right, the sign-off under
+   the links. GRID PLACEMENT does the arranging, which is what lets the sign-off
+   stay EARLY in the DOM while rendering LAST — see the note on .sig below. That
+   ordering is load-bearing, so this must not be rewritten as a flex column. */
 .foot{border-top:1px solid var(--rule);padding:2.2rem 0 3.4rem;
-  display:flex;flex-direction:column;align-items:center;gap:1.4rem;text-align:center}
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
+  align-items:start;text-align:left}
 /* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
    applied, and it is a notice we are obliged to show. Same size, full opacity. */
-.disc{margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
-  letter-spacing:.05em;color:var(--ink3);max-width:60ch}
+.disc{grid-column:1;grid-row:1/span 2;align-self:start;
+  margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
+  letter-spacing:.05em;color:var(--ink3);max-width:52ch}
 /* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
-.endnav{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+.endnav{grid-column:2;grid-row:1;
+  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
   gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
 .endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
@@ -364,15 +372,70 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   transition:color .22s,border-color .22s}
 .endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}
 .endnav span{color:var(--ink3);opacity:.45}
-/* The sign-off sits ABOVE the footer rule and OUTSIDE .foot on purpose. It is
-   the closing line of the document, not site chrome, and on the warm pages it is
-   lifted straight out of the source — where it runs on from the last paragraph
-   ("Thanks for being here — genuinely. / ♡ Made with love by dior"). Put it below
-   the link row and five nav labels land inside that sentence: verify() reports
-   the run missing, correctly, because a reader meets the nav mid-sentence too. */
-.sig{margin:2.6rem 0 0;text-align:center;
+/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
+   is deliberate. On the warm pages this line is lifted straight out of the
+   source, where it runs on from the last paragraph ("Thanks for being here —
+   genuinely. / ♡ Made with love by dior"). If the five nav labels sit between
+   those two in the DOM, they land inside that sentence: verify() reports the run
+   missing, correctly, because a reader meets the nav mid-sentence too.
+   Grid placement moves it below the links visually without moving it in the
+   document. Do not "tidy" this by reordering the markup to match the layout. */
+.sig{grid-column:2;grid-row:2;text-align:right;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
+/* One column once the two would fight for width; the notice leads, as it does
+   on every other narrow layout here. */
+@media (max-width:760px){
+  .foot{grid-template-columns:minmax(0,1fr);row-gap:1.3rem}
+  .disc{grid-row:auto;max-width:none}
+  .endnav{grid-column:1;justify-content:flex-start}
+  .sig{grid-column:1;text-align:left;margin:0}
+}
 .sig b{color:var(--ink2);font-weight:600}
+/* ── back to top ──────────────────────────────────────────────────────
+   The ring IS the scroll position, so the control answers "how much is left"
+   as well as "take me back" — on a 22-section document that is worth more than
+   a bare arrow. It is driven from the SAME scroll handler that feeds the
+   progress bar and the section rail, so the three can never disagree.
+   The arrow is two chevrons in a 12px window: hovering slides the pair up so
+   the second takes the first's place, and clicking fires the group off the top
+   and brings it back in from below. */
+.totop{position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
+  z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
+  -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
+  background:color-mix(in srgb,var(--paper) 90%,transparent);
+  backdrop-filter:blur(12px) saturate(1.25);
+  opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}
+.totop.on{opacity:1;transform:none;pointer-events:auto}
+.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.tt-ring{position:absolute;inset:0;width:46px;height:46px;transform:rotate(-90deg)}
+.tt-trk{fill:none;stroke:var(--rule);stroke-width:1.5}
+/* dasharray is 2*pi*r at r=20; the script writes the offset from scroll */
+.tt-bar{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-linecap:round;
+  stroke-dasharray:125.66;stroke-dashoffset:125.66}
+.tt-ar{position:relative;display:block;width:12px;height:12px;overflow:hidden}
+.tt-ar i{position:absolute;left:0;width:12px;height:12px;display:block;
+  transition:transform .42s cubic-bezier(.22,.9,.24,1)}
+.tt-ar i::before{content:"";position:absolute;left:2px;top:4px;width:7px;height:7px;
+  border-left:1.7px solid var(--ink);border-top:1.7px solid var(--ink);transform:rotate(45deg)}
+.tt-ar i:nth-child(1){top:0}
+.tt-ar i:nth-child(2){top:12px}
+@media (hover:hover) and (pointer:fine){
+  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .totop:hover .tt-ar i{transform:translateY(-12px)}
+}
+@keyframes ttFire{
+  0%{transform:translateY(0);opacity:1}
+  36%{transform:translateY(-20px);opacity:0}
+  37%{transform:translateY(15px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+@media (prefers-reduced-motion:reduce){
+  .totop{transition:opacity .2s ease}
+  .tt-ar i{transition:none}
+  .totop.fire .tt-ar{animation:none}
+}
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
@@ -510,9 +573,9 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .tray .lab{margin-right:auto}
 </style></head><body><svg class="goodef" aria-hidden="true" focusable="false"><filter id="dbgoo"
  x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
-<feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur"/>
+<feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
- values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -12"/>
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 32 -15"/>
 </filter></svg>
 <div class="wrap">
   <div class="top">
