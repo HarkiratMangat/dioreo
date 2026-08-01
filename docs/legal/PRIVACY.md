@@ -202,7 +202,7 @@ and transmitted, and we would rather state plainly that this one is not.
 | **Your email address** | Never requested, never received from Discord. |
 | **Your real name** | Never requested. |
 | **Your Discord username or display name** | Used momentarily to render a response, never written to the database. |
-| **Your IP address** | Discord handles the connection; we never see it. |
+| **Your IP address** | Discord handles the Bot's connection; we never see it. Loading *this website* is a normal web request, so the host that serves it necessarily processes your IP the way any web server does — that is described in §5, and it never reaches us or our database. |
 | **Payment information** | The Bot is free and has no payment feature. |
 | **A list of your servers** | Not collected or stored. |
 | **Analytics or tracking data** | No analytics SDK, no telemetry, no tracking pixel, no ad network, no fingerprinting. |
