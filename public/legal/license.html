@@ -674,13 +674,22 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    particles converge on a small RADIUS around the destination, which is what
    makes the new shape look built out of them rather than filled in. Keep the
    endpoint scale small — a droplet that is still large when it lands does not
-   get absorbed by the alpha crush, it reads as a stray dot beside the pill. */
+   get absorbed by the alpha crush, it reads as a stray dot beside the pill. *//* ⚠️ The rotation is not decoration and it is not visible on its own — a circle
+   spun about its centre looks identical. It matters because the droplet is
+   translated FIRST and rotated second, so the rotation swings the whole
+   trajectory: the path bows instead of running straight, and fourteen droplets
+   each bowing by a different amount stop arriving in formation. Straight-line
+   droplets were the largest remaining tell that this was fourteen elements on
+   fourteen paths rather than one mass coming apart. Borrowed from the
+   reference's own particle keyframes, which rotate to 1.2x the declared angle
+   by the end for exactly this reason. */
+
 
 @keyframes ptFly{
-  0%{opacity:0;transform:translate(var(--x0),var(--y0)) scale(.15)}
-  26%{opacity:1;transform:translate(var(--x1),var(--y1)) scale(1)}
-  78%{opacity:1;transform:translate(var(--x2),var(--y2)) scale(.8)}
-  100%{opacity:0;transform:translate(var(--x2),var(--y2)) scale(.1)}
+  0%{opacity:0;transform:rotate(0deg) translate(var(--x0),var(--y0)) scale(.15)}
+  26%{opacity:1;transform:rotate(calc(var(--rot) * .5)) translate(var(--x1),var(--y1)) scale(1)}
+  78%{opacity:1;transform:rotate(calc(var(--rot) * .9)) translate(var(--x2),var(--y2)) scale(.85)}
+  100%{opacity:0;transform:rotate(calc(var(--rot) * 1.2)) translate(var(--x2),var(--y2)) scale(.1)}
 }
 @media (prefers-reduced-motion:reduce){ .pt{display:none} }
 .goodef{position:absolute;width:0;height:0;overflow:hidden}
@@ -1692,6 +1701,16 @@ html{scroll-behavior:smooth}
     function H(){ return ink.clientHeight||26; }
     function box(i){ return [tabs[i].offsetLeft, tabs[i].offsetWidth]; }
     function band(a,b,x){ x=Math.max(0,Math.min(1,(x-a)/(b-a))); return x*x*(3-2*x); }
+    /* A damped spring, the one thing the mobile indicator has that this did not.
+       Everything here eased with smoothstep, which decelerates into its target
+       and stops dead — correct, and inert. This overshoots by about 5% around
+       x=0.35 and rings down to exactly 1, so the arriving pill inflates a little
+       past the tab and settles onto it. 5%, not the reference's 27%: its pill
+       springs from nothing in the middle of a bar and has nowhere to land, ours
+       has to come to rest on a specific word. Width is the right thing to spring
+       because border-radius:999px keeps the caps circular at any width — a
+       scaleX would have flattened them into ellipses at the peak. */
+    function spr(x){ return x>=1 ? 1 : 1 - Math.exp(-8*x)*Math.cos(7.2*x); }
     function rgbOf(c){ return 'rgb('+hex(c).join(',')+')'; }
     function tween(t){ return 'rgb('+mix(cFrom,cTo,Math.max(0,Math.min(1,t))).join(',')+')'; }
 
@@ -1703,7 +1722,7 @@ html{scroll-behavior:smooth}
        intact reads as a marker being repositioned, which is what this was. */
     function paint(){
       var aw=srcW*(1-band(0.04,0.55,p));
-      var bw=dstW*band(0.28,1,p);
+      var bw=dstW*spr(band(0.28,1,p));
       /* ⚠️ The tail collapses toward the edge FACING the destination. It used
          to be pinned at srcX and only lose width, so on a left-to-right move
          the leftover slid LEFT — away from where the eye was going — and the
@@ -1771,10 +1790,19 @@ html{scroll-behavior:smooth}
         var dur=Math.round(DUR*(0.6+Math.random()*0.32));
         var del=Math.round(i*DUR*0.014+Math.random()*44);
         if(dur+del>max) max=dur+del;
-        el.style.cssText='--w:'+(7+Math.random()*9).toFixed(1)+'px;'
+        var rot=(Math.random()-0.5)*2; rot = (rot>0 ? rot+0.35 : rot-0.35)*26;
+        /* ⚠️ 11px minimum, not 7. The filter thresholds alpha at 22a-8, so a
+           droplet only paints once its BLURRED peak alpha clears 0.364, and at
+           stdDeviation 3.6 that needs a diameter of about 10.6px:
+           1-exp(-(d/2)^2 / (2*3.6^2)) = 0.364 at d = 10.6. Every droplet spawned
+           between 7 and 10.6px was mathematically invisible for its whole
+           flight — a third of them, doing nothing but costing layout. The same
+           arithmetic caught the same mistake in the mobile burst. */
+        el.style.cssText='--w:'+(11+Math.random()*9).toFixed(1)+'px;'
           +'--x0:'+x0.toFixed(1)+'px;--y0:'+y0.toFixed(1)+'px;'
           +'--x1:'+x1.toFixed(1)+'px;--y1:'+y1.toFixed(1)+'px;'
           +'--x2:'+x2.toFixed(1)+'px;--y2:'+y2.toFixed(1)+'px;'
+          +'--rot:'+rot.toFixed(0)+'deg;'
           +'--t:'+dur+'ms;--d:'+del+'ms;'
           +'--pc:'+tween(run?(x1-sc)/run:1);
         ink.appendChild(el);
@@ -1793,7 +1821,7 @@ html{scroll-behavior:smooth}
       if(i===idx&&p>=1) return;
       /* Break from where the pill actually IS. Mid-flight the destination is
          the only piece with real size, so that is what the next move tears. */
-      var bw=dstW*band(0.28,1,p);
+      var bw=dstW*spr(band(0.28,1,p));
       if(bw>6){ srcX=dstX+(dstW-bw)/2; srcW=bw; cFrom=cTo; }
       else { srcW=Math.max(srcW*(1-band(0.04,0.55,p)),10); }
       idx=i; dstX=b[0]; dstW=b[1]; cTo=cols[i];
@@ -1813,9 +1841,19 @@ html{scroll-behavior:smooth}
        which is the same defect as the vanished "Contributing" in a slower form.
        band reaches ~0.9 at p=0.81, so the swap waits until the pill is actually
        under the word it is inverting. */
+    /* ⚠️ CLEARING AND SETTING ARE TWO DIFFERENT MOMENTS, and treating them as
+       one is what made a label unreadable while you were hovering. This used to
+       toggle every tab in a single pass at DUR*0.8 — so the tab the pill was
+       LEAVING kept its near-black for 600ms after the pill had gone, sitting on
+       the dark bar with nothing behind it. The delay is right for the arriving
+       label and wrong for the departing one; they are opposite events.
+       The old label is dropped on the same frame the move starts, which hands it
+       back to .tab's own 0.3s colour transition, so it fades up to readable ink
+       as the pill peels off it rather than snapping. */
     function lit(i,delay){
       clearTimeout(litT);
       var vis = home!==null || seg.classList.contains('hot');
+      tabs.forEach(function(a,j){ if(j!==i) a.classList.remove('lit'); });
       var set=function(){ tabs.forEach(function(a,j){ a.classList.toggle('lit', vis&&j===i); }); };
       if(delay) litT=setTimeout(set,delay); else set();
     }
