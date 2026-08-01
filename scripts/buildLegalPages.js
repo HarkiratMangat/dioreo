@@ -83,20 +83,30 @@ const BRAND = {
     // distinguishable hues, and the first attempt used gold for the licence and
     // harbor for the notice — different SHADES of the amber and teal already
     // taken by terms and privacy, which read as the same two colours twice.
-    // These two are separated by hue, not lightness: amber ~28°, teal ~180°,
-    // violet ~268°, rose ~345°. Four clearly distinct positions on the wheel.
+    // Separated by hue, not lightness.
     violet: '#9B6BE3',
-    rose: '#E8657F',
+    crimson: '#FF5264',
 
     // The same argument again, one level out. The two warm pages first used
-    // emerald and gold, which are neighbours of the teal and amber already taken
-    // by privacy and terms — so the invitation pages read as more of the legal
-    // set rather than as something else. These sit in the two genuinely empty
-    // arcs of the wheel: lime ~74° (between amber and teal) and azure ~211°
-    // (between teal and violet), and both are far brighter and more saturated
-    // than anything in the legal four, which separates them by value as well.
-    lime: '#B6E24A',
-    azure: '#5AA9FF',
+    // emerald and gold, which are neighbours of the teal and amber already
+    // taken by privacy and terms — so the invitation pages read as more of the
+    // legal set rather than as something else.
+    periwinkle: '#8B9BFF',
+    citron: '#F8FF4A',
+
+    /* ⚠️ THE SIX SITE HUES, MEASURED — and the only number that matters is the
+       TIGHTEST PAIR, because a set is exactly as distinct as its closest two.
+       Sorted: amber 28° · citron 62° · teal 180° · periwinkle 232° ·
+       violet 264° · crimson 354°.
+       Gaps around the wheel: 34 · 118 · 52 · 32 · 90 · 34. The binding
+       constraint is periwinkle against violet at 32°, which clears the 30°
+       collision line but not by much — under 30 two accents read as the same
+       colour at tab size, whatever their names say.
+       Chosen 2026-08-01 18:01 EDT with the Accent Lab
+       (/Applications/Claude Code/design-tools/accent-lab/), which scores every
+       combination on that tightest gap and re-measures WCAG AA in both themes.
+       ⚠️ Do NOT change one of these in isolation — moving any single hue can
+       collapse a gap somewhere else on the wheel. Re-score the whole set. */
 
     // ── the chronicle family: NOT part of this palette ──────────────────────
     // These three are the Armory Terminal's signal colours, and they deliberately
@@ -144,7 +154,7 @@ const PAGES = [
         file: 'NOTICE', kind: 'text', root: true, out: 'notice.html',
         title: 'Notices & Attributions',
         short: 'Notice', kicker: 'Attribution', 
-        accent: BRAND.rose, glow: BRAND.plum,
+        accent: BRAND.crimson, glow: BRAND.plum,
         blurb: 'Every dependency and its licence, the marks that are not ours, and where AI helped.'
     }
 ];
@@ -167,7 +177,7 @@ const EXTRA_PAGES = [
     {
         file: 'CONTRIBUTING.md', kind: 'md', root: true, out: 'contributing.html',
         title: 'Contributing', short: 'Contributing',
-        kicker: 'Join in', accent: BRAND.lime, glow: '#E4F291',
+        kicker: 'Join in', accent: BRAND.periwinkle, glow: '#C3CBFF',
         lede: 'Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.',
         badge: 'Open to anyone',
         blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.'
@@ -175,7 +185,7 @@ const EXTRA_PAGES = [
     {
         file: 'CONTRIBUTORS.md', kind: 'md', root: true, out: 'contributors.html',
         title: 'Contributors', short: 'Contributors',
-        kicker: 'Roll call', accent: BRAND.azure, glow: '#9BCBFF',
+        kicker: 'Roll call', accent: BRAND.citron, glow: '#FBFFB0',
         lede: 'Everyone who has made this better, credited under the name they chose.',
         badge: 'Your name goes here',
         blurb: 'Who helped build this, and how credit works. Bug reports count.'
@@ -1172,6 +1182,18 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
     </span>
     <span class="thm-kn">
       <svg viewBox="0 0 24 24">
+        <defs>
+          <radialGradient id="thm-lit" cx="34%" cy="30%" r="78%">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="0.6" stop-color="#E4EAF9"/>
+            <stop offset="1" stop-color="#C3CDE8"/>
+          </radialGradient>
+          <radialGradient id="thm-sun" cx="34%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#FFE49A"/>
+            <stop offset="0.5" stop-color="#F2A93B"/>
+            <stop offset="1" stop-color="#E08A1E"/>
+          </radialGradient>
+        </defs>
         <mask id="thm-cut">
           <rect width="24" height="24" fill="#000"/>
           <circle cx="12" cy="12" r="7.4" fill="#fff"/>
@@ -1184,8 +1206,12 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
           <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
         <g class="moon">
-          <circle class="limb" cx="12" cy="12" r="7.4"/>
           <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+          <g class="craters" mask="url(#thm-cut)">
+            <circle cx="8.6" cy="13.6" r="1.5"/>
+            <circle cx="10.2" cy="16.4" r="1.05"/>
+            <circle cx="7.6" cy="10.2" r="0.85"/>
+          </g>
         </g>
       </svg>
     </span>
@@ -1609,17 +1635,33 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 /* The knob is a real plate now — a circle with its own edge and shadow — and the
    sun or moon is an icon sitting ON it, rather than the bare celestial body
    floating in the track with nothing to hold it. */
+/* ⚠️ ONE CIRCLE, CONCENTRIC. This carried an off-centre highlight (at 32% 26%)
+   plus a shadow pushed 2px down plus an inset light along the top — three
+   circles with three different centres, which at any magnification reads as a
+   misaligned disc sitting behind the moon rather than as one lit plate. The
+   gradient is centred now and the only offset left is a soft drop shadow. */
 .thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
   display:grid;place-items:center;
-  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.20),rgba(255,255,255,.07));
-  border:1px solid rgba(255,255,255,.24);
-  box-shadow:0 2px 6px -1px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.28);
+  background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.15),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 1px 5px -1px rgba(0,0,0,.45),inset 0 0 0 .5px rgba(255,255,255,.10);
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
 .thm-kn svg{width:17px;height:17px;overflow:visible}
-/* moon */
-.thm-kn .orb{fill:#DCE4F7}
+/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
+   shape whose fill rule goes missing paints BLACK with no warning — that is
+   worth knowing before anyone "tidies" this: losing this one line produces a
+   black crescent and, in light mode, a black sun ringed by orange rays.
+   A crescent's whole job is to say "sphere", and a flat fill says "shape". */
+.thm-kn .orb{fill:url(#thm-lit)}
+/* Craters. FILLED, never stroked: a hairline is a third of a pixel once the svg
+   renders at 17px, which is what killed the first attempt at these. They sit
+   inside the lune by construction — each is at least its own radius clear of
+   both the outer rim and the cut circle — and they carry the same mask, so
+   nothing can spill past the terminator. No craters on the sun. */
+.thm-kn .craters{opacity:.5;transition:opacity .4s}
+.thm-kn .craters circle{fill:#7C89AE}
 /* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
    which is the opposite of the intuition. What is left is a lune whose width
    along the axis is R + D - r (orb radius, centre distance, cut radius). The
@@ -1644,24 +1686,24 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    4.91–19.40, a box centred at (11.85, 12.15). It needed a 0.15 nudge. It was
    given 3.32, which threw the moon into the top-right corner of its own knob.
 
-   So the translate is now 0.9: 0.15 of real bbox correction plus ~0.75 of
-   optical, since a crescent's ink all sits on the lower-left of its box and has
-   to move UP-RIGHT to feel centred. Light mode still returns it to zero so the
-   sun, which is a plain disc about (12,12), stays concentric.
+   So the translate is the bbox correction and nothing else: 0.15. An earlier
+   version added ~0.75 of optical nudge on top, on the reasoning that a
+   crescent's ink sits on the lower-left of its box; on screen that just read as
+   off-centre again. Light mode returns it to zero so the sun, which is a plain
+   disc about (12,12), stays concentric.
 
    Width is R + D - r = 7.4 + 6.11 - 7 = 6.5 of a 14.8 diameter (44%), up from
    36%. Horn tips at ±61.5 degrees. 36% read as a fingernail at 17px; 3.1 and
    4.4 were tried on the way here and read as cheaper still.
 
-   THE EARTHSHINE DISC is the added element, and it is the reason this reads as a
-   MOON rather than a banana: the unlit limb is faintly lit by light bouncing off
-   the earth, so the full circle is always dimly visible behind the bright part.
-   It is a filled disc rather than an outline on purpose — a 0.5-unit stroke is a
-   third of a pixel once the svg renders at 16px, which is the same size trap that
-   killed the craters. Fill survives at any size; hairlines do not. */
-.thm-kn .moon{transform:translate(.9px,-.9px);
+   ⚠️ THE EARTHSHINE DISC IS GONE, and it is not coming back. It was a full circle
+   at 20% opacity behind the crescent, meant to read as the unlit limb catching
+   light bounced off the earth. On a 26px knob it read as a grey smudge — a
+   shadow of a moon that is not there. What it was reaching for (the sense that
+   the body is round and lit from one side) is carried by the orb's gradient
+   instead, which costs nothing and adds no second circle. */
+.thm-kn .moon{transform:translate(.15px,-.15px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .limb{fill:#DCE4F7;opacity:.2;transition:opacity .4s}
 .thm-kn .cut{transform:translate(4.32px,-4.32px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
@@ -1676,14 +1718,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    fan out, the orb fills from a crescent to a sun, clouds replace stars. */
 :root[data-theme=light] .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
 :root[data-theme=light] .thm-kn{transform:translateX(28px);
-  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+  background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.97),rgba(255,255,255,.80));
   border-color:rgba(255,255,255,.95);
-  box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
+  box-shadow:0 1px 6px -1px rgba(40,70,110,.30),inset 0 0 0 .5px rgba(255,255,255,.9)}
 :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
 :root[data-theme=light] .thm-kn .moon{transform:none}
-:root[data-theme=light] .thm-kn .limb{opacity:0}
-:root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
+:root[data-theme=light] .thm-kn .craters{opacity:0}
+:root[data-theme=light] .thm-kn .orb{fill:url(#thm-sun)}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
 :root[data-theme=light] .thm-cl{opacity:1}
@@ -1691,14 +1733,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
   :root:not([data-theme=dark]) .thm-kn{transform:translateX(28px);
-    background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+    background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.97),rgba(255,255,255,.80));
     border-color:rgba(255,255,255,.95);
-    box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}
+    box-shadow:0 1px 6px -1px rgba(40,70,110,.30),inset 0 0 0 .5px rgba(255,255,255,.9)}
   :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
   :root:not([data-theme=dark]) .thm-kn .moon{transform:none}
-  :root:not([data-theme=dark]) .thm-kn .limb{opacity:0}
-  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
+  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:url(#thm-sun)}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
   :root:not([data-theme=dark]) .thm-cl{opacity:1}
@@ -2663,7 +2705,18 @@ const SWITCHER_CSS = `
    them: worst pair is violet at 5.07, so this clears AA in both themes without
    needing a second copy of the text laid over the pill. .lit follows the
    INDICATOR, not the page, which is why hovering another tab moves it. */
-.tab.lit{color:#120E1C;font-weight:700}
+/* ⚠️ .tab.on.lit CARRIES THE WEIGHT ON PURPOSE. The label under the pill has to
+   be dark, and the current page tab is BOTH .on and .lit at rest — two rules of
+   equal specificity, so the winner came down to cascade order and .on was taking
+   it. That painted the label in the accent ON TOP OF a pill of the same accent:
+   invisible at worst, unreadable at best, and it got obvious the moment an
+   accent went bright (citron on citron). Measured on contributors.html: computed
+   colour was rgb(248,255,74) against a pill of rgb(248,255,74).
+   The three-class selector cannot lose that race.
+   ⚠️ .tab.on ALONE keeps the accent colour, and must: mid-morph the pill travels
+   away from the current tab, and a dark label with nothing behind it would
+   vanish into the bar. Dark is for -a pill is under me-, not for -I am current-. */
+.tab.on.lit,.tab.lit{color:#120E1C;font-weight:700}
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* Segment dividers — the affordance at rest. Drawn on the tab rather than the
    track so they land in the gaps whatever each label measures. */
@@ -4306,11 +4359,14 @@ function indexPage(built) {
       </a>`).join('');
 
     const invites = invRow(EXTRA_PAGES);
-    // The record gets its own row rather than joining the invitations. Reading what
-    // changed is not the same act as being asked to contribute, and the landing page
-    // is the one place the whole site is visible at once — so it is also the place
-    // the three families have to stay legible as three.
-    const chronicle = invRow(CHRONICLE_PAGES);
+    // ⚠️ THE RECORD ROW IS OFF THE LANDING PAGE, deliberately, and invRow() still
+    // knows how to build it — this is a hidden feature, not a deleted one.
+    // The pages themselves are still built, still deployed and still reachable at
+    // /changelog/; what is withdrawn is the landing page's invitation to go there.
+    // A landing page that offers everything equally offers nothing in particular,
+    // and this one exists to put four legal documents in front of a reader.
+    // To restore: uncomment, and put the two lines back in the markup below.
+    // const chronicle = invRow(CHRONICLE_PAGES);
 
     const n = built.length;
     const count = ['no', 'One', 'Two', 'Three', 'Four', 'Five'][n] || String(n);
@@ -4518,6 +4574,10 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 /* A section label between the two invite rows. Without it the six cards read as
    one undifferentiated grid, which is exactly the collapse the three page families
    exist to avoid. */
+/* ⚠️ KEPT ON PURPOSE THOUGH NOTHING CURRENTLY USES IT. Its only element was the
+   -The record- label above the changelog row, which is withdrawn from the landing
+   page rather than deleted. Removing this would make the -uncomment to restore-
+   note above a lie: the row would come back unstyled. */
 .lab-sec{display:block;margin:1.9rem 0 .7rem}
 
 /* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
@@ -4538,8 +4598,6 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <p class="lede">${esc(lede)}</p>
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
-  <span class="lab lab-sec">The record</span>
-  <div class="invite">${chronicle}</div>
   <div class="foot">
     <p class="contact">Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
     ${emailReveal}

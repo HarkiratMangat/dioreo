@@ -346,20 +346,36 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   animation:drift 9.5s ease-in-out infinite reverse}
 @keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}/* The knob is a real plate now — a circle with its own edge and shadow — and the
    sun or moon is an icon sitting ON it, rather than the bare celestial body
-   floating in the track with nothing to hold it. */
+   floating in the track with nothing to hold it. *//* ⚠️ ONE CIRCLE, CONCENTRIC. This carried an off-centre highlight (at 32% 26%)
+   plus a shadow pushed 2px down plus an inset light along the top — three
+   circles with three different centres, which at any magnification reads as a
+   misaligned disc sitting behind the moon rather than as one lit plate. The
+   gradient is centred now and the only offset left is a soft drop shadow. */
+
 
 
 .thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
   display:grid;place-items:center;
-  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.20),rgba(255,255,255,.07));
-  border:1px solid rgba(255,255,255,.24);
-  box-shadow:0 2px 6px -1px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.28);
+  background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.15),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 1px 5px -1px rgba(0,0,0,.45),inset 0 0 0 .5px rgba(255,255,255,.10);
   transform:translateX(0);
   transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
     background .5s,border-color .5s,box-shadow .5s}
-.thm-kn svg{width:17px;height:17px;overflow:visible}/* moon */
+.thm-kn svg{width:17px;height:17px;overflow:visible}/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
+   shape whose fill rule goes missing paints BLACK with no warning — that is
+   worth knowing before anyone "tidies" this: losing this one line produces a
+   black crescent and, in light mode, a black sun ringed by orange rays.
+   A crescent's whole job is to say "sphere", and a flat fill says "shape". */
 
-.thm-kn .orb{fill:#DCE4F7}/* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
+.thm-kn .orb{fill:url(#thm-lit)}/* Craters. FILLED, never stroked: a hairline is a third of a pixel once the svg
+   renders at 17px, which is what killed the first attempt at these. They sit
+   inside the lune by construction — each is at least its own radius clear of
+   both the outer rim and the cut circle — and they carry the same mask, so
+   nothing can spill past the terminator. No craters on the sun. */
+
+.thm-kn .craters{opacity:.5;transition:opacity .4s}
+.thm-kn .craters circle{fill:#7C89AE}/* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
    which is the opposite of the intuition. What is left is a lune whose width
    along the axis is R + D - r (orb radius, centre distance, cut radius). The
    old values — R 7.4, r 6.6, D 10.46 — give 11.27 out of a 14.8 diameter, so
@@ -382,26 +398,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    4.91–19.40, a box centred at (11.85, 12.15). It needed a 0.15 nudge. It was
    given 3.32, which threw the moon into the top-right corner of its own knob.
 
-   So the translate is now 0.9: 0.15 of real bbox correction plus ~0.75 of
-   optical, since a crescent's ink all sits on the lower-left of its box and has
-   to move UP-RIGHT to feel centred. Light mode still returns it to zero so the
-   sun, which is a plain disc about (12,12), stays concentric.
+   So the translate is the bbox correction and nothing else: 0.15. An earlier
+   version added ~0.75 of optical nudge on top, on the reasoning that a
+   crescent's ink sits on the lower-left of its box; on screen that just read as
+   off-centre again. Light mode returns it to zero so the sun, which is a plain
+   disc about (12,12), stays concentric.
 
    Width is R + D - r = 7.4 + 6.11 - 7 = 6.5 of a 14.8 diameter (44%), up from
    36%. Horn tips at ±61.5 degrees. 36% read as a fingernail at 17px; 3.1 and
    4.4 were tried on the way here and read as cheaper still.
 
-   THE EARTHSHINE DISC is the added element, and it is the reason this reads as a
-   MOON rather than a banana: the unlit limb is faintly lit by light bouncing off
-   the earth, so the full circle is always dimly visible behind the bright part.
-   It is a filled disc rather than an outline on purpose — a 0.5-unit stroke is a
-   third of a pixel once the svg renders at 16px, which is the same size trap that
-   killed the craters. Fill survives at any size; hairlines do not. */
+   ⚠️ THE EARTHSHINE DISC IS GONE, and it is not coming back. It was a full circle
+   at 20% opacity behind the crescent, meant to read as the unlit limb catching
+   light bounced off the earth. On a 26px knob it read as a grey smudge — a
+   shadow of a moon that is not there. What it was reaching for (the sense that
+   the body is round and lit from one side) is carried by the orb's gradient
+   instead, which costs nothing and adds no second circle. */
 
 
-.thm-kn .moon{transform:translate(.9px,-.9px);
+.thm-kn .moon{transform:translate(.15px,-.15px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .limb{fill:#DCE4F7;opacity:.2;transition:opacity .4s}
 .thm-kn .cut{transform:translate(4.32px,-4.32px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
@@ -416,14 +432,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 :root[data-theme=light] .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
 :root[data-theme=light] .thm-kn{transform:translateX(28px);
-  background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+  background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.97),rgba(255,255,255,.80));
   border-color:rgba(255,255,255,.95);
-  box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+  box-shadow:0 1px 6px -1px rgba(40,70,110,.30),inset 0 0 0 .5px rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
 :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
 :root[data-theme=light] .thm-kn .moon{transform:none}
-:root[data-theme=light] .thm-kn .limb{opacity:0}
-:root[data-theme=light] .thm-kn .orb{fill:#F2A93B}
+:root[data-theme=light] .thm-kn .craters{opacity:0}
+:root[data-theme=light] .thm-kn .orb{fill:url(#thm-sun)}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
 :root[data-theme=light] .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
@@ -431,14 +447,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
   :root:not([data-theme=dark]) .thm-kn{transform:translateX(28px);
-    background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,.72));
+    background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.97),rgba(255,255,255,.80));
     border-color:rgba(255,255,255,.95);
-    box-shadow:0 2px 7px -1px rgba(40,70,110,.34),inset 0 1px 0 rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+    box-shadow:0 1px 6px -1px rgba(40,70,110,.30),inset 0 0 0 .5px rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
   :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
   :root:not([data-theme=dark]) .thm-kn .moon{transform:none}
-  :root:not([data-theme=dark]) .thm-kn .limb{opacity:0}
-  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F2A93B}
+  :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:url(#thm-sun)}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
   :root:not([data-theme=dark]) .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
@@ -766,9 +782,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    arrives. Measured against all six accents AND every mid-gradient blend of
    them: worst pair is violet at 5.07, so this clears AA in both themes without
    needing a second copy of the text laid over the pill. .lit follows the
-   INDICATOR, not the page, which is why hovering another tab moves it. */
+   INDICATOR, not the page, which is why hovering another tab moves it. *//* ⚠️ .tab.on.lit CARRIES THE WEIGHT ON PURPOSE. The label under the pill has to
+   be dark, and the current page tab is BOTH .on and .lit at rest — two rules of
+   equal specificity, so the winner came down to cascade order and .on was taking
+   it. That painted the label in the accent ON TOP OF a pill of the same accent:
+   invisible at worst, unreadable at best, and it got obvious the moment an
+   accent went bright (citron on citron). Measured on contributors.html: computed
+   colour was rgb(248,255,74) against a pill of rgb(248,255,74).
+   The three-class selector cannot lose that race.
+   ⚠️ .tab.on ALONE keeps the accent colour, and must: mid-morph the pill travels
+   away from the current tab, and a dark label with nothing behind it would
+   vanish into the bar. Dark is for -a pill is under me-, not for -I am current-. */
 
-.tab.lit{color:#120E1C;font-weight:700}
+
+.tab.on.lit,.tab.lit{color:#120E1C;font-weight:700}
 .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* Segment dividers — the affordance at rest. Drawn on the tab rather than the
    track so they land in the gaps whatever each label measures. *//* No dividers. Spacing separates the tabs instead, which also gives the
    indicator somewhere to travel — with the tabs touching it had to stretch
@@ -1310,11 +1337,11 @@ html{scroll-behavior:smooth}
     <div class="navwrap"><div class="seg" data-at="2" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./terms.html">Documents</a>
-      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab on" href="./license.html" data-accent="#9B6BE3" aria-current="page">License</a><a class="tab" href="./notice.html" data-accent="#E8657F">Notice</a>
+      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab on" href="./license.html" data-accent="#9B6BE3" aria-current="page">License</a><a class="tab" href="./notice.html" data-accent="#FF5264">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="./contributing.html">Community</a>
-      <a class="tab" href="./contributing.html" data-accent="#B6E24A">Contributing</a><a class="tab" href="./contributors.html" data-accent="#5AA9FF">Contributors</a>
+      <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Releases">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
       <a class="segchip" href="../changelog/">Releases</a>
@@ -1342,6 +1369,18 @@ html{scroll-behavior:smooth}
     </span>
     <span class="thm-kn">
       <svg viewBox="0 0 24 24">
+        <defs>
+          <radialGradient id="thm-lit" cx="34%" cy="30%" r="78%">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="0.6" stop-color="#E4EAF9"/>
+            <stop offset="1" stop-color="#C3CDE8"/>
+          </radialGradient>
+          <radialGradient id="thm-sun" cx="34%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#FFE49A"/>
+            <stop offset="0.5" stop-color="#F2A93B"/>
+            <stop offset="1" stop-color="#E08A1E"/>
+          </radialGradient>
+        </defs>
         <mask id="thm-cut">
           <rect width="24" height="24" fill="#000"/>
           <circle cx="12" cy="12" r="7.4" fill="#fff"/>
@@ -1354,8 +1393,12 @@ html{scroll-behavior:smooth}
           <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
         <g class="moon">
-          <circle class="limb" cx="12" cy="12" r="7.4"/>
           <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+          <g class="craters" mask="url(#thm-cut)">
+            <circle cx="8.6" cy="13.6" r="1.5"/>
+            <circle cx="10.2" cy="16.4" r="1.05"/>
+            <circle cx="7.6" cy="10.2" r="0.85"/>
+          </g>
         </g>
       </svg>
     </span>
@@ -1368,7 +1411,7 @@ html{scroll-behavior:smooth}
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab on" href="./license.html" aria-current="page" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#E8657F">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#B6E24A">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#5AA9FF">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../changelog/" style="--row:#FF9E3D">What's New</a><a class="mtab" href="../changelog/detailed.html" style="--row:#7CE38B">Changelog</a><a class="mtab" href="../changelog/devlog.html" style="--row:#8FB8FF">Devlog</a>
+      <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab on" href="./license.html" aria-current="page" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="../changelog/" style="--row:#FF9E3D">What's New</a><a class="mtab" href="../changelog/detailed.html" style="--row:#7CE38B">Changelog</a><a class="mtab" href="../changelog/devlog.html" style="--row:#8FB8FF">Devlog</a>
     </nav>
   </div>
   <details class="msecd">
