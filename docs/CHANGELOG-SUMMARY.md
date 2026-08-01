@@ -29,8 +29,16 @@ A peek at what's planned (not built yet):
 ## v2.47.0 — August 1, 2026
 - **The legal site's navigation buttons often did nothing when you clicked them.** Fixed — a leftover
   drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.
-- **The menu on phones is one simple list now** instead of two competing ones, and buttons no longer
-  get stuck looking "pressed" after you tap them.
+- **The menu on phones is a swipeable row of tabs** — every page on one line, the one you are reading
+  always visible, and no menu to open first. Tapping one makes the highlight assemble itself out of a
+  swarm of droplets. Buttons no longer get stuck looking "pressed" after you tap them.
+- **The header on phones stopped overlapping itself.** "Dior's Builds" was being drawn straight across
+  the buttons beside it; there is room for everything now, and the Discord button says INSTALL rather
+  than being a bare circle that looked like a sign-in.
+- **The section list beside long documents no longer has its own scrollbar.** It follows the page as
+  you read, so you never have to scroll it separately.
+- **The menu label stopped going unreadable while you hover.** The word turned dark up to half a
+  second before the highlight arrived underneath it, leaving dark text on a dark bar.
 - **The opening line on Terms and Privacy read like a sentence cut in half.** It was — fixed.
 - **A "back to top" button** on the long documents, with a ring showing how far through you are.
 - **Download buttons** for the plain-text licence and notice.
@@ -39,6 +47,8 @@ A peek at what's planned (not built yet):
 - **The highlight behind the menu now breaks apart and rebuilds itself** when you move between pages,
   instead of sliding along as one piece.
 - **The moon on the dark/light switch is a proper thin crescent** — it used to be an almost-full moon.
+- **The highlight keeps its colour properly now.** Each page has its own accent, and on phones the
+  effect that draws it was washing every one of them out.
 
 ## v2.46.0 — July 31, 2026
 - **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch

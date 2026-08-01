@@ -230,6 +230,52 @@ const checks = [];
 const check = (id, severity, title, run, opts = {}) =>
   checks.push({ id, severity, title, run, vacuousOk: !!opts.vacuousOk });
 
+/* ------------------------ record-structure -------------------------- */
+// Born 2026-08-01 from a real corruption this suite did NOT catch: an edit to
+// docs/CHANGELOG.md spliced the file's ENTIRE 183-line header back into the
+// middle of the newest entry, truncating a sentence mid-word. Every other check
+// passed — links resolved, versions were covered, the hash chain was intact,
+// because none of them look at the file's SHAPE. A duplicated H1 is the cheapest
+// possible signal that a record has been spliced into itself, and it costs one
+// pass over each file.
+check(
+  "record-structure",
+  "ERROR",
+  "no record file repeats a top-level heading (a splice duplicates one)",
+  () => {
+    const out = [];
+    let examined = 0;
+    for (const f of ["docs/CHANGELOG.md", "docs/CHANGELOG-SUMMARY.md", "docs/DEVLOG.md",
+                     "docs/ROADMAP.md", "docs/README.md", "docs/db-deferred-list.md"]) {
+      const txt = read(f);
+      if (txt === null) continue;
+      examined++;
+      const lines = txt.split("\n");
+      // Fenced code can legitimately contain a '#' line; track fences and skip them.
+      let fence = false;
+      const heads = [];
+      for (const ln of lines) {
+        if (/^\s*(```|~~~)/.test(ln)) { fence = !fence; continue; }
+        if (!fence && /^#{1,3} /.test(ln)) heads.push(ln.trim());
+      }
+      // NOT "exactly one H1": DEVLOG legitimately uses H1 for its major parts
+      // (TOC, Part A, Part B) and the self-test caught that assumption on the
+      // first run. The invariant that actually detects a splice is REPETITION —
+      // a duplicated title, not a second one.
+      const seen = new Map();
+      for (const h of heads) seen.set(h, (seen.get(h) || 0) + 1);
+      for (const [h, n] of seen) {
+        if (n > 1 && /^#{1,2} /.test(h)) {
+          out.push({ msg: `${f} repeats the heading "${h.slice(0, 70)}" ${n} times. ` +
+            `Duplicate top-level headings mean either a copy-paste splice or two entries ` +
+            `claiming the same identity.` });
+        }
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
 /* ---------------------------- readme-map ---------------------------- */
 check(
   "readme-map",

@@ -97,6 +97,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document
 - 2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common
 - 2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click
+- 2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3341,6 +3342,54 @@ Gate 1 also earned its keep again: a copy button's "Copy" label sat between a co
 after it and split three source runs. I had written the comment warning about exactly that hazard in
 the same commit, and then walked into it anyway — the check caught what the author did not.
 
+## 2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen
+
+*(v2.47.0, #61 — the second half of the same PR.)*
+
+The job was to port the settled gooey-nav prototype into the site's mobile strip. The prototype's
+recipe crushes a blurred field of white discs to a hard two-tone image, which is what fuses them into
+one mass — and that crush drives every channel to 0 or 1, so it cannot carry an accent. The colour has
+to be put back afterwards. The plan, carried in from the prototype, was a fitted
+`sepia/saturate/hue-rotate/brightness` chain per accent: compose the four matrices, solve white →
+accent, and all six land within 1/255.
+
+They do land within 1/255. They also render visibly desaturated, and I only found that out because I
+stopped comparing colours by eye and built a **difference blend** — the candidate laid over the true
+accent with `mix-blend-mode: difference`, which renders pure black on an exact match and glows in the
+colour of the failing channel otherwise. Four of six glowed. Side-by-side swatches had already passed
+the same six chains twice.
+
+So I refitted with per-primitive clamping, which the spec's wording suggests. That model reproduces
+none of the chains already accepted on the device; the unclamped model reproduces all of them. Neither
+matches what the browser paints. A five-parameter fit with a leading `brightness()` — so nothing could
+overflow anywhere in the chain — still missed by 74/255 in red on teal. At that point the honest
+reading was that I was fitting a curve to a function nobody has the real form of, and no amount of
+better fitting was going to fix that.
+
+The answer was to stop needing a model. `multiply(white, accent)` **is** accent and
+`multiply(black, accent)` **is** black — exactly, by definition, for every accent that will ever
+exist. An accent plate blended over the crushed image colours the blobs and leaves the bed alone;
+light mode is the mirror, with the image inverted and the plate switched to `screen`. Twelve fitted
+chains deleted, and the next accent anybody adds needs no work at all. **When a model keeps missing,
+the fix is often a mechanism with exact identities rather than a better fit.**
+
+The rest of the session was the same shape repeatedly: things that looked right and measured wrong.
+The hover guard I had shipped the day before — the *mechanical* one, written precisely because hand
+discipline had failed — destroyed eight rules, because it kept comments in the selector prelude and a
+comment containing a comma got split as if it were a selector list. My "verified 0 unguarded" was
+produced by a checker with the same blind spot as the transform. The mobile indicator sat 17px off its
+tab because it cached `offsetLeft − scrollLeft` and `scroll-snap` re-settles the strip afterwards. The
+pill was armed inside `requestAnimationFrame`, which does not run in a backgrounded tab. The **entire**
+mobile header stylesheet block was dead code, because the base rule is concatenated after it at equal
+specificity — measured at 375px it was still reporting the desktop gap and padding, which is why the
+wordmark was painting across the buttons. And the changelog entry for this very release had the file's
+own 183-line header spliced into the middle of it, by the commit that wrote the entry.
+
+Every one of those was found by measuring, and none of them by looking. The pattern is now explicit
+enough to state: **a transform that reports its own success is not a check.** Both the hover guard and
+the docs audit now re-parse what actually reached disk, and both new gates were proven by running them
+against the broken output — a gate that has never failed is a gate nobody has tested.
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
@@ -3476,6 +3525,24 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
   decided not worth acting on yet.
 - **Changelog-drift habit** — recurred across multiple sessions; now guarded by a self-check callout, but
   worth staying honest about.
+
+### Modelling and measurement
+- **A model is not ground truth; validate it against the thing it predicts.** A colour transform that
+  was exact on paper rendered visibly wrong, through two different clamping models. Computing beats
+  guessing from screenshots — and it still has to be checked against the renderer.
+- **Prefer a mechanism with exact identities over one with fitted constants.** `multiply(white, x) = x`
+  needs no model, no re-derivation when a value changes, and cannot drift.
+- **Build the check so it answers in one glance.** A difference blend renders black on an exact match
+  and glows in the failing channel otherwise; one screenshot judged twelve candidates. Eyeballing the
+  same pairs had already passed the wrong ones.
+- **A transform that reports its own success is not a check.** Re-parse what reached disk. Both the CSS
+  hover guard and `docs:audit` do this now, and both new gates were proven by running them against the
+  broken output first.
+- **A gate that has never failed is a gate nobody has tested.** The first version of the new
+  `record-structure` check asserted "exactly one H1" and the self-test immediately caught that DEVLOG
+  legitimately uses H1 for its parts.
+- **Dead CSS is invisible; measure the computed value.** An entire mobile override block lost to
+  concatenation order looked perfectly correct in the source and had never applied once.
 
 ### Collaboration insights
 - **Systematic debugging beat guess-and-check repeatedly** — the session above is the clearest case:

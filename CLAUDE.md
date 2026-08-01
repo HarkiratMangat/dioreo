@@ -307,7 +307,33 @@ nothing else republishes the site, and `dior legal check` compares live bytes ag
   boxes, so nothing sets `--n`/`--i` and the pill cannot exceed the track.
 - ⚠️ **Every hover rule belongs inside `@media (hover:hover) and (pointer:fine)`.** On touch, `:hover`
   latches until you tap elsewhere, which is what left buttons "stuck mid-phase" on the phone. Touch
-  feedback goes through `:active`, which releases itself.
+  feedback goes through `:active`, which releases itself. **This is applied MECHANICALLY at the single
+  point where a stylesheet reaches disk (`guardCss`/`writePage`), not by hand** — a comment claimed
+  every rule was guarded and sixty were not. Don't hand-write the query in new CSS; write the plain
+  `:hover` rule and let the transform wrap it. ⚠️ **Comments are never part of a selector prelude.**
+  The first version of that transform kept them, so a comment containing a **comma** was split as if
+  it were a selector list and the rewritten rule was written into the middle of the comment —
+  destroying eight rules while reporting success. `hoverGuardAudit` re-parses the built CSS for
+  unguarded `:hover`, brace balance, and braces inside comments, because a transform that reports its
+  own success is not a check.
+- ⚠️ **The two surfaces use DIFFERENT metaball engines on purpose. Do not unify them.**
+  *Desktop* (`.seg-ink`) uses the SVG `#dbgoo` `feColorMatrix` alpha crush: it multiplies ALPHA and
+  leaves RGB alone, so the indicator keeps its own colour over the translucent glass header — no bed,
+  no blend, no duplicated label. *Mobile* (`.mgw`/`.mgo`) uses the CSS `blur(7px) contrast(20) blur(0)`
+  crush, because **on iOS an SVG filter renders the swarm as hard circles where the CSS chain renders
+  it as liquid** (measured, same device, two panels on one page). The CSS crush can only threshold
+  colour, so it needs an opaque black bed plus a blend to erase it — which is why `.mbar` is opaque and
+  is NOT a scroller (a scroll container composites its contents and drops the blend, leaving a black
+  rectangle). Making the desktop header opaque to match would destroy the frosted bar; that trade was
+  considered and refused.
+- ⚠️ **The indicator's accent comes from a BLEND, never a fitted filter chain.**
+  `multiply(white, accent)` IS accent and `multiply(black, accent)` IS black, exactly, for any accent.
+  An earlier version fitted `sepia/saturate/hue-rotate/brightness` per accent — exact on paper, visibly
+  desaturated on screen, and **two different clamping models both failed to predict what the browser
+  paints**. Don't reintroduce fitted chains; a new accent needs no work under the blend. The tint plate
+  must stay inside the bed's opaque core (`-80` inside `-110`), or blending against a partly
+  transparent backdrop shows the plate's own colour as a square around the effect. Full record:
+  memory `reference_goo_metaball_recipe`.
 - **The site's only repo link is the header button, and that is on purpose.** A citation inside a legal
   document must resolve (repo visibility can change — TERMS §7.1), so in-prose repo references still
   degrade to inert text via `PUBLISHED_TARGETS`. A nav button that 404s is a dead button, not a
@@ -395,7 +421,10 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
 - **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
   gate.** `--list` prints the current roster; it covers the records: doc map · cross-references · version coverage across all three
-  changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · and the **conservation rule** (an
+  changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · **record structure** (no repeated
+  top-level heading — added 2026-08-01 after a commit spliced CHANGELOG's own 183-line header into the
+  middle of an entry and every other check passed, because none of them look at a file's SHAPE) · and
+  the **conservation rule** (an
   item leaves an active list ONLY by appearing in its archive — a shrink with no matching grow means
   it was *deleted*, not swept). `ERROR` fails, `WARN` never blocks. `npm run docs:audit:test` proves
   each check can actually fail. Added 2026-07-28 21:00 EDT because "not checkable" had twice been
