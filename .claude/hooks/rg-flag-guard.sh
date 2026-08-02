@@ -21,6 +21,16 @@
 cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0
 
+# Strip HEREDOC BODIES first. A commit message or a `cat > f <<'EOF'` block that merely DISCUSSES rg
+# is prose, not an invocation — this guard's own commit message tripped it 2026-08-02 15:15 EDT by
+# quoting `rg -n` in the body. Third false-positive class fixed on this pattern in one session; each
+# one matters because a guard that cries wolf is how the true warning gets dismissed.
+cmd=$(printf '%s' "$cmd" | awk '
+  /<<-?'"'"'?[A-Za-z_]+'"'"'?/ && !inhd { match($0, /<<-?'"'"'?[A-Za-z_]+'"'"'?/);
+    d=substr($0, RSTART, RLENGTH); gsub(/^<<-?'"'"'?|'"'"'$/, "", d); inhd=1; print; next }
+  inhd && $0 == d { inhd=0; next }
+  !inhd { print }')
+
 # Only look at actual rg invocations: start of line, or after a pipe/;/&&/(.
 printf '%s' "$cmd" | grep -qE '(^|[|;&(]|[[:space:]])rg[[:space:]]' || exit 0
 
