@@ -119,10 +119,10 @@ use, say so qualitatively rather than pretending the number covers it.
 > only while the model mix holds — a second reason `models` is the **first** thing to check at
 > close-out. If the mix shifted, even the *relative* comparison distorts.
 
-**Three baseline numbers are findings in their own right:** **0.45 deliberate memory writes per
-session** (the "starved layers" problem, quantified) · **`search_graph` used once in 38 sessions**
+**Three baseline numbers are findings in their own right:** **0.49 deliberate memory writes per
+session** (the "starved layers" problem, quantified) · **`search_graph` used once in 35 sessions**
 (the measurable cost of a hook that spent nine days asserting the tool did not work on JS) ·
-**260,742 cache reads per turn**, which is the actual cost driver and the reason turn count matters
+**290,915 cache reads per turn**, which is the actual cost driver and the reason turn count matters
 at all.
 
 ## 4. What would count as evidence — declared in advance

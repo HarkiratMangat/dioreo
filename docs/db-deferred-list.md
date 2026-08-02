@@ -105,9 +105,10 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
      884-turn build session with zero seq uses. Measured window is 7 whole days, Aug 3–9.)
   2. Compare only against the **pre-registered** baseline + criteria in
      `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`. Baseline (Diors-only,
-     instrument v2): 38 sessions · 13,889 turns · mean 365.5 / median 279 / max 1,729 ·
-     **260,742 cache reads per turn** · 0.014 seq-calls/100 turns · 0.45 memory writes/session ·
-     `search_graph` 1 · 18 compactions · models sonnet-5 5,663 / opus-5 4,747 / opus-4-8 3,431.
+     instrument v2, bucketed by session START): **35 sessions · 18,939 turns · median 276**
+     (mean 541.1 is outlier-driven — compare on the MEDIAN) · **290,915 cache reads per turn** ·
+     0.014 seq-calls/100 turns · 0.49 memory writes/session · `search_graph` 1 · 18 compactions ·
+     models sonnet-5 / opus-5 / opus-4-8.
      ⚠️ **Check the model + effort mix FIRST** — an Opus-skewed treatment week moves every other
      number on its own and would invalidate a naive comparison.
   3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT
