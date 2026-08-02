@@ -55,6 +55,13 @@ jobs:
       # both times, with git reporting no change — so rebuilding and asking git whether anything moved
       # is an exact test, not an approximation. If this step fails, the fix is to run the build and
       # commit the result; never to edit public/ by hand.
+      # Emoji ids are captured at RENDER time, never at require time — a module-level const holding
+      # `${emojis.x}` freezes whatever id was loaded when the module was first required, which is the
+      # PROD id, and then the dev bot renders broken emoji. Memory project_emoji_require_time_capture
+      # says to run this after touching emoji rendering; that was a prose instruction and nothing ran
+      # it. Verified to exit 0 on a clean tree before wiring it here.
+      - run: node scripts/checkEmojiCaptures.js
+
       - run: npm run site
       - name: public/ is up to date with its sources
         run: |

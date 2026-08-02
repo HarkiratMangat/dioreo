@@ -144,3 +144,25 @@ hooks all run without this script and catch different failures.
 *General rules: a migration/backfill script should be safe to re-run (clear/upsert, not blind insert).
 Never log a raw Cloudinary error object from a script — plaintext secrets; see
 `.claude/rules/loadout-images-and-metadata.md`.*
+
+## Licence & attribution gates (added 2026-08-02)
+
+Two invariants that CLAUDE.md's licensing section had stated in prose and nothing enforced — the
+consequence of getting either wrong is a licence-compliance defect, not stale documentation.
+
+- **`dep-licences`** (ERROR) — no GPL/AGPL/LGPL/MPL/SSPL/CDDL/EPL/CC-BY-SA/OSL/EUPL anywhere in the
+  tree, and **every package's licence must be KNOWN**. A licence resolves from the lockfile, then the
+  package's own `package.json`, then its licence FILE text. ⚠️ **The text fallback is not optional**:
+  `chroma-js` and `exif-parser` declare no licence field at all, and a scanner that reads "unknown" as
+  permissive fails open — the exact failure it exists to prevent. Reading the file identifies them
+  (BSD and MIT) with no allowlist to go stale. SKIPs with a stated reason when `node_modules` is
+  absent rather than passing.
+- **`notice-attribution`** (ERROR) — every runtime dependency appears in NOTICE §1 **at the version
+  the lockfile resolves**. The version half matters: "regenerate when dependencies change" is mostly
+  about changes, and a name-only check calls a two-majors-stale attribution correct.
+  ⚠️ Its section boundary is the next **line-initial** numbered heading. The first version searched
+  for the literal `"2."` and matched inside `chrono-node 2.9.1` — the first entry — so the section came
+  out empty and every dependency was reported missing against a NOTICE that was entirely correct.
+
+⚠️ **`scripts/checkEmojiCaptures.js` now runs in CI.** It was documented in memory as "run it after
+touching emoji rendering" and nothing ran it.

@@ -1335,6 +1335,133 @@ check(
   }
 );
 
+/* --------------------------- dep-licences --------------------------- */
+// Reciprocal licences. Any of these anywhere in the tree could force source publication on terms
+// incompatible with the source-available model this project ships under, so they are a build failure
+// rather than a note. LGPL is included deliberately: its dynamic-linking carve-out is an argument, not
+// a guarantee, and this is not the place to be having that argument.
+const COPYLEFT = /\b(GPL|AGPL|LGPL|MPL|SSPL|CDDL|EPL|CC-BY-SA|OSL|EUPL)\b/i;
+// Phrases from the licence TEXT, for packages that declare nothing in their package.json. Order
+// matters: the copyleft names are tested first so a permissive-sounding preamble cannot mask one.
+const LICENCE_TEXT = [
+  [/GNU\s+AFFERO\s+GENERAL\s+PUBLIC/i, "AGPL"],
+  [/GNU\s+LESSER\s+GENERAL\s+PUBLIC/i, "LGPL"],
+  [/GNU\s+GENERAL\s+PUBLIC/i, "GPL"],
+  [/Mozilla\s+Public\s+License/i, "MPL"],
+  [/Server\s+Side\s+Public\s+License/i, "SSPL"],
+  [/Common\s+Development\s+and\s+Distribution/i, "CDDL"],
+  [/Eclipse\s+Public\s+License/i, "EPL"],
+  [/Apache\s+License/i, "Apache-2.0"],
+  [/Permission\s+is\s+hereby\s+granted,\s+free\s+of\s+charge/i, "MIT"],
+  [/Redistributions\s+of\s+source\s+code\s+must\s+retain/i, "BSD"],
+  [/Permission\s+to\s+use,\s+copy,\s+modify/i, "ISC"],
+];
+
+/** Resolve one installed package's licence: lock metadata → its package.json → its licence TEXT. */
+function licenceOf(dir, lockEntry) {
+  let l = lockEntry && lockEntry.license;
+  if (!l) {
+    try {
+      const p = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+      l = p.license || (Array.isArray(p.licenses) ? p.licenses.map((x) => x.type).join(" OR ") : null);
+    } catch { /* fall through to the text */ }
+  }
+  if (l && typeof l === "object") l = l.type;
+  if (l) return String(l);
+  // ⚠️ THE TEXT FALLBACK IS NOT OPTIONAL. Two real packages in this tree — chroma-js and exif-parser —
+  // declare no licence field at all. Without this they resolve to "unknown", and a scanner that treats
+  // unknown as clean fails OPEN, which is the entire failure mode it exists to prevent. Reading the
+  // file identifies them (BSD and MIT respectively) with no allowlist and no exemption to go stale.
+  let names = [];
+  try { names = readdirSync(dir).filter((f) => /^(licen[sc]e|copying)/i.test(f)); } catch { return null; }
+  for (const f of names) {
+    let body = "";
+    try { body = readFileSync(join(dir, f), "utf8").slice(0, 4000); } catch { continue; }
+    for (const [re, name] of LICENCE_TEXT) if (re.test(body)) return name;
+  }
+  return null;
+}
+
+check(
+  "dep-licences",
+  "ERROR",
+  "no copyleft licence has entered the dependency tree, and every package's licence is known",
+  () => {
+    // CLAUDE.md's licensing section required this be "re-checked whenever dependencies change" and
+    // nothing did it — last hand-verified 2026-07-28, then trusted. NOTICE §3 makes a standing claim
+    // about this tree, so it is a claim the build should be able to defend.
+    const lockRaw = read("package-lock.json");
+    if (lockRaw === null) return { findings: [], examined: 0 };
+    let lock;
+    try { lock = JSON.parse(lockRaw); } catch (e) {
+      return { findings: [{ msg: `package-lock.json does not parse (${e.message}) — the tree cannot be audited.` }], examined: 0 };
+    }
+    const entries = Object.entries(lock.packages || {}).filter(([k]) => k.startsWith("node_modules/"));
+    if (!entries.length) return { findings: [], examined: 0 };
+    if (!existsSync(join(REPO, "node_modules"))) {
+      return { findings: [], skipped: "no node_modules on this machine — licences NOT verified (CI installs them)" };
+    }
+    const out = [];
+    for (const [k, v] of entries) {
+      const name = k.replace(/.*node_modules\//, "");
+      if (v.link) continue;                       // a workspace symlink, not a published package
+      const l = licenceOf(join(REPO, k), v);
+      if (!l) {
+        out.push({ msg: `${name}: licence could NOT be determined from the lockfile, its package.json, or its licence file. An undetermined licence is not a permissive one — identify it by hand.` });
+      } else if (COPYLEFT.test(l)) {
+        out.push({ msg: `${name} is ${l}. A reciprocal licence in this tree could force source publication on terms incompatible with the source-available model (LICENSE §4, NOTICE §3). Remove it or take a deliberate decision and record it.` });
+      }
+    }
+    return { findings: out, examined: entries.length };
+  }
+);
+
+/* ------------------------ notice-attribution ------------------------ */
+check(
+  "notice-attribution",
+  "ERROR",
+  "NOTICE §1 lists every runtime dependency at the version actually installed",
+  () => {
+    // NOTICE is incorporated into LICENSE by reference (§7.1) and carries the Apache-2.0 attributions
+    // that discord.js and xlsx OBLIGE us to reproduce — a duty that attaches upstream and survives
+    // whatever our own licence permits. So a dependency added or bumped without regenerating NOTICE is
+    // a licence-compliance defect, not stale prose. The version is checked as well as the name because
+    // "regenerate when dependencies change" is mostly about CHANGES, and a name-only check would call
+    // a two-major-versions-stale attribution correct.
+    const notice = read("NOTICE");
+    const pkgRaw = read("package.json");
+    if (notice === null || pkgRaw === null) return { findings: [], examined: 0 };
+    const deps = Object.keys(JSON.parse(pkgRaw).dependencies || {});
+    if (!deps.length) return { findings: [], examined: 0 };
+    const from = notice.indexOf("1. DIRECT DEPENDENCIES");
+    if (from < 0) return { findings: [{ msg: "NOTICE has no \"1. DIRECT DEPENDENCIES\" section — the attribution list cannot be located, so it cannot be verified." }], examined: 0 };
+    // ⚠️ The section ends at the next LINE-INITIAL numbered heading, not at the next "2.". The first
+    // version of this searched for the literal "2." and matched inside `chrono-node 2.9.1` — the very
+    // first entry — so the section was empty and every dependency was reported missing. A check that
+    // fires on everything is as useless as one that fires on nothing, and this one did it on its first
+    // run against a NOTICE that was completely correct.
+    const nextHead = /\n(\d+)\.\s+[A-Z]/g;
+    nextHead.lastIndex = from + 1;
+    const m = nextHead.exec(notice);
+    const sec = notice.slice(from, m ? m.index : undefined);
+    const lockRaw = read("package-lock.json");
+    const lock = lockRaw ? JSON.parse(lockRaw) : { packages: {} };
+    const out = [];
+    for (const d of deps) {
+      const line = new RegExp(`^\\s*${d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+([0-9][^\\s]*)`, "m").exec(sec);
+      if (!line) {
+        out.push({ msg: `NOTICE §1 does not list the runtime dependency \`${d}\`. Its attribution is a licence obligation, not documentation — add it and re-check §3.` });
+        continue;
+      }
+      const installed = (lock.packages || {})[`node_modules/${d}`];
+      if (installed && installed.version && installed.version !== line[1]) {
+        out.push({ msg: `NOTICE §1 lists \`${d} ${line[1]}\` but the lockfile resolves ${installed.version}. Regenerate §1 (and re-check §3) — see the licensing section of CLAUDE.md.` });
+      }
+    }
+    return { findings: out, examined: deps.length };
+  }
+);
+
 /* ------------------------ privacy-inventory ------------------------- */
 check(
   "privacy-inventory",

@@ -75,13 +75,33 @@ const makeFixture = () => {
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
-  write(root, "package.json", JSON.stringify({ name: "fixture", version: "2.33.0" }, null, 2));
+  // A runtime dependency, its lock entry, its installed copy and its NOTICE attribution — all four,
+  // consistent. dep-licences and notice-attribution both examine this; without it they examine 0
+  // items and the ledger correctly calls that a vacuous pass.
+  write(
+    root,
+    "package.json",
+    JSON.stringify({ name: "fixture", version: "2.33.0", dependencies: { widget: "^1.2.3" } }, null, 2)
+  );
+  write(
+    root,
+    "package-lock.json",
+    JSON.stringify({ name: "fixture", lockfileVersion: 3, packages: { "node_modules/widget": { version: "1.2.3", license: "MIT" } } }, null, 2)
+  );
+  write(root, "node_modules/widget/package.json", JSON.stringify({ name: "widget", version: "1.2.3", license: "MIT" }));
+  write(
+    root,
+    "NOTICE",
+    "NOTICE — fixture\n\n1. DIRECT DEPENDENCIES\n================================\n\n" +
+      "  widget 1.2.3                   MIT\n                                 Copyright (c) someone\n\n" +
+      "2. TRADEMARKS\n================================\n\nnone\n"
+  );
   // Names every unit the new structural checks look for: the root docs, every top-level directory,
   // each path-scoped rule, and each script. A fixture that doesn't satisfy them reports VACUOUS PASS.
   write(
     root,
     "CLAUDE.md",
-    "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`.\n\n" +
+    "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`, attributions in `NOTICE`.\n\n" +
       "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/`.\n" +
       "Scripts: `scripts/dofix.js`.\n"
   );
@@ -141,7 +161,7 @@ const makeFixture = () => {
   // **/.claude/settings.local.json, so it is ignored in EVERY repo on this machine including this
   // fixture. Without the negation the file is silently untracked -- which is precisely the bug the real
   // .gitignore documents, and the baseline meta-test caught it here first.
-  write(root, ".gitignore", ".env\n.env.*\n!.claude/settings.local.json\n");
+  write(root, ".gitignore", ".env\n.env.*\nnode_modules/\n!.claude/settings.local.json\n");
   write(root, ".env", "BOT_TOKEN=fake-value-for-fixture\n");
   write(root, ".claude/settings.local.json", JSON.stringify({ permissions: { allow: [] } }, null, 2));
   // ci-wiring: the audit must guard its own CI wiring.
@@ -497,7 +517,11 @@ proves("a NUL byte making a text file invisible to ripgrep", "binary-in-text", (
 });
 
 proves("a root-level document nothing maps", "root-docs", (root) => {
-  write(root, "NOTICE", "Third-party notices.\n");
+  // ⚠️ NOT `NOTICE` any more. This used NOTICE, and then the fixture gained a real NOTICE (for
+  // notice-attribution) that CLAUDE.md maps — so the "break" stopped breaking anything and this test
+  // silently went dead while still reporting a pass. Caught by the suite's own baseline assertion.
+  // Any unmapped root document does the job; this one is not referenced anywhere in the fixture.
+  write(root, "GOVERNANCE.md", "How decisions get made.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
@@ -530,6 +554,33 @@ proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (
     + "\n### A subsystem that outgrew the map\n"
     + "detail line\n".repeat(140);
   write(root, "CLAUDE.md", c);
+});
+
+proves("a copyleft package entering the dependency tree", "dep-licences", (root) => {
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.packages["node_modules/evil"] = { version: "1.0.0", license: "GPL-3.0" };
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+});
+
+proves("a package whose licence cannot be determined at all", "dep-licences", (root) => {
+  // Not the same failure as copyleft, and it must not be treated as clean: a scanner that reads
+  // "unknown" as permissive fails open, which is the whole thing it exists to prevent.
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.packages["node_modules/mystery"] = { version: "1.0.0" };
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+  write(root, "node_modules/mystery/package.json", JSON.stringify({ name: "mystery", version: "1.0.0" }));
+});
+
+proves("NOTICE going stale when a dependency is bumped", "notice-attribution", (root) => {
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.packages["node_modules/widget"].version = "9.9.9";
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+});
+
+proves("a runtime dependency with no NOTICE attribution", "notice-attribution", (root) => {
+  const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  pkg.dependencies.unattributed = "^1.0.0";
+  write(root, "package.json", JSON.stringify(pkg, null, 2));
 });
 
 proves("a stored field missing from the privacy policy's inventory", "privacy-inventory", (root) => {
