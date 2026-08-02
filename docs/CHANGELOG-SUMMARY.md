@@ -26,6 +26,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.49.2 — August 2, 2026
+- **Nothing changed in the bot.** An internal safety check was running at the wrong time — it only
+  noticed a missing piece of paperwork *after* the work had already been filed, which meant the only
+  way to fix it was to file everything again. It now runs beforehand, so the problem gets caught while
+  it can still be fixed in place.
+
+
 ## v2.49.1 — August 2, 2026
 - **Nothing user-facing changed.** A maintenance release: one of the automatic checks was reporting a
   problem when there wasn't one, and an internal rule about version numbering was out of date.

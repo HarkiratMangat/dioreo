@@ -181,7 +181,40 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.49.1 — 2026-08-02 16:06 EDT (#66) — The gate fired on its own author, and the versioning rule was describing a dead era
+## v2.49.2 — 2026-08-02 16:12 EDT (#67) — A gate that fired too late, and the release it forced
+
+**The DEVLOG check was gated `PostToolUse` on `gh pr merge` — it fired AFTER the
+merge.** It caught a genuine omission in v2.49.1, but by then the branch was gone
+and the only remedy it could offer was "ship a follow-up release". So it
+manufactured an extra PR, merge, version and tag purely to satisfy a gate that
+fired too late. Harkirat, immediately: *"thats just poor timing for the hook to
+trigger, no? it stopped you AFTER you had already merged and thus caused another
+merge."*
+
+That is textbook — **a check at the wrong MOMENT is the same bug as no check** —
+and it was already written down in `feedback_not_checkable_is_usually_unexamined`
+before being shipped anyway.
+
+**Four** release checks were on the wrong side of the merge. `release-ready-check.sh`
+now runs **`PreToolUse` on `gh pr merge`** and inspects `origin/main...HEAD` — the
+branch's own diff — so a missing changelog, summary, version bump or DEVLOG entry
+is caught while the branch can still receive it. Not an event-name swap: the
+post-merge versions read `origin/main` after the fact, which is a different
+question. It **asks** rather than blocks, because a docs-only merge may
+legitimately skip a DEVLOG entry — but that must be a decision, not an omission.
+
+The `PostToolUse` DEVLOG check is **removed**; its only possible remedy was the
+extra release. The remaining post-merge checks stay as backstops, because what
+they find (a hash backfill) is genuinely fixable next release.
+
+Six proofs, including the discriminating pair: a missing DEVLOG fires, a purely
+mechanical change (changelog + summary + version only) does not.
+
+**And this release carries the DEVLOG entry v2.49.1 should have had** — the guard
+that sharpened itself by misfiring on its own author, where to stop widening an
+escape, and the versioning rule that had been documenting a dead era.
+
+## v2.49.1 — 2026-08-02 16:06 EDT (#66 · `6bf05ed`) — The gate fired on its own author, and the versioning rule was describing a dead era
 
 **A guard blocked a summary that was true.** `outstanding-not-filed` flagged two
 items as unfiled; both were genuinely filed, at `docs/db-deferred-list.md:202`

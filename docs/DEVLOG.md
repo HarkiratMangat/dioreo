@@ -103,6 +103,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)
 - 2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)
 - 2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)
+- 2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3698,6 +3699,60 @@ has three states — absent, installed, and ROUTED — and only the third does a
   session, and a batch size read as a total — both while feeling most rigorous.
 - **What makes a guard work is being point-of-use, not being a hook.** A catalogue injected at session
   start is the same shape as the prose that already failed 788× to 4×.
+
+## 2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)
+
+Late in a very long session the hooks I had built that same day started firing on me, and the pattern
+in *how* they were wrong turned out to be more useful than the times they were right.
+
+**`outstanding-not-filed` blocked a summary that was entirely true.** It flagged two deferred items as
+unfiled; both were filed — `docs/db-deferred-list.md:202` and `:249`, in commit `7cd21e7`, present on
+`origin/main`. I checked rather than argued, which is the only reason the next part happened: the gate
+was right *mechanically* (that turn touched no list) and wrong *in substance*, and the gap was that its
+already-filed escape matched `filed as/in/under/it` but not **"filed with direction"**.
+
+Widening it was easy. Knowing where to stop was the actual work. **"I'll file it later" must still
+block** — that is an intention, and letting intentions pass is the entire failure the gate exists for.
+There is now a test pinning exactly that pair, because the line between "already filed" and "meaning to
+file" is the whole value of the thing.
+
+**Then Harkirat said a merge means a version bump, and `CLAUDE.md` said the opposite** — *"a version is
+minted for a RELEASE, not for every merge"*, citing 31 untagged commits as *"entirely correct"*. Rather
+than argue from the doc I measured against tags: 29 of 85 commits carry no tag, **but the newest is
+2026-07-28**, only 3 are the retired `chore(release): finalize` pattern, and the last **14 consecutive**
+commits are tagged — pure `docs:` merges included. The doc was describing a superseded era and
+presenting it as current. He was right; the file was stale. **Third stale-rule correction of the day.**
+
+**And correcting it broke the build.** Written out in full, the fix pushed that CLAUDE.md section to 137
+lines against a 130 limit, and `docs:audit` failed. Worse — I had printed the exit code and pushed
+anyway, because printing a check's result is not the same as reading it. Compressed rather than
+exempted: the file loads in full every session, so a verbose correction to a stale rule is a cost paid
+on every future one.
+
+**Then this very entry existed only because a hook demanded it — and the hook was itself broken.** The
+DEVLOG check fired *after* the merge, pointing out that a release carrying two real lessons had no
+narrative entry. Correct finding, useless timing: the branch was gone, so the only remedy it could
+offer was "ship a follow-up release", and I started doing exactly that. Harkirat stopped me mid-flow:
+*"thats just poor timing for the hook to trigger, no? it stopped you AFTER you had already merged and
+thus caused another merge."*
+
+He was right, and it is a failure this repo had **already written down** — *a check at the wrong MOMENT
+is the same bug as no check* — and shipped anyway. **Four** release checks sat `PostToolUse` on
+`gh pr merge`, all firing where nothing could be fixed. They now run `PreToolUse` against the branch's
+own diff, which is not an event-name swap: the post-merge versions read `origin/main` after the fact,
+answering a different question entirely.
+
+So v2.49.2 stopped being paperwork. It carries the entry v2.49.1 should have had **and** the fix that
+stops the gate manufacturing releases to satisfy itself.
+
+### What I'd keep
+- **A guard firing on its own author and getting sharpened is the intended lifecycle, not a defect.**
+  Four of them improved that way today. The failure mode to fear is the guard nobody argues with.
+- **When widening an escape, name the line you refuse to cross** and pin it with a test. "Already filed"
+  passing is correct; "about to file" passing destroys the guard.
+- **Printing a check's exit code is not reading it.** `docs:audit exit=1` scrolled past under a push.
+- **When the user and the documentation disagree, measure — do not pick a side.** He was right and the
+  doc was stale, and only the measurement could have told me which.
 
 # Part B — Lessons Ledger (thematic)
 
