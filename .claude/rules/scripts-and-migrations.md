@@ -141,6 +141,31 @@ prior detection layer still stands beside it — the `gh pr merge` hooks (change
 check), the `git tag` invariant gate, the Edit/Write TIMESTAMP check and the `Stop` completion-claim
 hooks all run without this script and catch different failures.
 
+## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 17:45 EDT)
+Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`;
+writes nothing and touches no project state. It measures the 7-day MCP observation window opened
+2026-08-02 17:00 EDT (protocol + pre-registered baseline:
+`docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`; close-out is a dated reminder
+in `docs/db-deferred-list.md`).
+
+⚠️ **DO NOT EDIT IT DURING THE WINDOW.** The baseline and the treatment period must be measured the
+same way or the comparison is void. It already went v1 → v2 once (v1 measured turns but not tokens or
+model mix — half the cost model), which was only legitimate because zero treatment data existed yet.
+The same edit on day 3 destroys the experiment. If a change is unavoidable: note it in the protocol
+and re-baseline both windows.
+
+⚠️ **`--to` is EXCLUSIVE.** Use `--to 2026-08-10` to include 2026-08-09. This off-by-one has already
+been caught twice — once here and once in `.claude/hooks/mcp-layer-check.sh`'s date comparison, where
+it would have reverted the window's final 17 hours.
+
+⚠️ **`estCostUSD` is a RELATIVE INDEX, never spend.** Calibrated against the one real figure
+(session `38972d5e`: 404 Sonnet-5 turns → $44.02 at list vs $17.10 billed = **2.57×**), and that factor
+is **model-specific** — Opus and Sonnet rates differ ~5×, so it holds only while the model mix holds.
+**Check the `models` breakdown first at close-out**; an Opus-skewed week moves every number by itself.
+
+It counts real `tool_use` invocations, never mentions — mention-counting `sequentialthinking` returns
+38 vs 2 actual calls, because the name appears in every system-prompt tool listing.
+
 *General rules: a migration/backfill script should be safe to re-run (clear/upsert, not blind insert).
 Never log a raw Cloudinary error object from a script — plaintext secrets; see
 `.claude/rules/loadout-images-and-metadata.md`.*
