@@ -1,9 +1,14 @@
 #!/bin/bash
 HOOK="$(dirname "$0")/release-ready-check.sh"; pass=0; fail=0
+# ⚠️ CLAUDE_PROJECT_DIR must be set explicitly. The hook defaults it to an absolute Mac path that does
+# not exist on a CI runner, so `cd` fails and it exits 0 — every assertion then read SILENT and six
+# cases "passed" by not running. Caught by CI on 2026-08-02 22:00 UTC, the first run after the
+# required status check was switched on.
+REPO="$(cd "$(dirname "$0")/../.." \&\& pwd)"
 # $2 = base branch (default main). RELEASE_CHECK_BASE pins it so the v3 branch can be proven
 # without a network call to `gh pr view`.
 r(){ local raw; raw="$(printf '{"tool_input":{"command":"gh pr merge 1 --squash"}}' \
-       | RELEASE_CHECK_FILES="$1" RELEASE_CHECK_BASE="${2:-main}" bash "$HOOK")"
+       | RELEASE_CHECK_FILES="$1" RELEASE_CHECK_BASE="${2:-main}" CLAUDE_PROJECT_DIR="$REPO" bash "$HOOK")"
      [ -z "$raw" ] && { echo SILENT; return; }; printf '%s' "$raw" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; }
 a(){ local n="$1" needle="$2" want="$3" files="$4" out; out="$(r "$files" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac

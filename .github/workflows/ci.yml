@@ -33,6 +33,13 @@ jobs:
           node-version: '24'
       - run: npm ci
 
+      # ripgrep is a real dependency of `.claude/hooks/stale-reference-sweep.sh` — the whole sweep is
+      # one `rg` call. The runner does not ship it, and without it the hook found nothing and exited
+      # silently, so all five of its assertions passed as SILENT on the first CI run after the
+      # required status check was enabled. The hook now reports its own absence, but installing rg is
+      # what makes CI test the REAL path instead of the degraded one.
+      - run: sudo apt-get install -y ripgrep
+
       # `npm test` rather than `npm run check`, changed 2026-08-02 16:49 EDT. Two suites existed and
       # NOTHING RAN THEM in CI: `scripts/calendarDedup.test.js` (reachable only via `npm test`, which
       # CI never called) and the ten `.claude/hooks/*.test.sh` files, which were referenced by

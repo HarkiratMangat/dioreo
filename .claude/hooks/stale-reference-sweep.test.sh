@@ -83,4 +83,18 @@ printf 'accentColor is described here\n' > "$_h2/$MEMREL/old.md"
 touch -t 202601010000 "$_h2/$MEMREL/old.md"                        # long before the branch point
 a "an OLD memory file IS flagged"       "old.md"                yes "$STALEMEM"
 
+# --- the tool it depends on may not exist. Added 2026-08-02 18:04 EDT after CI (no ripgrep on the
+#     ubuntu runner) made all five real assertions above pass as SILENT — a missing binary and a
+#     clean branch were byte-identical.
+PATHLESS=$(mkrepo c9 utils/accentColor.js)
+IFS=$'\t' read -r _d3 _h3 <<< "$PATHLESS"
+out=$(PATH=/usr/bin:/bin HOME="$_h3" CLAUDE_PROJECT_DIR="$_d3" bash "$HOOK" main 2>/dev/null \
+      | jq -r '.hookSpecificOutput.additionalContext // "SILENT"')
+if command -v /usr/bin/rg >/dev/null 2>&1 || command -v /bin/rg >/dev/null 2>&1; then
+  echo "  SKIP  rg lives on the minimal PATH here, cannot simulate its absence"
+else
+  case "$out" in *"CANNOT RUN"*) echo "  PASS  missing rg is REPORTED, not silent"; pass=$((pass+1));;
+    *) echo "  FAIL  missing rg produced [$out] instead of a CANNOT RUN notice"; fail=$((fail+1));; esac
+fi
+
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1
