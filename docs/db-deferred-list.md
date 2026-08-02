@@ -199,6 +199,28 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **🧠 Distil the linksee auto-capture queue, and declare a North Star** `[P2 · S]`
+  (filed 2026-08-02 19:05 EDT). **8 auto-captured memories are still RAW USER UTTERANCES**
+  (`dream()` → `distill_total: 8`, verified — an earlier session-start banner said 19 and was stale;
+  re-run `dream()` for the live count rather than trusting any number written here).
+  **Why it matters — this is the "junk memories" problem, concretely.** The Stop hook captures by
+  heuristic with no LLM in the path, so it files raw chat as insight. Live examples: memory **7357**
+  is *"lets finalize and merge the open PRs…"* stored as a **`learning`**; **3496** is a task
+  instruction stored as a **`caveat`**. A future session recalling "learnings" gets served Harkirat's
+  to-do list. **Each raw row also drags ~10 `affects` paths of unrelated files with it**, so it
+  pollutes file-history recall too.
+  **How:** `dream()` returns the queue; rewrite each via `remember({memory_id, content})` with a
+  one-line `what`, a real `why`, and **`"distilled": true`** — that marker is REQUIRED, it is what
+  stops the next Stop-hook sync wiping the rewrite and resurrecting the raw utterance
+  (`DELETE … WHERE source LIKE '%session_id%' AND distilled != 1`). Drain up to 8 per `dream()` call.
+  A row with no real decision in it gets `type: "note", state: "superseded"` — retired in place,
+  never deleted.
+  **Also:** `north_star` is **null**, which `dream()` flags itself — without one there is no frame for
+  triaging proposals. Declare via `declare_anchor(node_type: "north_star")`, but that is **Harkirat's
+  call to state**, not mine to invent.
+  ⚠️ **Not mechanical — it is a judgement rewrite of his memories**, which is why it is queued for its
+  own session rather than tacked onto the end of a long one.
+
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]`
 tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
