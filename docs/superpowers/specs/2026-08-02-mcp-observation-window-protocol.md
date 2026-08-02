@@ -41,27 +41,73 @@ That failure has a name in this repo: the verifier halo ([[feedback_verify_befor
 | `sequential-thinking` calls · calls per 100 turns | the direct trigger-rate answer |
 | `turnsPerSession` | the cost claim: does an unrestricted tool inflate turns? |
 | `totalThoughts` distribution | a 2-thought run is not a real exercise of the tool; long runs are |
-| `Read` + `Bash` counts | control variables — a turn spike must be attributable, not assumed |
+| `Read` / `Write` / `Edit` / `Bash` counts | control variables — a turn spike must be attributable, not assumed |
+| **`cacheRead` total · `cacheReadPerTurn`** | **the actual cost driver.** *cost ≈ turns × context*, and this IS the context term. Baseline 260,742/turn |
+| **`tokens.{input,output,cacheCreate,cacheRead}`** | the full token picture; output tokens are the expensive ones per unit |
+| **`cache1h` vs `cache5m`** | a shift toward 5m ephemeral means cache is being rebuilt more often — a silent cost rise |
+| **`models` mix** | ⚠️ **the biggest confounder.** An Opus-skewed treatment week moves every number on its own |
+| **`efforts` mix** | same confounder class — high/xhigh vs medium changes turn behaviour |
+| **`compactions`** | a compacted session distorts turn counts and context curves; must be comparable across windows |
+| **`apiErrors` + `toolErrors`** | quality signal — more thinking must not come with more failed calls |
+| **`subagent-spawn`** | the *other* turn-multiplier; if it moves, turn changes may not be sequential-thinking at all |
+| **`turnsPerSession.median` and `.max`** | the mean is carried by outliers — baseline mean 365.5 vs median 279, max 1,729 |
+| `estCostUSD` | relative index only (list rate is 7.7× observed) — direction, never dollars |
 | `linksee-remember` + `perseus-remember` per session | do the memory-layer fixes hold? |
 | `linksee-recall`, `read_smart`, `perseus-recall` | is recall actually being used, or just written? |
 | `codebase-search_graph` | did correcting the stale "Python-only" hook change routing? |
 | `ctx-execute*` | did the injected routing move work off `Bash`? |
 
-### Baseline — control window 2026-07-24 → 2026-08-02 (measured 2026-08-02 17:00 EDT)
+### Baseline — control window 2026-07-24 → 2026-08-02
+
+> **⚠️ INSTRUMENT v1 → v2, re-baselined 2026-08-02 17:30 EDT — before any treatment data existed.**
+> v1 measured turns and tool counts only, which is **half the cost model**: the standing formula is
+> *cost ≈ turns × context*, and v1 never measured context. It also ignored the **model/effort mix**,
+> a real confounder — the corpus spans `sonnet-5`, `opus-5`, `opus-4-8` and `haiku-4-5` across three
+> effort levels, so a treatment week skewed toward Opus would move every number on its own. v1 also
+> silently scanned **all projects**, not just this one. Caught by Harkirat, 2026-08-02 17:20 EDT.
+> Re-baselining now is legitimate precisely because zero treatment data exists yet; the same edit on
+> day 3 would have voided the experiment.
+
+**Diors-Builds only (the comparison set) — `--project -Applications-Claude-Code-Diors-Builds`:**
 
 ```
-sessions 41 · assistantTurns 14,344 · turnsPerSession 349.9
-sequential-thinking        2   (0.014 per 100 turns)   ← both in ONE session, totalThoughts: 2
-linksee-recall             7      linksee-remember     9
-linksee-read_smart         2      perseus-recall       6
-perseus-remember           8      codebase-search_graph 1
-ctx-execute*             108      Read              1,015      Bash            3,253
-memoryWritesPerSession  0.41
+sessions 38 · assistantTurns 13,889
+turnsPerSession   mean 365.5 · median 279 · max 1,729     ← median matters: one 1,729-turn session
+tokensPerTurn     272,505        cacheReadPerTurn 260,742      would carry a mean on its own
+models   sonnet-5 5,663 · opus-5 4,747 · opus-4-8 3,431
+compactions 18 · toolErrors 192 · apiErrors 11
+estCostUSD 6,556  ⚠️ RELATIVE INDEX ONLY, see below
+
+sequential-thinking 2 (0.014 /100 turns)  ← both in ONE session, totalThoughts: 2
+linksee-recall 7 · linksee-remember 9 · linksee-read_smart 2
+perseus-recall 6 · perseus-remember 8 · codebase-search_graph 1
+ctx-execute* 108 · subagent-spawn 27
+Read 993 · Write 149 · Edit 1,725 · Bash 3,165
+memoryWritesPerSession 0.45
 ```
 
-Two baseline numbers are findings in their own right: **0.41 deliberate memory writes per session**
-(the "starved layers" problem, quantified) and **`search_graph` used once in 41 sessions** (the
-measurable cost of a hook that spent nine days asserting the tool did not work on JS).
+*All projects, same window, for reference: 41 sessions · 14,344 turns · 349.9 mean · cacheRead
+3.69 **billion** · memoryWrites/session 0.41.*
+
+> **⚠️ `estCostUSD` is NOT money.** Calibrated 2026-08-02 17:40 EDT against the only real figure on
+> record, recomputed **from its transcript** rather than a remembered summary — session `38972d5e`:
+> **404 `claude-sonnet-5` turns, 87.4M cache reads, 430k output → $44.02 at list vs $17.10 billed =
+> list is 2.57× actual.**
+>
+> **A first attempt said 7.7× and was wrong twice:** it applied **Opus** cache-read rates ($1.50/M) to
+> a **Sonnet** session ($0.30/M), and counted only cache reads while ignoring 430k output tokens.
+> Harkirat caught the model error. Two wrong inputs produced one confident number — inside the
+> instrument built to measure rigour. Logged here because the protocol should carry its own scars.
+>
+> **The 2.57× factor is model-specific.** Opus and Sonnet rates differ ~5×, so a single scalar holds
+> only while the model mix holds — a second reason `models` is the **first** thing to check at
+> close-out. If the mix shifted, even the *relative* comparison distorts.
+
+**Three baseline numbers are findings in their own right:** **0.45 deliberate memory writes per
+session** (the "starved layers" problem, quantified) · **`search_graph` used once in 38 sessions**
+(the measurable cost of a hook that spent nine days asserting the tool did not work on JS) ·
+**260,742 cache reads per turn**, which is the actual cost driver and the reason turn count matters
+at all.
 
 ## 4. What would count as evidence — declared in advance
 
@@ -94,7 +140,15 @@ The `outcome` line is the one that matters. "It felt thorough" is not an outcome
 
 ## 6. Close-out
 
-1. Re-run the instrument **unchanged**: `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-09 --label treatment`
+1. Re-run the instrument **unchanged**, both scopes:
+   ```bash
+   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds
+   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment-all
+   ```
+   ⚠️ **`--to` is EXCLUSIVE, so it must be `2026-08-10` to include the window's final day.** An earlier
+   draft said `--to 2026-08-09`, which would have silently dropped Aug 9 — the same off-by-one already
+   caught in the hook's own date comparison. Off-by-one in an experiment's instrument is a
+   data-integrity bug, and this one bit twice.
 2. Compare against §3 using only the §4 criteria.
 3. Decide: keep unrestricted · reinstate explicit-request-only · or adopt the fit-conditions version.
 4. Update `~/.claude/CLAUDE.md` and `project_context_token_budget` with the verdict **and the data**.

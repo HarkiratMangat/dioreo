@@ -98,11 +98,16 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
   **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
   **Close-out (all four, in order):**
-  1. Re-run the instrument **UNCHANGED** — editing it voids the comparison:
-     `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-09 --label treatment`
+  1. Re-run the instrument **UNCHANGED** — editing it voids the comparison. **`--to` is EXCLUSIVE, so
+     it must be `2026-08-10` to include the final day:**
+     `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds`
   2. Compare only against the **pre-registered** baseline + criteria in
-     `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md` (baseline: 41 sessions,
-     349.9 turns/session, 0.014 seq-calls/100 turns, 0.41 memory writes/session, `search_graph` 1).
+     `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`. Baseline (Diors-only,
+     instrument v2): 38 sessions · 13,889 turns · mean 365.5 / median 279 / max 1,729 ·
+     **260,742 cache reads per turn** · 0.014 seq-calls/100 turns · 0.45 memory writes/session ·
+     `search_graph` 1 · 18 compactions · models sonnet-5 5,663 / opus-5 4,747 / opus-4-8 3,431.
+     ⚠️ **Check the model + effort mix FIRST** — an Opus-skewed treatment week moves every other
+     number on its own and would invalidate a naive comparison.
   3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT
      it fired, never whether it helped. **Watch for novelty**: a spike of 2–3 thought runs with no
      decision attached is the tool being new, not useful.
