@@ -1,0 +1,6 @@
+# `mis` is flagged as a misspelling of "miss"/"mist", but this repo uses it constantly as a valid
+# hyphenated prefix — mis-described, mis-filed, mis-indexed. Measured 2026-08-02 15:25 EDT: it was the
+# single largest false-positive source, and a linter that is usually wrong is one you learn to ignore.
+[default.extend-words]
+mis = "mis"
+unparseable = "unparseable"

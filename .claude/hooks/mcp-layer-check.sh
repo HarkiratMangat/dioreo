@@ -76,6 +76,16 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
   · perseus-vault for durable cross-session decisions; linksee for project/file-scoped caveats.
   · Write to the memory layer at the real moments: a decision, a failure, a correction. An entire
     session once passed with zero writes because nothing forced them.
+
+CLI ROUTING — installed 2026-08-02 15:25 EDT and listed HERE so they get used. shellcheck sat
+installed and unrun for weeks while the bug it catches shipped; being on disk is not being available.
+  · sd      instead of sed/perl for find-replace — no escaping/quoting minefield (several retries today)
+  · ast-grep (sg) for STRUCTURAL code search — `sg -p 'foo($A)'`; beats rg when the shape matters
+  · gron    to make unknown JSON greppable — `gron f.json | rg key`; better than hand-rolled node -e
+  · difft   for structural diffs when a plain git diff is unreadable
+  · deno    for one-off TS/JS scripts with no package.json (instead of long `node -e` one-liners)
+  · gtimeout (coreutils) to bound anything that might hang
+  · bats    is installed but the hook test suites are still hand-rolled — see db-deferred-list
 EOF
 
 # --- the 7-day sequential-thinking measurement window ------------------------------------------
