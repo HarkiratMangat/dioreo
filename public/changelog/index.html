@@ -784,12 +784,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .ib-c{top:50%;bottom:auto;height:0}/* The droplets. They live INSIDE the filtered layer, which is the whole point:
    on their own they would be loose dots, but blurred and alpha-crushed together
-   with the pill they read as material being thrown off it and gathered back. */
+   with the pill they read as material being thrown off it and gathered back. *//* ⚠️ WIDTH AND HEIGHT ARE INDEPENDENT, and --br is four asymmetric corner radii
+   rather than a circle. A droplet used to be a disc of one size because the
+   crush's floor was derived for a circle; it is not, so these are blobs of
+   varying length, thickness and silhouette. The margin has to centre on BOTH
+   axes separately now — using --w for the vertical offset would hang every
+   long droplet below its own path. */
 
-.pt{position:absolute;top:50%;left:0;width:var(--w);height:var(--w);
-  margin:calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
-  border-radius:50%;background:var(--pc);opacity:0;pointer-events:none;
-  animation:ptFly var(--t) var(--d) cubic-bezier(.32,.72,.36,1) both}/* ⚠️ --y2 is READ here, and it did not used to be: the last two stops were
+
+.pt{position:absolute;top:50%;left:0;width:var(--w);height:var(--ph,var(--w));
+  margin:calc(var(--ph,var(--w)) / -2) 0 0 calc(var(--w) / -2);
+  border-radius:var(--br,50%);background:var(--pc);opacity:0;pointer-events:none;
+  animation:ptFly var(--t) var(--d) var(--ez,cubic-bezier(.32,.72,.36,1)) both}/* ⚠️ --y2 is READ here, and it did not used to be: the last two stops were
    pinned to y=0, so every droplet landed on the pill's centre line and the
    arrival looked like a row of dots sliding into a slot. The reference's
    particles converge on a small RADIUS around the destination, which is what
@@ -2517,18 +2523,28 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          alpha crush simply fused them back into it and it read as one blob with a
          bump. Change ONE of these at a time and look at it. */
       var n=14, h=H(), max=0;
+      var EZ=['cubic-bezier(.32,.72,.36,1)','cubic-bezier(.18,.86,.32,1)',
+              'cubic-bezier(.45,.55,.25,1)','cubic-bezier(.25,.9,.45,.98)'];
       var sc=srcX+srcW/2, dc=dstX+dstW/2, run=dc-sc;
       for(var i=0;i<n;i++){
         var el=document.createElement('i');
         el.className='pt';
-        var a=(i/n)*Math.PI*2+Math.random()*0.6;
+        /* Jittered by nearly a full slot either way rather than a fixed 0.6 rad
+           bias, so the ring of departure angles stops reading as a ring. */
+        var a=(i/n)*Math.PI*2+(Math.random()-0.5)*(Math.PI*2/n)*1.9;
         var x0=srcX+srcW*(0.08+0.84*Math.random());
         /* y0 is the spawn point, at opacity 0 and scale .15 - never seen, so it
            costs nothing visually and is not part of the budget above. */
         var y0=(Math.random()-0.5)*h*0.45;
-        var t=0.22+0.56*Math.random();
+        var t=0.10+0.80*Math.random();
         var x1=sc+run*t+Math.cos(a)*22;
-        var y1=Math.sin(a)*(h*0.12+Math.random()*h*0.22);
+        /* ⚠️ RE-DERIVED, because the droplets are shorter now. The old cap was
+           27 - 9.5 - 7 = 10.5px (0.34h): half a 19px-wide DISC plus the blur.
+           A droplet is at most 11px TALL now, so the same arithmetic gives
+           27 - 5.5 - 7 = 14.5px, which is 0.47h. The extra 4px is spent on
+           spread, not on flinging anything out of the bar — the bound is still
+           the bar's half-height and nothing may exceed it. */
+        var y1=Math.sin(a)*(h*0.10+Math.random()*h*0.37);
         var x2=dc+Math.cos(a)*(4+Math.random()*10);
         /* ⚠️ THE ARRIVAL IS ALMOST ON THE CENTRE LINE, and that is not fussiness.
            The pill is 25px tall, so its half-height is 12.5. A droplet is up to
@@ -2539,7 +2555,11 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            parked on it. ±2px keeps every droplet inside (9.5 + 2 < 12.5).
            Variety at the arrival is carried HORIZONTALLY by x2, where the pill is
            49px wide and there is room for it. */
-        var y2=Math.sin(a)*(0.5+Math.random()*1.5);
+        /* Same re-derivation at the arrival: the pill's half-height is 12.5 and
+           a droplet's half-height is now at most 5.5, so 3.5px of offset still
+           lands it fully inside (5.5 + 3.5 < 12.5) where 2px was the limit for
+           a 9.5px-radius disc. */
+        var y2=Math.sin(a)*(0.4+Math.random()*3.1);
         /* ⚠️ EVERY DROPLET MUST LAND BEFORE THE PILL DOES. This is a hard cap,
            not a tuning value, and the old numbers broke it arithmetically:
            dur reached 0.92*DUR and del reached i*0.014*DUR + 44ms, which at i=13
@@ -2551,9 +2571,13 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            The droplets are supposed to BUILD the pill, so the pill arriving is
            the last thing that happens. dur is therefore clamped against this
            droplet's own delay so del+dur can never exceed the move itself. */
-        var del=Math.round(i*DUR*0.010+Math.random()*30);
-        var dur=Math.round(Math.max(DUR*0.34,
-                  Math.min(DUR*(0.55+Math.random()*0.30), DUR*0.90-del)));
+        /* ⚠️ UNORDERED. This was i*DUR*0.010 + jitter, so the launch order was
+           the DOM order and the burst read as a sweep from one end. The hard cap
+           below (del+dur <= 0.90*DUR) is what actually protects the arrival, so
+           the delay itself is free to be random. */
+        var del=Math.round(Math.random()*DUR*0.15);
+        var dur=Math.round(Math.max(DUR*0.30,
+                  Math.min(DUR*(0.42+Math.random()*0.46), DUR*0.90-del)));
         if(dur+del>max) max=dur+del;
         var rot=(Math.random()-0.5)*2; rot = (rot>0 ? rot+0.35 : rot-0.35)*26;
         /* ⚠️ CLAMP THE ROTATION AGAINST THE TRAVEL DISTANCE. This is the actual
@@ -2577,17 +2601,40 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         var reach=Math.max(Math.abs(x1),Math.abs(x2),1);
         var cap=Math.asin(Math.min(1,PERP/reach))*180/Math.PI/1.2;
         rot=Math.max(-cap,Math.min(cap,rot));
-        /* ⚠️ 11px minimum, not 7. The filter thresholds alpha at 22a-8, so a
-           droplet only paints once its BLURRED peak alpha clears 0.364, and at
-           stdDeviation 3.6 that needs a diameter of about 10.6px:
-           1-exp(-(d/2)^2 / (2*3.6^2)) = 0.364 at d = 10.6. Every droplet spawned
-           between 7 and 10.6px was mathematically invisible for its whole
-           flight — a third of them, doing nothing but costing layout. The same
-           arithmetic caught the same mistake in the mobile burst. */
-        /* 11px stays the floor for the reason below; the CEILING comes down from
-           20 to 16. A 20px droplet is most of the pill's own height, so it read
-           as a second blob rather than as something shed by the pill. */
-        el.style.cssText='--w:'+(11+Math.random()*8).toFixed(1)+'px;'
+        /* ⚠️ THE 11px FLOOR WAS DERIVED FOR A CIRCLE, AND THAT WAS THE WHOLE
+           PROBLEM. It came from 1-exp(-(d/2)^2/(2*3.6^2)) = 0.364, which is the
+           smallest CIRCLE the crush will paint. Every droplet therefore had to
+           be at least 11px in BOTH axes, so they could only ever be fat discs —
+           "too thick and blobby", and fourteen of the same lozenge besides.
+
+           But the crush does not threshold on diameter, it thresholds on blurred
+           peak alpha, and an elongated shape reaches that with far less
+           thickness. Rasterised through a replica of #dbgoo and read off the
+           canvas (# solid, + faint, . invisible):
+
+               h =    3  4  5  6  7  8 10 12
+               w= 8   .  .  .  .  #  #  #  #
+               w=10   .  .  .  #  #  #  #  #
+               w=12   .  .  +  #  #  #  #  #
+               w=14   .  .  #  #  #  #  #  #
+               w=18   .  +  #  #  #  #  #  #
+               w=22   .  +  #  #  #  #  #  #
+
+           So a 22x5 lozenge paints solid where an 8x5 does not: thickness can go
+           to 5px as long as the droplet is long. minW() below is that table, and
+           nothing is spawned outside it — a droplet that cannot paint is worse
+           than no droplet, because it still costs layout and still occupies one
+           of the fourteen slots.
+           ⚠️ Re-measure the table if stdDeviation or the crush matrix changes. */
+        var ph=5+Math.random()*6;                       // 5 - 11 tall
+        var minW = ph<5.5 ? 14 : ph<6.5 ? 10 : 8;       // from the table above
+        var pw=Math.min(24, Math.max(minW, ph*(1+Math.random()*1.9)));
+        /* Not ellipses — blobs. Four independent corner radii give each droplet
+           an asymmetric silhouette, so a pass never shows the same shape twice,
+           and the crush keeps the edges liquid rather than geometric. */
+        var r4=function(){ return (38+Math.random()*24).toFixed(0)+'%'; };
+        var br=r4()+' '+r4()+' '+r4()+' '+r4()+' / '+r4()+' '+r4()+' '+r4()+' '+r4();
+        el.style.cssText='--w:'+pw.toFixed(1)+'px;--ph:'+ph.toFixed(1)+'px;--br:'+br+';'
           +'--x0:'+x0.toFixed(1)+'px;--y0:'+y0.toFixed(1)+'px;'
           +'--x1:'+x1.toFixed(1)+'px;--y1:'+y1.toFixed(1)+'px;'
           +'--x2:'+x2.toFixed(1)+'px;--y2:'+y2.toFixed(1)+'px;'
@@ -2597,6 +2644,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
           +'--x3:'+dc.toFixed(1)+'px;'
           +'--rot:'+rot.toFixed(0)+'deg;'
           +'--t:'+dur+'ms;--d:'+del+'ms;'
+          /* A per-droplet easing is the cheapest real randomiser here: fourteen
+             droplets on one curve arrive in formation however scattered their
+             paths are. */
+          +'--ez:'+EZ[(Math.random()*EZ.length)|0]+';'
           +'--pc:'+tween(run?(x1-sc)/run:1)+';'
           /* The colour it ARRIVES in. Without this the droplet kept its
              spawn-time tween colour all the way onto the destination pill and
