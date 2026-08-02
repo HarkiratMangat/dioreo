@@ -686,8 +686,16 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
-.top .ghb{margin-left:auto}
-h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:.9;
+.top .ghb{margin-left:auto}/* ⚠️ -.038em, not -.05em. The face DOES have ligatures — the fi in "fine" is a
+   real one and is correct typography — but at -.05em on a ~66px display size the
+   tracking was pulling unrelated pairs into contact too: the comma sat on the t of
+   "print", and the n of "plain" touched the s of "sight". That collision is what
+   made the ligature look like a rendering fault rather than a ligature. Easing the
+   tracking separates the pairs and leaves the ligature alone.
+   To turn ligatures off instead, add font-variant-ligatures:none here — but that
+   is a taste call, not a defect. */
+
+h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
   max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}

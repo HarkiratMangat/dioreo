@@ -392,6 +392,17 @@ file, and this section all reference it; renaming it is a separate change that h
   current tab's label and its pill were the same colour, and every partial-coverage frame mixed toward
   the pill's own hue. It is `var(--ink)` now: dark on the pill, bright off it, nothing in between that
   can vanish. Crossover band tightened to 0.30/0.58 so the mid-mix lasts ~6 frames, not half the move.
+- ⚠️ **The desktop pill is ASSEMBLED on page load, and that is not a second animation system.**
+  `birth()` is just a move whose source has no width: set `srcX = dstX` and `srcW = 0` and every line
+  of `paint()` already does the right thing — the tail is skipped, the neck collapses, and the head
+  grows from the destination's own centre through the same spring. It therefore shares the goo ramp,
+  the anisotropic dilation compensation, the label's coverage colour and the settle, and cannot drift
+  from them. Only the droplets differ: with nothing to tear off, they start on a wide **ring** around
+  the pill's centre and fall inward, which is the mobile choreography. **It plays once, on load, and
+  only for the group that owns the current page** — a group you are not in has no pill at rest, so a
+  burst there would announce an indicator about to vanish. Snapped under `prefers-reduced-motion` and
+  on coarse pointers. Measured: 14 droplets, width 0 → 88 → settles 85, `morph` on at frame 0 and off
+  at the end, the other group at 0 droplets, nothing returning after the sweep.
 - ⚠️ **`sectionise()` wraps each top-level `<h2>` and its clauses in a `<section class="dsec">`, and
   that is what makes the sticky section headings possible.** What bounds a sticky element is its
   CONTAINING BLOCK; `parseBlocks()` emits headings as flat siblings, so without the wrappers they all

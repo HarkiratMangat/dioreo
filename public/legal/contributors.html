@@ -2233,6 +2233,101 @@ html{scroll-behavior:smooth}
       }, max+140);
     }
 
+    /* ── the pill's ARRIVAL, played once, on page load ──────────────────────
+       Harkirat's ask: the desktop pill should be ASSEMBLED out of converging
+       droplets when a page loads, the way the mobile indicator already is, and
+       then behave normally — the hover morph — for the rest of the visit.
+
+       ⚠️ It is not a second animation system. A birth is just a move whose SOURCE
+       has no width: set srcX = dstX and srcW = 0 and every line of paint() already
+       does the right thing — the tail is skipped (its width is zero), the neck
+       spans nothing (l and r collapse to the same x), and the head grows from the
+       destination's own centre through the same spring. So this shares the goo
+       ramp, the dilation compensation, the label's coverage colour and the settle,
+       and cannot drift away from them.
+
+       What differs is only where the droplets come FROM. In a move they are torn
+       off a departing pill and carried along the run; here there is nothing to
+       tear, so they start on a wide ring around the pill's centre and fall inward
+       — which is the mobile choreography, and reads as the shape being assembled
+       rather than delivered.
+
+       ⚠️ ONLY the group that owns the current page. A group you are not in has no
+       pill at rest, so there is nothing to create and a burst of droplets would
+       announce an indicator that is about to vanish. */
+    function sprayBirth(){
+      if(!ink) return;
+      clearTimeout(sweep);
+      var n=14, h=H(), max=0;
+      var EZ=['cubic-bezier(.32,.72,.36,1)','cubic-bezier(.18,.86,.32,1)',
+              'cubic-bezier(.45,.55,.25,1)','cubic-bezier(.25,.9,.45,.98)'];
+      var dc=dstX+dstW/2;
+      /* The ring. Wide enough that the droplets are clearly separate objects
+         before they converge — inside about 40px the crush fuses them into the
+         forming pill immediately and the whole thing reads as a fade-in. Scaled
+         off the pill's own width so it stays proportionate on a tightened bar. */
+      var R0=Math.max(58,dstW*1.25), R1=Math.max(74,dstW*1.7);
+      for(var i=0;i<n;i++){
+        var el=document.createElement('i');
+        el.className='pt';
+        var a=(i/n)*Math.PI*2+(Math.random()-0.5)*(Math.PI*2/n)*1.9;
+        var rr=R0+Math.random()*(R1-R0);
+        /* ⚠️ THE VERTICAL BOUND IS THE SAME ONE THE MOVE OBEYS. The bar is 54px,
+           so the pill's half-height is 27; a droplet is at most 11px tall and the
+           blur reaches ~7px, leaving 14.5px of usable throw. A ring is a circle in
+           principle and a very flat ellipse here on purpose — the scatter that
+           reads as "coming together" has to be HORIZONTAL, because vertical space
+           does not exist. */
+        var ry=h*0.42;
+        var x0=dc+Math.cos(a)*rr*1.18, y0=Math.sin(a)*ry*1.1;
+        var x1=dc+Math.cos(a)*rr,      y1=Math.sin(a)*ry;
+        var x2=dc+Math.cos(a)*(4+Math.random()*10);
+        var y2=Math.sin(a)*(0.4+Math.random()*3.1);
+        var del=Math.round(Math.random()*DUR*0.16);
+        var dur=Math.round(Math.max(DUR*0.34,
+                  Math.min(DUR*(0.46+Math.random()*0.42), DUR*0.90-del)));
+        if(dur+del>max) max=dur+del;
+        var rot=(Math.random()-0.5)*2; rot=(rot>0?rot+0.35:rot-0.35)*26;
+        var PERP=9;
+        var reach=Math.max(Math.abs(x1),Math.abs(x2),1);
+        var cap=Math.asin(Math.min(1,PERP/reach))*180/Math.PI/1.2;
+        rot=Math.max(-cap,Math.min(cap,rot));
+        var ph=5+Math.random()*6;
+        var minW = ph<5.5 ? 14 : ph<6.5 ? 10 : 8;
+        var pw=Math.min(24, Math.max(minW, ph*(1+Math.random()*1.9)));
+        var r4=function(){ return (38+Math.random()*24).toFixed(0)+'%'; };
+        var br=r4()+' '+r4()+' '+r4()+' '+r4()+' / '+r4()+' '+r4()+' '+r4()+' '+r4();
+        /* One colour throughout: there is no gradient to tween across, because
+           there is no pill being left behind. */
+        var c=rgbOf(cTo);
+        el.style.cssText='--w:'+pw.toFixed(1)+'px;--ph:'+ph.toFixed(1)+'px;--br:'+br+';'
+          +'--x0:'+x0.toFixed(1)+'px;--y0:'+y0.toFixed(1)+'px;'
+          +'--x1:'+x1.toFixed(1)+'px;--y1:'+y1.toFixed(1)+'px;'
+          +'--x2:'+x2.toFixed(1)+'px;--y2:'+y2.toFixed(1)+'px;'
+          +'--x3:'+dc.toFixed(1)+'px;'
+          +'--rot:'+rot.toFixed(0)+'deg;'
+          +'--t:'+dur+'ms;--d:'+del+'ms;'
+          +'--ez:'+EZ[(Math.random()*EZ.length)|0]+';'
+          +'--pc:'+c+';--pc2:'+c;
+        ink.appendChild(el);
+      }
+      sweep=setTimeout(function(){
+        [].slice.call(ink.querySelectorAll('.pt')).forEach(function(n){ n.remove(); });
+      }, max+140);
+    }
+
+    function birth(){
+      var b=box(home);
+      idx=home;
+      srcX=dstX=b[0]; srcW=0; dstW=b[1];
+      cFrom=cTo=cols[home];
+      p=0; t0=performance.now();
+      seg.classList.add('morph');
+      lit(home,DUR*0.55);
+      sprayBirth();
+      if(!raf) raf=requestAnimationFrame(step);
+    }
+
     function aim(i,snap){
       var b=box(i);
       if(snap||still){
@@ -2327,8 +2422,20 @@ html{scroll-behavior:smooth}
     });
     seg.addEventListener('mouseleave',function(){ if(fine.matches) rest(); });
 
-    /* First paint snaps: an animation from zero width would read as a glitch. */
-    aim(home===null?0:home,true);
+    /* ⚠️ THE FIRST PAINT IS THE ONE PLACE AN ANIMATION FROM ZERO WIDTH IS RIGHT.
+       It used to snap, on the reasoning that growing a pill out of nothing reads
+       as a glitch — true when it happens mid-visit, for no reason the reader can
+       see. On ARRIVAL it is the opposite: the page has just been replaced, so
+       every element is new, and the indicator assembling itself is the one moment
+       that explains what it is. It plays once and never again; hovering from then
+       on is the ordinary morph.
+       Snapped still for a group that owns no page (nothing to create), and under
+       prefers-reduced-motion. The still flag already covers coarse pointers. */
+    if(home!==null && !still && !matchMedia('(prefers-reduced-motion:reduce)').matches){
+      birth();
+    } else {
+      aim(home===null?0:home,true);
+    }
     addEventListener('resize',function(){ padMeasure(); aim(idx,true); });
   });
 
