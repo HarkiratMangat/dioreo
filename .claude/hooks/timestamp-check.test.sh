@@ -53,6 +53,11 @@ a "future stamp in BACKTICKS denied" pre "deny:"            yes "Shipped \`$FUTS
 a "past time not denied"            pre "deny:"             no  "Measured $PASTSTAMP $LOCALTZ during the run."
 a "bare date never denied"          pre "deny:"             no  "Corrected on $TODAY after review."
 a "TS-EXAMPLE line is exempt"       pre "deny:"             no  "Illustration only: $TOMORROWSTAMP $LOCALTZ (TS-EXAMPLE)."
+# A REAL scheduled deadline carries a clock time on purpose — the window closes at an hour, not on a
+# day — so "write it without a time" is not available. Added after this gate refused an edit that
+# merely touched the line holding the MCP observation-window close-out.
+a "TS-DEADLINE line is exempt"      pre "deny:"             no  "CLOSE OUT the window: $TOMORROWSTAMP $LOCALTZ (TS-DEADLINE)."
+a "an UNMARKED future deadline still denies" pre "deny:"     yes "CLOSE OUT the window: $TOMORROWSTAMP $LOCALTZ."
 a "undated content not denied"      pre "deny:"             no  "Ordinary prose with no dates at all."
 a "a future DATE alone is allowed"  pre "deny:"             no  "Deadline: ${TOMORROWSTAMP%% *} — no clock time, deliberately."
 

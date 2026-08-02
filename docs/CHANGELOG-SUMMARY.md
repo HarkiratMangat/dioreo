@@ -26,6 +26,12 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.50.1 — August 2, 2026
+- **Nothing changed in the bot.** One of the new safety checks was refusing a legitimate edit — it
+  treated a genuine future deadline as an impossible date. It now understands the difference, and
+  two open questions that had only ever been raised in conversation are written down properly.
+
+
 ## v2.50.0 — August 2, 2026
 - **Nothing changed in the bot.** A maintenance release about the project's own safety checks. It
   turned out the tests written to prove those checks work were never actually being run by anything —

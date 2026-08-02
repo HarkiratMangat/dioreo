@@ -181,7 +181,40 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.50.0 — 2026-08-02 17:14 EDT (#68) — The tests were fine. Nothing was running them.
+## v2.50.1 — 2026-08-02 18:22 EDT (#69) — A gate that refused a real deadline, and two items that were only ever said out loud
+
+**`timestamp-check.sh pre` denied a correct edit.** Its deny message tells you
+that if you mean a future deadline, write the date with no clock time — and that
+advice is wrong for scheduled events. `docs/db-deferred-list.md` carries the MCP
+observation-window close-out, where the hour **is** the content: the window
+closes at a time, not on a day. Merely editing *near* that line was refused.
+
+New per-line **`TS-DEADLINE`** escape, kept separate from `TS-EXAMPLE` on
+purpose: they mean different things, and someone grepping `rg TS-EXAMPLE` to
+audit for hidden fabrications should not have to wade through scheduled
+deadlines. An **unmarked** future deadline still denies — a test pins that pair,
+because an escape that is easy to reach for stops being an escape.
+
+**And two things this session had only ever said in chat are now filed** — the
+`Stop` gate caught that, correctly:
+
+- The **Contributing design fork** (constellation · gradient bands · hybrid) was
+  asked and dismissed, so it stayed nowhere. The deferred entry it belongs to was
+  also carrying three *superseded* questions from the abandoned Interchange/Plate
+  mockup; the reference research settled the first outright — Contributors'
+  emptiness is solved **structurally**, by cutting the roster into many small
+  named sections, not by resizing a plate.
+- **`fix/legal-site-nav-and-mobile-sheet` was still on `origin`** at `704994b` —
+  a handoff had asserted it deleted, but only the *local* ref was gone, and
+  `git branch -a` renders remote-only branches indistinguishably. It was
+  CLOSED-unmerged, so the "a merged branch must never outlive its PR" rule is the
+  *opposite* case: it was the only copy of 19 commits. **Proven superseded before
+  deleting** — every line the branch added relative to merge-base `a4b17d6` was
+  searched for in `main`, and all were present except `Effective date: 31 July
+  2026` in TERMS and PRIVACY, where `main` reads **1 August 2026**. Superseded,
+  not lost. Branch deleted; remote heads are now `main` and `v3-pre-release`.
+
+## v2.50.0 — 2026-08-02 17:14 EDT (#68 · `7b9e3c4`) — The tests were fine. Nothing was running them.
 
 Harkirat, after three gates failed inside the first minutes of a session he had
 spent hours building them in: *"i literally spent hours last session working on
