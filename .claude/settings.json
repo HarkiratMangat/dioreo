@@ -37,6 +37,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/mcp-layer-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else printf 'MCP LAYER CHECK DID NOT RUN -- %s is missing or unreadable. The MCP routing rules (linksee recall-by-query, the v0.11.x removed tools, search_graph before rg, ctx_execute for processed output) were NOT injected this session, and linksee entity fragmentation was NOT measured. These rules exist as a hook precisely because prose failed to carry them.' \"$S\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}}'; fi",
+            "timeout": 8
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "cd \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { git fetch --prune --quiet 2>/dev/null; gone=$(git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads | grep '\\[gone\\]' | cut -d' ' -f1); n=$(printf '%s' \"$gone\" | grep -c .); if [ \"$n\" -gt 0 ]; then printf 'STALE-BRANCH CHECK: %s local branch(es) whose remote is already deleted (GitHub auto-deletes on merge) are sitting unpruned:\\n%s\\nThey rot because a plain git fetch does NOT prune remote-tracking refs, so git branch -a keeps listing merged work as if it were live. Prune now: confirm each PR is MERGED (gh pr list --head <branch> --state all --json number,state), then git branch -D <branch>; git fetch --prune. A merged branch should never outlive its PR -- see docs/README.md chore checklist step 8.' \"$n\" \"$gone\"; fi; } | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
             "timeout": 15
           }
