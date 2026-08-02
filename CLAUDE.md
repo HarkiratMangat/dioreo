@@ -139,13 +139,16 @@ separate rules and only the first is absolute:
      2026-07-24 → 2026-07-27, the era of the `chore(release): finalize` two-commit pattern that was
      retired 2026-07-27 21:27 EDT. Then **six days with none at all** — and then `ebbf196`
      (2026-08-02 01:10 EDT), which was a mistake and broke that clean run.
-  2. **A version is minted for a RELEASE, not for every merge.** Measured by TAGS, which is the
-     authoritative record: 31 of those 85 commits carry no tag, almost all `docs:` work, and they are
-     entirely correct. ⚠️ **Do not measure this with `package.json`** — it went unbumped for a long
-     stretch (the audit's own `TAG_RULE_FROM` exemption records that it was not bumped per release
-     before v2.33.0), so counting its edits answers a different question and gives a wrong number.
-     That mistake was made and corrected in this very passage.
-So an unversioned commit on `main` is normal; an *unreviewed* one is not.
+  2. **EVERY merge to `main` gets a version — the judgement is the SIZE, never whether.**
+     ⚠️ **CORRECTED 2026-08-02 16:02 EDT**; this used to say *"a version is minted for a RELEASE, not
+     for every merge"* and cited 31 untagged commits as correct — describing a superseded era as
+     current. Measured against tags: 29 of 85 commits carry no tag but **the newest is 2026-07-28**,
+     only 3 of those are the retired `chore(release): finalize` pattern, and the last **14
+     consecutive** commits are tagged *including pure `docs:` merges* (`v2.43.2`, `v2.42.1`, `v2.41.4`).
+     ⚠️ **Never measure this with `package.json`** — it went unbumped before v2.33.0 (see the audit's
+     `TAG_RULE_FROM` exemption), so counting its edits answers a different question.
+So an unreviewed commit on `main` is the thing that must never happen; an unversioned one is now
+equally wrong.
 **`main` is branch-protected as of 2026-08-02 02:10 EDT** — pull request required, force pushes and
 deletions blocked, linear history required, **0 required approvals** (a solo maintainer cannot approve
 their own PR, and requiring one would deadlock every merge). `enforce_admins` is deliberately OFF so

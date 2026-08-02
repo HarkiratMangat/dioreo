@@ -65,6 +65,15 @@ assert "'remains unresolved' blocks" block
 mk 'The hook fires on "still outstanding" phrasing, which is why I filed it in the deferred list.'
 assert "quoted phrase + filed language passes" pass
 
+# 5b. Real phrasings that mean ALREADY FILED — the gap that made it misfire on a true summary.
+mk "Deferred with a full note; filed with direction in docs/db-deferred-list.md."
+assert "'filed with direction' passes"      pass
+mk "Both are still outstanding — see docs/db-deferred-list.md:202 for the detail."
+assert "naming the list file passes"        pass
+# 5c. …but an INTENTION must still block. This is the line the escape must not cross.
+mk "That one is still outstanding; I'll file it later."
+assert "'I'll file it later' still BLOCKS"  block
+
 # 6. An ordinary completion message must never trip it.
 mk "Merged and tagged v2.48.0. Memory index clean, docs:audit exit 0."
 assert "benign completion message passes" pass

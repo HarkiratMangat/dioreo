@@ -37,7 +37,11 @@ last=$(tail -n +"$ln" "$tp" | grep '"type":"assistant"' | tail -6 \
   | sed -E 's/"[^"]*"//g; s/`[^`]*`//g')
 
 # Already-filed language means the item HAS a home and I am merely reporting it. Not a violation.
-if printf '%s' "$last" | grep -qiE 'filed (as|in|under|it)|already filed|added (it )?to the (db-|meta-)?deferred|in the deferred list|see .{0,20}deferred'; then exit 0; fi
+# The escape must cover how already-filed status is ACTUALLY phrased, not how I imagined it. It fired
+# on a summary saying "filed with direction" and "deferred with a full note" — both unambiguously
+# already-filed, neither matched. Widened 2026-08-02 15:55 EDT, but deliberately NOT to bare "file
+# it" / "I'll file": those are intentions, and letting an intention pass is the whole failure.
+if printf '%s' "$last" | grep -qiE 'filed (as|in|under|it|with|to)|already filed|added (it )?to the (db-|meta-)?deferred|in the deferred list|see .{0,20}deferred|deferred with a|db-deferred-list|meta-deferred-list'; then exit 0; fi
 
 TELL='still (outstanding|open|pending|unresolved|untouched|not done|left)|remains? (outstanding|open|unresolved|undone)|^[[:space:]]*outstanding:|not (yet )?(filed|recorded|tracked|logged)|deliberately (left|leaving|skipped)|(left|leaving) (it )?(untouched|undone|unaddressed|for (a )?(later|future))|for a (future|later|dedicated) session|next session can'
 
