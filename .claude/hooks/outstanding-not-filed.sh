@@ -2,7 +2,7 @@
 # outstanding-not-filed.sh — Stop hook. Blocks when I NAME an outstanding item and never FILE it.
 #
 # WHY THIS EXISTS
-# 2026-08-02 19:05 EDT: I closed FIVE consecutive messages with "still outstanding: the linksee distill
+# 2026-08-02 14:59 EDT: I closed FIVE consecutive messages with "still outstanding: the linksee distill
 # queue" and never wrote it into any list. Harkirat had to ask. One `rg` returned zero hits across
 # db-deferred-list.md, meta-deferred-list.md and the notes file.
 #

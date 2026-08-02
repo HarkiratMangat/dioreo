@@ -141,10 +141,10 @@ prior detection layer still stands beside it — the `gh pr merge` hooks (change
 check), the `git tag` invariant gate, the Edit/Write TIMESTAMP check and the `Stop` completion-claim
 hooks all run without this script and catch different failures.
 
-## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 17:45 EDT)
+## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 14:59 EDT)
 Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`;
 writes nothing and touches no project state. It measures the 7-day MCP observation window opened
-2026-08-02 17:00 EDT (protocol + pre-registered baseline:
+2026-08-02 14:43 EDT (protocol + pre-registered baseline:
 `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`; close-out is a dated reminder
 in `docs/db-deferred-list.md`).
 

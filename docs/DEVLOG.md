@@ -101,7 +101,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
 - 2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means
 - 2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)
-- 2026-08-02 18:40 EDT — The session that kept catching its own bugs (v2.48.0)
+- 2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3586,7 +3586,7 @@ So the useful question when writing a guard is not "does this catch the case I a
 find out is to run the guard against the real event rather than the imagined one — which is only
 possible if you go and cause the event.
 
-## 2026-08-02 18:40 EDT — The session that kept catching its own bugs (v2.48.0)
+## 2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)
 
 The task was small: `MEMORY.md` had nearly outgrown a read limit, so give it a structure. The premise
 was wrong within twenty minutes — the "24.4KB hard read limit" does not reproduce, and a 33,530-byte

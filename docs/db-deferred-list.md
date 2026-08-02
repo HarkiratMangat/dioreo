@@ -93,7 +93,7 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 2026-07-25 21:43 EDT.*
 
 - **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design
-  (opened 2026-08-02 17:00 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
+  (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
   question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
   existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
   **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
@@ -200,7 +200,7 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ## 🗂️ Queued — worth its own dedicated session
 
 - **🧠 Distil the linksee auto-capture queue, and declare a North Star** `[P2 · S]`
-  (filed 2026-08-02 19:05 EDT). **19 auto-captured memories are still RAW USER UTTERANCES.**
+  (filed 2026-08-02 14:49 EDT). **19 auto-captured memories are still RAW USER UTTERANCES.**
   ⚠️ `dream()` reports `distill_total: 8` because it **serves a BATCH of up to 8 per call** — the true
   backlog is `SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%'` = **19**. I first
   "corrected" the 19 down to 8 on the strength of one `dream()` call; the batch size is not the total,
@@ -589,7 +589,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 well-specified execution/polish, not novel design.*
 
 - **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
-  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 15:50 EDT). The *data* was repaired (see the resolved
+  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 14:43 EDT). The *data* was repaired (see the resolved
   list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the
   server gets `env: {}` in `~/.claude.json`, and there is no config file anywhere, so linksee falls
   back to guessing a project from a folder name. A session touching `~/Library/...` can still spawn a

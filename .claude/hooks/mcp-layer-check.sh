@@ -62,7 +62,7 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
 fi
 
 read -r -d '' RULES <<'EOF'
-MCP LAYER — the routing that was measured, not assumed (2026-08-02 16:05 EDT):
+MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
   · linksee RECALL BY query, NEVER entity_name — entity attribution is path-derived and
     entity-scoped recall under-returns SILENTLY. On WRITE always pass entity_name explicitly.
     Removed in v0.11.x: list_entities -> recall({}) · recall_file -> recall({path}) ·

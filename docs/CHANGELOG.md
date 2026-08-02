@@ -181,7 +181,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.48.0 — 2026-08-02 18:40 EDT (#64) — The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken
+## v2.48.0 — 2026-08-02 14:43 EDT (#64) — The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken
 
 **`MEMORY.md` is the only auto-loaded memory file**, so the index is a per-session
 tax charged **per FILE** — every entry is paid on every session, forever, while the

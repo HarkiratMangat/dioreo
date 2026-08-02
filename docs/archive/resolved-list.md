@@ -25,7 +25,7 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
-- **🧠 Linksee memory fragmentation — REPAIRED 2026-08-02 15:25 EDT (data migration, outside the repo).**
+- **🧠 Linksee memory fragmentation — REPAIRED 2026-08-02 14:43 EDT (data migration, outside the repo).**
   *Was filed the same session as `[P2 · M]` ⛓️ "blocked on tooling", which was **wrong** — the block was
   never tested. Disproving it took four tool calls.* Linksee had misfiled ~29% of this project's
   memories under fake path-derived entities: `Application` (66, the **entire licensing session** that

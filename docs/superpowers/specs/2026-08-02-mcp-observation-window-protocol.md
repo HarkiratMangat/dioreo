@@ -1,6 +1,6 @@
 # 7-day MCP observation window — protocol
 
-**Status:** ▶️ RUNNING. Opened 2026-08-02 17:00 EDT. **Closes 2026-08-09 17:00 EDT.**
+**Status:** ▶️ RUNNING. Opened 2026-08-02 14:43 EDT. **Closes 2026-08-09 17:00 EDT.**
 **Analysis:** a dedicated session after close. Do not analyse early and do not extend silently.
 **Instrument:** `scripts/mcp-observation-metrics.mjs` — the same script for both windows.
 
@@ -8,7 +8,7 @@
 
 ## 1. The question
 
-Harkirat, 2026-08-02 16:45 EDT: *"is the lack of usage due to the rule or due to the actual cost of
+Harkirat, 2026-08-02 14:43 EDT: *"is the lack of usage due to the rule or due to the actual cost of
 using the tool?"*
 
 `sequential-thinking` has been invoked **twice, ever**. That number is currently **uninterpretable**,
@@ -59,16 +59,16 @@ That failure has a name in this repo: the verifier halo ([[feedback_verify_befor
 
 ### Baseline — control window 2026-07-24 → 2026-08-02
 
-> **⚠️ INSTRUMENT v1 → v2, re-baselined 2026-08-02 17:30 EDT — before any treatment data existed.**
+> **⚠️ INSTRUMENT v1 → v2, re-baselined 2026-08-02 14:43 EDT — before any treatment data existed.**
 > v1 measured turns and tool counts only, which is **half the cost model**: the standing formula is
 > *cost ≈ turns × context*, and v1 never measured context. It also ignored the **model/effort mix**,
 > a real confounder — the corpus spans `sonnet-5`, `opus-5`, `opus-4-8` and `haiku-4-5` across three
 > effort levels, so a treatment week skewed toward Opus would move every number on its own. v1 also
-> silently scanned **all projects**, not just this one. Caught by Harkirat, 2026-08-02 17:20 EDT.
+> silently scanned **all projects**, not just this one. Caught by Harkirat, 2026-08-02 14:43 EDT.
 > Re-baselining now is legitimate precisely because zero treatment data exists yet; the same edit on
 > day 3 would have voided the experiment.
 
-> **⚠️ SECOND instrument correction, 2026-08-02 17:50 EDT — bucketing by session START, not mtime.**
+> **⚠️ SECOND instrument correction, 2026-08-02 14:43 EDT — bucketing by session START, not mtime.**
 > Sessions were being attributed by *last-modified*, so any session that began before a window and ran
 > into it landed on the wrong side. **Not hypothetical: the session that built this instrument started
 > 12:53 EDT — over four hours before the window opened at 17:00 — and by mtime would have joined the
@@ -96,10 +96,10 @@ memoryWritesPerSession 0.49
 
 ### ⏱️ Relaxation period ≠ measured window
 
-- **Relaxation is LIVE from 2026-08-02 17:00 EDT** through 2026-08-09 17:00 EDT — exactly 7×24h.
+- **Relaxation is LIVE from 2026-08-02 14:43 EDT** through 2026-08-09 17:00 EDT — exactly 7×24h.
 - **The MEASURED window is 2026-08-02 → 2026-08-10 (exclusive), and 08-02 COUNTS.**
 
-**Harkirat's call, 2026-08-02 18:20 EDT:** start measuring today, from the next session opened, with
+**Harkirat's call, 2026-08-02 14:43 EDT:** start measuring today, from the next session opened, with
 the already-run sessions filtered out. Starting on 08-03 instead would have discarded a full day of
 the relaxation period — and the first day is where a novelty spike, if there is one, would show.
 
@@ -115,7 +115,7 @@ and **2 sessions / 922 turns** under `--exclude none`.
 
 ### ⚠️ DECLARED IN ADVANCE: the treatment period is expected to be DESIGN-heavy
 
-Harkirat stated 2026-08-02 18:10 EDT that he resumes **website work** next session, and that it *"could
+Harkirat stated 2026-08-02 14:43 EDT that he resumes **website work** next session, and that it *"could
 very easily trigger the tool."* He is right, and that is exactly why this has to be written down now
 rather than discovered in the analysis.
 
@@ -144,7 +144,7 @@ costing >10 turns). So:
 If the profiles differ sharply, the cost metrics are describing two different kinds of week and only
 the trigger-rate question survives. Say so plainly rather than reporting a clean-looking delta.
 
-> **⚠️ `estCostUSD` is NOT money.** Calibrated 2026-08-02 17:40 EDT against the only real figure on
+> **⚠️ `estCostUSD` is NOT money.** Calibrated 2026-08-02 14:43 EDT against the only real figure on
 > record, recomputed **from its transcript** rather than a remembered summary — session `38972d5e`:
 > **404 `claude-sonnet-5` turns, 87.4M cache reads, 430k output → $44.02 at list vs $17.10 billed =
 > list is 2.57× actual.**

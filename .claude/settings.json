@@ -61,6 +61,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"[clock] Real current time: %s. Use THIS for any timestamp you write \u2014 never estimate elapsed time from how long the session feels. On 2026-08-02 a single date call at 12:57 followed by guessing produced 30 fabricated stamps drifting 4.5h into the future, in a released CHANGELOG and a git tag.\"}}' \"$(date '+%Y-%m-%d %H:%M %Z')\"",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -154,12 +163,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "today=$(date +%Y-%m-%d); content=$(jq -r '.tool_input.new_string // .tool_input.content // empty'); hits=$(printf '%s' \"$content\" | grep -F \"$today\"); if [ -n \"$hits\" ]; then bad=$(printf '%s' \"$hits\" | grep -vE \"$today [0-9]{2}:[0-9]{2}\"); if [ -n \"$bad\" ]; then jq -n --arg d \"$today\" '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:(\"TIMESTAMP CHECK: this edit wrote the date \" + $d + \" without an HH:MM TZ time next to it. Working-agreement checklist rule 10 (feedback_docs_at_push_time): every date you write in docs, memory, DEVLOG, changelogs, notes marks, or code comments needs YYYY-MM-DD HH:MM TZ. Add the time now, or -- only if it is a deliberate bare date such as a historical reference or the player-facing summary -- confirm that before moving on.\")}}'; fi; fi",
-            "timeout": 10
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/timestamp-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:\"TIMESTAMP CHECK DID NOT RUN \u2014 .claude/hooks/timestamp-check.sh is unreadable, so nothing is checking dates OR catching impossible (future) timestamps. On 2026-08-02 that failure mode put 30 fabricated stamps into records. Verify any timestamp you write by hand.\"}}'; fi",
+            "timeout": 8
           },
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-hardwrap-check.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "fp=$(jq -r '.tool_input.file_path // empty'); case \"$fp\" in *.sh) ;; *) exit 0;; esac; [ -r \"$fp\" ] || exit 0; command -v shellcheck >/dev/null 2>&1 || exit 0; out=$(shellcheck -f gcc -S warning \"$fp\" 2>/dev/null | head -12); [ -z \"$out\" ] && exit 0; printf 'SHELLCHECK on %s\\n%s\\n\\nThese are warning-level or higher. SC2086 (unquoted expansion) and SC2044 (for-over-find) are the two that actually bit on 2026-08-02: an unquoted loop over a path containing a space (/Applications/Claude Code/) silently updated ZERO files while reporting success. shellcheck was installed the whole time and simply never run. Fix or state why it is safe.' \"$fp\" \"$out\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:.}}'",
+            "timeout": 10
           }
         ]
       }
