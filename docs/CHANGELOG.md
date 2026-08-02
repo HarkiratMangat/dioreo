@@ -181,7 +181,74 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.47.1 — 2026-08-02 02:20 EDT (#63) — The site publishes itself, and main stops accepting direct pushes
+## v2.48.0 — 2026-08-02 18:40 EDT (#64) — The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken
+
+**`MEMORY.md` is the only auto-loaded memory file**, so the index is a per-session
+tax charged **per FILE** — every entry is paid on every session, forever, while the
+memory bodies are only paid when something reads them. It had been emergency-compacted
+23.1KB → 12.9KB by shortening lines, which is a lever you can only pull once.
+
+**The premise turned out to be wrong.** The "24.4KB hard read limit" the compaction was
+racing does not reproduce: a 33,530-byte memory file reads in full, no truncation. What
+IS true and matters more — verified by checking every settings file — is that **nothing
+in this repo loads `MEMORY.md`; the platform does**, which also retires a standing
+"native auto-load is UNVERIFIED" caveat that had sat in `CLAUDE.md` for days.
+
+- **Archive tier** — `memory/archive/` holds retired memories intact with a `RETIRED`
+  header, struck from the index. Both hooks that recurse into the memory directory were
+  taught about it *and dry-run before a single file moved*: `records-close-check.sh`
+  needed `-maxdepth 1` (an archived file's mtime would otherwise satisfy the "memory was
+  written" gate), and `stale-reference-sweep.sh` now excludes it, because an outdated
+  reference inside a frozen record is correct rather than drift.
+- **Eight memories consolidated** into three canonical entries.
+  `feedback_verify_before_claiming` is new and resolves a filename several memories had
+  been linking to *before it existed*.
+- **`memory-index-check.sh`** runs at SessionStart against a 16,000B budget, a
+  three-partition conservation rule, and a total-count floor that catches a memory
+  **deleted** rather than archived — unrecoverable otherwise, because the store lives in
+  `~/.claude/` and has no version control.
+- **The rule that actually holds the line:** a new lesson becomes a **case inside an
+  existing memory** unless it has a different trigger, supersedes, or is independently
+  actionable. Applied honestly it *shrank* the merge list — three memories earned their
+  files and were correctly left alone, against the design's own candidate list.
+
+**The MCP layer underneath was measurably broken**, and none of it was visible from
+outside — 438 memories and 11k captures all looked healthy.
+- **~29% of this project's linksee memories were filed under fake path-derived
+  entities.** `Application` held the *entire licensing session* that produced `LICENSE`,
+  `NOTICE`, `TERMS.md` and `PRIVACY.md`; `Containers` held an edit to
+  `.claude/settings.local.json`. Entity-scoped recall missed all of them **silently**,
+  with no error. **Repaired: 123 memories re-homed, 696 rows before and after,
+  `integrity_check` ok**, and the real sibling project `dior` deliberately untouched.
+- **The global `usage-guard.mjs` was injecting a stale "codebase-index is PYTHON-ONLY"
+  claim into every large Read** — routing every session away from a graph tool that does
+  index this JS repo (2,260 nodes on live HEAD). Measurable cost: `search_graph` used
+  **once in 35 sessions**. A gate repeating a stale capability finding is worse than no
+  gate.
+- **linksee v0.11.x removed four tools its own bundled SKILL.md still teaches**
+  (`list_entities`, `recall_file`, `update_memory`, `consolidate`). Verified against the
+  installed package source — not an install, Claude Desktop or Claude Code problem, an
+  upstream documentation bug. The local skill was corrected and its Japanese stripped,
+  since the frontmatter loads into every session.
+- **`mcp-layer-check.sh`** now injects the measured routing every session and reports
+  live fragmentation. Every one of the failures above was already "documented somewhere";
+  prose has never carried a rule on this repo, and this is the standing answer to that.
+
+**A 7-day measurement window opened on `sequential-thinking`.** It has been invoked twice
+ever — but it was installed by the *same* 2026-07-24 integration that restricted it
+(**310 pre-rule transcripts, present in 0**), so that number measures the rule, not the
+tool, and any inference from it is circular. It is unrestricted until 2026-08-09 with
+pre-registered metrics, a scripted instrument, an auto-expiring suspension, and the
+design-heavy task mix declared as a known confound *in advance*.
+
+**Corrections this release makes to its own claims**, kept rather than quietly fixed: a
+"blocked on tooling" deferral that four tool calls disproved · a cost calibration of
+7.7× that was Opus rates applied to a Sonnet session with output tokens ignored (actual
+2.57×, and model-specific) · session bucketing by mtime that would have dropped 919
+pre-relaxation turns into the treatment set · two off-by-one boundary bugs · and a
+vacuous test that grepped a string matching the healthy state.
+
+## v2.47.1 — 2026-08-02 02:20 EDT (#63 · `f778195`) — The site publishes itself, and main stops accepting direct pushes
 
 **The live site was stale and nothing noticed.** `dioreo.is-not-a.dev` was still
 serving the previous headline *after* v2.47.0 had merged and been tagged. `public/`
