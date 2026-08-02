@@ -190,14 +190,29 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
   text-transform:uppercase;font-weight:700;
   color:#141021;background:var(--accent);border:1px solid var(--accent);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),
+  /* ⚠️ AN INSET TOP HIGHLIGHT ON A PILL DRAWS AN ARC, NOT AN EDGE. inset 0 1px 0
+     paints a 1px band across the top of the BORDER BOX, and where the box curves
+     away the band follows it — so at 999px radius it read as a bright line drawn
+     around the top half of the button and stopping dead at each side. Harkirat
+     asked whether it was meant to be there; it was meant to be a material rim and
+     it was not one. A spread ring is even all the way round, which is what a rim
+     actually looks like. */
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
   transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}/* Taller, heavier and wider than the repo capsule beside it. These two were the
    same 32px pill, which gave the primary action on the site exactly as much
-   presence as a link to the source. */
+   presence as a link to the source. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
+   same number as the right. The pill is 37px tall, so its cap radius is 18.5px;
+   the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
+   inside a cap only when the gap equals the difference — 7.5px, which is .47rem.
+   At the old symmetric .95rem the disc was 15.2px from the left edge and 7.5px
+   from the top and bottom, so the crescent of space around it was twice as thick
+   on one axis as the other: the "different amounts of curve". The right side
+   keeps more room because it ends in a text run's terminal, not a circle. */
 
-.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.95rem}
-.ins .ins-t{font-size:.7rem}
+
+.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.47rem .85rem}
+.ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
   background:color-mix(in srgb,var(--desk) 20%,transparent);
@@ -224,10 +239,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}.ins:focus-visible::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}@media (hover:hover) and (pointer:fine){
 .ins:hover::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}
 @keyframes swipe{to{left:118%}}.ins:focus-visible{transform:translateY(-1px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.44),
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
     0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}@media (hover:hover) and (pointer:fine){
 .ins:hover{transform:translateY(-1px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.44),
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
     0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}}.ins:focus-visible .ins-gl{opacity:1}@media (hover:hover) and (pointer:fine){
 .ins:hover .ins-gl{opacity:1}}.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}@media (hover:hover) and (pointer:fine){
 .ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:.8rem;
@@ -469,14 +484,36 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
   color:var(--ink3);list-style:none;transition:color .2s}
 .rev summary::-webkit-details-marker{display:none}@media (hover:hover) and (pointer:fine){
-.rev summary:hover{color:var(--ink)}}
-.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
-  border:1px solid var(--rule2);border-radius:3px}
-.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
-  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
-.rev[open] .rv-i::after{transform:translateX(101%)}@media (hover:hover) and (pointer:fine){
-.rev summary:hover .rv-i::after{transform:translateX(48%)}}@media (hover:hover) and (pointer:fine){
-.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}}
+.rev summary:hover{color:var(--ink)}}/* ⚠️ AN ENVELOPE, NOT A SWITCH. This was a 24x10 track with a sliding fill, which
+   is the shape of a toggle — and a toggle promises a setting you can leave on.
+   This control reveals an address; it is a disclosure. So the mark is the thing
+   being disclosed, and it OPENS: the flap is flipped about its own hinge (the top
+   edge of the envelope), which is one scaleY and needs no path morph.
+   The word carries the state as well as the icon, because "Reveal" going accent is
+   the same signal the Discord handle beside it already uses — see .dh. */
+
+.rv-i{display:block;width:17px;height:13px;flex:0 0 17px;color:var(--ink3);
+  transition:color .24s ease}
+.rv-i svg{width:17px;height:13px;display:block;overflow:visible;fill:none;
+  stroke:currentColor;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
+.ev-f{transform-origin:8px 2.6px;
+  transition:transform .46s cubic-bezier(.34,1.08,.42,1)}
+.rev[open] .ev-f{transform:scaleY(-1)}
+.rv-q{color:var(--ink3);transition:color .2s ease}/* The chip treatment is deliberately the SAME one the Discord handle wears, so
+   the two contact routes read as two of a kind rather than as a name and a link. */
+
+.rv-a{border-radius:4px;padding:.12em .42em;font-weight:600;
+  color:var(--ink3);background:transparent;
+  transition:color .22s ease,background .22s ease}
+.rev[open] .rv-a{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.rev[open] .rv-i{color:var(--accent-t)}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-a{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-i{color:var(--accent-t)}}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-q{color:var(--ink2)}}
+.rev summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
+  border-radius:5px}
 .rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
   border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
   background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
@@ -551,16 +588,32 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    progress bar and the section rail, so the three can never disagree.
    The arrow is two chevrons in a 12px window: hovering slides the pair up so
    the second takes the first's place, and clicking fires the group off the top
-   and brings it back in from below. */
+   and brings it back in from below. *//* ⚠️ IT PARKS ON THE FOOTER RATHER THAN FLOATING OVER IT. A fixed control at a
+   fixed offset from the viewport bottom sits on top of whatever the page ends
+   with, and on a short window — Harkirat's Arc window, where the chrome eats the
+   viewport — that was the footer's own link row, with the button covering the
+   last two entries. Hiding it at the bottom is the usual answer and it is the
+   wrong one here: the bottom of the document is precisely where "back to top" is
+   worth most.
+   So --lift is written from the script each frame: zero until the footer's top
+   edge reaches the button, then exactly the overlap, so it rides up ahead of the
+   footer and never crosses it. It is a variable rather than a direct transform
+   write because .totop.on owns the transform — a script setting style.transform
+   would have fought the entry animation. */
 
-.totop{position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
+
+.totop{--lift:0px;
+  position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
   background:color-mix(in srgb,var(--paper) 90%,transparent);
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
-  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}
-.totop.on{opacity:1;transform:none;pointer-events:auto}
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
+   make the button lag the footer it is supposed to stay clear of. */
+
+.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+  transition:opacity .34s ease,border-color .3s ease}
 .totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
@@ -685,13 +738,38 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   text-decoration:none;color:inherit;border-radius:14px;background:var(--paper);
   border:1px solid var(--rule);
   transition:transform .38s cubic-bezier(.16,.84,.28,1),box-shadow .38s,border-color .38s}
-.inv-b{padding:1.35rem 1.4rem 1.3rem;min-width:0}
-.inv-s{position:relative;border-radius:0 13px 13px 0;
+.inv-b{position:relative;z-index:1;padding:1.35rem 1.4rem 1.3rem;min-width:0}/* ⚠️ THE GLOW IS AN ABSOLUTE ::before, NOT A grid ITEM. .inv is display:grid, so a
+   pseudo-element in normal flow would take a track of its own and shove the stub
+   off the card. Absolute positioning removes it from the grid entirely. It also
+   has to sit UNDER the text, which is why .inv-b is positioned: an unpositioned
+   block paints below a positioned sibling regardless of source order. */
+
+.inv::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  border-radius:14px;opacity:0;transition:opacity .38s ease;
+  background:radial-gradient(128% 96% at 16% 0%,
+    color-mix(in srgb,var(--ia) 15%,transparent),transparent 64%)}.inv:focus-visible::before{opacity:1}@media (hover:hover) and (pointer:fine){
+.inv:hover::before{opacity:1}}
+.inv-s{position:relative;z-index:1;border-radius:0 13px 13px 0;
   display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:center;
   padding:.9rem 0 .8rem;
-  border-left:2px dashed color-mix(in srgb,var(--ia) 40%,var(--rule));
   background:color-mix(in srgb,var(--ia) 6%,transparent);
-  transition:background .38s}/* ⚠️ The notches are MASKED OUT of the card, not painted over it. They used to be
+  transition:background .38s}/* ⚠️ THE PERFORATION IS A GRADIENT NOW, because a border-dashed cannot open.
+   It also cannot MOVE: the notches are punched at a fixed --nx by the card's
+   mask, so any transform that carried the dashed edge sideways separated the
+   line from the two holes it is supposed to run between — which is exactly what
+   translateX(3px) did, and Harkirat was right that it made no sense.
+   background-size sets the tile a repeating gradient repeats over, and the stops
+   inside are absolute px, so growing the tile from 10px to 15px keeps a 5px dash
+   and stretches the GAP to 10px. The dashes stay put and pull apart: the paper
+   giving way along the line, not the line sliding. Hard stops, no interpolation
+   range, so there is no grey fringe between dash and gap. */
+
+.inv-s::before{content:"";position:absolute;left:-2px;top:0;bottom:0;width:2px;
+  background-image:repeating-linear-gradient(180deg,
+    color-mix(in srgb,var(--ia) 40%,var(--rule)) 0 5px,transparent 5px 10px);
+  background-size:2px 10px;
+  transition:background-size .44s cubic-bezier(.34,1.06,.44,1)}.inv:focus-visible .inv-s::before{background-size:2px 15px}@media (hover:hover) and (pointer:fine){
+.inv:hover .inv-s::before{background-size:2px 15px}}/* ⚠️ The notches are MASKED OUT of the card, not painted over it. They used to be
    discs filled with --desk, which only matches the page where the page is a flat
    colour — and it is not: there is a radial glow behind these cards, so each notch
    read as a dark disc stuck to the edge rather than a hole bitten out of it.
@@ -717,11 +795,20 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}}/* The stub lifts and skews away from the body along the perforation, so the card
    reads as beginning to tear rather than simply rising. It stops well short of
    detaching — a ticket half-torn is an invitation; a ticket in two pieces is a
-   used one. */.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
-  transform:translateX(3px) rotate(.7deg)}@media (hover:hover) and (pointer:fine){
+   used one. *//* ⚠️ THE HINGE IS THE PERFORATION, so the transform must leave x=0 fixed. A
+   rotateY about -left center- does exactly that — every point on the left edge is
+   on the axis — so the stub swings toward the reader while the dashed line and
+   its two notches do not move by a pixel. The previous translateX(3px) rotate(.7deg)
+   failed on both counts: it slid the perforation away from the notches, and the
+   2D rotation tipped the arrow badge at the bottom of a ~300px card by nearly 2px
+   of drift on top of its own nudge, which is the "weirdly aligned" arrow.
+   It stops well short of detaching — a ticket half-torn is an invitation; a ticket
+   in two pieces is a used one. */.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
+  transform:perspective(560px) rotateY(-9deg)}@media (hover:hover) and (pointer:fine){
+
 
 .inv:hover .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
-  transform:translateX(3px) rotate(.7deg)}}
+  transform:perspective(560px) rotateY(-9deg)}}
 .inv-s{transform-origin:left center;
   transition:background .42s ease,transform .42s cubic-bezier(.34,1.1,.44,1)}
 @media (prefers-reduced-motion:reduce){.inv:focus-visible .inv-s{transform:none}@media (hover:hover) and (pointer:fine){
@@ -767,13 +854,18 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .inv .arw{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
   color:var(--ia-t);background:color-mix(in srgb,var(--ia) 14%,transparent);
   transition:background .3s}/* Drawn rather than typed. The arrow glyph came in at whatever weight the mono
-   face had, which was far too thin beside the display type it sits under. */
+   face had, which was far too thin beside the display type it sits under. *//* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE. The head is a 6.2px box turned 45deg,
+   so its tip reaches 6.2/sqrt(2) = 4.38px from its own centre, not 3.1 — at right:.5px
+   the point stuck 0.78px out of an 11px box that place-items:center was centring.
+   right must be at least 4.38-3.1 = 1.28 for the ink to stay inside; 12px and
+   1.3px puts the tip at 11.98 and the drawn arrow centred on the box it is in. */
 
-.inv .arw i{position:relative;display:block;width:11px;height:9px;
+
+.inv .arw i{position:relative;display:block;width:12px;height:9px;
   transition:transform .38s cubic-bezier(.34,1.1,.44,1)}
 .inv .arw i::before{content:"";position:absolute;left:0;top:3.6px;width:9.5px;height:1.9px;
   border-radius:1px;background:currentColor}
-.inv .arw i::after{content:"";position:absolute;right:.5px;top:1.4px;width:6.2px;height:6.2px;
+.inv .arw i::after{content:"";position:absolute;right:1.3px;top:1.4px;width:6.2px;height:6.2px;
   border-right:1.9px solid currentColor;border-top:1.9px solid currentColor;
   border-radius:0 1px 0 0;transform:rotate(45deg)}@media (hover:hover) and (pointer:fine){
 .inv:hover .arw{background:color-mix(in srgb,var(--ia) 26%,transparent)}}@media (hover:hover) and (pointer:fine){
@@ -890,7 +982,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <div class="foot">
     <p class="contact">Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
     <details class="rev">
-  <summary><span class="rv-i" aria-hidden="true"></span>Prefer email? Reveal address</summary>
+  <summary><span class="rv-i" aria-hidden="true"><svg viewBox="0 0 16 12"><rect class="ev-b" x=".9" y=".9" width="14.2" height="10.2" rx="2.2"/><path class="ev-f" d="M.9 2.6 8 7.7 15.1 2.6"/></svg></span><span class="rv-q">Prefer email?</span><span class="rv-a">Reveal</span></summary>
   <div class="rv-b">
     <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
     <span>The formal route. Named in the Terms and Privacy Policy for legal notices,
@@ -950,7 +1042,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
-  <p class="disc fine">Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+  <p class="disc fine">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
 </main>
 <script>
 (function(){

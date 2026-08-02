@@ -1230,13 +1230,35 @@ const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
  * A group you are not currently inside has data-at="-1": its indicator is hidden
  * until you point at it, so exactly one indicator is ever "yours".
  */
-const NAV_GROUPS = [PAGES, EXTRA_PAGES, CHRONICLE_PAGES];
+/* ⚠️ CHRONICLE_PAGES IS WITHDRAWN FROM THE NAV, not deleted — the same call that
+   took the record row off the landing page, finished. Leaving the row off the
+   home page while the tabs still advertised it was half a job: the reader was
+   invited into a section the page itself had stopped offering.
+   The three pages are still BUILT, still deployed and still reachable at
+   /changelog/ (and /changelog via _redirects); every gate — linkAudit,
+   crossRefAudit, PUBLISHED_TARGETS, contrastAudit — still sees them, so an
+   in-prose reference to them still resolves to a real link.
+   To restore: put CHRONICLE_PAGES back here, add 'Releases' back to the labels
+   below, restore it in pageFoot()'s endnav, and RE-MEASURE the desktop staging —
+   the breakpoints in SWITCHER_CSS are measured for the tab count, not derived. */
+const NAV_GROUPS = [PAGES, EXTRA_PAGES];
+
+/* ⚠️ WITHDRAWN IS NOT UNREACHABLE, and the difference is load-bearing. If the
+   record group vanished from the nav on EVERY page, the three chronicle pages
+   would have no route to each other either — you could reach /changelog/ from a
+   link and then be stranded on it, with the mobile strip carrying no tab for the
+   page you are actually on. So a reader who is already inside the section still
+   gets its group; nobody outside it is invited in. */
+const navSetFor = cur => (cur && dirOf(cur) === 'changelog')
+    ? [...NAV_GROUPS, CHRONICLE_PAGES]
+    : NAV_GROUPS;
+const navLabelFor = gi => NAV_GROUP_LABELS[gi] || 'Releases';
 
 /* What each group is called once it is stacked in the mobile menu, where the
    pills are no longer side by side to make the distinction for themselves. The
    labels are also what the collapsed desktop chips show between 981 and 1100px —
    see SWITCHER_CSS, where the staging is re-derived for three groups. */
-const NAV_GROUP_LABELS = ['Documents', 'Community', 'Releases'];
+const NAV_GROUP_LABELS = ['Documents', 'Community'];
 
 /**
  * DESKTOP navigation — the segmented switcher in the bar.
@@ -1254,11 +1276,28 @@ const NAV_GROUP_LABELS = ['Documents', 'Community', 'Releases'];
  * assuming every tab is 1/n of the track. That is what lets the pill fit
  * "Contributing" and "Notice" correctly, and it is why nothing here sets --n.
  */
-const navSwitcher = cur => `<div class="navwrap">${navGroups(cur)}</div>`;
+/* ⚠️ data-fit IS THE BREAKPOINT REGIME, and it exists because the bar now comes in
+   two sizes. Withdrawing the record group left six tabs on every page except the
+   three inside /changelog/, which still carry nine for their own navigation — and a
+   single staging cannot serve both: the nine-tab thresholds tighten a six-tab bar at
+   1440px, where it has 390px to spare, and the six-tab thresholds overflow a nine-tab
+   bar by 200px. Each regime's numbers are MEASURED (see SWITCHER_CSS).
+   A count this does not know about is a build failure rather than a silently wrong
+   nav — the whole point is that these numbers are measured, so an unmeasured count
+   must not quietly inherit someone else's. */
+const navSwitcher = cur => {
+    const n = navSetFor(cur).reduce((a, g) => a + g.length, 0);
+    if (n !== 6 && n !== 9) {
+        throw new Error(`navSwitcher: ${n} tabs has no measured breakpoint staging. ` +
+            'Measure it (bar.scrollWidth > bar.clientWidth, both sides of every boundary), ' +
+            'add a data-fit tier in SWITCHER_CSS, then allow the count here.');
+    }
+    return `<div class="navwrap" data-fit="${n}">${navGroups(cur)}</div>`;
+};
 
 const isHere = (p, cur) => cur && p.out === cur.out && dirOf(p) === dirOf(cur);
 
-const navGroups = (cur, i0 = 0) => NAV_GROUPS.map((grp, gi) => {
+const navGroups = (cur, i0 = 0) => navSetFor(cur).map((grp, gi) => {
     const at = grp.findIndex(p => isHere(p, cur));
     /* ⚠️ THE COLLAPSED CHIP IS REAL MARKUP, NOT A ::before.
        Between 981 and 1100px the groups you are not in give up their tabs (nine
@@ -1269,9 +1308,9 @@ const navGroups = (cur, i0 = 0) => NAV_GROUPS.map((grp, gi) => {
        have drawn the label but cannot be a link, and the link surviving is the
        entire point of the tier. */
     const first = grp[0];
-    return `<div class="seg" data-at="${at}" data-label="${esc(NAV_GROUP_LABELS[gi])}">
+    return `<div class="seg" data-at="${at}" data-label="${esc(navLabelFor(gi))}">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="${hrefTo(first, cur || first)}">${esc(NAV_GROUP_LABELS[gi])}</a>
+      <a class="segchip" href="${hrefTo(first, cur || first)}">${esc(navLabelFor(gi))}</a>
       ${grp.map(p => `<a class="tab${isHere(p, cur) ? ' on' : ''}" href="${hrefTo(p, cur || p)}"` +
         ` data-accent="${p.accent}"` +
         `${isHere(p, cur) ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}
@@ -1308,7 +1347,7 @@ const mobileNav = (cur, slots) => {
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
     <nav class="mstrip" id="mstrip" aria-label="Pages">
-      ${NAV_GROUPS.map(grp => grp.map(tab).join('')).join('<span class="ms-sep" aria-hidden="true"></span>')}
+      ${navSetFor(cur).map(grp => grp.map(tab).join('')).join('<span class="ms-sep" aria-hidden="true"></span>')}
     </nav>
   </div>
   ${slots ? `<details class="msecd">
@@ -1328,10 +1367,25 @@ const mobileNav = (cur, slots) => {
  * does not do its job. NOTICE §2 remains the authoritative version; this is the
  * short form.
  */
+/* ⚠️ ONE STRING, TWO PLACES. This was typed out twice — once here and once at the
+   foot of the landing page — and the two copies had drifted into saying different
+   things: the footer named "Activision, TiMi, Tencent, or Discord" and the landing
+   page also disclaimed "the rights holders of any content the game features under
+   licence". Harkirat noticed the disclaimer differed between the home page and the
+   legal pages, and he was reading two genuinely different notices.
+   The landing page's is the one kept, because it is strictly the more complete of
+   the two and a trademark notice has no business being shorter on the pages that
+   ARE the legal instruments. Never re-inline this: a notice duplicated in prose is
+   a notice that will disagree with itself again. */
+const TRADEMARK_NOTE = 'Dior&#8217;s Builds is an unofficial fan project and is not '
+    + 'affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, '
+    + 'Discord Inc., or with the rights holders of any content the game features '
+    + 'under licence.';
+
 const pageFoot = (cur, sig) => `<footer class="foot">
     <p class="sig">${sig || DIOR_SIG}</p>
-    <p class="disc">Dior&#8217;s Builds is an unofficial fan project. Not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, or Discord Inc.</p>
-    <nav class="endnav">${ALL_PAGES
+    <p class="disc">${TRADEMARK_NOTE}</p>
+    <nav class="endnav">${navSetFor(cur).flat()
         .filter(p => !isHere(p, cur))
         .map(p => `<a href="${hrefTo(p, cur || p)}">${esc(p.short)}</a>`)
         .join('<span>&middot;</span>')}</nav>
@@ -1352,7 +1406,7 @@ const pageFoot = (cur, sig) => `<footer class="foot">
  * the binding documents name email would have been a real inconsistency.
  */
 const emailReveal = `<details class="rev">
-  <summary><span class="rv-i" aria-hidden="true"></span>Prefer email? Reveal address</summary>
+  <summary><span class="rv-i" aria-hidden="true"><svg viewBox="0 0 16 12"><rect class="ev-b" x=".9" y=".9" width="14.2" height="10.2" rx="2.2"/><path class="ev-f" d="M.9 2.6 8 7.7 15.1 2.6"/></svg></span><span class="rv-q">Prefer email?</span><span class="rv-a">Reveal</span></summary>
   <div class="rv-b">
     <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
     <span>The formal route. Named in the Terms and Privacy Policy for legal notices,
@@ -1485,14 +1539,29 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
   text-transform:uppercase;font-weight:700;
   color:#141021;background:var(--accent);border:1px solid var(--accent);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),
+  /* ⚠️ AN INSET TOP HIGHLIGHT ON A PILL DRAWS AN ARC, NOT AN EDGE. inset 0 1px 0
+     paints a 1px band across the top of the BORDER BOX, and where the box curves
+     away the band follows it — so at 999px radius it read as a bright line drawn
+     around the top half of the button and stopping dead at each side. Harkirat
+     asked whether it was meant to be there; it was meant to be a material rim and
+     it was not one. A spread ring is even all the way round, which is what a rim
+     actually looks like. */
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),
     0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
   transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}
 /* Taller, heavier and wider than the repo capsule beside it. These two were the
    same 32px pill, which gave the primary action on the site exactly as much
    presence as a link to the source. */
-.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.95rem}
-.ins .ins-t{font-size:.7rem}
+/* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
+   same number as the right. The pill is 37px tall, so its cap radius is 18.5px;
+   the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
+   inside a cap only when the gap equals the difference — 7.5px, which is .47rem.
+   At the old symmetric .95rem the disc was 15.2px from the left edge and 7.5px
+   from the top and bottom, so the crescent of space around it was twice as thick
+   on one axis as the other: the "different amounts of curve". The right side
+   keeps more room because it ends in a text run's terminal, not a circle. */
+.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.47rem .85rem}
+.ins .ins-t{font-size:.7rem;font-weight:800}
 .ins-ic{position:relative;z-index:2;display:grid;place-items:center;
   width:22px;height:22px;flex:0 0 22px;border-radius:50%;
   background:color-mix(in srgb,var(--desk) 20%,transparent);
@@ -1520,7 +1589,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .ins:hover::after,.ins:focus-visible::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}
 @keyframes swipe{to{left:118%}}
 .ins:hover,.ins:focus-visible{transform:translateY(-1px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.44),
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
     0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}
 .ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
 .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}
@@ -1761,13 +1830,35 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   color:var(--ink3);list-style:none;transition:color .2s}
 .rev summary::-webkit-details-marker{display:none}
 .rev summary:hover{color:var(--ink)}
-.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
-  border:1px solid var(--rule2);border-radius:3px}
-.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
-  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
-.rev[open] .rv-i::after{transform:translateX(101%)}
-.rev summary:hover .rv-i::after{transform:translateX(48%)}
-.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+/* ⚠️ AN ENVELOPE, NOT A SWITCH. This was a 24x10 track with a sliding fill, which
+   is the shape of a toggle — and a toggle promises a setting you can leave on.
+   This control reveals an address; it is a disclosure. So the mark is the thing
+   being disclosed, and it OPENS: the flap is flipped about its own hinge (the top
+   edge of the envelope), which is one scaleY and needs no path morph.
+   The word carries the state as well as the icon, because "Reveal" going accent is
+   the same signal the Discord handle beside it already uses — see .dh. */
+.rv-i{display:block;width:17px;height:13px;flex:0 0 17px;color:var(--ink3);
+  transition:color .24s ease}
+.rv-i svg{width:17px;height:13px;display:block;overflow:visible;fill:none;
+  stroke:currentColor;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
+.ev-f{transform-origin:8px 2.6px;
+  transition:transform .46s cubic-bezier(.34,1.08,.42,1)}
+.rev[open] .ev-f{transform:scaleY(-1)}
+.rv-q{color:var(--ink3);transition:color .2s ease}
+/* The chip treatment is deliberately the SAME one the Discord handle wears, so
+   the two contact routes read as two of a kind rather than as a name and a link. */
+.rv-a{border-radius:4px;padding:.12em .42em;font-weight:600;
+  color:var(--ink3);background:transparent;
+  transition:color .22s ease,background .22s ease}
+.rev[open] .rv-a{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.rev[open] .rv-i{color:var(--accent-t)}
+.rev summary:hover .rv-a{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.rev summary:hover .rv-i{color:var(--accent-t)}
+.rev summary:hover .rv-q{color:var(--ink2)}
+.rev summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
+  border-radius:5px}
 .rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
   border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
   background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
@@ -1844,14 +1935,30 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    The arrow is two chevrons in a 12px window: hovering slides the pair up so
    the second takes the first's place, and clicking fires the group off the top
    and brings it back in from below. */
-.totop{position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
+/* ⚠️ IT PARKS ON THE FOOTER RATHER THAN FLOATING OVER IT. A fixed control at a
+   fixed offset from the viewport bottom sits on top of whatever the page ends
+   with, and on a short window — Harkirat's Arc window, where the chrome eats the
+   viewport — that was the footer's own link row, with the button covering the
+   last two entries. Hiding it at the bottom is the usual answer and it is the
+   wrong one here: the bottom of the document is precisely where "back to top" is
+   worth most.
+   So --lift is written from the script each frame: zero until the footer's top
+   edge reaches the button, then exactly the overlap, so it rides up ahead of the
+   footer and never crosses it. It is a variable rather than a direct transform
+   write because .totop.on owns the transform — a script setting style.transform
+   would have fought the entry animation. */
+.totop{--lift:0px;
+  position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
   background:color-mix(in srgb,var(--paper) 90%,transparent);
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
   transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}
-.totop.on{opacity:1;transform:none;pointer-events:auto}
+/* No transition on the parked position: --lift tracks scroll, so easing it would
+   make the button lag the footer it is supposed to stay clear of. */
+.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+  transition:opacity .34s ease,border-color .3s ease}
 .totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 /* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
@@ -2480,10 +2587,20 @@ const NAV_JS = `
       var set=function(){ tabs.forEach(function(a,j){ a.classList.toggle('lit', vis&&j===i); }); };
       if(delay) litT=setTimeout(set,delay); else set();
     }
+    /* ⚠️ THIS PATH MUST REPAINT, and not doing so is what left a nav label stuck
+       near-black on the dark bar. paint() gates coverage on -shown-, which is
+       false for a group you are not in the moment -hot- comes off — but on this
+       branch nothing called paint(), and if the move had already SETTLED there
+       was no rAF left to call it either (step() sets raf=0 at p>=1). So every tab
+       in that group kept the --cov of its last frame until the next hover.
+       That is the whole of "sometimes": it happened only when you paused on the
+       tab long enough for the move to finish before leaving it, which is why a
+       quick pass over the bar never showed it. */
     function rest(){
       seg.classList.remove('hot');
       if(home===null){ clearTimeout(litT);
-        tabs.forEach(function(a){ a.classList.remove('lit'); }); return; }
+        tabs.forEach(function(a){ a.classList.remove('lit'); });
+        paint(); return; }
       aim(home,false);
     }
 
@@ -2802,8 +2919,14 @@ const SWITCHER_CSS = `
    the geometry the indicator measures stays put. */
 .tab{position:relative;z-index:1;display:block;white-space:nowrap;cursor:pointer;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;
+  /* 600, and the same 600 in every state. A label that changes weight when the
+     pill arrives is a snap the eye reads as a glitch — font-weight cannot tween —
+     and it would also change the tab's width, which is the geometry the indicator
+     measures. Heavier than the 400 it was because these are the site's primary
+     navigation and they were the lightest type in the bar. */
+  font-weight:600;
   text-transform:uppercase;text-decoration:none;
-  padding:.42rem .85rem;border-radius:999px;
+  padding:.42rem 1.02rem;border-radius:999px;
   /* --cov is written every frame by paint(): 0 = no pill over me, 1 = fully
      covered. --rest is what this tab looks like with no pill on it. */
   --cov:0; --rest:var(--ink2);
@@ -2857,59 +2980,72 @@ const SWITCHER_CSS = `
 .seg[data-at="-1"].hot .seg-ink{opacity:1}
 .seg-gap{width:.45rem;flex:0 0 auto}
 
-/* NINE tabs in THREE groups, and the staging below was MEASURED, not reasoned.
-     1460  tighter tabs
-     1260  the groups you are NOT in collapse to a labelled CHIP that still links
-      980  the desktop switcher goes entirely and .mnav takes over
+/* THE BAR COMES IN TWO SIZES NOW, and each has its own MEASURED staging. Six tabs
+   on every page; nine on the three inside /changelog/, which keep their own group
+   so a reader already in that section is not stranded there. data-fit on .navwrap
+   selects the regime — see navSwitcher(), which refuses to build an unmeasured one.
 
-   ⚠️ The first pass at this staging used 1240/1100 and was wrong at BOTH ends —
-   caught by measuring the bar in a browser rather than by reading the CSS, and it
-   would have shipped a nav that ran off the edge at two common laptop widths:
-     · at 1101px all nine tabs were shown and the bar overflowed by 18px, because
-       the chip tier had been set 140px lower than the width where nine tightened
-       tabs actually stop fitting;
-     · at 1280px the tabs had already reverted to FULL size (the tighter rule ended
-       at 1240) and overflowed by 33px — a tier boundary is only correct if BOTH
-       sides of it fit.
-   Measured on the devlog page, which carries the longest labels: nine tightened
-   tabs need 1240px exactly, and nine full-size tabs need ~1401px EXACTLY — a fit with zero spare beyond the
-   padding. The thresholds below sit clear of both, which matters more than it
-   looks: the webfonts load with font-display:swap, so the bar is laid out with
-   FALLBACK metrics first, and a boundary with no margin overflows during that
-   swap on every cold load.
+   Measured 2026-08-01 21:40 EDT, in a browser, on the widest page of each set. The method is
+   the only one that works: neutralise the media queries, read the nav's real width
+   at each tab size, and add the bar's own chrome (32+32 padding + a 24 gap + the
+   108px wordmark). Reading the CSS cannot find these numbers and neither can
+   arithmetic on the old ones — the tabs went to 600 weight and 1.02rem of padding
+   in this same pass, which moved every one of them.
 
-   ⚠️ Why a chip and not the old rule. The two-group version hid the whole seg —
-   display:none on .seg[data-at="-1"] and on .seg-gap, i.e. "hide the group you are
-   not in" — and it cost you one group in a 20px band, recoverable from the footer. With
-   three groups the same rule hides TWO, so two thirds of the site leaves the bar
-   at once. Collapsing to a chip keeps every group one click away at every width
-   above the mobile handoff, which is the property that actually matters. The band
-   was also far too narrow at 20px to be worth a rule; it is 120px now, which is
-   where nine tabs genuinely stop fitting beside the wordmark and the four buttons. */
+       tabs   full-size needs   tightened needs   chips-only needs
+        6          1049              936                 -
+        9          1452             1277                919
+
+   ⚠️ A TIER BOUNDARY IS ONLY CORRECT IF BOTH SIDES OF IT FIT. That is what caught
+   the previous staging's first attempt (1240/1100), which was wrong at both ends
+   and shipped a nav running off the edge at two common laptop widths. Every
+   boundary below is checked one pixel above as well as one below:
+     · six tabs, 1060: full needs 1049 above it, tightened needs 936 below. Six
+       tightened tabs still fit at 981, so this set needs NO chip tier at all —
+       tightening carries it the whole way to the mobile handoff.
+     · nine tabs, 1465: full needs 1452 above, tightened 1277 below.
+     · nine tabs, 1300: tightened needs 1277 above, chips-only 919 below.
+
+   The margins are deliberate rather than tight: the chronicle pages' webfonts load
+   with font-display:swap, so the bar is first laid out with FALLBACK metrics, and a
+   boundary with no spare room overflows during the swap on every cold load.
+
+   ⚠️ Why a chip rather than hiding the group. The two-group version hid the whole
+   seg, which cost one group in a narrow band and was recoverable from the footer.
+   At nine tabs the same rule hides TWO — two thirds of the bar's destinations at
+   once — so a hidden group leaves a labelled chip that still links to its first
+   page. It is real markup, not a ::before, because a pseudo-element cannot be a
+   link and the link surviving is the entire point of the tier. */
 .navwrap{display:flex;align-items:center}
 
-/* The chip only exists between 981 and 1100. Above that the group shows its tabs;
-   below it the whole switcher is gone. No tabindex is needed to keep it out of the
-   tab order in the meantime — a display:none element is not focusable — and adding
-   tabindex="-1" would have been actively wrong, since it would still apply at the
-   one width where the chip IS the only way to reach that group by keyboard. */
+/* No tabindex is needed to keep the chip out of the tab order while it is hidden —
+   a display:none element is not focusable — and adding tabindex="-1" would have been
+   actively wrong, since it would still apply at the one width where the chip IS the
+   only keyboard route to that group. */
 .segchip{display:none;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink3);text-decoration:none;
   padding:.42rem .55rem;border-radius:7px;white-space:nowrap}
 .segchip:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .segchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-@media (max-width:1460px){
-  .tab{padding:.42rem .5rem;font-size:.62rem;letter-spacing:.07em}
-  .seg{--gap:.6rem}
+/* ── six tabs: tighten below 1060, and that is the whole staging ── */
+@media (max-width:1059px){
+  .navwrap[data-fit="6"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="6"] .seg{--gap:.6rem}
 }
-@media (min-width:981px) and (max-width:1260px){
+
+/* ── nine tabs: tighten below 1465, chips below 1300 ── */
+@media (max-width:1464px){
+  .navwrap[data-fit="9"] .tab{padding:.42rem .62rem;font-size:.62rem;letter-spacing:.07em}
+  .navwrap[data-fit="9"] .seg{--gap:.6rem}
+}
+@media (min-width:981px) and (max-width:1299px){
   /* A group you are not in shows its chip instead of its tabs. The indicator goes
      with them — .seg-ink measures real tab boxes, and there are none to measure. */
-  .seg[data-at="-1"] .tab{display:none}
-  .seg[data-at="-1"] .seg-ink{display:none}
-  .seg[data-at="-1"] .segchip{display:inline-block}
-  .seg[data-at="-1"]{padding:0}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .tab{display:none}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .seg-ink{display:none}
+  .navwrap[data-fit="9"] .seg[data-at="-1"] .segchip{display:inline-block}
+  .navwrap[data-fit="9"] .seg[data-at="-1"]{padding:0}
 }
 
 /* Desktop shows no mobile menu. */
@@ -3527,6 +3663,11 @@ ${mobileNav(cur, slots)}
 (function(){
   var prog=document.getElementById('prog');
   var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
+  /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
+     value only changes with the viewport (it is a clamp of vw). */
+  var foot=document.querySelector('.foot'), ttBase=0;
+  function ttMeasure(){ ttBase=top?parseFloat(getComputedStyle(top).bottom)||0:0; }
+  ttMeasure();
   var slots=[].slice.call(document.querySelectorAll('.slot'));
   var rail=document.querySelector('.rail'), lastId=null;
   /* The section index is rendered TWICE — once in the desktop rail, once in the
@@ -3550,6 +3691,16 @@ ${mobileNav(cur, slots)}
     if(top){
       top.classList.toggle('on', h.scrollTop>h.clientHeight*0.6);
       if(ttBar) ttBar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
+      /* Park above the footer. base is the button's own CSS bottom offset, so the
+         un-lifted bottom edge sits at innerHeight-base; anything below the
+         footer's top edge (less a 12px breathing gap) is overlap, and the lift is
+         exactly that. Read the footer's rect, never the button's — the button's
+         own rect already includes the lift, which would feed back on itself. */
+      if(foot){
+        var ft=foot.getBoundingClientRect().top;
+        var over=(h.clientHeight-ttBase)-ft+12;
+        top.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
+      }
     }
     var cur=-1;
     /* Viewport-relative, not offsetTop. offsetTop is measured from the nearest
@@ -3614,7 +3765,7 @@ ${mobileNav(cur, slots)}
     top.addEventListener('animationend',function(){ top.classList.remove('fire'); });
   }
   addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
-  addEventListener('resize',paint); paint();
+  addEventListener('resize',function(){ ttMeasure(); paint(); }); paint();
 
 
 })();
@@ -4601,13 +4752,38 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   text-decoration:none;color:inherit;border-radius:14px;background:var(--paper);
   border:1px solid var(--rule);
   transition:transform .38s cubic-bezier(.16,.84,.28,1),box-shadow .38s,border-color .38s}
-.inv-b{padding:1.35rem 1.4rem 1.3rem;min-width:0}
-.inv-s{position:relative;border-radius:0 13px 13px 0;
+.inv-b{position:relative;z-index:1;padding:1.35rem 1.4rem 1.3rem;min-width:0}
+/* ⚠️ THE GLOW IS AN ABSOLUTE ::before, NOT A grid ITEM. .inv is display:grid, so a
+   pseudo-element in normal flow would take a track of its own and shove the stub
+   off the card. Absolute positioning removes it from the grid entirely. It also
+   has to sit UNDER the text, which is why .inv-b is positioned: an unpositioned
+   block paints below a positioned sibling regardless of source order. */
+.inv::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  border-radius:14px;opacity:0;transition:opacity .38s ease;
+  background:radial-gradient(128% 96% at 16% 0%,
+    color-mix(in srgb,var(--ia) 15%,transparent),transparent 64%)}
+.inv:hover::before,.inv:focus-visible::before{opacity:1}
+.inv-s{position:relative;z-index:1;border-radius:0 13px 13px 0;
   display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:center;
   padding:.9rem 0 .8rem;
-  border-left:2px dashed color-mix(in srgb,var(--ia) 40%,var(--rule));
   background:color-mix(in srgb,var(--ia) 6%,transparent);
   transition:background .38s}
+/* ⚠️ THE PERFORATION IS A GRADIENT NOW, because a border-dashed cannot open.
+   It also cannot MOVE: the notches are punched at a fixed --nx by the card's
+   mask, so any transform that carried the dashed edge sideways separated the
+   line from the two holes it is supposed to run between — which is exactly what
+   translateX(3px) did, and Harkirat was right that it made no sense.
+   background-size sets the tile a repeating gradient repeats over, and the stops
+   inside are absolute px, so growing the tile from 10px to 15px keeps a 5px dash
+   and stretches the GAP to 10px. The dashes stay put and pull apart: the paper
+   giving way along the line, not the line sliding. Hard stops, no interpolation
+   range, so there is no grey fringe between dash and gap. */
+.inv-s::before{content:"";position:absolute;left:-2px;top:0;bottom:0;width:2px;
+  background-image:repeating-linear-gradient(180deg,
+    color-mix(in srgb,var(--ia) 40%,var(--rule)) 0 5px,transparent 5px 10px);
+  background-size:2px 10px;
+  transition:background-size .44s cubic-bezier(.34,1.06,.44,1)}
+.inv:hover .inv-s::before,.inv:focus-visible .inv-s::before{background-size:2px 15px}
 /* ⚠️ The notches are MASKED OUT of the card, not painted over it. They used to be
    discs filled with --desk, which only matches the page where the page is a flat
    colour — and it is not: there is a radial glow behind these cards, so each notch
@@ -4633,8 +4809,17 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
    reads as beginning to tear rather than simply rising. It stops well short of
    detaching — a ticket half-torn is an invitation; a ticket in two pieces is a
    used one. */
+/* ⚠️ THE HINGE IS THE PERFORATION, so the transform must leave x=0 fixed. A
+   rotateY about -left center- does exactly that — every point on the left edge is
+   on the axis — so the stub swings toward the reader while the dashed line and
+   its two notches do not move by a pixel. The previous translateX(3px) rotate(.7deg)
+   failed on both counts: it slid the perforation away from the notches, and the
+   2D rotation tipped the arrow badge at the bottom of a ~300px card by nearly 2px
+   of drift on top of its own nudge, which is the "weirdly aligned" arrow.
+   It stops well short of detaching — a ticket half-torn is an invitation; a ticket
+   in two pieces is a used one. */
 .inv:hover .inv-s,.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
-  transform:translateX(3px) rotate(.7deg)}
+  transform:perspective(560px) rotateY(-9deg)}
 .inv-s{transform-origin:left center;
   transition:background .42s ease,transform .42s cubic-bezier(.34,1.1,.44,1)}
 @media (prefers-reduced-motion:reduce){
@@ -4682,11 +4867,16 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   transition:background .3s}
 /* Drawn rather than typed. The arrow glyph came in at whatever weight the mono
    face had, which was far too thin beside the display type it sits under. */
-.inv .arw i{position:relative;display:block;width:11px;height:9px;
+/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE. The head is a 6.2px box turned 45deg,
+   so its tip reaches 6.2/sqrt(2) = 4.38px from its own centre, not 3.1 — at right:.5px
+   the point stuck 0.78px out of an 11px box that place-items:center was centring.
+   right must be at least 4.38-3.1 = 1.28 for the ink to stay inside; 12px and
+   1.3px puts the tip at 11.98 and the drawn arrow centred on the box it is in. */
+.inv .arw i{position:relative;display:block;width:12px;height:9px;
   transition:transform .38s cubic-bezier(.34,1.1,.44,1)}
 .inv .arw i::before{content:"";position:absolute;left:0;top:3.6px;width:9.5px;height:1.9px;
   border-radius:1px;background:currentColor}
-.inv .arw i::after{content:"";position:absolute;right:.5px;top:1.4px;width:6.2px;height:6.2px;
+.inv .arw i::after{content:"";position:absolute;right:1.3px;top:1.4px;width:6.2px;height:6.2px;
   border-right:1.9px solid currentColor;border-top:1.9px solid currentColor;
   border-radius:0 1px 0 0;transform:rotate(45deg)}
 .inv:hover .arw{background:color-mix(in srgb,var(--ia) 26%,transparent)}
@@ -4736,7 +4926,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
-  <p class="disc fine">Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+  <p class="disc fine">${TRADEMARK_NOTE}</p>
 </main>
 <script>${THEME_JS}</script>
 </body></html>`;
