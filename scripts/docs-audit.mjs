@@ -1357,6 +1357,11 @@ check(
     // ⚠️ git() here returns "" on failure rather than throwing, so absence has to be
     // tested, not caught. A try/catch around it would never fire and the check would
     // silently treat "no tags" as "nothing unreleased" — a vacuous pass.
+    // Distinguish the two ways this cannot run. Reporting "no tags" when the real cause is
+    // "no main branch" sent me looking in the wrong place for a CI-only failure.
+    if (!git("rev-parse", "--verify", "--quiet", "main").trim()) {
+      return { findings: [], skipped: "no `main` branch in this checkout — not verified" };
+    }
     const newest = git("describe", "--tags", "--abbrev=0", "main").trim();
     if (!newest) return { findings: [], skipped: "no tag reachable from main — nothing to measure against" };
     const commits = git("log", "--oneline", `${newest}..main`).trim();

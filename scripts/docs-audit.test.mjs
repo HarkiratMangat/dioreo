@@ -71,7 +71,13 @@ const makeFixture = () => {
   // surface in a space-free tmpdir. A fixture that doesn't reproduce production's hazards is a
   // fixture that certifies the wrong thing. Do not "tidy" this into a hyphen.
   const root = mkdtempSync(join(tmpdir(), "docs audit fixture "));
-  execFileSync("git", ["init", "-q"], { cwd: root });
+  // ⚠️ -b main IS LOAD-BEARING. `git init` takes its branch name from init.defaultBranch,
+  // which is set to `main` in THIS repo's local config and unset globally — so the fixture
+  // was `main` on the developer's Mac and `master` on CI's ubuntu runner. Checks that name
+  // `main` then could not resolve it, skipped, and a prove case correctly reported the check
+  // as dead — a failure that could only ever appear in CI. Same class as the deliberate SPACE
+  // in the tmpdir prefix above: a fixture must not inherit anything from the machine.
+  execFileSync("git", ["init", "-q", "-b", "main"], { cwd: root });
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
