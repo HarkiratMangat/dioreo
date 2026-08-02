@@ -105,6 +105,37 @@ date-granular boundary cannot split that day cleanly, and the day is already con
 ⚠️ The cost is that any **novelty spike** on day one is unmeasured — if the log shows heavy day-one
 use, say so qualitatively rather than pretending the number covers it.
 
+### ⚠️ DECLARED IN ADVANCE: the treatment period is expected to be DESIGN-heavy
+
+Harkirat stated 2026-08-02 18:10 EDT that he resumes **website work** next session, and that it *"could
+very easily trigger the tool."* He is right, and that is exactly why this has to be written down now
+rather than discovered in the analysis.
+
+**The task mix is the largest UNCONTROLLED variable in this experiment**, and the two windows are
+already known to differ:
+
+| | control window | treatment window (expected) |
+|---|---|---|
+| dominant work | auditing, records, debugging, memory forensics | website / visual design |
+| shape | verify-and-sweep — premises unknown, checking is the bottleneck | design forks — premises known, *choosing* is the bottleneck |
+
+Design work is **precisely the declared fit case** (verified premises · real branches · a wrong choice
+costing >10 turns). So:
+
+- **A high trigger rate next week does NOT prove the tool is generally useful.** It would show the tool
+  fires on design work. That is a narrower claim — and arguably the more useful one — but it must be
+  stated that way, not generalised into "sequential-thinking earns its place."
+- **A low trigger rate even in its best-fit week is strong evidence the other way**, and is the single
+  most informative outcome available.
+- **Cost comparisons are contaminated too.** Design work has a different tool profile (more browsing,
+  more artifact iteration, longer outputs), so a change in `turnsPerSession` or `cacheReadPerTurn`
+  cannot be attributed to sequential-thinking without first ruling this out.
+
+**The partial control:** the instrument already records `Read`/`Write`/`Edit`/`Bash`, `subagent-spawn`,
+`ctx-execute*`, model and effort mix. **At close-out, compare the tool PROFILE between windows first.**
+If the profiles differ sharply, the cost metrics are describing two different kinds of week and only
+the trigger-rate question survives. Say so plainly rather than reporting a clean-looking delta.
+
 > **⚠️ `estCostUSD` is NOT money.** Calibrated 2026-08-02 17:40 EDT against the only real figure on
 > record, recomputed **from its transcript** rather than a remembered summary — session `38972d5e`:
 > **404 `claude-sonnet-5` turns, 87.4M cache reads, 430k output → $44.02 at list vs $17.10 billed =

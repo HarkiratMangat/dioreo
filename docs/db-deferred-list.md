@@ -109,8 +109,11 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
      (mean 541.1 is outlier-driven — compare on the MEDIAN) · **290,915 cache reads per turn** ·
      0.014 seq-calls/100 turns · 0.49 memory writes/session · `search_graph` 1 · 18 compactions ·
      models sonnet-5 / opus-5 / opus-4-8.
-     ⚠️ **Check the model + effort mix FIRST** — an Opus-skewed treatment week moves every other
-     number on its own and would invalidate a naive comparison.
+     ⚠️ **Check the model + effort mix AND the tool profile FIRST.** An Opus-skewed week moves every
+     number on its own. And the treatment period is KNOWN in advance to be website/design-heavy while
+     the baseline was audit/debug-heavy — design work is precisely sequential-thinking's declared fit
+     case, so a high trigger rate shows it fires on DESIGN, not that it is generally useful. A low
+     rate even in its best-fit week is the strongest possible evidence the other way.
   3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT
      it fired, never whether it helped. **Watch for novelty**: a spike of 2–3 thought runs with no
      decision attached is the tool being new, not useful.
