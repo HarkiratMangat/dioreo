@@ -1,7 +1,7 @@
 # Privacy Policy — Dior's Builds
 
-**Effective date:** 31 July 2026
-**Version:** 1.2
+**Effective date:** 1 August 2026
+**Version:** 1.3
 **Applies to:** the Dior's Builds Discord application (the "Bot") and this
 documentation website (the "Site")
 
@@ -616,6 +616,7 @@ database or any server, and it is described in full in §2.6.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
 | **1.2** | 31 July 2026 | Documented the Site's single `db-theme` local-storage item (§2.6); corrected the "there is no website" statement in §3. |
 | **1.1** | 29 July 2026 | Added the controller's `diorswrld` alias. |
 | **1.0** | 28 July 2026 | Initial policy. |
@@ -657,4 +658,5 @@ relevant code.
 ---
 
 *Dior's Builds is an unofficial fan project and is not affiliated with Activision
-Publishing, Inc. or Discord Inc.*
+Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
+holders of any content the game features under licence.*

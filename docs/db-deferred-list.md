@@ -200,6 +200,34 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
+- `[P2 · M · 🧩needs-design]` **Legal site: redesign the section scrollspy.** *Filed 2026-08-01 22:05 EDT,
+  from Harkirat's desktop pass.* His words: "While I love that you implemented a scrollspy, I feel like
+  you could improve its design, functionality and animation. Please get creative and think outside the
+  box for something more unique." What exists today is `.rail` in `scripts/buildLegalPages.js` — a
+  sticky left column of numbered slots, tracked by the `paint()` loop in the legal shell's scroll
+  script, which highlights the slot whose heading last crossed a 130px line and nudges the rail's own
+  scrollbox to keep it visible. It works and it is plain. **Not a bug — an open design brief**, so it
+  wants options put in front of him before anything is built (`feedback_ask_before_visual_rework`).
+  Constraints that are already load-bearing and must survive any redesign: the index is rendered
+  TWICE (desktop rail + mobile `.msecd`) and tracking keys on section ID, never on an index into a flat
+  slot list, because whichever copy sits later in the DOM would otherwise win; the rail must not become
+  a second scrollbar; and its containing block is `.cols`, not `.page`, which is what stops it
+  travelling into the footer. Sections are now wrapped in `<section class="dsec">` by `sectionise()`
+  and each heading is sticky, so a redesign has structure to work with that it did not have before.
+
+- `[P2 · M · 🧩needs-design · 🔗bundle]` **Legal site: use the fluid morph on something other than the
+  nav.** *Filed 2026-08-01 22:05 EDT, from the same pass.* His words: "I also want to sprinkle our
+  fluid morphing animation/system to some other elements in the website so it doesn't feel like a
+  standalone design choice. Idk where but if we get an opportunity, let me know." So the deliverable is
+  first a **shortlist of candidate surfaces with a recommendation**, not an implementation. Bundles
+  naturally with the scrollspy item above, which is the most obvious candidate surface.
+  ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
+  SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately
+  (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a
+  fitted filter chain; and the geometry constants are MEASURED against the renderer, not derived — see
+  `reference_goo_metaball_recipe` and `feedback_measure_the_renderer_not_the_model`. Any new surface
+  with a different element height needs its dilation re-measured with the canvas method.
+
 - `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
   2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
   from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.

@@ -549,12 +549,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
    applied, and it is a notice we are obliged to show. Same size, full opacity. */
 
-.disc{grid-column:1;grid-row:1/span 2;align-self:start;
+.disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
 
-.endnav{grid-column:2;grid-row:1;
+.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
   display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
   gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
@@ -569,9 +569,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    those two in the DOM, they land inside that sentence: verify() reports the run
    missing, correctly, because a reader meets the nav mid-sentence too.
    Grid placement moves it below the links visually without moving it in the
-   document. Do not "tidy" this by reordering the markup to match the layout. */
+   document. Do not "tidy" this by reordering the markup to match the layout. *//* Left column, under the notice. It used to sit bottom-RIGHT under the link row,
+   which put the two mono lines on opposite corners with nothing tying them
+   together; both belong to the site rather than to the navigation. On the four
+   legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
+   this is simply the bottom-left line. */
 
-.sig{grid-column:2;grid-row:2;text-align:right;margin:.85rem 0 0;
+
+.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* One column once the two would fight for width; the notice leads, as it does
    on every other narrow layout here. */
 

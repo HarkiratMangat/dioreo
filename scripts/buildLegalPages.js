@@ -1382,9 +1382,14 @@ const TRADEMARK_NOTE = 'Dior&#8217;s Builds is an unofficial fan project and is 
     + 'Discord Inc., or with the rights holders of any content the game features '
     + 'under licence.';
 
-const pageFoot = (cur, sig) => `<footer class="foot">
+/* `disc` is false on the four legal instruments, and only there. Each of those
+   documents now CLOSES with this same notice as part of its own text, so printing
+   it again in the chrome a centimetre below said the same thing twice on one
+   screen — which is what Harkirat was looking at. The warm and chronicle pages
+   carry no such closing line, so they keep the footer's copy. */
+const pageFoot = (cur, sig, disc = true) => `<footer class="foot">
     <p class="sig">${sig || DIOR_SIG}</p>
-    <p class="disc">${TRADEMARK_NOTE}</p>
+    ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
     <nav class="endnav">${navSetFor(cur).flat()
         .filter(p => !isHere(p, cur))
         .map(p => `<a href="${hrefTo(p, cur || p)}">${esc(p.short)}</a>`)
@@ -1894,12 +1899,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   align-items:start;text-align:left}
 /* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
    applied, and it is a notice we are obliged to show. Same size, full opacity. */
-.disc{grid-column:1;grid-row:1/span 2;align-self:start;
+.disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}
 /* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
    the one you are pointing at. */
-.endnav{grid-column:2;grid-row:1;
+.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
   display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
   gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
   text-transform:uppercase}
@@ -1916,7 +1921,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    missing, correctly, because a reader meets the nav mid-sentence too.
    Grid placement moves it below the links visually without moving it in the
    document. Do not "tidy" this by reordering the markup to match the layout. */
-.sig{grid-column:2;grid-row:2;text-align:right;margin:.85rem 0 0;
+/* Left column, under the notice. It used to sit bottom-RIGHT under the link row,
+   which put the two mono lines on opposite corners with nothing tying them
+   together; both belong to the site rather than to the navigation. On the four
+   legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
+   this is simply the bottom-left line. */
+.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
 /* One column once the two would fight for width; the notice leads, as it does
    on every other narrow layout here. */
@@ -2357,7 +2367,13 @@ const NAV_JS = `
             if(ov>0) cov=Math.max(cov, ov/tb[1]);
           }
         }
-        tabs[q].style.setProperty('--cov', band(0.22,0.72,cov).toFixed(3));
+        /* ⚠️ A TIGHTER CROSSOVER THAN IT LOOKS. 0.30/0.58 rather than 0.22/0.72:
+           a single colour can never be right for a glyph run that is half on the
+           pill and half on the dark bar, so the goal is to spend as FEW frames
+           there as possible. The wider band spent roughly half the move in the
+           mid range, which is what read as the label going pale before it
+           committed. Not a hard step, because that is a visible snap. */
+        tabs[q].style.setProperty('--cov', band(0.30,0.58,cov).toFixed(3));
       }
     }
     function step(now){
@@ -2924,7 +2940,7 @@ const SWITCHER_CSS = `
      and it would also change the tab's width, which is the geometry the indicator
      measures. Heavier than the 400 it was because these are the site's primary
      navigation and they were the lightest type in the bar. */
-  font-weight:600;
+  font-weight:700;
   text-transform:uppercase;text-decoration:none;
   padding:.42rem 1.02rem;border-radius:999px;
   /* --cov is written every frame by paint(): 0 = no pill over me, 1 = fully
@@ -2938,7 +2954,21 @@ const SWITCHER_CSS = `
    exists only for the jump when a group you are not in shows or hides its
    indicator, which is not a per-frame change. */
 .seg.morph .tab{transition:none}
-.tab.on{--rest:var(--accent-t)}
+/* ⚠️ THE CURRENT TAB IS NOT PAINTED IN ITS OWN ACCENT, and this is the whole bug
+   behind "the white nav text is not legible". --rest is what a tab looks like with
+   no pill on it, and setting it to the accent meant the label and the pill beneath
+   it were THE SAME COLOUR. Measured on contributors.html: settled off-pill the
+   label computed rgb(248,255,74) against a pill of rgb(248,255,74). Worse, every
+   partial-coverage frame mixed from near-black TOWARD the accent, so mid-move the
+   label passed through a washed-out light tint sitting on a bright pill — which is
+   exactly the frame in Harkirat's screenshot, and no amount of tuning the crossover
+   fixes a mix whose far end is the pill's own colour.
+   --ink instead: the brightest text colour on the bar. It still marks "you are
+   here" against the other tabs' --ink2, it is legible on the dark bar in both
+   themes, and the mix now runs near-black -> near-white, whose midpoint is a
+   neutral grey rather than a tint of the pill. Dark on the pill, light off it,
+   nothing in between that can disappear. */
+.tab.on{--rest:var(--ink)}
 /* The label sitting ON the pill. A solid accent fill is far too light to carry
    accent-coloured text, so the tab the indicator currently covers flips to
    near-black — the same inversion the reference makes when its white pill
@@ -2971,9 +3001,17 @@ const SWITCHER_CSS = `
 /* No dividers. Spacing separates the tabs instead, which also gives the
    indicator somewhere to travel — with the tabs touching it had to stretch
    directly across a neighbouring label. */
-@media (hover:hover) and (pointer:fine){
-  .tab:hover{color:var(--ink)}
-}
+/* ⚠️ THERE IS NO :hover COLOUR ON A TAB, AND THERE MUST NOT BE. There used to be
+   a .tab:hover colour rule — a brightening affordance from before the tabs
+   had an indicator at all. It is a (0,2,0) selector against .tab's own (0,1,0), so
+   it BEAT the coverage colour outright: for the entire time the pointer sat on a
+   tab, the label was pinned near-white — on top of the pill that had just arrived
+   underneath it. Releasing the pointer released the rule, so the label went dark at
+   the exact moment the pill began to LEAVE. That inversion is what Harkirat kept
+   reporting, and it is why a scripted mouseenter could never reproduce it: a
+   dispatched event does not create a :hover state, so every measurement of the
+   hovered tab read the correct colour while the screen showed the wrong one.
+   The pill IS the hover feedback. A second, contradictory one is not needed. */
 /* A group you are not currently inside shows no indicator until you point at
    it, so exactly one indicator on screen is ever "yours". */
 .seg[data-at="-1"] .seg-ink{opacity:0;transition:opacity .3s}
@@ -3484,11 +3522,16 @@ ${SWITCHER_CSS}
        and the stuck heading always reads as a closed band rather than as text
        floating over the prose. */
     margin-bottom:1.15rem}
-  /* The margin index is absolutely positioned against the heading, so it comes
-     along — but it sits OUTSIDE the heading's background, in .doc's padding, and
-     over a transparent patch the prose would show through it. It gets its own. */
+  /* ⚠️ THE MARGIN INDEX HAS TO ABSORB THE STICKY PADDING. .idx is positioned
+     top:.34em against the heading's PADDING box, which used to start at the text.
+     Adding .9rem of padding-top for the sticky band pushed the heading's text down
+     and left the number where it was, so every section number sat high — visible
+     immediately, and only on the numbered legal set. The number is aligned to the
+     text, so it has to move with it.
+     The background is insurance: the number sits outside the heading's own band,
+     in .doc's padding gutter. */
   @media (min-width:1120px){
-    .doc .dsec>h2 .idx{background:var(--paper);padding:.15rem 0}
+    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);background:var(--paper)}
   }
 }
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
@@ -3712,7 +3755,7 @@ ${mobileNav(cur, slots)}
        Notice, so the hand-added ../NOTICE link that used to sit here produced two
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
-  ${pageFoot(cur)}
+  ${pageFoot(cur, null, false)}
 </div>
 
 <!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,

@@ -352,23 +352,57 @@ file, and this section all reference it; renaming it is a separate change that h
   without it every cross-reference between the three records goes inert with **nothing reporting it** —
   `linkAudit` has no href to resolve and `crossRefAudit` resolves by basename against the deploy tree,
   where `changelog-summary.html` legitimately does not exist.
-- ⚠️ **The desktop breakpoint staging was MEASURED for nine tabs, not reasoned.** It is
-  **1460** (tighter tabs) → **1260** (groups you are not in collapse to a labelled **chip that still
-  links**) → **980** (mobile strip). The old rule hid the group you were not in; with three groups that
-  hides **two**, taking two thirds of the site out of the bar. The chip is real markup, not a
-  `::before` — a pseudo-element cannot be a link, and the link surviving is the whole point of the
-  tier. It carries no `tabindex="-1"`: `display:none` already removes it from the tab order, and the
-  attribute would still apply at the one width where the chip IS the only keyboard route to that group.
-  ⚠️ **A first attempt at these numbers (1240/1100) was wrong at BOTH ends and was caught only by
-  measuring the bar in a browser** — reading the CSS could not have found it. At 1101px all nine tabs
-  showed and the bar overflowed by 18px; at 1280px the tabs had already reverted to full size and
-  overflowed by 33px. **A tier boundary is only correct if BOTH sides of it fit** — check the width
-  just above a boundary as well as the width just below. Measured on the devlog page (longest labels):
-  nine tightened tabs need 1240px, nine full-size tabs need 1401px exactly. The shipped thresholds sit
-  clear of both **because the webfonts use `font-display:swap`** — the bar lays out with fallback
-  metrics first, so a boundary with zero margin overflows on every cold load.
+- ⚠️ **CHRONICLE_PAGES IS WITHDRAWN FROM THE NAV** (2026-08-01 21:15 EDT) — off the desktop switcher,
+  the mobile strip and the footer, everywhere **except inside `/changelog/` itself**, where the three
+  pages keep their group so a reader who arrives by link is not stranded with no route between them
+  (`navSetFor(cur)`). The pages are still built, deployed, reachable, and seen by every gate. This
+  finishes the earlier withdrawal of the record row from the landing page, which left the tabs still
+  advertising a section the page had stopped offering.
+- ⚠️ **THE BAR NOW COMES IN TWO SIZES, and each has its own MEASURED staging.** `data-fit` on
+  `.navwrap` selects the regime, and **`navSwitcher()` THROWS on a tab count with no measured staging**
+  rather than letting it inherit numbers that do not apply to it.
+  **Six tabs:** full-size above **1060**, tightened down to 981 — and that is the whole staging, because
+  six tightened tabs still fit at 981, so this set needs **no chip tier at all**.
+  **Nine tabs:** full above **1465** → tightened to **1300** → chips to **980**.
+  Requirements measured 2026-08-01 21:40 EDT in a browser: six tabs need 1049 full / 936 tightened;
+  nine need 1452 / 1277 / 919. ⚠️ **Do not arithmetic these from the old numbers** — the tabs went to
+  700 weight and 1.02rem padding in the same pass, which moved every one of them.
+  The chip is real markup, not a `::before` — a pseudo-element cannot be a link, and the link surviving
+  is the whole point of the tier. It carries no `tabindex="-1"`: `display:none` already removes it from
+  the tab order, and the attribute would still apply at the one width where the chip IS the only
+  keyboard route to that group.
+  ⚠️ **A tier boundary is only correct if BOTH sides of it fit** — check the width just above a boundary
+  as well as just below. An early staging (1240/1100) was wrong at BOTH ends and was caught only by
+  measuring the bar in a browser; reading the CSS could not have found it. Verified at the tightest
+  width of every tier: 1465 / 1300 / 981 for nine, 1061 / 1059 / 981 for six, all zero overflow. The
+  thresholds keep margin **because the chronicle pages' webfonts use `font-display:swap`** — the bar
+  lays out with fallback metrics first, so a boundary with zero spare overflows on every cold load.
   ⚠️ **`.bar nav` is `margin-left:auto`, so its right edge is ALWAYS flush** — "distance from the nav
   to the viewport edge" measures nothing. Test overflow with `bar.scrollWidth > bar.clientWidth`.
+- ⚠️ **A NAV TAB HAS NO `:hover` COLOUR RULE, and must never get one back.** The label's colour is
+  driven per frame by `--cov` (how much of that tab's box the pill actually covers). A
+  `.tab:hover{color:…}` rule is `(0,2,0)` against `.tab`'s own `(0,1,0)`, so it **beat the coverage
+  colour outright**: for the whole time the pointer sat on a tab the label was pinned near-white, on
+  top of the pill that had just arrived under it, and it only went dark when you moved away and the
+  rule stopped applying. Harkirat reported this four times before it was found (2026-08-01 21:55 EDT).
+  ⚠️ **A scripted `mouseenter` CANNOT reproduce it** — a dispatched event does not create a `:hover`
+  state, so every measurement of the hovered tab read the correct colour while the screen showed the
+  wrong one. Verify hover states by moving the real cursor and asserting `el.matches(':hover')` first.
+  ⚠️ **`.tab.on` is NOT painted in its own accent either** — `--rest` was `var(--accent-t)`, so the
+  current tab's label and its pill were the same colour, and every partial-coverage frame mixed toward
+  the pill's own hue. It is `var(--ink)` now: dark on the pill, bright off it, nothing in between that
+  can vanish. Crossover band tightened to 0.30/0.58 so the mid-mix lasts ~6 frames, not half the move.
+- ⚠️ **`sectionise()` wraps each top-level `<h2>` and its clauses in a `<section class="dsec">`, and
+  that is what makes the sticky section headings possible.** What bounds a sticky element is its
+  CONTAINING BLOCK; `parseBlocks()` emits headings as flat siblings, so without the wrappers they all
+  pin at the same offset and cover each other instead of handing off. **The split is on a line-initial
+  `<h2`**, because Terms opens with a callout blockquote containing an h2 of its own on the same line
+  — splitting on every `<h2` would cut that element in half. It lives in `shell()`, NOT in
+  `parseBlocks()`, because the warm and chronicle templates share that parser and each has a gate keyed
+  to the shape it emits today. Two consequences that bit immediately: section spacing had to move onto
+  `.dsec` (inside a section the h2 is `:first-child`, which the existing rule zeroes), and `.idx` needs
+  `top:calc(.34em + .9rem)` to absorb the sticky band's padding or every section number sits high.
+  The `.stuck` class carrying the pinned shadow is toggled from the rect the scrollspy already reads.
 - ⚠️ **The nav is TWO controls — a desktop switcher and a mobile menu — and they must stay separate**
   (rebuilt 2026-07-31 23:55 EDT). Sharing one control across breakpoints is what broke it: a
   pointer-driven indicator that has to be a horizontal track AND a vertical thumb-follower does neither

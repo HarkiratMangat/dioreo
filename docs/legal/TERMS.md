@@ -1,7 +1,7 @@
 # Terms of Service — Dior's Builds
 
-**Effective date:** 31 July 2026
-**Version:** 1.2
+**Effective date:** 1 August 2026
+**Version:** 1.3
 **Applies to:** the Dior's Builds Discord application (the "Bot") and the website
 these documents are published on (the "Site")
 
@@ -697,6 +697,9 @@ For security reports, email — don't open a public issue. See §4.11 of the
 
 | Version | Date | Change |
 |---|---|---|
+| **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
+| **1.2** | 31 July 2026 | Brought the Site — the website these documents are published on — into scope alongside the Bot. |
+| **1.1** | 29 July 2026 | Added the controller's "diorswrld" alias; added §7.3 covering third-party crossover and collaboration content, renumbering the takedown process to §7.5. |
 | **1.0** | 28 July 2026 | Initial terms. |
 
 Future revisions will be listed here. The complete drafting history is public in
@@ -705,4 +708,5 @@ the repository's git log.
 ---
 
 *Dior's Builds is an unofficial fan project and is not affiliated with Activision
-Publishing, Inc. or Discord Inc.*
+Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
+holders of any content the game features under licence.*
