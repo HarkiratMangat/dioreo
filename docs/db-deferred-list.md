@@ -75,8 +75,67 @@ scratchpad for 2 days.*
   never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every
   build, which is real coverage — but it proves ratios, not whether the page looks right.
 
+- `[P1 · XS · 🔗bundle-with: `dior pr compose` in `meta-deferred-list.md`]` **The SQUASH-TRAILER GATE
+  is `"ask"`, so it gets approved through, and every squash commit still carries duplicated trailers.**
+  *Filed 2026-08-02 16:19 EDT.*
+
+  `.claude/settings.json:96` fires a `PreToolUse` gate when `gh pr merge --squash` runs without an
+  explicit `--body`, because the repo's `squash_merge_commit_message=COMMIT_MESSAGES` makes GitHub build
+  the squash message by **concatenating every branch commit** — so each commit's trailer block repeats
+  once per commit. The gate's diagnosis is right; its `permissionDecision` is `"ask"`, which is a prompt,
+  and a prompt is something a session in a hurry clicks past.
+
+  **Measured on the last 8 squash commits on `main` (2026-08-02 16:19 EDT).** Correct shape is
+  `total=2, diorswrld=1`. Only `ee3b0cd` has it:
+
+  | commit | `Co-Authored-By:` lines | `diorswrld` lines |
+  |---|---|---|
+  | `ee3b0cd` | 2 ✅ | 1 ✅ |
+  | `c6cd875` | 6 | 3 |
+  | `6bf05ed` | 8 | 4 |
+  | `f778195` | 20 | 10 |
+  | `7cd21e7` | 22 | 11 |
+  | `a4b17d6` | 32 | 16 |
+  | `8731b6f` | 28 | 14 |
+  | `9b9b4ce` | **130** | 67 |
+
+  ⚠️ **Note the three most recent — `7cd21e7`, `6bf05ed`, `c6cd875` — are the merges that shipped the
+  hook work itself.** The gate was in place and they still duplicated. That is the whole argument:
+  as an `"ask"` it is not an enforcement layer, it is a speed bump. **The fix is one word — flip
+  `permissionDecision` to `"deny"`.** Deny is safe rather than deadlocking, because passing `--body`
+  satisfies the condition and the gate never fires; it only blocks the exact call that produces the bug.
+  Composing that body well is the bundled item, but the flip does not depend on it and should not wait
+  for it. See `[[reference_enforcement_hooks]]` — a checkable rule becomes a hook, and a hook that asks
+  is prose with extra steps.
+
+- `[P1 · S · 🔗bundle-with: the gate flip above]` **Three enforcement hooks fire too late to prevent
+  anything — they can only narrate.** *Filed 2026-08-02 16:28 EDT, after the third one was hit live.*
+
+  Measured from `.claude/settings.json` (2026-08-02 16:28 EDT): **PreToolUse has 7 hooks — `Artifact` ×1,
+  `Bash` ×6, and not one on `Edit|Write`.** All three `Edit|Write` hooks (`timestamp-check`,
+  `shellcheck`, `typos-check`) are **PostToolUse**. That asymmetry is the whole bug, and it produces
+  three separate instances of one defect class:
+
+  | # | Check | Fires | Could fire | Cost of firing late |
+  |---|---|---|---|---|
+  | 1 | `timestamp-check.sh` | PostToolUse `Edit\|Write` | **PreToolUse** — the stamp is right there in `tool_input.new_string` | Bad bytes land on disk; correcting costs a second `date` + a second Edit. Hit 2026-08-02 16:19 EDT. |
+  | 2 | `main-push-guard.sh` | PreToolUse `Bash`, on `git push` | **PreToolUse `Edit\|Write`** — deny a write to a *tracked* file while HEAD is `main` | Editing tracked files on `main` is wholly unguarded. By push time there are commits on `main` to unwind — that is what retracting `ebbf196` cost. Hit 2026-08-02 16:19 EDT. |
+  | 3 | SQUASH-TRAILER GATE | PreToolUse, but `"ask"` | `"deny"` | See the entry above — a prompt is something a session in a hurry clicks past. |
+
+  ⚠️ **This is not a new insight; it is an unfinished sweep.** `c6cd875` (PR #67) is titled *"move the
+  release checks before the merge, where they can still be acted on"* — the identical move, applied to
+  exactly one hook. The other three were never revisited. **When fixing these, ask of every hook in the
+  file: at the moment this fires, can the thing it is complaining about still be prevented?** If not, it
+  is documentation wearing a hook's clothes.
+
+  **Caveat on #2, so nobody builds it naively:** it must key off *tracked* status, not path — untracked
+  scratch files, `local/`, and anything outside the repo must stay writable on `main`, and the check has
+  to stay cheap enough to run on every single write. `/Applications/Claude Code/meta-deferred-list.md`
+  is the worked example: it lives outside any git repo, so it is correctly exempt.
+
 *(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in
-v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
+v2.20.0, see `docs/archive/resolved-list.md`. The items above are the published legal **site** and the
+merge tooling, not the bot.)*
 
 *(A security-hygiene item — two dead host credentials sitting in `.env` — was found and **fully resolved**
 2026-07-28 11:20 EDT. See `docs/archive/resolved-list.md`.)*
