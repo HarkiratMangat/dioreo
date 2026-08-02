@@ -170,6 +170,48 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
+- `[P2 · S · 🔗bundle]` **Bulk-resync `public/changelog/` before those pages go back in the nav.**
+  *Filed 2026-08-02 02:45 EDT, at Harkirat's instruction.* The three chronicle pages are withdrawn
+  from the nav and reachable by nobody, so **both** the CI freshness gate and the deploy workflow now
+  exclude `public/changelog/` — a changelog or devlog edit no longer forces a rebuild+commit of HTML
+  no reader is served. The deliberate cost is that those built pages drift behind their sources.
+  **Before those pages are linked again: run `npm run site`, commit `public/changelog/`, and remove the
+  two exclusions** (one in `.github/workflows/ci.yml`, one in `.github/workflows/deploy-site.yml`) plus
+  the `!public/changelog/**` negation in the deploy trigger. `chronicle-drift` (WARN) reports how far
+  behind they are in the meantime — it is a meter, not an error. 🔗 Bundles with the chronicle-page
+  design work, since that is when they become reachable.
+
+- `[P1 · L · 🧩needs-design · Opus5-H]` **Rebuild Contributing and Contributors as two DISTINCT pages.**
+  *Filed 2026-08-02 01:10 EDT. Direction chosen and mockup approved by Harkirat — this is a build, not
+  an exploration.* They currently share `warmShell()`; the decision is that they stop sharing it and
+  become their own things, sharing only header, footer and tokens.
+  - **Approved mockup: `local/site-redesign/mockup-v1.html`** (gitignored, open it directly).
+    **Contributing = "The Interchange"** — four ways in (bug report · security · idea · code) on
+    tinted lanes, converging on one shared track that ends at *merged & credited*. The route DIAGRAM is
+    the page's spine. **Contributors = "The Plate"** — an engraved steel plate, screwed down, maker's
+    mark at the top, rows engraved beneath.
+  - ⚠️ **NODES, NEVER NUMERALS on Contributing.** `warmShell()`'s rule is "no numbers anywhere — the
+    number series is what tells a reader *these bind you*". A step sequence would *earn* numerals
+    semantically, but they are the legal set's signature and an invitation must not borrow it. Harkirat
+    was shown this conflict and the node form was kept.
+  - **Three open questions, deliberately carried here rather than answered:**
+    1. **Contributors' emptiness.** There is genuinely one name, so the plate is mostly bare and the
+       dashed "unengraved" row currently reads as a rendering bug rather than as reserved space. Two
+       honest routes: shrink the plate so emptiness is not the dominant impression and let the
+       surrounding cards carry the page (my lean), or make the reserved slot unmistakably deliberate.
+    2. **Lane colours on Contributing.** The mockup gives each lane its own hue, which is four colours
+       the site's palette never accounted for. Alternative: four tints of periwinkle.
+    3. **The Contributors accent.** If the plate survives, it becomes **steel `#C9CEDA`** — achromatic,
+       so it collides with none of the six hues and answers this outright. `#F8FF4A` citron is still a
+       placeholder and would retire. Gold was already ruled out at 18° from Terms amber.
+  - **Then, and only then:** the ticket-tear animation on the landing-page cards. Harkirat's words —
+    "it looks 'eh okay' at best, it needs a heavy redesign, but hold off until AFTER the
+    contributing/contributor page redesigns", because the cards are those pages' front doors.
+  - Constraints that must survive: `warmStructAudit()` keys off source heading text, so renaming a
+    heading in `CONTRIBUTING.md` silently drops that section to plain prose and **no other gate sees
+    it** — update `WARM_STRUCT` in the same change. Both pages close with the trademark notice as part
+    of their own text now, and their footers pass `disc:false`.
+
 - `[P1 · M]` **The site has NEVER been checked on a real phone since the desktop pass.** *Filed
   2026-08-02 00:40 EDT, at Harkirat's instruction, before merging v2.47.0.* Everything in that release
   was designed, measured and verified at desktop widths — the nav restaging, the sticky section

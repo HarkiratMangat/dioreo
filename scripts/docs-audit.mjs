@@ -1335,6 +1335,94 @@ check(
   }
 );
 
+/* -------------------------- chronicle-drift ------------------------- */
+check(
+  "chronicle-drift",
+  "WARN",
+  "the built changelog pages still match their sources",
+  () => {
+    // ⚠️ WARN BY DESIGN, and this one is a deliberate allowance rather than a defect.
+    // Harkirat's call 2026-08-02 02:45 EDT: the three chronicle pages are withdrawn from
+    // the nav and reachable by nobody, so forcing a rebuild+commit of their HTML on every
+    // changelog or devlog edit is churn for output no reader is served. Both the CI
+    // freshness gate and the deploy workflow now exclude public/changelog/ for that reason.
+    //
+    // The cost of that allowance is that the built pages go quietly stale. This is the
+    // meter: it does not block anything, it just says how far behind they are, so the bulk
+    // resync when those pages are revived is a known quantity rather than a surprise.
+    //
+    // It compares the newest VERSION HEADING in each source against the rendered page —
+    // cheap, and it catches the case that actually happens (an entry added, page not
+    // rebuilt). It does not attempt a full content diff; that is what `npm run site` is for.
+    const pairs = [
+      ["docs/CHANGELOG.md", "public/changelog/detailed.html"],
+      ["docs/CHANGELOG-SUMMARY.md", "public/changelog/index.html"],
+    ];
+    const out = [];
+    let examined = 0;
+    for (const [src, built] of pairs) {
+      const a = read(src), b = read(built);
+      if (a === null || b === null) continue;
+      examined++;
+      const newest = (a.match(/^##\s+(v\d+\.\d+\.\d+)/m) || [])[1];
+      if (!newest) continue;
+      if (!b.includes(newest)) {
+        out.push({
+          msg: `${built} does not contain ${newest}, the newest version in ${src}. The chronicle ` +
+            "pages are deliberately allowed to drift while they are withdrawn from the nav — this " +
+            "is the meter, not an error. Run `npm run site` and commit public/changelog/ when those " +
+            "pages are revived.",
+        });
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
+/* ------------------------- unreleased-on-main ----------------------- */
+check(
+  "unreleased-on-main",
+  "WARN",
+  "no commit sits on main without belonging to a release",
+  () => {
+    // Version is minted at MERGE here, one per squashed PR, and the tag lands on that
+    // commit — so after a proper merge the range newest-tag..main is EMPTY. A non-empty
+    // range means a commit reached main some other way, which in practice means a direct
+    // push. That is what happened on 2026-08-02 01:10 EDT: a docs commit went straight to main
+    // immediately after v2.47.0 was tagged, and belongs to no version and no changelog.
+    //
+    // ⚠️ WARN, not ERROR, and the reason matters. There is a legitimate window between
+    // `gh pr merge` and `git tag` where this is briefly true — the workflow explicitly
+    // separates those two steps, because chaining them once put a tag on the wrong
+    // commit. An ERROR here would fire during correct behaviour, get muted, and then
+    // catch nothing. The prevention lives in .claude/hooks/main-push-guard.sh; this is
+    // only the detector for when something got past it.
+    if (isShallow()) return { findings: [], skipped: "shallow clone — tag history is incomplete" };
+    // ⚠️ git() here returns "" on failure rather than throwing, so absence has to be
+    // tested, not caught. A try/catch around it would never fire and the check would
+    // silently treat "no tags" as "nothing unreleased" — a vacuous pass.
+    // Distinguish the two ways this cannot run. Reporting "no tags" when the real cause is
+    // "no main branch" sent me looking in the wrong place for a CI-only failure.
+    if (!git("rev-parse", "--verify", "--quiet", "main").trim()) {
+      return { findings: [], skipped: "no `main` branch in this checkout — not verified" };
+    }
+    const newest = git("describe", "--tags", "--abbrev=0", "main").trim();
+    if (!newest) return { findings: [], skipped: "no tag reachable from main — nothing to measure against" };
+    const commits = git("log", "--oneline", `${newest}..main`).trim();
+    if (!commits) return { findings: [], examined: 1 };
+    const list = commits.split("\n").filter(Boolean);
+    return {
+      findings: [{
+        msg: `${list.length} commit(s) on main after ${newest} belong to no release: ` +
+          list.map((l) => l.split(" ")[0]).join(", ") +
+          ". If a merge is mid-flight this is expected and clears when you tag. Otherwise " +
+          "they reached main outside the PR flow — cover them in the next release's changelog.",
+      }],
+      examined: 1,
+    };
+  }
+);
+
 /* ---------------------------- lock-version -------------------------- */
 check(
   "lock-version",

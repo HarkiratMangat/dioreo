@@ -27,9 +27,18 @@ purpose. Everything below is the detail — read it before changing any of it.
 
 ## Build and sources
 
-**Run `dior legal build` (or `dior legal deploy`, which rebuilds and publishes) after editing ANY
-source.** `npm run site` is the alternative entry point — see the root file for why there are two.
-`dior legal check` compares live bytes against the local build.
+**Run `npm run site` after editing ANY source** — it syntax-checks both build scripts first, and a
+backtick in a CSS comment inside a template literal is a `SyntaxError` that has broken the build
+repeatedly. `dior legal build` runs the same builder WITHOUT that pre-check (a known wart, filed in
+`meta-deferred-list.md`). `dior legal check` compares live bytes against the local build.
+
+⚠️ **You do not normally deploy by hand.** `.github/workflows/deploy-site.yml` publishes to Cloudflare
+Pages on any merge to `main` that touches the site, and **skips changelog/devlog-only changes on
+purpose** — those pages are withdrawn from the nav, so a publish for them reaches no reader. The
+workflow rebuilds and refuses to publish a stale `public/`, then asserts the live `<title>` matches
+what it uploaded, because a 200 can be served from cache while the site is down. Until
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` exist as repo secrets it verifies the build and
+skips the upload with a visible warning rather than going red.
 
 ⚠️ **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown or the
 generator, re-run the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves

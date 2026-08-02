@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/SESSION-START.md\"; if [ -f \"$F\" ]; then cat \"$F\"; else echo \"⚠️ SESSION-START.md NOT FOUND at $F — session-start guidance did NOT load. Tell Harkirat, and fix the SessionStart hook path in .claude/settings.local.json.\"; fi | jq -Rs '{hookSpecificOutput: {hookEventName: \"SessionStart\", additionalContext: .}}'",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/SESSION-START.md\"; if [ -f \"$F\" ]; then cat \"$F\"; else echo \"\u26a0\ufe0f SESSION-START.md NOT FOUND at $F \u2014 session-start guidance did NOT load. Tell Harkirat, and fix the SessionStart hook path in .claude/settings.local.json.\"; fi | jq -Rs '{hookSpecificOutput: {hookEventName: \"SessionStart\", additionalContext: .}}'",
             "timeout": 5
           }
         ]
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/diors-builds notes.md\"; if [ -f \"$F\" ]; then base=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' \"$F\"); n=$(printf '%s' \"$base\" | grep -cE '^- [^<[]'); open=$(printf '%s' \"$base\" | grep -E '^- [^<[]' | cut -c1-120 | head -15); if [ \"$n\" -gt 0 ]; then printf 'NOTES-FILE CHECK: docs/diors-builds notes.md has %s open (unmarked) item(s) in its working sections (above the 📍 pointer section). Do NOT skip the notes file this session -- review, answer, mark, and file them per the notes workflow (project_central_notes_file memory). Truncated previews:\\n%s' \"$n\" \"$open\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/diors-builds notes.md\"; if [ -f \"$F\" ]; then base=$(awk '/^## Questions/{f=1} /^## \ud83d\udccd/{exit} f{print}' \"$F\"); n=$(printf '%s' \"$base\" | grep -cE '^- [^<[]'); open=$(printf '%s' \"$base\" | grep -E '^- [^<[]' | cut -c1-120 | head -15); if [ \"$n\" -gt 0 ]; then printf 'NOTES-FILE CHECK: docs/diors-builds notes.md has %s open (unmarked) item(s) in its working sections (above the \ud83d\udccd pointer section). Do NOT skip the notes file this session -- review, answer, mark, and file them per the notes workflow (project_central_notes_file memory). Truncated previews:\\n%s' \"$n\" \"$open\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
             "timeout": 5
           }
         ]
@@ -94,6 +94,15 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // empty'); if echo \"$cmd\" | grep -qE '(^|[;&|] *)gh pr create'; then base=$(echo \"$cmd\" | grep -oE '[-][-]base +[A-Za-z0-9._/-]+' | awk '{print $2}'); bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/docs-audit-gate.sh\" \"${base:-main}\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/main-push-guard.sh\""
           }
         ]
       }

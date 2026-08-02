@@ -119,7 +119,30 @@ Full setup, the emoji/DB cloning, and the caveats: `docs/reference/deployment-an
 
 ### Git workflow = Branch → Commit → Test (dev bot) → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT; Test step added 2026-07-26 13:45 EDT)
 Never push, merge, or deploy without asking first — approval never carries over (branch commits and
-**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
+**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.**
+⚠️ **That does NOT mean every merge mints a version, and reading it that way caused real confusion
+(2026-08-02 01:45 EDT).** It means: *when* a version is minted, it happens at merge time. These are two
+separate rules and only the first is absolute:
+  1. **`main` only ever advances through a PR.** Measured across the 85 commits on `main` since this
+     workflow was adopted on 2026-07-24: **nine** reached it by direct push. Eight of those fall in
+     2026-07-24 → 2026-07-27, the era of the `chore(release): finalize` two-commit pattern that was
+     retired 2026-07-27 21:27 EDT. Then **six days with none at all** — and then `ebbf196`
+     (2026-08-02 01:10 EDT), which was a mistake and broke that clean run.
+  2. **A version is minted for a RELEASE, not for every merge.** Measured by TAGS, which is the
+     authoritative record: 31 of those 85 commits carry no tag, almost all `docs:` work, and they are
+     entirely correct. ⚠️ **Do not measure this with `package.json`** — it went unbumped for a long
+     stretch (the audit's own `TAG_RULE_FROM` exemption records that it was not bumped per release
+     before v2.33.0), so counting its edits answers a different question and gives a wrong number.
+     That mistake was made and corrected in this very passage.
+So an unversioned commit on `main` is normal; an *unreviewed* one is not.
+**`main` is branch-protected as of 2026-08-02 02:10 EDT** — pull request required, force pushes and
+deletions blocked, linear history required, **0 required approvals** (a solo maintainer cannot approve
+their own PR, and requiring one would deadlock every merge). `enforce_admins` is deliberately OFF so
+Harkirat can still override in a genuine emergency — the retraction of `ebbf196` needed exactly that.
+⚠️ **No required status check is configured**, because a context name that does not match exactly
+blocks every merge with no way to tell why; add CI as a required check only after confirming the check
+name GitHub actually reports. `unreleased-on-main` (WARN)
+reports the former for traceability, and `.claude/hooks/main-push-guard.sh` prevents the latter. The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
 the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
@@ -288,9 +311,18 @@ Discord Developer Portal has stable public URLs that survive the repo flipping p
 `docs/legal/*.md`, the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
 `CONTRIBUTORS.md`), **and the three records `docs/CHANGELOG-SUMMARY.md`, `docs/CHANGELOG.md`,
 `docs/DEVLOG.md`**; the HTML is produced by `scripts/buildLegalPages.js`.
-**Run `dior legal build` (or `dior legal deploy`, which rebuilds and publishes) after editing ANY of
-those nine sources** — nothing else republishes the site, and `dior legal check` compares live bytes
-against the local build.
+**Run `dior legal build` after editing ANY of those nine sources** — nothing else regenerates
+`public/`, and `dior legal check` compares live bytes against the local build.
+
+⚠️ **PUBLISHING IS AUTOMATIC NOW — do not deploy by hand as a matter of course**
+(`.github/workflows/deploy-site.yml`, added 2026-08-02 01:30 EDT). A merge to `main` that touches the
+site publishes it to Cloudflare Pages on its own. **It deliberately does NOT fire for
+changelog/devlog-only changes**: those three pages are withdrawn from the nav, so republishing the
+whole site for a page nobody can reach is waste. The workflow rebuilds and refuses to publish if
+`public/` is stale, then asserts the live `<title>` matches what it just uploaded — a 200 alone can be
+cache. `dior legal deploy` still exists for a manual push, and `workflow_dispatch` does the same from
+CI. This was added because the live site was found serving the previous headline **after v2.47.0 had
+merged and been tagged**: `public/` was correct in `main` and nothing ever pushed it anywhere.
 - ⚠️ **THERE ARE TWO BUILD ENTRY POINTS AND THAT IS A KNOWN WART, not a design.** `npm run site` was
   added 2026-08-01 22:20 EDT without checking that `dior legal build` already existed and ran the same builder,
   and this section was rewritten to name the new one — demoting a working CLI command. Both call

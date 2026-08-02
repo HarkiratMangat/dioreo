@@ -71,7 +71,32 @@ const makeFixture = () => {
   // surface in a space-free tmpdir. A fixture that doesn't reproduce production's hazards is a
   // fixture that certifies the wrong thing. Do not "tidy" this into a hyphen.
   const root = mkdtempSync(join(tmpdir(), "docs audit fixture "));
-  execFileSync("git", ["init", "-q"], { cwd: root });
+  // ⚠️ -b main IS LOAD-BEARING. `git init` takes its branch name from init.defaultBranch,
+  // which is set to `main` in THIS repo's local config and unset globally — so the fixture
+  // was `main` on the developer's Mac and `master` on CI's ubuntu runner. Checks that name
+  // `main` then could not resolve it, skipped, and a prove case correctly reported the check
+  // as dead — a failure that could only ever appear in CI. Same class as the deliberate SPACE
+  // in the tmpdir prefix above: a fixture must not inherit anything from the machine.
+  execFileSync("git", ["init", "-q", "-b", "main"], { cwd: root });
+  // ⚠️ ASSERT IT, don't assume it. -b is the fix, but the failure this replaced was a
+  // fixture quietly sitting on the wrong branch, and the symptom was "the check is dead"
+  // — which sent me looking at the CHECK, not the fixture. Any future cause of a wrong
+  // branch name (a git default change, a template, an env var) now says so directly.
+  // A compatibility fallback for git < 2.28 was suggested and deliberately not taken:
+  // the runner is 2.54 and this Mac is 2.50, and `git init -b` on an older git FAILS
+  // LOUDLY rather than silently picking another name, so the fallback would guard a
+  // path that cannot go wrong quietly. An assertion covers strictly more.
+  {
+    // symbolic-ref, not rev-parse: the fixture has no commit yet, so HEAD is an UNBORN
+    // branch and `rev-parse --abbrev-ref HEAD` errors out. symbolic-ref reads the ref HEAD
+    // points at without needing a commit behind it. (The first version of this assertion
+    // used rev-parse and threw on every run — an assertion that is itself wrong is worse
+    // than none, so it is verified below in both directions.)
+    const b = execFileSync("git", ["symbolic-ref", "--short", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+    if (b !== "main") {
+      throw new Error(`fixture is on branch "${b}", not "main" — checks that name main would skip and report as dead`);
+    }
+  }
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
@@ -103,10 +128,15 @@ const makeFixture = () => {
     root,
     "CLAUDE.md",
     "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`, attributions in `NOTICE`.\n\n" +
-      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/`.\n" +
+      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/` `public/`.\n" +
       "Scripts: `scripts/dofix.js`.\n"
   );
   write(root, "LICENSE", "Fixture licence.\n");
+  // chronicle-drift compares the newest source version against the BUILT page, so the fixture
+  // needs both or the check skips, examines nothing, and the ledger calls it a vacuous pass.
+  // These carry v2.33.0 — the newest in the fixture's CHANGELOG — so the baseline is clean.
+  write(root, "public/changelog/detailed.html", "<h1>Changelog</h1><p>v2.33.0</p>\n");
+  write(root, "public/changelog/index.html", "<h1>What's New</h1><p>v2.33.0</p>\n");
   write(root, "scripts/dofix.js", "// fixture script\n");
   // privacy-inventory loads the schema rather than regexing it, so the fixture must supply one —
   // otherwise the check skips, examines nothing, and the ledger correctly calls that a vacuous pass.
@@ -206,7 +236,12 @@ const makeFixture = () => {
  * @param breakIt (root) => void — introduce exactly one violation
  * @param args    extra audit args (e.g. --diff)
  */
+// Every check id any prove case claims to exercise. The coverage assertion at the bottom compares
+// this against the audit's own --list, so a check registered with no test cannot ship unnoticed.
+const proven = new Set();
+
 const proves = (name, checkId, breakIt, args = []) => {
+  proven.add(checkId);
   const root = makeFixture();
   try {
     // 1. The baseline must be clean, or nothing below means anything.
@@ -235,6 +270,7 @@ const proves = (name, checkId, breakIt, args = []) => {
  * what nearly caused two correct CHANGELOG-SUMMARY range headings to be "fixed" into a fake gap.
  */
 const provesSilent = (name, checkId, setup) => {
+  proven.add(checkId);
   const root = makeFixture();
   try {
     setup(root);
@@ -527,7 +563,10 @@ proves("a root-level document nothing maps", "root-docs", (root) => {
 });
 
 proves("a brand-new top-level directory", "top-level-dirs", (root) => {
-  write(root, "public/index.html", "<p>hi</p>\n");
+  // ⚠️ NOT `public/` any more. The fixture gained a real public/ (for chronicle-drift) and
+  // CLAUDE.md now names it, so this break stopped breaking and the test silently went dead —
+  // the same trap that hit the NOTICE case earlier. Use a directory the fixture never mentions.
+  write(root, "vendor/thing.txt", "hi\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
@@ -555,6 +594,28 @@ proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (
     + "\n### A subsystem that outgrew the map\n"
     + "detail line\n".repeat(140);
   write(root, "CLAUDE.md", c);
+});
+
+proves("a record file with its top-level heading spliced in twice", "record-structure", (root) => {
+  // The real incident this guards: a commit spliced CHANGELOG's own 183-line header into the middle
+  // of an entry, and every other check passed because none of them look at a file's SHAPE.
+  const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
+  write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
+});
+
+proves("a changelog entry whose built page was never regenerated", "chronicle-drift", (root) => {
+  // The allowance's meter: add a version to the source and leave the built page alone.
+  const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
+  write(root, "docs/CHANGELOG.md", c.replace("# Changelog\n", "# Changelog\n\n## v2.34.0 — 2026-08-01 (#3 · `SHA`) — three\n"));
+});
+
+proves("a commit reaching main outside the PR flow", "unreleased-on-main", (root) => {
+  // A direct push leaves a commit after the newest tag. Version is minted at merge here, so
+  // that range is empty on a correctly released tree — which is what makes the range a usable
+  // signal at all. WARN, not ERROR: the merge->tag window makes this briefly true on purpose.
+  write(root, "docs/ROADMAP.md", "# Roadmap\n\npushed straight to main\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+  execFileSync("git", ["commit", "-qm", "docs: straight to main"], { cwd: root });
 });
 
 proves("the lockfile's version drifting from package.json", "lock-version", (root) => {
@@ -675,6 +736,38 @@ proves(
   // them never touches the notes file — so the check is correctly silent there.
   ["--diff", "HEAD~1"]
 );
+
+// ---- coverage: a check with no test is an unproven check --------------------------------------
+// ⚠️ ADDED 2026-08-02 01:30 EDT because this suite did not notice. `unreleased-on-main` was
+// registered in docs-audit.mjs and shipped with no prove case, and the summary still reported
+// "all 53 checks proven" — counting PROVE CASES, never checks. A suite whose whole purpose is
+// "no guard ships unproven" was itself blind to an unproven guard.
+{
+  const listed = execFileSync("node", [AUDIT, "--list"], { encoding: "utf8" })
+    .split("\n")
+    .map((l) => (l.match(/^(?:ERROR|WARN)\s+(\S+)/) || [])[1])
+    .filter(Boolean);
+  // ⚠️ EXEMPTIONS CARRY A REASON, per this repo's own convention — an unexplained allowlist
+  // silences a real defect forever. These four read the developer's REAL ~/.claude (the memory
+  // store, the external anchors, the slug derived from the repo's location). A fixture in /tmp
+  // cannot make them fire without writing into the actual home directory, which a test must not
+  // do. They are exercised every time the audit runs for real; in CI they SKIP and say so.
+  const CANNOT_FIXTURE = {
+    "memory-xref": "reads the real ~/.claude memory store",
+    "memory-index": "reads the real ~/.claude memory store",
+    "memory-slug": "derives the slug from this checkout's real path",
+    "external-anchors": "resolves absolute paths outside the repo",
+  };
+  const missing = listed.filter((id) => !proven.has(id) && !CANNOT_FIXTURE[id]);
+  if (missing.length) {
+    failures.push(
+      `coverage: ${missing.length} check(s) registered in docs-audit.mjs have NO self-test — ` +
+      `${missing.join(", ")}. Add a proves(...) case; an untested guard is an unproven guard.`
+    );
+  } else {
+    console.log(`\n  ✓ coverage               all ${listed.length} registered checks covered (${Object.keys(CANNOT_FIXTURE).length} exempt, with reasons)`);
+  }
+}
 
 console.log();
 if (failures.length) {

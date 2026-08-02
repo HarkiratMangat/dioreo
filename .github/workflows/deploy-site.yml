@@ -1,0 +1,121 @@
+# Publish the site to Cloudflare Pages when a merge actually touches it.
+#
+# WHY THIS EXISTS
+# ---------------
+# public/ is build output AND it is committed, so `main` always holds a correct
+# site — but nothing ever pushed it anywhere. Deploying was `dior legal deploy`
+# run by hand from one Mac, so the live site drifted behind `main` silently and
+# for as long as nobody remembered. It was found serving the previous headline
+# after v2.47.0 had already merged and been tagged.
+#
+# WHY THE PATH FILTER IS THE POINT
+# --------------------------------
+# Harkirat's instruction: do not redeploy the whole site just because a changelog
+# or devlog entry was written. Those three pages are built and deployed but are
+# deliberately withdrawn from the nav — nobody can reach them from the site — so a
+# deploy triggered by them costs a publish for a page no reader will see.
+#
+# `paths` below is an allow-list with ONE negation, and the negation is
+# load-bearing: `public/**` would otherwise match `public/changelog/*.html`, which
+# is regenerated whenever CHANGELOG.md, CHANGELOG-SUMMARY.md or DEVLOG.md change.
+# Excluding the SOURCE files alone would not have worked, because it is the built
+# OUTPUT that lands in the commit. A push touching the records only matches
+# nothing here and does not deploy; a push touching a legal page deploys
+# everything, records included, which is correct — they are already in the tree.
+#
+# ⚠️ Patterns are evaluated in order and a later one wins, so the negation must
+# stay BELOW `public/**`. Moving it above silently re-enables changelog deploys.
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - '!public/changelog/**'
+      - 'scripts/buildLegalPages.js'
+      - 'scripts/lib/chronicle.js'
+      - 'docs/legal/**'
+      - 'LICENSE'
+      - 'NOTICE'
+      - 'CONTRIBUTING.md'
+      - 'CONTRIBUTORS.md'
+      - '.github/workflows/deploy-site.yml'
+  # A manual handle, for the case this workflow exists to fix: the live site has
+  # drifted and nobody wants to wait for the next qualifying merge.
+  workflow_dispatch:
+
+# One deploy at a time. Two overlapping publishes to the same Pages project is
+# the shape of the unexplained zero-file deploys recorded in
+# docs/db-deferred-list.md, so they are serialised rather than cancelled —
+# cancelling mid-upload is what could leave a project half-published.
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+
+      # ⚠️ REBUILD AND COMPARE BEFORE PUBLISHING. public/ is committed, so this
+      # should be a no-op — but "should" is not "is", and publishing a stale tree
+      # is the failure this workflow exists to prevent, not one to automate. CI
+      # gates this on the PR; doing it again here means a direct push to main,
+      # which bypasses PR CI, cannot publish an out-of-date site either.
+      - name: public/ matches its sources
+        run: |
+          npm run site
+          # public/changelog/ excluded for the same reason as in ci.yml: those pages are
+          # unreachable, deliberately allowed to drift, and resynced in bulk when revived.
+          # A drifted changelog page must not block publishing a legal page that IS reachable.
+          if ! git diff --quiet -- public/ ':(exclude)public/changelog/'; then
+            echo "::error::public/ is stale — a source was edited without rebuilding. Refusing to publish."
+            git diff --stat -- public/ ':(exclude)public/changelog/'
+            exit 1
+          fi
+
+      # ⚠️ SKIPS RATHER THAN FAILS when the credential is absent, and says so
+      # loudly. A workflow that goes permanently red trains everyone to ignore
+      # red; a silent pass is worse. This states the exact reason, the same way
+      # docs-audit reports a check it cannot support.
+      - name: Publish to Cloudflare Pages
+        id: publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::SKIPPED — CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID are not set on this repository, so the site was NOT published. The build was verified; only the upload was skipped. Add both secrets to enable this."
+            exit 0
+          fi
+          npx wrangler pages deploy public \
+            --project-name=diors-builds-legal \
+            --branch main \
+            --commit-dirty=true
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      # Cloudflare's edge presents a fresh deploy as 404 for up to ~60s before it
+      # settles (measured 2026-07-30 00:15 EDT), so this waits before believing a
+      # failure. It asserts a string only the CURRENT build contains, because a
+      # 200 alone can be served from cache while the site is actually down — the
+      # exact way an outage hid behind a green check once already.
+      - name: Verify the live site is the build we just published
+        if: steps.publish.outputs.published == 'true'
+        run: |
+          want=$(grep -o '<title>[^<]*</title>' public/legal/index.html | head -1)
+          for i in 1 2 3 4 5 6; do
+            got=$(curl -fsSL --max-time 20 "https://diors-builds-legal.pages.dev/legal/" \
+                  | grep -o '<title>[^<]*</title>' | head -1 || true)
+            if [ "$got" = "$want" ]; then echo "Live site matches the published build."; exit 0; fi
+            echo "Attempt $i: live title is '$got', expected '$want' — waiting."
+            sleep 15
+          done
+          echo "::error::The live site did not match the published build after ~90s."
+          exit 1
