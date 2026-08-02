@@ -181,7 +181,88 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.49.2 — 2026-08-02 16:12 EDT (#67) — A gate that fired too late, and the release it forced
+## v2.50.0 — 2026-08-02 17:14 EDT (#68) — The tests were fine. Nothing was running them.
+
+Harkirat, after three gates failed inside the first minutes of a session he had
+spent hours building them in: *"i literally spent hours last session working on
+some of these gates and literally within the first few minutes of this session,
+they dont even seem to hold despite their 'tests'."*
+
+**The tests were correct. They were executed by nothing.** Measured: each of the
+six `.claude/hooks/*.test.sh` files was referenced by `package.json`,
+`.github/workflows/` and `.claude/settings.json` a combined **zero** times. They
+ran only when someone hand-typed `bash <file>` — in practice, the session that
+wrote them and never again. `scripts/calendarDedup.test.js` was in the same
+state: reachable only through `npm test`, which CI never called.
+
+A test nobody runs is worse than no test, because it produces a documented belief
+that the behaviour is covered. Same shape as shellcheck sitting installed and
+unrun while the bug it catches shipped.
+
+**`npm run test:hooks` now runs every hook self-test, `npm test` includes it, and
+CI calls `npm test`.** The runner also asserts **coverage**: every hook script
+must have a test, computed from the scripts on disk rather than a hand-kept list,
+so deleting a test fails the suite instead of silently shrinking it.
+
+**Writing the eight missing tests found two gates that had never worked:**
+
+- **`main-push-guard.sh` — the only hook in the repo that can actually block
+  anything — passed `rtk git push` straight through.** Its anchor required `git`
+  at the start of a command, and RTK.md documents that commands are transparently
+  rewritten through `rtk`. `rtk --help` confirms `rtk git` and `rtk gh` are both
+  real subcommands. The same naive anchor was in **nine** gate invocations: the
+  squash gate, the release-ready check, the four `gh pr create` dispatchers and
+  the three post-merge checks. All hardened; `command-anchors.test.sh` is a
+  regression lock that scans the whole layer, because a per-hook test cannot catch
+  the *next* gate written the old way.
+- **`records-close-check.sh`'s memory branch used `find -newermt "@epoch"`, which
+  BSD find cannot parse.** It errored into `2>/dev/null`, the count came back 0
+  every time, and check (6) fired on every PR whether or not a memory had been
+  written — a gate that always fires trains you to dismiss it. Replaced with an
+  explicit `stat` comparison. **It nearly escaped a second time:** probing
+  `find -newermt @N` from an interactive shell *succeeds*, because this machine
+  aliases `find` to `bfs`. Hooks get plain `/usr/bin/find`. Test a hook the way the
+  hook runs.
+
+**The squash-trailer gate is now `deny`, not `ask`.** As an `ask` it was clicked
+past on three consecutive merges — including the three that shipped the hook work
+itself. Of the last 8 squash commits only `ee3b0cd` has the correct 2 trailer
+lines; `f778195` has 20 and `9b9b4ce` has **130**. Deny is satisfied by any
+`--body`, so it blocks only the call that produces the bug.
+
+**New `branch-discipline-guard.sh`** — PreToolUse had **seven** hooks, all
+`Bash`/`Artifact`, and **none on `Edit|Write`**, so nothing could prevent a bad
+write. Editing tracked files on `main`, and committing there, were unguarded; the
+push guard only spoke at the last step, when there are already commits to unwind.
+Tracked files only — untracked and gitignored paths stay writable.
+
+**`timestamp-check.sh` now runs at both events** — `pre` denies an impossible
+timestamp before it reaches disk, `post` keeps the advisory bare-date check. Three
+further defects fixed: it only ever checked **today**, so a stamp dated tomorrow
+sailed through; backticks exempted the impossible check, which is exactly where
+changelog fabrications land; and a timestamp wrapped across a line break read as a
+bare date. A `TS-EXAMPLE` line token exempts documentation that quotes fabricated
+stamps — the first `pre` build denied its own header.
+
+**New `clock-inject.sh`, from Harkirat's suggestion, adopted the same turn.** A
+`UserPromptSubmit` clock hook already existed, but it refreshes only when he
+speaks; inside this turn the anchor went stale and four timestamps were invented
+by extrapolating from it. The clock is now re-stated before every write. Its own
+test caught it broken on first run — `rtrimstr(.;"\n")` is the two-argument form
+and does not exist, so the hook failed to compile on every write.
+
+Also: `release-ready-check.sh` diffed `origin/main...HEAD` unconditionally, wrong
+for every `v3-pre-release` PR and invisible only because the two branches are
+currently identical; it now resolves the real base and drops the
+CHANGELOG-SUMMARY demand during v3 pre-release. `rg-flag-guard.sh` no longer
+reports flag-shaped text inside a quoted **pattern** (its fifth false-positive
+class). The global `usage-guard.mjs` no longer demands `--hidden` for explicitly
+named files — verified empirically that ripgrep searches named hidden/gitignored
+files regardless, so that warning was simply wrong.
+
+**17 hook test suites, 0 untested hooks, shellcheck-clean.**
+
+## v2.49.2 — 2026-08-02 16:12 EDT (#67 · `c6cd875`) — A gate that fired too late, and the release it forced
 
 **The DEVLOG check was gated `PostToolUse` on `gh pr merge` — it fired AFTER the
 merge.** It caught a genuine omission in v2.49.1, but by then the branch was gone

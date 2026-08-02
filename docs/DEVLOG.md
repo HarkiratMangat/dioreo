@@ -104,6 +104,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)
 - 2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)
 - 2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)
+- 2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3753,6 +3754,96 @@ stops the gate manufacturing releases to satisfy itself.
 - **Printing a check's exit code is not reading it.** `docs:audit exit=1` scrolled past under a push.
 - **When the user and the documentation disagree, measure — do not pick a side.** He was right and the
   doc was stale, and only the measurement could have told me which.
+
+## 2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)
+
+Harkirat opened the session's real work with a complaint that turned out to be exactly diagnostic:
+*"i literally spent hours last session working on some of these gates and literally within the first
+few minutes of this session, they dont even seem to hold despite their 'tests'."*
+
+He was right about the symptom and the cause was one level below where either of us was looking.
+**The tests were correct. Nothing executed them.** Each of the six `.claude/hooks/*.test.sh` files was
+referenced by `package.json`, `.github/workflows/` and `.claude/settings.json` a combined **zero**
+times. They ran when someone hand-typed `bash <file>` — which meant the session that wrote them, once.
+`scripts/calendarDedup.test.js` was in the same state, reachable only through an `npm test` that CI
+never called.
+
+This is the third instance of one pattern in this repo: shellcheck installed and unrun while the bug
+it catches shipped; `usage-guard.mjs` shipping with every Bash rule dead from line 2 and looking fine;
+now six green test files that nothing invoked. **Being on disk is not being run, and a test nobody runs
+is worse than no test** — it manufactures a documented belief that the behaviour is covered.
+
+### What the audit actually found
+
+Before writing anything I inventoried the whole layer rather than the three hooks that had misfired.
+That was the right call, because the interesting findings were structural:
+
+- **12 of 13 hook scripts could not block anything.** Only `main-push-guard.sh` exits 2. Everything
+  else prints advisory text. That is often correct — but it was never a decision, just an accretion.
+- **PreToolUse had seven hooks and none on `Edit|Write`.** So nothing could prevent a bad *write*,
+  only complain afterwards. Both failures I hit earlier in the session — editing tracked files on
+  `main`, and writing an invented timestamp — were in that hole.
+- **CI was not a required status check.** A red PR could merge, and one run had gone red that day.
+
+### The two gates that had never worked
+
+Writing the eight missing tests is what found them. Neither was findable by reading.
+
+**`main-push-guard.sh` passed `rtk git push` straight through** — and it is the *only* hook that can
+actually block. Its anchor demanded `git` at the start of a command, while RTK.md documents that shell
+commands are transparently rewritten through `rtk`. The same naive anchor sat in **nine** gate
+invocations. The fix is trivial; the lesson is that a per-hook test cannot catch the *next* gate
+written the old way, so `command-anchors.test.sh` now scans the whole layer for the pattern.
+
+**`records-close-check.sh`'s memory check used `find -newermt "@epoch"`, which BSD find cannot parse.**
+It errored into `2>/dev/null`, the count was always 0, and the gate fired on every PR regardless of
+whether a memory had been written. A gate that always fires is dismissed exactly like a gate that
+never does.
+
+That one nearly escaped twice. My first probe of `find -newermt @N` **succeeded** — because this
+machine's shell aliases `find` to a function dispatching to `bfs`, a different implementation that
+accepts the epoch form. Hooks run in a plain non-interactive shell and get `/usr/bin/find`. **Test a
+hook the way the hook runs, not the way your prompt runs.**
+
+### The pattern worth keeping
+
+Three separate gates were wrong in the same way, and the shape has a name now: **the check exists, its
+diagnosis is correct, and it fires where it can no longer prevent anything.** The timestamp check was
+PostToolUse when the content sits in `tool_input` at PreToolUse. The branch guard watched `push` when
+the violation is the *commit*. The squash gate was an `ask`, which is a prompt, and a prompt is
+something a session in a hurry clicks past — measurably so: of the last 8 squash commits only one has
+the correct 2 trailer lines, and the three worst offenders are the merges that shipped the hook work
+itself.
+
+`c6cd875` had already fixed exactly one instance of this ("move the release checks before the merge,
+where they can still be acted on") and the sweep was never done. **When a fix names a class, sweep the
+class.**
+
+### Harkirat's suggestion, and why it was the better half
+
+Mid-session he proposed injecting the clock on tool calls, not just on his messages. The
+`UserPromptSubmit` half already existed — but his framing named the gap precisely: *"if i send a
+message or if u trigger a tool."* The existing hook refreshes only when he speaks, and this turn ran
+120+ tool calls after one 16:32 injection. I invented four timestamps in that window by adding an
+imagined elapsed time to a stale anchor, and the new `pre` gate denied two of them.
+
+That is the distinction worth recording: **`timestamp-check` is the net, `clock-inject` is the
+supply.** A net without supply means guessing and getting denied; supply without a net means one
+careless turn ships a fabrication into the CHANGELOG again. Keeping both is not redundancy.
+
+His hook's own test then caught it broken on the first run — `rtrimstr(.;"\n")` is a two-argument form
+that does not exist, so it failed to compile on every write. A hook written, reviewed, wired up, and
+completely dead. Which is the entire argument of this release in one line.
+
+### Where it landed
+17 hook test suites, 0 untested hooks, shellcheck-clean, `npm test` runs them and CI runs `npm test`.
+Coverage is computed from the scripts on disk, so deleting a test fails the suite rather than quietly
+shrinking it.
+
+**One thing I could not do:** adding `syntax-check` as a required status check on `main` was blocked by
+the permission classifier, twice. The check name is confirmed (`syntax-check`, and *not* `sync`, which
+only runs on push to `main` and would deadlock every PR) — the command is handed over rather than run.
+
 
 # Part B — Lessons Ledger (thematic)
 

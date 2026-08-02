@@ -4,3 +4,10 @@
 [default.extend-words]
 mis = "mis"
 unparseable = "unparseable"
+
+# Hook self-tests carry DELIBERATE misspellings as fixtures — typos-check.test.sh has to feed the
+# checker a real typo to prove it still fires. Without this exclusion the spellchecker reports the
+# test that proves the spellchecker works, which is noise of exactly the kind the `mis` note above
+# describes. Added 2026-08-02 16:49 EDT, when writing that test tripped the hook it was testing.
+[files]
+extend-exclude = [".claude/hooks/*.test.sh"]
