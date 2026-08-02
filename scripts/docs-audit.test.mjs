@@ -206,7 +206,12 @@ const makeFixture = () => {
  * @param breakIt (root) => void — introduce exactly one violation
  * @param args    extra audit args (e.g. --diff)
  */
+// Every check id any prove case claims to exercise. The coverage assertion at the bottom compares
+// this against the audit's own --list, so a check registered with no test cannot ship unnoticed.
+const proven = new Set();
+
 const proves = (name, checkId, breakIt, args = []) => {
+  proven.add(checkId);
   const root = makeFixture();
   try {
     // 1. The baseline must be clean, or nothing below means anything.
@@ -235,6 +240,7 @@ const proves = (name, checkId, breakIt, args = []) => {
  * what nearly caused two correct CHANGELOG-SUMMARY range headings to be "fixed" into a fake gap.
  */
 const provesSilent = (name, checkId, setup) => {
+  proven.add(checkId);
   const root = makeFixture();
   try {
     setup(root);
@@ -557,6 +563,22 @@ proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (
   write(root, "CLAUDE.md", c);
 });
 
+proves("a record file with its top-level heading spliced in twice", "record-structure", (root) => {
+  // The real incident this guards: a commit spliced CHANGELOG's own 183-line header into the middle
+  // of an entry, and every other check passed because none of them look at a file's SHAPE.
+  const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
+  write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
+});
+
+proves("a commit reaching main outside the PR flow", "unreleased-on-main", (root) => {
+  // A direct push leaves a commit after the newest tag. Version is minted at merge here, so
+  // that range is empty on a correctly released tree — which is what makes the range a usable
+  // signal at all. WARN, not ERROR: the merge->tag window makes this briefly true on purpose.
+  write(root, "docs/ROADMAP.md", "# Roadmap\n\npushed straight to main\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+  execFileSync("git", ["commit", "-qm", "docs: straight to main"], { cwd: root });
+});
+
 proves("the lockfile's version drifting from package.json", "lock-version", (root) => {
   // The real drift: package.json reached 2.47.0 while the lock still said 2.35.3, twelve releases
   // back, because npm only rewrites that field when a dependency-touching command runs.
@@ -675,6 +697,38 @@ proves(
   // them never touches the notes file — so the check is correctly silent there.
   ["--diff", "HEAD~1"]
 );
+
+// ---- coverage: a check with no test is an unproven check --------------------------------------
+// ⚠️ ADDED 2026-08-02 01:30 EDT because this suite did not notice. `unreleased-on-main` was
+// registered in docs-audit.mjs and shipped with no prove case, and the summary still reported
+// "all 53 checks proven" — counting PROVE CASES, never checks. A suite whose whole purpose is
+// "no guard ships unproven" was itself blind to an unproven guard.
+{
+  const listed = execFileSync("node", [AUDIT, "--list"], { encoding: "utf8" })
+    .split("\n")
+    .map((l) => (l.match(/^(?:ERROR|WARN)\s+(\S+)/) || [])[1])
+    .filter(Boolean);
+  // ⚠️ EXEMPTIONS CARRY A REASON, per this repo's own convention — an unexplained allowlist
+  // silences a real defect forever. These four read the developer's REAL ~/.claude (the memory
+  // store, the external anchors, the slug derived from the repo's location). A fixture in /tmp
+  // cannot make them fire without writing into the actual home directory, which a test must not
+  // do. They are exercised every time the audit runs for real; in CI they SKIP and say so.
+  const CANNOT_FIXTURE = {
+    "memory-xref": "reads the real ~/.claude memory store",
+    "memory-index": "reads the real ~/.claude memory store",
+    "memory-slug": "derives the slug from this checkout's real path",
+    "external-anchors": "resolves absolute paths outside the repo",
+  };
+  const missing = listed.filter((id) => !proven.has(id) && !CANNOT_FIXTURE[id]);
+  if (missing.length) {
+    failures.push(
+      `coverage: ${missing.length} check(s) registered in docs-audit.mjs have NO self-test — ` +
+      `${missing.join(", ")}. Add a proves(...) case; an untested guard is an unproven guard.`
+    );
+  } else {
+    console.log(`\n  ✓ coverage               all ${listed.length} registered checks covered (${Object.keys(CANNOT_FIXTURE).length} exempt, with reasons)`);
+  }
+}
 
 console.log();
 if (failures.length) {

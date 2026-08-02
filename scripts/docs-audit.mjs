@@ -1335,6 +1335,45 @@ check(
   }
 );
 
+/* ------------------------- unreleased-on-main ----------------------- */
+check(
+  "unreleased-on-main",
+  "WARN",
+  "no commit sits on main without belonging to a release",
+  () => {
+    // Version is minted at MERGE here, one per squashed PR, and the tag lands on that
+    // commit — so after a proper merge the range newest-tag..main is EMPTY. A non-empty
+    // range means a commit reached main some other way, which in practice means a direct
+    // push. That is what happened on 2026-08-02 01:10 EDT: a docs commit went straight to main
+    // immediately after v2.47.0 was tagged, and belongs to no version and no changelog.
+    //
+    // ⚠️ WARN, not ERROR, and the reason matters. There is a legitimate window between
+    // `gh pr merge` and `git tag` where this is briefly true — the workflow explicitly
+    // separates those two steps, because chaining them once put a tag on the wrong
+    // commit. An ERROR here would fire during correct behaviour, get muted, and then
+    // catch nothing. The prevention lives in .claude/hooks/main-push-guard.sh; this is
+    // only the detector for when something got past it.
+    if (isShallow()) return { findings: [], skipped: "shallow clone — tag history is incomplete" };
+    // ⚠️ git() here returns "" on failure rather than throwing, so absence has to be
+    // tested, not caught. A try/catch around it would never fire and the check would
+    // silently treat "no tags" as "nothing unreleased" — a vacuous pass.
+    const newest = git("describe", "--tags", "--abbrev=0", "main").trim();
+    if (!newest) return { findings: [], skipped: "no tag reachable from main — nothing to measure against" };
+    const commits = git("log", "--oneline", `${newest}..main`).trim();
+    if (!commits) return { findings: [], examined: 1 };
+    const list = commits.split("\n").filter(Boolean);
+    return {
+      findings: [{
+        msg: `${list.length} commit(s) on main after ${newest} belong to no release: ` +
+          list.map((l) => l.split(" ")[0]).join(", ") +
+          ". If a merge is mid-flight this is expected and clears when you tag. Otherwise " +
+          "they reached main outside the PR flow — cover them in the next release's changelog.",
+      }],
+      examined: 1,
+    };
+  }
+);
+
 /* ---------------------------- lock-version -------------------------- */
 check(
   "lock-version",

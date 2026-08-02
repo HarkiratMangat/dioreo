@@ -288,9 +288,18 @@ Discord Developer Portal has stable public URLs that survive the repo flipping p
 `docs/legal/*.md`, the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
 `CONTRIBUTORS.md`), **and the three records `docs/CHANGELOG-SUMMARY.md`, `docs/CHANGELOG.md`,
 `docs/DEVLOG.md`**; the HTML is produced by `scripts/buildLegalPages.js`.
-**Run `dior legal build` (or `dior legal deploy`, which rebuilds and publishes) after editing ANY of
-those nine sources** — nothing else republishes the site, and `dior legal check` compares live bytes
-against the local build.
+**Run `dior legal build` after editing ANY of those nine sources** — nothing else regenerates
+`public/`, and `dior legal check` compares live bytes against the local build.
+
+⚠️ **PUBLISHING IS AUTOMATIC NOW — do not deploy by hand as a matter of course**
+(`.github/workflows/deploy-site.yml`, added 2026-08-02 01:30 EDT). A merge to `main` that touches the
+site publishes it to Cloudflare Pages on its own. **It deliberately does NOT fire for
+changelog/devlog-only changes**: those three pages are withdrawn from the nav, so republishing the
+whole site for a page nobody can reach is waste. The workflow rebuilds and refuses to publish if
+`public/` is stale, then asserts the live `<title>` matches what it just uploaded — a 200 alone can be
+cache. `dior legal deploy` still exists for a manual push, and `workflow_dispatch` does the same from
+CI. This was added because the live site was found serving the previous headline **after v2.47.0 had
+merged and been tagged**: `public/` was correct in `main` and nothing ever pushed it anywhere.
 - ⚠️ **THERE ARE TWO BUILD ENTRY POINTS AND THAT IS A KNOWN WART, not a design.** `npm run site` was
   added 2026-08-01 22:20 EDT without checking that `dior legal build` already existed and ran the same builder,
   and this section was rewritten to name the new one — demoting a working CLI command. Both call
