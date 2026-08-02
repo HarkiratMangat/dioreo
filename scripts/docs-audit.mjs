@@ -1335,6 +1335,50 @@ check(
   }
 );
 
+/* -------------------------- chronicle-drift ------------------------- */
+check(
+  "chronicle-drift",
+  "WARN",
+  "the built changelog pages still match their sources",
+  () => {
+    // ⚠️ WARN BY DESIGN, and this one is a deliberate allowance rather than a defect.
+    // Harkirat's call 2026-08-02 02:45 EDT: the three chronicle pages are withdrawn from
+    // the nav and reachable by nobody, so forcing a rebuild+commit of their HTML on every
+    // changelog or devlog edit is churn for output no reader is served. Both the CI
+    // freshness gate and the deploy workflow now exclude public/changelog/ for that reason.
+    //
+    // The cost of that allowance is that the built pages go quietly stale. This is the
+    // meter: it does not block anything, it just says how far behind they are, so the bulk
+    // resync when those pages are revived is a known quantity rather than a surprise.
+    //
+    // It compares the newest VERSION HEADING in each source against the rendered page —
+    // cheap, and it catches the case that actually happens (an entry added, page not
+    // rebuilt). It does not attempt a full content diff; that is what `npm run site` is for.
+    const pairs = [
+      ["docs/CHANGELOG.md", "public/changelog/detailed.html"],
+      ["docs/CHANGELOG-SUMMARY.md", "public/changelog/index.html"],
+    ];
+    const out = [];
+    let examined = 0;
+    for (const [src, built] of pairs) {
+      const a = read(src), b = read(built);
+      if (a === null || b === null) continue;
+      examined++;
+      const newest = (a.match(/^##\s+(v\d+\.\d+\.\d+)/m) || [])[1];
+      if (!newest) continue;
+      if (!b.includes(newest)) {
+        out.push({
+          msg: `${built} does not contain ${newest}, the newest version in ${src}. The chronicle ` +
+            "pages are deliberately allowed to drift while they are withdrawn from the nav — this " +
+            "is the meter, not an error. Run `npm run site` and commit public/changelog/ when those " +
+            "pages are revived.",
+        });
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
 /* ------------------------- unreleased-on-main ----------------------- */
 check(
   "unreleased-on-main",

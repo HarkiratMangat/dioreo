@@ -71,9 +71,12 @@ jobs:
       - name: public/ matches its sources
         run: |
           npm run site
-          if ! git diff --quiet -- public/; then
+          # public/changelog/ excluded for the same reason as in ci.yml: those pages are
+          # unreachable, deliberately allowed to drift, and resynced in bulk when revived.
+          # A drifted changelog page must not block publishing a legal page that IS reachable.
+          if ! git diff --quiet -- public/ ':(exclude)public/changelog/'; then
             echo "::error::public/ is stale — a source was edited without rebuilding. Refusing to publish."
-            git diff --stat -- public/
+            git diff --stat -- public/ ':(exclude)public/changelog/'
             exit 1
           fi
 

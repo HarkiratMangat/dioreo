@@ -78,6 +78,25 @@ const makeFixture = () => {
   // as dead — a failure that could only ever appear in CI. Same class as the deliberate SPACE
   // in the tmpdir prefix above: a fixture must not inherit anything from the machine.
   execFileSync("git", ["init", "-q", "-b", "main"], { cwd: root });
+  // ⚠️ ASSERT IT, don't assume it. -b is the fix, but the failure this replaced was a
+  // fixture quietly sitting on the wrong branch, and the symptom was "the check is dead"
+  // — which sent me looking at the CHECK, not the fixture. Any future cause of a wrong
+  // branch name (a git default change, a template, an env var) now says so directly.
+  // A compatibility fallback for git < 2.28 was suggested and deliberately not taken:
+  // the runner is 2.54 and this Mac is 2.50, and `git init -b` on an older git FAILS
+  // LOUDLY rather than silently picking another name, so the fallback would guard a
+  // path that cannot go wrong quietly. An assertion covers strictly more.
+  {
+    // symbolic-ref, not rev-parse: the fixture has no commit yet, so HEAD is an UNBORN
+    // branch and `rev-parse --abbrev-ref HEAD` errors out. symbolic-ref reads the ref HEAD
+    // points at without needing a commit behind it. (The first version of this assertion
+    // used rev-parse and threw on every run — an assertion that is itself wrong is worse
+    // than none, so it is verified below in both directions.)
+    const b = execFileSync("git", ["symbolic-ref", "--short", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+    if (b !== "main") {
+      throw new Error(`fixture is on branch "${b}", not "main" — checks that name main would skip and report as dead`);
+    }
+  }
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
@@ -109,10 +128,15 @@ const makeFixture = () => {
     root,
     "CLAUDE.md",
     "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`, attributions in `NOTICE`.\n\n" +
-      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/`.\n" +
+      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/` `public/`.\n" +
       "Scripts: `scripts/dofix.js`.\n"
   );
   write(root, "LICENSE", "Fixture licence.\n");
+  // chronicle-drift compares the newest source version against the BUILT page, so the fixture
+  // needs both or the check skips, examines nothing, and the ledger calls it a vacuous pass.
+  // These carry v2.33.0 — the newest in the fixture's CHANGELOG — so the baseline is clean.
+  write(root, "public/changelog/detailed.html", "<h1>Changelog</h1><p>v2.33.0</p>\n");
+  write(root, "public/changelog/index.html", "<h1>What's New</h1><p>v2.33.0</p>\n");
   write(root, "scripts/dofix.js", "// fixture script\n");
   // privacy-inventory loads the schema rather than regexing it, so the fixture must supply one —
   // otherwise the check skips, examines nothing, and the ledger correctly calls that a vacuous pass.
@@ -539,7 +563,10 @@ proves("a root-level document nothing maps", "root-docs", (root) => {
 });
 
 proves("a brand-new top-level directory", "top-level-dirs", (root) => {
-  write(root, "public/index.html", "<p>hi</p>\n");
+  // ⚠️ NOT `public/` any more. The fixture gained a real public/ (for chronicle-drift) and
+  // CLAUDE.md now names it, so this break stopped breaking and the test silently went dead —
+  // the same trap that hit the NOTICE case earlier. Use a directory the fixture never mentions.
+  write(root, "vendor/thing.txt", "hi\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
@@ -574,6 +601,12 @@ proves("a record file with its top-level heading spliced in twice", "record-stru
   // of an entry, and every other check passed because none of them look at a file's SHAPE.
   const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
   write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
+});
+
+proves("a changelog entry whose built page was never regenerated", "chronicle-drift", (root) => {
+  // The allowance's meter: add a version to the source and leave the built page alone.
+  const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");
+  write(root, "docs/CHANGELOG.md", c.replace("# Changelog\n", "# Changelog\n\n## v2.34.0 — 2026-08-01 (#3 · `SHA`) — three\n"));
 });
 
 proves("a commit reaching main outside the PR flow", "unreleased-on-main", (root) => {

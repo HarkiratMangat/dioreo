@@ -170,6 +170,17 @@ tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
+- `[P2 · S · 🔗bundle]` **Bulk-resync `public/changelog/` before those pages go back in the nav.**
+  *Filed 2026-08-02 02:45 EDT, at Harkirat's instruction.* The three chronicle pages are withdrawn
+  from the nav and reachable by nobody, so **both** the CI freshness gate and the deploy workflow now
+  exclude `public/changelog/` — a changelog or devlog edit no longer forces a rebuild+commit of HTML
+  no reader is served. The deliberate cost is that those built pages drift behind their sources.
+  **Before those pages are linked again: run `npm run site`, commit `public/changelog/`, and remove the
+  two exclusions** (one in `.github/workflows/ci.yml`, one in `.github/workflows/deploy-site.yml`) plus
+  the `!public/changelog/**` negation in the deploy trigger. `chronicle-drift` (WARN) reports how far
+  behind they are in the meantime — it is a meter, not an error. 🔗 Bundles with the chronicle-page
+  design work, since that is when they become reachable.
+
 - `[P1 · L · 🧩needs-design · Opus5-H]` **Rebuild Contributing and Contributors as two DISTINCT pages.**
   *Filed 2026-08-02 01:10 EDT. Direction chosen and mockup approved by Harkirat — this is a build, not
   an exploration.* They currently share `warmShell()`; the decision is that they stop sharing it and

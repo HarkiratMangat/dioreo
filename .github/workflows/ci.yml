@@ -65,9 +65,15 @@ jobs:
       - run: npm run site
       - name: public/ is up to date with its sources
         run: |
-          if ! git diff --quiet -- public/; then
+          # ⚠️ public/changelog/ IS EXCLUDED ON PURPOSE (2026-08-02 02:45 EDT, Harkirat's call).
+          # Those three pages are withdrawn from the nav and reachable by nobody, and the deploy
+          # workflow already skips them — so ALSO forcing a rebuild+commit of their HTML on every
+          # changelog or devlog edit was pure churn for output that is never served to a reader.
+          # They are allowed to drift, deliberately, and get one bulk resync when those pages are
+          # revived. `chronicle-drift` (WARN) keeps that drift visible in the meantime.
+          if ! git diff --quiet -- public/ ':(exclude)public/changelog/'; then
             echo "::error::public/ is stale — a source was edited without rebuilding the site."
-            git diff --stat -- public/
+            git diff --stat -- public/ ':(exclude)public/changelog/'
             exit 1
           fi
 
