@@ -93,7 +93,7 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 2026-07-25 21:43 EDT.*
 
 - **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design
-  (opened 2026-08-02 17:00 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
+  (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
   question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
   existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
   **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
@@ -198,6 +198,93 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+- **🌐 Version-control `~/.claude`, then promote the point-of-use guards globally** `[P2 · M]` 🔗bundle
+  (filed 2026-08-02 15:36 EDT). Two coupled pieces — **do them in this order**, because editing an
+  unversioned global config with no backup is what makes the second half risky.
+
+  **① Make `~/.claude` a LOCAL-ONLY git repo** (Harkirat's call: no GitHub remote).
+  ⚠️ **An allowlist `.gitignore` is mandatory, not stylistic.** Measured: the directory is **1,119 MB**
+  while the config worth versioning is **236 KB** — a 4,700× difference. A naive `git add .` tries to
+  commit 557 MB of session transcripts, 296 MB of `security/` and 181 MB of `plugins/`. Ignore
+  everything, then un-ignore: `.gitignore`, `CLAUDE.md`, `RTK.md`, `settings.json`,
+  `keybindings.json`, `hooks/**`, `agents/**`, `plans/**`. Deliberately excluded: `projects/`
+  (transcripts — huge and private), `security/`, `plugins/`, `context-mode/`, `uploads/`, `cache/`,
+  `telemetry/`, `debug/`, `tasks/`, `backups/`, `skills/` (third-party, 5 MB), and
+  **`mcp-needs-auth-cache.json`** (auth state).
+  ✅ **Verified safe to track: `~/.claude/settings.json` holds NO secrets** — only `theme`, `hooks`,
+  `permissions`, `enabledPlugins`, `statusLine` and similar. Checked 2026-08-02 15:36 EDT.
+  ✅ **Dry-run already done and reverted.** `git init` + allowlist staged exactly **18 files / 2,802
+  lines**, with no transcripts, plugins, cache or auth included. It was reverted rather than left
+  half-done, so the next session starts from a clean directory. **Verify the staged set again before
+  the first commit — check, then commit, never the reverse.**
+  **Why it matters:** every global hook lives there unversioned with no backup. This project already
+  learned that lesson once, which is why `.claude/settings.json` was promoted out of gitignored
+  `settings.local.json` into tracked git. Promoting more hooks into an unversioned directory walks
+  straight back into it.
+
+  **② THEN promote the point-of-use guards from this repo to global.**
+  Portability was measured, not assumed: **`rg-flag-guard.sh` has 0 project-specific references**
+  (fully generic), while **`mcp-layer-check.sh` has 7** — so that one must be SPLIT, never promoted
+  whole. Promote: `rg-flag-guard`, the shellcheck-on-edit hook, `typos-check`, `timestamp-check` and
+  the clock injector. Keep local: the memory-index and linksee/fragmentation checks.
+  ⚠️ **Take each hook's `.test.sh` with it.** `rg-flag-guard` was the only hook written without tests
+  and the only one that regressed — four false-positive classes, three of them patched by observation
+  before any test existed.
+
+  **③ The open question to decide there, NOT settled here:** should the global `CLAUDE.md`'s
+  **`Available CLI Superpowers`** section move out to an on-demand reference with a one-line pointer?
+  Measured: it is **3,441 B of 27,189** (12.7%) — the SMALLEST of the four sections (MCP Servers 9,218,
+  Turn Discipline 8,886, Tool Preferences 5,636), so the saving is ~850 tokens/session. **Moving it
+  into a HOOK saves nothing** — a SessionStart hook is injected every session too, same pipe, and it
+  becomes bash-escaped JSON that is far harder to hand-edit. The only real gain is making it
+  **on-demand**, mirroring this repo's own 2026-07-22 CLAUDE.md modularization. Modest win, global
+  blast radius, so decide it deliberately rather than in passing.
+
+  **The principle worth carrying in:** what makes a guard work is being **point-of-use**, not being a
+  hook. `rg-flag-guard` fires at the moment the wrong flag is typed. A session-start catalogue — which
+  is what the CLI ROUTING block in `mcp-layer-check.sh` is — is structurally the same shape as the
+  CLAUDE.md prose that failed 788× vs 4×. Do not promote catalogues; promote interventions.
+
+- **🧪 Migrate the four hand-rolled hook test suites to `bats`** `[P3 · M]` (filed 2026-08-02 15:25 EDT).
+  `bats-core` is installed. The suites (`memory-index-check`, `mcp-layer-check`,
+  `outstanding-not-filed`, `timestamp-check` — 43 assertions total) are hand-written bash with
+  hand-rolled `assert` helpers, and **two of them shipped with real bugs the same day they were
+  written**: one grepped a needle that also matches the HEALTHY output line, and one grepped
+  `"decision":"block"` while `jq -n` pretty-prints it *with a space*. Both reported PASS while
+  verifying nothing. A real framework gives proper assertions, TAP output and per-case isolation, and
+  removes the class.
+  ⚠️ **Not urgent and NOT a correctness gap today** — all four suites currently pass and were fixed to
+  discriminate. This is about the assertion *machinery* being homemade, not the coverage.
+  **Direction:** convert one suite first (`timestamp-check`, the smallest at 9 cases) and confirm the
+  same failures still get caught, before touching the other three. Keep each suite's WHY-comments —
+  they carry the incidents the tests exist for, and those are worth more than the assertions.
+  ⚠️ **Do not migrate mid-observation-window if it touches `mcp-layer-check`** — that hook is part of
+  the running experiment.
+
+- **🧠 Distil the linksee auto-capture queue, and declare a North Star** `[P2 · S]`
+  (filed 2026-08-02 14:49 EDT). **19 auto-captured memories are still RAW USER UTTERANCES.**
+  ⚠️ `dream()` reports `distill_total: 8` because it **serves a BATCH of up to 8 per call** — the true
+  backlog is `SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%'` = **19**. I first
+  "corrected" the 19 down to 8 on the strength of one `dream()` call; the batch size is not the total,
+  and the session-start banner was right. **Draining it takes ~3 `dream()` calls, not one.**
+  **Why it matters — this is the "junk memories" problem, concretely.** The Stop hook captures by
+  heuristic with no LLM in the path, so it files raw chat as insight. Live examples: memory **7357**
+  is *"lets finalize and merge the open PRs…"* stored as a **`learning`**; **3496** is a task
+  instruction stored as a **`caveat`**. A future session recalling "learnings" gets served Harkirat's
+  to-do list. **Each raw row also drags ~10 `affects` paths of unrelated files with it**, so it
+  pollutes file-history recall too.
+  **How:** `dream()` returns the queue; rewrite each via `remember({memory_id, content})` with a
+  one-line `what`, a real `why`, and **`"distilled": true`** — that marker is REQUIRED, it is what
+  stops the next Stop-hook sync wiping the rewrite and resurrecting the raw utterance
+  (`DELETE … WHERE source LIKE '%session_id%' AND distilled != 1`). Drain up to 8 per `dream()` call.
+  A row with no real decision in it gets `type: "note", state: "superseded"` — retired in place,
+  never deleted.
+  **Also:** `north_star` is **null**, which `dream()` flags itself — without one there is no frame for
+  triaging proposals. Declare via `declare_anchor(node_type: "north_star")`, but that is **Harkirat's
+  call to state**, not mine to invent.
+  ⚠️ **Not mechanical — it is a judgement rewrite of his memories**, which is why it is queued for its
+  own session rather than tacked onto the end of a long one.
 
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]`
 tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
@@ -565,7 +652,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 well-specified execution/polish, not novel design.*
 
 - **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
-  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 15:50 EDT). The *data* was repaired (see the resolved
+  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 14:43 EDT). The *data* was repaired (see the resolved
   list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the
   server gets `env: {}` in `~/.claude.json`, and there is no config file anywhere, so linksee falls
   back to guessing a project from a folder name. A session touching `~/Library/...` can still spawn a

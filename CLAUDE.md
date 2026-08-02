@@ -233,7 +233,7 @@ listing locally as though they were live. Use `gh pr list --state all`, or `git 
 **Merge with `gh pr merge --squash --delete-branch`** so the branch dies with its PR — the flag removes
 the local branch too, which auto-delete-on-merge does not. Without it they silently pile up: **10 merged
 branches were found rotting on 2026-07-27 21:50 EDT**, the oldest from PR #11, all long since merged.
-A merged branch must never outlive its PR. Two hooks in `.claude/settings.json` (tracked, so they survive a fresh clone) now enforce this —
+A merged branch must never outlive its PR. Hooks in `.claude/settings.json` (tracked, so they survive a fresh clone) now enforce this —
 a `SessionStart` check that fetches with `--prune` and lists any `[gone]` branch, and a `PostToolUse`
 check that fires when a `gh pr merge` runs without `--delete-branch`.
 
@@ -441,7 +441,7 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
   central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
-  real `git diff`/`git log` covers their history. ⚠️ **Two `SessionStart` hooks in `.claude/settings.json` PARSE these
+  real `git diff`/`git log` covers their history. ⚠️ **`SessionStart` hooks in `.claude/settings.json` PARSE these
   files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
   by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
   `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME

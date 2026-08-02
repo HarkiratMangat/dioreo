@@ -101,7 +101,8 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
 - 2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means
 - 2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)
-- 2026-08-02 18:40 EDT — The session that kept catching its own bugs (v2.48.0)
+- 2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)
+- 2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3586,7 +3587,7 @@ So the useful question when writing a guard is not "does this catch the case I a
 find out is to run the guard against the real event rather than the imagined one — which is only
 possible if you go and cause the event.
 
-## 2026-08-02 18:40 EDT — The session that kept catching its own bugs (v2.48.0)
+## 2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)
 
 The task was small: `MEMORY.md` had nearly outgrown a read limit, so give it a structure. The premise
 was wrong within twenty minutes — the "24.4KB hard read limit" does not reproduce, and a 33,530-byte
@@ -3648,6 +3649,55 @@ now.
 - **When a session is explicitly ABOUT a topic, a deferral inside that topic is nearly always wrong.**
   Deferring the memory-architecture problem in the memory-architecture session should have been
   self-evidently absurd, and it wasn't, because it was well-formatted.
+
+## 2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)
+
+Harkirat asked a maintenance question — *why do we keep burning a tool call fixing timestamps?* — and
+the answer was not the hook. **I had run `date` once, at 12:57, and invented every stamp after it**,
+incrementing by how long the session *felt*. The real clock read 15:02. Thirty fabricated future
+timestamps had reached `docs/`, four memory files, a **released changelog**, the **DEVLOG** and a
+**git tag**.
+
+The gate passed all thirty because it asserted a time was *present*, never *true*. **A validator that
+checks shape will certify fiction, confidently, thirty times.** Git was the only honest clock in the
+room — `git log -S"<stamp>"` recovers when each string actually landed.
+
+**The deeper pattern the day kept producing: my checks were the unreliable part, not my checking.**
+Three separate test harnesses read *absence of output* as a firing; one cheerfully reported that
+`curl -H` had tripped an **rg** guard, which is impossible on its face and which I did not question
+until the numbers got absurd. A fourth "proof" grepped a needle that also matches the healthy line.
+Every one of those reported PASS while verifying nothing.
+
+**And the guard that regressed four times was the only one I wrote without tests.** That is not
+coincidence, it is mechanism — I patched it three times by watching it misfire before writing a single
+case. The four hooks built test-first needed no fixes at all.
+
+Harkirat then asked the question that reframed the session: *"nothing you want to file for future
+sessions? or just fixed on the spot so they don't have to know?"* Auditing which lessons were
+mechanically enforced versus prose-only found three gaps — and one of them was a **rule that already
+existed and had already been corrected twice**, in the working agreement, about this exact
+hook-then-patch loop. Today was the third occurrence. The rule said *"get `date` ONCE per turn and
+reuse it"*, which is safe **within** a turn and dangerous **across** turns — a boundary the wording
+never marked, and precisely the gap I fell through.
+
+The fix was not better wording. **The clock is now injected into every turn**, so the judgement call
+is gone.
+
+Then: *what tools would help?* The honest answer was **none — they were already installed.**
+`shellcheck` had been sitting there unrun while the exact bug it catches shipped in a sweep that
+reported success while updating zero files. So the lesson filed was not about tooling: **a capability
+has three states — absent, installed, and ROUTED — and only the third does anything.**
+
+### What I'd keep
+- **A well-formed value is not a verified value.** A fabricated timestamp is byte-identical to a true
+  one. Shape checks cannot see truth; only a source can.
+- **Write the test file WITH the guard, never after.** The one exception today needed four fixes.
+- **An impossible-looking finding is an instrument fault until proven otherwise.** `curl` cannot trip
+  an `rg` guard.
+- **A correction carries borrowed credibility.** I got two wrong today — Opus rates on a Sonnet
+  session, and a batch size read as a total — both while feeling most rigorous.
+- **What makes a guard work is being point-of-use, not being a hook.** A catalogue injected at session
+  start is the same shape as the prose that already failed 788× to 4×.
 
 # Part B — Lessons Ledger (thematic)
 

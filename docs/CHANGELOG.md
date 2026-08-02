@@ -181,7 +181,50 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.48.0 — 2026-08-02 18:40 EDT (#64) — The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken
+## v2.49.0 — 2026-08-02 15:41 EDT (#65) — Four guards that fire at the moment of the mistake, and thirty invented timestamps
+
+**I fabricated thirty timestamps and every gate passed them.** `date` was called
+**once**, at 12:57 EDT, and every stamp after it was invented — drifting to 19:30
+while the real clock read 15:02. They reached `docs/`, four memory files, the
+**released v2.48.0 changelog**, the **DEVLOG** and a **git tag annotation**.
+
+The old TIMESTAMP hook asserted a time was *present*, never that it was *true*, so
+all thirty sailed through well-formed. **A validator that checks SHAPE will certify
+fiction.** All thirty corrected from **git**, which timestamps its own commits —
+`git log -S"<stamp>"` recovers when each string actually landed.
+
+**Four guards, all point-of-use** — the distinction that matters is not hook-vs-prose
+but *fires at the moment of the mistake* vs *catalogue read at session start*:
+- **`timestamp-check.sh`** flags a time **later than now** as impossible. It also strips
+  date-prefixed filenames, `--flag DATE` arguments and backticked spans first — the old
+  one fired ~15 times a session and nearly every fire was a false positive, which is
+  precisely how the real miss got waved through.
+- **`outstanding-not-filed.sh`** blocks naming something as outstanding without filing
+  it. Five consecutive messages ended with "still outstanding: the distil queue" and it
+  was never written down; Harkirat had to ask.
+- **`rg-flag-guard.sh`** catches `-h`/`-E`/`-r` typed from grep habit. All three produced
+  silent garbage in one day — `-oh` printed the **help text**, which skims exactly like
+  "no matches" and nearly produced a wrong "unused field" conclusion.
+- **`typos-check.sh`** checks only the text being written, not the whole file.
+
+Plus a **clock injected into every turn**, which is the actual prevention: there is no
+longer a reason to estimate a time.
+
+**Tools are now ROUTED, not merely installed.** `shellcheck` sat installed and unrun
+while the bug it catches shipped — it flags that word-splitting failure instantly. Now
+hooked, with `sd`, `ast-grep`, `gron`, `difft`, `deno` and `gtimeout` named in the
+session-injected routing block. `markdownlint-cli2` was deliberately **not** wired (725
+of 741 findings are house style, and the rule that matters is already in `docs-audit`),
+nor `shfmt` (cosmetic on shellcheck-clean scripts).
+
+**Corrections this release makes to its own work**, kept rather than quietly fixed:
+`rg-flag-guard` shipped without tests and regressed four times before getting the suite
+it should have had · **three separate test harnesses** read *absence of output* as a
+firing, one reporting that `curl -H` tripped an `rg` guard · and the distil backlog is
+**19, not 8** — `dream()` returns a batch of up to 8, and reading that batch as a total
+"corrected" a figure that had been right all along.
+
+## v2.48.0 — 2026-08-02 14:43 EDT (#64 · `8731b6f`) — The memory index gets a ceiling, and the MCP layer turns out to have been quietly broken
 
 **`MEMORY.md` is the only auto-loaded memory file**, so the index is a per-session
 tax charged **per FILE** — every entry is paid on every session, forever, while the

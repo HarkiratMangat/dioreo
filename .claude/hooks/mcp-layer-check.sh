@@ -38,7 +38,20 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
       GROUP BY e.id);" 2>/dev/null)
   canon=$(sqlite3 "$LINKSEE_DB" "SELECT COUNT(*) FROM memories m JOIN entities e ON e.id=m.entity_id WHERE e.name='$CANON_ENTITY';" 2>/dev/null)
   frag=${frag:-0}; canon=${canon:-0}
-  frag_line="linksee: ${canon} on '${CANON_ENTITY}', ${frag} misfiled elsewhere"
+  # Auto-capture files RAW USER UTTERANCES as learnings/caveats (no LLM in the Stop-hook path), so a
+  # future session recalling "learnings" gets served Harkirat's to-do list. Nothing PREVENTS this
+  # upstream; distilling is the only remedy, so the backlog has to at least be VISIBLE.
+  # Count the flag directly: dream() returns a BATCH of up to 8, which is not the total.
+  distill=$(sqlite3 "$LINKSEE_DB" "SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%' AND COALESCE(json_extract(content,'\$.distilled'),0)!=1;" 2>/dev/null)
+  distill=${distill:-0}
+  frag_line="linksee: ${canon} on '${CANON_ENTITY}', ${frag} misfiled elsewhere, ${distill} awaiting distil"
+  if [ "$distill" -gt 12 ] 2>/dev/null; then
+    warn="$warn
+  ⚠️ ${distill} auto-captured memories are still RAW user utterances filed as learnings/caveats.
+     dream() drains up to 8 PER CALL, so this needs repeat calls. Rewrite each via
+     remember({memory_id, content}) with \"distilled\": true — without that marker the next Stop-hook
+     sync wipes the rewrite and the raw utterance comes back. Filed in docs/db-deferred-list.md."
+  fi
   if [ "$frag" -gt "$FRAG_WARN" ] 2>/dev/null; then
     warn="$warn
   ⚠️ ${frag} memories referencing this repo are filed under PATH-DERIVED junk entities (folder names
@@ -49,7 +62,7 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
 fi
 
 read -r -d '' RULES <<'EOF'
-MCP LAYER — the routing that was measured, not assumed (2026-08-02 16:05 EDT):
+MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
   · linksee RECALL BY query, NEVER entity_name — entity attribution is path-derived and
     entity-scoped recall under-returns SILENTLY. On WRITE always pass entity_name explicitly.
     Removed in v0.11.x: list_entities -> recall({}) · recall_file -> recall({path}) ·
@@ -63,6 +76,16 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 16:05 EDT):
   · perseus-vault for durable cross-session decisions; linksee for project/file-scoped caveats.
   · Write to the memory layer at the real moments: a decision, a failure, a correction. An entire
     session once passed with zero writes because nothing forced them.
+
+CLI ROUTING — installed 2026-08-02 15:25 EDT and listed HERE so they get used. shellcheck sat
+installed and unrun for weeks while the bug it catches shipped; being on disk is not being available.
+  · sd      instead of sed/perl for find-replace — no escaping/quoting minefield (several retries today)
+  · ast-grep (sg) for STRUCTURAL code search — `sg -p 'foo($A)'`; beats rg when the shape matters
+  · gron    to make unknown JSON greppable — `gron f.json | rg key`; better than hand-rolled node -e
+  · difft   for structural diffs when a plain git diff is unreadable
+  · deno    for one-off TS/JS scripts with no package.json (instead of long `node -e` one-liners)
+  · gtimeout (coreutils) to bound anything that might hang
+  · bats    is installed but the hook test suites are still hand-rolled — see db-deferred-list
 EOF
 
 # --- the 7-day sequential-thinking measurement window ------------------------------------------
