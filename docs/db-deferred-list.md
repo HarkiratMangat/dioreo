@@ -199,6 +199,53 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **🌐 Version-control `~/.claude`, then promote the point-of-use guards globally** `[P2 · M]` 🔗bundle
+  (filed 2026-08-02 15:36 EDT). Two coupled pieces — **do them in this order**, because editing an
+  unversioned global config with no backup is what makes the second half risky.
+
+  **① Make `~/.claude` a LOCAL-ONLY git repo** (Harkirat's call: no GitHub remote).
+  ⚠️ **An allowlist `.gitignore` is mandatory, not stylistic.** Measured: the directory is **1,119 MB**
+  while the config worth versioning is **236 KB** — a 4,700× difference. A naive `git add .` tries to
+  commit 557 MB of session transcripts, 296 MB of `security/` and 181 MB of `plugins/`. Ignore
+  everything, then un-ignore: `.gitignore`, `CLAUDE.md`, `RTK.md`, `settings.json`,
+  `keybindings.json`, `hooks/**`, `agents/**`, `plans/**`. Deliberately excluded: `projects/`
+  (transcripts — huge and private), `security/`, `plugins/`, `context-mode/`, `uploads/`, `cache/`,
+  `telemetry/`, `debug/`, `tasks/`, `backups/`, `skills/` (third-party, 5 MB), and
+  **`mcp-needs-auth-cache.json`** (auth state).
+  ✅ **Verified safe to track: `~/.claude/settings.json` holds NO secrets** — only `theme`, `hooks`,
+  `permissions`, `enabledPlugins`, `statusLine` and similar. Checked 2026-08-02 15:36 EDT.
+  ✅ **Dry-run already done and reverted.** `git init` + allowlist staged exactly **18 files / 2,802
+  lines**, with no transcripts, plugins, cache or auth included. It was reverted rather than left
+  half-done, so the next session starts from a clean directory. **Verify the staged set again before
+  the first commit — check, then commit, never the reverse.**
+  **Why it matters:** every global hook lives there unversioned with no backup. This project already
+  learned that lesson once, which is why `.claude/settings.json` was promoted out of gitignored
+  `settings.local.json` into tracked git. Promoting more hooks into an unversioned directory walks
+  straight back into it.
+
+  **② THEN promote the point-of-use guards from this repo to global.**
+  Portability was measured, not assumed: **`rg-flag-guard.sh` has 0 project-specific references**
+  (fully generic), while **`mcp-layer-check.sh` has 7** — so that one must be SPLIT, never promoted
+  whole. Promote: `rg-flag-guard`, the shellcheck-on-edit hook, `typos-check`, `timestamp-check` and
+  the clock injector. Keep local: the memory-index and linksee/fragmentation checks.
+  ⚠️ **Take each hook's `.test.sh` with it.** `rg-flag-guard` was the only hook written without tests
+  and the only one that regressed — four false-positive classes, three of them patched by observation
+  before any test existed.
+
+  **③ The open question to decide there, NOT settled here:** should the global `CLAUDE.md`'s
+  **`Available CLI Superpowers`** section move out to an on-demand reference with a one-line pointer?
+  Measured: it is **3,441 B of 27,189** (12.7%) — the SMALLEST of the four sections (MCP Servers 9,218,
+  Turn Discipline 8,886, Tool Preferences 5,636), so the saving is ~850 tokens/session. **Moving it
+  into a HOOK saves nothing** — a SessionStart hook is injected every session too, same pipe, and it
+  becomes bash-escaped JSON that is far harder to hand-edit. The only real gain is making it
+  **on-demand**, mirroring this repo's own 2026-07-22 CLAUDE.md modularization. Modest win, global
+  blast radius, so decide it deliberately rather than in passing.
+
+  **The principle worth carrying in:** what makes a guard work is being **point-of-use**, not being a
+  hook. `rg-flag-guard` fires at the moment the wrong flag is typed. A session-start catalogue — which
+  is what the CLI ROUTING block in `mcp-layer-check.sh` is — is structurally the same shape as the
+  CLAUDE.md prose that failed 788× vs 4×. Do not promote catalogues; promote interventions.
+
 - **🧪 Migrate the four hand-rolled hook test suites to `bats`** `[P3 · M]` (filed 2026-08-02 15:25 EDT).
   `bats-core` is installed. The suites (`memory-index-check`, `mcp-layer-check`,
   `outstanding-not-filed`, `timestamp-check` — 43 assertions total) are hand-written bash with
