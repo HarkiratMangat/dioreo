@@ -19,8 +19,11 @@ the subsystem rule it belongs to:*
   matched by name) → `docs/reference/deployment-and-ops.md` + memory `project_local_dev_bot`
 - `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot`
   → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
-- `buildLegalPages.js` (+ **`scripts/lib/chronicle.js`**) → CLAUDE.md's **`public/` — the built legal site**
-  section. Renders `docs/legal/*.md` and four root documents → `public/legal/*.html`, **and the three
+- `buildLegalPages.js` (+ **`scripts/lib/chronicle.js`**) → **`.claude/rules/legal-site.md`**, which
+  loads automatically alongside this file when you open either of them. *(It used to point at a
+  286-line section of the root `CLAUDE.md`; that was moved into its own path-scoped rule on
+  2026-08-01 23:40 EDT, because subsystem craft loaded on every session is exactly what the rules
+  system exists to avoid.)* Renders `docs/legal/*.md` and four root documents → `public/legal/*.html`, **and the three
   records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` → `public/changelog/*.html`**, for
   Cloudflare Pages. Not a migration: a **generator**, and the only script here whose output is committed.
   Run it with **`npm run site`** (syntax-checks both files first, then builds).
