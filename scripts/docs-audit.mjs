@@ -59,6 +59,7 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -1331,6 +1332,60 @@ check(
     // reported a pass that verified nothing — a vacuous pass, which this suite treats as a failure.
     // The check reads every line of the file to find its sections, so lines are what it examined.
     return { findings: out, examined: lines.length };
+  }
+);
+
+/* ------------------------ privacy-inventory ------------------------- */
+check(
+  "privacy-inventory",
+  "ERROR",
+  "PRIVACY Appendix A names every field the UserPreference schema actually stores",
+  () => {
+    // ⚠️ THE POLICY DECLARES THIS INVARIANT ITSELF and nothing was checking it. Appendix A says it
+    // "mirrors the UserPreference schema", that it is "a transcription of it, not a summary", and it
+    // ends "That's the whole list." CLAUDE.md said drift here makes the policy "a false statement
+    // about live data collection" — and left it to whoever remembered.
+    //
+    // It had already drifted (found 2026-08-01 23:55 EDT): decorationColorHex and nameplateColorHex
+    // were stored and unlisted, and the four *PaletteSource fields were covered only by a
+    // parenthetical "(+ source hashes)" rather than named. Published, under a heading that claims
+    // completeness.
+    //
+    // The schema is read through mongoose rather than by regex on purpose: a regex that misses an
+    // unusually-formatted field fails OPEN, and failing open is the exact defect this check exists to
+    // catch. If the dependency is unavailable the check SKIPS and says so, rather than reporting a
+    // conclusion it cannot support.
+    const md = read("docs/legal/PRIVACY.md");
+    if (md === null) return { findings: [], examined: 0 };
+    let schema;
+    try {
+      const require_ = createRequire(import.meta.url);
+      schema = require_(join(REPO, "models/UserPreference.js")).schema;
+    } catch (e) {
+      return { findings: [], skipped: `could not load models/UserPreference.js (${e.code || e.message}) — inventory NOT verified` };
+    }
+    const stored = [...new Set(
+      Object.keys(schema.paths)
+        .filter((p) => !["_id", "__v"].includes(p))
+        .map((p) => p.split(".")[0])
+    )];
+    // Bounded to the appendix's own list. Past "That's the whole list." the section discusses the
+    // site's local-storage item, whose backticked VALUES (`light`, `dark`) are not field names.
+    const from = md.indexOf("## Appendix A");
+    const to = md.indexOf("That's the whole list", from);
+    if (from < 0 || to < 0) {
+      return { findings: [{ msg: "docs/legal/PRIVACY.md: Appendix A or its closing \"That's the whole list.\" is missing — the inventory cannot be located, so it cannot be verified." }], examined: 0 };
+    }
+    const named = new Set(
+      [...md.slice(from, to).matchAll(/`([A-Za-z_][A-Za-z0-9_]*)`/g)].map((m) => m[1])
+    );
+    const out = stored.filter((f) => !named.has(f)).map((f) => ({
+      msg: `docs/legal/PRIVACY.md Appendix A does not name \`${f}\`, which UserPreference stores. ` +
+        "The appendix claims to be a complete transcription of the schema, so an unlisted field makes " +
+        "the published policy inaccurate about live data collection. Add it, bump the policy version, " +
+        "and add a change-history row.",
+    }));
+    return { findings: out, examined: stored.length };
   }
 );
 

@@ -1,7 +1,7 @@
 # Privacy Policy — Dior's Builds
 
 **Effective date:** 1 August 2026
-**Version:** 1.4
+**Version:** 1.5
 **Applies to:** the Dior's Builds Discord application (the "Bot") and this
 documentation website (the "Site")
 
@@ -599,8 +599,12 @@ you can read yourself at [`models/UserPreference.js`](../../models/UserPreferenc
 - `avatarColorHex` / `avatarColorSource`
 - `bannerColorHex` / `bannerColorSource`
 - `displayNameColorHex` / `displayNameColorSource`
-- `decorationColorSource`, `nameplateColorSource`
-- `avatarPalette`, `bannerPalette`, `decorationPalette`, `nameplatePalette` (+ source hashes)
+- `decorationColorHex` / `decorationColorSource`
+- `nameplateColorHex` / `nameplateColorSource`
+- `avatarPalette` / `avatarPaletteSource`
+- `bannerPalette` / `bannerPaletteSource`
+- `decorationPalette` / `decorationPaletteSource`
+- `nameplatePalette` / `nameplatePaletteSource`
 
 **That's the whole list.** It mirrors the schema in the source code rather than
 paraphrasing it, so it can be checked line-by-line against the software itself. If
@@ -618,6 +622,7 @@ database or any server, and it is described in full in §2.6.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.5** | 1 August 2026 | Appendix A now names `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and names the four `*PaletteSource` fields individually rather than as "(+ source hashes)". **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already being stored and are already described by §2; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again. |
 | **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §13, alongside the canonical email. A Privacy Request under §9 must still come by email. |
 | **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
 | **1.2** | 31 July 2026 | Documented the Site's single `db-theme` local-storage item (§2.6); corrected the "there is no website" statement in §3. |

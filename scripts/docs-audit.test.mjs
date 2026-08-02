@@ -82,17 +82,35 @@ const makeFixture = () => {
     root,
     "CLAUDE.md",
     "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`.\n\n" +
-      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/`.\n" +
+      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/`.\n" +
       "Scripts: `scripts/dofix.js`.\n"
   );
   write(root, "LICENSE", "Fixture licence.\n");
   write(root, "scripts/dofix.js", "// fixture script\n");
+  // privacy-inventory loads the schema rather than regexing it, so the fixture must supply one —
+  // otherwise the check skips, examines nothing, and the ledger correctly calls that a vacuous pass.
+  // ⚠️ It exports a PLAIN object, not a mongoose schema. A `require('mongoose')` here resolves from
+  // the fixture's own directory in /tmp, which has no node_modules, so it threw and the check skipped
+  // — silently turning the "broken fixture must fail" assertion into a false pass. The check only
+  // ever reads `schema.paths`, so this is the same shape without the resolution hazard.
+  write(
+    root,
+    "models/UserPreference.js",
+    "module.exports = { schema: { paths: { discordId: {}, timezone: {} } } };\n"
+  );
+  write(
+    root,
+    "docs/legal/PRIVACY.md",
+    "# Privacy\n\n## Appendix A — Complete data inventory\n\n" +
+      "- `discordId` — the user id\n- `timezone`\n\n**That's the whole list.**\n"
+  );
   write(
     root,
     "docs/README.md",
     "# Map\n\n| File | What |\n|---|---|\n| `CHANGELOG.md` | log |\n| `CHANGELOG-SUMMARY.md` | summary |\n" +
       "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `diors-builds notes.md` | intake |\n" +
       "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n" +
+      "| `legal/PRIVACY.md` | policy |\n" +
       "\nPath-scoped rules: example (1 file).\n"
   );
   // Placeholder hashes are filled in below with a REAL sha. Invented hashes fail `hash-chain`'s
@@ -512,6 +530,15 @@ proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (
     + "\n### A subsystem that outgrew the map\n"
     + "detail line\n".repeat(140);
   write(root, "CLAUDE.md", c);
+});
+
+proves("a stored field missing from the privacy policy's inventory", "privacy-inventory", (root) => {
+  // Appendix A says it is "a transcription" of the UserPreference schema and ends "That's the whole
+  // list." It had really drifted: two ColorHex fields were stored and unlisted. Dropping a field from
+  // the fixture's appendix reproduces exactly that.
+  const p = join(root, "docs/legal/PRIVACY.md");
+  write(root, "docs/legal/PRIVACY.md",
+    readFileSync(p, "utf8").replace(/^- `discordId`.*$/m, "- (removed)"));
 });
 
 // ---- the evidence ledger: a pass you cannot audit is not a pass -------------------------------
