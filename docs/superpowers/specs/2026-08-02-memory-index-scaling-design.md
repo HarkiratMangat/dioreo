@@ -105,7 +105,7 @@ Three consequences follow, and they are what the design must actually respond to
    undocumented, untestable from inside a session, and can change under us without warning.
 
 **Therefore the design does not target a number.** Betting the store's readability on an
-unverifiable constant is exactly the failure mode of [[feedback_verify_before_assuming]]. The design
+unverifiable constant is exactly the failure mode of [[feedback_verify_before_claiming]]. The design
 targets *keeping the index small enough that the question never has to be asked* — which is correct
 whether the cliff is at 24.4KB, at 40KB, or does not exist at all.
 
@@ -397,6 +397,18 @@ new three-partition rule; `MEMORY.md` size recorded before/after.
 1. `feedback_verify_before_claiming` ← the six from D2. **Do this one first, alone**, and let it sit
    for a session or two before proceeding — it is the template, and it is worth finding out whether
    a case table actually recalls as well as six separate files before repeating it five more times.
+
+   > ### ⚠️ EXECUTED 2026-08-02 13:20 EDT — as FIVE, not six. Deviation from this plan, recorded.
+   > **`feedback_not_checkable_is_usually_unexamined` was NOT merged.** Tested against D3's own
+   > earning rule, it passes two of the three tests: it fires at a **different trigger** (*designing
+   > an enforcement check*, not *claiming something is done*) and it is **independently actionable**
+   > (its own 20-lesson procedure for deriving invariants and avoiding vacuous checks). By the rule
+   > this design wrote, it earns its file — so merging it would have been the design overriding its
+   > own criterion for the sake of one more index line.
+   >
+   > D2 listed it among the six because the *topic* is shared. The rule tests the **moment**, not the
+   > topic, and that distinction is the whole point of D3. Merged five; saved four index lines
+   > instead of five.
 2. Then, each proposed separately: the token/tool-routing cluster (4 → 2) and the git/release
    cluster (7 → ~4).
 
@@ -411,7 +423,7 @@ since merged files leave dangling wiki-links everywhere they were cited.
 4. Register it in [[reference_enforcement_hooks]].
 
 *Verify:* hook fires on a real session start; deliberately breach the budget in a scratch copy to
-prove the warning can actually fire ([[feedback_reproduction_must_discriminate]] — a check that has
+prove the warning can actually fire ([[feedback_verify_before_claiming]] — a check that has
 never been seen to fail is not known to work).
 
 **Expected outcome:** ~73 → ~50 active files; `MEMORY.md` ~13.2KB → ~9KB; growth governed rather

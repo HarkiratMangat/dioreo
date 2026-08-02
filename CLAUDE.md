@@ -61,9 +61,20 @@ never reads, bridged only by a redirect note in this file.
   (`/Applications/Claude Code/local/memory-architecture-STATUS.md` + `meta-deferred-list.md`) were
   annotated in the same pass. **The general defer-to-owning-project rule is NOT retired** — see
   [[feedback_defer_to_owning_project]]. Full record: memory `project_memory_slug_migration.md`.
-- ⚠️ **Native auto-load is still UNVERIFIED.** The correct path means the platform *can* see the store;
-  it does not prove it loads it. The `SessionStart` hook + this file remain the depended-upon
-  mechanism — do not remove either on the assumption that native loading now covers it.
+- ✅ **Native auto-load is CONFIRMED WORKING — verified 2026-08-02 12:50 EDT.** `MEMORY.md`'s full
+  contents arrive in context labelled by the platform as the user's auto-memory, and **no hook in any
+  settings file loads it** (checked project `settings.json`, `settings.local.json`, and global
+  `~/.claude/settings.json`). The 2026-07-28 slug migration achieved what it was for. *(This replaces a
+  standing "still UNVERIFIED" caveat that was never actually tested.)*
+- ⚠️ **That is NOT a licence to remove the `SessionStart` hook.** The hook loads `docs/SESSION-START.md`
+  and runs the notes-file check — different files, neither of which native auto-load covers. Only the
+  claim about `MEMORY.md` changed.
+- ⚠️ **`MEMORY.md` is the ONLY auto-loaded file; the other memories are on-demand.** So its size is a
+  tax on every session, and it grows with the file count. It is budgeted at **under 16,000 bytes** and
+  a `SessionStart` check warns past that. Design + migration plan:
+  `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md`. Note that a previously-assumed
+  "24.4KB hard read limit" **does not reproduce** (a 33,530-byte memory file reads in full) — the budget
+  is a deliberate safety margin, not that number.
 
 ### `.env` is never un-gitignored
 `.env` stays gitignored, deliberately, and should **NEVER** be un-ignored regardless of repo visibility —

@@ -28,6 +28,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/memory-index-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else printf 'MEMORY INDEX CHECK DID NOT RUN -- %s is missing or unreadable. The memory index is UNGUARDED this session: neither the 16000B budget nor the conservation rule (which is the only thing standing between a deleted memory and silent permanent data loss, since the store has no version control) was checked. Do not treat a clean index as verified.' \"$S\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}}'; fi",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "cd \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}\" 2>/dev/null && git rev-parse --git-dir >/dev/null 2>&1 && { git fetch --prune --quiet 2>/dev/null; gone=$(git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads | grep '\\[gone\\]' | cut -d' ' -f1); n=$(printf '%s' \"$gone\" | grep -c .); if [ \"$n\" -gt 0 ]; then printf 'STALE-BRANCH CHECK: %s local branch(es) whose remote is already deleted (GitHub auto-deletes on merge) are sitting unpruned:\\n%s\\nThey rot because a plain git fetch does NOT prune remote-tracking refs, so git branch -a keeps listing merged work as if it were live. Prune now: confirm each PR is MERGED (gh pr list --head <branch> --state all --json number,state), then git branch -D <branch>; git fetch --prune. A merged branch should never outlive its PR -- see docs/README.md chore checklist step 8.' \"$n\" \"$gone\"; fi; } | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
             "timeout": 15
           }

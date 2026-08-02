@@ -67,7 +67,7 @@ scratchpad for 2 days.*
   Related and already handled: edge propagation presents as 404 for up to ~60s after a deploy (measured
   2026-07-30 00:15 EDT), and `dior legal check` now retries on non-200 rather than only on a hash
   mismatch. **Any "the site is down" report within a minute of a deploy should be re-checked before it
-  is believed.** See `[[feedback_green_check_can_mask_outage]]`.
+  is believed.** See `[[feedback_verify_before_claiming]]`.
 
 - `[P2 · S]` **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true
   2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is
@@ -165,6 +165,25 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+- **Memory consolidation pass 2 — the token/tool-routing and git/release clusters** `[P2 · M]`
+  (filed 2026-08-02 13:40 EDT). Pass 1 shipped the mechanism (archive tier, canonical merge, the
+  `SessionStart` budget/conservation hook) but **deliberately merged only the verification cluster**,
+  so the *size* win was not realised: `MEMORY.md` went 13,192B → 13,240B, essentially flat, because
+  the four index lines saved were offset by the new section-header trigger clauses. **Headroom is
+  now ~2,760B ≈ 15 entries** against the 16,000B budget, which is thin.
+  **Direction:** merge `project_context_token_budget` + `feedback_be_usage_conscious` into
+  `feedback_token_conscious_tool_routing` (all three are the same cost lesson; the routing entry
+  already carries the four practices). Then assess the git/release cluster —
+  `feedback_wait_for_commit_push_confirmation`, `feedback_push_means_full_cycle`, and
+  `feedback_docs_at_push_time` are candidates, but `project_git_workflow` and
+  `project_commit_naming_convention` are canonical and should stay.
+  **Test each candidate against the D3 earning rule first** (different trigger · supersedes ·
+  independently actionable) — pass 1 found that `feedback_not_checkable_is_usually_unexamined`
+  *earned* its file and correctly was NOT merged, so do not assume the design's original list is
+  right. **Snapshot before merging; the store has no version control.**
+  See `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md` and the memory
+  `project_memory_index_scaling`.
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]`
 tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
 by items added since. (A count used to live here; it went stale the moment an item was added, so the

@@ -62,7 +62,11 @@ if [ -d "$MEM" ]; then
     point=$(git merge-base "$BASE" HEAD 2>/dev/null)
     since=$(git log -1 --format=%ct "$point" 2>/dev/null)
     if [ -n "$since" ]; then
-      recent=$(find "$MEM" -name '*.md' -newermt "@$since" 2>/dev/null | wc -l | tr -d ' ')
+      # -maxdepth 1 is load-bearing: memory/archive/ holds RETIRED memories, and editing one (e.g.
+      # stamping its retirement header) bumps its mtime — which without this flag would count as
+      # "a memory was written this branch" and silently satisfy check (6) while nothing live was
+      # recorded. Only ACTIVE memory proves a standing rule was written down.
+      recent=$(find "$MEM" -maxdepth 1 -name '*.md' -newermt "@$since" 2>/dev/null | wc -l | tr -d ' ')
       if [ "${recent:-0}" -eq 0 ]; then
         msg="$msg(6) MEMORY: this branch changes rule/enforcement files but NO memory file has been written since the branch point. Changed:
 $(printf '%s' "$rulechange" | sed 's/^/    /')
