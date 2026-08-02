@@ -4,7 +4,7 @@ HOOK="$(dirname "$0")/release-ready-check.sh"; pass=0; fail=0
 # without a network call to `gh pr view`.
 r(){ local raw; raw="$(printf '{"tool_input":{"command":"gh pr merge 1 --squash"}}' \
        | RELEASE_CHECK_FILES="$1" RELEASE_CHECK_BASE="${2:-main}" bash "$HOOK")"
-     [ -z "$raw" ] && { echo SILENT; return; }; printf '%s' "$raw" | jq -r '.hookSpecificOutput.permissionDecisionReason // "SILENT"'; }
+     [ -z "$raw" ] && { echo SILENT; return; }; printf '%s' "$raw" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; }
 a(){ local n="$1" needle="$2" want="$3" files="$4" out; out="$(r "$files" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1)); else echo "  FAIL  $n"; echo "        got: $out"; fail=$((fail+1)); fi; }
@@ -30,7 +30,7 @@ a "missing DEVLOG fires"              "docs/DEVLOG.md has no entry" yes "$NODEVL
 a "purely mechanical skips DEVLOG"    "docs/DEVLOG.md has no entry" no  "$MECHANICAL"
 a "missing CHANGELOG fires"           "docs/CHANGELOG.md has no entry" yes "$NOCHANGELOG"
 a "missing SUMMARY fires"             "CHANGELOG-SUMMARY.md has no line" yes "$NOCHANGELOG"
-a "it ASKS, never hard-blocks"        "RELEASE NOT READY" yes "$NODEVLOG"
+a "advisory, never a hard block"     "RELEASE NOT READY" yes "$NODEVLOG"
 # --- v3 pre-release: CHANGELOG-only. Demanding a SUMMARY line there would be the gate enforcing a
 #     rule that does not apply, which teaches you to merge past it. Added 2026-08-02 16:49 EDT with
 #     the base-branch fix; before it, every v3 PR was diffed against origin/main.

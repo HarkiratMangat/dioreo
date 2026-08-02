@@ -77,4 +77,4 @@ fi
 
 [ -z "$miss" ] && exit 0
 printf 'RELEASE NOT READY — checked the BRANCH before merging, which is the only moment these can still be fixed:%s\n\nAdd them to this branch now; after the merge the only remedy is an extra release, which is what this gate exists to prevent. If a gap is deliberate, say which and why — then proceed.' "$miss" \
-  | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:.}}'
+  | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'

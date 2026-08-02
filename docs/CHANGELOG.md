@@ -224,11 +224,35 @@ so deleting a test fails the suite instead of silently shrinking it.
   aliases `find` to `bfs`. Hooks get plain `/usr/bin/find`. Test a hook the way the
   hook runs.
 
-**The squash-trailer gate is now `deny`, not `ask`.** As an `ask` it was clicked
-past on three consecutive merges — including the three that shipped the hook work
-itself. Of the last 8 squash commits only `ee3b0cd` has the correct 2 trailer
-lines; `f778195` has 20 and `9b9b4ce` has **130**. Deny is satisfied by any
-`--body`, so it blocks only the call that produces the bug.
+**🚨 `permissionDecision:"ask"` is silently auto-approved — seven gates were dead.**
+Found mid-merge-flow while running this very PR: `gh pr create` produced no prompt
+and no output, while running the same hook by hand emitted a full finding. The
+innocent explanations were ruled out first — the wrapper regex was confirmed to
+match the real command string, and the hook was confirmed to emit `ask`. It simply
+never surfaced. The discriminating test was `gh pr merge 999999 --squash` on a PR
+that cannot exist: the `deny` **blocked hard, with its message**.
+
+| Decision | Behaviour | Evidence |
+|---|---|---|
+| `deny` | blocks, message shown | stopped `gh pr merge 999999` |
+| `additionalContext` | surfaces every time | rg-flag-guard, all session |
+| `ask` | **silently auto-approved** | four gates fired, zero output |
+
+So the earlier framing in v2.49.x was wrong and is corrected: the squash gate was
+not "clicked past by a session in a hurry" — **it was never presented at all.**
+Same for the tag-invariant gate, the Artifact force-overwrite gate, and all four
+`gh pr create` gates.
+
+Objective violations are now `deny` (impossible timestamp · squash without
+`--body` · tag ≠ `package.json` · `force:true` overwrite · tracked-file edit or
+commit on `main`). Judgement calls became visible `additionalContext`
+(`release-ready-check`, `records-close-check`, `stale-reference-sweep`,
+`devlog-toc-check`, `docs-audit-gate`) — **a visible advisory beats an invisible
+ask, always.** Proven end-to-end: the identical `gh pr create --help` that was
+silent before now prints both findings.
+
+On the trailers themselves: of the last 8 squash commits only `ee3b0cd` has the
+correct 2 lines; `f778195` has 20 and `9b9b4ce` has **130**.
 
 **New `branch-discipline-guard.sh`** — PreToolUse had **seven** hooks, all
 `Bash`/`Artifact`, and **none on `Edit|Write`**, so nothing could prevent a bad

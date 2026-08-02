@@ -28,13 +28,13 @@ BASE="${1:-main}"
 # ⚠️ FAILSAFE (2026-07-29 02:00 EDT): "the audit is missing" and "the audit found nothing" must never
 # look the same. A silent skip here would turn a deleted or crashing script into a permanent green.
 if [ ! -f scripts/docs-audit.mjs ]; then
-  jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:"DOCS AUDIT CANNOT RUN: scripts/docs-audit.mjs is missing, so NONE of the documentation invariants were checked for this PR. CI will still run its own copy -- but if it is gone there too, this PR is completely ungated."}}'
+  jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:"DOCS AUDIT CANNOT RUN: scripts/docs-audit.mjs is missing, so NONE of the documentation invariants were checked for this PR. CI will still run its own copy -- but if it is gone there too, this PR is completely ungated."}}'
   exit 0
 fi
 
 out=$(node scripts/docs-audit.mjs --diff "$BASE" --json 2>&1)
 if ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
-  jq -n --arg e "$(printf '%s' "$out" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:("DOCS AUDIT CRASHED: it did not return valid JSON, so nothing was verified. Fix the audit before trusting this PR.\n\n" + $e)}}'
+  jq -n --arg e "$(printf '%s' "$out" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:("DOCS AUDIT CRASHED: it did not return valid JSON, so nothing was verified. Fix the audit before trusting this PR.\n\n" + $e)}}'
   exit 0
 fi
 
@@ -49,7 +49,6 @@ ledger=$(printf '%s' "$out" | jq -r '[.ledger[] | select(.skipped != null)] | ma
 jq -n --arg d "$detail" --arg l "$ledger" --arg n "$errors" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: ("DOCS AUDIT FAILED -- " + $n + " error(s). This is the same check CI runs, run early so the fix is still free:\n\n" + $d + "\n" + (if $l == "" then "" else "\n  Checks that did NOT run:\n" + $l + "\n" end) + "\nFix them, or run `npm run docs:audit` to see the full report. If a finding is wrong, fix the CHECK -- do not add an exemption to silence a real defect.")
+    additionalContext: ("DOCS AUDIT FAILED -- " + $n + " error(s). This is the same check CI runs, run early so the fix is still free:\n\n" + $d + "\n" + (if $l == "" then "" else "\n  Checks that did NOT run:\n" + $l + "\n" end) + "\nFix them, or run `npm run docs:audit` to see the full report. If a finding is wrong, fix the CHECK -- do not add an exemption to silence a real defect.")
   }
 }'

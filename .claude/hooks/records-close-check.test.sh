@@ -43,7 +43,7 @@ mkrepo() {
 run() { local d h; IFS=$'\t' read -r d h <<< "$1"
         local o; o=$(HOME="$h" CLAUDE_PROJECT_DIR="$d" bash "$HOOK" main)
         [ -z "$o" ] && { echo SILENT; return; }
-        printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason // "SILENT"'; }
+        printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; }
 a() { local n="$1" needle="$2" want="$3" out; out="$(run "$4")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))

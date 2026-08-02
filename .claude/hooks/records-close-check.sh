@@ -105,7 +105,6 @@ fi
 jq -n --arg m "$msg" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: ("RECORDS NOT CLOSED -- the two chore-checklist items CI cannot see:\n\n" + $m + "\nBoth were previously documented as \"NOT checkable\". They are checkable; the old check simply ran at session START, when there is nothing to close yet. If skipping either is the right call here, say so out loud and why -- a silent omission is the failure this gate exists to stop.")
+    additionalContext: ("RECORDS NOT CLOSED -- the two chore-checklist items CI cannot see:\n\n" + $m + "\nBoth were previously documented as \"NOT checkable\". They are checkable; the old check simply ran at session START, when there is nothing to close yet. If skipping either is the right call here, say so out loud and why -- a silent omission is the failure this gate exists to stop.")
   }
 }'

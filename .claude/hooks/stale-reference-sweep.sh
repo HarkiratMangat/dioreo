@@ -97,7 +97,6 @@ done
 jq -n --arg r "$report" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: ("STALE-REFERENCE SWEEP (backward verification).\n\nYou changed code that other files DESCRIBE. Those descriptions may have just become wrong -- this is the miss Harkirat has had to catch by hand every session, and it is the reason this gate exists.\n" + $r + "\n\nOpen each one and confirm it is still TRUE of the new behaviour. Fix the stale ones ON THIS BRANCH so they ride in the PR (docs land in the PR -- project_git_workflow). Memory files never appear in a git diff, so they are always listed here; that is deliberate, they go stale the most.\n\nProceed only once you have actually checked them -- not because the list looks short.")
+    additionalContext: ("STALE-REFERENCE SWEEP (backward verification).\n\nYou changed code that other files DESCRIBE. Those descriptions may have just become wrong -- this is the miss Harkirat has had to catch by hand every session, and it is the reason this gate exists.\n" + $r + "\n\nOpen each one and confirm it is still TRUE of the new behaviour. Fix the stale ones ON THIS BRANCH so they ride in the PR (docs land in the PR -- project_git_workflow). Memory files never appear in a git diff, so they are always listed here; that is deliberate, they go stale the most.\n\nProceed only once you have actually checked them -- not because the list looks short.")
   }
 }'

@@ -3835,6 +3835,40 @@ His hook's own test then caught it broken on the first run — `rtrimstr(.;"\n")
 that does not exist, so it failed to compile on every write. A hook written, reviewed, wired up, and
 completely dead. Which is the entire argument of this release in one line.
 
+### The finding that only appeared because I ran the merge flow
+
+Everything above came from the audit. **The biggest finding came from actually using the thing.**
+
+Opening this release's own PR, `gh pr create` produced no prompt and no output — yet running
+`records-close-check.sh` by hand emitted a full "RECORDS NOT CLOSED" finding. I could have shrugged
+at that. Instead I ruled out the innocent explanations in order: the wrapper regex **does** match the
+real command string, and the hook **does** emit `permissionDecision:"ask"`. So it fired and vanished.
+
+The discriminating test mattered more than the observation. `gh pr merge 999999 --squash` — a PR that
+cannot exist, so nothing could merge whichever way it went — and the `deny` **blocked hard, message
+and all**. Three decision types, three different fates:
+
+| `deny` | blocks, shown | `additionalContext` | always surfaces | `ask` | **silently auto-approved** |
+|---|---|---|---|---|---|
+
+**Seven gates were doing nothing.** And it corrects something I had written into this repo's records
+twice that same day: I had said the squash gate was *"clicked past by a session in a hurry"*. That
+was a guess dressed as a finding. It was never presented. Nobody clicked anything.
+
+The fix is a rule with a shape: **objective violation → `deny`; judgement call → visible
+`additionalContext`; never `ask`.** A visible advisory beats an invisible ask, always. Proven the
+only way worth trusting — the identical `gh pr create --help` that had been silent now prints both
+findings.
+
+Two things I want to keep from this. First, **the merge flow is itself a test**, and it exercised
+paths the whole audit had not. Second, **"the hook didn't fire" and "the hook fired and was
+swallowed" look identical from the outside** — and the second one is the failure mode that survives
+an audit, because every artifact says the gate exists.
+
+And the gates repaid it immediately: the newly-visible stale-reference sweep flagged four files
+describing behaviour I had just changed, including a spec step telling a future session to add a
+`-maxdepth 1` to a `find` call that no longer exists. All four fixed on this branch.
+
 ### Where it landed
 17 hook test suites, 0 untested hooks, shellcheck-clean, `npm test` runs them and CI runs `npm test`.
 Coverage is computed from the scripts on disk, so deleting a test fails the suite rather than quietly
