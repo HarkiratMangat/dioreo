@@ -3869,6 +3869,35 @@ And the gates repaid it immediately: the newly-visible stale-reference sweep fla
 describing behaviour I had just changed, including a spec step telling a future session to add a
 `-maxdepth 1` to a `find` call that no longer exists. All four fixed on this branch.
 
+### The required status check paid for itself on its first run
+
+Switching `syntax-check` from "runs" to "required" took one API call. The very first gated run
+**failed** — not on the hooks, on my own tests, in five distinct ways that a Mac can structurally
+never show:
+
+1. `timestamp-check.test.sh` read the **date** from now and the **time** from now+3h independently.
+   At 17:00 EDT that is harmlessly same-day. At 22:00 UTC it produced "today 01:00" — a *past*
+   stamp — so seven "future is denied" assertions were quietly testing the opposite of their name.
+2. `release-ready-check.test.sh` never set `CLAUDE_PROJECT_DIR`, so the hook `cd`'d to an absolute
+   Mac path that does not exist on a runner, exited 0, and six cases "passed" **by not running**.
+3. `records-close-check.test.sh` wrote its memory fixture in the same second as the branch commit on
+   the faster CI filesystem, so `mtime > branch-point` was false.
+4. `stale-reference-sweep.sh` is one `rg` call, and the runner has no ripgrep — so it found nothing
+   and exited silently, byte-identical to a clean branch. **Five real assertions passed as SILENT.**
+5. `typos-check.test.sh` demanded a binary that only matters on the dev machine.
+
+Then a second round, and the better one: `stat -f %m "$f" || stat -c %Y "$f"` is **BSD-first**, and
+on GNU `-f` means `--file-system` — it *prints filesystem info to stdout* and only then fails, so the
+fallback appends its number to that garbage. The captured value is not an integer and every mtime
+comparison silently went false. That idiom was pre-existing in two hooks. And my own fix to (2) had
+been written with `sd`, whose escaping left a literal `\&\&` in the `REPO=` line, so `cd` took `'&'`
+as arguments and `REPO` was empty — **it passed locally for the wrong reason.**
+
+Every one of these is the same shape as the day's main finding: *the check ran, reported success, and
+had tested nothing.* Four of them were introduced by me, in this release, while writing the suite
+whose entire purpose is to stop exactly that. The suite is not the safeguard — **a second, different
+environment is.** Running `TZ=UTC CI=1` locally now reproduces the runner and is the pre-push check.
+
 ### Where it landed
 17 hook test suites, 0 untested hooks, shellcheck-clean, `npm test` runs them and CI runs `npm test`.
 Coverage is computed from the scripts on disk, so deleting a test fails the suite rather than quietly
