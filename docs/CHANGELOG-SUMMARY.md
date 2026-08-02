@@ -26,6 +26,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.49.0 — August 2, 2026
+- **Nothing in the bot changed.** Another behind-the-scenes release — this one about the safety checks
+  that run while the bot is being worked on, so nothing you use in Discord is affected.
+- **A batch of automatic checks was added** that catch mistakes as they happen rather than after,
+  including one that spots an impossible date being written down and one that catches typos in new
+  text before it is saved.
+
 ## v2.48.0 — August 2, 2026
 - **Nothing in the bot changed this release.** All of this was behind-the-scenes work on how the
   project's own notes and history are stored, so nothing you use in Discord looks or behaves any
