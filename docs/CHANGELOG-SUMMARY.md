@@ -26,6 +26,15 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.50.0 — August 2, 2026
+- **Nothing changed in the bot.** A maintenance release about the project's own safety checks. It
+  turned out the tests written to prove those checks work were never actually being run by anything —
+  so they always looked like they were passing. They now run automatically on every change.
+- Running them for the first time uncovered two safety checks that had never worked at all, plus a
+  few that were warning about problems that weren't real. All fixed, and every check now has a test
+  that runs with the rest.
+
+
 ## v2.49.2 — August 2, 2026
 - **Nothing changed in the bot.** An internal safety check was running at the wrong time — it only
   noticed a missing piece of paperwork *after* the work had already been filed, which meant the only

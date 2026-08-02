@@ -20,26 +20,48 @@
 # judgement is the human's. But it must be a decision, not an omission.
 
 cmd=$(jq -r '.tool_input.command // empty')
-printf '%s' "$cmd" | grep -qE '(^|[;&|] *)gh pr merge' || exit 0
+printf '%s' "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time) +)*gh pr merge' || exit 0
 
 cd "${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
-git fetch origin main --quiet 2>/dev/null
+
+# ⚠️ THE BASE IS NOT ALWAYS `main` — fixed 2026-08-02 16:49 EDT. This diffed `origin/main...HEAD`
+# unconditionally, which is wrong for every v3 PR: those target the long-lived `v3-pre-release`
+# integration branch, so the diff would have included all of that branch's divergence and the
+# verdict would have been about the wrong set of files. It is invisible today only because
+# `main` and `v3-pre-release` happen to be identical (`git rev-list --left-right --count` = 0 0),
+# which is exactly the kind of coincidence that hides a bug until the day it matters.
+# RELEASE_CHECK_BASE lets the test pin the base without a network call.
+base="${RELEASE_CHECK_BASE:-}"
+if [ -z "$base" ]; then
+  pr=$(printf '%s' "$cmd" | grep -oE 'gh pr merge +[0-9]+' | grep -oE '[0-9]+$')
+  base=$(gh pr view ${pr:+"$pr"} --json baseRefName -q .baseRefName 2>/dev/null)
+  [ -z "$base" ] && base=main
+fi
+git fetch origin "$base" --quiet 2>/dev/null
 
 # RELEASE_CHECK_FILES overrides the diff so the miss-branches can be PROVEN, not assumed. Nothing in
 # normal operation sets it. Every hook written without tests today regressed; the four written with
 # them did not.
-changed="${RELEASE_CHECK_FILES:-$(git diff --name-only origin/main...HEAD 2>/dev/null)}"
+changed="${RELEASE_CHECK_FILES:-$(git diff --name-only "origin/$base...HEAD" 2>/dev/null)}"
 [ -z "$changed" ] && exit 0
 
 miss=""
 echo "$changed" | grep -qx 'docs/CHANGELOG.md' \
   || miss="$miss
-  · docs/CHANGELOG.md has no entry on this branch. Every merge to main gets a version (corrected
+  · docs/CHANGELOG.md has no entry on this branch. Every merge gets a version (corrected
     2026-08-02 16:02 EDT — the newest untagged commit is 2026-07-28; the last 14 are all tagged)."
-echo "$changed" | grep -qx 'docs/CHANGELOG-SUMMARY.md' \
-  || miss="$miss
+
+# During v3 pre-release the records rule is CHANGELOG-only: docs/CHANGELOG.md carries
+# `Pre-Release v3.MAJOR.MINOR`, package.json carries a matching `-pre` suffix, and no
+# CHANGELOG-SUMMARY line or tag is minted until v3.0.0 (2026-07-27 v3 development-structure spec).
+# Demanding a SUMMARY line on a v3 branch would be the gate enforcing a rule that does not apply —
+# which teaches you to merge past it, and then it is not a gate on main either.
+if [ "$base" != "v3-pre-release" ]; then
+  echo "$changed" | grep -qx 'docs/CHANGELOG-SUMMARY.md' \
+    || miss="$miss
   · docs/CHANGELOG-SUMMARY.md has no line. Every version number needs one, even ops/docs-only."
+fi
 echo "$changed" | grep -qx 'package.json' \
   || miss="$miss
   · package.json was not bumped. (package-lock.json carries the version twice — both fields move.)"
@@ -55,4 +77,4 @@ fi
 
 [ -z "$miss" ] && exit 0
 printf 'RELEASE NOT READY — checked the BRANCH before merging, which is the only moment these can still be fixed:%s\n\nAdd them to this branch now; after the merge the only remedy is an extra release, which is what this gate exists to prevent. If a gap is deliberate, say which and why — then proceed.' "$miss" \
-  | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:.}}'
+  | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'

@@ -38,6 +38,17 @@ BASE="${1:-main}"
 changed=$(git diff --name-only "$BASE...HEAD" 2>/dev/null)
 [ -n "$changed" ] || exit 0
 
+# ⚠️ FAIL LOUD IF `rg` IS ABSENT — added 2026-08-02 18:04 EDT. The entire sweep is one `rg` call, so
+# without the binary it found nothing and exited silently, which is byte-identical to "your branch is
+# clean". CI proved this is not hypothetical: the ubuntu runner has no ripgrep and all five real
+# assertions in this hook's test passed as SILENT. Same failure shape the two delegating gates already
+# guard against — "the tool is missing" and "the tool found nothing" must never look the same.
+if ! command -v rg >/dev/null 2>&1; then
+  printf 'STALE-REFERENCE SWEEP CANNOT RUN: ripgrep (`rg`) is not installed, so NOTHING was swept for stale references on this branch. Do not read this as a clean result — install rg, or check by hand which docs/rules/memory files describe the code you changed.' \
+    | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
+  exit 0
+fi
+
 # Only code/config/script changes redefine behaviour that prose elsewhere describes. A docs-only branch
 # is exempt: doc-to-doc references are what the changelog/DEVLOG hooks already cover, and flagging them
 # here would fire on every release and train the gate into background noise.
@@ -81,7 +92,7 @@ for s in $subjects; do
     # listed on every single PR including ones that just updated them — and a gate that cries wolf on
     # work you actually did is a gate that gets dismissed unread.
     case "$f" in
-      /*) m=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+      /*) m=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)
           [ "${m:-0}" -gt "${branch_start:-0}" ] && continue ;;
     esac
     unswept="$unswept
@@ -97,7 +108,6 @@ done
 jq -n --arg r "$report" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: ("STALE-REFERENCE SWEEP (backward verification).\n\nYou changed code that other files DESCRIBE. Those descriptions may have just become wrong -- this is the miss Harkirat has had to catch by hand every session, and it is the reason this gate exists.\n" + $r + "\n\nOpen each one and confirm it is still TRUE of the new behaviour. Fix the stale ones ON THIS BRANCH so they ride in the PR (docs land in the PR -- project_git_workflow). Memory files never appear in a git diff, so they are always listed here; that is deliberate, they go stale the most.\n\nProceed only once you have actually checked them -- not because the list looks short.")
+    additionalContext: ("STALE-REFERENCE SWEEP (backward verification).\n\nYou changed code that other files DESCRIBE. Those descriptions may have just become wrong -- this is the miss Harkirat has had to catch by hand every session, and it is the reason this gate exists.\n" + $r + "\n\nOpen each one and confirm it is still TRUE of the new behaviour. Fix the stale ones ON THIS BRANCH so they ride in the PR (docs land in the PR -- project_git_workflow). Memory files never appear in a git diff, so they are always listed here; that is deliberate, they go stale the most.\n\nProceed only once you have actually checked them -- not because the list looks short.")
   }
 }'

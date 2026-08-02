@@ -153,9 +153,11 @@ equally wrong.
 deletions blocked, linear history required, **0 required approvals** (a solo maintainer cannot approve
 their own PR, and requiring one would deadlock every merge). `enforce_admins` is deliberately OFF so
 Harkirat can still override in a genuine emergency — the retraction of `ebbf196` needed exactly that.
-⚠️ **No required status check is configured**, because a context name that does not match exactly
-blocks every merge with no way to tell why; add CI as a required check only after confirming the check
-name GitHub actually reports. `unreleased-on-main` (WARN)
+⚠️ **No required status check yet, so a PR with RED CI still merges** (one did, 2026-08-02 16:05 EDT).
+The old blocker (not knowing the exact context name) is resolved — it is **`syntax-check`**, verified
+2026-08-02 17:16 EDT; ⛔ never also require **`sync`**, which runs only on push to `main` and would
+deadlock every PR. Applying it is OPEN (classifier-blocked): `gh api -X PUT .../branches/main/protection`
+with `required_status_checks:{strict:false,contexts:["syntax-check"]}`, all other fields preserved. `unreleased-on-main` (WARN)
 reports the former for traceability, and `.claude/hooks/main-push-guard.sh` prevents the latter. The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
@@ -256,6 +258,23 @@ re-added by hand; that is no longer true.)* `settings.local.json` is now **track
 `!.claude/settings.local.json` negation in `.gitignore`, because the GLOBAL `~/.config/git/ignore`
 ignores that filename in every repo on this machine — removing the repo-level pattern alone did nothing. **Put any new hook in
 `settings.json`, never in the local file**, or it silently becomes unrecoverable again.
+
+### 🧪 Every hook needs a self-test, and `npm test` must run it (added 2026-08-02 17:23 EDT, v2.50.0)
+**EVERY script in `.claude/hooks/` needs a `<name>.test.sh`** — enforced by `run-all-tests.sh`, wired
+into `npm run test:hooks` → `npm test`, which CI calls. This exists because **six self-tests were found
+that nothing invoked**: referenced by `package.json`, `.github/workflows/` and `.claude/settings.json`
+a combined zero times, so they ran only when hand-typed. A test nobody runs is worse than no test — it
+manufactures a documented belief that the behaviour is covered. Writing the eight missing ones
+immediately exposed **two gates that had never worked once** (`main-push-guard` passed `rtk git push`;
+`records-close-check` used a `find -newermt @epoch` that BSD find cannot parse).
+- Coverage is computed from the scripts on disk, so **deleting a test fails the suite** instead of
+  quietly shrinking it. `UNTESTED_OK` is empty and must stay empty.
+- ⚠️ **Test a hook the way the hook RUNS** — a non-interactive shell. This machine's interactive
+  aliases (`find`→`bfs`, `git`→`rtk`) make probes succeed where the real hook fails; that is how the
+  BSD-find bug nearly escaped a second time.
+- ⚠️ **Ask of every gate: at the moment this fires, can the thing it complains about still be
+  prevented?** If not it is documentation wearing a hook's clothes. Full audit + the defect classes:
+  memory `reference_enforcement_hooks`.
 
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it

@@ -66,7 +66,30 @@ if [ -d "$MEM" ]; then
       # stamping its retirement header) bumps its mtime — which without this flag would count as
       # "a memory was written this branch" and silently satisfy check (6) while nothing live was
       # recorded. Only ACTIVE memory proves a standing rule was written down.
-      recent=$(find "$MEM" -maxdepth 1 -name '*.md' -newermt "@$since" 2>/dev/null | wc -l | tr -d ' ')
+      # ⚠️ THIS LINE WAS DEAD FROM THE DAY IT SHIPPED — found 2026-08-02 17:06 EDT by writing its
+      # first test. It used `find … -newermt "@$since"`. BSD find (which is what /usr/bin/find is on
+      # macOS, and what a hook's non-interactive shell actually invokes) CANNOT parse the `@epoch`
+      # form: it exits with `find: Can't parse date/time: @1785704722`. The `2>/dev/null` swallowed
+      # that error, `recent` came back 0 every single time, and check (6) therefore fired on EVERY
+      # PR whether or not a memory had been written.
+      #
+      # Which is the worse failure: a gate that ALWAYS fires teaches you to dismiss it, and a
+      # dismissed gate protects nothing — the same noise argument written into three other hooks in
+      # this directory. It read as working because it was never wrong in the visible direction.
+      #
+      # ⚠️ AND IT WAS NEARLY MISSED AGAIN. Probing `find -newermt "@N"` from an interactive shell
+      # SUCCEEDS, because this machine's shell aliases `find` to a function that dispatches to
+      # `bfs` — a different implementation that does accept `@epoch`. Hooks get plain
+      # `/usr/bin/find`. Test a hook the way the hook runs, not the way your prompt runs.
+      #
+      # Replaced with an explicit stat comparison — the same both-flavours idiom already used in
+      # stale-reference-sweep.sh — so there is no date parsing to be incompatible about.
+      recent=0
+      for f in "$MEM"/*.md; do
+        [ -e "$f" ] || continue
+        m=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)
+        [ "${m:-0}" -gt "${since:-0}" ] && recent=$((recent+1))
+      done
       if [ "${recent:-0}" -eq 0 ]; then
         msg="$msg(6) MEMORY: this branch changes rule/enforcement files but NO memory file has been written since the branch point. Changed:
 $(printf '%s' "$rulechange" | sed 's/^/    /')
@@ -82,7 +105,6 @@ fi
 jq -n --arg m "$msg" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: ("RECORDS NOT CLOSED -- the two chore-checklist items CI cannot see:\n\n" + $m + "\nBoth were previously documented as \"NOT checkable\". They are checkable; the old check simply ran at session START, when there is nothing to close yet. If skipping either is the right call here, say so out loud and why -- a silent omission is the failure this gate exists to stop.")
+    additionalContext: ("RECORDS NOT CLOSED -- the two chore-checklist items CI cannot see:\n\n" + $m + "\nBoth were previously documented as \"NOT checkable\". They are checkable; the old check simply ran at session START, when there is nothing to close yet. If skipping either is the right call here, say so out loud and why -- a silent omission is the failure this gate exists to stop.")
   }
 }'

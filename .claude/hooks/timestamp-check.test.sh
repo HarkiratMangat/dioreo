@@ -1,32 +1,88 @@
 #!/bin/bash
-# Proves timestamp-check.sh kills the false positives AND catches the fabricated-future case the old
-# inline version passed 30 times in one session.
-HOOK="$(dirname "$0")/timestamp-check.sh"
-pass=0; fail=0
-TODAY=$(date +%Y-%m-%d)
-PAST=$(date -v-2H +%H:%M 2>/dev/null || date -d '2 hours ago' +%H:%M)
-FUT=$(date -v+3H +%H:%M 2>/dev/null || date -d '3 hours' +%H:%M)
+# Proofs for timestamp-check.sh, in BOTH modes.
+#
+# `pre` can now DENY a write, so its false-positive surface is the dangerous one: a wrong deny
+# stops work dead and gets the hook switched off. `post` stays advisory and only has to avoid noise.
+#
+# Every case below corresponds to something that actually happened, not a hypothetical:
+#   · the fabricated-future stamp the old hook passed 30 times in one session
+#   · the tomorrow-dated stamp neither old branch even looked at
+#   · the backticked stamp that was exempt precisely where the fabrications landed
+#   · the line-wrapped timestamp that read as a bare date (this hook did it to its own commit)
+#   · the filename / CLI-arg false positives that made the original version noise
 
-run() { printf '{"tool_input":{"content":%s}}' "$(printf '%s' "$1" | jq -Rs .)" | bash "$HOOK" \
-        | jq -r '.hookSpecificOutput.additionalContext // ""'; }
-assert() { local n="$1" needle="$2" want="$3" out; out="$(run "$4")"
+HOOK="$(cd "$(dirname "$0")" && pwd)/timestamp-check.sh"
+pass=0; fail=0
+# ⚠️ DATE AND TIME MUST COME FROM THE SAME SHIFTED INSTANT — CI caught this, 2026-08-02 22:00 UTC.
+# The first version took `$TODAY` from now and `$FUT` from now+3h *independently*. On the Mac (17:00
+# EDT) that is harmlessly same-day; on the UTC CI runner at 22:00 it produced "today 01:00" — a PAST
+# timestamp — so every "future is denied" case silently asserted the wrong thing and failed. Seven
+# tests, one root cause: two halves of a timestamp read from two different moments.
+#
+# `when()` shifts once and formats once, on either BSD or GNU date, so the pair can never disagree.
+when() { # $1 = offset like '+3H' / '-2H' / '+1d'  -> "YYYY-MM-DD HH:MM"
+  date -v"$1" '+%Y-%m-%d %H:%M' 2>/dev/null && return
+  local gnu="${1#+}"; gnu="${gnu/H/ hours}"; gnu="${gnu/d/ days}"
+  case "$1" in -*) date -d "${gnu#-} ago" '+%Y-%m-%d %H:%M';; *) date -d "$gnu" '+%Y-%m-%d %H:%M';; esac
+}
+TODAY=$(date +%Y-%m-%d)
+LOCALTZ=$(date '+%Z')
+FUTSTAMP=$(when '+3H')            # a genuinely future date+time, whatever the zone or hour
+PASTSTAMP=$(when '-2H')           # genuinely past, same guarantee
+TOMORROWSTAMP="$(when '+1d' | cut -d' ' -f1) 09:00"
+
+# A hook that decides nothing prints nothing; jq on empty stdin also prints nothing. Catch empty
+# BEFORE jq or every silent case reads as "" and the suite lies about which way it failed.
+run() { # $1 = mode, $2 = content -> "deny:<reason>" | "<advisory text>" | "SILENT"
+  local o; o=$(printf '{"tool_input":{"content":%s}}' "$(printf '%s' "$2" | jq -Rs .)" | bash "$HOOK" "$1")
+  [ -z "$o" ] && { echo SILENT; return; }
+  local d; d=$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecision // empty')
+  if [ -n "$d" ]; then printf 'deny:%s' "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')"
+  else printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; fi; }
+a() { local n="$1" mode="$2" needle="$3" want="$4" out; out="$(run "$mode" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
-  if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1));
-  else echo "  FAIL  $n (expected $want for '$needle')"; echo "        got: [$out]"; fail=$((fail+1)); fi; }
+  if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
+  else echo "  FAIL  $n (wanted $want for '$needle')"; echo "        got: [$out]"; fail=$((fail+1)); fi; }
 
 echo "timestamp-check.sh — proofs"
-# THE case the old hook missed: a well-formed but impossible time.
-assert "future time flagged as IMPOSSIBLE" "IMPOSSIBLE TIMESTAMP" yes "Measured $TODAY $FUT EDT during the run."
-assert "past time is silent"               "TIMESTAMP CHECK"      no  "Measured $TODAY $PAST EDT during the run."
-# The false positives that made the old hook noise.
-assert "date-prefixed FILENAME silent"     "TIMESTAMP CHECK"      no  "See docs/specs/$TODAY-some-protocol.md for detail."
-assert "CLI date argument silent"          "TIMESTAMP CHECK"      no  "Run: node x.mjs --from $TODAY --to $TODAY-x"
-assert "backticked date silent"            "TIMESTAMP CHECK"      no  "The window is \`$TODAY\` in the config."
-# The real miss it must still catch.
-assert "bare prose date flagged"           "BARE DATE"            yes "Corrected on $TODAY after review."
-# Both at once.
-assert "both findings can co-occur"        "IMPOSSIBLE TIMESTAMP" yes "Filed $TODAY and measured $TODAY $FUT EDT."
-assert "…and the bare-date half too"       "BARE DATE"            yes "Filed $TODAY and measured $TODAY $FUT EDT."
-# Nothing dated at all.
-assert "undated content silent"            "TIMESTAMP CHECK"      no  "Just some ordinary prose with no dates."
+
+echo "  -- pre mode: DENIES the impossible, blocks nothing else --"
+a "future time today denied"        pre "deny:"             yes "Measured $FUTSTAMP $LOCALTZ during the run."
+a "TOMORROW's stamp denied"         pre "deny:"             yes "Filed $TOMORROWSTAMP $LOCALTZ."
+a "future stamp in BACKTICKS denied" pre "deny:"            yes "Shipped \`$FUTSTAMP $LOCALTZ\` per the log."
+a "past time not denied"            pre "deny:"             no  "Measured $PASTSTAMP $LOCALTZ during the run."
+a "bare date never denied"          pre "deny:"             no  "Corrected on $TODAY after review."
+a "TS-EXAMPLE line is exempt"       pre "deny:"             no  "Illustration only: $TOMORROWSTAMP $LOCALTZ (TS-EXAMPLE)."
+a "undated content not denied"      pre "deny:"             no  "Ordinary prose with no dates at all."
+a "a future DATE alone is allowed"  pre "deny:"             no  "Deadline: ${TOMORROWSTAMP%% *} — no clock time, deliberately."
+
+echo "  -- post mode: advisory only --"
+a "bare prose date flagged"         post "BARE DATE"        yes "Corrected on $TODAY after review."
+a "past timestamp silent"           post "TIMESTAMP CHECK"  no  "Measured $PASTSTAMP $LOCALTZ during the run."
+a "date-prefixed FILENAME silent"   post "TIMESTAMP CHECK"  no  "See docs/specs/$TODAY-some-protocol.md for detail."
+a "CLI date argument silent"        post "TIMESTAMP CHECK"  no  "Run: node x.mjs --from $TODAY --to $TODAY-x"
+a "backticked bare date silent"     post "TIMESTAMP CHECK"  no  "The window is \`$TODAY\` in the config."
+a "undated content silent"          post "TIMESTAMP CHECK"  no  "Just some ordinary prose with no dates."
+a "future still reported in post"   post "IMPOSSIBLE"       yes "Measured $FUTSTAMP $LOCALTZ during the run."
+
+echo "  -- foreign timezones are out of scope, not violations --"
+# A stamp in a zone that is NOT the local one cannot be compared against the local clock without
+# conversion, so it is skipped. This gate denied a legitimate UTC stamp on 2026-08-02 17:21 EDT while
+# documenting a CI run, and GitHub API times are always UTC — it would have recurred constantly.
+# ⚠️ The label must be a zone the machine is NOT in, or the case proves nothing. CI runs in UTC and
+# the Mac in EDT, so pick whichever the local zone is not.
+if [ "$LOCALTZ" = "UTC" ]; then FOREIGNTZ=EST; else FOREIGNTZ=UTC; fi
+a "explicit foreign TZ is skipped"  pre "deny:" no  "The run finished $FUTSTAMP $FOREIGNTZ per the API."
+# …but the LOCAL zone spelled out must still be judged, or the escape swallows everything.
+a "explicit LOCAL tz still denied"  pre "deny:" yes "Measured $FUTSTAMP $LOCALTZ during the run."
+a "no timezone at all still denied" pre "deny:" yes "Measured $FUTSTAMP during the run."
+
+echo "  -- the line-wrap false positive (defect 4) --"
+# A timestamp split across a wrapped comment must NOT read as a bare date. This is verbatim the
+# shape that fired while writing main-push-guard.test.sh.
+a "wrapped stamp is not a bare date" post "BARE DATE" no "$(printf '# it shipped %s\n# %s '"$LOCALTZ"' with no test\n' "${PASTSTAMP%% *}" "${PASTSTAMP##* }")"
+a "wrapped stamp in prose too"       post "BARE DATE" no "$(printf 'filed %s\n%s %s\n' "${PASTSTAMP%% *}" "${PASTSTAMP##* }" "$LOCALTZ")"
+# …and a wrapped FUTURE stamp must still be caught, not hidden by the rejoin.
+a "wrapped future stamp still denied" pre "deny:" yes "$(printf '# filed %s\n# %s %s\n' "${FUTSTAMP%% *}" "${FUTSTAMP##* }" "$LOCALTZ")"
+
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

@@ -67,8 +67,18 @@ kind of content lives and who's responsible for keeping it current.
 **Which of these are machine-checked (re-audited 2026-07-28 20:50 EDT):** items **1, 2, 3, 5, 8.2,
 8.4, 8.5** fire a hook at `gh pr merge` (or at `git tag`). Item **4** is nudged when code under
 `commands/utils/models/scripts` changes without a `CLAUDE.md`/`.claude/rules/*.md` note. Items **6
-(memory)** and **7 (notes file)** are gated at `gh pr create` by
+(memory)** and **7 (notes file)** fire at `gh pr create` via
 `.claude/hooks/records-close-check.sh`.
+
+> ⚠️ **They surface as ADVISORY context, not as a permission prompt — changed 2026-08-02 17:55 EDT
+> (v2.50.0), and the reason matters.** These gates used to emit `permissionDecision:"ask"`. Measured
+> that day: an `ask` from a `PreToolUse` hook is **silently auto-approved** in the permission mode
+> actually in use — the same `gh pr create` produced no prompt and no output, while running the hook
+> by hand emitted a full finding. Seven gates were dead this way. `additionalContext` demonstrably
+> does surface, so every judgement gate now uses it, and objective violations (impossible timestamp,
+> squash without `--body`, tag/version mismatch, `force:true` artifact overwrite) were promoted to
+> `deny`, which was verified to block hard. **Never write a new gate as `ask` without re-testing that
+> asks are visible.**
 
 > ⚠️ **This paragraph used to say items 6 and 7 were "NOT checkable". That was wrong** (corrected
 > 2026-07-28 20:50 EDT, Harkirat's catch). A `SessionStart` hook had been counting the notes file's

@@ -1,70 +1,122 @@
 #!/bin/bash
-# timestamp-check.sh — PostToolUse on Edit|Write. Replaces the inline TIMESTAMP nag.
+# timestamp-check.sh — argv[1] selects the mode:
+#   pre   → PreToolUse  on Edit|Write. DENIES an impossible (future) timestamp before it is written.
+#   post  → PostToolUse on Edit|Write. Advisory only: bare dates missing their HH:MM.
+# Default is `post`, so an un-argumented call behaves as it did before the split.
 #
-# WHY IT WAS REPLACED (2026-08-02 15:02 EDT)
-# The old inline version had two faults, and the second one is the serious one.
+# WHY IT WAS REPLACED THE FIRST TIME (2026-08-02 15:02 EDT)
+# The original inline version was LINE-based, so a date-prefixed filename (`2026-08-02-protocol.md`)
+# and a CLI date argument (`--from 2026-08-02`) both fired. A gate that is usually wrong trains you
+# to dismiss it. Worse, it asserted a time was PRESENT, never PLAUSIBLE: on 2026-08-02 a single
+# `date` call at 12:57 was followed by 30 invented stamps drifting to 19:30 (TS-EXAMPLE), all well-formed, all
+# passed. The format was right and the data was fiction.
 #
-# 1. FALSE POSITIVES, constantly. It was LINE-based: any line containing today's date without an
-#    adjacent HH:MM fired. But a date-prefixed FILENAME (`2026-08-02-protocol.md`) and a CLI date
-#    ARGUMENT (`--from 2026-08-02`) are both correct and both have no time. In one session it fired
-#    ~15 times and nearly every fire was answered "deliberate — filename / CLI arg / historical
-#    reference". A gate that is usually wrong trains you to dismiss it, which is how the real one gets
-#    dismissed too.
+# WHY IT CHANGED AGAIN (2026-08-02 16:47 EDT) — three defects found by using it, in one session:
 #
-# 2. IT NEVER CHECKED WHETHER THE TIME WAS TRUE. It asserted a time was PRESENT, never PLAUSIBLE. On
-#    2026-08-02 I ran `date` once at 12:57 and then INVENTED every subsequent timestamp, drifting to
-#    19:30 while the real clock read 15:02. Thirty fabricated future stamps landed in docs, hooks,
-#    memory, a released CHANGELOG, the DEVLOG and a git tag annotation — and this hook passed every
-#    one of them, because they all had a well-formed HH:MM. **The format was right and the data was
-#    fiction.** Harkirat caught it, not the gate.
+#  1. IT FIRED TOO LATE TO PREVENT ANYTHING. It was PostToolUse only, so the invented stamp was
+#     already on disk and correcting it cost a second `date` plus a second Edit. The content is
+#     sitting in `tool_input.new_string` at PreToolUse — it can simply be refused. This is the same
+#     wrong-moment defect PR #67 fixed for the release checks and never swept for anywhere else.
 #
-# So this version: strips the known-legitimate shapes to kill the noise, and adds the check that
-# actually mattered — a timestamp LATER THAN NOW cannot have been observed.
+#  2. IT ONLY EVER CHECKED **TODAY**. Both branches were anchored to `$(date +%Y-%m-%d)`, so a
+#     stamp dated TOMORROW — `2026-08-03 09:00` (TS-EXAMPLE) — matched neither and sailed through. The whole
+#     point is catching times that cannot have been observed, and a future date is the purest case.
+#     Now every `YYYY-MM-DD HH:MM` in the content is compared against now. ISO-8601 sorts
+#     lexicographically, so this is a plain string comparison with no date arithmetic to get wrong.
 #
-# The real prevention is upstream: a UserPromptSubmit hook now injects the current time every turn, so
-# there is never a reason to guess one. This gate is the safety net for when I guess anyway.
+#  3. BACKTICKS EXEMPTED THE CHECK THAT MATTERS. Backticked spans were stripped before BOTH
+#     branches, so `` `2026-08-02 19:30 EDT` `` (TS-EXAMPLE) was invisible — and changelog and devlog entries
+#     are full of backticks, which is exactly where the 30 fabricated stamps landed. Stripping is
+#     now scoped to the BARE-DATE branch, where it exists to kill false positives. A future
+#     timestamp is never legitimate, in any markup.
+#
+#  4. A TIMESTAMP WRAPPED ACROSS A LINE BREAK read as a bare date. Writing
+#     `... shipped 2026-08-02` / `# 01:30 EDT ...` in a wrapped comment fired the bare-date branch
+#     even though the time is right there. Found by this hook false-positiving on the very commit
+#     that was fixing it. Dates and times are now rejoined across a newline and any comment
+#     leader before either branch runs.
+#
+# A future DATE with no clock time is deliberately ALLOWED: that is how a real deadline is written,
+# and the deny message says so. Only date+time in the future is treated as impossible.
+#
+# ⚠️ THE ESCAPE, AND WHY IT HAD TO EXIST. The first `pre` build denied its own documentation: this
+# very file quotes fabricated stamps as EXAMPLES, and a deny cannot distinguish an example from an
+# assertion. Anything that writes about timestamps — this hook, its test, the memory files, the
+# DEVLOG entry explaining the incident — hits it. So a line carrying the literal token
+# `TS-EXAMPLE` is exempt from the impossible check.
+#
+# It is a per-LINE, explicitly-typed token on purpose. A file-level switch would be flipped once
+# and then silently cover every later edit to that file; `e.g.`-sniffing would be guessable by
+# accident. This has to be typed next to the stamp, shows up in the diff, and greps in one command
+# (`rg TS-EXAMPLE`) if it is ever suspected of hiding a real fabrication.
+
+mode="${1:-post}"
 
 content=$(jq -r '.tool_input.new_string // .tool_input.content // empty')
 [ -z "$content" ] && exit 0
 
 today=$(date +%Y-%m-%d)
-now_min=$(( 10#$(date +%H) * 60 + 10#$(date +%M) ))
+now="$(date '+%Y-%m-%d %H:%M')"
 
-# --- kill the known-legitimate shapes BEFORE judging -------------------------------------------
-# Order matters: filenames first (they contain the date followed by '-'), then flag arguments.
-clean=$(printf '%s' "$content" \
+# Rejoin a timestamp split across a line break, optionally through a comment leader (`#`, `//`,
+# `*`) — see defect 4. Without this, wrapped prose reads as a bare date.
+joined=$(printf '%s' "$content" | perl -0pe 's/(\d{4}-\d{2}-\d{2})[ \t]*\n[ \t]*(?:#+|\/\/|\*)?[ \t]*(\d{2}:\d{2})/$1 $2/g' 2>/dev/null) || joined="$content"
+[ -z "$joined" ] && joined="$content"
+
+# --- (A) IMPOSSIBLE: a date-time later than now was not observed. NOT backtick-exempt. ----------
+# ⚠️ FOREIGN TIMEZONES ARE NOT COMPARABLE — added 2026-08-02 17:21 EDT, when this gate denied a
+# perfectly good UTC stamp (TS-EXAMPLE: `2026-08-02 20:05 UTC`, which is 16:05 local, comfortably
+# past) while writing the CLAUDE.md paragraph about CI. GitHub API times are UTC, so that is not a
+# rare shape in this repo.
+#
+# Comparing a stamp in another zone against the LOCAL clock is meaningless without conversion, and
+# converting inside a hook invites a subtler class of bug. So a stamp carrying an explicit timezone
+# that is not the local one is skipped — out of scope, rather than guessed at. Anything with no zone,
+# or with the local zone, is still compared, which covers every stamp the records convention actually
+# asks for (`YYYY-MM-DD HH:MM TZ`, local).
+localtz=$(date '+%Z')
+future=$(printf '%s' "$joined" \
+  | grep -v 'TS-EXAMPLE' \
+  | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}( [A-Z]{2,5})?' \
+  | while read -r d hm tz; do
+      [ -n "$tz" ] && [ "$tz" != "$localtz" ] && continue
+      [ "$d $hm" \> "$now" ] && echo "$d $hm"
+    done \
+  | sort -u | tr '\n' ' ')
+
+if [ -n "$future" ]; then
+  msg="IMPOSSIBLE TIMESTAMP — this write contains ${future}but the clock reads ${now}. A time later than now cannot have been observed, so it was invented. On 2026-08-02 exactly this put 30 fabricated stamps into docs, memory, a released CHANGELOG and a git tag, every one of them well-formed. Run \`date\` and use what it returns. If you mean a genuine FUTURE deadline, write the date with NO clock time (that form is deliberately allowed), or say plainly that it is a target."
+  if [ "$mode" = "pre" ]; then
+    jq -n --arg r "$msg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
+    exit 0
+  fi
+fi
+
+# `pre` mode judges only the objective check. The bare-date branch has a false-positive history and
+# must never be able to block a write — noise that blocks is how a gate gets switched off.
+[ "$mode" = "pre" ] && exit 0
+
+findings=""
+[ -n "$future" ] && findings="
+  🚨 $msg"
+
+# --- (B) BARE DATE: advisory, and the only branch that strips known-legitimate shapes ------------
+# Order matters: filenames first (date followed by '-'), then flag arguments, then backticks.
+clean=$(printf '%s' "$joined" \
   | sed -E "s/${today}-[A-Za-z0-9._-]+//g" \
   | sed -E "s/--[a-z-]+[= ]${today}//g" \
   | sed -E "s/\`[^\`]*\`//g")
-
-findings=""
-
-# --- (A) the check that actually matters: a time later than NOW was not observed ----------------
-future=$(printf '%s' "$clean" | grep -oE "${today} [0-9]{2}:[0-9]{2}" | while read -r _ hm; do
-  h=${hm%%:*}; m=${hm##*:}
-  [ $(( 10#$h * 60 + 10#$m )) -gt "$now_min" ] && echo "$hm"
-done | sort -u | tr '\n' ' ')
-if [ -n "$future" ]; then
-  findings="${findings}
-  🚨 IMPOSSIBLE TIMESTAMP — this edit writes today at ${future}but the clock reads $(date +%H:%M). A
-     time later than now cannot have been observed, so it was invented. On 2026-08-02 exactly this put
-     30 fabricated stamps into docs, memory, a released CHANGELOG and a git tag. Get the real time
-     (\`date\`) and use it. If it is genuinely a FUTURE deadline, write the date without a clock time,
-     or say plainly that it is a target."
-fi
-
-# --- (B) the original check, now only on prose ---------------------------------------------------
-# OCCURRENCE-based, not line-based. The old hook judged whole LINES, so a line carrying one good
-# timestamp masked a bare date sitting next to it — the same granularity flaw in mirror image. Strip
-# every well-formed stamp first; whatever date text survives is genuinely bare.
+# OCCURRENCE-based, not line-based: strip every well-formed stamp, and whatever date text survives
+# is genuinely bare. Judging whole lines let one good timestamp mask a bare date beside it.
 bare=$(printf '%s' "$clean" | sed -E "s/${today} [0-9]{2}:[0-9]{2}//g" | grep -F "$today")
 if [ -n "$bare" ]; then
   findings="${findings}
   ⏱️ BARE DATE — today's date appears with no HH:MM TZ beside it. Working-agreement rule 10: dated
      content in docs, memory, DEVLOG, changelogs, notes marks and code comments carries
-     YYYY-MM-DD HH:MM TZ. Filenames, \`--flag DATE\` arguments and backticked spans are already
-     stripped before this check, so this is prose. Add the time, or confirm it is a deliberate bare
-     date (a historical reference, or the player-facing summary)."
+     YYYY-MM-DD HH:MM TZ. Filenames, \`--flag DATE\` arguments, backticked spans and timestamps
+     wrapped across a line break are all stripped before this check, so this is prose. Add the
+     time, or confirm it is a deliberate bare date (a historical reference, or the player-facing
+     summary)."
 fi
 
 [ -z "$findings" ] && exit 0

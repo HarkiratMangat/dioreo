@@ -29,7 +29,21 @@ cmd=$(jq -r '.tool_input.command // empty')
 
 # Only look at real pushes. `--dry-run` changes nothing, and a push that names an
 # explicit non-main refspec (`git push origin HEAD:refs/...`) is not this failure.
-echo "$cmd" | grep -qE '(^|[;&|] *)git +push' || exit 0
+#
+# ⚠️ WRAPPER PREFIXES — found by the test written 2026-08-02 16:38 EDT, three weeks after this
+# guard shipped. The old anchor was `(^|[;&|] *)git +push`, which requires `git` to sit at the
+# start of a command. `rtk git push` therefore did NOT match, and this hook — the only one in the
+# repo that can actually block — silently allowed the exact command it exists to stop. RTK.md
+# documents that shell commands are transparently rewritten through `rtk`, so this was not a
+# hypothetical spelling; it is the documented normal form. `sudo`, `env`, `command`, `nohup` and
+# `time` are covered for the same reason.
+#
+# The wrapper list is EXPLICIT rather than "any leading words" on purpose: a permissive prefix
+# would make `echo git push ...` match, and a guard that fires on prose trains you to dismiss it —
+# which is how the real fire gets dismissed too (the noise lesson from timestamp-check.sh).
+#
+# `([^[:alnum:]]|$)` after `push` keeps `git pushing` from matching, which the loose form allowed.
+echo "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_][A-Za-z0-9_]*=[^ ]*)*) +)*git +push([^[:alnum:]]|$)' || exit 0
 echo "$cmd" | grep -q -- '--dry-run' && exit 0
 
 dir="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"

@@ -75,8 +75,15 @@ scratchpad for 2 days.*
   never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every
   build, which is real coverage — but it proves ratios, not whether the page looks right.
 
+
 *(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in
 v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
+
+*(Two enforcement-layer bugs filed here 2026-08-02 16:19/16:28 EDT — the SQUASH-TRAILER gate stuck on
+`"ask"`, and three hooks firing too late to prevent anything — were **fixed the same session** in
+v2.50.0 and moved to `docs/archive/resolved-list.md`. Their bundled sibling, `dior pr compose`,
+remains OPEN in `/Applications/Claude Code/meta-deferred-list.md`: it belongs to the `dior` CLI repo,
+not this one.)*
 
 *(A security-hygiene item — two dead host credentials sitting in `.env` — was found and **fully resolved**
 2026-07-28 11:20 EDT. See `docs/archive/resolved-list.md`.)*

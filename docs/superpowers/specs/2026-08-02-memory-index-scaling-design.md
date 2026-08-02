@@ -380,8 +380,14 @@ writing".
 
 ### Phase 1 — Archive tier (mechanical, reversible)
 1. Create `memory/archive/`.
-2. **Update `.claude/hooks/records-close-check.sh:65`** — `find "$MEM" -name '*.md'` is recursive
-   and would count archived files as "memory written on this branch". Needs `-maxdepth 1`.
+2. ~~**Update `.claude/hooks/records-close-check.sh:65`** — `find "$MEM" -name '*.md'` is recursive
+   and would count archived files as "memory written on this branch". Needs `-maxdepth 1`.~~
+   ✅ **DONE, then superseded 2026-08-02 17:55 EDT (v2.50.0).** `-maxdepth 1` was added and worked —
+   but the surrounding `find … -newermt "@$since"` never did: **BSD find cannot parse the `@epoch`
+   form**, so it errored into `2>/dev/null` and the count came back 0 on every run, firing the check
+   on every PR regardless. The whole call is now a `for f in "$MEM"/*.md` glob plus an explicit
+   `stat` comparison, which is non-recursive **by construction** — there is no longer a `-maxdepth`
+   to forget. Found by writing the hook's first test; see memory `reference_enforcement_hooks`.
 3. **Update `.claude/hooks/stale-reference-sweep.sh:62`** — passes `"$MEM"` to a recursive `rg`, so
    archived files get swept for stale references. Decide explicitly: exclude, or accept the noise.
 4. Update the conservation check per §7.

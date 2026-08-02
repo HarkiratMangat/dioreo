@@ -32,7 +32,26 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci
-      - run: npm run check
+
+      # ripgrep is a real dependency of `.claude/hooks/stale-reference-sweep.sh` — the whole sweep is
+      # one `rg` call. The runner does not ship it, and without it the hook found nothing and exited
+      # silently, so all five of its assertions passed as SILENT on the first CI run after the
+      # required status check was enabled. The hook now reports its own absence, but installing rg is
+      # what makes CI test the REAL path instead of the degraded one.
+      - run: sudo apt-get install -y ripgrep
+
+      # `npm test` rather than `npm run check`, changed 2026-08-02 16:49 EDT. Two suites existed and
+      # NOTHING RAN THEM in CI: `scripts/calendarDedup.test.js` (reachable only via `npm test`, which
+      # CI never called) and the ten `.claude/hooks/*.test.sh` files, which were referenced by
+      # package.json, this workflow and settings.json a combined ZERO times — they ran only when
+      # someone hand-typed `bash <file>`. Harkirat, 2026-08-02: "i literally spent hours last session
+      # working on some of these gates and ... they dont even seem to hold despite their 'tests'."
+      # The tests were fine. Nothing was running them. A test nobody runs is worse than no test,
+      # because it produces a documented belief that the behaviour is covered.
+      #
+      # This covers `npm run check` (node --check over every JS file) and `docs:audit:test`, so
+      # neither needs its own step any more.
+      - run: npm test
 
       # The documentation invariants (scripts/docs-audit.mjs). This step is the whole reason the audit
       # is a program instead of another Claude Code hook: a hook only fires inside a Claude session on
@@ -42,6 +61,11 @@ jobs:
       # Its own self-test runs FIRST and gates the audit: an audit whose checks have quietly stopped
       # matching passes everything, which is indistinguishable from a clean tree. That is not
       # hypothetical -- usage-guard.mjs shipped with every Bash rule dead from line 2 and looked fine.
+      # ⚠️ KEPT EXPLICIT even though `npm test` above already runs it. Removing this line tripped
+      # docs-audit's own `ci-wiring` check, which asserts CI runs the audit's self-test by NAME —
+      # and that check is right to be literal: if `npm test` is ever re-scoped, the self-test would
+      # vanish from CI silently, and an audit whose checks have quietly died passes everything.
+      # A couple of duplicated seconds is the correct price for that invariant staying checkable.
       - run: npm run docs:audit:test
       - run: npm run docs:audit
 

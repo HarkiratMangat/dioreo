@@ -43,6 +43,12 @@ findings=""
 # multi-line command whose other line carried `jq -r` leaked that -r into the flag scan. Fourth
 # false-positive class on this guard, and the one that finally earned it a test file.
 seg=$(printf '%s' "$cmd" | grep -E '(^|[|;&(]|[[:space:]])rg[[:space:]]' | sed -E 's/.*(^|[|;&(]|[[:space:]])rg[[:space:]]/rg /' | sed -E 's/[|;&].*//')
+# Then drop QUOTED SPANS — the search PATTERN is not a flag list. `rg -n 'jq -r .foo'` was reported
+# as a `-r` finding because the pattern contains the characters `-r`; the command was correct and
+# the guard was wrong. Fifth false-positive class on this one guard, all the same shape: text that
+# merely LOOKS like a flag. Caught live 2026-08-02 16:41 EDT by this guard firing on a command
+# being run to audit it.
+seg=$(printf '%s' "$seg" | sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g")
 # Short-flag clusters only (single dash). Long forms are explicit and intentional, so they pass.
 shorts=$(printf '%s' "$seg" | grep -oE '(^|[[:space:]])-[A-Za-z]+' | tr -d ' ' | grep -v '^--' || true)
 

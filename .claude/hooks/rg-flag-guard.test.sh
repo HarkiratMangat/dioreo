@@ -25,6 +25,14 @@ a "multi-line, -r on another line" silent "$(printf "jq -r '.hooks' ~/.claude/se
 # FALSE positive #4: -c/-n/-l are fine.
 a "ordinary rg flags"             silent "rg -n --hidden --no-ignore 'pat' docs"
 a "rg -c"                         silent "rg -c 'pat' file.md"
+# FALSE positive #5: flag-shaped text inside the SEARCH PATTERN. Found 2026-08-02 16:41 EDT when
+# this guard fired on a command being run to audit it — the pattern, not the command, held the -r.
+a "-r inside the pattern"         silent "rg -n 'jq -r .hookSpecificOutput' file.sh"
+a "-h inside a double-quoted pat" silent "rg -n \"use -h for help\" docs"
+a "-E inside the pattern"         silent "rg -n 'pass -E to iconv' notes.md"
+# …but a real bad flag next to a harmless pattern must STILL fire. The strip must not blind it.
+a "real -r with quoted pattern"   fires  "rg -rn 'ordinary text' ."
+a "real -oh with quoted pattern"  fires  "rg -oh 'ordinary text' dir"
 # Not rg at all.
 a "grep -rn is not rg"            silent "grep -rn 'pat' ."
 a "curl -H is not rg"             silent "curl -H 'X: y' https://x.dev"

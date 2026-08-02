@@ -44,13 +44,13 @@ git diff --name-only "$BASE...HEAD" 2>/dev/null | grep -qx 'docs/DEVLOG.md' || e
 # So an audit that cannot RUN is itself reported. Deliberately NOT a duplicated copy of the comparison
 # logic: two copies drift, and the drift is silent too.
 if [ ! -f scripts/docs-audit.mjs ]; then
-  jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:"DEVLOG TOC GATE CANNOT RUN: scripts/docs-audit.mjs is missing, so the table of contents was NOT checked against the body. Restore it, or check the TOC by hand before opening this PR -- do not treat this as a pass."}}'
+  jq -n '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:"DEVLOG TOC GATE CANNOT RUN: scripts/docs-audit.mjs is missing, so the table of contents was NOT checked against the body. Restore it, or check the TOC by hand before opening this PR -- do not treat this as a pass."}}'
   exit 0
 fi
 
 raw=$(node scripts/docs-audit.mjs --only devlog-toc --json 2>&1)
 if ! printf '%s' "$raw" | jq -e . >/dev/null 2>&1; then
-  jq -n --arg e "$(printf '%s' "$raw" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:("DEVLOG TOC GATE CANNOT RUN: docs-audit.mjs did not return valid JSON, so the TOC was NOT checked. A broken audit must never read as a clean one.\n\n" + $e)}}'
+  jq -n --arg e "$(printf '%s' "$raw" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:("DEVLOG TOC GATE CANNOT RUN: docs-audit.mjs did not return valid JSON, so the TOC was NOT checked. A broken audit must never read as a clean one.\n\n" + $e)}}'
   exit 0
 fi
 
@@ -61,7 +61,6 @@ findings=$(printf '%s' "$raw" | jq -r '.results[]? | "    - " + .msg' 2>/dev/nul
 jq -n --arg d "$findings" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
-    permissionDecision: "ask",
-    permissionDecisionReason: ("DEVLOG TOC OUT OF SYNC.\n\nEvery dated Part A entry in the table of contents must be its body heading verbatim (with `## ` stripped) -- that is what makes the TOC greppable straight to the entry, and it is why vague qualifiers like \"(later)\" were retired 2026-07-28 17:35 EDT.\n\n" + $d + "\n\nFix the TOC, but do NOT blind-regenerate it: the block also holds intentional non-dated pointer lines with no body heading, and a naive rebuild deletes them.\n\nRun `npm run docs:audit` to re-check.")
+    additionalContext: ("DEVLOG TOC OUT OF SYNC.\n\nEvery dated Part A entry in the table of contents must be its body heading verbatim (with `## ` stripped) -- that is what makes the TOC greppable straight to the entry, and it is why vague qualifiers like \"(later)\" were retired 2026-07-28 17:35 EDT.\n\n" + $d + "\n\nFix the TOC, but do NOT blind-regenerate it: the block also holds intentional non-dated pointer lines with no body heading, and a naive rebuild deletes them.\n\nRun `npm run docs:audit` to re-check.")
   }
 }'
