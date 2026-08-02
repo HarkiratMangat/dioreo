@@ -58,7 +58,10 @@ for s in $subjects; do
 
   # --hidden --no-ignore is mandatory here: .claude/ is a dot-dir and would otherwise be invisible —
   # which is precisely where two of the stale files that prompted this hook were sitting.
-  hits=$(rg --hidden --no-ignore -l --fixed-strings "$s" \
+  # memory/archive/ is excluded deliberately: retired memories are FROZEN historical records, so an
+  # outdated reference inside one is correct, not drift. Sweeping them would generate permanent noise
+  # that can never be actioned — and noise is how a real hit gets ignored.
+  hits=$(rg --hidden --no-ignore -l --fixed-strings --glob '!archive/**' "$s" \
            "$REPO/docs" "$REPO/.claude" "$REPO/CLAUDE.md" "$MEM" 2>/dev/null \
          | sed "s|^$REPO/||" | sort -u)
   [ -n "$hits" ] || continue

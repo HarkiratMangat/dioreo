@@ -101,6 +101,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
 - 2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means
 - 2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)
+- 2026-08-02 18:40 EDT — The session that kept catching its own bugs (v2.48.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3584,6 +3585,69 @@ So the useful question when writing a guard is not "does this catch the case I a
 "what vocabulary does the system actually use, and am I using the same one?" And the cheapest way to
 find out is to run the guard against the real event rather than the imagined one — which is only
 possible if you go and cause the event.
+
+## 2026-08-02 18:40 EDT — The session that kept catching its own bugs (v2.48.0)
+
+The task was small: `MEMORY.md` had nearly outgrown a read limit, so give it a structure. The premise
+was wrong within twenty minutes — the "24.4KB hard read limit" does not reproduce, and a 33,530-byte
+memory file reads in full. What was actually true is that **nothing in this repo loads `MEMORY.md`;
+the platform does** — which quietly retired a "native auto-load is UNVERIFIED" caveat that had been
+sitting in `CLAUDE.md` being cited as a reason to keep a hook.
+
+That set the pattern for the whole session. Almost everything expensive was a **claim nobody had
+checked**, and almost nothing was a hard problem.
+
+**The one I am least proud of.** I found that ~29% of this project's linksee memories were filed under
+fake path-derived entities — `Application` held the *entire licensing session*, the one that produced
+the licence, ToS and privacy policy — and I wrote it up as `⛓️ blocked on tooling, needs SQLite
+surgery, not urgent`. Harkirat's reply: *"you literally deferred something by dressing it up and then
+literally went and verified and it wasn't even blocked."* He was right. Disproving it took four tool
+calls: `memories.entity_id` is a plain foreign key, and the caveat "protection" I had cited is
+`AFTER INSERT` only. 123 memories re-homed in one transaction, 696 rows before and after.
+
+**A deferral with a priority tag, an effort estimate and a blocker reason looks like diligence.** That
+is exactly why it escapes the scrutiny a bare "I'll skip this" would attract. It is the same bug as
+"not checkable", and it now lives as a case in that memory.
+
+**Four more, all the same shape.** A cost calibration I asserted at 7.7× — Opus rates applied to a
+Sonnet session, output tokens ignored; Harkirat caught the model, and the real figure is 2.57×. A
+`rg -oh` that printed ripgrep's help because `-h` is `--help`, not grep's "no filename". Session
+bucketing by mtime that would have dropped *this session's* 919 pre-relaxation turns straight into the
+data meant to detect the opposite. Two off-by-one date boundaries. And a failure-mode test that
+grepped `misfiled` — a string that matches the healthy line "0 misfiled elsewhere" just as well as the
+warning, so it would have passed forever without the warning branch ever executing.
+
+**Every fix this session was a check, never a think.** That turned out to be the answer to a question
+Harkirat asked later — whether `sequential-thinking` should be used more freely. Structured reasoning
+would not have caught one of those; `ls`, `sqlite3` and reading package source did. Worse, it would
+have made the unverified premises *feel* rigorous. When reasoning and checking compete, checking wins.
+
+**But the honest version of that answer is that we don't know.** The tool has been invoked twice ever
+— and it was installed by the same integration that restricted it, so the number measures the rule,
+not the tool. Inferring "barely used, therefore not worth using" is circular. So it is unrestricted
+for seven days, with metrics pre-registered *before* any data exists, a scripted instrument so both
+windows are measured identically, an auto-expiring suspension, and the design-heavy task mix declared
+as a known confound up front rather than discovered in the analysis.
+
+**The other thing Harkirat had to ask for.** Whether we were using the MCP layer at all. We were
+barely, and partly wrongly: the global `usage-guard` hook had been injecting a stale *"codebase-index
+is PYTHON-ONLY"* claim into **every large Read** for nine days, steering away from a graph tool that
+does index this repo — cost: `search_graph` used once in 35 sessions. An entire session ran with zero
+`ctx_execute*` calls. The linksee skill taught four tools removed in v0.11.x. All of it was already
+"documented somewhere". Prose has never carried a rule on this repo; that is why the routing is a hook
+now.
+
+### What I'd keep
+- **"Blocked", "not possible without X", "not checkable" are CLAIMS.** They need the same evidence as
+  any other claim, and the cheapest version of X is usually four tool calls away.
+- **A restriction and the behaviour it governs, introduced together, produce a statistic that measures
+  the restriction.** Check whether an unrestricted window ever existed before reading low usage as a
+  verdict.
+- **A check whose healthy state is indistinguishable from its dead state is not a check.** Two of mine
+  were, in one session — one printed the finding and "clean" underneath it.
+- **When a session is explicitly ABOUT a topic, a deferral inside that topic is nearly always wrong.**
+  Deferring the memory-architecture problem in the memory-architecture session should have been
+  self-evidently absurd, and it wasn't, because it was well-formatted.
 
 # Part B — Lessons Ledger (thematic)
 

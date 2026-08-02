@@ -124,7 +124,7 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
   (it'll correctly show as "automatic/unattended" — see the alert restart-labeling note below). **A merge
   alone does NOT update the VM** — deploy is asked separately every time, and a merged version can sit
   undeployed indefinitely. No auto-deploy-on-merge (considered and deferred — see `docs/ROADMAP.md`'s
-  "Process / tooling" section). See [[feedback_push_means_full_cycle]], [[project_git_workflow]].
+  "Process / tooling" section). See [[project_git_workflow]] (which absorbed the "never let 'merged' imply 'live'" rule).
 - **Repo went PRIVATE 2026-07-18** (was public; Harkirat's call, unrelated to any security incident) —
   this broke the VM's `git pull`, which had been pulling anonymously over a plain `https://github.com/...`
   remote (worked fine on a public repo, silently requires auth the moment it isn't). Fixed with a

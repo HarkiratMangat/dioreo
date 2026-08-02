@@ -167,7 +167,7 @@ Harkirat is ET. **Get the real clock time proactively, ONCE, before drafting any
 `date "+%Y-%m-%d %H:%M %Z"` — and reuse that value for every date written the rest of the turn. A
 `PostToolUse` hook flags a bare today-date after the fact, but it's a safety net for the rare miss, not
 license to fetch the time reactively every time (caught doing exactly that 2026-07-26 11:35 EDT — see
-`feedback_docs_at_push_time` / `feedback_be_usage_conscious` memory).
+`feedback_docs_at_push_time` / `feedback_token_conscious_tool_routing` memory).
 
 ## Where the legal documents live, and why they are not all together
 

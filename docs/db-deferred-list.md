@@ -67,7 +67,7 @@ scratchpad for 2 days.*
   Related and already handled: edge propagation presents as 404 for up to ~60s after a deploy (measured
   2026-07-30 00:15 EDT), and `dior legal check` now retries on non-200 rather than only on a hash
   mismatch. **Any "the site is down" report within a minute of a deploy should be re-checked before it
-  is believed.** See `[[feedback_green_check_can_mask_outage]]`.
+  is believed.** See `[[feedback_verify_before_claiming]]`.
 
 - `[P2 · S]` **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true
   2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is
@@ -91,6 +91,39 @@ though the Return-key one only reproduces in this repo's notes file.*
 *Time- or condition-based — not "do this now," but things not to forget when the trigger hits. Tagged
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
+
+- **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design
+  (opened 2026-08-02 17:00 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
+  question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
+  existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
+  **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
+  **Close-out (all four, in order):**
+  1. Re-run the instrument **UNCHANGED** — editing it voids the comparison. **`--to` is EXCLUSIVE, so
+     it must be `2026-08-10` to include the final day:**
+     `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds`
+     (**08-02 COUNTS** — measurement starts the day the window opened. The two sessions that ran
+     before 17:00 EDT are excluded by session id, hardcoded in the instrument so no flag is needed.)
+  2. Compare only against the **pre-registered** baseline + criteria in
+     `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`. Baseline (Diors-only,
+     instrument v2, bucketed by session START): **35 sessions · 18,939 turns · median 276**
+     (mean 541.1 is outlier-driven — compare on the MEDIAN) · **290,915 cache reads per turn** ·
+     0.014 seq-calls/100 turns · 0.49 memory writes/session · `search_graph` 1 · 18 compactions ·
+     models sonnet-5 / opus-5 / opus-4-8.
+     ⚠️ **Check the model + effort mix AND the tool profile FIRST.** An Opus-skewed week moves every
+     number on its own. And the treatment period is KNOWN in advance to be website/design-heavy while
+     the baseline was audit/debug-heavy — design work is precisely sequential-thinking's declared fit
+     case, so a high trigger rate shows it fires on DESIGN, not that it is generally useful. A low
+     rate even in its best-fit week is the strongest possible evidence the other way.
+  3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT
+     it fired, never whether it helped. **Watch for novelty**: a spike of 2–3 thought runs with no
+     decision attached is the tool being new, not useful.
+  4. Record the verdict **with data** in `~/.claude/CLAUDE.md` + `project_context_token_budget`.
+  ⚠️ **The suspension AUTO-EXPIRES** — `.claude/hooks/mcp-layer-check.sh` flips to chasing the
+  close-out on 2026-08-10 (boundary tested). So the rule reinstates itself even if this item is
+  missed; what would be lost is the *analysis*, not the guardrail.
+  **Also under observation:** whether the 2026-08-02 MCP fixes hold — memory writes/session, recall
+  usage, `search_graph` adoption, `ctx-execute*` share. If those do not move, the SessionStart routing
+  hook failed the same way prose did, which is the more valuable finding.
 
 - `[P0 · XS · read before resuming]` **⚠️ CROSS-SESSION NOTICE — a parallel session was mid-flight on
   hooks + the DEVLOG backfill when v2.41.0 landed. Read this before continuing that work.** Written
@@ -165,6 +198,7 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
 *Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]`
 tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
@@ -529,6 +563,19 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 (accepted gaps), and memory. Model tags re-audited 2026-07-18 against the "tier vs. effort" calibration
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
+
+- **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
+  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 15:50 EDT). The *data* was repaired (see the resolved
+  list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the
+  server gets `env: {}` in `~/.claude.json`, and there is no config file anywhere, so linksee falls
+  back to guessing a project from a folder name. A session touching `~/Library/...` can still spawn a
+  junk entity.
+  **Standing defence, already in force and sufficient:** recall by `query` (FTS5, crosses entities),
+  never by `entity_name`; pass `entity_name` explicitly on every write. Encoded in the skill's
+  frontmatter, `reference_tool_capability_tests`, and both MCP stores.
+  **Direction if ever picked up:** investigate whether `map_projects` / `recall({scope_to_roots})`
+  can be populated to pin a project root, or raise it upstream. Low priority — the defence works and
+  the repair is repeatable.
 
 - `[P2 · M · Sonnet5-H]` **The memory index `MEMORY.md` is close to its read limit and needs a
   compaction pass.** Filed 2026-08-01 16:10 EDT at Harkirat's request, after the harness warned during

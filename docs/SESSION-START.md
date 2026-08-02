@@ -117,7 +117,7 @@ New session on Dior's Builds. Before anything else:
        AND both changelog roadmap sections (sourced from it, must not drift) AND a DEVLOG entry. The
        changelog is the one step that keeps getting skipped — don't skip it.
      See [[reference_vm_bot_commands]], [[project_deployment_migration_render_to_gcp]],
-     [[project_git_workflow]], [[feedback_push_means_full_cycle]], [[feedback_docs_at_push_time]]. Bot
+     [[project_git_workflow]], [[feedback_docs_at_push_time]]. Bot
      alerts a Discord channel on each (re)start + on errors.
    • Versioning is 3-part vMAJOR.MODERATE.MINOR, **minted at MERGE, not push** (changed 2026-07-24 12:24 EDT): a
      significant merged PR bumps MODERATE (resets MINOR to 0), a small one bumps MINOR; NEVER bump

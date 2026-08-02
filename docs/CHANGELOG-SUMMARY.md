@@ -26,6 +26,17 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.48.0 — August 2, 2026
+- **Nothing in the bot changed this release.** All of this was behind-the-scenes work on how the
+  project's own notes and history are stored, so nothing you use in Discord looks or behaves any
+  differently.
+- **The project's memory got a size limit and a tidy-up.** The file that lists everything the project
+  remembers had grown close to unreadable; it now has a ceiling, a place to retire finished notes, and
+  an automatic check that nothing goes missing.
+- **A filing problem was found and fixed.** About a third of the project's saved notes had been filed
+  under the wrong labels — including the entire session that wrote the licence and privacy policy — so
+  searching for them quietly turned up nothing. All of it was recovered, with nothing lost.
+
 ## v2.47.1 — August 2, 2026
 - **The website now updates itself.** It was still showing an older version of a page even after the
   change had been finished and released — publishing was a manual step somebody had to remember. It
