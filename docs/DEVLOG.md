@@ -100,6 +100,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen
 - 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
 - 2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means
+- 2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3546,6 +3547,43 @@ report success, and success is indistinguishable from a working system until som
 own eyes. Every gate added afterwards was proven against deliberately broken input before it was
 trusted — and two of them were themselves caught being wrong by the self-test suite's vacuous-pass
 ledger, which is the only reason they are sound rather than merely present.
+
+## 2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)
+
+Three guards went in today. Each was defeated, immediately, by exactly the situation it existed for.
+
+**The push guard.** I committed documentation straight onto `main` right after tagging v2.47.0 —
+the one thing CLAUDE.md names explicitly ("if you find yourself about to commit on main after
+merging, stop"). So I wrote a hook to refuse it. Then, retracting that very commit, I ran
+`git push --force-with-lease origin 9b9b4ce:main` from a feature branch and the hook let it straight
+through: it checked the *current branch* and never looked at the refspec. The guard was defeated by
+the first real push it ever saw.
+
+**The self-test suite.** It exists so no guard ships unproven. I added `unreleased-on-main` with no
+test, and the suite reported "all 53 checks proven" — because it was counting *prove cases*, never
+*checks*. Teaching it to compare against the audit's own `--list` found five more untested checks
+that had been sitting there, including `record-structure`, which was itself added after a splice
+corrupted a changelog.
+
+**The measurement.** Asked whether the stray commit had created a version gap, I counted commits that
+touched `package.json` and answered confidently. Harkirat pointed out that `package.json` went
+unbumped for a long stretch — the audit's own exemption list records it — so the number answered a
+different question. Re-measured against tags: nine direct pushes to `main`, not the one I had
+reported. The conclusion survived; the evidence for it did not.
+
+### Lesson
+
+A guard is a claim about a situation you have not been in yet, so its first encounter with that
+situation is the only real test. All three of today's failures share one shape: **the check and the
+thing it checks were described in different terms.** The hook reasoned about branches while git
+reasoned about refspecs. The suite counted tests while the audit registered checks. My measurement
+counted file edits while the project recorded versions in tags. Each pair looked equivalent and was
+not, and in every case the mismatch was invisible until something crossed it.
+
+So the useful question when writing a guard is not "does this catch the case I am thinking of" but
+"what vocabulary does the system actually use, and am I using the same one?" And the cheapest way to
+find out is to run the guard against the real event rather than the imagined one — which is only
+possible if you go and cause the event.
 
 # Part B — Lessons Ledger (thematic)
 

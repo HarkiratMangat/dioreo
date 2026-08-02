@@ -26,6 +26,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.47.1 — August 2, 2026
+- **The website now updates itself.** It was still showing an older version of a page even after the
+  change had been finished and released — publishing was a manual step somebody had to remember. It
+  happens automatically now, and it checks that the live site really is the new version afterwards
+  rather than assuming.
+- **It skips pointless republishes.** Writing a changelog entry no longer republishes the whole site,
+  since those pages aren't linked from anywhere yet.
+
 ## v2.47.0 — August 2, 2026
 - **The legal site's navigation buttons often did nothing when you clicked them.** Fixed — a leftover
   drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.

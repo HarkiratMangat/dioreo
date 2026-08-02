@@ -181,7 +181,73 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.47.0 — 2026-08-02 00:40 EDT (#62) — The record pages, a rebuilt nav indicator, and eight new build gates
+## v2.47.1 — 2026-08-02 02:20 EDT (#63) — The site publishes itself, and main stops accepting direct pushes
+
+**The live site was stale and nothing noticed.** `dioreo.is-not-a.dev` was still
+serving the previous headline *after* v2.47.0 had merged and been tagged. `public/`
+was correct in `main`; publishing was a command run by hand from one Mac, so the
+site drifted for exactly as long as nobody remembered.
+
+`.github/workflows/deploy-site.yml` now publishes on any push to `main` that
+touches the site.
+- ⚠️ **It deliberately does NOT fire for changelog/devlog-only changes.** Those
+  three pages are withdrawn from the nav, so republishing the whole site for a page
+  no reader can reach is waste. The negation `!public/changelog/**` must stay BELOW
+  `public/**`: excluding the SOURCE files would not work, because it is the built
+  OUTPUT that lands in the commit.
+- It rebuilds and refuses to publish a stale `public/`, then asserts the live
+  `<title>` matches what it uploaded — a 200 alone can be served from cache while
+  the site is down, which is how an outage hid behind a green check here before.
+- Deploys are serialised rather than cancelled; cancelling mid-upload is a
+  plausible shape for the unexplained zero-file deploys on the deferred list.
+- Until `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` exist it verifies the
+  build and skips the upload with a visible warning, rather than going permanently
+  red — a workflow that is always red trains everyone to ignore red.
+
+**`main` stops accepting direct pushes.** Immediately after tagging v2.47.0 I
+committed documentation straight onto `main` and pushed it, which the workflow
+explicitly forbids and which nothing prevented.
+- `.claude/hooks/main-push-guard.sh` refuses such a push. ⚠️ Its first version only
+  checked the CURRENT branch and missed every explicit refspec — found by using
+  one: the retraction below needed `git push --force-with-lease origin 9b9b4ce:main`
+  from a feature branch, and the guard written to stop that let it through.
+- `main` is branch-protected: PR required, force pushes and deletions blocked,
+  linear history, **0 required approvals** (a solo maintainer cannot approve their
+  own PR). `enforce_admins` is off so an emergency override stays possible.
+- **`ebbf196` was retracted** from `main` and `v3-pre-release`, both of which were
+  at exactly that commit with zero divergence. Its content ships in this release
+  instead, so `main`'s history contains no direct-push commit.
+
+**There was no version gap, and the first measurement of that was wrong.**
+Measured by TAGS, which is how versions were actually recorded: 31 of the 85
+post-adoption commits on `main` carry no tag, almost all `docs:` work, so
+unversioned commits on `main` are routine. ⚠️ The first attempt measured
+`package.json` instead and reported "exactly one direct push"; `package.json` went
+unbumped for a long stretch — the audit's own `TAG_RULE_FROM` exemption records
+it — so that number answered a different question. Re-measured: **nine** direct
+pushes, eight of them in the 2026-07-24 → 07-27 window of the retired two-commit
+release pattern. CLAUDE.md now states the two rules separately, because one
+sentence conflated "main only advances through a PR" with "every merge mints a
+version" — only the first is absolute.
+
+**Two new audit checks, and the suite that was blind to one of them.**
+- `unreleased-on-main` (WARN) reports commits on `main` belonging to no release.
+  WARN, not ERROR: the documented merge→tag gap makes it briefly true during
+  correct behaviour, and an ERROR there would be muted and then catch nothing.
+- `lock-version` (ERROR) — `package-lock.json` had read **2.35.3** while
+  `package.json` read 2.47.0, twelve releases of drift that `npm ci` ignores.
+- ⚠️ `unreleased-on-main` shipped with **no self-test**, and the suite still
+  reported "all 53 checks proven" — it was counting PROVE CASES, never checks. A
+  suite whose entire purpose is "no guard ships unproven" could not see an unproven
+  guard. It now compares coverage against the audit's own `--list`, which
+  immediately found **five untested checks**, including `record-structure`, added
+  after a splice corrupted a changelog. Four that read the real `~/.claude` are
+  exempt with stated reasons.
+
+**Documentation.** The deploy path is documented in CLAUDE.md and the rules file,
+both of which named the manual command as the only way to publish until now.
+
+## v2.47.0 — 2026-08-02 00:40 EDT (#62 · `9b9b4ce`) — The record pages, a rebuilt nav indicator, and eight new build gates
 
 The site's navigation had been unusable and nobody could say why. Fixing it turned into a pass over
 most of the surface Harkirat had flagged from live testing.
