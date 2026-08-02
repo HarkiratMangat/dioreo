@@ -25,6 +25,30 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🔒 Three enforcement hooks that fired too late to prevent anything — FIXED 2026-08-02 17:24 EDT
+  (v2.50.0).** *Filed and closed in the same session; the filing is what made the class visible.*
+  Measured: PreToolUse had 7 hooks, all `Bash`/`Artifact`, **none on `Edit|Write`**, so nothing could
+  prevent a bad write. (1) `timestamp-check.sh` was PostToolUse when the content sits in
+  `tool_input.new_string` at PreToolUse → now runs at both, `pre` denying an impossible stamp.
+  (2) `main-push-guard.sh` guarded `git push` while the real violation is the commit → new
+  `branch-discipline-guard.sh` denies editing a *tracked* file, or committing, on `main`/`master`.
+  (3) The SQUASH-TRAILER GATE was `"ask"` → now `"deny"`; as an ask it was clicked past on three
+  consecutive merges, including the three that shipped the hook work itself. **The class to sweep
+  for:** the check exists, its diagnosis is correct, and it fires where nothing can still be
+  prevented. `c6cd875` (#67) had fixed exactly one instance and the sweep was never done. Full
+  record: CHANGELOG v2.50.0, DEVLOG 2026-08-02 17:14 EDT, memory `reference_enforcement_hooks`.
+
+- **🧪 Six hook self-tests that nothing ever ran — WIRED 2026-08-02 17:24 EDT (v2.50.0).** Each
+  `*.test.sh` was referenced by `package.json`, `.github/workflows/` and `.claude/settings.json` a
+  combined **zero** times; `scripts/calendarDedup.test.js` was likewise reachable only via an
+  `npm test` CI never called. Harkirat: *"they dont even seem to hold despite their 'tests'."* The
+  tests were correct — nothing executed them. `npm run test:hooks` → `npm test` → CI, with coverage
+  computed from the scripts on disk so deleting a test fails the suite. Writing the eight missing
+  tests exposed **two gates that had never worked**: `main-push-guard` passed `rtk git push` (the
+  documented normal spelling, and it is the only hook that can block), and `records-close-check`
+  used `find -newermt "@epoch"`, which BSD find cannot parse — it errored into `/dev/null` and the
+  check fired on every PR regardless. 17 suites, 0 untested hooks.
+
 - **🧠 Linksee memory fragmentation — REPAIRED 2026-08-02 14:43 EDT (data migration, outside the repo).**
   *Was filed the same session as `[P2 · M]` ⛓️ "blocked on tooling", which was **wrong** — the block was
   never tested. Disproving it took four tool calls.* Linksee had misfiled ~29% of this project's
