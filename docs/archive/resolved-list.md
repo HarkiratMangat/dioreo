@@ -25,6 +25,31 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🧠 Linksee memory fragmentation — REPAIRED 2026-08-02 15:25 EDT (data migration, outside the repo).**
+  *Was filed the same session as `[P2 · M]` ⛓️ "blocked on tooling", which was **wrong** — the block was
+  never tested. Disproving it took four tool calls.* Linksee had misfiled ~29% of this project's
+  memories under fake path-derived entities: `Application` (66, the **entire licensing session** that
+  produced `LICENSE`/`NOTICE`/`TERMS.md`/`PRIVACY.md`), `Containers` (31, incl. an edit to
+  `.claude/settings.local.json`), `CleanShot` (41), `Application Support` (25), plus three
+  name-variant fragments. Entity-scoped recall missed all of them, silently.
+  **Fix:** `memories.entity_id` is a plain FK and the `caveat` "protection" is application-layer only
+  (`trg_protect_caveat` is `AFTER INSERT`, sets `protected=1`, blocks no SQL). After a `.backup`, one
+  transaction re-homed everything provably tied to the repo path and dropped the emptied entities
+  behind a `NOT EXISTS` guard. **`Diors-Builds` 450 → 573 (+123); total rows 696 before and after —
+  nothing lost; `integrity_check` ok.** Entity `dior` (a real separate project) untouched.
+  **Also corrected in the same pass:** linksee v0.11.x **removed** `list_entities`, `recall_file`,
+  `update_memory` and `consolidate` (the server answers them with a migration hint; consolidate now
+  auto-runs at startup) while the bundled SKILL.md still taught all four — verified against package
+  source 0.11.5, so it is an upstream doc bug, not an install problem. The local skill was fixed and
+  its Japanese stripped (the frontmatter loads every session). And the **global
+  `usage-guard.mjs` hook was injecting a stale "codebase-index is PYTHON-ONLY" claim into every large
+  Read**, routing sessions away from a graph tool that does index this JS repo.
+  **The lesson is filed as its own case** in `feedback_not_checkable_is_usually_unexamined`: "blocked"
+  is the same failure as "not checkable" — a deferral with a priority tag and a blocker reason *looks
+  like diligence*, which is exactly why it escapes scrutiny.
+  Root cause (path-derived entity naming) remains open as a `[P3 · S]` item; the recall-by-query
+  defence is in force.
+
 - **🧠 MEMORY.md index scaling — SHIPPED 2026-08-02 14:30 EDT, branch `docs/memory-index-scaling-design`
   (not yet merged/tagged).**
   *Was `[P2 · M]`, filed 2026-08-02 13:40 EDT as "consolidation pass 2" and completed the same session,

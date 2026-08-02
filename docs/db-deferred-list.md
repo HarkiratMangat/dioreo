@@ -531,6 +531,19 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
+- **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
+  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 15:50 EDT). The *data* was repaired (see the resolved
+  list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the
+  server gets `env: {}` in `~/.claude.json`, and there is no config file anywhere, so linksee falls
+  back to guessing a project from a folder name. A session touching `~/Library/...` can still spawn a
+  junk entity.
+  **Standing defence, already in force and sufficient:** recall by `query` (FTS5, crosses entities),
+  never by `entity_name`; pass `entity_name` explicitly on every write. Encoded in the skill's
+  frontmatter, `reference_tool_capability_tests`, and both MCP stores.
+  **Direction if ever picked up:** investigate whether `map_projects` / `recall({scope_to_roots})`
+  can be populated to pin a project root, or raise it upstream. Low priority — the defence works and
+  the repair is repeatable.
+
 - `[P2 · M · Sonnet5-H]` **The memory index `MEMORY.md` is close to its read limit and needs a
   compaction pass.** Filed 2026-08-01 16:10 EDT at Harkirat's request, after the harness warned during
   the changelog-site work. Measured then: **21.1KB against a 24.4KB read limit** — so it is not a
