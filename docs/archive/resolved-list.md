@@ -25,6 +25,27 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🧠 MEMORY.md index scaling — SHIPPED 2026-08-02 14:30 EDT, branch `docs/memory-index-scaling-design`
+  (not yet merged/tagged).**
+  *Was `[P2 · M]`, filed 2026-08-02 13:40 EDT as "consolidation pass 2" and completed the same session,
+  so it never sat queued.* `MEMORY.md` is the only auto-loaded memory file, so the index is charged per
+  FILE; an emergency compaction had already spent the line-length lever (23.1KB → 12.9KB). Delivered:
+  the `memory/archive/` tier with retirement criteria · a canonical `feedback_verify_before_claiming`
+  merging five verification memories · `project_git_workflow` and `feedback_token_conscious_tool_routing`
+  absorbing three more as cases · a `SessionStart` guard (`memory-index-check.sh`) enforcing a 16,000B
+  budget and a three-partition conservation rule, with all 11 failure modes proven by its own test suite.
+  **Two corrections landed with it:** native memory auto-load is CONFIRMED (no hook loads `MEMORY.md`,
+  yet it is in context), and the assumed "24.4KB hard read limit" **does not reproduce** — a 33,530-byte
+  memory file reads in full.
+  **The finding worth keeping:** applying the earning rule honestly, the store turned out **far less
+  redundant than the design assumed** — `project_context_token_budget`,
+  `feedback_not_checkable_is_usually_unexamined`, and `feedback_docs_at_push_time` all earned their
+  files and were correctly NOT merged. Consolidation is therefore close to exhausted as a lever, and the
+  **growth governor (a new lesson defaults to a CASE, not a file) is what actually holds the line.** Do
+  not re-raise "merge more memories" as a size fix without testing candidates against that rule first.
+  See `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md` and the memory
+  `project_memory_index_scaling`.
+
 - **⚔️ Patch notes "Additional Info" auto-formatting — SHIPPED 2026-07-31 17:20 EDT, on branch
   `feat/calendar-sections-and-v2-fixes` (not yet merged/tagged).**
   *Was `[P2 · S]`, filed 2026-07-31 16:41 EDT from notes L182's ∴ follow-up reply (2026-07-31 11:39
