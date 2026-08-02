@@ -82,8 +82,24 @@ function walk(dir) {
   return out;
 }
 
+// Bucket by the session's FIRST timestamp (when it STARTED), not mtime. mtime is when it last
+// changed, so a session that began before a window and ran into it is attributed to the wrong side.
+// That is not hypothetical: the session that BUILT this instrument started 2026-08-02 12:53 EDT --
+// hours before the window opened at 17:00 -- and by mtime would have landed in the treatment set,
+// contributing hundreds of turns of pre-relaxation work with zero sequential-thinking use.
+function sessionStart(file) {
+  try {
+    for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+      if (!line) continue;
+      let o; try { o = JSON.parse(line); } catch { continue; }
+      if (o.timestamp) return o.timestamp.slice(0, 10);
+    }
+  } catch { /* fall through */ }
+  return new Date(fs.statSync(file).mtime).toISOString().slice(0, 10);
+}
+
 let files = walk(PROJECT ? path.join(ROOT, PROJECT) : ROOT).filter((f) => {
-  const d = new Date(fs.statSync(f).mtime).toISOString().slice(0, 10);
+  const d = sessionStart(f);
   return d >= FROM && d < TO;
 });
 
@@ -136,7 +152,7 @@ for (const f of files) {
         if (/mcp__sequential-thinking__/.test(b.name)) {
           seqDetail.push({
             session: path.basename(f, '.jsonl').slice(0, 8),
-            date: new Date(fs.statSync(f).mtime).toISOString().slice(0, 10),
+            date: sessionStart(f),
             thoughtNumber: b.input?.thoughtNumber, totalThoughts: b.input?.totalThoughts,
             isRevision: b.input?.isRevision ?? false, branchId: b.input?.branchId ?? null,
             inputChars: JSON.stringify(b.input ?? {}).length,

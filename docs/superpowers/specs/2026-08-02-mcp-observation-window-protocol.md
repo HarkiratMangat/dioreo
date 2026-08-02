@@ -42,7 +42,7 @@ That failure has a name in this repo: the verifier halo ([[feedback_verify_befor
 | `turnsPerSession` | the cost claim: does an unrestricted tool inflate turns? |
 | `totalThoughts` distribution | a 2-thought run is not a real exercise of the tool; long runs are |
 | `Read` / `Write` / `Edit` / `Bash` counts | control variables — a turn spike must be attributable, not assumed |
-| **`cacheRead` total · `cacheReadPerTurn`** | **the actual cost driver.** *cost ≈ turns × context*, and this IS the context term. Baseline 260,742/turn |
+| **`cacheRead` total · `cacheReadPerTurn`** | **the actual cost driver.** *cost ≈ turns × context*, and this IS the context term. Baseline **290,915/turn** |
 | **`tokens.{input,output,cacheCreate,cacheRead}`** | the full token picture; output tokens are the expensive ones per unit |
 | **`cache1h` vs `cache5m`** | a shift toward 5m ephemeral means cache is being rebuilt more often — a silent cost rise |
 | **`models` mix** | ⚠️ **the biggest confounder.** An Opus-skewed treatment week moves every number on its own |
@@ -50,8 +50,8 @@ That failure has a name in this repo: the verifier halo ([[feedback_verify_befor
 | **`compactions`** | a compacted session distorts turn counts and context curves; must be comparable across windows |
 | **`apiErrors` + `toolErrors`** | quality signal — more thinking must not come with more failed calls |
 | **`subagent-spawn`** | the *other* turn-multiplier; if it moves, turn changes may not be sequential-thinking at all |
-| **`turnsPerSession.median` and `.max`** | the mean is carried by outliers — baseline mean 365.5 vs median 279, max 1,729 |
-| `estCostUSD` | relative index only (list rate is 7.7× observed) — direction, never dollars |
+| **`turnsPerSession.median` and `.max`** | the mean is carried by outliers — baseline mean 541.1 vs **median 276**, max 5,380. **Compare on the MEDIAN.** |
+| `estCostUSD` | relative index only (list is **2.57×** observed, and model-specific) — direction, never dollars |
 | `linksee-remember` + `perseus-remember` per session | do the memory-layer fixes hold? |
 | `linksee-recall`, `read_smart`, `perseus-recall` | is recall actually being used, or just written? |
 | `codebase-search_graph` | did correcting the stale "Python-only" hook change routing? |
@@ -68,26 +68,42 @@ That failure has a name in this repo: the verifier halo ([[feedback_verify_befor
 > Re-baselining now is legitimate precisely because zero treatment data exists yet; the same edit on
 > day 3 would have voided the experiment.
 
-**Diors-Builds only (the comparison set) — `--project -Applications-Claude-Code-Diors-Builds`:**
+> **⚠️ SECOND instrument correction, 2026-08-02 17:50 EDT — bucketing by session START, not mtime.**
+> Sessions were being attributed by *last-modified*, so any session that began before a window and ran
+> into it landed on the wrong side. **Not hypothetical: the session that built this instrument started
+> 12:53 EDT — over four hours before the window opened at 17:00 — and by mtime would have joined the
+> TREATMENT set, contributing 884 turns of pre-relaxation work with zero sequential-thinking uses.**
+> The fix moved the baseline materially (mean 365.5 → 541.1, max 1,729 → 5,380) while the **median
+> barely moved, 279 → 276** — i.e. the mean had been carried by misattributed long sessions all along.
+
+**Diors-Builds only (the comparison set), bucketed by session start —
+`--project -Applications-Claude-Code-Diors-Builds`:**
 
 ```
-sessions 38 · assistantTurns 13,889
-turnsPerSession   mean 365.5 · median 279 · max 1,729     ← median matters: one 1,729-turn session
-tokensPerTurn     272,505        cacheReadPerTurn 260,742      would carry a mean on its own
-models   sonnet-5 5,663 · opus-5 4,747 · opus-4-8 3,431
-compactions 18 · toolErrors 192 · apiErrors 11
-estCostUSD 6,556  ⚠️ RELATIVE INDEX ONLY, see below
+sessions 35 · assistantTurns 18,939
+turnsPerSession   mean 541.1 · median 276 · max 5,380   ← use the MEDIAN; the mean is outlier-driven
+cacheReadPerTurn  290,915
+models   sonnet-5 · opus-5 · opus-4-8 (mix — check FIRST at close-out)
+compactions 18 · toolErrors 192 · apiErrors 11 · speed/tier: all "standard"
 
 sequential-thinking 2 (0.014 /100 turns)  ← both in ONE session, totalThoughts: 2
 linksee-recall 7 · linksee-remember 9 · linksee-read_smart 2
 perseus-recall 6 · perseus-remember 8 · codebase-search_graph 1
 ctx-execute* 108 · subagent-spawn 27
 Read 993 · Write 149 · Edit 1,725 · Bash 3,165
-memoryWritesPerSession 0.45
+memoryWritesPerSession 0.49
 ```
 
-*All projects, same window, for reference: 41 sessions · 14,344 turns · 349.9 mean · cacheRead
-3.69 **billion** · memoryWrites/session 0.41.*
+### ⏱️ Relaxation period ≠ measured window
+
+- **Relaxation is LIVE from 2026-08-02 17:00 EDT** through 2026-08-09.
+- **The MEASURED window is 2026-08-03 00:00 → 2026-08-10 00:00 — seven whole days.**
+
+**2026-08-02 is a deliberate warm-up day, excluded from measurement.** The window opened mid-day, so a
+date-granular boundary cannot split that day cleanly, and the day is already contaminated by the
+2-session/884-turn build session above. Measuring it would import that contamination for no gain.
+⚠️ The cost is that any **novelty spike** on day one is unmeasured — if the log shows heavy day-one
+use, say so qualitatively rather than pretending the number covers it.
 
 > **⚠️ `estCostUSD` is NOT money.** Calibrated 2026-08-02 17:40 EDT against the only real figure on
 > record, recomputed **from its transcript** rather than a remembered summary — session `38972d5e`:
@@ -142,8 +158,8 @@ The `outcome` line is the one that matters. "It felt thorough" is not an outcome
 
 1. Re-run the instrument **unchanged**, both scopes:
    ```bash
-   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds
-   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment-all
+   node scripts/mcp-observation-metrics.mjs --from 2026-08-03 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds
+   node scripts/mcp-observation-metrics.mjs --from 2026-08-03 --to 2026-08-10 --label treatment-all
    ```
    ⚠️ **`--to` is EXCLUSIVE, so it must be `2026-08-10` to include the window's final day.** An earlier
    draft said `--to 2026-08-09`, which would have silently dropped Aug 9 — the same off-by-one already
