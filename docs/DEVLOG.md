@@ -3729,9 +3729,21 @@ anyway, because printing a check's result is not the same as reading it. Compres
 exempted: the file loads in full every session, so a verbose correction to a stale rule is a cost paid
 on every future one.
 
-**Then this very entry existed only because a hook demanded it.** The DEVLOG check fired after the merge
-pointing out that a release carrying two real lessons had no narrative entry, and told me to say so out
-loud rather than skip silently. So: v2.49.2 exists to carry the entry v2.49.1 should have had.
+**Then this very entry existed only because a hook demanded it — and the hook was itself broken.** The
+DEVLOG check fired *after* the merge, pointing out that a release carrying two real lessons had no
+narrative entry. Correct finding, useless timing: the branch was gone, so the only remedy it could
+offer was "ship a follow-up release", and I started doing exactly that. Harkirat stopped me mid-flow:
+*"thats just poor timing for the hook to trigger, no? it stopped you AFTER you had already merged and
+thus caused another merge."*
+
+He was right, and it is a failure this repo had **already written down** — *a check at the wrong MOMENT
+is the same bug as no check* — and shipped anyway. **Four** release checks sat `PostToolUse` on
+`gh pr merge`, all firing where nothing could be fixed. They now run `PreToolUse` against the branch's
+own diff, which is not an event-name swap: the post-merge versions read `origin/main` after the fact,
+answering a different question entirely.
+
+So v2.49.2 stopped being paperwork. It carries the entry v2.49.1 should have had **and** the fix that
+stops the gate manufacturing releases to satisfy itself.
 
 ### What I'd keep
 - **A guard firing on its own author and getting sharpened is the intended lifecycle, not a defect.**
