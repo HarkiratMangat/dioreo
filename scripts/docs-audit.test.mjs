@@ -503,6 +503,17 @@ proves("a hardcoded rule-file count going stale", "nav-map-sync", (root) => {
   write(root, "docs/README.md", r);
 });
 
+proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (root) => {
+  // The real failure this was built from: the `public/` section reached 286 lines — 43% of the file
+  // that is loaded in full every session — because nothing measured it. nav-map-sync could not see
+  // it: that check only fires once a rule file EXISTS and is unlisted, never when the detail was
+  // simply never moved into one.
+  const c = readFileSync(join(root, "CLAUDE.md"), "utf8")
+    + "\n### A subsystem that outgrew the map\n"
+    + "detail line\n".repeat(140);
+  write(root, "CLAUDE.md", c);
+});
+
 // ---- the evidence ledger: a pass you cannot audit is not a pass -------------------------------
 
 proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-documented", (root) => {

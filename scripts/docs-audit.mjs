@@ -1284,6 +1284,56 @@ check(
   }
 );
 
+/* ------------------------- claude-md-shape -------------------------- */
+export const CLAUDE_MD_SECTION_MAX = 130;
+check(
+  "claude-md-shape",
+  "ERROR",
+  "no CLAUDE.md section has grown into subsystem detail that belongs in a rule file",
+  () => {
+    // ⚠️ THIS EXISTS BECAUSE THE RULE WAS PROSE-ONLY AND DEGRADED EXACTLY AS PROSE RULES DO
+    // (2026-08-01 23:40 EDT). CLAUDE.md's own opening states it is "invariants + a navigation map",
+    // cut from ~3,300 lines in the 2026-07-22 modularization so that sessions stop paying for detail
+    // they will never use — it is the one file loaded IN FULL every session. Nothing checked it. The
+    // `public/` section grew to 286 lines, 43% of the whole file, across many sessions, and every
+    // other gate stayed green: nav-map-sync only fires once a rule file EXISTS and is unlisted, so it
+    // cannot see detail that was never moved into one.
+    //
+    // The threshold is DERIVED, not guessed. Measured on the tree the day this was added: the
+    // offending section was 285 lines and the largest legitimate one — the git workflow, a genuine
+    // hard invariant that must survive /compact — was 102. 130 sits clear of the real invariants and
+    // well under the failure, so it fires long before a section reaches the size that prompted this.
+    //
+    // It counts `###` sections because that is the grain the file is organised in. A section over the
+    // limit is not automatically wrong, it is a prompt: either it is genuinely a hard invariant that
+    // must be re-injected after /compact, or it is subsystem craft and belongs in `.claude/rules/`.
+    const claude = read("CLAUDE.md");
+    if (claude === null) return { findings: [], examined: 0 };
+    const lines = claude.split("\n");
+    const secs = [];
+    let cur = null, n = 0, at = 0;
+    const close = () => { if (cur !== null) secs.push({ title: cur, n, at }); };
+    lines.forEach((l, i) => {
+      if (l.startsWith("### ")) { close(); cur = l.slice(4).trim(); n = 0; at = i + 1; }
+      else if (cur !== null) n++;
+    });
+    close();
+    const out = secs
+      .filter((s) => s.n > CLAUDE_MD_SECTION_MAX)
+      .map((s) => ({
+        msg: `CLAUDE.md:${s.at} "${s.title.slice(0, 60)}" is ${s.n} lines (limit ${CLAUDE_MD_SECTION_MAX}). ` +
+          "This file is loaded in full EVERY session. If it is subsystem detail, move it to a " +
+          "path-scoped .claude/rules/*.md and leave a pointer plus any safety line that must " +
+          "survive /compact. If it genuinely is a hard invariant, tighten it.",
+      }));
+    // ⚠️ examined is the LINE count, not the section count, and the self-test's evidence ledger is
+    // what forced that. A CLAUDE.md with no `###` headings at all would have examined 0 sections and
+    // reported a pass that verified nothing — a vacuous pass, which this suite treats as a failure.
+    // The check reads every line of the file to find its sections, so lines are what it examined.
+    return { findings: out, examined: lines.length };
+  }
+);
+
 /* ------------------------- external-anchors ------------------------- */
 check(
   "external-anchors",
