@@ -39,7 +39,10 @@ findings=""
 # containing both `jq -r` and `rg -n` reported a bogus -r finding — caught live 2026-08-02 15:15 EDT
 # by the guard firing on the very command inspecting it. A guard that cries wolf is how the real
 # warning gets waved through, which is the lesson the timestamp hook already paid for.
-seg=$(printf '%s' "$cmd" | sed -E 's/.*(^|[|;&(]|[[:space:]])rg[[:space:]]/rg /' | sed -E 's/[|;&].*//')
+# SELECT the rg-bearing lines FIRST. sed rewrites per line but PASSES NON-MATCHING LINES THROUGH, so a
+# multi-line command whose other line carried `jq -r` leaked that -r into the flag scan. Fourth
+# false-positive class on this guard, and the one that finally earned it a test file.
+seg=$(printf '%s' "$cmd" | grep -E '(^|[|;&(]|[[:space:]])rg[[:space:]]' | sed -E 's/.*(^|[|;&(]|[[:space:]])rg[[:space:]]/rg /' | sed -E 's/[|;&].*//')
 # Short-flag clusters only (single dash). Long forms are explicit and intentional, so they pass.
 shorts=$(printf '%s' "$seg" | grep -oE '(^|[[:space:]])-[A-Za-z]+' | tr -d ' ' | grep -v '^--' || true)
 
