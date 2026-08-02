@@ -1250,7 +1250,42 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
-.doc h2:first-child,.doc h3:first-child{margin-top:0}
+.doc h2:first-child,.doc h3:first-child{margin-top:0}/* ── sections, and the heading that stays with you ────────────────────
+   Every top-level heading and its clauses are wrapped by sectionise(). The
+   spacing between sections moved onto the WRAPPER: inside a section the h2 is
+   :first-child, so the existing rule above zeroes its top margin, and leaving the
+   3.6rem there would have collapsed the gap between every section on the page. */
+
+
+.doc .dsec{margin-top:3.6rem}
+.doc .dsec:first-child{margin-top:0}/* ⚠️ SCOPED TO DESKTOP ON PURPOSE. Below 980 the mobile nav is itself sticky at
+   top:54px and about 52px tall, so a heading sticking to the same offset would sit
+   underneath it — and that width already has the -On this page- control naming the
+   section you are in, which is what a sticky heading is for.
+   The background is not decoration: a sticky element with a transparent background
+   has the document scrolling visibly through its glyphs. It only needs to span the
+   content box, because .doc's padding is a gutter no text can enter. */
+
+
+@media (min-width:981px){/* The shadow only exists while the heading is pinned — see the .stuck toggle in
+     the scroll script. Without it a line of prose sliding under the band came to
+     rest exactly on the heading's rule and read as a struck-through sentence. */
+  
+  .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}
+  .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
+    padding-top:.9rem;padding-bottom:.78rem;
+    transition:box-shadow .18s ease;
+    /* The rule under the heading is its own border-bottom, so it travels with it
+       and the stuck heading always reads as a closed band rather than as text
+       floating over the prose. */
+    margin-bottom:1.15rem}/* The margin index is absolutely positioned against the heading, so it comes
+     along — but it sits OUTSIDE the heading's background, in .doc's padding, and
+     over a transparent patch the prose would show through it. It gets its own. */
+  
+  @media (min-width:1120px){
+    .doc .dsec>h2 .idx{background:var(--paper);padding:.15rem 0}
+  }
+}
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
@@ -1552,6 +1587,7 @@ html{scroll-behavior:smooth}
       </header>
       <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../LICENSE" download="LICENSE.txt"><span class="dl-i" aria-hidden="true"></span>Download LICENSE</a></div><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
 <p>This is a source-available license, not an open-source license. It is not approved by the Open Source Initiative and does not meet the Open Source Definition. The source code of Dior's Builds is published so that it can be read, studied, audited, and improved -- not so that it can be copied, deployed, redistributed, or turned into a competing bot.</p>
+<section class="dsec">
 <h2 id="plain-english-summary-not-part-of-the-license" class="plain"><span class="ht">PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span><a class="anchor" href="#plain-english-summary-not-part-of-the-license" aria-label="Link to this section">¶</a></h2>
 <p>This summary is provided for convenience only. It has no legal effect, and if it conflicts with the terms below, the terms below govern.</p>
 <p class="sub">YOU MAY:</p>
@@ -1559,6 +1595,8 @@ html{scroll-behavior:smooth}
 <p class="sub">YOU MAY NOT:</p>
 <ul class="lettered"><li>Run the Software, or anything derived from it, anywhere that another person can use it -- including a Discord server with other members in it.</li><li>Publish, share, redistribute, sell, or sublicense the Software or any modified version of it.</li><li>Use the Software, its curated data, or its output to build, train, or operate a competing bot or service.</li><li>Use the "Dior's Builds" name, branding, or visual identity.</li></ul>
 <p class="sub">If you want to do something this license does not allow, ask. Permission is freely given in writing where it makes sense; see <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
+</section>
+<section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DEFINITIONS</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-1.1" class="clause"><span class="idx" aria-hidden="true">1.1</span><span class="ht"></span><a class="anchor" href="#s-1.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">"Licensor" means Harkirat Mangat, also known as "dior" or "diorswrld", the holder of the Software, and his successors and assigns.</p>
@@ -1589,6 +1627,8 @@ html{scroll-behavior:smooth}
 <p class="sub">"Competing Service" means any bot, application, website, API, service, or product that provides, in whole or in substantial part, functionality comparable to that of the Software or the Official Service, whether or not it is offered for a fee, and whether or not it is directed at the same game, platform, or audience.</p>
 <h3 id="s-1.13" class="clause"><span class="idx" aria-hidden="true">1.13</span><span class="ht"></span><a class="anchor" href="#s-1.13" aria-label="Link to this section">¶</a></h3>
 <p class="sub">"AI/ML System" means any machine learning model, neural network, large language model, embedding index, retrieval corpus, or other automated system that is trained on, fine-tuned on, indexed over, or otherwise derives statistical or generative capability from input data.</p>
+</section>
+<section class="dsec">
 <h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">GRANT OF RIGHTS</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-2.1" class="clause"><span class="idx" aria-hidden="true">2.1</span><span class="ht">Grant.</span><a class="anchor" href="#s-2.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Subject to Your full and continuing compliance with every term and condition of this License, the Licensor grants You a worldwide, royalty-free, non-exclusive, non-transferable, non-sublicensable, revocable license to:</p>
@@ -1599,6 +1639,8 @@ html{scroll-behavior:smooth}
 <p class="sub">All rights not expressly granted in <a class="xref" href="#s-2.1">Section&nbsp;2.1</a> are reserved to the Licensor. Nothing in this License may be construed as granting, by implication, estoppel, exhaustion, acquiescence, course of dealing, or otherwise, any license or right other than those expressly stated. The publication of the Software in a publicly readable repository is not, and shall not be construed as, a waiver, abandonment, dedication to the public, or implied license of any right.</p>
 <h3 id="s-2.4" class="clause"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Patents.</span><a class="anchor" href="#s-2.4" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor grants You no patent license under this License, except for a non-exclusive, royalty-free license under those patent claims owned or controlled by the Licensor that are necessarily infringed by Permitted Local Use of the Software as furnished by the Licensor. That patent license terminates automatically and immediately if You, or any entity controlled by You, initiate or voluntarily participate in any patent claim, cross-claim, counterclaim, or proceeding alleging that the Software or any Contribution constitutes direct or contributory patent infringement.</p>
+</section>
+<section class="dsec">
 <h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">CONDITIONS</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
 <p>Every right granted in <a class="xref" href="#s-2">Section&nbsp;2</a> is conditional on Your compliance with this <a class="xref" href="#s-3">Section&nbsp;3</a>. Failure to comply is both a breach of this License and, because the grant is conditional, an act outside the scope of the license granted and therefore an infringement of the Licensor's copyright.</p>
 <h3 id="s-3.1" class="clause"><span class="idx" aria-hidden="true">3.1</span><span class="ht">Notices.</span><a class="anchor" href="#s-3.1" aria-label="Link to this section">¶</a></h3>
@@ -1613,6 +1655,8 @@ html{scroll-behavior:smooth}
 <p class="sub">You must comply with the terms of service, developer terms, and policies of Discord Inc., GitHub Inc., and any other platform through which You access, obtain, or run the Software.</p>
 <h3 id="s-3.6" class="clause"><span class="idx" aria-hidden="true">3.6</span><span class="ht">Capacity.</span><a class="anchor" href="#s-3.6" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You represent that You have the legal capacity to enter into this License and, if You are accepting it on behalf of an entity, that You have authority to bind that entity.</p>
+</section>
+<section class="dsec">
 <h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PROHIBITED USES</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
 <p>Without limiting <a class="xref" href="#s-2.3">Section&nbsp;2.3</a>, and for the avoidance of any doubt, You must not do any of the following, whether directly or indirectly, whether for a fee or free of charge, and whether or not You attribute the Licensor:</p>
 <h3 id="s-4.1" class="clause"><span class="idx" aria-hidden="true">4.1</span><span class="ht">Deployment.</span><a class="anchor" href="#s-4.1" aria-label="Link to this section">¶</a></h3>
@@ -1641,6 +1685,8 @@ html{scroll-behavior:smooth}
 <p class="sub">Use any Brand Asset, or any confusingly similar name or mark, for any purpose, including in the name, description, avatar, documentation, or marketing of any project, service, or account. This prohibition survives termination of this License indefinitely.</p>
 <h3 id="s-4.11" class="clause"><span class="idx" aria-hidden="true">4.11</span><span class="ht">Security research limits.</span><a class="anchor" href="#s-4.11" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Notwithstanding <a class="xref" href="#s-1.10">Section&nbsp;1.10</a>(c), You must not, in the course of security research, test against the Official Service or its live infrastructure, access or exfiltrate any data belonging to the Licensor or to any user, or publicly disclose a vulnerability before the Licensor has had a reasonable opportunity to remedy it. Test against Your own local instance, and report findings privately in accordance with <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
+</section>
+<section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">CONTRIBUTIONS</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-5.1" class="clause"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Contributor License.</span><a class="anchor" href="#s-5.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">By submitting a Contribution, You grant the Licensor a perpetual, worldwide, non-exclusive, irrevocable, royalty-free, fully paid-up, transferable license, with the right to sublicense through multiple tiers, to reproduce, prepare derivative works of, publicly display, publicly perform, distribute, Deploy, commercialize, and otherwise exploit Your Contribution and such derivative works, in any medium and by any means now known or later devised, and to license or relicense Your Contribution under any terms the Licensor chooses, including proprietary terms.</p>
@@ -1658,11 +1704,15 @@ html{scroll-behavior:smooth}
 <p class="sub">The Licensor is under no obligation to review, accept, merge, retain, or continue to use any Contribution, and may remove or replace a Contribution at any time for any reason. Where a Contribution is removed entirely, the Licensor will remove the corresponding credit on request.</p>
 <h3 id="s-5.8" class="clause"><span class="idx" aria-hidden="true">5.8</span><span class="ht">No relationship created.</span><a class="anchor" href="#s-5.8" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Submitting a Contribution creates no employment, agency, partnership, joint venture, or fiduciary relationship, and confers no right to remuneration.</p>
+</section>
+<section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">TRADEMARKS AND BRAND</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">This License grants no trademark rights, express or implied.</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub"><a class="xref" href="#s-4.10">Section&nbsp;4.10</a> applies in full.</p>
 <h3 id="s-6.2" class="clause"><span class="idx" aria-hidden="true">6.2</span><span class="ht">Nominative fair use is not restricted.</span><a class="anchor" href="#s-6.2" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You may truthfully refer to the Software by name -- for example, to say that You reported a bug in Dior's Builds, to cite it in an article, or to describe a Contribution You made -- provided You do not thereby suggest endorsement, affiliation, or sponsorship.</p>
+</section>
+<section class="dsec">
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">THIRD-PARTY MATERIALS</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-7.1" class="clause"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Dependencies.</span><a class="anchor" href="#s-7.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Software depends on third-party packages that are not owned by the Licensor and are licensed to You by their own respective licensors under their own terms, not under this License. Those terms govern those packages, and nothing in this License purports to restrict, enlarge, or otherwise vary any right You have in them.</p>
@@ -1674,6 +1724,8 @@ html{scroll-behavior:smooth}
 <p class="sub">Weapon names, attachment names, item names, in-game imagery, screenshots, logos, and other game content referenced or displayed by the Software remain the property of their respective owners. The Licensor claims no ownership of that material and grants You no rights in it. This License extends only to the Licensor's own original expression -- the code, the structure and arrangement of the Curated Data, the descriptive text, and the Brand Assets.</p>
 <h3 id="s-7.4" class="clause"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Platform services.</span><a class="anchor" href="#s-7.4" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Software interoperates with services operated by third parties, including Discord Inc., GitHub Inc., MongoDB Inc., Cloudinary Ltd., and Google LLC. Your use of those services is governed by their terms, not by this License.</p>
+</section>
+<section class="dsec">
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">RESERVATION AND OWNERSHIP</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-8.1" class="clause"><span class="idx" aria-hidden="true">8.1</span><span class="ht"></span><a class="anchor" href="#s-8.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor retains all right, title, and interest in and to the Software, the Curated Data, and the Brand Assets, including all intellectual property rights in them, subject only to <a class="xref" href="#s-7">Section&nbsp;7</a>.</p>
@@ -1681,6 +1733,8 @@ html{scroll-behavior:smooth}
 <p class="sub">The publication of the Software does not place it in the public domain. Public availability and public licensing are distinct; the former has occurred, the latter has not.</p>
 <h3 id="s-8.3" class="clause"><span class="idx" aria-hidden="true">8.3</span><span class="ht"></span><a class="anchor" href="#s-8.3" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor may at any time, in his sole discretion and without notice, change the license under which future versions of the Software are made available, cease publishing the source code, make the repository private, or discontinue the Official Service. Doing so does not retroactively withdraw the rights You held in a version You lawfully obtained before the change, except on termination under <a class="xref" href="#s-9">Section&nbsp;9</a>.</p>
+</section>
+<section class="dsec">
 <h2 id="s-8a" class="numbered"><span class="idx" aria-hidden="true">8A</span><span class="ht">AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span><a class="anchor" href="#s-8a" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-8a.1" class="clause"><span class="idx" aria-hidden="true">8A.1</span><span class="ht">AI assistance disclosed.</span><a class="anchor" href="#s-8a.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Portions of the Software, its documentation, and this License were authored with the assistance of AI tools, principally Claude (Anthropic PBC), used as a drafting and implementation instrument under the continuous direction of the human author. Full disclosure: NOTICE <a class="xref" href="#s-6">Section&nbsp;6</a>.</p>
@@ -1692,6 +1746,8 @@ html{scroll-behavior:smooth}
 <p class="sub">Independently of copyright in the code, the Licensor asserts rights in the Curated Data as a compilation arising from the selection, verification, arrangement, and presentation of its contents -- including, where applicable, the sui generis database right under Directive 96/9/EC and its national implementations, and equivalent protection under the Copyright Act (Canada) and 17 U.S.C. Section 101. <a class="xref" href="#s-4.6">Section&nbsp;4.6</a> applies to the Curated Data whether or not copyright subsists in any individual fact within it. Facts themselves are not owned; their selection and arrangement are.</p>
 <h3 id="s-8a.5" class="clause"><span class="idx" aria-hidden="true">8A.5</span><span class="ht">Independent development.</span><a class="anchor" href="#s-8a.5" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor may develop, acquire, commission, or operate software, features, data, or services similar or identical to anything You suggest, contribute, or build, without obligation to You. Nothing in this License restricts the Licensor's own activities, and submitting a Contribution or an idea grants You no rights in what the Licensor later creates.</p>
+</section>
+<section class="dsec">
 <h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">TERM AND TERMINATION</span><a class="anchor" href="#s-9" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-9.1" class="clause"><span class="idx" aria-hidden="true">9.1</span><span class="ht">Term.</span><a class="anchor" href="#s-9.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">This License takes effect when You first access, download, copy, or use the Software, and continues until terminated.</p>
@@ -1707,17 +1763,25 @@ html{scroll-behavior:smooth}
 <p class="sub">Sections 1, 3.1, 3.2, 4.4, 4.5, 4.6, 4.7, 4.10, 5, 6, 7, 8, 8A, 9.5, 9.6, 10, 11, 12, 13, and 14 survive termination.</p>
 <h3 id="s-9.7" class="clause"><span class="idx" aria-hidden="true">9.7</span><span class="ht">Remedies.</span><a class="anchor" href="#s-9.7" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You acknowledge that a breach of Sections 4.1, 4.2, 4.5, 4.6, 4.7, or 4.10 would cause the Licensor harm that monetary damages alone could not adequately remedy, and that the Licensor is entitled to seek injunctive or other equitable relief without the necessity of posting a bond, in addition to any other remedy available at law. The Licensor's failure to enforce any provision on any occasion is not a waiver of that or any other provision on any other occasion.</p>
+</section>
+<section class="dsec">
 <h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">NO WARRANTY</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
 <p class="shout">THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY, CONDITION, REPRESENTATION, OR TERM OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR EXPRESSLY DISCLAIMS ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</p>
 <p class="shout">THE LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF HARMFUL COMPONENTS, THAT DEFECTS WILL BE CORRECTED, THAT ANY DATA IT PRODUCES OR STORES IS ACCURATE, CURRENT, OR COMPLETE, OR THAT IT WILL MEET YOUR REQUIREMENTS. GAME DATA CHANGES FREQUENTLY AND MAY BE WRONG OR OUT OF DATE AT ANY TIME.</p>
 <p class="shout">NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED FROM THE LICENSOR CREATES ANY WARRANTY NOT EXPRESSLY STATED HERE.</p>
 <p>Some jurisdictions do not allow the exclusion of certain warranties. To the extent an exclusion above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-10">Section&nbsp;10</a> continues in effect.</p>
+</section>
+<section class="dsec">
 <h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">LIMITATION OF LIABILITY</span><a class="anchor" href="#s-11" aria-label="Link to this section">¶</a></h2>
 <p class="shout">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL THE LICENSOR BE LIABLE, WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY, FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, OR ANTICIPATED SAVINGS, OR FOR BUSINESS INTERRUPTION OR COST OF SUBSTITUTE SERVICES, ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</p>
 <p class="shout">THE LICENSOR'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE WILL NOT EXCEED THE GREATER OF (A) THE TOTAL AMOUNT YOU PAID THE LICENSOR FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</p>
 <p>Some jurisdictions do not allow the limitation or exclusion of liability for death or personal injury caused by negligence, for fraud or fraudulent misrepresentation, or for certain other liabilities. Nothing in this License limits any liability that cannot lawfully be limited. To the extent a limitation above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-11">Section&nbsp;11</a> continues in effect.</p>
+</section>
+<section class="dsec">
 <h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">INDEMNITY</span><a class="anchor" href="#s-12" aria-label="Link to this section">¶</a></h2>
 <p>You will defend, indemnify, and hold harmless the Licensor from and against any claim, demand, proceeding, loss, liability, damage, penalty, cost, and expense (including reasonable legal fees) arising out of or relating to: (a) Your use of the Software; (b) Your breach of this License; (c) Your violation of any law or of any third party's rights; or (d) any Contribution You submit, including any claim that it infringes a third party's rights.</p>
+</section>
+<section class="dsec">
 <h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">GOVERNING LAW AND DISPUTE RESOLUTION</span><a class="anchor" href="#s-13" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-13.1" class="clause"><span class="idx" aria-hidden="true">13.1</span><span class="ht">Governing law.</span><a class="anchor" href="#s-13.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">This License is governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable in that province, without regard to any conflict-of-laws rule that would apply the law of another jurisdiction.</p>
@@ -1731,6 +1795,8 @@ html{scroll-behavior:smooth}
 <p class="sub">Notwithstanding <a class="xref" href="#s-13.3">Section&nbsp;13.3</a>, the Licensor may seek injunctive or other equitable relief to protect his intellectual property in any court of competent jurisdiction.</p>
 <h3 id="s-13.6" class="clause"><span class="idx" aria-hidden="true">13.6</span><span class="ht">Limitation period.</span><a class="anchor" href="#s-13.6" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Any claim You bring arising out of or relating to this License must be commenced within one (1) year after the claim arose, except where a longer period is required by law.</p>
+</section>
+<section class="dsec">
 <h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">GENERAL</span><a class="anchor" href="#s-14" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-14.1" class="clause"><span class="idx" aria-hidden="true">14.1</span><span class="ht">Entire agreement.</span><a class="anchor" href="#s-14.1" aria-label="Link to this section">¶</a></h3>
 <p class="sub">This License, together with any written permission granted under <a class="xref" href="#s-17">Section&nbsp;17</a>, is the entire agreement between You and the Licensor concerning the Software, and supersedes all prior or contemporaneous understandings, communications, and representations, including anything stated in the repository's README, documentation, package metadata, or issue tracker. In the event of any conflict between this License and any other file in the repository, this License governs.</p>
@@ -1772,12 +1838,18 @@ html{scroll-behavior:smooth}
 <p class="sub">This License is a grant of limited permission, not a sale. No exhaustion, first-sale, or equivalent doctrine applies to it, and no right is transferred to You beyond the express permissions in <a class="xref" href="#s-2">Section&nbsp;2</a>.</p>
 <h3 id="s-14.19" class="clause"><span class="idx" aria-hidden="true">14.19</span><span class="ht">Cumulative remedies.</span><a class="anchor" href="#s-14.19" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor's rights and remedies under this License are cumulative and in addition to, and not in substitution for, any right or remedy available at law or in equity.</p>
+</section>
+<section class="dsec">
 <h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">FILE-LEVEL NOTICE</span><a class="anchor" href="#s-15" aria-label="Link to this section">¶</a></h2>
 <p>The following notice may be applied to individual source files:</p>
 <p class="sub">Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved. Licensed under the Dior's Builds Source-Available License v1.0. Source-available, not open source. No deployment, no redistribution. See the LICENSE file at the repository root for full terms.</p>
+</section>
+<section class="dsec">
 <h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">SPDX IDENTIFIER</span><a class="anchor" href="#s-16" aria-label="Link to this section">¶</a></h2>
 <p>This is a custom license with no OSI-approved SPDX short identifier. Refer to it in machine-readable metadata as:</p>
 <pre class="block">LicenseRef-Diors-Builds-Source-Available-1.0</pre>
+</section>
+<section class="dsec">
 <h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">CONTACT AND PERMISSIONS</span><a class="anchor" href="#s-17" aria-label="Link to this section">¶</a></h2>
 <p>Requests for permission beyond the scope of this License, security reports under <a class="xref" href="#s-4.11">Section&nbsp;4.11</a>, licensing enquiries, and notices under <a class="xref" href="#s-14.7">Section&nbsp;14.7</a> should be sent to:</p>
 <pre class="block">Harkirat Mangat ("dior", "diorswrld")
@@ -1785,6 +1857,7 @@ html{scroll-behavior:smooth}
 <a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a></pre>
 <p>Permission outside this License is effective only if granted by the Licensor in writing and signed or sent from the address above. Silence, inaction, or a response from any other channel is not permission.</p>
 <p>The Licensor is generally willing to grant additional permission for genuine research, education, accessibility, and archival purposes. Ask.</p>
+</section>
     </main>
   </div>
 
@@ -1858,8 +1931,22 @@ html{scroll-behavior:smooth}
        POSITIONED ancestor, and the headings sit inside .doc, which is
        position:relative — so it was being compared against a document-space
        scroll value and every heading read low by the masthead's height. */
+    /* ⚠️ .stuck IS TOGGLED FROM THE RECT THE SCROLLSPY ALREADY READS. A pinned
+       heading needs a shadow and a resting one must not have it, and CSS cannot
+       tell the two apart — but this loop already measures every heading's top on
+       every frame, so the answer is free. A sentinel element plus a second
+       IntersectionObserver would have cost a node per section and a second source
+       of truth about where a heading is.
+       The test is "within a pixel of the sticky offset", not "above it": once the
+       section ends the heading is pushed to a negative top and is no longer pinned,
+       and a <= test would have left the shadow on all the way up the page.
+       Below 981 the sticky rule is off entirely, so nothing may latch there. */
+    var wide=matchMedia('(min-width:981px)').matches;
     for(var i=0;i<heads.length;i++){
-      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+      if(!heads[i]) continue;
+      var ht=heads[i].getBoundingClientRect().top;
+      if(ht<=130) cur=i;
+      heads[i].classList.toggle('stuck', wide && ht>52.5 && ht<55.5);
     }
     /* At the bottom of the document the last headings can never cross the 130px
        line — the page simply runs out of scroll before they get there — so the

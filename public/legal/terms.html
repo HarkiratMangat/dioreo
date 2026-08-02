@@ -1250,7 +1250,42 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
-.doc h2:first-child,.doc h3:first-child{margin-top:0}
+.doc h2:first-child,.doc h3:first-child{margin-top:0}/* ── sections, and the heading that stays with you ────────────────────
+   Every top-level heading and its clauses are wrapped by sectionise(). The
+   spacing between sections moved onto the WRAPPER: inside a section the h2 is
+   :first-child, so the existing rule above zeroes its top margin, and leaving the
+   3.6rem there would have collapsed the gap between every section on the page. */
+
+
+.doc .dsec{margin-top:3.6rem}
+.doc .dsec:first-child{margin-top:0}/* ⚠️ SCOPED TO DESKTOP ON PURPOSE. Below 980 the mobile nav is itself sticky at
+   top:54px and about 52px tall, so a heading sticking to the same offset would sit
+   underneath it — and that width already has the -On this page- control naming the
+   section you are in, which is what a sticky heading is for.
+   The background is not decoration: a sticky element with a transparent background
+   has the document scrolling visibly through its glyphs. It only needs to span the
+   content box, because .doc's padding is a gutter no text can enter. */
+
+
+@media (min-width:981px){/* The shadow only exists while the heading is pinned — see the .stuck toggle in
+     the scroll script. Without it a line of prose sliding under the band came to
+     rest exactly on the heading's rule and read as a struck-through sentence. */
+  
+  .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}
+  .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
+    padding-top:.9rem;padding-bottom:.78rem;
+    transition:box-shadow .18s ease;
+    /* The rule under the heading is its own border-bottom, so it travels with it
+       and the stuck heading always reads as a closed band rather than as text
+       floating over the prose. */
+    margin-bottom:1.15rem}/* The margin index is absolutely positioned against the heading, so it comes
+     along — but it sits OUTSIDE the heading's background, in .doc's padding, and
+     over a transparent patch the prose would show through it. It gets its own. */
+  
+  @media (min-width:1120px){
+    .doc .dsec>h2 .idx{background:var(--paper);padding:.15rem 0}
+  }
+}
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
@@ -1554,10 +1589,13 @@ html{scroll-behavior:smooth}
 <p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
 <p><strong>If you do not agree, do not install or use the Bot.</strong></p></blockquote>
 <hr>
+<section class="dsec">
 <h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" aria-label="Link to this section">¶</a></h2>
 <p>This is a free, unofficial Call of Duty: Mobile info bot run by one person as a hobby. Use it, enjoy it, don't abuse it. The game data is best-effort and often changes — don't spend money based on it. It comes with no warranty, and our liability is limited. Nothing here removes rights your local law gives you that can't be signed away.</p>
 <p><em>This summary is for convenience only. The numbered sections are the actual terms.</em></p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
 <p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
 <p><strong>Contact:</strong> harkirat117@gmail.com</p>
@@ -1567,6 +1605,8 @@ html{scroll-behavior:smooth}
 <p>Where these Terms would sensibly apply to it, they do: in particular the disclaimer of warranties (<a class="xref" href="#s-14">§14</a>), the limitation of liability (<a class="xref" href="#s-15">§15</a>), and the intellectual-property terms (<a class="xref" href="#s-7">§7</a>) cover the Site and its contents as well as the Bot. Everything written about <em>using the Bot</em> — the eligibility, conduct, suspension and account provisions — applies to the Bot only, because there is nothing on the Site to use in that sense.</p>
 <p><strong>If the two ever conflict about a document's contents, the plain-text original governs</strong>, as stated on each rendered page.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">Agreement to these Terms</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">How you accept</span><a class="anchor" href="#s-2.1" aria-label="Link to this section">¶</a></h3>
 <p><strong>You accept these Terms by doing any of the following:</strong></p>
@@ -1585,11 +1625,15 @@ html{scroll-behavior:smooth}
 <h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" aria-label="Link to this section">¶</a></h3>
 <p><strong>Don't install or use the Bot.</strong> If you've already installed it, remove it via Discord's "Authorized Apps" settings and stop issuing commands. See <a class="xref" href="#s-13.1">§13.1</a>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">Eligibility</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
 <p>To use the Bot you must:</p>
 <ol><li>Be at least <strong>13 years old</strong>, or the higher minimum age Discord requires in your country — in parts of the EU and elsewhere this is <strong>14, 15, or 16</strong>. Discord's <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> set the controlling minimum, and you must meet it.</li><li>Have the legal capacity to enter into these Terms, or have your parent or guardian's consent, in which case they accept these Terms on your behalf and are responsible for your use.</li><li>Not be barred from using Discord under Discord's terms.</li><li>Not be located in, or ordinarily resident in, a country subject to a comprehensive Canadian trade embargo, and not be listed on any applicable sanctions or restricted-party list.</li></ol>
 <p><strong>We do not knowingly permit use below Discord's minimum age.</strong> We have no independent age-verification mechanism and rely on Discord's enforcement. If we learn a user is under that age, we will delete their stored preferences — see <a class="xref" href="#s-10">§10</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">What the Bot does</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
 <p>The Bot is a <strong>user-installed Discord application</strong> providing Call of Duty: Mobile reference information:</p>
 <div class="tw"><table><thead><tr><th>Feature</th><th>What it gives you</th></tr></thead><tbody><tr><td>Weapon loadouts</td><td>Curated multiplayer and DMZ builds, attachments, rankings</td></tr><tr><td>Lucky draw info</td><td>Draw contents, items, and CP pricing</td></tr><tr><td>Patch notes</td><td>Season balance changes and patch history</td></tr><tr><td>Seasonal calendar</td><td>Events, start and end dates</td></tr><tr><td>Countdowns</td><td>Season, rank, and DMZ end timers</td></tr><tr><td><code>/timestamp</code></td><td>Discord timestamp generation in your timezone</td></tr><tr><td><code>/settings</code></td><td>Your display preferences</td></tr><tr><td>Accent colours</td><td>Message colours matched to your Discord profile</td></tr></tbody></table></div>
@@ -1603,6 +1647,8 @@ html{scroll-behavior:smooth}
 <h3 id="s-4.4" class="numbered"><span class="idx" aria-hidden="true">4.4</span><span class="ht">No support obligation</span><a class="anchor" href="#s-4.4" aria-label="Link to this section">¶</a></h3>
 <p>We have no obligation to provide support, respond to reports, fix bugs, maintain the Bot, or keep any feature working. We generally try. That is a courtesy, not a commitment, and no course of dealing creates one.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Accuracy — please read this one</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
 <p><strong>The game information in the Bot is best-effort and may be wrong.</strong></p>
 <ul><li>Loadouts, rankings, and "meta" designations reflect <strong>opinion and community consensus</strong>, not objective fact.</li><li>Call of Duty: Mobile is patched frequently. Data can go stale immediately after an update, and there may be a lag before it's corrected.</li><li>Draw contents, prices, and odds are <strong>as observed</strong>, may vary by region, account, and over time, and are <strong>not a representation of what you will receive</strong>.</li><li>Dates, countdowns, and calendar entries depend on information published by others and on your timezone setting being correct.</li></ul>
@@ -1614,6 +1660,8 @@ html{scroll-behavior:smooth}
 <h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">No professional advice</span><a class="anchor" href="#s-5.2" aria-label="Link to this section">¶</a></h3>
 <p>Nothing in the Bot is financial, legal, medical, or other professional advice.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
 <p>You must not:</p>
 <ol><li><strong>Abuse or overload it</strong> — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.</li><li><strong>Attack it</strong> — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.</li><li><strong>Circumvent controls</strong> — no bypassing cooldowns, permission checks, or admin-only gates.</li><li><strong>Impersonate</strong> — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.</li><li><strong>Break the law or Discord's rules</strong> — no use in connection with harassment, fraud, hate speech, or illegal activity, and no use violating <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Discord's Terms</a> or <a href="https://discord.com/guidelines" target="_blank" rel="noopener noreferrer">Community Guidelines</a>.</li><li><strong>Extract the data</strong> — no bulk collection, mirroring, re-hosting, or republishing of the Bot's curated datasets or output.</li><li><strong>Train models on it</strong> — no using the Bot's output or data as training, fine-tuning, evaluation, or retrieval input for any AI or machine-learning system.</li><li><strong>Redistribute the software</strong> — the source code is governed by the <a href="../LICENSE">LICENSE</a>, separate from these Terms. Reading it is allowed; deploying or redistributing it is not.</li></ol>
@@ -1621,6 +1669,8 @@ html{scroll-behavior:smooth}
 <h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
 <p>To report misuse of the Bot, a security issue, or content that shouldn't be there, email <strong>harkirat117@gmail.com</strong>. Security issues should never go in a public GitHub issue.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" aria-label="Link to this section">¶</a></h3>
 <p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dior's Builds" name and visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
@@ -1649,10 +1699,14 @@ html{scroll-behavior:smooth}
 <h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" aria-label="Link to this section">¶</a></h3>
 <p>We may develop, acquire, or operate features, products, or services similar to anything you suggest. Nothing in these Terms restricts that, and submitting an idea gives you no rights in what we later build.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
 <p>Portions of this project — its source code, documentation, and these legal documents — were <strong>written with the assistance of AI tools</strong>, principally Claude (Anthropic PBC), under human direction. Full disclosure: <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-6">§6</a>.</p>
 <p><strong>No AI system processes your data.</strong> The only AI in the running Bot is an administrator-only image-extraction command that never receives end-user data. See <a class="xref" href="#s-5.1">§5.1</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Third-party services</span><a class="anchor" href="#s-9" aria-label="Link to this section">¶</a></h2>
 <p>The Bot runs on and interoperates with services we don't control:</p>
 <div class="tw"><table><thead><tr><th>Service</th><th>Role</th></tr></thead><tbody><tr><td><strong>Discord Inc.</strong></td><td>The platform the Bot runs on</td></tr><tr><td><strong>MongoDB Atlas</strong></td><td>Stores preferences and content data (Canada)</td></tr><tr><td><strong>Cloudinary</strong></td><td>Hosts and serves cached game images</td></tr><tr><td><strong>Google Cloud Platform</strong></td><td>Hosts the server; Vertex AI for admin-only image extraction</td></tr></tbody></table></div>
@@ -1665,18 +1719,26 @@ html{scroll-behavior:smooth}
 <p>If we learn that a provider has mishandled data, we will investigate, notify you and any relevant regulator where required, and change provider where that's the right answer. See <a class="xref" href="#s-5.2">§5.2</a> of the <a href="privacy.html">Privacy Policy</a>, which also explains the limits of this allocation — a controller's obligations under data protection law cannot be disclaimed by contract, and we don't claim otherwise.</p>
 <p>Data details: <a href="privacy.html">Privacy Policy</a> <a class="xref" href="#s-5">§5</a>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Availability and changes</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
 <p><strong>The Bot is provided on an "as is" and "as available" basis.</strong> We make no promise about uptime.</p>
 <p>We may, at any time and without notice or liability:</p>
 <ul><li>Change, add, or remove features, commands, or data</li><li>Suspend, interrupt, or discontinue the Bot entirely</li><li>Impose or change rate limits and cooldowns</li><li>Modify or delete stored content, including curated data</li></ul>
 <p>The Bot runs on a single small server instance with no redundancy. Outages, restarts, and deploys will happen.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Force majeure</span><a class="anchor" href="#s-11" aria-label="Link to this section">¶</a></h2>
 <p>We are not liable for any failure or delay caused by events beyond our reasonable control — including acts of God, natural disaster, fire, flood, epidemic or pandemic, war, terrorism, civil unrest, strike, government action, change of law, power or internet failure, hosting or cloud-provider outage, denial-of-service attack, or <strong>any act, omission, outage, policy change, suspension, or termination by Discord, GitHub, Google, MongoDB, Cloudinary, or Activision</strong>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Export control and sanctions</span><a class="anchor" href="#s-12" aria-label="Link to this section">¶</a></h2>
 <p>You must not use the Bot in violation of Canadian, US, EU, UK, or other applicable export-control or sanctions laws, and you represent that you are not a restricted party under any of them.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Suspension and termination</span><a class="anchor" href="#s-13" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-13.1" class="numbered"><span class="idx" aria-hidden="true">13.1</span><span class="ht">By you</span><a class="anchor" href="#s-13.1" aria-label="Link to this section">¶</a></h3>
 <p>Remove the Bot from your Discord account at any time via Discord's "Authorized Apps" settings. That stops all future interaction immediately.</p>
@@ -1687,6 +1749,8 @@ html{scroll-behavior:smooth}
 <h3 id="s-13.3" class="numbered"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Survival</span><a class="anchor" href="#s-13.3" aria-label="Link to this section">¶</a></h3>
 <p>Sections 5, 6, 7, 8, 11, 12, 13.3, 14, 15, 16, 17, and 18 survive termination.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">Disclaimer of warranties</span><a class="anchor" href="#s-14" aria-label="Link to this section">¶</a></h2>
 <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE BOT IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY, CONDITION, OR REPRESENTATION OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE.</strong></p>
 <p><strong>WE EXPRESSLY DISCLAIM ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</strong></p>
@@ -1694,6 +1758,8 @@ html{scroll-behavior:smooth}
 <p><strong>NO ADVICE OR INFORMATION OBTAINED FROM US CREATES ANY WARRANTY NOT EXPRESSLY STATED HERE.</strong></p>
 <p>Some jurisdictions don't allow the exclusion of certain warranties. Where an exclusion isn't permitted, it applies to the minimum extent the law allows and the rest of this section stands.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">Limitation of liability</span><a class="anchor" href="#s-15" aria-label="Link to this section">¶</a></h2>
 <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, WE WILL NOT BE LIABLE — WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY — FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, IN-GAME CURRENCY, IN-GAME ITEMS, ACCOUNT STANDING, OR ANTICIPATED SAVINGS, ARISING OUT OF OR RELATING TO THE BOT — EVEN IF ADVISED OF THE POSSIBILITY AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</strong></p>
 <p><strong>OUR TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THE BOT AND THESE TERMS WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</strong></p>
@@ -1701,10 +1767,14 @@ html{scroll-behavior:smooth}
 <p><strong>Nothing in these Terms excludes or limits our liability for death or personal injury caused by our negligence, for fraud or fraudulent misrepresentation, or for any other liability that cannot lawfully be excluded or limited.</strong> If you are a consumer, nothing here affects your statutory rights.</p>
 <p><strong>This allocation of risk is a fundamental basis of the bargain.</strong> The Bot is provided free of charge, and we could not offer it at all on terms of unlimited liability.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">Indemnity</span><a class="anchor" href="#s-16" aria-label="Link to this section">¶</a></h2>
 <p>You will indemnify and hold us harmless from any claim, loss, liability, damage, cost, or expense (including reasonable legal fees) arising out of your use of the Bot, your breach of these Terms, or your violation of any law or third-party right.</p>
 <p>This does not apply to the extent the claim arises from our own breach, negligence, or wilful misconduct, and it does not apply where you are a consumer and the law prohibits it.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">Governing law and disputes</span><a class="anchor" href="#s-17" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-17.1" class="numbered"><span class="idx" aria-hidden="true">17.1</span><span class="ht">Informal resolution first</span><a class="anchor" href="#s-17.1" aria-label="Link to this section">¶</a></h3>
 <p><strong>Before starting formal proceedings, please email harkirat117@gmail.com.</strong> Most problems are solvable in one message, and we ask for 30 days to try.</p>
@@ -1719,6 +1789,8 @@ html{scroll-behavior:smooth}
 <h3 id="s-17.4" class="numbered"><span class="idx" aria-hidden="true">17.4</span><span class="ht">Limitation period</span><a class="anchor" href="#s-17.4" aria-label="Link to this section">¶</a></h3>
 <p>Any claim must be commenced within <strong>one year</strong> after it arose, except where a longer period is required by law.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">General</span><a class="anchor" href="#s-18" aria-label="Link to this section">¶</a></h2>
 <p><strong>Entire agreement.</strong> These Terms, the Privacy Policy, and (for source code) the LICENSE are the entire agreement between you and us regarding the Bot, superseding all prior understandings. Nothing here limits liability for fraudulent misrepresentation.</p>
 <p><strong>Severability.</strong> If a provision is held unenforceable, it is modified to the minimum extent needed to make it enforceable, or severed, and the rest continues in full force. This applies with particular force to §<a class="xref" href="#s-14">§14</a>, 15, and 17.3, each of which is intended to be given the maximum effect the law permits.</p>
@@ -1730,6 +1802,8 @@ html{scroll-behavior:smooth}
 <p><strong>Headings and summaries.</strong> For convenience only; they have no legal effect.</p>
 <p><strong>Language.</strong> Drafted in English; the English version governs. <em>Les parties ont exigé que la présente convention soit rédigée en anglais.</em></p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-19" class="numbered"><span class="idx" aria-hidden="true">19</span><span class="ht">Changes to these Terms</span><a class="anchor" href="#s-19" aria-label="Link to this section">¶</a></h2>
 <p>We may update these Terms. When we do:</p>
 <ul><li>The <strong>effective date and version</strong> at the top change.</li><li>The change is recorded in the repository's git history.</li><li>For <strong>material</strong> changes we will make reasonable efforts to give notice — typically through the project's Discord presence, a repository release note, or a notice in the Bot itself.</li></ul>
@@ -1738,16 +1812,21 @@ html{scroll-behavior:smooth}
 <p>Kept here as well as in git, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a change record you can't reach isn't a change record.</p>
 <div class="tw"><table><thead><tr><th>Version</th><th>Effective</th><th>What changed</th></tr></thead><tbody><tr><td>1.2</td><td>31 July 2026</td><td>Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (<a class="xref" href="#s-14">§14</a>) and the limitation of liability (<a class="xref" href="#s-15">§15</a>) did not reach the pages these documents are published on. Adds <a class="xref" href="#s-1.1">§1.1</a> defining the Site and saying exactly which Terms cover it and which do not. <strong>No new obligation on you and no reduction of your rights</strong> — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone.</td></tr><tr><td>1.1</td><td>29 July 2026</td><td>Added <a class="xref" href="#s-7.3">§7.3</a> (crossover and collaboration content — third-party IP featured in the game); noted the operator's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>; renumbered the former <a class="xref" href="#s-7.3">§7.3</a>–<a class="xref" href="#s-7.6">§7.6</a> to <a class="xref" href="#s-7.4">§7.4</a>–<a class="xref" href="#s-7.7">§7.7</a> to make room. <strong>Clarifying additions only</strong> — no reduction of your rights, no new data collected, no new obligation on you.</td></tr><tr><td>1.0</td><td>28 July 2026</td><td>First published version.</td></tr></tbody></table></div>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" aria-label="Link to this section">¶</a></h2>
 <p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong></p>
 <p>Email is the canonical contact and always reaches us. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
 <p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial terms.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is public in the repository's git log.</p>
 <hr>
 <p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc. or Discord Inc.</em></p>
+</section>
     </main>
   </div>
 
@@ -1821,8 +1900,22 @@ html{scroll-behavior:smooth}
        POSITIONED ancestor, and the headings sit inside .doc, which is
        position:relative — so it was being compared against a document-space
        scroll value and every heading read low by the masthead's height. */
+    /* ⚠️ .stuck IS TOGGLED FROM THE RECT THE SCROLLSPY ALREADY READS. A pinned
+       heading needs a shadow and a resting one must not have it, and CSS cannot
+       tell the two apart — but this loop already measures every heading's top on
+       every frame, so the answer is free. A sentinel element plus a second
+       IntersectionObserver would have cost a node per section and a second source
+       of truth about where a heading is.
+       The test is "within a pixel of the sticky offset", not "above it": once the
+       section ends the heading is pushed to a negative top and is no longer pinned,
+       and a <= test would have left the shadow on all the way up the page.
+       Below 981 the sticky rule is off entirely, so nothing may latch there. */
+    var wide=matchMedia('(min-width:981px)').matches;
     for(var i=0;i<heads.length;i++){
-      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+      if(!heads[i]) continue;
+      var ht=heads[i].getBoundingClientRect().top;
+      if(ht<=130) cur=i;
+      heads[i].classList.toggle('stuck', wide && ht>52.5 && ht<55.5);
     }
     /* At the bottom of the document the last headings can never cross the 130px
        line — the page simply runs out of scroll before they get there — so the

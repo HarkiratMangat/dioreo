@@ -3307,6 +3307,38 @@ const THEME_BOOT = '<script>try{var t=localStorage.getItem(\'db-theme\');'
 // inferred from the title. The previous `short === 'Terms' ? ... : 'privacy'`
 // test silently assumed there would only ever be two pages, and quietly marked
 // anything else as Privacy.
+/**
+ * Wrap each top-level <h2> and everything beneath it in a <section>.
+ *
+ * ⚠️ THIS IS WHAT MAKES A STICKY HEADING POSSIBLE AT ALL, and it cannot be done in
+ * CSS. What bounds a sticky element is its CONTAINING BLOCK — the same fact that
+ * once let the section rail travel 126px into the footer. parseBlocks() emits the
+ * headings as FLAT SIBLINGS of the prose, so every h2 shares one containing block:
+ * they would all stick at the same offset and simply cover each other, swapping
+ * instantly instead of the outgoing heading being pushed up by the incoming
+ * section. Give each heading a section and the hand-off is free.
+ *
+ * ⚠️ THE SPLIT IS ON A LINE-INITIAL <h2, NOT ON EVERY <h2. Terms opens with a
+ * callout blockquote that contains an h2 of its own, emitted inline on the same
+ * line as the <blockquote> tag; splitting on every h2 would cut that element in
+ * half and produce unbalanced markup. Measured on the built page: 22 of the 23 h2s
+ * begin a line, and the one that does not is exactly that callout.
+ *
+ * Done here rather than in parseBlocks() because parseBlocks is shared — the warm
+ * pages and all three chronicle voices consume it through CHROME, and each has its
+ * own structural gate keyed to the shape it emits today. Only the legal shell wants
+ * sections, so only the legal shell adds them.
+ */
+function sectionise(html) {
+    const parts = html.split(/\n(?=<h2 )/);
+    if (parts.length < 2) return html;
+    // Anything before the first heading (the callout, the lead-in) stays a direct
+    // child of .doc: it belongs to no section, and wrapping it would give the page
+    // a sticky heading it does not have.
+    const head = parts.shift();
+    return [head, ...parts.map(p => `<section class="dsec">\n${p}\n</section>`)].join('\n');
+}
+
 function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir }) {
     // The nav helpers identify a page by directory AND filename now — two pages on
     // the site are called index.html, so a bare name no longer picks one out.
@@ -3424,6 +3456,41 @@ ${SWITCHER_CSS}
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
 .doc h2:first-child,.doc h3:first-child{margin-top:0}
+
+/* ── sections, and the heading that stays with you ────────────────────
+   Every top-level heading and its clauses are wrapped by sectionise(). The
+   spacing between sections moved onto the WRAPPER: inside a section the h2 is
+   :first-child, so the existing rule above zeroes its top margin, and leaving the
+   3.6rem there would have collapsed the gap between every section on the page. */
+.doc .dsec{margin-top:3.6rem}
+.doc .dsec:first-child{margin-top:0}
+
+/* ⚠️ SCOPED TO DESKTOP ON PURPOSE. Below 980 the mobile nav is itself sticky at
+   top:54px and about 52px tall, so a heading sticking to the same offset would sit
+   underneath it — and that width already has the -On this page- control naming the
+   section you are in, which is what a sticky heading is for.
+   The background is not decoration: a sticky element with a transparent background
+   has the document scrolling visibly through its glyphs. It only needs to span the
+   content box, because .doc's padding is a gutter no text can enter. */
+@media (min-width:981px){
+  /* The shadow only exists while the heading is pinned — see the .stuck toggle in
+     the scroll script. Without it a line of prose sliding under the band came to
+     rest exactly on the heading's rule and read as a struck-through sentence. */
+  .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}
+  .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
+    padding-top:.9rem;padding-bottom:.78rem;
+    transition:box-shadow .18s ease;
+    /* The rule under the heading is its own border-bottom, so it travels with it
+       and the stuck heading always reads as a closed band rather than as text
+       floating over the prose. */
+    margin-bottom:1.15rem}
+  /* The margin index is absolutely positioned against the heading, so it comes
+     along — but it sits OUTSIDE the heading's background, in .doc's padding, and
+     over a transparent patch the prose would show through it. It gets its own. */
+  @media (min-width:1120px){
+    .doc .dsec>h2 .idx{background:var(--paper);padding:.15rem 0}
+  }
+}
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
@@ -3637,7 +3704,7 @@ ${mobileNav(cur, slots)}
         <div class="rule"></div>
         <div class="meta">${meta.map(m => `<span>${m}</span>`).join('')}</div>
       </header>
-      ${body}
+      ${sectionise(body)}
     </main>
   </div>
 
@@ -3707,8 +3774,22 @@ ${mobileNav(cur, slots)}
        POSITIONED ancestor, and the headings sit inside .doc, which is
        position:relative — so it was being compared against a document-space
        scroll value and every heading read low by the masthead's height. */
+    /* ⚠️ .stuck IS TOGGLED FROM THE RECT THE SCROLLSPY ALREADY READS. A pinned
+       heading needs a shadow and a resting one must not have it, and CSS cannot
+       tell the two apart — but this loop already measures every heading's top on
+       every frame, so the answer is free. A sentinel element plus a second
+       IntersectionObserver would have cost a node per section and a second source
+       of truth about where a heading is.
+       The test is "within a pixel of the sticky offset", not "above it": once the
+       section ends the heading is pushed to a negative top and is no longer pinned,
+       and a <= test would have left the shadow on all the way up the page.
+       Below 981 the sticky rule is off entirely, so nothing may latch there. */
+    var wide=matchMedia('(min-width:981px)').matches;
     for(var i=0;i<heads.length;i++){
-      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+      if(!heads[i]) continue;
+      var ht=heads[i].getBoundingClientRect().top;
+      if(ht<=130) cur=i;
+      heads[i].classList.toggle('stuck', wide && ht>52.5 && ht<55.5);
     }
     /* At the bottom of the document the last headings can never cross the 130px
        line — the page simply runs out of scroll before they get there — so the
@@ -4768,22 +4849,42 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   padding:.9rem 0 .8rem;
   background:color-mix(in srgb,var(--ia) 6%,transparent);
   transition:background .38s}
-/* ⚠️ THE PERFORATION IS A GRADIENT NOW, because a border-dashed cannot open.
-   It also cannot MOVE: the notches are punched at a fixed --nx by the card's
-   mask, so any transform that carried the dashed edge sideways separated the
-   line from the two holes it is supposed to run between — which is exactly what
-   translateX(3px) did, and Harkirat was right that it made no sense.
-   background-size sets the tile a repeating gradient repeats over, and the stops
-   inside are absolute px, so growing the tile from 10px to 15px keeps a 5px dash
-   and stretches the GAP to 10px. The dashes stay put and pull apart: the paper
-   giving way along the line, not the line sliding. Hard stops, no interpolation
-   range, so there is no grey fringe between dash and gap. */
-.inv-s::before{content:"";position:absolute;left:-2px;top:0;bottom:0;width:2px;
+/* ⚠️ THE PERFORATION BELONGS TO THE CARD, NOT TO THE STUB — this is the whole
+   reason the tear reads. It used to be a border-left on .inv-s, so every transform
+   that moved the stub carried the dashed line with it, away from the two notches
+   the card's mask punches at a fixed --nx. That is why the line appeared to slide
+   right on hover and why it made no sense: on real paper the perforation is printed
+   across the sheet and STAYS while the stub comes away from it.
+   Anchored here at --nx, it is clipped by the same mask that cuts the notches, so
+   the line runs exactly between the two holes at every card width.
+   background-size sets the tile a repeating gradient repeats over and the stops
+   inside it are absolute px, so growing the tile from 10 to 15 keeps a 5px dash and
+   stretches the GAP to 10 — the perforation opening up rather than moving. Hard
+   stops, so there is no interpolation range and no grey fringe between dash and gap. */
+.inv::after{content:"";position:absolute;z-index:2;top:0;bottom:0;
+  left:calc(var(--nx) - 1px);width:2px;pointer-events:none;
   background-image:repeating-linear-gradient(180deg,
     color-mix(in srgb,var(--ia) 40%,var(--rule)) 0 5px,transparent 5px 10px);
   background-size:2px 10px;
   transition:background-size .44s cubic-bezier(.34,1.06,.44,1)}
-.inv:hover .inv-s::before,.inv:focus-visible .inv-s::before{background-size:2px 15px}
+.inv:hover::after,.inv:focus-visible::after{background-size:2px 15px}
+/* The torn fibres, which only exist once there is a gap for them to be seen in.
+   At rest it is invisible and the edge is clean, because an untorn ticket has no
+   ragged edge to show.
+   ⚠️ TWO GRADIENTS WITH CO-PRIME PERIODS, and that is the whole trick. A single
+   repeating gradient beside the perforation gave two evenly dashed verticals a few
+   pixels apart, which read as a second perforation rather than as a torn edge —
+   the eye finds the regularity immediately. 7px against 11px only realign every
+   77px, so over a 160px stub the marks land in a pattern that does not repeat
+   within view. Paper colour, not accent: fibres are the sheet giving way, and an
+   accent-coloured edge would have read as printed rule again. */
+.inv-s::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;
+  opacity:0;pointer-events:none;
+  background-image:
+    repeating-linear-gradient(180deg,var(--ink3) 0 3px,transparent 3px 7px),
+    repeating-linear-gradient(180deg,var(--ink3) 0 2px,transparent 2px 11px);
+  transition:opacity .3s ease .06s}
+.inv:hover .inv-s::before,.inv:focus-visible .inv-s::before{opacity:.45}
 /* ⚠️ The notches are MASKED OUT of the card, not painted over it. They used to be
    discs filled with --desk, which only matches the page where the page is a flat
    colour — and it is not: there is a radial glow behind these cards, so each notch
@@ -4802,26 +4903,37 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 .inv-sw{writing-mode:vertical-rl;transform:rotate(180deg);
   font-family:var(--mono);font-size:.57rem;letter-spacing:.24em;text-transform:uppercase;
   color:color-mix(in srgb,var(--ia-t) 72%,var(--ink3))}
-.inv:hover,.inv:focus-visible{transform:translateY(-4px) rotate(-.35deg);
+/* ⚠️ THE CARD NO LONGER ROTATES. A -.35deg tilt on the whole card plus the stub's
+   own rotation compounded on the arrow badge at the bottom of the stub, which is
+   what made it look wrongly aligned on hover. The tear carries the paper character
+   now; the card only lifts. */
+.inv:hover,.inv:focus-visible{transform:translateY(-4px);
   border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
   box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}
 /* The stub lifts and skews away from the body along the perforation, so the card
    reads as beginning to tear rather than simply rising. It stops well short of
    detaching — a ticket half-torn is an invitation; a ticket in two pieces is a
    used one. */
-/* ⚠️ THE HINGE IS THE PERFORATION, so the transform must leave x=0 fixed. A
-   rotateY about -left center- does exactly that — every point on the left edge is
-   on the axis — so the stub swings toward the reader while the dashed line and
-   its two notches do not move by a pixel. The previous translateX(3px) rotate(.7deg)
-   failed on both counts: it slid the perforation away from the notches, and the
-   2D rotation tipped the arrow badge at the bottom of a ~300px card by nearly 2px
-   of drift on top of its own nudge, which is the "weirdly aligned" arrow.
+/* ⚠️ THE STUB TEARS AWAY; IT DOES NOT HINGE. Two earlier versions moved the stub
+   as one rigid piece — first a translate+rotate that dragged the perforation with
+   it, then a rotateY hinge that pinned the left edge and only lifted. Neither is a
+   tear: a tear is a SEPARATION that PROPAGATES, and it has to leave a visible gap.
+   transform-origin is left TOP, not left centre, and that is the mechanism. A
+   rotation about the top corner leaves the top nearly closed and opens the bottom
+   by height*sin(angle) — on a ~168px stub at 1.15deg that is 3.4px, on top of the
+   5px translate, so the gap runs 5px at the top to 8.4px at the bottom. That wedge
+   IS the tear running down the perforation, and it comes free without any keyframes.
+   The shadow cast back onto the card is what makes the gap read as a gap rather
+   than as a lighter stripe: it is the only cue that the two pieces are now at
+   different depths.
    It stops well short of detaching — a ticket half-torn is an invitation; a ticket
    in two pieces is a used one. */
 .inv:hover .inv-s,.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
-  transform:perspective(560px) rotateY(-9deg)}
-.inv-s{transform-origin:left center;
-  transition:background .42s ease,transform .42s cubic-bezier(.34,1.1,.44,1)}
+  transform:translateX(5px) rotate(1.15deg);
+  box-shadow:-7px 0 12px -7px rgba(0,0,0,.6)}
+.inv-s{transform-origin:left top;
+  transition:background .42s ease,transform .46s cubic-bezier(.32,1.06,.4,1),
+    box-shadow .42s ease}
 @media (prefers-reduced-motion:reduce){
   .inv:hover .inv-s,.inv:focus-visible .inv-s{transform:none}
 }
@@ -4909,7 +5021,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
     ${installBtn()}
   </div>
   <span class="lab">Legal</span>
-  <h1>The fine print,<br>written to be read.</h1>
+  <h1>The fine print,<br>in plain sight.</h1>
   <p class="lede">${esc(lede)}</p>
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>

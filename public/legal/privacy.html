@@ -1250,7 +1250,42 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
-.doc h2:first-child,.doc h3:first-child{margin-top:0}
+.doc h2:first-child,.doc h3:first-child{margin-top:0}/* ── sections, and the heading that stays with you ────────────────────
+   Every top-level heading and its clauses are wrapped by sectionise(). The
+   spacing between sections moved onto the WRAPPER: inside a section the h2 is
+   :first-child, so the existing rule above zeroes its top margin, and leaving the
+   3.6rem there would have collapsed the gap between every section on the page. */
+
+
+.doc .dsec{margin-top:3.6rem}
+.doc .dsec:first-child{margin-top:0}/* ⚠️ SCOPED TO DESKTOP ON PURPOSE. Below 980 the mobile nav is itself sticky at
+   top:54px and about 52px tall, so a heading sticking to the same offset would sit
+   underneath it — and that width already has the -On this page- control naming the
+   section you are in, which is what a sticky heading is for.
+   The background is not decoration: a sticky element with a transparent background
+   has the document scrolling visibly through its glyphs. It only needs to span the
+   content box, because .doc's padding is a gutter no text can enter. */
+
+
+@media (min-width:981px){/* The shadow only exists while the heading is pinned — see the .stuck toggle in
+     the scroll script. Without it a line of prose sliding under the band came to
+     rest exactly on the heading's rule and read as a struck-through sentence. */
+  
+  .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}
+  .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
+    padding-top:.9rem;padding-bottom:.78rem;
+    transition:box-shadow .18s ease;
+    /* The rule under the heading is its own border-bottom, so it travels with it
+       and the stuck heading always reads as a closed band rather than as text
+       floating over the prose. */
+    margin-bottom:1.15rem}/* The margin index is absolutely positioned against the heading, so it comes
+     along — but it sits OUTSIDE the heading's background, in .doc's padding, and
+     over a transparent patch the prose would show through it. It gets its own. */
+  
+  @media (min-width:1120px){
+    .doc .dsec>h2 .idx{background:var(--paper);padding:.15rem 0}
+  }
+}
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
@@ -1558,6 +1593,7 @@ html{scroll-behavior:smooth}
 <p>You can have everything deleted by emailing <strong>harkirat117@gmail.com</strong> — see <a class="xref" href="#s-9">§9</a>.</p>
 <p><em>This summary is for convenience. The sections below are the actual policy.</em></p>
 <hr>
+<section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who is responsible for your data</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
 <p>The <strong>data controller</strong> is:</p>
 <p><strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada. 📧 <strong>harkirat117@gmail.com</strong></p>
@@ -1566,6 +1602,8 @@ html{scroll-behavior:smooth}
 <p>We have not appointed an EU representative under <strong>GDPR Article 27</strong>. We rely on the exemption in <strong>Article 27(2)(a)</strong>: our processing is occasional, does not include special-category or criminal-conviction data on any scale, involves only a user ID and display preferences, and is unlikely to result in a risk to the rights and freedoms of individuals.</p>
 <p>If that assessment ever stops being accurate, we will appoint a representative and update this policy. EU and UK users can reach us directly at the address above, and we answer.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">What we collect</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">Information stored about you</span><a class="anchor" href="#s-2.1" aria-label="Link to this section">¶</a></h3>
 <p>Everything below lives in a single <code>UserPreference</code> record keyed to your Discord user ID. <strong>A record is only created once you actually use the Bot.</strong></p>
@@ -1598,16 +1636,22 @@ html{scroll-behavior:smooth}
 <p><strong>Before you press the switch, nothing is stored at all</strong> — the Site simply follows whatever light or dark setting your operating system or browser is already using. That happens through an ordinary CSS media query: your browser applies one set of colours or the other while drawing the page. We are not told which it chose. There is no server-side component that could be told — these are static files.</p>
 <p>The one place the Site reads that setting in code, it does so only to keep the switch's on/off state honest for screen readers, in your own browser. <strong>It is never stored, never written to a log, never combined with anything else, and never sent anywhere.</strong> We mention it because a colour-scheme preference is one of the signals that <em>can</em> be used to help fingerprint a browser when it is collected and transmitted, and we would rather state plainly that this one is not.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">What we do NOT collect</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>❌ We do not have</th><th>Why</th></tr></thead><tbody><tr><td><strong>Your messages</strong></td><td>The Bot runs with only the <code>Guilds</code> gateway intent. It does <strong>not</strong> have the Message Content intent, so Discord never sends us message text. A technical impossibility, not just a policy promise.</td></tr><tr><td><strong>Your DMs</strong></td><td>Same reason.</td></tr><tr><td><strong>Your email address</strong></td><td>Never requested, never received from Discord.</td></tr><tr><td><strong>Your real name</strong></td><td>Never requested.</td></tr><tr><td><strong>Your Discord username or display name</strong></td><td>Used momentarily to render a response, never written to the database.</td></tr><tr><td><strong>Your IP address</strong></td><td>Discord handles the Bot's connection; we never see it. Loading <em>this website</em> is a normal web request, so the host that serves it necessarily processes your IP the way any web server does — that is described in <a class="xref" href="#s-5">§5</a>, and it never reaches us or our database.</td></tr><tr><td><strong>Payment information</strong></td><td>The Bot is free and has no payment feature.</td></tr><tr><td><strong>A list of your servers</strong></td><td>Not collected or stored.</td></tr><tr><td><strong>Analytics or tracking data</strong></td><td>No analytics SDK, no telemetry, no tracking pixel, no ad network, no fingerprinting.</td></tr><tr><td><strong>Cookies</strong></td><td>None, anywhere. The Bot runs inside Discord and has no web surface at all. This documentation website sets no cookies either; it stores a single light/dark preference in your browser, which is described in full in <a class="xref" href="#s-2.6">§2.6</a> and is never transmitted.</td></tr><tr><td><strong>Voice data, location, contacts, or biometrics</strong></td><td>Not applicable, not collected.</td></tr></tbody></table></div>
 <p>We do <strong>no</strong> profiling, no behavioural advertising, and <strong>no automated decision-making producing legal or similarly significant effects</strong> (GDPR Art. 22).</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">Why we process it, and our legal basis</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>Purpose</th><th>Legal basis (GDPR Art. 6)</th></tr></thead><tbody><tr><td>Remembering your preferences</td><td><strong>Consent</strong> — you chose to set them (Art. 6(1)(a))</td></tr><tr><td>Making the Bot work when you invoke a command</td><td><strong>Contract</strong> — the Terms of Service (Art. 6(1)(b))</td></tr><tr><td>Keeping the Bot secure and stable (cooldowns, crash logs)</td><td><strong>Legitimate interests</strong> — running a functioning, non-abused service (Art. 6(1)(f))</td></tr><tr><td>Complying with legal obligations</td><td><strong>Legal obligation</strong> (Art. 6(1)(c))</td></tr></tbody></table></div>
 <p>No <strong>special category</strong> data (Art. 9) is processed — no health, biometric, racial or ethnic origin, political, religious, or sexual-orientation data.</p>
 <p>Under <strong>PIPEDA</strong>, our basis is your <strong>implied consent</strong>: you install the Bot and set a preference, and we store it for the obvious purpose of honouring it. You can withdraw consent at any time (<a class="xref" href="#s-9">§9</a>).</p>
 <blockquote class="callout"><p><strong>A note on PIPEDA's scope.</strong> PIPEDA applies to organisations collecting personal information "in the course of commercial activity." This Bot is free and non-commercial, so PIPEDA arguably doesn't bind us at all. <strong>We comply with it regardless</strong>, and don't rely on that argument to hold anything back.</p></blockquote>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Who your data is shared with</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
 <p><strong>We do not sell your data. We do not share it for advertising or cross-context behavioural advertising. We do not disclose it to data brokers.</strong> We have never done so, and we have no plans to.</p>
 <div class="tw"><table><thead><tr><th>Provider</th><th>What it handles</th><th>Where</th></tr></thead><tbody><tr><td><strong>Discord Inc.</strong></td><td>The platform itself — your ID, your interactions</td><td>Per <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a></td></tr><tr><td><strong>MongoDB Atlas</strong> (MongoDB, Inc.)</td><td><strong>Stores your preference record</strong></td><td><strong>🇨🇦 Azure Canada Central (Toronto)</strong></td></tr><tr><td><strong>Google Cloud Platform</strong> (Google LLC)</td><td>Hosts the server the Bot runs on</td><td>🇺🇸 <code>us-east1</code> (South Carolina)</td></tr><tr><td><strong>Google Cloud Logging</strong> (Google LLC)</td><td>Server logs, 30-day retention</td><td>🇺🇸 United States</td></tr><tr><td><strong>Google Cloud Vertex AI</strong> (Google LLC)</td><td>Admin-only image extraction — <strong>no end-user data</strong></td><td>🇺🇸 United States</td></tr><tr><td><strong>Cloudinary Ltd.</strong></td><td>Hosts cached <strong>game images</strong> only</td><td>🇺🇸 United States</td></tr><tr><td><strong>Cloudflare, Inc.</strong></td><td>Serves these legal documents as a public web page</td><td>Global edge network</td></tr></tbody></table></div>
@@ -1627,12 +1671,16 @@ html{scroll-behavior:smooth}
 <p>We may disclose information where legally required — a valid court order, subpoena, or law-enforcement request under Canadian law — or where necessary to investigate a security incident or protect someone's rights or safety. Given what we hold, such a request would yield very little. Where we are lawfully permitted to tell you about such a request, we will.</p>
 <p>If the Bot were ever transferred to another operator, your data could transfer with it. We would give notice first, and you could delete your data beforehand.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">International transfers</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
 <p><strong>Your stored preferences do not leave Canada.</strong> They sit in Azure Canada Central.</p>
 <p>Some <em>processing</em> happens elsewhere: the server that runs the Bot is in the United States (Google Cloud <code>us-east1</code>), so your data is handled in memory there while a command runs. Discord operates globally and handles your data under its own policy.</p>
 <p><strong>If you are in the EEA, the UK, or Switzerland:</strong> Canada holds a partial <strong>adequacy decision</strong> from the European Commission for organisations subject to PIPEDA, which means transfers to Canada are recognised as offering adequate protection. For the US-based processing, we rely on Google's transfer mechanisms — Standard Contractual Clauses and the EU–US Data Privacy Framework — as set out in the Google Cloud data processing terms.</p>
 <p>Given the data involved is a user ID and colour preferences, the practical risk of these transfers is low.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">How long we keep it</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>Data</th><th>Retention</th></tr></thead><tbody><tr><td><strong>Your preference record</strong></td><td><strong>Kept until you ask us to delete it</strong> — see <a class="xref" href="#s-9">§9</a></td></tr><tr><td><strong>Alert logs</strong></td><td><strong>30 days</strong>, then automatically deleted</td></tr><tr><td><strong>Server logs (Google Cloud Logging)</strong></td><td><strong>30 days</strong>, then automatically deleted</td></tr><tr><td><strong>In-memory caches</strong></td><td>Until the next restart or deploy — hours to days</td></tr><tr><td><strong>Cloudinary game images</strong></td><td>Until the underlying content rolls out of the Bot's history</td></tr></tbody></table></div>
 <h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">An honest disclosure about deletion</span><a class="anchor" href="#s-7.1" aria-label="Link to this section">¶</a></h3>
@@ -1641,6 +1689,8 @@ html{scroll-behavior:smooth}
 <p><strong>Deletion is currently handled manually, on request, by email.</strong> That is a legitimate and compliant route — the law requires that you be able to exercise the right, not that a button exist — but we consider the absence of self-service a shortcoming rather than a design choice. A <code>/settings</code> delete option and an automatic clean-up of long-dormant records are planned, and this policy will be updated when they ship.</p>
 <p><code>/settings</code> currently lets you <strong>change</strong> stored values, which overwrites them. It has no reset or delete.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">Security</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
 <p>What actually protects your data:</p>
 <ul><li><strong>Credentials</strong> live in environment variables, never committed to the repository; the secrets file is permanently excluded from version control.</li><li><strong>Database access</strong> is restricted and authenticated.</li><li><strong>All connections</strong> to Discord, MongoDB, Cloudinary, and Google Cloud use TLS.</li><li><strong>Administrative commands</strong> are locked to a single hard-coded Discord ID — no one else can reach the management, alerting, or automation features.</li><li><strong>Rate limiting and cooldowns</strong> guard against abuse.</li><li><strong>Only one bot instance</strong> may run at a time, enforced by a database lock.</li></ul>
@@ -1650,6 +1700,8 @@ html{scroll-behavior:smooth}
 <p>If a breach creates a <strong>real risk of significant harm</strong>, we will:</p>
 <ol><li>Report it to the <strong>Office of the Privacy Commissioner of Canada</strong> as PIPEDA requires, and keep a record of it.</li><li>Notify affected users through the Bot or the project's public channels, without undue delay.</li><li>For EEA/UK users, notify the relevant supervisory authority within <strong>72 hours</strong> where GDPR requires it, and notify you directly where the risk is high.</li></ol>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Your rights and how to use them</span><a class="anchor" href="#s-9" aria-label="Link to this section">¶</a></h2>
 <p><strong>Whoever and wherever you are, you can ask us to do all of the following.</strong> We apply the strongest standard to everyone rather than sorting users by jurisdiction.</p>
 <div class="tw"><table><thead><tr><th>Right</th><th>What it means</th></tr></thead><tbody><tr><td>🔍 <strong>Access</strong></td><td>Get a copy of everything stored about you</td></tr><tr><td>✏️ <strong>Correction</strong></td><td>Fix anything inaccurate</td></tr><tr><td>🗑️ <strong>Deletion</strong></td><td>Have your record erased entirely</td></tr><tr><td>📦 <strong>Portability</strong></td><td>Receive your data in a machine-readable format (JSON)</td></tr><tr><td>⛔ <strong>Object / restrict</strong></td><td>Object to legitimate-interests processing, or ask us to pause it</td></tr><tr><td>↩️ <strong>Withdraw consent</strong></td><td>At any time, without affecting past lawful processing</td></tr><tr><td>🚫 <strong>Non-discrimination</strong></td><td>We will not degrade the Bot for you for exercising a right</td></tr></tbody></table></div>
@@ -1674,15 +1726,21 @@ html{scroll-behavior:smooth}
 <p>The CCPA/CPRA applies to "businesses" meeting thresholds — over $25M in annual revenue, personal information on 100,000+ consumers, or 50%+ of revenue from selling personal information. <strong>We meet none of them</strong>, so the CCPA does not apply to us as a matter of law.</p>
 <p>We honour the equivalent rights anyway. For the record, in CCPA terms: the only category of personal information we collect is <strong>identifiers</strong> (a Discord user ID) plus user-set preferences; we collect it directly from your use of the Bot; we use it solely to operate the Bot; <strong>we do not and have never sold or shared personal information</strong>; and we do not collect sensitive personal information.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Children's privacy</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
 <p>The Bot is <strong>not directed at children</strong>. You must meet Discord's minimum age for your country — <strong>13 in most places, and 14, 15, or 16 in parts of the EU and elsewhere</strong>. See <a class="xref" href="#s-3">§3</a> of the <a href="terms.html">Terms of Service</a>.</p>
 <p>We do not knowingly collect data from anyone below that age, and we have no mechanism to verify age beyond Discord's own — we rely on Discord's enforcement of its minimum age.</p>
 <p>If you believe a child's data is stored, email <strong>harkirat117@gmail.com</strong> and we will delete it promptly and without requiring the verification steps in <a class="xref" href="#s-9.2">§9.2</a>.</p>
 <p>Because we never collect names, emails, photographs, or message content, the data we hold about any user — including a young one — is limited to a Discord ID and display preferences.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Third-party links and content</span><a class="anchor" href="#s-11" aria-label="Link to this section">¶</a></h2>
 <p>The Bot displays images and information sourced from third parties and may link elsewhere. <strong>We are not responsible for the privacy practices of any third-party site or service.</strong> Discord's own handling of your data is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a>, which is worth reading — it covers far more data than we ever see.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Changes to this policy</span><a class="anchor" href="#s-12" aria-label="Link to this section">¶</a></h2>
 <p>We may update this policy. When we do:</p>
 <ul><li>The <strong>effective date and version</strong> at the top change.</li><li>The full change history is kept in the repository's git log.</li><li>For <strong>material</strong> changes — new data collected, a new recipient, a new purpose — we will make reasonable efforts to give notice before they take effect, and will seek fresh consent where the law requires it.</li></ul>
@@ -1691,11 +1749,15 @@ html{scroll-behavior:smooth}
 <p>Kept here as well as in git, because the repository's visibility can change and a change record you can't reach isn't a change record.</p>
 <div class="tw"><table><thead><tr><th>Version</th><th>Effective</th><th>What changed</th></tr></thead><tbody><tr><td>1.2</td><td>31 July 2026</td><td>Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds <a class="xref" href="#s-2.6">§2.6</a> describing that item in full — including how the Site behaves <em>before</em> you touch the switch, when it simply follows your operating system's light/dark setting and stores nothing at all — extends the scope line to cover the Site, and corrects the <a class="xref" href="#s-3">§3</a> and Appendix C entries. <strong>No change to what the Bot collects, why, who receives it, or how long it is kept</strong> — the stored fields in Appendix A are identical to versions 1.0 and 1.1.</td></tr><tr><td>1.1</td><td>29 July 2026</td><td>Noted the controller's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a>, <a class="xref" href="#s-9">§9</a>, and <a class="xref" href="#s-13">§13</a>. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — the stored fields in Appendix A are identical to version 1.0.</td></tr><tr><td>1.0</td><td>28 July 2026</td><td>First published version.</td></tr></tbody></table></div>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Contact</span><a class="anchor" href="#s-13" aria-label="Link to this section">¶</a></h2>
 <p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> — Data Controller Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong></p>
 <p>Email is the canonical contact and always reaches us. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-2.5">§2.5</a>) and a contact point in a privacy policy must not be able to go dead.</p>
 <p>For privacy requests, use the subject line <strong>"Privacy Request"</strong> and include your Discord user ID.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="appendix-a-complete-data-inventory" class="plain"><span class="ht">Appendix A — Complete data inventory</span><a class="anchor" href="#appendix-a-complete-data-inventory" aria-label="Link to this section">¶</a></h2>
 <p>Every field stored about a user. This mirrors the <code>UserPreference</code> schema, which you can read yourself at <span class="ref"><code>models/UserPreference.js</code></span>.</p>
 <p><strong>Identity</strong></p>
@@ -1707,10 +1769,14 @@ html{scroll-behavior:smooth}
 <p><strong>That's the whole list.</strong> It mirrors the schema in the source code rather than paraphrasing it, so it can be checked line-by-line against the software itself. If you have access to the repository you can verify it directly; if you don't, ask and we will show you the relevant file.</p>
 <p><strong>Stored on your device, not on ours:</strong> the documentation website additionally keeps a single <code>db-theme</code> entry in your own browser's local storage, holding <code>light</code> or <code>dark</code>. It is listed here for completeness only — it never reaches our database or any server, and it is described in full in <a class="xref" href="#s-2.6">§2.6</a>.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="appendix-b-change-history" class="plain"><span class="ht">Appendix B — Change history</span><a class="anchor" href="#appendix-b-change-history" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.2</strong></td><td>31 July 2026</td><td>Documented the Site's single <code>db-theme</code> local-storage item (<a class="xref" href="#s-2.6">§2.6</a>); corrected the "there is no website" statement in <a class="xref" href="#s-3">§3</a>.</td></tr><tr><td><strong>1.1</strong></td><td>29 July 2026</td><td>Added the controller's <code>diorswrld</code> alias.</td></tr><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial policy.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is kept in the repository's git log.</p>
 <hr>
+</section>
+<section class="dsec">
 <h2 id="appendix-c-how-each-claim-was-verified" class="plain"><span class="ht">Appendix C — How each claim was verified</span><a class="anchor" href="#appendix-c-how-each-claim-was-verified" aria-label="Link to this section">¶</a></h2>
 <p>A privacy policy is a set of <strong>enforceable representations</strong>. Saying more than is true is worse than saying nothing. Every factual claim in this policy was checked against the running software rather than asserted, and this table records how.</p>
 <div class="tw"><table><thead><tr><th>Claim</th><th>How it was verified</th></tr></thead><tbody><tr><td>We cannot read your messages</td><td>The Discord client is constructed with <code>GatewayIntentBits.Guilds</code> only — no Message Content intent. Verified in <code>index.js</code>.</td></tr><tr><td>No analytics, telemetry, or tracking</td><td>Searched the codebase for analytics and error-reporting SDKs (Sentry, PostHog, Mixpanel, Google Analytics). <strong>None present.</strong></td></tr><tr><td>The exact fields we store</td><td>Read directly from the <code>UserPreference</code> Mongoose schema. Appendix A is a transcription of it, not a summary.</td></tr><tr><td>Alert logs deleted after 30 days</td><td><code>RETENTION_DAYS = 30</code> in <code>utils/alertStore.js</code>, with a matching <code>deleteMany</code> on <code>createdAt</code>.</td></tr><tr><td>Server logs deleted after 30 days</td><td>Google Cloud Logging default retention, as relied on by <code>scripts/vmstatus.sh</code>.</td></tr><tr><td>Your data is stored in Canada</td><td>Resolved the Atlas cluster's DNS records to <code>mtm-azure-**canatral**-…</code> — Azure Canada Central, Toronto.</td></tr><tr><td>Cloudinary stores in the US</td><td>Cloudinary's published documentation: standard accounts default to US storage; EU residency is an Enterprise option.</td></tr><tr><td>We use Vertex AI, not the consumer Gemini API</td><td>The request endpoint in <code>utils/visionExtract.js</code> is <code>aiplatform.googleapis.com</code>, project- and location-scoped — not <code>generativelanguage.googleapis.com</code>.</td></tr><tr><td>No AI receives end-user data</td><td><code>/autobuild</code> is the only AI call site and is gated on the administrator's Discord ID.</td></tr><tr><td>Admin commands are locked to one account</td><td><code>ALLOWED_ADMIN_ID</code> guards in <code>commands/manage.js</code>, <code>commands/autobuild.js</code>, and the central interaction router.</td></tr><tr><td><strong>There is no automated deletion</strong></td><td>Searched for every <code>deleteOne</code> / <code>deleteMany</code> / <code>findOneAndDelete</code> in the codebase. <strong>None operates on <code>UserPreference</code>.</strong> This is why <a class="xref" href="#s-7.1">§7.1</a> discloses a shortcoming instead of claiming a capability.</td></tr><tr><td><code>/settings</code> has no reset or delete</td><td>Searched <code>commands/settings.js</code> for reset/restore-default handling. None exists — it only overwrites individual values.</td></tr><tr><td>No cookies</td><td>The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for <code>document.cookie</code> — no occurrences.</td></tr><tr><td>One local-storage item on the Site</td><td>Searched the site generator for <code>localStorage</code> and <code>sessionStorage</code>: the only key written is <code>db-theme</code>, holding <code>light</code> or <code>dark</code>, in <code>THEME_JS</code> and <code>THEME_BOOT</code> in <code>scripts/buildLegalPages.js</code>. Nothing else is stored, and nothing is sent anywhere.</td></tr></tbody></table></div>
@@ -1718,6 +1784,7 @@ html{scroll-behavior:smooth}
 <p>You are welcome to check any of this yourself, or to ask us to show you the relevant code.</p>
 <hr>
 <p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc. or Discord Inc.</em></p>
+</section>
     </main>
   </div>
 
@@ -1791,8 +1858,22 @@ html{scroll-behavior:smooth}
        POSITIONED ancestor, and the headings sit inside .doc, which is
        position:relative — so it was being compared against a document-space
        scroll value and every heading read low by the masthead's height. */
+    /* ⚠️ .stuck IS TOGGLED FROM THE RECT THE SCROLLSPY ALREADY READS. A pinned
+       heading needs a shadow and a resting one must not have it, and CSS cannot
+       tell the two apart — but this loop already measures every heading's top on
+       every frame, so the answer is free. A sentinel element plus a second
+       IntersectionObserver would have cost a node per section and a second source
+       of truth about where a heading is.
+       The test is "within a pixel of the sticky offset", not "above it": once the
+       section ends the heading is pushed to a negative top and is no longer pinned,
+       and a <= test would have left the shadow on all the way up the page.
+       Below 981 the sticky rule is off entirely, so nothing may latch there. */
+    var wide=matchMedia('(min-width:981px)').matches;
     for(var i=0;i<heads.length;i++){
-      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+      if(!heads[i]) continue;
+      var ht=heads[i].getBoundingClientRect().top;
+      if(ht<=130) cur=i;
+      heads[i].classList.toggle('stuck', wide && ht>52.5 && ht<55.5);
     }
     /* At the bottom of the document the last headings can never cross the 130px
        line — the page simply runs out of scroll before they get there — so the
