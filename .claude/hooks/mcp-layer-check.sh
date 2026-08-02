@@ -65,5 +65,34 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 16:05 EDT):
     session once passed with zero writes because nothing forced them.
 EOF
 
-printf '%s\n%s%s' "$frag_line" "$RULES" "$warn" \
+# --- the 7-day sequential-thinking measurement window ------------------------------------------
+# AUTO-EXPIRES ON PURPOSE. A suspension that has to be manually revoked becomes a permanent silent
+# change the moment someone forgets — the exact stale-state failure this whole hook exists to stop.
+# The date comparison does the revoking, and after the end date this block starts CHASING the
+# close-out instead of announcing the window.
+WINDOW_END="${MCPCHECK_WINDOW_END:-2026-08-09}"
+TODAY="${MCPCHECK_TODAY:-$(date +%Y-%m-%d)}"
+PROTO="docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md"
+
+# NOTE the comparison direction: OPEN while today <= WINDOW_END, so the final day stays open. An
+# earlier version used `today < end`, which flipped to CLOSED at 00:00 on the last day and would have
+# silently reverted behaviour for the window's final 17 hours — biasing exactly the data being
+# collected. Off-by-one in an experiment's own instrument is a data-integrity bug, not a cosmetic one.
+if [ ! "$TODAY" \> "$WINDOW_END" ]; then
+  window="
+🧪 OBSERVATION WINDOW OPEN until ${WINDOW_END} 17:00 EDT — sequential-thinking is UNRESTRICTED.
+   Use it on judgement, no permission needed. This is a measurement: the tool has never existed
+   without its rule, so the 'used twice' figure measures the RULE, not the tool.
+   ⚠️ EVERY use must be logged in local/mcp-observation-log.md with why + outcome. An unlogged use is
+   a lost data point. Baseline to beat: 0.014 calls/100 turns, 349.9 turns/session.
+   Protocol: ${PROTO}"
+else
+  window="
+⏰ OBSERVATION WINDOW CLOSED (ended ${WINDOW_END}). The sequential-thinking suspension has EXPIRED —
+   explicit-request-only is in force again unless a close-out recorded otherwise WITH DATA.
+   Close it out: node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to ${WINDOW_END} --label treatment
+   then compare against the pre-registered baseline in ${PROTO} and record the verdict."
+fi
+
+printf '%s\n%s%s%s' "$frag_line" "$RULES" "$warn" "$window" \
   | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'

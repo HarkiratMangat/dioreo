@@ -70,6 +70,18 @@ MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
   && { echo "  PASS  missing db still emits valid JSON"; pass=$((pass+1)); } \
   || { echo "  FAIL  missing db emitted invalid JSON"; fail=$((fail+1)); }
 
+# 6. The observation window must AUTO-EXPIRE, and must stay open through its final day.
+#    An earlier version compared `today < end`, flipping to CLOSED at 00:00 on the last day — which
+#    would have reverted behaviour for the window's final 17 hours and biased the very data being
+#    collected. Off-by-one in an experiment's own instrument is a data-integrity bug.
+mkfixture 0
+wrun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_TODAY="$1" MCPCHECK_WINDOW_END=2026-08-09 bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
+assert "window OPEN mid-window"        "WINDOW OPEN"   yes "$(wrun 2026-08-05)"
+assert "window OPEN on its LAST day"   "WINDOW OPEN"   yes "$(wrun 2026-08-09)"
+assert "window CLOSED the day after"   "WINDOW CLOSED" yes "$(wrun 2026-08-10)"
+assert "closed state chases close-out" "close it out"  no  "$(wrun 2026-08-05)"
+assert "closed state names the script" "mcp-observation-metrics.mjs" yes "$(wrun 2026-08-10)"
+
 echo
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

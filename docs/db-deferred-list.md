@@ -92,6 +92,28 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design
+  (opened 2026-08-02 17:00 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
+  question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
+  existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
+  **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
+  **Close-out (all four, in order):**
+  1. Re-run the instrument **UNCHANGED** — editing it voids the comparison:
+     `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-09 --label treatment`
+  2. Compare only against the **pre-registered** baseline + criteria in
+     `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md` (baseline: 41 sessions,
+     349.9 turns/session, 0.014 seq-calls/100 turns, 0.41 memory writes/session, `search_graph` 1).
+  3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT
+     it fired, never whether it helped. **Watch for novelty**: a spike of 2–3 thought runs with no
+     decision attached is the tool being new, not useful.
+  4. Record the verdict **with data** in `~/.claude/CLAUDE.md` + `project_context_token_budget`.
+  ⚠️ **The suspension AUTO-EXPIRES** — `.claude/hooks/mcp-layer-check.sh` flips to chasing the
+  close-out on 2026-08-10 (boundary tested). So the rule reinstates itself even if this item is
+  missed; what would be lost is the *analysis*, not the guardrail.
+  **Also under observation:** whether the 2026-08-02 MCP fixes hold — memory writes/session, recall
+  usage, `search_graph` adoption, `ctx-execute*` share. If those do not move, the SessionStart routing
+  hook failed the same way prose did, which is the more valuable finding.
+
 - `[P0 · XS · read before resuming]` **⚠️ CROSS-SESSION NOTICE — a parallel session was mid-flight on
   hooks + the DEVLOG backfill when v2.41.0 landed. Read this before continuing that work.** Written
   2026-07-28 16:45 EDT. A second Claude Code session (paused on a usage limit) was working on: improving
