@@ -34,7 +34,17 @@ echo "$cmd" | grep -q -- '--dry-run' && exit 0
 
 dir="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
 branch=$(cd "$dir" 2>/dev/null && git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0
-[ "$branch" = "main" ] || exit 0
+
+# ⚠️ TWO WAYS TO PUSH TO main, AND THE FIRST VERSION ONLY CAUGHT ONE. Checking the
+# current branch misses an explicit refspec — `git push origin HEAD:main`, or
+# `git push origin <sha>:main`, or `git push origin main` from a feature branch — all
+# advance main from anywhere. Found while force-pushing main to retract a commit,
+# using a command this guard was supposed to cover and did not.
+# The word boundary matters: `main` must not match `main-something` or `maintenance`.
+targets_main=0
+echo "$cmd" | grep -qE 'git +push[^;&|]*(^| |:)main( |$)' && targets_main=1
+
+[ "$branch" = "main" ] || [ "$targets_main" = "1" ] || exit 0
 
 # Pushing a TAG from main is legitimate and is part of the release flow — the tag is
 # created on main after the squash merge. Allow it; block only branch pushes.

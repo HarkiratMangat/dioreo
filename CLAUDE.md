@@ -134,7 +134,14 @@ separate rules and only the first is absolute:
      stretch (the audit's own `TAG_RULE_FROM` exemption records that it was not bumped per release
      before v2.33.0), so counting its edits answers a different question and gives a wrong number.
      That mistake was made and corrected in this very passage.
-So an unversioned commit on `main` is normal; an *unreviewed* one is not. `unreleased-on-main` (WARN)
+So an unversioned commit on `main` is normal; an *unreviewed* one is not.
+**`main` is branch-protected as of 2026-08-02 02:10 EDT** — pull request required, force pushes and
+deletions blocked, linear history required, **0 required approvals** (a solo maintainer cannot approve
+their own PR, and requiring one would deadlock every merge). `enforce_admins` is deliberately OFF so
+Harkirat can still override in a genuine emergency — the retraction of `ebbf196` needed exactly that.
+⚠️ **No required status check is configured**, because a context name that does not match exactly
+blocks every merge with no way to tell why; add CI as a required check only after confirming the check
+name GitHub actually reports. `unreleased-on-main` (WARN)
 reports the former for traceability, and `.claude/hooks/main-push-guard.sh` prevents the latter. The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
