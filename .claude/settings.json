@@ -191,6 +191,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/outstanding-not-filed.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{decision:\"block\",reason:\"OUTSTANDING-NOT-FILED GATE MISSING \u2014 .claude/hooks/outstanding-not-filed.sh is unreadable, so nothing is checking whether items you named as outstanding actually got filed. Restore it or say explicitly that you are proceeding without it.\"}'; fi",
+            "timeout": 10
+          }
+        ]
       }
     ]
   }

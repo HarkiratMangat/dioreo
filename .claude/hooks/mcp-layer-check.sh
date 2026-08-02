@@ -38,7 +38,20 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
       GROUP BY e.id);" 2>/dev/null)
   canon=$(sqlite3 "$LINKSEE_DB" "SELECT COUNT(*) FROM memories m JOIN entities e ON e.id=m.entity_id WHERE e.name='$CANON_ENTITY';" 2>/dev/null)
   frag=${frag:-0}; canon=${canon:-0}
-  frag_line="linksee: ${canon} on '${CANON_ENTITY}', ${frag} misfiled elsewhere"
+  # Auto-capture files RAW USER UTTERANCES as learnings/caveats (no LLM in the Stop-hook path), so a
+  # future session recalling "learnings" gets served Harkirat's to-do list. Nothing PREVENTS this
+  # upstream; distilling is the only remedy, so the backlog has to at least be VISIBLE.
+  # Count the flag directly: dream() returns a BATCH of up to 8, which is not the total.
+  distill=$(sqlite3 "$LINKSEE_DB" "SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%' AND COALESCE(json_extract(content,'\$.distilled'),0)!=1;" 2>/dev/null)
+  distill=${distill:-0}
+  frag_line="linksee: ${canon} on '${CANON_ENTITY}', ${frag} misfiled elsewhere, ${distill} awaiting distil"
+  if [ "$distill" -gt 12 ] 2>/dev/null; then
+    warn="$warn
+  ⚠️ ${distill} auto-captured memories are still RAW user utterances filed as learnings/caveats.
+     dream() drains up to 8 PER CALL, so this needs repeat calls. Rewrite each via
+     remember({memory_id, content}) with \"distilled\": true — without that marker the next Stop-hook
+     sync wipes the rewrite and the raw utterance comes back. Filed in docs/db-deferred-list.md."
+  fi
   if [ "$frag" -gt "$FRAG_WARN" ] 2>/dev/null; then
     warn="$warn
   ⚠️ ${frag} memories referencing this repo are filed under PATH-DERIVED junk entities (folder names

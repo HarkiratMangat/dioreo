@@ -200,9 +200,11 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ## 🗂️ Queued — worth its own dedicated session
 
 - **🧠 Distil the linksee auto-capture queue, and declare a North Star** `[P2 · S]`
-  (filed 2026-08-02 19:05 EDT). **8 auto-captured memories are still RAW USER UTTERANCES**
-  (`dream()` → `distill_total: 8`, verified — an earlier session-start banner said 19 and was stale;
-  re-run `dream()` for the live count rather than trusting any number written here).
+  (filed 2026-08-02 19:05 EDT). **19 auto-captured memories are still RAW USER UTTERANCES.**
+  ⚠️ `dream()` reports `distill_total: 8` because it **serves a BATCH of up to 8 per call** — the true
+  backlog is `SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%'` = **19**. I first
+  "corrected" the 19 down to 8 on the strength of one `dream()` call; the batch size is not the total,
+  and the session-start banner was right. **Draining it takes ~3 `dream()` calls, not one.**
   **Why it matters — this is the "junk memories" problem, concretely.** The Stop hook captures by
   heuristic with no LLM in the path, so it files raw chat as insight. Live examples: memory **7357**
   is *"lets finalize and merge the open PRs…"* stored as a **`learning`**; **3496** is a task
