@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.49.2 — August 2, 2026
+- **Nothing changed in the bot.** A record-keeping release: the written history of the previous update
+  was missing its write-up, so this adds it.
+
 ## v2.49.1 — August 2, 2026
 - **Nothing user-facing changed.** A maintenance release: one of the automatic checks was reporting a
   problem when there wasn't one, and an internal rule about version numbering was out of date.

@@ -181,7 +181,18 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.49.1 — 2026-08-02 16:06 EDT (#66) — The gate fired on its own author, and the versioning rule was describing a dead era
+## v2.49.2 — 2026-08-02 16:09 EDT (#67) — The DEVLOG entry v2.49.1 should have carried
+
+**A hook caught a silent omission and this release is the correction.** v2.49.1
+carried two real lessons — a guard sharpening itself by misfiring on its own
+author, and a versioning rule that had been documenting a superseded era — and
+shipped with no DEVLOG entry. The `gh pr merge` DEVLOG check flagged it: measured
+across 22 releases, CHANGELOG and CHANGELOG-SUMMARY were 22/22 while DEVLOG was
+8/22, and the misses were never the trivial releases.
+
+No behaviour changes. The narrative entry is the deliverable.
+
+## v2.49.1 — 2026-08-02 16:06 EDT (#66 · `6bf05ed`) — The gate fired on its own author, and the versioning rule was describing a dead era
 
 **A guard blocked a summary that was true.** `outstanding-not-filed` flagged two
 items as unfiled; both were genuinely filed, at `docs/db-deferred-list.md:202`
