@@ -106,6 +106,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)
 - 2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)
 - 2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)
+- 2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3943,6 +3944,42 @@ The branch one has a wrinkle worth writing down. `fix/legal-site-nav-and-mobile-
 does not lie. It is **closed, not merged**, so the standing rule *a merged branch must never outlive
 its PR* is the opposite case: deleting it destroys the only copy. Filed with the diff commands that
 would prove it superseded, rather than swept on the strength of a rule that does not cover it.
+
+## 2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)
+
+Harkirat: *"it's triggered way too many false positives."*
+
+The tempting move was to go straight to the fix — I already had a hypothesis about which shapes were
+noise, and it turned out to be right. **I measured first anyway, and that was the part that mattered.**
+
+The corpus was free and honest: every line added to `main` today carrying today's date, `public/`
+excluded because generated HTML never reaches the hook. 164 lines. Then I ran *both* versions of the
+hook over it — the committed one from `main` and the branch one — rather than modelling what they
+would do. That distinction is the whole point: I have been wrong this session about what a gate does
+when I reasoned about it instead of running it, twice.
+
+**Before: 22 fires, 4 genuine — 18%. After: 4 fires, 4 genuine — 100%.** Eighteen suppressed, zero
+real misses.
+
+The number reframed the problem. At 18% this was not a check with some rough edges; it was a check
+asking the wrong question. Rule 10 wants a time on a **record stamp**. It has never wanted one on
+ordinary English that names a day — and "today's date appears without a time beside it" cannot tell
+those apart. The two discriminators fell straight out of reading the corpus rather than inventing
+categories: a preposition or article directly before the date means prose, and an arrow or dash on
+either side means a range bound, where a clock time would be actively wrong.
+
+Three smaller things worth keeping:
+
+- **The first draft of my own fix tripped the check** — an example quote in the new comment wrapped
+  across a newline, and the quoted-span strip is per-line. Found by the hook firing on the edit that
+  was fixing the hook. That is the third time today a guard has caught its own author, and each time
+  the catch was correct.
+- **I corrected my own comment after measuring.** I had written "5 fires, 80% precision" from the
+  scratch harness; the real hook gave 4 and 100%. A file about not fabricating numbers is the last
+  place to leave an estimate sitting where a measurement belongs.
+- **A deliberate limit, pinned by a test:** only the word immediately before the date is examined, so
+  `the actual <date> failure` still fires. Widening to "article plus any adjective" starts guessing
+  at grammar. Better a known, documented edge than a rule nobody can predict.
 
 # Part B — Lessons Ledger (thematic)
 

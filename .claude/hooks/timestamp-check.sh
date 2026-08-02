@@ -112,14 +112,44 @@ findings=""
   🚨 $msg"
 
 # --- (B) BARE DATE: advisory, and the only branch that strips known-legitimate shapes ------------
-# Order matters: filenames first (date followed by '-'), then flag arguments, then backticks.
+#
+# ⚠️ NARROWED 2026-08-02 18:39 EDT — it was firing far more often than it was right, and Harkirat
+# called it: "it's triggered way too many false positives."
+#
+# MEASURED, not guessed. Corpus: every line added to `main` today carrying today's date, with
+# `public/` excluded (generated HTML, which never reaches this hook) — 164 lines.
+#   · old rule: 22 fires, 4 genuine → **18% precision**
+#   · new rule:  4 fires, 4 genuine → **100% precision**, 18 suppressed, 0 real misses
+# Both numbers come from running the two hook versions over that corpus, not from a model of them.
+# A gate that is wrong four times in five trains you to scroll past it — which is exactly how the
+# fabricated-timestamp miss got waved through 30 times, the failure this file was written for.
+#
+# WHAT THE RULE NOW IS. Rule 10 wants a time on a *record stamp* — the `(added …)` / `PATH UPDATED
+# …:` / changelog-heading shapes. It never wanted one on ordinary English that names a day. Two
+# discriminators separate them, both derived from the corpus rather than imagined:
+# (⚠️ note those examples carry no literal date: a quoted span is stripped per LINE, so an example
+#  quote that WRAPPED across a newline survived the strip and fired this very check on itself.)
+#   1. PROSE — a preposition, article or conjunction directly before the date: "on 2026-08-02",
+#      "from 2026-08-02", "a 2026-08-02 session", "three times on 2026-08-02". This alone accounts
+#      for most of the 18 suppressions. A record stamp never reads that way.
+#   2. RANGE ENDPOINT — an arrow or dash on either side ("2026-07-24 → 2026-08-02"). A bound is a
+#      date, not a moment; a clock time there would be wrong, not merely verbose.
+# Double-quoted spans are stripped alongside backticks — the same trick the deferral-tell hook uses.
+# A date inside a string literal is data, not a record.
+#
+# Order matters: filenames first (date followed by '-'), then flag arguments, then quoted spans.
 clean=$(printf '%s' "$joined" \
   | sed -E "s/${today}-[A-Za-z0-9._-]+//g" \
   | sed -E "s/--[a-z-]+[= ]${today}//g" \
-  | sed -E "s/\`[^\`]*\`//g")
-# OCCURRENCE-based, not line-based: strip every well-formed stamp, and whatever date text survives
-# is genuinely bare. Judging whole lines let one good timestamp mask a bare date beside it.
-bare=$(printf '%s' "$clean" | sed -E "s/${today} [0-9]{2}:[0-9]{2}//g" | grep -F "$today")
+  | sed -E "s/\`[^\`]*\`//g" \
+  | sed -E 's/"[^"]*"//g')
+# OCCURRENCE-based, not line-based: strip every well-formed stamp FIRST, so a line carrying one good
+# timestamp can still be reported for a bare date beside it. Only then judge what survives, line by
+# line — because "which word precedes the date" is a question about a line.
+PROSE_LEAD='(on|in|at|by|since|from|until|to|after|before|a|an|the|of|during|around|through|between|and|this|that|its|dated)'
+bare=$(printf '%s' "$clean" | sed -E "s/${today} [0-9]{2}:[0-9]{2}//g" | grep -F "$today" \
+  | grep -viE "(^|[^A-Za-z])${PROSE_LEAD}[[:space:]]+${today}" \
+  | grep -vE "(→|–|—|\.\.|->)[[:space:]]*${today}|${today}[[:space:]]*(→|–|—|\.\.|->)")
 if [ -n "$bare" ]; then
   findings="${findings}
   ⏱️ BARE DATE — today's date appears with no HH:MM TZ beside it. Working-agreement rule 10: dated
