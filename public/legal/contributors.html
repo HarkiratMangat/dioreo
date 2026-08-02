@@ -869,13 +869,21 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    label passed through a washed-out light tint sitting on a bright pill — which is
    exactly the frame in Harkirat's screenshot, and no amount of tuning the crossover
    fixes a mix whose far end is the pill's own colour.
-   --ink instead: the brightest text colour on the bar. It still marks "you are
-   here" against the other tabs' --ink2, it is legible on the dark bar in both
-   themes, and the mix now runs near-black -> near-white, whose midpoint is a
-   neutral grey rather than a tint of the pill. Dark on the pill, light off it,
-   nothing in between that can disappear. */
+   ⚠️ RESTORED to the accent 2026-08-01 22:30 EDT after being briefly changed to
+   --ink, which cost the current tab its identity: with the pill parked elsewhere,
+   "Terms" went bright white instead of amber and no longer read as the page you
+   are on. Two other fixes are what make the accent safe again, and BOTH are
+   load-bearing — if either is undone this becomes illegible immediately:
+     1. The .tab:hover colour rule is gone. That was pinning the label
+        near-white while the pointer was on it, which is what the accent was
+        wrongly blamed for.
+     2. The crossover band is 0.30/0.58, so --rest is only reached when the pill
+        covers 30% or less of the tab. Between 30% and 58% the mix runs toward the
+        accent for about six frames; above 58% the label is fully near-black. The
+        old 0.22/0.72 band spent half the move in that range, which is where
+        accent-on-accent actually became unreadable. */
 
-.tab.on{--rest:var(--ink)}/* The label sitting ON the pill. A solid accent fill is far too light to carry
+.tab.on{--rest:var(--accent-t)}/* The label sitting ON the pill. A solid accent fill is far too light to carry
    accent-coloured text, so the tab the indicator currently covers flips to
    near-black — the same inversion the reference makes when its white pill
    arrives. Measured against all six accents AND every mid-gradient blend of
@@ -2134,7 +2142,18 @@ html{scroll-behavior:smooth}
         idx=i; srcX=dstX=b[0]; srcW=dstW=b[1]; p=1;
         cFrom=cTo=cols[i]; seg.classList.remove('morph'); lit(i); paint(); return;
       }
-      if(i===idx&&p>=1) return;
+      /* ⚠️ THE EARLY RETURN MUST STILL REPAINT — this is the exact mirror of the
+         bug in rest(), at the other end of the same journey. Nothing has to MOVE
+         when you point at the tab the pill is already parked on, so this returns
+         before starting a frame loop. But for a group you are not in, the pill was
+         INVISIBLE a moment ago: paint() gates coverage on -shown-, which is false
+         until .hot goes on, so the last --cov written for these tabs was 0. The
+         indicator then fades in over the label via CSS while the label is still
+         painted for a bare bar, i.e. dull ink on a bright pill.
+         It only showed on the FIRST tab of a cold group, because idx is left at 0
+         by the initial snap — hover any other tab first and aim() takes the normal
+         path, which is why moving to Contributors and back "fixed" it. */
+      if(i===idx&&p>=1){ lit(i); paint(); return; }
       /* Break from where the pill actually IS. Mid-flight the destination is
          the only piece with real size, so that is what the next move tears. */
       var bw=dstW*spr(band(0.28,1,p));
