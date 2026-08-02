@@ -25,6 +25,41 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🌿 `fix/legal-site-nav-and-mobile-sheet` — VERIFIED SUPERSEDED AND DELETED 2026-08-02 18:29 EDT.**
+  *Filed and closed the same session; the filing is what forced the verification.*
+  The branch (`704994b`, PR [#61](https://github.com/HarkiratMangat/Diors-Builds/pull/61),
+  **closed-unmerged**) was still on `origin`. A session handoff had asserted it deleted — only the
+  **local** ref was gone, and `git branch -a` renders remote-only branches indistinguishably.
+  **`git ls-remote --heads origin` is the check that does not lie.**
+  **Why it needed proving rather than sweeping:** the standing rule is *a merged branch must never
+  outlive its PR*, and this was the **opposite** case — closed, not merged, so the branch was the only
+  copy of 19 commits. Deleting on the strength of a rule that does not cover the case would have been
+  destruction, not tidying.
+  **How it was verified** (Harkirat's belief that PR #62 had absorbed it turned out correct): for
+  every source document, each line the branch ADDED relative to the merge base `a4b17d6` was searched
+  for in `main`. All present, with exactly two exceptions — `**Effective date:** 31 July 2026` in
+  TERMS and PRIVACY, where `main` reads **1 August 2026**, i.e. superseded rather than lost. Its
+  DEVLOG entry is on `main`, and `SECURITY.md`, the `/install` and `/security` redirects all match
+  byte-for-byte. `public/` was excluded deliberately: it is build output, so a diff there proves
+  nothing about content.
+  **Remote heads now:** `main` and `v3-pre-release` only.
+
+- **🎭 "Contributors' emptiness" (open question 1 of the warm-pages redesign) — ANSWERED
+  2026-08-02 18:22 EDT by the reference research, not by a decision.** *Was carried in
+  `db-deferred-list.md` as: "There is genuinely one name, so the plate is mostly bare and the dashed
+  'unengraved' row currently reads as a rendering bug rather than as reserved space. Two honest
+  routes: shrink the plate…, or make the reserved slot unmistakably deliberate."*
+  *The block it sat in was headed "**Three open questions, deliberately carried here rather than
+  answered:**" — that header is now reworded in place to "the three ORIGINAL open questions, kept for
+  the record", because only this one closed; 2 and 3 remain open there.*
+  **Both routes are retired.** The nine-site crawl (`local/site-redesign/reference-research.md`)
+  found the problem solved structurally at ensambles.eu/creditos: **cut the roster into many small
+  NAMED sections**, so no section is ever expected to be full and a single name never reads as a gap.
+  That is a better answer than either sizing tweak because it removes the premise — emptiness stops
+  being a property of the page. Questions 2 (lane colours) and 3 (the Contributors accent) stay open
+  in `db-deferred-list.md`, but apply **only if** the abandoned Interchange/Plate mockup is revived;
+  the live open decision is now the constellation-vs-gradient-bands fork, filed there.
+
 - **🔒 Three enforcement hooks that fired too late to prevent anything — FIXED 2026-08-02 17:24 EDT
   (v2.50.0).** *Filed and closed in the same session; the filing is what made the class visible.*
   Measured: PreToolUse had 7 hooks, all `Bash`/`Artifact`, **none on `Edit|Write`**, so nothing could

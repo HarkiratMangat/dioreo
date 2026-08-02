@@ -99,7 +99,7 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design
+- **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE)
   (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
   question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
   existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
@@ -322,7 +322,32 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     number series is what tells a reader *these bind you*". A step sequence would *earn* numerals
     semantically, but they are the legal set's signature and an invitation must not borrow it. Harkirat
     was shown this conflict and the node form was kept.
-  - **Three open questions, deliberately carried here rather than answered:**
+  - ⚠️ **SUPERSEDED BY THE REFERENCE RESEARCH — read `local/site-redesign/reference-research.md`
+    before touching any of this.** *Updated 2026-08-02 18:19 EDT.* The nine-site crawl settled
+    question 1 outright and reframed the rest: **Contributors' emptiness is solved STRUCTURALLY, not
+    by resizing** — cut the roster into many small NAMED sections (ensambles.eu/creditos), so no
+    section is expected to be full and one name never reads as a gap. That retires *both* routes
+    below (shrink-the-plate and reserved-slot). Harkirat has also released these two pages from the
+    legal set's design language entirely — the Interchange/Plate mockup is a **fallback only**, and
+    two distinct identities is fine. Dark AND light both required; he prefers dark.
+  - 🧩 **THE ONE OPEN DECISION, and it needs Harkirat — do not guess it.** For Contributing's four
+    routes, which structure carries them?
+    **(a) Constellation** (ensambles) — four markers as free coordinates, each owning a hue, label
+    unfolding on hover and the page aura shifting with it. Delivers the four independent hues as a
+    live mechanic and is spatially unlike anything else on the site, which is the changelog lesson
+    (*the GRID separates page families; colour is the weakest carrier*). Risk: scattered coordinates
+    do not survive 375px, and the site has never been checked on a real phone — needs a deliberate
+    mobile fallback, not a reflow.
+    **(b) Gradient bands** (siberia) — each route a full-bleed gradient field with mono caps labels
+    and a cursor-following orb. Bolder at a glance, degrades to a plain stack on mobile for free, but
+    separates the pages by *colour*, which the changelog work found to be the weakest carrier.
+    **(c) Constellation with a band fallback below the breakpoint** — best of both, but genuinely two
+    layouts to build and keep in sync.
+    *Asked 2026-08-02 17:20 EDT; Harkirat dismissed the question to prioritise the hook audit, so it
+    is still open. My lean is (a).* Verify by building the chosen one and checking BOTH themes at
+    desktop and at 375px — the two checks this subsystem has repeatedly skipped.
+  - **The three ORIGINAL open questions, kept for the record — 1 is answered above, 2 and 3 apply
+    only if the fallback mockup is revived:**
     1. **Contributors' emptiness.** There is genuinely one name, so the plate is mostly bare and the
        dashed "unengraved" row currently reads as a rendering bug rather than as reserved space. Two
        honest routes: shrink the plate so emptiness is not the dominant impression and let the

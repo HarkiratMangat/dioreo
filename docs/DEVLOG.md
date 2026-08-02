@@ -105,6 +105,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)
 - 2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)
 - 2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)
+- 2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3907,6 +3908,41 @@ shrinking it.
 the permission classifier, twice. The check name is confirmed (`syntax-check`, and *not* `sync`, which
 only runs on push to `main` and would deadlock every PR) — the command is handed over rather than run.
 
+
+## 2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)
+
+Two small things, both of which happened *to* me rather than being found by looking.
+
+**The timestamp gate denied a correct edit.** I went to file an item into `docs/db-deferred-list.md`
+and it refused — because the anchor line I was matching against holds
+`⏰ 2026-08-09 17:00 EDT — CLOSE OUT the MCP observation window` (TS-EXAMPLE). A future timestamp,
+therefore impossible, therefore denied. Except it is a **scheduled deadline**, and the hour is the
+content: the window closes at a time, not on a day. My own deny message says *"if you mean a future
+deadline, write the date with NO clock time"* — advice that is simply unavailable here.
+
+So: a second per-line escape, `TS-DEADLINE`. Two details worth keeping. It is **separate from
+`TS-EXAMPLE` rather than folded into it**, because a reviewer grepping `rg TS-EXAMPLE` to audit for
+hidden fabrications should not have to read past scheduled deadlines — the two tokens mean different
+things and merging them would quietly weaken the audit. And an **unmarked** future deadline still
+denies, pinned by a test, because an escape that is comfortable to reach for stops being an escape.
+
+There was a bootstrap moment I enjoyed: I could not write the comment explaining `TS-DEADLINE`,
+because the illustration inside it tripped the version of the check that did not yet know the token.
+
+**Then the Stop hook caught a real omission.** My summary listed the Contributing design fork and a
+stray remote branch as "still open" — and this repo has a gate for exactly that, because saying a
+thing repeatedly *feels* like recording it. Both were genuinely unfiled. Worse, the deferred entry
+the design fork belongs to was still carrying three questions from the abandoned Interchange/Plate
+mockup, one of which the reference research had settled outright: Contributors' emptiness is fixed
+**structurally** — cut the roster into many small named sections so no section is expected to be
+full — not by resizing a plate. A stale entry reads as current, so that was the more expensive half.
+
+The branch one has a wrinkle worth writing down. `fix/legal-site-nav-and-mobile-sheet` is still on
+`origin`; a handoff had asserted it was deleted, and only the local ref was gone —
+`git branch -a` renders remote-only branches indistinguishably, while `git ls-remote --heads origin`
+does not lie. It is **closed, not merged**, so the standing rule *a merged branch must never outlive
+its PR* is the opposite case: deleting it destroys the only copy. Filed with the diff commands that
+would prove it superseded, rather than swept on the strength of a rule that does not cover it.
 
 # Part B — Lessons Ledger (thematic)
 
