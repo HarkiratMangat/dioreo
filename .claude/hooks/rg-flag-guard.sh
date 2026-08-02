@@ -25,8 +25,13 @@ cmd=$(jq -r '.tool_input.command // empty')
 printf '%s' "$cmd" | grep -qE '(^|[|;&(]|[[:space:]])rg[[:space:]]' || exit 0
 
 findings=""
+# Scope to the rg SEGMENT only. The first version scanned the whole command string, so a pipeline
+# containing both `jq -r` and `rg -n` reported a bogus -r finding — caught live 2026-08-02 15:15 EDT
+# by the guard firing on the very command inspecting it. A guard that cries wolf is how the real
+# warning gets waved through, which is the lesson the timestamp hook already paid for.
+seg=$(printf '%s' "$cmd" | sed -E 's/.*(^|[|;&(]|[[:space:]])rg[[:space:]]/rg /' | sed -E 's/[|;&].*//')
 # Short-flag clusters only (single dash). Long forms are explicit and intentional, so they pass.
-shorts=$(printf '%s' "$cmd" | grep -oE '(^|[[:space:]])-[A-Za-z]+' | tr -d ' ' | grep -v '^--' || true)
+shorts=$(printf '%s' "$seg" | grep -oE '(^|[[:space:]])-[A-Za-z]+' | tr -d ' ' | grep -v '^--' || true)
 
 printf '%s' "$shorts" | grep -q 'h' && findings="${findings}
   · -h is --help in rg (NOT grep's no-filename). It prints the help text, which skims like an empty
