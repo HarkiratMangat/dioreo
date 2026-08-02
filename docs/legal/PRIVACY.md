@@ -1,7 +1,7 @@
 # Privacy Policy — Dior's Builds
 
 **Effective date:** 1 August 2026
-**Version:** 1.3
+**Version:** 1.4
 **Applies to:** the Dior's Builds Discord application (the "Bot") and this
 documentation website (the "Site")
 
@@ -35,6 +35,7 @@ The **data controller** is:
 **Harkirat Mangat**, also known as **"dior"** or **"diorswrld"**, an individual
 based in Ontario, Canada.
 📧 **harkirat117@gmail.com**
+💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
 This is a hobby project run by one person. There is no company, no data
 protection officer (none is required — we do not carry out large-scale or
@@ -568,8 +569,9 @@ change record you can't reach isn't a change record.
 **Harkirat Mangat ("dior", "diorswrld")** — Data Controller
 Ontario, Canada
 📧 **harkirat117@gmail.com**
+💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
-Email is the canonical contact and always reaches us. We deliberately don't list a
+Email is the canonical contact and always reaches us; Discord is usually faster for a question. A **Privacy Request** under §9 must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a
 repository link here, because the repository's visibility can change (§2.5) and a
 contact point in a privacy policy must not be able to go dead.
 
@@ -616,6 +618,7 @@ database or any server, and it is described in full in §2.6.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §13, alongside the canonical email. A Privacy Request under §9 must still come by email. |
 | **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
 | **1.2** | 31 July 2026 | Documented the Site's single `db-theme` local-storage item (§2.6); corrected the "there is no website" statement in §3. |
 | **1.1** | 29 July 2026 | Added the controller's `diorswrld` alias. |

@@ -1,7 +1,7 @@
 # Terms of Service — Dior's Builds
 
 **Effective date:** 1 August 2026
-**Version:** 1.3
+**Version:** 1.4
 **Applies to:** the Dior's Builds Discord application (the "Bot") and the website
 these documents are published on (the "Site")
 
@@ -36,7 +36,7 @@ can't be signed away.
 Dior's Builds is operated by **Harkirat Mangat**, also known as **"dior"** or
 **"diorswrld"**, an individual based in Ontario, Canada ("we", "us", "our").
 
-**Contact:** harkirat117@gmail.com
+**Contact:** harkirat117@gmail.com, or [diorswrld on Discord](https://discord.com/users/1139845545754632283)
 
 There is no company behind this. It's one person, and support is best-effort.
 
@@ -683,8 +683,9 @@ Kept here as well as in git, because the repository's visibility can change
 **Harkirat Mangat ("dior", "diorswrld")**
 Ontario, Canada
 📧 **harkirat117@gmail.com**
+💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
-Email is the canonical contact and always reaches us. We deliberately don't list a
+Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under §17 — goes to the email address. We deliberately don't list a
 repository link here, because the repository's visibility can change (§7.1) and a
 contact point in binding terms must not be able to go dead.
 
@@ -697,6 +698,7 @@ For security reports, email — don't open a public issue. See §4.11 of the
 
 | Version | Date | Change |
 |---|---|---|
+| **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §20, alongside the canonical email. Anything that has to be on the record still goes by email. |
 | **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
 | **1.2** | 31 July 2026 | Brought the Site — the website these documents are published on — into scope alongside the Bot. |
 | **1.1** | 29 July 2026 | Added the controller's "diorswrld" alias; added §7.3 covering third-party crossover and collaboration content, renumbering the takedown process to §7.5. |

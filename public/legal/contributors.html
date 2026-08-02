@@ -229,11 +229,22 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    gap between the label and the arrow was drawn even with the arrow collapsed.
    Measured on Terms at 1440: 16.20px of space before the Discord mark against
    24.99px after the label — the 8.8px difference is exactly that gap. The
-   negative margin removes it while collapsed and returns to 0 as the arrow opens. */
+   negative margin removes it while collapsed and returns to 0 as the arrow opens. *//* ⚠️ DRAWN, NOT TYPED — the same lesson as the invitation cards' arrow. The
+   travel arrow was the character U+2197, which the mono stack sets on its own
+   baseline at its own optical weight: it sat low and light beside a 700-weight
+   cap-height label and read as misaligned, because it WAS aligned — to a baseline
+   the label does not share. An SVG in a centred grid cell has no font metrics to
+   disagree with. overflow:hidden is what lets it stay drawn while the box is
+   collapsed to zero width. */
 
-.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+
+.ins-ar{display:grid;place-items:center;overflow:hidden;
+  opacity:0;width:0;transform:translateX(-4px);
   margin-inline-start:-.55rem;
-  transition:opacity .26s,width .26s,margin-inline-start .26s,transform .26s}/* the cursor-tracked light, over the fill */
+  transition:opacity .26s,width .26s,margin-inline-start .26s,transform .26s}
+.ins-ar svg{width:11px;height:11px;display:block;flex:0 0 11px;
+  fill:none;stroke:currentColor;stroke-width:1.55;
+  stroke-linecap:round;stroke-linejoin:round}/* the cursor-tracked light, over the fill */
 
 .ins-gl{position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .3s;
   background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
@@ -250,9 +261,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
     0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}}.ins:focus-visible .ins-gl{opacity:1}@media (hover:hover) and (pointer:fine){
 .ins:hover .ins-gl{opacity:1}}.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}@media (hover:hover) and (pointer:fine){
-.ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:.8rem;
+.ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:11px;
   margin-inline-start:0;transform:translateX(0)}@media (hover:hover) and (pointer:fine){
-.ins:hover .ins-ar{opacity:1;width:.8rem;
+.ins:hover .ins-ar{opacity:1;width:11px;
   margin-inline-start:0;transform:translateX(0)}}
 .ins:active{transform:translateY(0) scale(.98)}
 @media (prefers-reduced-motion:reduce){.ins:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
@@ -489,33 +500,30 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
   color:var(--ink3);list-style:none;transition:color .2s}
 .rev summary::-webkit-details-marker{display:none}@media (hover:hover) and (pointer:fine){
-.rev summary:hover{color:var(--ink)}}/* ⚠️ AN ENVELOPE, NOT A SWITCH. This was a 24x10 track with a sliding fill, which
-   is the shape of a toggle — and a toggle promises a setting you can leave on.
-   This control reveals an address; it is a disclosure. So the mark is the thing
-   being disclosed, and it OPENS: the flap is flipped about its own hinge (the top
-   edge of the envelope), which is one scaleY and needs no path morph.
-   The word carries the state as well as the icon, because "Reveal" going accent is
-   the same signal the Discord handle beside it already uses — see .dh. */
+.rev summary:hover{color:var(--ink)}}/* The original sliding-fill mark, restored 2026-08-01 23:10 EDT. An envelope that
+   opened was tried and rejected: the fill sliding out of a slot says "something is
+   being uncovered", which is what this control does, and the envelope only said
+   "email" — which the words beside it already say. */
 
-.rv-i{display:block;width:17px;height:13px;flex:0 0 17px;color:var(--ink3);
-  transition:color .24s ease}
-.rv-i svg{width:17px;height:13px;display:block;overflow:visible;fill:none;
-  stroke:currentColor;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
-.ev-f{transform-origin:8px 2.6px;
-  transition:transform .46s cubic-bezier(.34,1.08,.42,1)}
-.rev[open] .ev-f{transform:scaleY(-1)}
-.rv-q{color:var(--ink3);transition:color .2s ease}/* The chip treatment is deliberately the SAME one the Discord handle wears, so
-   the two contact routes read as two of a kind rather than as a name and a link. */
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-i::after{transform:translateX(48%)}}@media (hover:hover) and (pointer:fine){
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}}
+.rv-q{color:var(--ink3);transition:color .2s ease}/* ⚠️ EXACTLY .dh's TREATMENT, INCLUDING ITS TEXT COLOUR. A first version kept the
+   16% accent wash but coloured the word in the accent too, which made a small
+   mono word the loudest thing in the contact block — louder than the Discord
+   handle it was supposed to match. .dh is accent-tinted GROUND with ordinary ink
+   on top; the tint is the highlight, the text is not. */
 
-.rv-a{border-radius:4px;padding:.12em .42em;font-weight:600;
+.rv-a{border-radius:4px;padding:.1em .36em;font-weight:600;
   color:var(--ink3);background:transparent;
   transition:color .22s ease,background .22s ease}
-.rev[open] .rv-a{color:var(--accent-t);
-  background:color-mix(in srgb,var(--accent) 16%,transparent)}
-.rev[open] .rv-i{color:var(--accent-t)}@media (hover:hover) and (pointer:fine){
-.rev summary:hover .rv-a{color:var(--accent-t);
+.rev[open] .rv-a{color:var(--ink);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}@media (hover:hover) and (pointer:fine){.rev summary:hover .rv-a{color:var(--ink);
   background:color-mix(in srgb,var(--accent) 16%,transparent)}}@media (hover:hover) and (pointer:fine){
-.rev summary:hover .rv-i{color:var(--accent-t)}}@media (hover:hover) and (pointer:fine){
 .rev summary:hover .rv-q{color:var(--ink2)}}
 .rev summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
   border-radius:5px}
@@ -582,7 +590,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* One column once the two would fight for width; the notice leads, as it does
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+   the notice is part of the document, so the footer's row 1 is empty — leaving the
+   sign-off in row 2 dropped it a whole line below the link row it should sit level
+   with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
+   .85rem top margin has to go with it or the alignment is off by that much. */
+
+.foot.nodisc .sig{grid-row:1;margin-top:0}
+.foot.nodisc .endnav{grid-row:1}/* One column once the two would fight for width; the notice leads, as it does
    on every other narrow layout here. */
 
 @media (max-width:760px){
@@ -591,7 +606,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .endnav{grid-column:1;justify-content:flex-start}
   .sig{grid-column:1;text-align:left;margin:0}
 }
-.sig b{color:var(--ink2);font-weight:600}/* ── back to top ──────────────────────────────────────────────────────
+.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+   hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
+   the name is already the only emphasised word in it. */
+
+.sig .sig-a{text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
+.sig .sig-a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.sig .sig-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}/* .dh is an anchor now, not a <b>. Same chip, plus the affordances a link owes. */
+
+a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
+a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
+a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -1413,9 +1439,16 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   border-radius:12px;background:var(--raised);border:1px solid var(--rule);
   display:flex;flex-wrap:wrap;align-items:center;gap:.7rem 1rem}
 .slip::before{content:"";position:absolute;left:.62rem;top:.7rem;bottom:.7rem;
-  border-left:2px dashed color-mix(in srgb,var(--accent) 48%,var(--rule))}
-.card .slip-t{flex:1 1 17rem;margin:0;font-family:var(--mono);font-size:.78rem;
-  line-height:1.7;color:var(--ink);word-break:break-word}
+  border-left:2px dashed color-mix(in srgb,var(--accent) 48%,var(--rule))}/* ⚠️ THE BUTTON GOES TO THE EDGE, and the line takes only the room it needs.
+   flex:1 1 17rem let the text claim the whole row, so once the CLA line wrapped to
+   two lines the button sat immediately after the shorter second line with a wide
+   empty gutter to its right — reading as though it belonged to that line rather
+   than to the slip. max-content caps the text at its natural width and margin-left
+   auto pins the button to the right edge, where a control on a strip belongs. */
+
+.card .slip-t{flex:0 1 auto;max-width:max-content;margin:0;font-family:var(--mono);
+  font-size:.78rem;line-height:1.7;color:var(--ink);word-break:break-word}
+.slip .cpy{margin-left:auto}
 .cpy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
   min-height:44px;padding:0 1.05rem;border-radius:999px;cursor:pointer;
   font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
@@ -1423,8 +1456,12 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);
   transition:background .2s,color .2s,border-color .2s}@media (hover:hover) and (pointer:fine){
 .cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}}
-.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
-.cpy-i{font-size:.85rem}/* Visually hidden, still announced. The button label also changes, so a sighted
+.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}/* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
+   surface it sits on. In the floating variant that is --raised; inside the labelled
+   pill it is the pill's own accent-washed fill, and --raised there left a visibly
+   darker notch through the drawing. */
+
+.slip .cpy .cpy-g::after{background:color-mix(in srgb,var(--accent) 13%,var(--raised))}/* Visually hidden, still announced. The button label also changes, so a sighted
    user gets the same confirmation without the live region. */
 
 .cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
@@ -1559,7 +1596,7 @@ html{scroll-behavior:smooth}
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
-  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+  <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
@@ -1619,26 +1656,27 @@ html{scroll-behavior:smooth}
 </aside>
 <div class="wrap">
   <header class="hero">
-    <span class="chip">Your name goes here</span>
+    <span class="chip">Credit, in writing</span>
     <h1>Contributors</h1>
     <p class="lede">Everyone who has made this better, credited under the name they chose.</p>
   </header>
-  <main class="card" id="main" tabindex="-1"><div class="lead"><p>Everyone who has contributed to Dior's Builds, credited by the name or handle they asked to be credited under.</p>
-<p>If your work ships, your name goes here and in the changelog entry for the release it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the <a href="../LICENSE">LICENSE</a> requires it.</p></div>
+  <main class="card" id="main" tabindex="-1"><div class="lead"><p>The people who have worked on Dior's Builds. Each one is listed under the name or handle they asked for.</p>
+<p>Ship something and you are added here, and to the changelog entry for the release it goes out in. That is an obligation rather than a courtesy, and it cannot be withdrawn later: §5.6 of the <a href="../LICENSE">LICENSE</a> requires it.</p></div>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p class="wall-l">Name &middot; Role</p><div class="wall"><div class="plate"><span class="plate-n"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</span><span class="plate-r">Creator and maintainer</span></div></div></div></section>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><a class="plate ghost" href="./contributing.html"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></a></div>
 <p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p></div></section>
 <section class="sec" data-t="promises"><span class="node" aria-hidden="true"></span><h2 id="how-credit-works" class="plain"><span class="ht">How credit works</span><a class="anchor" href="#how-credit-works" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="proms"><article class="prom"><h4>You choose the name.</h4><p>GitHub handle, display name, or anything reasonable — tell us in the pull request.</p></article><article class="prom"><h4>Credit appears in two places:</h4><p>this file, and the <code>docs/CHANGELOG.md</code> entry for the release your work ships in.</p></article><article class="prom"><h4>Credit survives.</h4><p>It stays even if the code is later refactored or replaced.</p></article><article class="prom"><h4>If a contribution is removed entirely</h4><p>, we'll remove the credit on request — or leave it, if you'd rather keep it.</p></article></div>
-<p>Thanks to everyone who has taken the time to make this better.</p></div></section></main>
+<p>Thanks to everyone who has taken the time to make this better.</p>
+<p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
   <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
        the SOURCE file ends with, lifted out of the body by warmCompose so it
        shows once; DIOR_SIG is the fallback when a source carries no closing line.
        No bottom theme tray: the header already has the switch, and offering the
        same control twice on one screen is clutter. (The landing page is the
        exception — it has no fixed header, so its switch lives at the foot.) -->
-  <footer class="foot">
+  <footer class="foot nodisc">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <strong>dior</strong></p>
-    <p class="disc">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+    
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a></nav>
   </footer>
 </div>

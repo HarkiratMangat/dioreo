@@ -229,11 +229,22 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    gap between the label and the arrow was drawn even with the arrow collapsed.
    Measured on Terms at 1440: 16.20px of space before the Discord mark against
    24.99px after the label — the 8.8px difference is exactly that gap. The
-   negative margin removes it while collapsed and returns to 0 as the arrow opens. */
+   negative margin removes it while collapsed and returns to 0 as the arrow opens. *//* ⚠️ DRAWN, NOT TYPED — the same lesson as the invitation cards' arrow. The
+   travel arrow was the character U+2197, which the mono stack sets on its own
+   baseline at its own optical weight: it sat low and light beside a 700-weight
+   cap-height label and read as misaligned, because it WAS aligned — to a baseline
+   the label does not share. An SVG in a centred grid cell has no font metrics to
+   disagree with. overflow:hidden is what lets it stay drawn while the box is
+   collapsed to zero width. */
 
-.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+
+.ins-ar{display:grid;place-items:center;overflow:hidden;
+  opacity:0;width:0;transform:translateX(-4px);
   margin-inline-start:-.55rem;
-  transition:opacity .26s,width .26s,margin-inline-start .26s,transform .26s}/* the cursor-tracked light, over the fill */
+  transition:opacity .26s,width .26s,margin-inline-start .26s,transform .26s}
+.ins-ar svg{width:11px;height:11px;display:block;flex:0 0 11px;
+  fill:none;stroke:currentColor;stroke-width:1.55;
+  stroke-linecap:round;stroke-linejoin:round}/* the cursor-tracked light, over the fill */
 
 .ins-gl{position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .3s;
   background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
@@ -250,9 +261,9 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
     0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}}.ins:focus-visible .ins-gl{opacity:1}@media (hover:hover) and (pointer:fine){
 .ins:hover .ins-gl{opacity:1}}.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}@media (hover:hover) and (pointer:fine){
-.ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:.8rem;
+.ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:11px;
   margin-inline-start:0;transform:translateX(0)}@media (hover:hover) and (pointer:fine){
-.ins:hover .ins-ar{opacity:1;width:.8rem;
+.ins:hover .ins-ar{opacity:1;width:11px;
   margin-inline-start:0;transform:translateX(0)}}
 .ins:active{transform:translateY(0) scale(.98)}
 @media (prefers-reduced-motion:reduce){.ins:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
@@ -489,33 +500,30 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
   color:var(--ink3);list-style:none;transition:color .2s}
 .rev summary::-webkit-details-marker{display:none}@media (hover:hover) and (pointer:fine){
-.rev summary:hover{color:var(--ink)}}/* ⚠️ AN ENVELOPE, NOT A SWITCH. This was a 24x10 track with a sliding fill, which
-   is the shape of a toggle — and a toggle promises a setting you can leave on.
-   This control reveals an address; it is a disclosure. So the mark is the thing
-   being disclosed, and it OPENS: the flap is flipped about its own hinge (the top
-   edge of the envelope), which is one scaleY and needs no path morph.
-   The word carries the state as well as the icon, because "Reveal" going accent is
-   the same signal the Discord handle beside it already uses — see .dh. */
+.rev summary:hover{color:var(--ink)}}/* The original sliding-fill mark, restored 2026-08-01 23:10 EDT. An envelope that
+   opened was tried and rejected: the fill sliding out of a slot says "something is
+   being uncovered", which is what this control does, and the envelope only said
+   "email" — which the words beside it already say. */
 
-.rv-i{display:block;width:17px;height:13px;flex:0 0 17px;color:var(--ink3);
-  transition:color .24s ease}
-.rv-i svg{width:17px;height:13px;display:block;overflow:visible;fill:none;
-  stroke:currentColor;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
-.ev-f{transform-origin:8px 2.6px;
-  transition:transform .46s cubic-bezier(.34,1.08,.42,1)}
-.rev[open] .ev-f{transform:scaleY(-1)}
-.rv-q{color:var(--ink3);transition:color .2s ease}/* The chip treatment is deliberately the SAME one the Discord handle wears, so
-   the two contact routes read as two of a kind rather than as a name and a link. */
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-i::after{transform:translateX(48%)}}@media (hover:hover) and (pointer:fine){
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}}
+.rv-q{color:var(--ink3);transition:color .2s ease}/* ⚠️ EXACTLY .dh's TREATMENT, INCLUDING ITS TEXT COLOUR. A first version kept the
+   16% accent wash but coloured the word in the accent too, which made a small
+   mono word the loudest thing in the contact block — louder than the Discord
+   handle it was supposed to match. .dh is accent-tinted GROUND with ordinary ink
+   on top; the tint is the highlight, the text is not. */
 
-.rv-a{border-radius:4px;padding:.12em .42em;font-weight:600;
+.rv-a{border-radius:4px;padding:.1em .36em;font-weight:600;
   color:var(--ink3);background:transparent;
   transition:color .22s ease,background .22s ease}
-.rev[open] .rv-a{color:var(--accent-t);
-  background:color-mix(in srgb,var(--accent) 16%,transparent)}
-.rev[open] .rv-i{color:var(--accent-t)}@media (hover:hover) and (pointer:fine){
-.rev summary:hover .rv-a{color:var(--accent-t);
+.rev[open] .rv-a{color:var(--ink);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}@media (hover:hover) and (pointer:fine){.rev summary:hover .rv-a{color:var(--ink);
   background:color-mix(in srgb,var(--accent) 16%,transparent)}}@media (hover:hover) and (pointer:fine){
-.rev summary:hover .rv-i{color:var(--accent-t)}}@media (hover:hover) and (pointer:fine){
 .rev summary:hover .rv-q{color:var(--ink2)}}
 .rev summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
   border-radius:5px}
@@ -582,7 +590,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* One column once the two would fight for width; the notice leads, as it does
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+   the notice is part of the document, so the footer's row 1 is empty — leaving the
+   sign-off in row 2 dropped it a whole line below the link row it should sit level
+   with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
+   .85rem top margin has to go with it or the alignment is off by that much. */
+
+.foot.nodisc .sig{grid-row:1;margin-top:0}
+.foot.nodisc .endnav{grid-row:1}/* One column once the two would fight for width; the notice leads, as it does
    on every other narrow layout here. */
 
 @media (max-width:760px){
@@ -591,7 +606,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .endnav{grid-column:1;justify-content:flex-start}
   .sig{grid-column:1;text-align:left;margin:0}
 }
-.sig b{color:var(--ink2);font-weight:600}/* ── back to top ──────────────────────────────────────────────────────
+.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+   hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
+   the name is already the only emphasised word in it. */
+
+.sig .sig-a{text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
+.sig .sig-a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.sig .sig-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}/* .dh is an anchor now, not a <b>. Same chip, plus the affordances a link owes. */
+
+a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
+a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
+a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -1319,7 +1345,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      the scroll script. Without it a line of prose sliding under the band came to
      rest exactly on the heading's rule and read as a struck-through sentence. */
   
-  .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}
+  .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}/* ⚠️ THE BAND HAS TO CLEAR THE PROSE OUT, AND A HARD EDGE CANNOT. A sticky
+     heading with a solid background hides whatever is behind it and nothing more,
+     so the line of text arriving underneath is sliced across the middle and its
+     bottom half sits bright against the rule. The band gets a short fade below it
+     instead, so a line dissolves as it goes under rather than being cut.
+     top:100% and no pointer-events: it hangs below the border box, over the
+     heading's own bottom margin, and must never eat a click on the prose. */
+  
+  .doc .dsec>h2::after{content:"";position:absolute;left:0;right:0;top:100%;
+    height:15px;pointer-events:none;opacity:0;transition:opacity .18s ease;
+    background:linear-gradient(var(--paper),transparent)}
+  .doc .dsec>h2.stuck::after{opacity:1}
   .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
     padding-top:.9rem;padding-bottom:.78rem;
     transition:box-shadow .18s ease;
@@ -1333,10 +1370,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      immediately, and only on the numbered legal set. The number is aligned to the
      text, so it has to move with it.
      The background is insurance: the number sits outside the heading's own band,
-     in .doc's padding gutter. */
+     in .doc's padding gutter.
+     ⚠️ THE BAND MUST SPAN THE GUTTER TOO. A background patch behind the number is
+     not enough: the number of the section you are LEAVING scrolls up through that
+     same gutter and passed clean beside the pinned one, so two section numbers were
+     on screen at once, one of them half-clipped. Widening the heading's own box
+     leftwards by the gutter (negative margin + equal padding) makes the band cover
+     the whole strip, and the number's offset moves with it — 3.8 - 3.6 = 0.2rem. */
   
   @media (min-width:1120px){
-    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);background:var(--paper)}
+    .doc .dsec>h2{margin-left:-3.8rem;padding-left:3.8rem}
+    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:.2rem}
   }
 }
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
@@ -1544,7 +1588,7 @@ html{scroll-behavior:smooth}
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
-  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+  <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
   aria-checked="false" aria-label="Switch between light and dark">
@@ -1636,7 +1680,7 @@ html{scroll-behavior:smooth}
         <span class="lab">Agreement</span>
         <h1>Terms of Service</h1>
         <div class="rule"></div>
-        <div class="meta"><span>Effective <b>1 August 2026</b></span><span>Revision <b>1.3</b></span><span>Ontario, Canada</span></div>
+        <div class="meta"><span>Effective <b>1 August 2026</b></span><span>Revision <b>1.4</b></span><span>Ontario, Canada</span></div>
       </header>
       <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" aria-label="Link to this section">¶</a></h2>
 <p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
@@ -1651,7 +1695,7 @@ html{scroll-behavior:smooth}
 <section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
 <p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
-<p><strong>Contact:</strong> harkirat117@gmail.com</p>
+<p><strong>Contact:</strong> harkirat117@gmail.com, or <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a></p>
 <p>There is no company behind this. It's one person, and support is best-effort.</p>
 <h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">The Site</span><a class="anchor" href="#s-1.1" aria-label="Link to this section">¶</a></h3>
 <p>These documents are published on a website (the <strong>"Site"</strong>). It is a set of static pages: no accounts, no forms, no analytics, and nothing to sign up for. The only thing it keeps is the light or dark appearance you pick, stored in your own browser and never transmitted — the Privacy Policy describes it in <a class="xref" href="#s-2.6">§2.6</a>.</p>
@@ -1868,14 +1912,14 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" aria-label="Link to this section">¶</a></h2>
-<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong></p>
-<p>Email is the canonical contact and always reaches us. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
+<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong> 💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
+<p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under <a class="xref" href="#s-17">§17</a> — goes to the email address. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
 <p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
 <hr>
 </section>
 <section class="dsec">
 <h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" aria-label="Link to this section">¶</a></h2>
-<div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.3</strong></td><td>1 August 2026</td><td>Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr><td><strong>1.2</strong></td><td>31 July 2026</td><td>Brought the Site — the website these documents are published on — into scope alongside the Bot.</td></tr><tr><td><strong>1.1</strong></td><td>29 July 2026</td><td>Added the controller's "diorswrld" alias; added <a class="xref" href="#s-7.3">§7.3</a> covering third-party crossover and collaboration content, renumbering the takedown process to <a class="xref" href="#s-7.5">§7.5</a>.</td></tr><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial terms.</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.4</strong></td><td>1 August 2026</td><td>Added Discord (diorswrld) as a second contact route in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>, alongside the canonical email. Anything that has to be on the record still goes by email.</td></tr><tr><td><strong>1.3</strong></td><td>1 August 2026</td><td>Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr><td><strong>1.2</strong></td><td>31 July 2026</td><td>Brought the Site — the website these documents are published on — into scope alongside the Bot.</td></tr><tr><td><strong>1.1</strong></td><td>29 July 2026</td><td>Added the controller's "diorswrld" alias; added <a class="xref" href="#s-7.3">§7.3</a> covering third-party crossover and collaboration content, renumbering the takedown process to <a class="xref" href="#s-7.5">§7.5</a>.</td></tr><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial terms.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is public in the repository's git log.</p>
 <hr>
 <p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
@@ -1887,8 +1931,8 @@ html{scroll-behavior:smooth}
        Notice, so the hand-added ../NOTICE link that used to sit here produced two
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
-  <footer class="foot">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <b>dior</b></p>
+  <footer class="foot nodisc">
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">dior</a></p>
     
     <nav class="endnav"><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
@@ -1911,8 +1955,11 @@ html{scroll-behavior:smooth}
   var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
   /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
      value only changes with the viewport (it is a clamp of vw). */
-  var foot=document.querySelector('.foot'), ttBase=0;
-  function ttMeasure(){ ttBase=top?parseFloat(getComputedStyle(top).bottom)||0:0; }
+  var foot=document.querySelector('.foot'), ttBase=0, ttPad=0;
+  function ttMeasure(){
+    ttBase=top?parseFloat(getComputedStyle(top).bottom)||0:0;
+    ttPad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+  }
   ttMeasure();
   var slots=[].slice.call(document.querySelectorAll('.slot'));
   var rail=document.querySelector('.rail'), lastId=null;
@@ -1942,8 +1989,14 @@ html{scroll-behavior:smooth}
          footer's top edge (less a 12px breathing gap) is overlap, and the lift is
          exactly that. Read the footer's rect, never the button's — the button's
          own rect already includes the lift, which would feed back on itself. */
+      /* ⚠️ IT PARKS ON THE FOOTER'S CONTENT, NOT ON ITS BOX. The footer carries
+         2.2rem of top padding, so stopping at the box's top edge left the button
+         hovering over the bottom-right corner of the document card, in the gap
+         where nothing needed covering. Clearing the first line of actual footer
+         text instead lets it settle INTO that gap, which is where it belongs and
+         is also 35px lower. */
       if(foot){
-        var ft=foot.getBoundingClientRect().top;
+        var ft=foot.getBoundingClientRect().top + ttPad;
         var over=(h.clientHeight-ttBase)-ft+12;
         top.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
       }

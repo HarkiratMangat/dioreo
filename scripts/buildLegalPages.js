@@ -187,7 +187,10 @@ const EXTRA_PAGES = [
         title: 'Contributors', short: 'Contributors',
         kicker: 'Roll call', accent: BRAND.citron, glow: '#FBFFB0',
         lede: 'Everyone who has made this better, credited under the name they chose.',
-        badge: 'Your name goes here',
+        // "Your name goes here" read as a sales pitch on a page whose actual
+        // subject is that crediting is a binding obligation under LICENSE §5.6.
+        // This says the same thing the page does.
+        badge: 'Credit, in writing',
         blurb: 'Who helped build this, and how credit works. Bug reports count.'
     }
 ];
@@ -1083,11 +1086,16 @@ const writePage = (dest, html) => {
 /* ─────────────── shared components: wordmark, repo, theme switch ───────── */
 
 const REPO_URL = 'https://github.com/HarkiratMangat/diors-builds';
+/* The controller's Discord profile. Deliberately a bare user link rather than an
+   invite: it is a contact route for a person, not a server to join, and the
+   documents name it that way. */
+const DISCORD_URL = 'https://discord.com/users/1139845545754632283';
 
 // Matches the bot's own sign-off. commands/settings.js closes its panel with
 // `-# {diorHeart} Made with love by @dior`, so the site says the same thing in
 // the same words rather than inventing a second voice for the same person.
-const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <b>dior</b>';
+const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with love by '
+    + `<a class="sig-a" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer">dior</a>`;
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 
 /**
@@ -1113,7 +1121,7 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
   <span class="ins-t">${big ? 'Add to Discord' : 'Install'}</span>
-  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+  <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>`;
 
 /**
@@ -1387,7 +1395,7 @@ const TRADEMARK_NOTE = 'Dior&#8217;s Builds is an unofficial fan project and is 
    it again in the chrome a centimetre below said the same thing twice on one
    screen — which is what Harkirat was looking at. The warm and chronicle pages
    carry no such closing line, so they keep the footer's copy. */
-const pageFoot = (cur, sig, disc = true) => `<footer class="foot">
+const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
     <p class="sig">${sig || DIOR_SIG}</p>
     ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
     <nav class="endnav">${navSetFor(cur).flat()
@@ -1411,7 +1419,7 @@ const pageFoot = (cur, sig, disc = true) => `<footer class="foot">
  * the binding documents name email would have been a real inconsistency.
  */
 const emailReveal = `<details class="rev">
-  <summary><span class="rv-i" aria-hidden="true"><svg viewBox="0 0 16 12"><rect class="ev-b" x=".9" y=".9" width="14.2" height="10.2" rx="2.2"/><path class="ev-f" d="M.9 2.6 8 7.7 15.1 2.6"/></svg></span><span class="rv-q">Prefer email?</span><span class="rv-a">Reveal</span></summary>
+  <summary><span class="rv-i" aria-hidden="true"></span><span class="rv-q">Prefer email?</span><span class="rv-a">Reveal</span></summary>
   <div class="rv-b">
     <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
     <span>The formal route. Named in the Terms and Privacy Policy for legal notices,
@@ -1580,9 +1588,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    Measured on Terms at 1440: 16.20px of space before the Discord mark against
    24.99px after the label — the 8.8px difference is exactly that gap. The
    negative margin removes it while collapsed and returns to 0 as the arrow opens. */
-.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
+/* ⚠️ DRAWN, NOT TYPED — the same lesson as the invitation cards' arrow. The
+   travel arrow was the character U+2197, which the mono stack sets on its own
+   baseline at its own optical weight: it sat low and light beside a 700-weight
+   cap-height label and read as misaligned, because it WAS aligned — to a baseline
+   the label does not share. An SVG in a centred grid cell has no font metrics to
+   disagree with. overflow:hidden is what lets it stay drawn while the box is
+   collapsed to zero width. */
+.ins-ar{display:grid;place-items:center;overflow:hidden;
+  opacity:0;width:0;transform:translateX(-4px);
   margin-inline-start:-.55rem;
   transition:opacity .26s,width .26s,margin-inline-start .26s,transform .26s}
+.ins-ar svg{width:11px;height:11px;display:block;flex:0 0 11px;
+  fill:none;stroke:currentColor;stroke-width:1.55;
+  stroke-linecap:round;stroke-linejoin:round}
 /* the cursor-tracked light, over the fill */
 .ins-gl{position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .3s;
   background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
@@ -1598,7 +1617,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
     0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}
 .ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
 .ins:hover .ins-ic,.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}
-.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;
+.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:11px;
   margin-inline-start:0;transform:translateX(0)}
 .ins:active{transform:translateY(0) scale(.98)}
 @media (prefers-reduced-motion:reduce){
@@ -1835,32 +1854,28 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   color:var(--ink3);list-style:none;transition:color .2s}
 .rev summary::-webkit-details-marker{display:none}
 .rev summary:hover{color:var(--ink)}
-/* ⚠️ AN ENVELOPE, NOT A SWITCH. This was a 24x10 track with a sliding fill, which
-   is the shape of a toggle — and a toggle promises a setting you can leave on.
-   This control reveals an address; it is a disclosure. So the mark is the thing
-   being disclosed, and it OPENS: the flap is flipped about its own hinge (the top
-   edge of the envelope), which is one scaleY and needs no path morph.
-   The word carries the state as well as the icon, because "Reveal" going accent is
-   the same signal the Discord handle beside it already uses — see .dh. */
-.rv-i{display:block;width:17px;height:13px;flex:0 0 17px;color:var(--ink3);
-  transition:color .24s ease}
-.rv-i svg{width:17px;height:13px;display:block;overflow:visible;fill:none;
-  stroke:currentColor;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
-.ev-f{transform-origin:8px 2.6px;
-  transition:transform .46s cubic-bezier(.34,1.08,.42,1)}
-.rev[open] .ev-f{transform:scaleY(-1)}
+/* The original sliding-fill mark, restored 2026-08-01 23:10 EDT. An envelope that
+   opened was tried and rejected: the fill sliding out of a slot says "something is
+   being uncovered", which is what this control does, and the envelope only said
+   "email" — which the words beside it already say. */
+.rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
+  border:1px solid var(--rule2);border-radius:3px}
+.rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
+.rev[open] .rv-i::after{transform:translateX(101%)}
+.rev summary:hover .rv-i::after{transform:translateX(48%)}
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
 .rv-q{color:var(--ink3);transition:color .2s ease}
-/* The chip treatment is deliberately the SAME one the Discord handle wears, so
-   the two contact routes read as two of a kind rather than as a name and a link. */
-.rv-a{border-radius:4px;padding:.12em .42em;font-weight:600;
+/* ⚠️ EXACTLY .dh's TREATMENT, INCLUDING ITS TEXT COLOUR. A first version kept the
+   16% accent wash but coloured the word in the accent too, which made a small
+   mono word the loudest thing in the contact block — louder than the Discord
+   handle it was supposed to match. .dh is accent-tinted GROUND with ordinary ink
+   on top; the tint is the highlight, the text is not. */
+.rv-a{border-radius:4px;padding:.1em .36em;font-weight:600;
   color:var(--ink3);background:transparent;
   transition:color .22s ease,background .22s ease}
-.rev[open] .rv-a{color:var(--accent-t);
+.rev[open] .rv-a,.rev summary:hover .rv-a{color:var(--ink);
   background:color-mix(in srgb,var(--accent) 16%,transparent)}
-.rev[open] .rv-i{color:var(--accent-t)}
-.rev summary:hover .rv-a{color:var(--accent-t);
-  background:color-mix(in srgb,var(--accent) 16%,transparent)}
-.rev summary:hover .rv-i{color:var(--accent-t)}
 .rev summary:hover .rv-q{color:var(--ink2)}
 .rev summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
   border-radius:5px}
@@ -1928,6 +1943,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    this is simply the bottom-left line. */
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
+/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+   the notice is part of the document, so the footer's row 1 is empty — leaving the
+   sign-off in row 2 dropped it a whole line below the link row it should sit level
+   with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
+   .85rem top margin has to go with it or the alignment is off by that much. */
+.foot.nodisc .sig{grid-row:1;margin-top:0}
+.foot.nodisc .endnav{grid-row:1}
 /* One column once the two would fight for width; the notice leads, as it does
    on every other narrow layout here. */
 @media (max-width:760px){
@@ -1936,7 +1958,18 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .endnav{grid-column:1;justify-content:flex-start}
   .sig{grid-column:1;text-align:left;margin:0}
 }
-.sig b{color:var(--ink2);font-weight:600}
+.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}
+/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+   hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
+   the name is already the only emphasised word in it. */
+.sig .sig-a{text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .22s,border-color .22s}
+.sig .sig-a:hover{color:var(--ink);border-bottom-color:var(--accent)}
+.sig .sig-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+/* .dh is an anchor now, not a <b>. Same chip, plus the affordances a link owes. */
+a.dh{text-decoration:none;transition:background .22s,color .22s}
+a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}
+a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* ── back to top ──────────────────────────────────────────────────────
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
@@ -3593,6 +3626,17 @@ ${SWITCHER_CSS}
      the scroll script. Without it a line of prose sliding under the band came to
      rest exactly on the heading's rule and read as a struck-through sentence. */
   .doc .dsec>h2.stuck{box-shadow:0 10px 12px -10px rgba(0,0,0,.32)}
+  /* ⚠️ THE BAND HAS TO CLEAR THE PROSE OUT, AND A HARD EDGE CANNOT. A sticky
+     heading with a solid background hides whatever is behind it and nothing more,
+     so the line of text arriving underneath is sliced across the middle and its
+     bottom half sits bright against the rule. The band gets a short fade below it
+     instead, so a line dissolves as it goes under rather than being cut.
+     top:100% and no pointer-events: it hangs below the border box, over the
+     heading's own bottom margin, and must never eat a click on the prose. */
+  .doc .dsec>h2::after{content:"";position:absolute;left:0;right:0;top:100%;
+    height:15px;pointer-events:none;opacity:0;transition:opacity .18s ease;
+    background:linear-gradient(var(--paper),transparent)}
+  .doc .dsec>h2.stuck::after{opacity:1}
   .doc .dsec>h2{position:sticky;top:54px;z-index:4;background:var(--paper);
     padding-top:.9rem;padding-bottom:.78rem;
     transition:box-shadow .18s ease;
@@ -3607,9 +3651,16 @@ ${SWITCHER_CSS}
      immediately, and only on the numbered legal set. The number is aligned to the
      text, so it has to move with it.
      The background is insurance: the number sits outside the heading's own band,
-     in .doc's padding gutter. */
+     in .doc's padding gutter.
+     ⚠️ THE BAND MUST SPAN THE GUTTER TOO. A background patch behind the number is
+     not enough: the number of the section you are LEAVING scrolls up through that
+     same gutter and passed clean beside the pinned one, so two section numbers were
+     on screen at once, one of them half-clipped. Widening the heading's own box
+     leftwards by the gutter (negative margin + equal padding) makes the band cover
+     the whole strip, and the number's offset moves with it — 3.8 - 3.6 = 0.2rem. */
   @media (min-width:1120px){
-    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);background:var(--paper)}
+    .doc .dsec>h2{margin-left:-3.8rem;padding-left:3.8rem}
+    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:.2rem}
   }
 }
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
@@ -3853,8 +3904,11 @@ ${mobileNav(cur, slots)}
   var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
   /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
      value only changes with the viewport (it is a clamp of vw). */
-  var foot=document.querySelector('.foot'), ttBase=0;
-  function ttMeasure(){ ttBase=top?parseFloat(getComputedStyle(top).bottom)||0:0; }
+  var foot=document.querySelector('.foot'), ttBase=0, ttPad=0;
+  function ttMeasure(){
+    ttBase=top?parseFloat(getComputedStyle(top).bottom)||0:0;
+    ttPad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+  }
   ttMeasure();
   var slots=[].slice.call(document.querySelectorAll('.slot'));
   var rail=document.querySelector('.rail'), lastId=null;
@@ -3884,8 +3938,14 @@ ${mobileNav(cur, slots)}
          footer's top edge (less a 12px breathing gap) is overlap, and the lift is
          exactly that. Read the footer's rect, never the button's — the button's
          own rect already includes the lift, which would feed back on itself. */
+      /* ⚠️ IT PARKS ON THE FOOTER'S CONTENT, NOT ON ITS BOX. The footer carries
+         2.2rem of top padding, so stopping at the box's top edge left the button
+         hovering over the bottom-right corner of the document card, in the gap
+         where nothing needed covering. Clearing the first line of actual footer
+         text instead lets it settle INTO that gap, which is where it belongs and
+         is also 35px lower. */
       if(foot){
-        var ft=foot.getBoundingClientRect().top;
+        var ft=foot.getBoundingClientRect().top + ttPad;
         var over=(h.clientHeight-ttBase)-ft+12;
         top.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
       }
@@ -4110,7 +4170,11 @@ function asSlip(block, mark) {
     return '<div class="slip">'
         + `<p class="slip-t" id="cla-line">${line}</p>`
         + '<button class="cpy" type="button" data-copy="cla-line">'
-        + '<span class="cpy-i" aria-hidden="true">&#9106;</span>'
+        // ⚠️ The same DRAWN glyph the floating code-copy button uses, not a
+        // character. This was U+2372 (⍲), which is an APL operator — it renders as
+        // whatever each platform has for it, looked like nothing in particular, and
+        // meant nothing at all. Two overlapping sheets is what "copy" looks like.
+        + '<span class="cpy-g" aria-hidden="true"></span>'
         + '<span class="cpy-t">Copy</span></button>'
         + '<span class="cpy-s" role="status" aria-live="polite"></span></div>';
 }
@@ -4257,7 +4321,14 @@ function warmCompose(blocks, out) {
     const last = blocks[blocks.length - 1] || '';
     if (/^<p>[^<]*Made with love by/.test(last)) {
         sig = last.replace(/^<p>/, '').replace(/<\/p>$/, '')
-            .replace('♡', '<span class="hrt" aria-hidden="true">&#9825;</span>');
+            .replace('♡', '<span class="hrt" aria-hidden="true">&#9825;</span>')
+            /* The name links to the controller's Discord profile here too. The
+               legal pages get it from DIOR_SIG; this sign-off is lifted from the
+               source file, so the <b> the parser produced is upgraded in place
+               rather than the line being replaced by a second hardcoded copy —
+               which is the whole reason it is lifted instead of deleted. */
+            .replace('<b>dior</b>',
+                `<a class="sig-a" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer">dior</a>`);
         blocks = blocks.slice(0, -1);
         warmHit('sig');
     }
@@ -4645,8 +4716,15 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   display:flex;flex-wrap:wrap;align-items:center;gap:.7rem 1rem}
 .slip::before{content:"";position:absolute;left:.62rem;top:.7rem;bottom:.7rem;
   border-left:2px dashed color-mix(in srgb,var(--accent) 48%,var(--rule))}
-.card .slip-t{flex:1 1 17rem;margin:0;font-family:var(--mono);font-size:.78rem;
-  line-height:1.7;color:var(--ink);word-break:break-word}
+/* ⚠️ THE BUTTON GOES TO THE EDGE, and the line takes only the room it needs.
+   flex:1 1 17rem let the text claim the whole row, so once the CLA line wrapped to
+   two lines the button sat immediately after the shorter second line with a wide
+   empty gutter to its right — reading as though it belonged to that line rather
+   than to the slip. max-content caps the text at its natural width and margin-left
+   auto pins the button to the right edge, where a control on a strip belongs. */
+.card .slip-t{flex:0 1 auto;max-width:max-content;margin:0;font-family:var(--mono);
+  font-size:.78rem;line-height:1.7;color:var(--ink);word-break:break-word}
+.slip .cpy{margin-left:auto}
 .cpy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
   min-height:44px;padding:0 1.05rem;border-radius:999px;cursor:pointer;
   font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
@@ -4655,7 +4733,11 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   transition:background .2s,color .2s,border-color .2s}
 .cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
 .cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
-.cpy-i{font-size:.85rem}
+/* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
+   surface it sits on. In the floating variant that is --raised; inside the labelled
+   pill it is the pill's own accent-washed fill, and --raised there left a visibly
+   darker notch through the drawing. */
+.slip .cpy .cpy-g::after{background:color-mix(in srgb,var(--accent) 13%,var(--raised))}
 /* Visually hidden, still announced. The button label also changes, so a sighted
    user gets the same confirmation without the live region. */
 .cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
@@ -4778,7 +4860,7 @@ ${mobileNav(cur, '')}
        No bottom theme tray: the header already has the switch, and offering the
        same control twice on one screen is clutter. (The landing page is the
        exception — it has no fixed header, so its switch lives at the foot.) -->
-  ${pageFoot(cur, sig)}
+  ${pageFoot(cur, sig, false)}
 </div>
 <script>${THEME_JS}${NAV_JS}${WARM_JS}</script>
 </body>
@@ -5147,7 +5229,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
   <div class="foot">
-    <p class="contact">Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
+    <p class="contact">Questions, corrections, or a privacy request — reach <a class="dh" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer">diorswrld</a> on Discord.</p>
     ${emailReveal}
   </div>
   <div class="tray">
