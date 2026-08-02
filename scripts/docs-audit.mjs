@@ -1335,6 +1335,43 @@ check(
   }
 );
 
+/* ---------------------------- lock-version -------------------------- */
+check(
+  "lock-version",
+  "ERROR",
+  "package-lock.json carries the same version as package.json",
+  () => {
+    // ⚠️ FOUND AT 2.35.3 WHILE package.json READ 2.47.0 — twelve releases of silent drift, because
+    // npm only rewrites the lock's version when a dependency-touching command runs, and a release here
+    // is a hand-edited bump. `version-sync` never saw it: that check compares package.json against the
+    // changelog, and nothing looked at the lock at all.
+    //
+    // It does not break `npm ci`, which ignores the field — which is exactly why it went unnoticed for
+    // so long, and exactly why it needs a gate rather than a habit. It is still wrong: the lockfile is
+    // the artefact a consumer reads to know what version they resolved.
+    //
+    // ⚠️ FIX IT BY EDITING THE TWO VERSION FIELDS, never with `npm install --package-lock-only`. That
+    // command recomputes the whole tree from package.json's ranges and can bump transitive
+    // dependencies — which at release time silently invalidates NOTICE §1 and the licence audit.
+    const pkg = read("package.json");
+    const lock = read("package-lock.json");
+    if (pkg === null || lock === null) return { findings: [], examined: 0 };
+    let p, l;
+    try { p = JSON.parse(pkg); l = JSON.parse(lock); } catch (e) {
+      return { findings: [{ msg: `package.json or package-lock.json does not parse (${e.message}).` }], examined: 0 };
+    }
+    const out = [];
+    const root = (l.packages && l.packages[""]) || {};
+    if (l.version !== p.version) {
+      out.push({ msg: `package-lock.json "version" is ${l.version} but package.json is ${p.version}. Edit the field; do NOT run npm install --package-lock-only at release time.` });
+    }
+    if (root.version && root.version !== p.version) {
+      out.push({ msg: `package-lock.json packages[""].version is ${root.version} but package.json is ${p.version}. npm writes both — both have to move.` });
+    }
+    return { findings: out, examined: 2 };
+  }
+);
+
 /* --------------------------- dep-licences --------------------------- */
 // Reciprocal licences. Any of these anywhere in the tree could force source publication on terms
 // incompatible with the source-available model this project ships under, so they are a build failure

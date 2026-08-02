@@ -86,7 +86,8 @@ const makeFixture = () => {
   write(
     root,
     "package-lock.json",
-    JSON.stringify({ name: "fixture", lockfileVersion: 3, packages: { "node_modules/widget": { version: "1.2.3", license: "MIT" } } }, null, 2)
+    JSON.stringify({ name: "fixture", version: "2.33.0", lockfileVersion: 3,
+      packages: { "": { version: "2.33.0" }, "node_modules/widget": { version: "1.2.3", license: "MIT" } } }, null, 2)
   );
   write(root, "node_modules/widget/package.json", JSON.stringify({ name: "widget", version: "1.2.3", license: "MIT" }));
   write(
@@ -554,6 +555,14 @@ proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (
     + "\n### A subsystem that outgrew the map\n"
     + "detail line\n".repeat(140);
   write(root, "CLAUDE.md", c);
+});
+
+proves("the lockfile's version drifting from package.json", "lock-version", (root) => {
+  // The real drift: package.json reached 2.47.0 while the lock still said 2.35.3, twelve releases
+  // back, because npm only rewrites that field when a dependency-touching command runs.
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.version = "0.0.1";
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
 });
 
 proves("a copyleft package entering the dependency tree", "dep-licences", (root) => {

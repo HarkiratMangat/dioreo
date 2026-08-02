@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "legal-site",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "exec python3 -m http.server \"${PORT:-8899}\" --directory public"
+      ],
+      "port": 8899,
+      "autoPort": true
+    }
+  ]
+}

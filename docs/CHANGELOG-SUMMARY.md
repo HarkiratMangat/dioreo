@@ -26,7 +26,7 @@ A peek at what's planned (not built yet):
 
 ---
 
-## v2.47.0 — August 1, 2026
+## v2.47.0 — August 2, 2026
 - **The legal site's navigation buttons often did nothing when you clicked them.** Fixed — a leftover
   drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.
 - **The menu on phones is a swipeable row of tabs** — every page on one line, the one you are reading
@@ -49,6 +49,24 @@ A peek at what's planned (not built yet):
 - **The moon on the dark/light switch is a proper thin crescent** — it used to be an almost-full moon.
 - **The highlight keeps its colour properly now.** Each page has its own accent, and on phones the
   effect that draws it was washing every one of them out.
+- **The menu label was hard to read whenever you pointed at it.** The word went pale on top of the
+  bright pill it was sitting on, and only turned dark again once you moved away. Fixed, along with the
+  page you are on losing its colour, and the first tab of the other group not lighting up at all.
+- **The highlight now builds itself when a page loads**, out of droplets that fly inward and join —
+  the same effect the phone menu already had. It plays once, on arrival.
+- **Headings stay pinned as you scroll a long document**, so you always know which section you are in,
+  and slide away as the next one arrives.
+- **The Contributing and Contributors pages carry the same closing notice as the legal documents**, so
+  the site no longer says the same thing twice in two different ways at the bottom of a page.
+- **You can reach the maintainer on Discord from the site** — the handle on the home page and the name
+  in every footer now link to a profile, and the Terms and Privacy Policy list it beside the email.
+- **The privacy policy's list of what is stored was incomplete.** Two fields were being stored and not
+  listed, under a heading that said "That's the whole list." Both are listed now. **Nothing about what
+  is collected changed** — the fields were already stored and already described elsewhere in the
+  policy; the list itself was short.
+- **The install button's arrow, the email reveal, the ticket cards and the footer** all got a pass:
+  a properly aligned arrow, a subtler highlight, a real tearing animation, and the sign-off lined up
+  with the links instead of hanging below them.
 
 ## v2.46.0 — July 31, 2026
 - **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch

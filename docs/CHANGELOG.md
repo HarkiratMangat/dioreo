@@ -181,7 +181,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.47.0 — 2026-08-01 03:05 EDT (#61) — A nav that swallowed its own clicks, and a design pass over the legal site
+## v2.47.0 — 2026-08-02 00:40 EDT (#62) — The record pages, a rebuilt nav indicator, and eight new build gates
 
 The site's navigation had been unusable and nobody could say why. Fixing it turned into a pass over
 most of the surface Harkirat had flagged from live testing.
@@ -373,6 +373,82 @@ the invariant that detects a splice is repetition, not count.
 
 **Still open:** every mobile claim here is Chrome emulation at 375/393/430, never a real phone; and
 the contributors page remains thin by nature.
+
+**The changelog, devlog and what's-new pages were published — then withdrawn from the nav.**
+- A third page family (`scripts/lib/chronicle.js`), three voices on one skeleton: a notice board, an
+  engineering ledger and a notebook. What separates them is the **grid**, never the palette — a
+  reader stops seeing colour in two seconds.
+- The pages are still built, deployed and reachable at `/changelog/`, but they are off the switcher,
+  the mobile strip and the footer — **except inside `/changelog/` itself**, where they keep their own
+  group so a reader arriving by link is not stranded. Harkirat withdrew the landing-page row first;
+  leaving the tabs advertising it was half a job.
+
+**The nav indicator's label was illegible, reported four times before the cause was found.**
+- `.tab:hover{color:var(--ink)}` — a brightening affordance from before the tabs had an indicator at
+  all. `(0,2,0)` against `.tab`'s own `(0,1,0)`, so it beat the per-frame coverage colour outright:
+  for as long as a real pointer sat on a tab the label was pinned near-white **on top of** the pill
+  that had just arrived under it, releasing only when the pointer left. Hence "it turns black when
+  the morph is *leaving* it".
+- ⚠️ A scripted `mouseenter` cannot reproduce this — a dispatched event does not create a `:hover`
+  state — so three rounds of measurement read the correct colour while the screen showed the wrong
+  one. Three plausible-but-wrong diagnoses in a row is the signature of an instrument that cannot see
+  the failing state.
+- Also fixed: the current tab was painted in its **own accent**, the same colour as its pill; and a
+  cold group's first hover left the label unpainted because `aim()`'s early return never repainted —
+  the exact mirror of a bug fixed in `rest()` earlier the same day.
+
+**Timing tied to the pill instead of to the clock.** Label coverage is measured against the LABEL, not
+the tab's padding box (roughly half of which is padding), against the head's true centred rect, and
+including the vertical taper — a wide flat head sits *beside* the glyphs, not under them. Measured on
+one hover: the colour used to commit 84ms into a 760ms move as a two-frame flip; it now crosses at
+284ms over 108ms and thirteen frames.
+
+**The pill is assembled on page load.** Droplets converge from a wide ring and the shape forms out of
+them, once per arrival. Not a second animation system: a birth is a move whose source has no width, so
+`paint()` already does the right thing and it cannot drift from the hover morph.
+
+**Sticky section headings on the legal documents.** `sectionise()` wraps each `<h2>` and its clauses in
+a `<section>`, because what bounds a sticky element is its containing block and the parser emits
+headings as flat siblings. The band spans the number gutter (or the previous section's number scrolls
+past beside the pinned one) and fades the prose beneath it (or an arriving line is sliced in half).
+
+**The documents themselves.** Terms and Privacy to **v1.5**: Discord added as a second contact route
+alongside the canonical email — deliberately *not* at every email mention, since §17.1, takedown
+notices and Privacy Requests each name a single route on purpose. Privacy Appendix A had really
+drifted: `decorationColorHex` and `nameplateColorHex` were **stored and unlisted** under a heading
+reading "That's the whole list." All four instruments now close with the full trademark notice, so the
+footer no longer says it a second time in different words. Terms' own change history was missing its
+1.1 and 1.2 rows; backfilled from git.
+
+**Eight new build gates, each proven against broken input before being trusted.**
+- `scriptSyntaxAudit()` — parses every emitted inline `<script>`. It exists because a build shipped a
+  completely dead nav while **twelve gates stayed green**: a comment landed one line below its closing
+  `*/`, and `node --check` on the generator cannot see it, because that code is a string in a template
+  literal until a browser parses it.
+- `privacy-inventory` — Appendix A against the live `UserPreference` schema. Loads the schema rather
+  than regexing it: a regex that misses an oddly-formatted field fails **open**.
+- `dep-licences` — no copyleft anywhere, and every licence must be **known**. `chroma-js` and
+  `exif-parser` declare none at all, so it falls back to reading the licence text; a scanner that reads
+  "unknown" as permissive fails open.
+- `notice-attribution` — every runtime dependency in NOTICE §1 at the version the lockfile resolves.
+- `claude-md-shape` — no `CLAUDE.md` section over 130 lines. The `public/` section had reached 286,
+  43% of the file that loads in full every session.
+- `lock-version` — `package-lock.json` had read **2.35.3** while `package.json` read 2.47.0, twelve
+  releases of drift that `npm ci` ignores and nothing checked.
+- **CI now builds the site and fails if `public/` moved** — it is build output *and* it is committed,
+  so a source edit without a rebuild ships the previous binding wording. It caught a stale tree on its
+  first real run.
+- `scripts/checkEmojiCaptures.js` wired into CI.
+
+**Documentation moved to where it belongs.** The legal site's craft detail left `CLAUDE.md` for
+`.claude/rules/legal-site.md`, which loads only when you touch the generator, `public/`, or one of the
+nine sources. 665 → 417 lines, with zero word-tokens lost.
+
+⚠️ **PR #61 was closed unmerged, not merged.** Its commits are ancestors of this branch, so merging
+both would have applied the same work twice. Everything it contained ships here.
+
+⚠️ **Mobile is UNVERIFIED.** Every measurement in this release was at desktop widths. Filed as
+`[P1 · M]` in `docs/db-deferred-list.md`.
 
 ## v2.46.0 — 2026-07-31 23:50 EDT (#60 · `a4b17d6`) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
 

@@ -168,3 +168,27 @@ Harkirat is ET. **Get the real clock time proactively, ONCE, before drafting any
 `PostToolUse` hook flags a bare today-date after the fact, but it's a safety net for the rare miss, not
 license to fetch the time reactively every time (caught doing exactly that 2026-07-26 11:35 EDT — see
 `feedback_docs_at_push_time` / `feedback_be_usage_conscious` memory).
+
+## Where the legal documents live, and why they are not all together
+
+A reasonable question, asked 2026-08-02: there are four legal documents and they sit in two places.
+The split is **forced by tooling, not chosen**, and moving them breaks things:
+
+| Document | Location | Why there |
+|---|---|---|
+| `LICENSE` | repo root, **no extension** | GitHub renders a licence banner from a root file with this exact name; licence scanners look for it. Plain text, not Markdown. |
+| `NOTICE` | repo root, **no extension** | The Apache-2.0 convention. It matters here because discord.js and xlsx are Apache-2.0 and their notices must be reproduced. |
+| `CONTRIBUTING.md` · `CONTRIBUTORS.md` | repo root | GitHub surfaces `CONTRIBUTING.md` in the PR and issue flows. |
+| `SECURITY.md` | repo root | GitHub reads it to power the private "Report a vulnerability" flow. Deliberately NOT published to the site; `/security` redirects to the Contributing page instead. |
+| `TERMS.md` · `PRIVACY.md` | `docs/legal/` | **No tool recognises these two.** They are ordinary project documents, so they live with the other documents rather than cluttering the root. |
+
+So: root is "files a tool reads by name"; `docs/` is everything else. **Do not tidy this into one
+folder** — it would cost the licence banner, the vulnerability-report flow and the contributor prompts.
+
+### And why `LICENSE`/`NOTICE` appear a second time under `public/`
+
+Those two are copied **verbatim, byte-for-byte**, by `buildCompanions()` so the deployed site serves
+the unrendered originals at a stable URL. They are operative legal instruments, and putting a Markdown
+parser between a reader and the binding wording is a lossy transformation. Each therefore has two
+forms: `legal/license.html` to read, `/LICENSE` to rely on. `CONTRIBUTING`/`CONTRIBUTORS` get no such
+copy — they are prose about a process, not instruments.

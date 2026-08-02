@@ -296,3 +296,30 @@ it directly with an empty build command, so nothing has to run on their side.
   the document column.
 - It renders every `§N` cross-reference into a working anchor. That is why the parser only ever
   rewrites text nodes — touching markup would corrupt existing `href`s.
+
+## Previewing it locally (`.claude/launch.json`, added 2026-08-02 00:40 EDT)
+
+`preview_start` with the config named **`legal-site`**. It serves `public/` over HTTP.
+
+⚠️ **This is the ONLY previewable surface in the repo, and that is not an oversight.** The bot has no
+HTTP server at all — `PORT` is commented out in `.env` deliberately and nothing reads it — so
+`node --watch --env-file=.env.dev index.js` has nothing a browser pane can open. Do not add a launch
+configuration for it; it would be an entry that can never preview.
+
+Two deliberate choices in that file, both of which fail silently if undone:
+- **`runtimeExecutable` is `sh -c`, not `python3`.** `python3 -m http.server` takes its port
+  POSITIONALLY and ignores `$PORT`, so with a bare executable the harness's assigned port is accepted
+  and then ignored, and the server keeps trying the hardcoded one. The shell expands it;
+  `${PORT:-8899}` keeps the documented default when run by hand, and `exec` stops the shell lingering
+  as a stray parent.
+- **`autoPort: true`.** Nothing depends on the number — this is static files, with no OAuth callback,
+  webhook or CORS origin bound to it. 8899 is frequently already held by an older preview, and
+  yielding the port is correct; killing someone else's server is not.
+
+⚠️ **The site root serves a DIRECTORY LISTING, not the landing page, and that is correct.** `/` →
+`/legal/` lives in `public/_redirects`, which is a Cloudflare Pages feature that a plain static server
+does not implement. Locally, go to **`/legal/`**. A "the preview is broken" report that is really this
+has cost time before.
+
+⚠️ **It binds localhost, so it cannot reach a phone.** For device testing run
+`python3 -m http.server 8899 --bind 0.0.0.0 --directory public` and browse the machine's LAN address.

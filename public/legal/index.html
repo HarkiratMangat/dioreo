@@ -692,8 +692,11 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6re
    "print", and the n of "plain" touched the s of "sight". That collision is what
    made the ligature look like a rendering fault rather than a ligature. Easing the
    tracking separates the pairs and leaves the ligature alone.
-   To turn ligatures off instead, add font-variant-ligatures:none here — but that
-   is a taste call, not a defect. */
+   ⚠️ LIGATURES STAY ON — Harkirat's decision, 2026-08-02 00:40 EDT. They are the browser
+   default and nothing here disables them; the fi ligature in "fine" is meant to be there.
+   Do NOT "fix" this later by adding font-variant-ligatures:none. If the type ever
+   looks wrong again the suspect is the TRACKING, which pulls unrelated pairs into
+   contact, not the ligature. */
 
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}

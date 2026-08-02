@@ -99,6 +99,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click
 - 2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen
 - 2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer
+- 2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3503,6 +3504,48 @@ quantity: do not model this filter, measure it.**
 - **The site failed WCAG 2.4.1 (Level A) on every page** — no skip link, so ~13 tab stops before the
   document. The first fix half-applied: both warm pages got the link and neither got the target, which
   is worse than no link. Gated now.
+
+## 2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means
+
+Harkirat reported the same thing four times: the nav label is unreadable when you point at it. Each
+time I measured, found something real, fixed it, and was wrong about the cause.
+
+The first fix was real — the current tab was painted in its own accent, so its label and its pill were
+the same colour. The second was real — a group you were not in never repainted when it went cold, so
+labels stuck dark. The third was real — the crossover band spent half the move in a mid tone. None of
+them was **the** cause, and after each one he came back with the same complaint.
+
+The cause was `.tab:hover{color:var(--ink)}`, four words left over from before the tabs had an
+indicator at all. It is a `(0,2,0)` selector against `.tab`'s own `(0,1,0)`, so it beat the per-frame
+coverage colour outright. For exactly as long as a real pointer sat on a tab, the label was pinned
+near-white on top of the pill that had just arrived underneath it — and released the instant the
+pointer left, which is why it "turned black when the morph was *leaving* it".
+
+**Why I could not see it.** Every measurement drove the hover with
+`dispatchEvent(new MouseEvent('mouseenter'))`. That fires the JS listeners and **does not create a CSS
+`:hover` state**. So the probe was structurally incapable of observing the bug: it measured the half of
+the system that was working, and returned "correct" three times while his screen showed the opposite.
+
+### Lesson
+
+Three plausible-but-wrong diagnoses in a row is not bad luck and it is not a subtle bug. It is the
+signature of an instrument that cannot see the failing state. The moment a user reports the same
+symptom a third time, the suspect is the probe, not the theory — and the cheapest possible check is to
+assert the precondition you are assuming: `el.matches(':hover') === true` before reading anything.
+
+The same shape appeared twice more the same day, in the tooling rather than the page. A build shipped a
+**completely dead nav** while twelve gates reported green, because a comment landed one line below its
+closing `*/` and no gate parsed the JavaScript it had just written — `node --check` on the generator
+cannot see it, since that code is a string inside a template literal right up until a browser reads it.
+And I told Harkirat a tracked file had been *deleted* when he had moved it into a gitignored folder,
+because I searched with default flags after the tool guard had warned me about exactly that twice in
+the same session.
+
+Three different surfaces, one failure: a check that cannot observe the thing it claims to check will
+report success, and success is indistinguishable from a working system until someone looks with their
+own eyes. Every gate added afterwards was proven against deliberately broken input before it was
+trusted — and two of them were themselves caught being wrong by the self-test suite's vacuous-pass
+ledger, which is the only reason they are sound rather than merely present.
 
 # Part B — Lessons Ledger (thematic)
 
