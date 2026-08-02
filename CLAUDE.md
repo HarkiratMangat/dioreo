@@ -119,7 +119,18 @@ Full setup, the emoji/DB cloning, and the caveats: `docs/reference/deployment-an
 
 ### Git workflow = Branch → Commit → Test (dev bot) → Push → PR → Merge → Deploy (adopted 2026-07-24 12:24 EDT; Test step added 2026-07-26 13:45 EDT)
 Never push, merge, or deploy without asking first — approval never carries over (branch commits and
-**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.** The bot runs
+**running the local dev bot** are the exceptions: free, no approval needed). **Version is minted at MERGE (squash), not push.**
+⚠️ **That does NOT mean every merge mints a version, and reading it that way caused real confusion
+(2026-08-02 01:45 EDT).** It means: *when* a version is minted, it happens at merge time. These are two
+separate rules and only the first is absolute:
+  1. **`main` only ever advances through a PR.** Measured across the 85 commits on `main` since this
+     workflow was adopted on 2026-07-24: exactly ONE reached it by direct push, and that was a mistake
+     (`ebbf196`, 2026-08-02 01:10 EDT). Everything else came through a PR.
+  2. **A version is minted for a RELEASE, not for every merge.** Also measured: only 62 of 187 commits
+     on `main` have ever touched `package.json`, and eleven-plus post-adoption merges — almost all
+     `docs:` work — carry no bump at all and are entirely correct.
+So an unversioned commit on `main` is normal; an *unreviewed* one is not. `unreleased-on-main` (WARN)
+reports the former for traceability, and `.claude/hooks/main-push-guard.sh` prevents the latter. The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on
 the branch (free) → push the branch (asked) → `gh pr create` (draft only if a test/review gap exists) →
