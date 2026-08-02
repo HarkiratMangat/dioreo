@@ -26,6 +26,12 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.50.2 — August 2, 2026
+- **Nothing changed in the bot.** One of the project's internal writing checks was complaining far
+  more often than it was right — roughly four times out of five it was flagging ordinary sentences
+  that simply mentioned a date. It now only speaks up for the cases it was actually meant to catch.
+
+
 ## v2.50.1 — August 2, 2026
 - **Nothing changed in the bot.** One of the new safety checks was refusing a legitimate edit — it
   treated a genuine future deadline as an impossible date. It now understands the difference, and

@@ -253,9 +253,12 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   is what the CLI ROUTING block in `mcp-layer-check.sh` is — is structurally the same shape as the
   CLAUDE.md prose that failed 788× vs 4×. Do not promote catalogues; promote interventions.
 
-- **🧪 Migrate the four hand-rolled hook test suites to `bats`** `[P3 · M]` (filed 2026-08-02 15:25 EDT).
-  `bats-core` is installed. The suites (`memory-index-check`, `mcp-layer-check`,
-  `outstanding-not-filed`, `timestamp-check` — 43 assertions total) are hand-written bash with
+- **🧪 Migrate the hand-rolled hook test suites to `bats`** `[P3 · M]` (filed 2026-08-02 15:25 EDT;
+  scope corrected 2026-08-02 18:45 EDT). `bats-core` is installed. ⚠️ **It said "the four suites …
+  43 assertions"; there are now SEVENTEEN suites** — v2.50.0 wired the suite into `npm test`/CI and
+  wrote the eight that were missing. The count in the original wording was a copy of state that
+  nothing updated, exactly what `feedback_no_duplicated_state_in_prose` warns about. They are
+  hand-written bash with
   hand-rolled `assert` helpers, and **two of them shipped with real bugs the same day they were
   written**: one grepped a needle that also matches the HEALTHY output line, and one grepped
   `"decision":"block"` while `jq -n` pretty-prints it *with a space*. Both reported PASS while
@@ -263,8 +266,10 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   removes the class.
   ⚠️ **Not urgent and NOT a correctness gap today** — all four suites currently pass and were fixed to
   discriminate. This is about the assertion *machinery* being homemade, not the coverage.
-  **Direction:** convert one suite first (`timestamp-check`, the smallest at 9 cases) and confirm the
-  same failures still get caught, before touching the other three. Keep each suite's WHY-comments —
+  **Direction:** convert ONE suite first and confirm the same failures still get caught before
+  touching the rest. ⚠️ Pick the smallest **at the time you start** (`typos-check` is 5 cases today;
+  `timestamp-check` was the smallest at 9 and is now the LARGEST at 35) — do not trust a count
+  written here, run `rg -c '^\s*a ' .claude/hooks/*.test.sh`. Keep each suite's WHY-comments —
   they carry the incidents the tests exist for, and those are worth more than the assertions.
   ⚠️ **Do not migrate mid-observation-window if it touches `mcp-layer-check`** — that hook is part of
   the running experiment.

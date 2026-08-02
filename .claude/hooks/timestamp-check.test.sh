@@ -62,13 +62,36 @@ a "undated content not denied"      pre "deny:"             no  "Ordinary prose 
 a "a future DATE alone is allowed"  pre "deny:"             no  "Deadline: ${TOMORROWSTAMP%% *} — no clock time, deliberately."
 
 echo "  -- post mode: advisory only --"
-a "bare prose date flagged"         post "BARE DATE"        yes "Corrected on $TODAY after review."
+a "'on DATE' is prose, now silent" post "BARE DATE"        no  "Corrected on $TODAY after review."
 a "past timestamp silent"           post "TIMESTAMP CHECK"  no  "Measured $PASTSTAMP $LOCALTZ during the run."
 a "date-prefixed FILENAME silent"   post "TIMESTAMP CHECK"  no  "See docs/specs/$TODAY-some-protocol.md for detail."
 a "CLI date argument silent"        post "TIMESTAMP CHECK"  no  "Run: node x.mjs --from $TODAY --to $TODAY-x"
 a "backticked bare date silent"     post "TIMESTAMP CHECK"  no  "The window is \`$TODAY\` in the config."
 a "undated content silent"          post "TIMESTAMP CHECK"  no  "Just some ordinary prose with no dates."
 a "future still reported in post"   post "IMPOSSIBLE"       yes "Measured $FUTSTAMP $LOCALTZ during the run."
+
+echo "  -- BARE DATE precision: prose names a day, a record stamps a moment --"
+# Measured on 164 real lines added to main on 2026-08-02: the old rule fired 22 times and was right
+# 4 times (18%). Every one of these suppressions is a shape that actually appeared in that corpus.
+a "prose 'on DATE' silent"          post "BARE DATE" no  "Three separate times on $TODAY I passed the wrong flag."
+a "prose 'from DATE' silent"        post "BARE DATE" no  "MEASURED from $TODAY, and this day counts."
+a "article 'a DATE session' silent" post "BARE DATE" no  "A $TODAY session handoff asserted it was deleted."
+# ⚠️ Only the word IMMEDIATELY before the date is examined, so "the actual DATE" is NOT
+#    suppressed by the article. That is deliberate — widening it to "article + any adjective"
+#    starts guessing at grammar. The real corpus line was QUOTED, and the quote strip is what
+#    handles it; the case below pins that, and this one pins the deliberate limit.
+a "'the ADJ DATE' still fires"     post "BARE DATE" yes "the actual $TODAY failure blocks on this."
+a "prose 'by DATE' silent"          post "BARE DATE" no  "It had all landed by $TODAY without anyone noticing."
+# A range BOUND is a date, not a moment — a clock time there would be wrong, not merely verbose.
+a "range with arrow silent"         post "BARE DATE" no  "Baseline — control window 2026-07-24 → $TODAY"
+a "range, date on the left, silent" post "BARE DATE" no  "The window is $TODAY → 2026-08-10 (exclusive)."
+# A date inside a string literal is data, not a record.
+a "date in a quoted literal silent" post "BARE DATE" no  "assert \"the actual $TODAY failure blocks\" block"
+# …and the shapes that MUST still fire: these are record stamps missing their time.
+a "'(added DATE)' still fires"      post "BARE DATE" yes "## Licence & attribution gates (added $TODAY)"
+a "'UPDATED DATE:' still fires"     post "BARE DATE" yes "PATH UPDATED $TODAY: the spreadsheet moved out of the repo root."
+a "'asked DATE:' still fires"       post "BARE DATE" yes "A reasonable question, asked $TODAY: where do these live?"
+a "bare prose date alone fires"     post "BARE DATE" yes "Corrected $TODAY after review."
 
 echo "  -- foreign timezones are out of scope, not violations --"
 # A stamp in a zone that is NOT the local one cannot be compared against the local clock without

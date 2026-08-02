@@ -181,7 +181,48 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.50.1 — 2026-08-02 18:22 EDT (#69) — A gate that refused a real deadline, and two items that were only ever said out loud
+## v2.50.2 — 2026-08-02 18:43 EDT (#70) — The bare-date check was wrong four times in five
+
+Harkirat: *"it's triggered way too many false positives."* He was right, and the
+number is worse than it felt.
+
+**Measured, not estimated.** Corpus: every line added to `main` today carrying
+today's date, `public/` excluded because generated HTML never reaches the hook —
+**164 lines**. Both hook versions were then run over it, rather than reasoning
+about what they would do:
+
+| | fires | genuine | precision |
+|---|---|---|---|
+| before | 22 | 4 | **18%** |
+| after | 4 | 4 | **100%** |
+
+18 suppressed, and **no real miss** — all four survivors are record stamps that
+genuinely lack a time (`(added …)`, `PATH UPDATED …:`, `asked …:`).
+
+**The rule was asking the wrong question.** Working-agreement rule 10 wants a time
+on a *record stamp*. It never wanted one on ordinary English that happens to name
+a day, and the check could not tell those apart. Two discriminators, both derived
+from the corpus:
+
+- **Prose** — a preposition, article or conjunction immediately before the date:
+  "on 2026-08-02", "from 2026-08-02", "a 2026-08-02 session". Most of the 18.
+- **Range endpoint** — an arrow or dash on either side (`2026-07-24 → 2026-08-02`).
+  A bound is a date, not a moment; a clock time there would be *wrong*.
+
+Double-quoted spans are now stripped alongside backticks — a date inside a string
+literal is data, not a record. That is the same trick the deferral-tell hook
+already uses.
+
+⚠️ **A deliberate limit, pinned by a test:** only the word *immediately* before the
+date is examined, so `the actual 2026-08-02 failure` still fires. Widening it to
+"article plus any adjective" starts guessing at grammar, and the real corpus line
+was quoted anyway — the quote strip is what handles it.
+
+This is the same lesson the hook's own header already carried and had not applied
+to its second branch: **a gate that is usually wrong trains you to scroll past
+it**, which is how the fabricated-timestamp miss got waved through 30 times.
+
+## v2.50.1 — 2026-08-02 18:22 EDT (#69 · `21e7e3f`) — A gate that refused a real deadline, and two items that were only ever said out loud
 
 **`timestamp-check.sh pre` denied a correct edit.** Its deny message tells you
 that if you mean a future deadline, write the date with no clock time — and that
