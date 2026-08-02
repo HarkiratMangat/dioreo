@@ -124,11 +124,16 @@ Never push, merge, or deploy without asking first — approval never carries ove
 (2026-08-02 01:45 EDT).** It means: *when* a version is minted, it happens at merge time. These are two
 separate rules and only the first is absolute:
   1. **`main` only ever advances through a PR.** Measured across the 85 commits on `main` since this
-     workflow was adopted on 2026-07-24: exactly ONE reached it by direct push, and that was a mistake
-     (`ebbf196`, 2026-08-02 01:10 EDT). Everything else came through a PR.
-  2. **A version is minted for a RELEASE, not for every merge.** Also measured: only 62 of 187 commits
-     on `main` have ever touched `package.json`, and eleven-plus post-adoption merges — almost all
-     `docs:` work — carry no bump at all and are entirely correct.
+     workflow was adopted on 2026-07-24: **nine** reached it by direct push. Eight of those fall in
+     2026-07-24 → 2026-07-27, the era of the `chore(release): finalize` two-commit pattern that was
+     retired 2026-07-27 21:27 EDT. Then **six days with none at all** — and then `ebbf196`
+     (2026-08-02 01:10 EDT), which was a mistake and broke that clean run.
+  2. **A version is minted for a RELEASE, not for every merge.** Measured by TAGS, which is the
+     authoritative record: 31 of those 85 commits carry no tag, almost all `docs:` work, and they are
+     entirely correct. ⚠️ **Do not measure this with `package.json`** — it went unbumped for a long
+     stretch (the audit's own `TAG_RULE_FROM` exemption records that it was not bumped per release
+     before v2.33.0), so counting its edits answers a different question and gives a wrong number.
+     That mistake was made and corrected in this very passage.
 So an unversioned commit on `main` is normal; an *unreviewed* one is not. `unreleased-on-main` (WARN)
 reports the former for traceability, and `.claude/hooks/main-push-guard.sh` prevents the latter. The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
