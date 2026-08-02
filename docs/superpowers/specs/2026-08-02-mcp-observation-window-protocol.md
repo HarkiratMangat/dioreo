@@ -96,14 +96,22 @@ memoryWritesPerSession 0.49
 
 ### ⏱️ Relaxation period ≠ measured window
 
-- **Relaxation is LIVE from 2026-08-02 17:00 EDT** through 2026-08-09.
-- **The MEASURED window is 2026-08-03 00:00 → 2026-08-10 00:00 — seven whole days.**
+- **Relaxation is LIVE from 2026-08-02 17:00 EDT** through 2026-08-09 17:00 EDT — exactly 7×24h.
+- **The MEASURED window is 2026-08-02 → 2026-08-10 (exclusive), and 08-02 COUNTS.**
 
-**2026-08-02 is a deliberate warm-up day, excluded from measurement.** The window opened mid-day, so a
-date-granular boundary cannot split that day cleanly, and the day is already contaminated by the
-2-session/884-turn build session above. Measuring it would import that contamination for no gain.
-⚠️ The cost is that any **novelty spike** on day one is unmeasured — if the log shows heavy day-one
-use, say so qualitatively rather than pretending the number covers it.
+**Harkirat's call, 2026-08-02 18:20 EDT:** start measuring today, from the next session opened, with
+the already-run sessions filtered out. Starting on 08-03 instead would have discarded a full day of
+the relaxation period — and the first day is where a novelty spike, if there is one, would show.
+
+**Two Aug-2 sessions are excluded BY SESSION ID, not by date:** `0bffaf56` (618 turns — the session
+that built this instrument) and `e754deb0` (301 turns). Both started before 17:00 EDT, both have zero
+sequential-thinking uses. The IDs are **hardcoded in the instrument**, not passed as a flag, because a
+close-out that forgot `--exclude` would silently pull ~919 zero-use turns into the treatment set and
+understate the trigger rate. Verified to discriminate: the window reads **0 sessions** with the filter
+and **2 sessions / 922 turns** under `--exclude none`.
+✅ **A day-one novelty spike IS now captured**, which is the point of starting on 08-02 rather than
+08-03. Treat a cluster of short (`totalThoughts` 2–3) runs on the first day as *novelty until the log's
+`why`/`outcome` says otherwise* — a newly-unlocked tool gets reached for because it is new.
 
 ### ⚠️ DECLARED IN ADVANCE: the treatment period is expected to be DESIGN-heavy
 
@@ -189,8 +197,8 @@ The `outcome` line is the one that matters. "It felt thorough" is not an outcome
 
 1. Re-run the instrument **unchanged**, both scopes:
    ```bash
-   node scripts/mcp-observation-metrics.mjs --from 2026-08-03 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds
-   node scripts/mcp-observation-metrics.mjs --from 2026-08-03 --to 2026-08-10 --label treatment-all
+   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds
+   node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment-all
    ```
    ⚠️ **`--to` is EXCLUSIVE, so it must be `2026-08-10` to include the window's final day.** An earlier
    draft said `--to 2026-08-09`, which would have silently dropped Aug 9 — the same off-by-one already

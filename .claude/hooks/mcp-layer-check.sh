@@ -85,13 +85,14 @@ if [ ! "$TODAY" \> "$WINDOW_END" ]; then
    without its rule, so the 'used twice' figure measures the RULE, not the tool.
    ⚠️ EVERY use must be logged in local/mcp-observation-log.md with why + outcome. An unlogged use is
    a lost data point. Baseline: 0.014 calls/100 turns, median 276 turns/session, 290,915 cacheRead/turn.
-   NOTE 2026-08-02 is an excluded warm-up day; the MEASURED window is Aug 3-9 (whole days).
+   MEASURED from 2026-08-02 (this day counts) — the two sessions that ran BEFORE 17:00 EDT are
+   filtered out by session id inside the instrument, so no flag is needed at close-out.
    Protocol: ${PROTO}"
 else
   window="
 ⏰ OBSERVATION WINDOW CLOSED (ended ${WINDOW_END}). The sequential-thinking suspension has EXPIRED —
    explicit-request-only is in force again unless a close-out recorded otherwise WITH DATA.
-   Close it out: node scripts/mcp-observation-metrics.mjs --from 2026-08-03 --to 2026-08-10 --label treatment
+   Close it out: node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment
    then compare against the pre-registered baseline in ${PROTO} and record the verdict."
 fi
 

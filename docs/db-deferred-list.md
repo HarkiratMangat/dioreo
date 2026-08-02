@@ -100,9 +100,9 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   **Close-out (all four, in order):**
   1. Re-run the instrument **UNCHANGED** — editing it voids the comparison. **`--to` is EXCLUSIVE, so
      it must be `2026-08-10` to include the final day:**
-     `node scripts/mcp-observation-metrics.mjs --from 2026-08-03 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds`
-     (**2026-08-02 is an excluded warm-up day** — the window opened mid-day and that day holds the
-     884-turn build session with zero seq uses. Measured window is 7 whole days, Aug 3–9.)
+     `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds`
+     (**08-02 COUNTS** — measurement starts the day the window opened. The two sessions that ran
+     before 17:00 EDT are excluded by session id, hardcoded in the instrument so no flag is needed.)
   2. Compare only against the **pre-registered** baseline + criteria in
      `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`. Baseline (Diors-only,
      instrument v2, bucketed by session START): **35 sessions · 18,939 turns · median 276**

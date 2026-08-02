@@ -54,6 +54,20 @@ const RATES = {
   'claude-haiku-4-5-20251001': { in: 0.8, out: 4, cacheWrite: 1, cacheRead: 0.08 },
 };
 
+// Sessions that ran on 2026-08-02 BEFORE the relaxation went live at 17:00 EDT. They must never
+// enter the treatment set: together ~919 turns of pre-relaxation work with ZERO sequential-thinking
+// uses, and 0bffaf56 is the session that built this instrument. Excluding them is what lets the
+// measured window start on 2026-08-02 (Harkirat's call — starting 08-03 would have discarded a whole
+// day of the relaxation period).
+//
+// HARDCODED, not a flag you must remember: a close-out that forgets `--exclude` would silently pull
+// 919 zero-use turns into the treatment data and understate the trigger rate. Override with
+// `--exclude a,b` or `--exclude none` if a future window needs different filtering.
+// Matched against the whole PATH, so a session's subagent sidechain files are excluded with it.
+const DEFAULT_EXCLUDE = ['0bffaf56', 'e754deb0'];
+const EXCLUDE = args.exclude === 'none' ? []
+  : (args.exclude ? args.exclude.split(',').map((x) => x.trim()).filter(Boolean) : DEFAULT_EXCLUDE);
+
 const WATCH = {
   'sequential-thinking': /mcp__sequential-thinking__/,
   'linksee-recall': /mcp__linksee__recall/,
@@ -99,6 +113,7 @@ function sessionStart(file) {
 }
 
 let files = walk(PROJECT ? path.join(ROOT, PROJECT) : ROOT).filter((f) => {
+  if (EXCLUDE.some((id) => f.includes(id))) return false;
   const d = sessionStart(f);
   return d >= FROM && d < TO;
 });
@@ -170,7 +185,7 @@ const median = perSessionTurns.length ? perSessionTurns[Math.floor(perSessionTur
 const totalTok = tok.input + tok.output + tok.cacheCreate + tok.cacheRead;
 
 console.log(JSON.stringify({
-  label: LABEL, window: { from: FROM, to: TO }, project: PROJECT ?? 'ALL',
+  label: LABEL, window: { from: FROM, to: TO }, project: PROJECT ?? 'ALL', excluded: EXCLUDE,
   wallClock: { first: firstTs, last: lastTs },
   sessions, assistantTurns,
   turnsPerSession: { mean: sessions ? +(assistantTurns / sessions).toFixed(1) : 0, median, max: perSessionTurns.at(-1) ?? 0 },
