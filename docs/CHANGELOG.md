@@ -181,7 +181,35 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.49.0 — 2026-08-02 15:41 EDT (#65) — Four guards that fire at the moment of the mistake, and thirty invented timestamps
+## v2.49.1 — 2026-08-02 16:06 EDT (#66) — The gate fired on its own author, and the versioning rule was describing a dead era
+
+**A guard blocked a summary that was true.** `outstanding-not-filed` flagged two
+items as unfiled; both were genuinely filed, at `docs/db-deferred-list.md:202`
+and `:249`, in `7cd21e7`, present on `origin/main`. The gate was right
+*mechanically* — that turn touched no list — but its already-filed escape only
+matched `filed as/in/under/it`, while the message said **"filed with direction"**
+and **"deferred with a full note"**.
+
+Widened to cover `filed with/to`, `deferred with a`, and a bare mention of the
+list filenames. **Deliberately NOT widened to "I'll file it" or "file it
+later"** — those are *intentions*, and letting an intention pass is the entire
+failure the gate exists for. A test pins that line: "filed with direction"
+passes, "I'll file it later" still blocks. 12 cases.
+
+**And the versioning rule was documenting a superseded era as current.** It read
+*"a version is minted for a RELEASE, not for every merge"* and cited 31 untagged
+commits as *"entirely correct"*. Measured against tags: 29 of 85 commits carry no
+tag, **but the newest of those is 2026-07-28**; only **3** are the retired
+`chore(release): finalize` pattern; and the last **14 consecutive** commits are
+tagged, *including pure `docs:` merges* (`v2.43.2`, `v2.42.1`, `v2.41.4`).
+**A merge means a version bump — the judgement is the size, never whether.**
+
+⚠️ Correcting it in full first pushed that CLAUDE.md section to **137 lines
+against a 130 limit**, and `docs:audit` failed the build. Compressed rather than
+exempted: the file is loaded in full every session, and a verbose correction to a
+stale rule is still a cost paid on every future one.
+
+## v2.49.0 — 2026-08-02 15:41 EDT (#65 · `7cd21e7`) — Four guards that fire at the moment of the mistake, and thirty invented timestamps
 
 **I fabricated thirty timestamps and every gate passed them.** `date` was called
 **once**, at 12:57 EDT, and every stamp after it was invented — drifting to 19:30

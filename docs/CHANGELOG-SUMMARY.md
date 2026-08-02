@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.49.1 — August 2, 2026
+- **Nothing user-facing changed.** A maintenance release: one of the automatic checks was reporting a
+  problem when there wasn't one, and an internal rule about version numbering was out of date.
+
 ## v2.49.0 — August 2, 2026
 - **Nothing in the bot changed.** Another behind-the-scenes release — this one about the safety checks
   that run while the bot is being worked on, so nothing you use in Discord is affected.
