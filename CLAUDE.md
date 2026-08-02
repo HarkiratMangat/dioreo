@@ -500,6 +500,17 @@ file, and this section all reference it; renaming it is a separate change that h
   declared in a later block and was never read. It merges every matching block in document order now.
   Caught only by reverting a known-bad value and watching it stay green: **prove a new gate against
   broken input, every time.**
+- ⚠️ **`scriptSyntaxAudit()` parses every emitted inline `<script>`, and it exists because a build
+  shipped a DEAD NAV while every other gate passed** (2026-08-01 22:05 EDT). A comment block was
+  inserted one line below the `*/` that closed the previous comment, so the client script carried bare
+  prose in statement position; the indicator IIFE died at parse time — no tab had a `--cov`, no group
+  went hot, the pill never moved — and the build still reported content complete, links resolving,
+  contrast AA and no credentials. **`node --check` on the generator cannot catch this**, and that is
+  the trap worth remembering: the client code lives inside a template literal, so to the generator it
+  is a *string*, syntactically perfect right up until a browser parses it. The gate shells out to
+  `node --check` rather than `new Function()` — both would find it, but a subprocess that can only
+  parse cannot turn into an execution path as the page content grows. Proven against the broken build
+  before being trusted: it named all nine pages and failed the build.
 - **`secretScan()` gates the published output against credential-SHAPED strings** (added with the
   chronicle family). `DEVLOG.md` is published in full and is the one source written candidly for us
   rather than for a reader — it discusses tokens, hosts and a past incident. It was clean when published

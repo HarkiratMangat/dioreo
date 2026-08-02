@@ -2147,6 +2147,14 @@ const NAV_JS = `
 
     function H(){ return ink.clientHeight||26; }
     function box(i){ return [tabs[i].offsetLeft, tabs[i].offsetWidth]; }
+    /* The tab's horizontal padding, so paint() can measure coverage of the LABEL
+       rather than of the whole tab. Cached rather than read per frame: every tab
+       carries the same padding, and it only changes when the breakpoint does — a
+       getComputedStyle per tab per frame would force a style resolve 6 times a
+       frame to learn a number that changes twice in the life of the page. */
+    var padX=0;
+    function padMeasure(){ padX = parseFloat(getComputedStyle(tabs[0]).paddingLeft) || 0; }
+    padMeasure();
     function band(a,b,x){ x=Math.max(0,Math.min(1,(x-a)/(b-a))); return x*x*(3-2*x); }
     /* A damped spring, the one thing the mobile indicator has that this did not.
        Everything here eased with smoothstep, which decelerates into its target
@@ -2345,35 +2353,73 @@ const NAV_JS = `
          switches to black at the end". A discrete state cannot describe a
          continuous one.
 
-         Coverage is the honest quantity: how much of this tab's box the pill
+         Coverage is the honest quantity: how much of this tab's LABEL the pill
          actually covers right now, taking whichever of the two pieces covers it
-         more. band() then biases the crossover so the label commits quickly
-         around the halfway point instead of spending the move as a mid grey —
-         a single colour can never be right for a glyph run that is half on the
-         pill, so the goal is to be wrong for as few frames as possible.
+         more.
+
+         ⚠️ THE LABEL, NOT THE TAB'S BOX — and getting this wrong is why the
+         timing could not be tuned into feeling right, only traded between two
+         kinds of wrong. A tab carries 1.02rem of padding on each side, so about
+         33px of a ~63px tab is padding. Measuring the padding box meant "half
+         covered" could mean the pill had not reached a single letter yet, and the
+         relationship between the number and what the eye sees changed with every
+         label's length: "Notice" and "Contributing" crossed over at visibly
+         different moments in their own moves. Against the content box, 0.5 means
+         half the glyphs are on the pill, on every tab, at every width — so the
+         crossover can be placed once and be right everywhere.
+
+         ⚠️ THE HEAD IS PAINTED CENTRED, so its rect must be too. This used the
+         destination's own left edge with the head's current width, i.e. a rect
+         growing from the LEFT, while the element is positioned at
+         dstX+(dstW-bw)/2 and inflates from its centre. For the destination tab
+         the total overlap came out the same by luck, but it was accumulating on
+         the wrong side of the word — the label committed as the pill's leading
+         edge passed, rather than as the pill spread out under it — and for the
+         NEIGHBOURING tab it was simply wrong. Both pieces are also inset by the
+         goo's own dilation, so these are the exact rects being painted.
 
          Read nothing from layout here. box() is offsetLeft/offsetWidth, which
-         the browser has cached since the last reflow; the pill's own extent is
-         already in hand as tailX/aw and dstX/bw. */
+         the browser has cached since the last reflow; padX is cached from the
+         last resize; the pill's extent is already in hand.
+
+         ⚠️ COVERAGE IS TWO-DIMENSIONAL, and leaving out the second dimension is
+         what made the switch fire early and read as a separate event. Both pieces
+         are tapered in HEIGHT as they narrow (sy() below: a piece under 26px wide
+         is scaled down to as little as 0.14 of the pill's height) so that they die
+         like droplets instead of standing full-height slivers. A head that is
+         30px wide but a fifth of the pill's height sits BESIDE the glyphs, not
+         under them — but a horizontal-only overlap scores it as fully covering.
+         Measured before this was added: on a Terms -> Notice hover the label was
+         fully committed to near-black 84ms into a 760ms move, while the pill was
+         still visibly assembling out of droplets. Multiplying by the taper is what
+         holds the colour until there is actually a pill under the word. */
       var shown = home!==null || seg.classList.contains('hot');
-      var piece = [[tailX,aw],[dstX,bw]];
+      var tap = w => Math.max(0.14, Math.min(1, w/26));
+      var piece = [[tailX+dil, aw-2*dil, tap(aw)],[dstX+(dstW-bw)/2+dil, bw-2*dil, tap(bw)]];
       for(var q=0;q<n;q++){
         var tb=box(q), cov=0;
-        if(shown && tb[1]>0){
+        var lx=tb[0]+padX, lw=tb[1]-2*padX;
+        if(shown && lw>0){
           for(var k=0;k<2;k++){
             var s=piece[k][0], w=piece[k][1];
             if(w<=0) continue;
-            var ov=Math.min(tb[0]+tb[1], s+w) - Math.max(tb[0], s);
-            if(ov>0) cov=Math.max(cov, ov/tb[1]);
+            var ov=Math.min(lx+lw, s+w) - Math.max(lx, s);
+            if(ov>0) cov=Math.max(cov, (ov/lw) * piece[k][2]);
           }
         }
-        /* ⚠️ A TIGHTER CROSSOVER THAN IT LOOKS. 0.30/0.58 rather than 0.22/0.72:
-           a single colour can never be right for a glyph run that is half on the
-           pill and half on the dark bar, so the goal is to spend as FEW frames
-           there as possible. The wider band spent roughly half the move in the
-           mid range, which is what read as the label going pale before it
-           committed. Not a hard step, because that is a visible snap. */
-        tabs[q].style.setProperty('--cov', band(0.30,0.58,cov).toFixed(3));
+        /* ⚠️ CENTRED ON 0.5, NOT BIASED. band() is a smoothstep, so its output is
+           0.5 exactly when cov is (a+b)/2 — and now that cov measures the LABEL,
+           cov 0.5 means half the glyphs are on the pill, which is precisely the
+           moment the label's colour should be halfway between the two. a+b=1 is
+           what ties the colour to the pill instead of to the clock.
+           The earlier 0.30/0.58 was biased early to compensate for measuring the
+           padding box, where the pill reached the letters much later than the
+           number implied. With the honest quantity the bias is not needed and the
+           crossover can be symmetric, which is what makes the two halves of a
+           move feel the same. Width 0.44 is a deliberate choice over something
+           snappier: the label passes through the mid tone for roughly a fifth of
+           the move, and a smoothstep spends most of that near its endpoints. */
+        tabs[q].style.setProperty('--cov', band(0.28,0.72,cov).toFixed(3));
       }
     }
     function step(now){
@@ -2654,7 +2700,7 @@ const NAV_JS = `
 
     /* First paint snaps: an animation from zero width would read as a glitch. */
     aim(home===null?0:home,true);
-    addEventListener('resize',function(){ aim(idx,true); });
+    addEventListener('resize',function(){ padMeasure(); aim(idx,true); });
   });
 
   /* ── the mobile strip ─────────────────────────────────────────────────
@@ -2964,7 +3010,20 @@ const SWITCHER_CSS = `
    the label's colour a fifth of a second after the pill settles. The transition
    exists only for the jump when a group you are not in shows or hides its
    indicator, which is not a per-frame change. */
-.seg.morph .tab{transition:none}
+/* ⚠️ A SHORT TRANSITION DURING THE MOVE, NOT NONE. This was transition:none, on
+   the reasoning that --cov already changes every frame so an eased transition on
+   top of it is pure lag. That is true of a quantity which changes SLOWLY — and
+   this one does not: measured on a Terms -> Notice hover, coverage crosses from
+   nothing to complete in about 84ms of a 760ms move, so the label flipped in two
+   frames while the pill spent the other 90% of the move assembling around it. A
+   step that fast inside a slow animation reads as a separate event, which is
+   exactly what did not feel seamless.
+   130ms is chosen against that 84ms traverse: long enough to spread the flip over
+   roughly eight frames, short enough that the colour still lands well before the
+   pill settles and never trails it. Do not raise it much — past about 200ms the
+   label visibly finishes after the pill does, which is the lag the original note
+   was right to warn about. */
+.seg.morph .tab{transition:color .13s ease-out}
 /* ⚠️ THE CURRENT TAB IS NOT PAINTED IN ITS OWN ACCENT, and this is the whole bug
    behind "the white nav text is not legible". --rest is what a tab looks like with
    no pill on it, and setting it to the accent meant the label and the pill beneath
@@ -5785,6 +5844,57 @@ function chronicleStructAudit(results) {
  * got the link and neither got the target, so two pages shipped a control that
  * jumped nowhere. A link to a missing anchor is worse than no link at all.
  */
+/**
+ * Parse every inline <script> in the built output and fail on a syntax error.
+ *
+ * ⚠️ THIS GATE EXISTS BECAUSE A BROKEN NAV SHIPPED AND EVERY OTHER GATE PASSED
+ * (2026-08-01 22:05 EDT). A comment block was inserted one line below the `*​/`
+ * that closed the previous comment, so the client script carried bare prose in
+ * statement position. The whole indicator IIFE died at parse time: no tab had a
+ * --cov, no group went hot, the pill never moved. The build reported content
+ * complete, links resolving, contrast AA and no credentials — because not one of
+ * those gates looks at whether the JavaScript it just wrote can be parsed.
+ *
+ * `node --check` on the generator cannot catch it either, and that is the trap:
+ * this code lives inside a template literal, so to the generator it is a STRING.
+ * It is syntactically perfect right up until a browser tries to run it.
+ *
+ * ⚠️ It shells out to `node --check` rather than using new Function(). Both would
+ * find the error, but new Function() COMPILES the string inside this process,
+ * and the honest description of this gate is "parse a file we just wrote to
+ * disk" — a subprocess that can only ever parse cannot become an execution path
+ * later, however the page content evolves. The temp file is written under
+ * os.tmpdir() and removed straight after.
+ */
+function scriptSyntaxAudit(built) {
+    const { execFileSync } = require('child_process');
+    const tmp = path.join(require('os').tmpdir(), `db-script-check-${process.pid}.js`);
+    let bad = 0, checked = 0;
+    // Same page set a11yAudit() uses: every built page plus the landing page,
+    // which is not in `built` because it has no Markdown source.
+    for (const file of [...built.map(outPath), path.join(OUT, 'index.html')]) {
+        const out = path.relative(path.join(ROOT, 'public'), file);
+        const html = fs.readFileSync(file, 'utf8');
+        const scripts = html.match(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g) || [];
+        scripts.forEach((block, i) => {
+            const code = block.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, '');
+            if (!code.trim()) return;
+            checked++;
+            fs.writeFileSync(tmp, code);
+            try { execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' }); }
+            catch (e) {
+                bad++;
+                const msg = String(e.stderr || e.message).split('\n')
+                    .find(l => /Error/.test(l)) || 'does not parse';
+                console.log(`  ✗ ${out}: inline script #${i + 1} — ${msg.trim()}`);
+            }
+        });
+    }
+    try { fs.unlinkSync(tmp); } catch { /* nothing to clean up */ }
+    if (!bad) console.log(`  ✓ all ${checked} inline scripts parse`);
+    return bad === 0;
+}
+
 function a11yAudit(built) {
     const bad = [];
     const pages = [...built.map(outPath), path.join(OUT, 'index.html')];
@@ -6028,6 +6138,8 @@ console.log('\nChecking the hover guard rewrote the stylesheets cleanly:');
 const hoverOk = hoverGuardAudit(guardedPages);
 console.log('\nChecking every source entry became an entry on the page:');
 const chronOk = chronicleStructAudit(chronicleResults);
+console.log('\nChecking the emitted client scripts parse:');
+const scriptOk = scriptSyntaxAudit(built);
 console.log('\nChecking structural accessibility (skip link, landmarks, headings):');
 const a11yOk = a11yAudit(built);
 console.log('\nChecking text contrast meets WCAG AA in both themes:');
@@ -6037,7 +6149,7 @@ const parserOk = parserStyleAudit(built);
 console.log('\nScanning published output for credential-shaped strings:');
 const secretOk = secretScan(built);
 const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && hoverOk
-    && chronOk && parserOk && a11yOk && contrastOk && secretOk;
+    && chronOk && parserOk && scriptOk && a11yOk && contrastOk && secretOk;
 // Names each property that was actually checked, rather than one word that reads
 // as "the output is correct". Each gate tests a different thing, and a pass on
 // one has already been mistaken for a pass on another once. Read this roster
@@ -6045,6 +6157,7 @@ const ok = contentOk && linksOk && structOk && xrefOk && warmOk && classOk && ho
 console.log(ok
     ? '\nDone. Content complete · links resolve · aligned blocks intact · '
       + 'cross-refs live · warm structure applied · class names distinct · '
-      + 'hover guard clean · every source entry rendered · parser markup styled · skip links land · contrast AA · no credentials published.'
+      + 'hover guard clean · every source entry rendered · parser markup styled · '
+      + 'scripts parse · skip links land · contrast AA · no credentials published.'
     : '\nFAILED — see the findings above.');
 process.exit(ok ? 0 : 1);
