@@ -271,6 +271,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `design-decisions.md` | parser/timestamp utils, calendar/patchnotes/seasonend/draws commands, `UserPreference` | the "don't re-litigate these" log (visibility Option A, admin-date UTC, chrono noon, bulk formats, title-casing, All-Season calendar, patch-note title sync, `/draw prices` rewrite, color map, emoji sourcing) |
 | `models.md` | `models/**` | data models · the schema-save gotcha (full) |
 | `scripts-and-migrations.md` | `scripts/**` | pointer map: which subsystem rule documents each script |
+| `legal-site.md` | `scripts/buildLegalPages.js`, `scripts/lib/chronicle.js`, `public/**`, `docs/legal/**`, `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` | the published site: three page families and their voices · the measured nav staging · the metaball constants · the build's gate roster · sticky headings · a11y + contrast |
 
 ### `docs/` — read on demand (planning / ops / history; not code-triggered)
 | File | Covers |
@@ -282,59 +283,41 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (v1.0, 2026-07-28 21:36 EDT). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. |
 
 ### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
-`public/legal/*.html` is **build output**, deployed to Cloudflare Pages so the
+`public/**/*.html` is **build output**, deployed to Cloudflare Pages so the
 Discord Developer Portal has stable public URLs that survive the repo flipping private. The sources are
-`docs/legal/*.md` plus the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
-`CONTRIBUTORS.md`); the HTML is produced by **`node scripts/buildLegalPages.js`**.
-**Run `node scripts/buildLegalPages.js && dior legal deploy` after editing ANY of those six sources** —
-nothing else republishes the site, and `dior legal check` compares live bytes against the local build.
-- **Two page classes, and the distinction is deliberate** (expanded 2026-07-29 22:17 EDT). `PAGES` is the
-  numbered legal set (terms · privacy · license · notice) rendered by `shell()`: squared corners,
-  hairline rules, cold graphite, a numbered margin index, and the `01/02/03` series on the landing page.
-  `EXTRA_PAGES` is contributing + contributors rendered by `warmShell()`: rounded, warm radial wash,
-  glow, **no numbers anywhere**. The number series is what tells a reader "these bind you", so an
-  invitation must never enter it. Don't collapse the two templates.
-- **The site's only repo link is the header button, and that is on purpose.** A citation inside a legal
-  document must resolve (repo visibility can change — TERMS §7.1), so in-prose repo references still
-  degrade to inert text via `PUBLISHED_TARGETS`. A nav button that 404s is a dead button, not a
-  defective instrument. TERMS §20 still withholds the repo as a *contact* route.
-- **The homepage leads with Discord (`diorswrld`) and hides the email behind a `<details>` reveal.** It
-  is `<details>`, not a script, because a data subject must be able to reach the controller with JS
-  disabled (PRIVACY §13 / GDPR Art. 13). The wording says Discord is *fastest* and email is *canonical* —
-  which is what the documents say; claiming Discord was "primary" would contradict TERMS §20.
-- **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown, re-run
-  the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves it directly with
-  an empty build command, so nothing has to run on their side.
-- The build **verifies itself**: it re-reads its own output and asserts every multi-word run from the
-  source survived rendering, then reports a percentage. It is not a "it didn't crash" check — treat
-  anything below 100% as lost content, but confirm against the source before believing it, because
-  several of its failures were verifier bugs, not real loss: ordered-list markers, stop-words, and
-  (2026-07-30 00:40 EDT) **an undecoded HTML entity becoming a WORD** — `&middot;` reduces to the token
-  `"middot"` and `&#9825;` to `"9825"`, which then sits *inside* an intact source run and splits it.
-  It now decodes numeric/hex/named entities; that is safe because an entity resolves to exactly one
-  character, so decoding can only *remove* a fabricated word, never supply a source word the page
-  doesn't render.
-- **There are FIVE gates now, not three.** `warmStructAudit()` (added 2026-07-30 00:40 EDT) asserts every
-  treatment each warm page **declares** in `WARM_STRUCT` actually fired. The warm treatments key off
-  source heading text, so renaming a heading in `CONTRIBUTING.md` would silently drop that section back
-  to plain prose — and **no other gate can see it**: all words still present, no links changed, no aligned
-  columns, no cross-references. `WARM_STRUCT` is declared rather than sniffed so the check can't draw its
-  expectations from the code under test.
-- **Decorative text belongs in CSS, never the DOM.** The ledger's direction marks and the ghost plate's
-  "Your name" label are drawn with CSS `content` on `aria-hidden` spans. Emitting them as HTML text put
-  invented characters between a section's heading and its first source sentence, breaking `verify()` runs.
-  The alternative — teaching `verify()` to ignore `aria-hidden` text — was rejected because it would hide
-  real content loss just as well. If a mark's meaning is already carried by adjacent prose, it is
-  reinforcement, and it goes in the stylesheet.
-- ⚠️ **`.page` is only the centred wrapper; `.cols` carries the two-column grid, and the footer sits in
-  `.page` OUTSIDE `.cols`. Do not fold these back together.** A sticky element is bounded by its
-  containing block, not its own height, so while the footer was a third child of the grid the section
-  rail was free to travel across it — measured at 1440×900 on Terms, 236px past the document and 126px
-  into the footer. `align-self:start` does **not** fix this and was wrongly documented as doing so for a
-  day. The footer must also stay *inside* `.page`, or it stretches to the full viewport width instead of
-  the document column.
-- It renders every `§N` cross-reference into a working anchor. That is why the parser only ever
-  rewrites text nodes — touching markup would corrupt existing `href`s.
+`docs/legal/*.md`, the four root documents (`LICENSE`, `NOTICE`, `CONTRIBUTING.md`,
+`CONTRIBUTORS.md`), **and the three records `docs/CHANGELOG-SUMMARY.md`, `docs/CHANGELOG.md`,
+`docs/DEVLOG.md`**; the HTML is produced by `scripts/buildLegalPages.js`.
+**Run `dior legal build` (or `dior legal deploy`, which rebuilds and publishes) after editing ANY of
+those nine sources** — nothing else republishes the site, and `dior legal check` compares live bytes
+against the local build.
+- ⚠️ **THERE ARE TWO BUILD ENTRY POINTS AND THAT IS A KNOWN WART, not a design.** `npm run site` was
+  added 2026-08-01 22:20 EDT without checking that `dior legal build` already existed and ran the same builder,
+  and this section was rewritten to name the new one — demoting a working CLI command. Both call
+  `scripts/buildLegalPages.js`, so their **output cannot differ**. The one real difference:
+  `npm run site` runs `node --check` on both build scripts first; **`dior legal build`/`deploy` do
+  not.** That protection is therefore on the path that does *not* publish. Until consolidated, use
+  `dior legal *` as the normal path and `npm run site` when the CLI isn't available (CI, a fresh
+  clone, a worktree) or when you specifically want the syntax pre-check. Filed as `[P2 · M]` in
+  `/Applications/Claude Code/meta-deferred-list.md` → Cross-project / meta.
+- ⚠️ **Before adding any project-local script or npm command, check whether the `dior` CLI already
+  does it** (`dior help`, or `~/.config/dior/*.zsh`). The CLI wraps this project's dev/deploy/
+  observability workflow and is easy to forget because it lives outside the repo — see memory
+  `project_dior_cli_repo`. This wart is exactly what skipping that check produces.
+Editing a source and re-running the build is the ENTIRE update path; no HTML is ever touched by hand.
+⚠️ The script is still called `buildLegalPages.js` but now builds the whole site, `public/legal/` **and**
+`public/changelog/`. The name is kept because `dior legal deploy`/`check` in the CLI repo, the rules
+file, and this section all reference it; renaming it is a separate change that has to move all four.
+- ⚠️ **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown or
+  the generator, re-run the build, commit both. `public/` is committed on purpose: Cloudflare Pages
+  serves it directly with an empty build command, so nothing has to run on their side. **This one
+  line is repeated in the rule file too, because only the project-root file survives `/compact`.**
+- 📄 **Everything else about this subsystem lives in `.claude/rules/legal-site.md`**, which loads
+  automatically when you touch the generator, `public/**`, or any of the nine sources — the three
+  page families and their voices, the measured nav staging, the metaball constants, the build's
+  gate roster, the sticky headings, the a11y and contrast rules, and every trap already paid for.
+  It was moved there 2026-08-01 23:40 EDT: it had reached 286 lines here, 43% of a root file that
+  is loaded in full on every session, most of which never touch the site.
 
 ### ⚖️ Licensing — source-available, NOT open source (added 2026-07-28 21:36 EDT)
 `LICENSE` is the custom **Dior's Builds Source-Available License v1.0**: read/study/audit and
@@ -367,10 +350,20 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 ### Records & workflow (outside the rules system)
 - **`LICENSE` / `CONTRIBUTING.md` / `CONTRIBUTORS.md`** (repo root) — licence terms + CLA, the
   contributor guide, and the credit ledger. See the licensing block above.
+- **`SECURITY.md`** (repo root, **deliberately NOT published to the site**) — the vulnerability
+  reporting route, the §4.11 testing limits restated, scope, and an explicit "no SLA" statement.
+  It stays repo-only because GitHub's private "Report a vulnerability" flow reads it from there;
+  the route is published to readers via the `/security` redirect, which points at the Contributing
+  page's security section. **If you add a stored field, a new host, or a new third-party service,
+  re-check its Scope section** — an out-of-scope list that silently goes stale invites reports
+  against infrastructure that is not ours to test.
 - **`docs/README.md`** — the documentation map (which record file does what, the per-push chore checklist).
 - **`npm run docs:audit`** (`scripts/docs-audit.mjs`) — **run this before opening a PR; it is also a CI
   gate.** `--list` prints the current roster; it covers the records: doc map · cross-references · version coverage across all three
-  changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · and the **conservation rule** (an
+  changelogs · changelog hash-chain · DEVLOG TOC · tag integrity · **record structure** (no repeated
+  top-level heading — added 2026-08-01 after a commit spliced CHANGELOG's own 183-line header into the
+  middle of an entry and every other check passed, because none of them look at a file's SHAPE) · and
+  the **conservation rule** (an
   item leaves an active list ONLY by appearing in its archive — a shrink with no matching grow means
   it was *deleted*, not swept). `ERROR` fails, `WARN` never blocks. `npm run docs:audit:test` proves
   each check can actually fail. Added 2026-07-28 21:00 EDT because "not checkable" had twice been

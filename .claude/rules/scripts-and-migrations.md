@@ -11,11 +11,31 @@ the subsystem rule it belongs to:*
 - `migrateBuildsToMongo.js`, `applyBadgesBulk.js`, `createPlaceholderLoadouts.js` → `.claude/rules/loadouts.md`
 - `backfillLoadoutMetadata.js`, `backfillPatchMetadata.js`, `createCloudinaryMetadataFields.js` → `.claude/rules/loadout-images-and-metadata.md`
 - `backfillLoadoutSlots.js`, `test-vertex-extract.js` → `.claude/rules/autobuild.md`
+- `backfillCalendarCategories.js` (one-time backfill of the `category` field for calendar entries
+  that pre-date the 3-section redesign) and `calendarDedup.test.js` (regression test for
+  `utils/search.js`'s `isSameDrawTitle()`, built from real seasonal titles) →
+  `.claude/rules/design-decisions.md` + `commands/calendar.js`
+- `syncMissingDevEmojis.js` (uploads any `utils/emojiMap.js` emoji the DEV application is missing,
+  matched by name) → `docs/reference/deployment-and-ops.md` + memory `project_local_dev_bot`
 - `deploy.sh`, `vmstatus.sh`, `vmpeaks.sh`, `devCommands.js`, `ops-agent-config.yaml`, `logrotate-diors-bot`
   → `docs/reference/deployment-and-ops.md` + memory `reference_vm_bot_commands`
-- `buildLegalPages.js` → CLAUDE.md's **`public/` — the built legal site** section (renders
-  `docs/legal/*.md` → `public/legal/*.html` for Cloudflare Pages). Not a migration: a **generator**,
-  and the only script here whose output is committed. It deliberately hand-rolls its Markdown parsing
+- `buildLegalPages.js` (+ **`scripts/lib/chronicle.js`**) → **`.claude/rules/legal-site.md`**, which
+  loads automatically alongside this file when you open either of them. *(It used to point at a
+  286-line section of the root `CLAUDE.md`; that was moved into its own path-scoped rule on
+  2026-08-01 23:40 EDT, because subsystem craft loaded on every session is exactly what the rules
+  system exists to avoid.)* Renders `docs/legal/*.md` and four root documents → `public/legal/*.html`, **and the three
+  records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` → `public/changelog/*.html`**, for
+  Cloudflare Pages. Not a migration: a **generator**, and the only script here whose output is committed.
+  Run it with **`npm run site`** (syntax-checks both files first, then builds).
+  ⚠️ **The name is now narrower than the job** — it builds the whole site, not just the legal pages.
+  Kept deliberately: `dior legal deploy`/`check` in the CLI repo, this line, and CLAUDE.md all name it,
+  so a rename is a four-place change and its own commit.
+  ⚠️ **`chronicle.js` receives everything it shares via the one-way `CHROME` bundle** — it imports
+  nothing from `buildLegalPages.js`. Add a key to `CHROME_KEYS` when you pass a new one; `requireChrome()`
+  throws on a missing key rather than rendering a page with a hole a content gate would not notice.
+  ⚠️ **Two output directories.** Every nav/footer link goes through `hrefTo(target, from)`, never a bare
+  `./name.html` — two pages are called `index.html` now. New page in a new directory ⇒ set `dir`, and add
+  it to `PUBLISHED_TARGETS` (and `PAGE_ALIASES` if its output name differs from its source name). It deliberately hand-rolls its Markdown parsing
   rather than adding a dependency — `NOTICE` §3 commits to a copyleft-free tree that gets re-audited on
   every dependency change, and a formatter for two files is not worth a new supply-chain entry. If you
   touch it, re-run `node scripts/buildLegalPages.js` and require **100%** from its self-verifier.
@@ -30,7 +50,9 @@ the subsystem rule it belongs to:*
   example row. Without the strip the comment rendered as visible content and the live credits page
   listed a **fabricated contributor** (`@example`) as though it were real.
 
-  ⚠️ **It has THREE independent gates and passing one proves nothing about the others** (learned the hard
+  ⚠️ **Its gates are INDEPENDENT and passing one proves nothing about the others** (learned the hard
+  way; the roster is printed on every run — read it there rather than from a count in prose, which said
+  "THREE" here and "FIVE" in CLAUDE.md and was stale both times). Historically (learned the hard
   way 2026-07-29 18:55 EDT, v2.43.1; third added 2026-07-29 22:17 EDT). `verify()` checks that every
   multi-word run of source survived into the HTML; `linkAudit()` resolves every internal href against the
   deploy tree; `structureAudit()` asserts every column-aligned source line landed inside a `<pre>` or a
@@ -122,3 +144,25 @@ hooks all run without this script and catch different failures.
 *General rules: a migration/backfill script should be safe to re-run (clear/upsert, not blind insert).
 Never log a raw Cloudinary error object from a script — plaintext secrets; see
 `.claude/rules/loadout-images-and-metadata.md`.*
+
+## Licence & attribution gates (added 2026-08-02)
+
+Two invariants that CLAUDE.md's licensing section had stated in prose and nothing enforced — the
+consequence of getting either wrong is a licence-compliance defect, not stale documentation.
+
+- **`dep-licences`** (ERROR) — no GPL/AGPL/LGPL/MPL/SSPL/CDDL/EPL/CC-BY-SA/OSL/EUPL anywhere in the
+  tree, and **every package's licence must be KNOWN**. A licence resolves from the lockfile, then the
+  package's own `package.json`, then its licence FILE text. ⚠️ **The text fallback is not optional**:
+  `chroma-js` and `exif-parser` declare no licence field at all, and a scanner that reads "unknown" as
+  permissive fails open — the exact failure it exists to prevent. Reading the file identifies them
+  (BSD and MIT) with no allowlist to go stale. SKIPs with a stated reason when `node_modules` is
+  absent rather than passing.
+- **`notice-attribution`** (ERROR) — every runtime dependency appears in NOTICE §1 **at the version
+  the lockfile resolves**. The version half matters: "regenerate when dependencies change" is mostly
+  about changes, and a name-only check calls a two-majors-stale attribution correct.
+  ⚠️ Its section boundary is the next **line-initial** numbered heading. The first version searched
+  for the literal `"2."` and matched inside `chrono-node 2.9.1` — the first entry — so the section came
+  out empty and every dependency was reported missing against a NOTICE that was entirely correct.
+
+⚠️ **`scripts/checkEmojiCaptures.js` now runs in CI.** It was documented in memory as "run it after
+touching emoji rendering" and nothing ran it.

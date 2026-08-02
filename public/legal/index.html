@@ -4,6 +4,7 @@
 <title>Legal — Dior's Builds</title>
 <meta name="description" content="Terms of Service, Privacy Policy, Source-Available License, Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
+<script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23F2994A'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
 
@@ -14,30 +15,42 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
-  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#6E6782;
+  --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
+  /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
+     paper the same values measured 1.0-2.0:1 — the active tab label, the status
+     chips and the ticket stubs were effectively invisible. Borders and fills
+     keep --accent; only glyphs and type use this. */
+  --accent-t:var(--accent);
   --shadow:0 24px 60px -28px rgba(0,0,0,.85);
+  /* The gooey nav's own easing, taken from the reference implementation. It
+     overshoots to 1.274 and settles through four decaying bounces, which no
+     cubic-bezier can express — a bezier can overshoot once and only once. The
+     pill assembling under it is what stops the effect reading as a fade. */
+  --spring:linear(0, 0.068, 0.19 2.7%, 0.804 8.1%, 1.037, 1.199 13.2%, 1.245, 1.27 15.8%, 1.274, 1.272 17.4%, 1.249 19.1%, 0.996 28%, 0.949, 0.928 33.3%, 0.926, 0.933 36.8%, 1.001 45.6%, 1.013, 1.019 50.8%, 1.018 54.4%, 1 63.1%, 0.995 68%, 1.001 85%, 1);
   --display:-apple-system,"SF Pro Display","Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   --serif:"Iowan Old Style",Charter,"Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
-}
-/* LIGHT MODE. The rules used to be #DED9D0 on #FCFBF9 paper — about 1.15:1,
+}/* LIGHT MODE. The rules used to be #DED9D0 on #FCFBF9 paper — about 1.15:1,
    which is to say invisible: every divider, table border and callout edge that
    structures these documents simply vanished in light mode while looking fine in
    dark. Light is not dark with the values flipped; the same separation needs more
    contrast on a bright ground. --rule now sits near 1.9:1 against paper and
    --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
    table headers read as distinct surfaces rather than the same cream. */
+
 :root[data-theme=light]{
   --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
   --rule:#CBC3B4; --rule2:#A39A8B;
-  --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
     --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
     --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#736C80;
+    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
     --shadow:0 20px 50px -30px rgba(40,32,50,.3);
   }
 }
@@ -50,106 +63,257 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#F2994A}
+:root{--accent:#F2994A}/* ── skip link ────────────────────────────────────────────────────────
+   WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
+   the bar carries nine nav tabs plus the source, install and theme controls, so
+   a keyboard or switch user tabbed through about thirteen widgets before
+   reaching a word of the document — on every page, every time.
 
-/* ── shared reset for the label buttons ───────────────────────────────
+   Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
+   which remove an element from the focus order entirely and would make this a
+   link nobody can ever reach. It is the first focusable thing in the body. */
+
+
+.skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
+  padding:.55rem .9rem;border-radius:6px;
+  background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
+  clip-path:inset(50%);white-space:nowrap}
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
    desktop path got the element change with none of the styling. */
-button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
-  padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}
 
-/* ── wordmark ─────────────────────────────────────────────────────────
+
+button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
+  padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}/* ── wordmark ─────────────────────────────────────────────────────────
    Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
    favicon. The interaction is that motif behaving like the thing it depicts:
    on hover the slots LOCK IN — they align to full width in sequence and go
    accent — and a light passes across the wordmark once. The only always-on
    movement is a single slow pulse on the top bar, because three staggered idle
    loops competed with everything else in the bar and read as noise. */
-.mark{display:inline-flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--ink);
-  font-family:var(--display);font-weight:800;font-size:1.06rem;letter-spacing:-.028em;
-  white-space:nowrap;position:relative;padding:.25rem 0}
-.glyph{display:grid;gap:3px;width:20px;flex:0 0 20px}
-.glyph i{display:block;height:3px;background:var(--ink3);border-radius:1.5px;
-  transform-origin:left center;
-  transition:width .34s cubic-bezier(.16,.84,.28,1),background .34s}
-.glyph i:nth-child(1){width:100%;background:var(--accent)}
-.glyph i:nth-child(2){width:56%}
-.glyph i:nth-child(3){width:78%}
-.mark.live .glyph i:nth-child(1){animation:tick 4.2s ease-in-out infinite}
-@keyframes tick{0%,84%,100%{opacity:1}92%{opacity:.34}}
 
-/* The shine. A masked gradient swept across the letterforms — text, not a bar
-   under it, so the mark itself is what responds. */
-.wm{position:relative;background-image:linear-gradient(100deg,
+
+.mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
+   slot has been emptied on purpose. It held three stacked bars first, which is
+   the universal glyph for a menu, so readers tried to tap it expecting one to
+   open. It then held a rounded square carrying a "D" — which was worse in a
+   quieter way: a single letter in a box is the most generic mark there is, it
+   said nothing the wordmark next to it does not already say in full, and it made
+   the site's identity a placeholder logo rather than the typography.
+
+   The wordmark alone is the mark. Do not "restore the logo" without an actual
+   drawn mark to put there; another letter-in-a-square is not one. */
+
+
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
+   this it kept its full 90px of text inside a 31px box and simply drew across
+   the buttons beside it — the "too tight" header was really this one missing
+   rule. Truncation is the honest failure mode for a flexible label. */
+
+.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
+  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
   var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
   background-size:280% 100%;background-position:130% 0;
   -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
-.mark.live:hover .wm,.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;
-  background-position:-30% 0}
-.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent);
-  opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}
-.mark.live:hover .go,.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
-.mark.live:hover .glyph i,.mark.live:focus-visible .glyph i{width:100%;background:var(--accent)}
-.mark.live:hover .glyph i:nth-child(2){transition-delay:.06s}
-.mark.live:hover .glyph i:nth-child(3){transition-delay:.12s}
-.mark.live:hover .glyph i:nth-child(1){animation:none}
+  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+   purpose — the switcher is right there saying the same thing, and a header
+   that states it twice is noise. Below 980 the switcher is gone. */
 
-/* ── action controls: pills ───────────────────────────────────────────
+
+.mk-ctx{display:none}
+.go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
+  opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
+   drop the keyboard focus styling on any device with a touchscreen, which is
+   most laptops now. Split, always. */
+
+
+.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
+@media (hover:hover) and (pointer:fine){
+  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .go{opacity:1;transform:translateX(0)}
+}/* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
    you, rounded = an invitation. An action is an invitation, so the earlier
    squared repo/install buttons contradicted the rule the rest of the site is
    built on. Every interactive control in the bar is now a pill; only document
-   chrome stays squared. */
-.ghb,.ins{border-radius:999px;height:30px}
+   chrome stays squared. *//* Every control in the bar is 32px tall so the icons, the switcher and the
+   switch sit on one optical line. The old 30px height with a 30px icon plate
+   inside a 1px border left the plate 2px wider than the content box, so the
+   GitHub mark was pushed off-centre and clipped by overflow:hidden — that is the
+   whole "logo is not properly aligned" bug, and it is why the plate is now sized
+   from the CONTENT box rather than matched to the outer height. */
 
-/* repo — icon-only, opening on hover. The label is revealed by a clip, and the
-   icon holds still. It used to spin 360°, which is the stock "look, animation"
-   move and reads as filler. */
+
+
+.ghb,.ins{border-radius:999px;height:32px;position:relative;isolation:isolate}/* repo — a capsule that opens. The mark holds still on its plate and the label
+   is uncovered as the capsule grows past it. */
+
+
 .ghb{display:inline-flex;align-items:center;justify-content:flex-start;
   overflow:hidden;text-decoration:none;color:var(--ink2);
   border:1px solid var(--rule2);background:transparent;
-  width:30px;padding:0;transition:width .38s cubic-bezier(.16,.84,.28,1),
-  color .22s,border-color .22s,background .22s}
-.ghb-ic{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px}
+  width:32px;padding:0;transition:width .42s cubic-bezier(.16,.84,.28,1),
+  color .22s,border-color .22s}
+.ghb-ic{position:relative;z-index:1;display:grid;place-items:center;
+  width:30px;height:30px;flex:0 0 30px}
 .ghb-ic svg{width:15px;height:15px;display:block}
-.ghb-t{overflow:hidden;padding-right:.85rem}
+.ghb-t{position:relative;z-index:1;overflow:hidden;padding-right:.9rem}
 .ghb-t b{display:block;font-family:var(--mono);font-size:.65rem;font-weight:600;
   letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;
   transform:translateX(-8px);opacity:0;
-  transition:transform .38s cubic-bezier(.16,.84,.28,1),opacity .3s}
-.ghb:hover,.ghb:focus-visible{width:106px;color:var(--ink);border-color:var(--ink3);
-  background:color-mix(in srgb,var(--ink) 7%,transparent)}
-.ghb:hover .ghb-t b,.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}
+  transition:transform .42s cubic-bezier(.16,.84,.28,1),opacity .3s}.ghb:focus-visible{width:108px;color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}@media (hover:hover) and (pointer:fine){
+.ghb:hover{width:108px;color:var(--ink);
+  border-color:color-mix(in srgb,var(--accent) 60%,var(--ink3))}}.ghb:focus-visible .ghb-t b{transform:translateX(0);opacity:1}@media (hover:hover) and (pointer:fine){
+.ghb:hover .ghb-t b{transform:translateX(0);opacity:1}}/* the cursor-tracked light */
 
-/* install — the one filled control on the site. Motion on hover only: the fill
-   brightens from the leading edge and the arrow steps out. No idle sheen loop
-   and no pulsing ring; two ambient loops on a single button was the clearest
-   case of decoration competing with the theme switch for attention. */
-.ins{position:relative;display:inline-flex;align-items:center;gap:.5rem;
-  overflow:hidden;text-decoration:none;padding:0 .95rem;
+.ghb::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  opacity:0;transition:opacity .3s;background:radial-gradient(64% 150% at
+    var(--px,50%) var(--py,50%),color-mix(in srgb,var(--accent) 30%,transparent),
+    transparent 72%)}.ghb:focus-visible::after{opacity:1}@media (hover:hover) and (pointer:fine){
+.ghb:hover::after{opacity:1}}/* install — the one filled control on the site, and the only place a second
+   ambient effect is justified. Three things happen and each has a reason: the
+   fill is lit from the cursor, a single edge-light passes once on hover (not a
+   loop — an idle sheen competes with the theme switch), and the mark sits in a
+   recessed disc so the button reads as a physical key rather than a coloured
+   rectangle with a logo dropped on it. */
+
+
+.ins{display:inline-flex;align-items:center;gap:.55rem;overflow:hidden;
+  text-decoration:none;padding:0 .5rem 0 .35rem;
   font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
   text-transform:uppercase;font-weight:700;
-  color:var(--desk);background:var(--accent);border:1px solid var(--accent);
-  transition:box-shadow .3s,filter .22s}
-.ins-ic{display:grid;place-items:center;width:16px;height:16px;flex:0 0 16px;
-  position:relative;z-index:1}
-.ins-ic svg{width:16px;height:auto;display:block}
-.ins-t,.ins-ar{position:relative;z-index:1}
-.ins-ar{font-size:.8rem;opacity:0;width:0;transform:translateX(-4px);
-  transition:opacity .26s,width .26s,transform .26s}
-.ins-gl{position:absolute;inset:0;z-index:0;opacity:0;
-  background:radial-gradient(120% 180% at 0% 50%,rgba(255,255,255,.5),transparent 62%);
-  transition:opacity .3s}
-.ins:hover,.ins:focus-visible{filter:brightness(1.06);
-  box-shadow:0 5px 20px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
-.ins:hover .ins-gl,.ins:focus-visible .ins-gl{opacity:1}
-.ins:hover .ins-ar,.ins:focus-visible .ins-ar{opacity:1;width:.8rem;transform:translateX(0)}
-.ins:active{filter:brightness(.97)}
+  color:#141021;background:var(--accent);border:1px solid var(--accent);
+  /* ⚠️ AN INSET TOP HIGHLIGHT ON A PILL DRAWS AN ARC, NOT AN EDGE. inset 0 1px 0
+     paints a 1px band across the top of the BORDER BOX, and where the box curves
+     away the band follows it — so at 999px radius it read as a bright line drawn
+     around the top half of the button and stopping dead at each side. Harkirat
+     asked whether it was meant to be there; it was meant to be a material rim and
+     it was not one. A spread ring is even all the way round, which is what a rim
+     actually looks like. */
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),
+    0 2px 10px -5px color-mix(in srgb,var(--accent) 80%,transparent);
+  transition:box-shadow .32s,transform .22s cubic-bezier(.2,.8,.2,1)}/* Taller, heavier and wider than the repo capsule beside it. These two were the
+   same 32px pill, which gave the primary action on the site exactly as much
+   presence as a link to the source. *//* ⚠️ THE LEFT PADDING IS THE ICON'S CONCENTRIC GAP, and that is why it is not the
+   same number as the right. The pill is 37px tall, so its cap radius is 18.5px;
+   the Discord disc is 22px, radius 11px. A disc reads as sitting concentrically
+   inside a cap only when the gap equals the difference — 7.5px, which is .47rem.
+   At the old symmetric .95rem the disc was 15.2px from the left edge and 7.5px
+   from the top and bottom, so the crescent of space around it was twice as thick
+   on one axis as the other: the "different amounts of curve". The right side
+   keeps more room because it ends in a text run's terminal, not a circle. */
 
-/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
+
+.ins{height:37px;font-weight:700;letter-spacing:.14em;padding-inline:.47rem .85rem}
+.ins .ins-t{font-size:.7rem;font-weight:800}
+.ins-ic{position:relative;z-index:2;display:grid;place-items:center;
+  width:22px;height:22px;flex:0 0 22px;border-radius:50%;
+  background:color-mix(in srgb,var(--desk) 20%,transparent);
+  box-shadow:inset 0 1px 2px color-mix(in srgb,var(--desk) 34%,transparent);
+  transition:transform .34s cubic-bezier(.3,1.5,.5,1)}
+.ins-ic svg{width:13px;height:auto;display:block}
+.ins-t,.ins-ar{position:relative;z-index:2}/* ⚠️ THE COLLAPSED ARROW MUST CANCEL ITS OWN FLEX GAP, and this is why the pill
+   looked lopsided: a zero-WIDTH flex item is still a flex ITEM, so the .55rem
+   gap between the label and the arrow was drawn even with the arrow collapsed.
+   Measured on Terms at 1440: 16.20px of space before the Discord mark against
+   24.99px after the label — the 8.8px difference is exactly that gap. The
+   negative margin removes it while collapsed and returns to 0 as the arrow opens. *//* ⚠️ DRAWN, NOT TYPED — the same lesson as the invitation cards' arrow. The
+   travel arrow was the character U+2197, which the mono stack sets on its own
+   baseline at its own optical weight: it sat low and light beside a 700-weight
+   cap-height label and read as misaligned, because it WAS aligned — to a baseline
+   the label does not share. An SVG in a centred grid cell has no font metrics to
+   disagree with. overflow:hidden is what lets it stay drawn while the box is
+   collapsed to zero width. */
+
+
+.ins-ar{display:grid;place-items:center;overflow:hidden;
+  opacity:0;width:0;transform:translateX(-4px);
+  margin-inline-start:-.55rem;
+  transition:opacity .26s,width .26s,margin-inline-start .26s,transform .26s}
+.ins-ar svg{width:11px;height:11px;display:block;flex:0 0 11px;
+  fill:none;stroke:currentColor;stroke-width:1.55;
+  stroke-linecap:round;stroke-linejoin:round}/* the cursor-tracked light, over the fill */
+
+.ins-gl{position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .3s;
+  background:radial-gradient(58% 150% at var(--px,50%) var(--py,50%),
+    rgba(255,255,255,.62),transparent 68%)}/* the single pass of edge-light */
+
+.ins::after{content:"";position:absolute;z-index:1;top:-60%;bottom:-60%;width:36px;
+  left:-60px;transform:skewX(-18deg);pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}.ins:focus-visible::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}@media (hover:hover) and (pointer:fine){
+.ins:hover::after{animation:swipe .62s cubic-bezier(.3,.7,.3,1)}}
+@keyframes swipe{to{left:118%}}.ins:focus-visible{transform:translateY(-1px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
+    0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}@media (hover:hover) and (pointer:fine){
+.ins:hover{transform:translateY(-1px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20),
+    0 8px 22px -7px color-mix(in srgb,var(--accent) 82%,transparent)}}.ins:focus-visible .ins-gl{opacity:1}@media (hover:hover) and (pointer:fine){
+.ins:hover .ins-gl{opacity:1}}.ins:focus-visible .ins-ic{transform:scale(1.1) rotate(-6deg)}@media (hover:hover) and (pointer:fine){
+.ins:hover .ins-ic{transform:scale(1.1) rotate(-6deg)}}.ins:focus-visible .ins-ar{opacity:1;width:11px;
+  margin-inline-start:0;transform:translateX(0)}@media (hover:hover) and (pointer:fine){
+.ins:hover .ins-ar{opacity:1;width:11px;
+  margin-inline-start:0;transform:translateX(0)}}
+.ins:active{transform:translateY(0) scale(.98)}
+@media (prefers-reduced-motion:reduce){.ins:focus-visible::after{animation:none}@media (hover:hover) and (pointer:fine){
+  .ins:hover::after{animation:none}}.ins:focus-visible,.ins:active{transform:none}@media (hover:hover) and (pointer:fine){
+  .ins:hover{transform:none}}.ins:focus-visible .ins-ic{transform:none}@media (hover:hover) and (pointer:fine){
+  .ins:hover .ins-ic{transform:none}}
+}/* On a 390px phone the bar measured 404px of content — wordmark 144 + a 24px gap
+   + three controls — so the theme switch sat past the right edge with the padding
+   eaten. The install button collapses to its mark and the gap tightens, which
+   brings it to ~315px. The GitHub button deliberately survives instead: it is the
+   ONLY repo link on the entire site, so dropping it on mobile would remove that
+   route altogether, whereas the install label is recoverable from the icon plus
+   the accessible name. */
+
+@media (max-width:620px){/* ⚠️ .bar.bar, not .bar — and the doubled class is load-bearing.
+     The base .bar rule lives in the SHELLS, which are concatenated after
+     COMPONENT_CSS, so at equal specificity the desktop values won no matter
+     what this media query said. The whole block was dead: measured at 375px it
+     was still reporting gap:1.5rem and padding:1rem, which is why the wordmark
+     was being squeezed until it painted over the repo button. Doubling the class
+     makes this override immune to where the file happens to concatenate it. */
+  
+  .bar.bar{gap:.6rem;padding:0 .75rem}
+  .bar.bar nav{gap:.5rem}/* The context line goes. It names the page you are on, and directly beneath it
+     the strip names the page you are on with a filled pill — saying it twice in
+     54px of header is what made the mark fight the buttons for width.
+     The wordmark also drops a step, because at 1.02rem it still truncated to
+     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
+     slightly smaller whole one. */
+  
+  .mk-ctx.mk-ctx{display:none}
+  .wm{font-size:.85rem}/* 19px of the mark's width was its own padding — a hover affordance, on a
+     surface that has no hover. Reclaiming it is what actually gives the wordmark
+     room; every other lever here was worth 2-4px and would have been pixel
+     chasing. */
+  
+  .mark.mark{padding:0}/* The little travel arrow is a hover-reveal, and it was costing the wordmark
+     19px (itself plus its gap) on a surface where it can never be revealed.
+     That 19px is exactly what "Dior's Buil..." was short of. */
+  
+  .mark .go{display:none}/* ⚠️ ONE rule, BOTH axes, for the icon-only control. The desktop rule gives
+     .ins height:37px while this one set only width:32px, so on a phone the
+     Discord button rendered as a 32x37 egg — a specificity trap, not a drawing
+     mistake: the height came from a rule nobody was looking at.
+     .ins keeps its LABEL here. A bare circular Discord glyph reads as a sign-in
+     or an avatar, which is the opposite of what it does — it is an outbound
+     install link, and the word is what says so. The repo button stays a circle
+     because it is secondary and its mark is self-explanatory. */
+  
+  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
+  .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
+    justify-content:center}
+  .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
+  .ins-ar{display:none}
+}/* ── THE SIGNATURE: the theme switch as a small sky ───────────────────
    This is the one place the design spends its boldness, so it is the one place
    with real depth. It is a sky you carry the sun and moon across:
      dark  — a cratered crescent, stars behind it
@@ -160,99 +324,204 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    NOT the page accent — a violet moon read as an unidentifiable blob. Only the
    track border and focus ring follow the accent.
    Hovering PEEKS: the knob leans toward the far side and the destination's
-   furniture fades up, so the control shows you what pressing it will do. */
+   furniture fades up, so the control shows you what pressing it will do. *//* Geometry, stated once because it was wrong before: the track is 60x32 with a
+   1px border, so the CONTENT box is 58x30. The knob is 26px inset 2px, which
+   leaves exactly 2px on every side and gives a travel of 58-2-26-2 = 28px. The
+   previous knob was inset 3px inside a 28px content box, so it had 3px above and
+   1px below — that is the "moon/sun aren't properly aligned" bug. Any change to
+   the track size has to re-derive the travel or the knob stops at the wrong end. */
+
+
+
 .thm{-webkit-appearance:none;appearance:none;background:none;border:0;padding:0;
   cursor:pointer;color:inherit;line-height:0;flex:0 0 auto;border-radius:999px}
-.thm-tr{display:block;position:relative;width:56px;height:30px;border-radius:999px;
+.thm-tr{display:block;position:relative;width:60px;height:32px;border-radius:999px;
   border:1px solid var(--rule2);overflow:hidden;
-  background:linear-gradient(165deg,#1B1830,#2A2340);
-  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}
-.thm:hover .thm-tr,.thm:focus-visible .thm-tr{border-color:var(--accent);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
-.thm-sky{position:absolute;inset:0}
+  background:linear-gradient(168deg,#171430,#2B2446 62%,#3A2F52);
+  transition:background .5s cubic-bezier(.4,0,.3,1),border-color .3s,box-shadow .3s}.thm:focus-visible .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}@media (hover:hover) and (pointer:fine){
+.thm:hover .thm-tr{border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}}
+.thm-sky{position:absolute;inset:0}/* stars — dark only, in the half the knob is not occupying */
 
-/* stars — dark only */
+
 .thm-st i{position:absolute;border-radius:50%;background:#EDEAF6;width:2px;height:2px;
   opacity:.85;animation:twinkle 3.6s ease-in-out infinite}
-.thm-st i:nth-child(1){left:34px;top:7px}
-.thm-st i:nth-child(2){left:43px;top:14px;animation-delay:.6s}
-.thm-st i:nth-child(3){left:47px;top:6px;width:1.5px;height:1.5px;animation-delay:1.2s}
-.thm-st i:nth-child(4){left:38px;top:21px;width:1.5px;height:1.5px;animation-delay:1.8s}
-.thm-st i:nth-child(5){left:49px;top:19px;width:1.5px;height:1.5px;animation-delay:2.4s}
+.thm-st i:nth-child(1){left:36px;top:8px}
+.thm-st i:nth-child(2){left:45px;top:15px;animation-delay:.6s}
+.thm-st i:nth-child(3){left:49px;top:7px;width:1.5px;height:1.5px;animation-delay:1.2s}
+.thm-st i:nth-child(4){left:40px;top:22px;width:1.5px;height:1.5px;animation-delay:1.8s}
+.thm-st i:nth-child(5){left:51px;top:20px;width:1.5px;height:1.5px;animation-delay:2.4s}
 @keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
-.thm-st{transition:opacity .4s}
+.thm-st{transition:opacity .4s}/* clouds — light only. Each cloud is one element plus two box-shadow lobes, so
+   it has an actual cloud silhouette instead of reading as a rounded bar. */
 
-/* clouds — light only. Two soft lozenges, drifting slowly. */
+
 .thm-cl{position:absolute;inset:0;opacity:0;transition:opacity .45s}
-.thm-cl i{position:absolute;background:#fff;border-radius:999px;opacity:.92}
-.thm-cl i:nth-child(1){left:7px;top:17px;width:16px;height:6px;
-  box-shadow:5px -4px 0 -1px #fff;animation:drift 7s ease-in-out infinite}
-.thm-cl i:nth-child(2){left:5px;top:8px;width:10px;height:4px;opacity:.6;
-  animation:drift 9s ease-in-out infinite reverse}
-@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+.thm-cl i{position:absolute;background:#fff;border-radius:999px}
+.thm-cl i:nth-child(1){left:6px;top:18px;width:17px;height:7px;opacity:.95;
+  box-shadow:4px -4px 0 -1px #fff,10px -2px 0 -1.5px #fff;
+  animation:drift 7s ease-in-out infinite}
+.thm-cl i:nth-child(2){left:5px;top:7px;width:11px;height:5px;opacity:.55;
+  box-shadow:5px -2px 0 -1px #fff;
+  animation:drift 9.5s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}/* The knob is a real plate now — a circle with its own edge and shadow — and the
+   sun or moon is an icon sitting ON it, rather than the bare celestial body
+   floating in the track with nothing to hold it. *//* ⚠️ ONE CIRCLE, CONCENTRIC. This carried an off-centre highlight (at 32% 26%)
+   plus a shadow pushed 2px down plus an inset light along the top — three
+   circles with three different centres, which at any magnification reads as a
+   misaligned disc sitting behind the moon rather than as one lit plate. The
+   gradient is centred now and the only offset left is a soft drop shadow. */
 
-.thm-kn{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+
+
+.thm-kn{position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;
   display:grid;place-items:center;
+  background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.15),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 1px 5px -1px rgba(0,0,0,.45),inset 0 0 0 .5px rgba(255,255,255,.10);
   transform:translateX(0);
-  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32)}
-.thm-kn svg{width:22px;height:22px;overflow:visible}
-/* moon */
-.thm-kn .orb{fill:#CFD8EA}
-.thm-kn .craters{fill:#A8B3CC;opacity:1;transition:opacity .3s}
-.thm-kn .cut{transform:translate(7.4px,-7.4px);
+  transition:transform .52s cubic-bezier(.5,-0.24,.28,1.32),
+    background .5s,border-color .5s,box-shadow .5s}
+.thm-kn svg{width:17px;height:17px;overflow:visible}/* ⚠️ THE BODY IS LIT, NOT FLAT, and it is filled by a GRADIENT REFERENCE. An SVG
+   shape whose fill rule goes missing paints BLACK with no warning — that is
+   worth knowing before anyone "tidies" this: losing this one line produces a
+   black crescent and, in light mode, a black sun ringed by orange rays.
+   A crescent's whole job is to say "sphere", and a flat fill says "shape". */
+
+.thm-kn .orb{fill:url(#thm-lit)}/* Craters. FILLED, never stroked: a hairline is a third of a pixel once the svg
+   renders at 17px, which is what killed the first attempt at these. They sit
+   inside the lune by construction — each is at least its own radius clear of
+   both the outer rim and the cut circle — and they carry the same mask, so
+   nothing can spill past the terminator. No craters on the sun. */
+
+.thm-kn .craters{opacity:.5;transition:opacity .4s}
+.thm-kn .craters circle{fill:#7C89AE}/* ⚠️ A THINNER crescent means moving the cut circle CLOSER to the orb centre,
+   which is the opposite of the intuition. What is left is a lune whose width
+   along the axis is R + D - r (orb radius, centre distance, cut radius). The
+   old values — R 7.4, r 6.6, D 10.46 — give 11.27 out of a 14.8 diameter, so
+   that shape was a gibbous with a bite taken out of it, not a crescent at all;
+   pushing the cut FURTHER out only makes the bite shallower. R 7.4, r 7, D 6.11
+   gives 6.5, a full-bodied crescent, with the horn tips landing at ±61.5 degrees
+   so they read as horns instead of wrapping into a ring.
+   D is 6.11 along the 45-degree diagonal, hence 6.11/sqrt(2) = 4.32 per axis.
+   Light mode still slides the cut to (30,-30): 42.4 apart clears 7.4+7, so the
+   disc reads as a full sun with nothing bitten out of it. *//* ⚠️ THE OLD RE-CENTRING WAS THE MISALIGNMENT, not the cure for it, and it is
+   worth stating exactly how — because the reasoning was careful and still wrong.
+   It centred the lune on its AXIS MIDPOINT: the shape runs from -R to (D-r)
+   along the axis, so that midpoint sits 4.7 units down-left of the disc centre,
+   and the whole moon group was pushed back by 4.7 to compensate.
+
+   But the axis midpoint is not what an eye reads as the centre of a crescent —
+   the BOUNDING BOX is, and the bounding box was already centred, because it is
+   dominated by the outer arc, which is drawn around (12,12) by construction.
+   Measured for the shipped geometry: the lune spans x 4.60–19.09 and y
+   4.91–19.40, a box centred at (11.85, 12.15). It needed a 0.15 nudge. It was
+   given 3.32, which threw the moon into the top-right corner of its own knob.
+
+   So the translate is the bbox correction and nothing else: 0.15. An earlier
+   version added ~0.75 of optical nudge on top, on the reasoning that a
+   crescent's ink sits on the lower-left of its box; on screen that just read as
+   off-centre again. Light mode returns it to zero so the sun, which is a plain
+   disc about (12,12), stays concentric.
+
+   Width is R + D - r = 7.4 + 6.11 - 7 = 6.5 of a 14.8 diameter (44%), up from
+   36%. Horn tips at ±61.5 degrees. 36% read as a fingernail at 17px; 3.1 and
+   4.4 were tried on the way here and read as cheaper still.
+
+   ⚠️ THE EARTHSHINE DISC IS GONE, and it is not coming back. It was a full circle
+   at 20% opacity behind the crescent, meant to read as the unlit limb catching
+   light bounced off the earth. On a 26px knob it read as a grey smudge — a
+   shadow of a moon that is not there. What it was reaching for (the sense that
+   the body is round and lit from one side) is carried by the orb's gradient
+   instead, which costs nothing and adds no second circle. */
+
+
+.thm-kn .moon{transform:translate(.15px,-.15px);
   transition:transform .5s cubic-bezier(.2,.8,.2,1)}
-.thm-kn .rays{stroke:#F6C560;opacity:0;transform:scale(.5);transform-origin:12px 12px;
-  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .cut{transform:translate(4.32px,-4.32px);
+  transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.thm-kn .rays{stroke:#F2A93B;opacity:0;transform:scale(.5);transform-origin:12px 12px;
+  transition:opacity .32s,transform .46s cubic-bezier(.2,.8,.2,1)}/* The hover peek leans the knob toward where it is going. It no longer fades the
+   clouds up behind the moon: clouds belong to the daytime sky, and previewing
+   them at night just put weather behind a moon for no reason. */@media (hover:hover) and (pointer:fine){
 
-/* the hover peek — leans toward the destination and previews its furniture */
-.thm:hover .thm-kn{transform:translateX(5px)}
-.thm:hover .thm-cl{opacity:.28}
 
-/* LIGHT: knob crosses, mask occluder is pushed clear so the disc fills, rays fan
-   out, the orb warms to a sun, craters go, clouds replace stars. */
-:root[data-theme=light] .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
-:root[data-theme=light] .thm-kn{transform:translateX(26px)}
-:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(21px)}
+.thm:hover .thm-kn{transform:translateX(5px)}}/* LIGHT: knob crosses, the mask occluder is pushed clear so the disc fills, rays
+   fan out, the orb fills from a crescent to a sun, clouds replace stars. */
+
+
+:root[data-theme=light] .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
+:root[data-theme=light] .thm-kn{transform:translateX(28px);
+  background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.97),rgba(255,255,255,.80));
+  border-color:rgba(255,255,255,.95);
+  box-shadow:0 1px 6px -1px rgba(40,70,110,.30),inset 0 0 0 .5px rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+:root[data-theme=light] .thm:hover .thm-kn{transform:translateX(23px)}}
 :root[data-theme=light] .thm-kn .cut{transform:translate(30px,-30px)}
-:root[data-theme=light] .thm-kn .orb{fill:#F6C560}
+:root[data-theme=light] .thm-kn .moon{transform:none}
 :root[data-theme=light] .thm-kn .craters{opacity:0}
+:root[data-theme=light] .thm-kn .orb{fill:url(#thm-sun)}
 :root[data-theme=light] .thm-kn .rays{opacity:1;transform:scale(1)}
 :root[data-theme=light] .thm-st{opacity:0}
-:root[data-theme=light] .thm-cl{opacity:1}
-:root[data-theme=light] .thm:hover .thm-st{opacity:.35}
+:root[data-theme=light] .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
+:root[data-theme=light] .thm:hover .thm-st{opacity:.35}}
 @media (prefers-color-scheme:light){
-  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(165deg,#8FC4EF,#C9E4F7)}
-  :root:not([data-theme=dark]) .thm-kn{transform:translateX(26px)}
-  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(21px)}
+  :root:not([data-theme=dark]) .thm-tr{background:linear-gradient(168deg,#7CBAF0,#AFDCF7 60%,#D8EEFB)}
+  :root:not([data-theme=dark]) .thm-kn{transform:translateX(28px);
+    background:radial-gradient(100% 100% at 50% 50%,rgba(255,255,255,.97),rgba(255,255,255,.80));
+    border-color:rgba(255,255,255,.95);
+    box-shadow:0 1px 6px -1px rgba(40,70,110,.30),inset 0 0 0 .5px rgba(255,255,255,.9)}@media (hover:hover) and (pointer:fine){
+  :root:not([data-theme=dark]) .thm:hover .thm-kn{transform:translateX(23px)}}
   :root:not([data-theme=dark]) .thm-kn .cut{transform:translate(30px,-30px)}
-  :root:not([data-theme=dark]) .thm-kn .orb{fill:#F6C560}
+  :root:not([data-theme=dark]) .thm-kn .moon{transform:none}
   :root:not([data-theme=dark]) .thm-kn .craters{opacity:0}
+  :root:not([data-theme=dark]) .thm-kn .orb{fill:url(#thm-sun)}
   :root:not([data-theme=dark]) .thm-kn .rays{opacity:1;transform:scale(1)}
   :root:not([data-theme=dark]) .thm-st{opacity:0}
-  :root:not([data-theme=dark]) .thm-cl{opacity:1}
-  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}
+  :root:not([data-theme=dark]) .thm-cl{opacity:1}@media (hover:hover) and (pointer:fine){
+  :root:not([data-theme=dark]) .thm:hover .thm-st{opacity:.35}}
 }
 @media (prefers-reduced-motion:reduce){
-  .thm-st i,.thm-cl i{animation:none}
-  .thm:hover .thm-kn{transform:translateX(0)}
-}
+  .thm-st i,.thm-cl i{animation:none}@media (hover:hover) and (pointer:fine){
+  .thm:hover .thm-kn{transform:translateX(0)}}@media (hover:hover) and (pointer:fine){
+  :root[data-theme=light] .thm:hover .thm-kn{transform:translateX(28px)}}
+}/* ── Discord handle + email reveal ──────────────────────────────────── */
 
-/* ── Discord handle + email reveal ──────────────────────────────────── */
+
 .dh{font-family:var(--mono);font-weight:600;color:var(--ink);letter-spacing:.02em;
   background:color-mix(in srgb,var(--accent) 16%,transparent);
   border-radius:4px;padding:.1em .36em}
 .rev{margin-top:.7rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em}
 .rev summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;
   color:var(--ink3);list-style:none;transition:color .2s}
-.rev summary::-webkit-details-marker{display:none}
-.rev summary:hover{color:var(--ink)}
+.rev summary::-webkit-details-marker{display:none}@media (hover:hover) and (pointer:fine){
+.rev summary:hover{color:var(--ink)}}/* The original sliding-fill mark, restored 2026-08-01 23:10 EDT. An envelope that
+   opened was tried and rejected: the fill sliding out of a slot says "something is
+   being uncovered", which is what this control does, and the envelope only said
+   "email" — which the words beside it already say. */
+
 .rv-i{position:relative;width:24px;height:10px;flex:0 0 24px;overflow:hidden;
   border:1px solid var(--rule2);border-radius:3px}
 .rv-i::after{content:"";position:absolute;inset:0;background:var(--accent);
   transform:translateX(0);transition:transform .44s cubic-bezier(.16,.84,.28,1)}
-.rev[open] .rv-i::after{transform:translateX(101%)}
-.rev summary:hover .rv-i::after{transform:translateX(48%)}
-.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}
+.rev[open] .rv-i::after{transform:translateX(101%)}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-i::after{transform:translateX(48%)}}@media (hover:hover) and (pointer:fine){
+.rev[open] summary:hover .rv-i::after{transform:translateX(101%)}}
+.rv-q{color:var(--ink3);transition:color .2s ease}/* ⚠️ EXACTLY .dh's TREATMENT, INCLUDING ITS TEXT COLOUR. A first version kept the
+   16% accent wash but coloured the word in the accent too, which made a small
+   mono word the loudest thing in the contact block — louder than the Discord
+   handle it was supposed to match. .dh is accent-tinted GROUND with ordinary ink
+   on top; the tint is the highlight, the text is not. */
+
+.rv-a{border-radius:4px;padding:.1em .36em;font-weight:600;
+  color:var(--ink3);background:transparent;
+  transition:color .22s ease,background .22s ease}
+.rev[open] .rv-a{color:var(--ink);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}@media (hover:hover) and (pointer:fine){.rev summary:hover .rv-a{color:var(--ink);
+  background:color-mix(in srgb,var(--accent) 16%,transparent)}}@media (hover:hover) and (pointer:fine){
+.rev summary:hover .rv-q{color:var(--ink2)}}
+.rev summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
+  border-radius:5px}
 .rv-b{display:grid;gap:.35rem;margin-top:.65rem;padding:.75rem .95rem;
   border-radius:8px;border:1px solid var(--rule);border-left:2px solid var(--accent);
   background:var(--raised);animation:uncover .4s cubic-bezier(.2,.8,.2,1) both}
@@ -260,27 +529,208 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
 @keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
   to{opacity:1;clip-path:inset(0 0 0 0)}}
-@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
+@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}/* ── the shared page footer ───────────────────────────────────────────
+   One definition for all three templates. It used to be three, which is how the
+   legal pages ended up with a plainer footer than the warm ones for no reason
+   anybody chose.
+
+   The affiliation disclaimer is deliberately the QUIETEST thing on the page: it
+   is a notice that has to be present, not something anyone is meant to read on
+   the way past. Small, wide-tracked, --ink3, and capped to a comfortable measure
+   so it never becomes a grey slab. *//* Two columns: the notice on the left, the links top-right, the sign-off under
+   the links. GRID PLACEMENT does the arranging, which is what lets the sign-off
+   stay EARLY in the DOM while rendering LAST — see the note on .sig below. That
+   ordering is load-bearing, so this must not be rewritten as a flex column. *//* ⚠️ COLUMN ONE CARRIES A FLOOR, and without it the footer collapsed on any page
+   whose document column is narrower than the legal set has. An auto track sizes
+   to max-content, and the end-nav's max-content is one unwrapped row of every page
+   on the site — 750px once there were nine. On Contributing that left the notice
+   a 71px-wide column and wrapped it into a 302px-tall grey noodle. With a floor
+   on column one the nav is forced to wrap instead, which is what it has
+   flex-wrap for. Re-check this if the site ever gains a tenth page. */
+
+
+
+
+.foot{padding:2.2rem 0 3.4rem;
+  display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
+  column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
+  align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
+   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+
+.disc{grid-column:1;grid-row:1;align-self:start;
+  margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
+  letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
+   the one you are pointing at. */
+
+.endnav{grid-column:2;grid-row:1/span 2;align-self:start;
+  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;
+  gap:.15rem .75rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase}
+.endnav a{color:var(--ink2);text-decoration:none;padding:.3rem .1rem;
+  border-bottom:1px solid transparent;
+  transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
+.endnav a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.endnav span{color:var(--ink3);opacity:.45}/* ⚠️ The sign-off is FIRST in the footer's DOM and LAST on screen, and the split
+   is deliberate. On the warm pages this line is lifted straight out of the
+   source, where it runs on from the last paragraph ("Thanks for being here —
+   genuinely. / ♡ Made with love by dior"). If the five nav labels sit between
+   those two in the DOM, they land inside that sentence: verify() reports the run
+   missing, correctly, because a reader meets the nav mid-sentence too.
+   Grid placement moves it below the links visually without moving it in the
+   document. Do not "tidy" this by reordering the markup to match the layout. *//* Left column, under the notice. It used to sit bottom-RIGHT under the link row,
+   which put the two mono lines on opposite corners with nothing tying them
+   together; both belong to the site rather than to the navigation. On the four
+   legal pages the notice is gone entirely, so grid row 1 collapses to nothing and
+   this is simply the bottom-left line. */
+
+
+.sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+   the notice is part of the document, so the footer's row 1 is empty — leaving the
+   sign-off in row 2 dropped it a whole line below the link row it should sit level
+   with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
+   .85rem top margin has to go with it or the alignment is off by that much. */
+
+.foot.nodisc .sig{grid-row:1;margin-top:0}
+.foot.nodisc .endnav{grid-row:1}/* One column once the two would fight for width; the notice leads, as it does
+   on every other narrow layout here. */
+
+@media (max-width:760px){
+  .foot{grid-template-columns:minmax(0,1fr);row-gap:1.3rem}
+  .disc{grid-row:auto;max-width:none}
+  .endnav{grid-column:1;justify-content:flex-start}
+  .sig{grid-column:1;text-align:left;margin:0}
+}
+.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+   hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
+   the name is already the only emphasised word in it. */
+
+.sig .sig-a{text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .22s,border-color .22s}@media (hover:hover) and (pointer:fine){
+.sig .sig-a:hover{color:var(--ink);border-bottom-color:var(--accent)}}
+.sig .sig-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}/* .dh is an anchor now, not a <b>. Same chip, plus the affordances a link owes. */
+
+a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
+a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
+a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
+   The ring IS the scroll position, so the control answers "how much is left"
+   as well as "take me back" — on a 22-section document that is worth more than
+   a bare arrow. It is driven from the SAME scroll handler that feeds the
+   progress bar and the section rail, so the three can never disagree.
+   The arrow is two chevrons in a 12px window: hovering slides the pair up so
+   the second takes the first's place, and clicking fires the group off the top
+   and brings it back in from below. *//* ⚠️ IT PARKS ON THE FOOTER RATHER THAN FLOATING OVER IT. A fixed control at a
+   fixed offset from the viewport bottom sits on top of whatever the page ends
+   with, and on a short window — Harkirat's Arc window, where the chrome eats the
+   viewport — that was the footer's own link row, with the button covering the
+   last two entries. Hiding it at the bottom is the usual answer and it is the
+   wrong one here: the bottom of the document is precisely where "back to top" is
+   worth most.
+   So --lift is written from the script each frame: zero until the footer's top
+   edge reaches the button, then exactly the overlap, so it rides up ahead of the
+   footer and never crosses it. It is a variable rather than a direct transform
+   write because .totop.on owns the transform — a script setting style.transform
+   would have fought the entry animation. */
+
+
+.totop{--lift:0px;
+  position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
+  z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
+  -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
+  background:color-mix(in srgb,var(--paper) 90%,transparent);
+  backdrop-filter:blur(12px) saturate(1.25);
+  opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
+   make the button lag the footer it is supposed to stay clear of. */
+
+.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+  transition:opacity .34s ease,border-color .3s ease}
+.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+   PADDING box, which is 44px inside this button's 1px border — but the svg is
+   46px, so it hung 1px down and right and its ring stopped being concentric with
+   the border it sits in. Covering the border box instead puts both circles on one
+   centre, which is the only way a ring around a button reads as a single object. */
+
+.tt-ring{position:absolute;inset:-1px;width:46px;height:46px;transform:rotate(-90deg)}
+.tt-trk{fill:none;stroke:var(--rule);stroke-width:1.5}/* dasharray is 2*pi*r at r=20; the script writes the offset from scroll */
+
+.tt-bar{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-linecap:round;
+  stroke-dasharray:125.66;stroke-dashoffset:125.66}
+.tt-ar{position:relative;display:block;width:12px;height:12px;overflow:hidden}
+.tt-ar i{position:absolute;left:0;width:12px;height:12px;display:block;
+  transition:transform .42s cubic-bezier(.22,.9,.24,1)}
+.tt-ar i::before{content:"";position:absolute;left:2px;top:4px;width:7px;height:7px;
+  border-left:1.7px solid var(--ink);border-top:1.7px solid var(--ink);transform:rotate(45deg)}
+.tt-ar i:nth-child(1){top:0}
+.tt-ar i:nth-child(2){top:12px}
+@media (hover:hover) and (pointer:fine){
+  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .totop:hover .tt-ar i{transform:translateY(-12px)}
+}
+@keyframes ttFire{
+  0%{transform:translateY(0);opacity:1}
+  36%{transform:translateY(-20px);opacity:0}
+  37%{transform:translateY(15px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+@media (prefers-reduced-motion:reduce){
+  .totop{transition:opacity .2s ease}
+  .tt-ar i{transition:none}
+  .totop.fire .tt-ar{animation:none}
+}
+.hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}
 
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
-.top .ghb{margin-left:auto}
-h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:.9;
+.top .ghb{margin-left:auto}/* ⚠️ -.038em, not -.05em. The face DOES have ligatures — the fi in "fine" is a
+   real one and is correct typography — but at -.05em on a ~66px display size the
+   tracking was pulling unrelated pairs into contact too: the comma sat on the t of
+   "print", and the n of "plain" touched the s of "sight". That collision is what
+   made the ligature look like a rendering fault rather than a ligature. Easing the
+   tracking separates the pairs and leaves the ligature alone.
+   ⚠️ LIGATURES STAY ON — Harkirat's decision, 2026-08-02 00:40 EDT. They are the browser
+   default and nothing here disables them; the fi ligature in "fine" is meant to be there.
+   Do NOT "fix" this later by adding font-variant-ligatures:none. If the type ever
+   looks wrong again the suspect is the TRACKING, which pulls unrelated pairs into
+   contact, not the ligature. */
+
+h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
   max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}
-.list{border-top:1px solid var(--rule)}
+.list{border-top:1px solid var(--rule)}/* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
+   linear the row snapped rather than moved — the whole page read as abrupt for
+   this reason, not because anything was missing. The rule wipes in from the top
+   rather than widening, which is the motion a marker being drawn actually makes. */
+
 .entry{display:grid;grid-template-columns:2.6rem 1fr auto;gap:1.4rem;align-items:baseline;
   padding:1.7rem .4rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--rule);
-  position:relative;transition:padding-left .22s}
-.entry::before{content:"";position:absolute;left:0;top:0;bottom:-1px;width:0;
-  background:var(--accent);transition:width .22s}
-.entry:hover{padding-left:1.3rem}
-.entry:hover::before{width:3px}
+  position:relative;
+  transition:padding-left .42s cubic-bezier(.22,.9,.24,1),background .42s ease}@media (hover:hover) and (pointer:fine){
+.entry:hover{background:linear-gradient(90deg,
+  color-mix(in srgb,var(--accent) 7%,transparent),transparent 42%)}}
+.entry::before{content:"";position:absolute;left:0;top:0;bottom:-1px;width:3px;
+  background:var(--accent);transform:scaleY(0);transform-origin:top;
+  transition:transform .44s cubic-bezier(.22,.9,.24,1)}@media (hover:hover) and (pointer:fine){
+.entry:hover::before{transform:scaleY(1)}}
+.entry i,.entry h2,.entry em{transition:color .34s ease}@media (hover:hover) and (pointer:fine){
+.entry:hover{padding-left:1.3rem}}/* ⚠️ --accent-t must be REDECLARED here. Custom properties resolve where they are
+   DECLARED, not where they are used: --accent-t:var(--accent) computes on :root,
+   where --accent is amber, and inherits that finished value. Overriding --accent
+   per row therefore did nothing and every number hovered orange. */
+
+.entry{--accent-t:var(--accent)}
+:root[data-theme=light] .entry{--accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .entry{--accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C)}
+}
 .entry i{font-family:var(--mono);font-style:normal;font-size:.7rem;color:var(--ink3);
-  letter-spacing:.1em;font-variant-numeric:tabular-nums}
-.entry:hover i{color:var(--accent)}
+  letter-spacing:.1em;font-variant-numeric:tabular-nums}@media (hover:hover) and (pointer:fine){
+.entry:hover i{color:var(--accent-t)}}
 .entry h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.025em;
   margin:0 0 .35rem;color:var(--ink)}
 .entry p{font-family:var(--serif);font-size:.98rem;line-height:1.65;color:var(--ink2);margin:0;max-width:44ch}
@@ -289,103 +739,257 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
 @media (max-width:620px){
   .entry{grid-template-columns:2.2rem 1fr;gap:1rem}
   .entry em{display:none}
-}
-.foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem}
-.foot p{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;letter-spacing:.04em;
-  color:var(--ink3);max-width:62ch}
-.foot a{color:var(--ink2)}
-/* ── invitation cards: contributing / contributors ────────────────────
+}/* The landing page keeps a left-aligned, borderless footer: it is a block of
+   contact information, not the end of a document. Every property the shared
+   .foot sets is overridden explicitly rather than left to cascade order. */
+
+.foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
+  align-items:flex-start;text-align:left;padding:0}
+.foot .disc{max-width:66ch}
+.disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
+  letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
+.contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
+  letter-spacing:.04em;color:var(--ink3);max-width:62ch}
+.contact a{color:var(--ink2)}/* ── invitation cards: contributing / contributors ────────────────────
    Deliberately NOT rows in the numbered list above. The 01/02/03 series means
    "documents that bind you"; these are an offer. So: rounded where those are
    squared, warm where those are cold, and side by side rather than stacked in a
-   ledger. The visual grammar carries the distinction on its own. */
-.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1rem;
+   ledger. The visual grammar carries the distinction on its own. *//* ── invitation TICKETS ───────────────────────────────────────────────
+   These are not cards with a hover effect bolted on; they are a different kind
+   of object from the numbered rows above, and the form says so. A ticket has a
+   torn stub, so each one is split by a perforation with the notches punched
+   through it, and the stub carries the destination's name turned on its side.
+
+   The tear is also a cross-reference: the Contributing page's CLA line — the one
+   thing on this whole site a reader physically takes away — is rendered as a
+   slip with the same dashed edge. Paper you tear off and carry, as against the
+   engraved plates on the Contributors page. Two materials, two meanings.
+
+   No overflow:hidden on .inv — the notches have to straddle the card edge to
+   read as bitten out of it. That is why the stub carries its own right-hand
+   radius instead of relying on the parent to clip it. */
+
+
+:root[data-theme=light] .inv{--ia-t:color-mix(in srgb,var(--ia) 38%,#120E1C)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) .inv{--ia-t:color-mix(in srgb,var(--ia) 38%,#120E1C)}
+}
+.invite{display:grid;grid-template-columns:repeat(auto-fit,minmax(286px,1fr));gap:1.1rem;
   margin-top:clamp(2.2rem,6vh,3rem)}
-.inv{position:relative;display:block;text-decoration:none;color:inherit;
-  border-radius:16px;padding:1.45rem 1.5rem 1.35rem;background:var(--paper);
+.inv{--ia-t:var(--ia);position:relative;display:grid;grid-template-columns:minmax(0,1fr) 46px;
+  text-decoration:none;color:inherit;border-radius:14px;background:var(--paper);
   border:1px solid var(--rule);
-  transition:transform .34s cubic-bezier(.16,.84,.28,1),box-shadow .34s}
+  transition:transform .38s cubic-bezier(.16,.84,.28,1),box-shadow .38s,border-color .38s}
+.inv-b{position:relative;z-index:1;padding:1.35rem 1.4rem 1.3rem;min-width:0}/* ⚠️ THE GLOW IS AN ABSOLUTE ::before, NOT A grid ITEM. .inv is display:grid, so a
+   pseudo-element in normal flow would take a track of its own and shove the stub
+   off the card. Absolute positioning removes it from the grid entirely. It also
+   has to sit UNDER the text, which is why .inv-b is positioned: an unpositioned
+   block paints below a positioned sibling regardless of source order. */
 
-/* ONE effect, not four. The previous card stacked a lift, a border-gradient
-   fade, a diagonal light sweep and a coloured shadow — four things firing at once,
-   which is what made it read as effects-for-their-own-sake rather than a design.
-   What remains is a single conic gradient rotating slowly around the card edge,
-   masked to a 1px ring. It is the same "live readout" idea as the wordmark's
-   slots, and it belongs to the card's own accent so the two cards never animate
-   identically. */
-.inv::before{content:"";position:absolute;inset:-1px;border-radius:17px;padding:1.4px;
-  background:conic-gradient(from var(--a,0deg),transparent 0deg,
-    color-mix(in srgb,var(--ia) 92%,white) 42deg,transparent 96deg,transparent 360deg);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
-  opacity:0;transition:opacity .34s;animation:orbit 3.6s linear infinite paused}
-.inv:hover,.inv:focus-visible{transform:translateY(-3px);
-  box-shadow:0 20px 44px -26px color-mix(in srgb,var(--ia) 55%,transparent)}
-.inv:hover::before,.inv:focus-visible::before{opacity:1;animation-play-state:running}
-@property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
-@keyframes orbit{to{--a:360deg}}
+.inv::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  border-radius:14px;opacity:0;transition:opacity .38s ease;
+  background:radial-gradient(128% 96% at 16% 0%,
+    color-mix(in srgb,var(--ia) 15%,transparent),transparent 64%)}.inv:focus-visible::before{opacity:1}@media (hover:hover) and (pointer:fine){
+.inv:hover::before{opacity:1}}
+.inv-s{position:relative;z-index:1;border-radius:0 13px 13px 0;
+  display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:center;
+  padding:.9rem 0 .8rem;
+  background:color-mix(in srgb,var(--ia) 6%,transparent);
+  transition:background .38s}/* ⚠️ THE PERFORATION BELONGS TO THE CARD, NOT TO THE STUB — this is the whole
+   reason the tear reads. It used to be a border-left on .inv-s, so every transform
+   that moved the stub carried the dashed line with it, away from the two notches
+   the card's mask punches at a fixed --nx. That is why the line appeared to slide
+   right on hover and why it made no sense: on real paper the perforation is printed
+   across the sheet and STAYS while the stub comes away from it.
+   Anchored here at --nx, it is clipped by the same mask that cuts the notches, so
+   the line runs exactly between the two holes at every card width.
+   background-size sets the tile a repeating gradient repeats over and the stops
+   inside it are absolute px, so growing the tile from 10 to 15 keeps a 5px dash and
+   stretches the GAP to 10 — the perforation opening up rather than moving. Hard
+   stops, so there is no interpolation range and no grey fringe between dash and gap. */
 
-.inv-h{display:flex;align-items:center;gap:.6rem}
-/* A small mark per card, animated in a way that means something: the plus draws
+.inv::after{content:"";position:absolute;z-index:2;top:0;bottom:0;
+  left:calc(var(--nx) - 1px);width:2px;pointer-events:none;
+  background-image:repeating-linear-gradient(180deg,
+    color-mix(in srgb,var(--ia) 40%,var(--rule)) 0 5px,transparent 5px 10px);
+  background-size:2px 10px;
+  transition:background-size .44s cubic-bezier(.34,1.06,.44,1)}.inv:focus-visible::after{background-size:2px 15px}@media (hover:hover) and (pointer:fine){
+.inv:hover::after{background-size:2px 15px}}/* The torn fibres, which only exist once there is a gap for them to be seen in.
+   At rest it is invisible and the edge is clean, because an untorn ticket has no
+   ragged edge to show.
+   ⚠️ TWO GRADIENTS WITH CO-PRIME PERIODS, and that is the whole trick. A single
+   repeating gradient beside the perforation gave two evenly dashed verticals a few
+   pixels apart, which read as a second perforation rather than as a torn edge —
+   the eye finds the regularity immediately. 7px against 11px only realign every
+   77px, so over a 160px stub the marks land in a pattern that does not repeat
+   within view. Paper colour, not accent: fibres are the sheet giving way, and an
+   accent-coloured edge would have read as printed rule again. */
+
+.inv-s::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:2px;
+  opacity:0;pointer-events:none;
+  background-image:
+    repeating-linear-gradient(180deg,var(--ink3) 0 3px,transparent 3px 7px),
+    repeating-linear-gradient(180deg,var(--ink3) 0 2px,transparent 2px 11px);
+  transition:opacity .3s ease .06s}.inv:focus-visible .inv-s::before{opacity:.45}@media (hover:hover) and (pointer:fine){
+.inv:hover .inv-s::before{opacity:.45}}/* ⚠️ The notches are MASKED OUT of the card, not painted over it. They used to be
+   discs filled with --desk, which only matches the page where the page is a flat
+   colour — and it is not: there is a radial glow behind these cards, so each notch
+   read as a dark disc stuck to the edge rather than a hole bitten out of it.
+   A mask removes the pixels, so whatever is behind shows through and it stays
+   correct in both themes and anywhere the backdrop changes. */
+
+.inv{--nx:calc(100% - 46px);
+  -webkit-mask:
+    radial-gradient(circle 7px at var(--nx) 0,transparent 98%,#000 100%),
+    radial-gradient(circle 7px at var(--nx) 100%,transparent 98%,#000 100%);
+  -webkit-mask-composite:source-in;
+  mask:
+    radial-gradient(circle 7px at var(--nx) 0,transparent 98%,#000 100%),
+    radial-gradient(circle 7px at var(--nx) 100%,transparent 98%,#000 100%);
+  mask-composite:intersect}
+.inv-sw{writing-mode:vertical-rl;transform:rotate(180deg);
+  font-family:var(--mono);font-size:.57rem;letter-spacing:.24em;text-transform:uppercase;
+  color:color-mix(in srgb,var(--ia-t) 72%,var(--ink3))}/* ⚠️ THE CARD NO LONGER ROTATES. A -.35deg tilt on the whole card plus the stub's
+   own rotation compounded on the arrow badge at the bottom of the stub, which is
+   what made it look wrongly aligned on hover. The tear carries the paper character
+   now; the card only lifts. */.inv:focus-visible{transform:translateY(-4px);
+  border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
+  box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}@media (hover:hover) and (pointer:fine){
+
+.inv:hover{transform:translateY(-4px);
+  border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
+  box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}}/* The stub lifts and skews away from the body along the perforation, so the card
+   reads as beginning to tear rather than simply rising. It stops well short of
+   detaching — a ticket half-torn is an invitation; a ticket in two pieces is a
+   used one. *//* ⚠️ THE STUB TEARS AWAY; IT DOES NOT HINGE. Two earlier versions moved the stub
+   as one rigid piece — first a translate+rotate that dragged the perforation with
+   it, then a rotateY hinge that pinned the left edge and only lifted. Neither is a
+   tear: a tear is a SEPARATION that PROPAGATES, and it has to leave a visible gap.
+   transform-origin is left TOP, not left centre, and that is the mechanism. A
+   rotation about the top corner leaves the top nearly closed and opens the bottom
+   by height*sin(angle) — on a ~168px stub at 1.15deg that is 3.4px, on top of the
+   5px translate, so the gap runs 5px at the top to 8.4px at the bottom. That wedge
+   IS the tear running down the perforation, and it comes free without any keyframes.
+   The shadow cast back onto the card is what makes the gap read as a gap rather
+   than as a lighter stripe: it is the only cue that the two pieces are now at
+   different depths.
+   It stops well short of detaching — a ticket half-torn is an invitation; a ticket
+   in two pieces is a used one. */.inv:focus-visible .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
+  transform:translateX(5px) rotate(1.15deg);
+  box-shadow:-7px 0 12px -7px rgba(0,0,0,.6)}@media (hover:hover) and (pointer:fine){
+
+
+.inv:hover .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
+  transform:translateX(5px) rotate(1.15deg);
+  box-shadow:-7px 0 12px -7px rgba(0,0,0,.6)}}
+.inv-s{transform-origin:left top;
+  transition:background .42s ease,transform .46s cubic-bezier(.32,1.06,.4,1),
+    box-shadow .42s ease}
+@media (prefers-reduced-motion:reduce){.inv:focus-visible .inv-s{transform:none}@media (hover:hover) and (pointer:fine){
+  .inv:hover .inv-s{transform:none}}
+}
+@media (prefers-reduced-motion:reduce){.inv:focus-visible{transform:none}@media (hover:hover) and (pointer:fine){
+  .inv:hover{transform:none}}
+}
+
+.inv-h{display:flex;align-items:center;gap:.6rem}/* A small mark per card, animated in a way that means something: the plus draws
    itself open (an invitation to add), and the three dots light in sequence (a
    list of names filling up). */
+
 .inv-m{position:relative;width:26px;height:26px;flex:0 0 26px;border-radius:8px;
   display:grid;place-items:center;color:var(--ia);
   background:color-mix(in srgb,var(--ia) 14%,transparent);
   border:1px solid color-mix(in srgb,var(--ia) 34%,transparent)}
-.inv-m svg{width:14px;height:14px;display:block;overflow:visible}
+.inv-m svg{width:14px;height:14px;display:block;overflow:visible}/* ⚠️ transform-origin belongs on the BASE rule, not the hover rule. It was set
+   only while hovered, so on the way back the origin reverted to the default —
+   the centre of the line's own bounding box, not the centre of the mark — and
+   the stroke swung in from somewhere else entirely instead of unwinding. Both
+   ends of a reversible transition need the same pivot. */
+
 .inv-m .pv,.inv-m .ph{stroke:currentColor;stroke-width:2;stroke-linecap:round;
-  transition:transform .42s cubic-bezier(.16,.84,.28,1)}
-.inv:hover .inv-m .pv{transform:rotate(90deg);transform-origin:7px 7px}
-.inv-m .d{fill:currentColor;opacity:.35}
-.inv:hover .inv-m .d{animation:roll 1.4s ease-in-out infinite}
-.inv:hover .inv-m .d:nth-child(2){animation-delay:.18s}
-.inv:hover .inv-m .d:nth-child(3){animation-delay:.36s}
-@keyframes roll{0%,100%{opacity:.35}45%{opacity:1}}
+  transform-origin:7px 7px;
+  transition:transform .52s cubic-bezier(.34,1.12,.42,1)}@media (hover:hover) and (pointer:fine){
+.inv:hover .inv-m .pv{transform:rotate(90deg)}}
+.inv-m .ln{stroke:currentColor;stroke-width:2;stroke-linecap:round;
+  transform-origin:2px 7px;opacity:.55;
+  transition:transform .5s cubic-bezier(.34,1.1,.44,1),opacity .4s ease}
+.inv-m .ln:nth-child(2){transition-delay:.06s}
+.inv-m .ln:nth-child(3){transition-delay:.12s}@media (hover:hover) and (pointer:fine){
+.inv:hover .inv-m .ln{opacity:1}}@media (hover:hover) and (pointer:fine){
+.inv:hover .inv-m .ln:nth-child(2){transform:scaleX(1.5625)}}@media (hover:hover) and (pointer:fine){
+.inv:hover .inv-m .ln:nth-child(3){transform:scaleX(2.7778)}}
 
 .inv .ik{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;
-  text-transform:uppercase;color:var(--ia)}
+  text-transform:uppercase;color:var(--ia-t)}
 .inv h3{font-family:var(--display);font-size:1.24rem;font-weight:750;letter-spacing:-.025em;
   color:var(--ink);margin:.75rem 0 .4rem}
-.inv p{font-family:var(--serif);font-size:.95rem;line-height:1.62;color:var(--ink2);margin:0}
-.inv .arw{display:inline-flex;align-items:center;gap:.4rem;margin-top:.95rem;
-  font-family:var(--mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ia)}
-.inv .arw i{font-style:normal;transition:transform .3s cubic-bezier(.16,.84,.28,1)}
-.inv:hover .arw i{transform:translateX(5px)}
-@media (prefers-reduced-motion:reduce){
-  .inv::before{animation:none}
-  .inv:hover .inv-m .d{animation:none;opacity:1}
-}
+.inv p{font-family:var(--serif);font-size:.95rem;line-height:1.62;color:var(--ink2);margin:0}/* The arrow lives in the stub now, where the thumb would go. */
 
-/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+.inv .arw{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  color:var(--ia-t);background:color-mix(in srgb,var(--ia) 14%,transparent);
+  transition:background .3s}/* Drawn rather than typed. The arrow glyph came in at whatever weight the mono
+   face had, which was far too thin beside the display type it sits under. *//* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE. The head is a 6.2px box turned 45deg,
+   so its tip reaches 6.2/sqrt(2) = 4.38px from its own centre, not 3.1 — at right:.5px
+   the point stuck 0.78px out of an 11px box that place-items:center was centring.
+   right must be at least 4.38-3.1 = 1.28 for the ink to stay inside; 12px and
+   1.3px puts the tip at 11.98 and the drawn arrow centred on the box it is in. */
+
+
+.inv .arw i{position:relative;display:block;width:12px;height:9px;
+  transition:transform .38s cubic-bezier(.34,1.1,.44,1)}
+.inv .arw i::before{content:"";position:absolute;left:0;top:3.6px;width:9.5px;height:1.9px;
+  border-radius:1px;background:currentColor}
+.inv .arw i::after{content:"";position:absolute;right:1.3px;top:1.4px;width:6.2px;height:6.2px;
+  border-right:1.9px solid currentColor;border-top:1.9px solid currentColor;
+  border-radius:0 1px 0 0;transform:rotate(45deg)}@media (hover:hover) and (pointer:fine){
+.inv:hover .arw{background:color-mix(in srgb,var(--ia) 26%,transparent)}}@media (hover:hover) and (pointer:fine){
+.inv:hover .arw i{transform:translateX(3px)}}
+@media (prefers-reduced-motion:reduce){@media (hover:hover) and (pointer:fine){
+  .inv:hover .arw i{transform:none}}@media (hover:hover) and (pointer:fine){
+  .inv:hover .inv-m .ln{transform:none;opacity:1}}
+}/* A section label between the two invite rows. Without it the six cards read as
+   one undifferentiated grid, which is exactly the collapse the three page families
+   exist to avoid. *//* ⚠️ KEPT ON PURPOSE THOUGH NOTHING CURRENTLY USES IT. Its only element was the
+   -The record- label above the changelog row, which is withdrawn from the landing
+   page rather than deleted. Removing this would make the -uncomment to restore-
+   note above a lie: the row would come back unstyled. */
+
+
+
+.lab-sec{display:block;margin:1.9rem 0 .7rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
    the top of the screen. */
+
+
 .tray{margin-top:clamp(1.8rem,5vh,2.8rem);padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;align-items:center;gap:.7rem}
 .tray .lab{margin-right:auto}
 </style></head><body>
-<div class="wrap">
+<a class="skip" href="#main">Skip to content</a>
+<main class="wrap" id="main" tabindex="-1">
   <div class="top">
     <div class="mark">
-    <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="wm">Dior&#8217;s Builds</span>
+    <span class="mk-s">
+      <span class="wm">Dior&#8217;s Builds</span>
+      
+    </span>
   </div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  title="View the source on GitHub">
+  data-spot title="View the source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
-  target="_blank" rel="noopener noreferrer">
+  target="_blank" rel="noopener noreferrer" data-spot
+  aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
-  <span class="ins-ar" aria-hidden="true">&#8599;</span>
+  <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
   </div>
   <span class="lab">Legal</span>
-  <h1>The fine print,<br>written to be read.</h1>
+  <h1>The fine print,<br>in plain sight.</h1>
   <p class="lede">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
   <div class="list">
       <a class="entry" href="terms.html" style="--accent:#F2994A;--glow:#6B4E7D">
@@ -412,7 +1016,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
         </div>
         <em>19 sections</em>
       </a>
-      <a class="entry" href="notice.html" style="--accent:#E8657F;--glow:#6B4E7D">
+      <a class="entry" href="notice.html" style="--accent:#FF5264;--glow:#6B4E7D">
         <i>04</i>
         <div>
           <h2>Notices &amp; Attributions</h2>
@@ -421,29 +1025,38 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
         <em>9 sections</em>
       </a></div>
   <div class="invite">
-      <a class="inv" href="contributing.html" style="--ia:#1F8A5E">
-        <span class="inv-h">
-          <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/><line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg></span>
-          <span class="ik">Join in</span>
+      <a class="inv" href="./contributing.html" style="--ia:#8B9BFF">
+        <span class="inv-b">
+          <span class="inv-h">
+            <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ph" x1="1.5" y1="7" x2="12.5" y2="7"/><line class="pv" x1="7" y1="1.5" x2="7" y2="12.5"/></svg></span>
+            <span class="ik">Join in</span>
+          </span>
+          <h3>Contributing</h3>
+          <p>How to report a bug, send a fix, and what the CLA actually asks of you.</p>
         </span>
-        <h3>Contributing</h3>
-        <p>How to report a bug, send a fix, and what the CLA actually asks of you.</p>
-        <span class="arw">Open <i>&#8594;</i></span>
+        <span class="inv-s" aria-hidden="true">
+          <span class="inv-sw">Contributing</span>
+          <span class="arw"><i aria-hidden="true"></i></span>
+        </span>
       </a>
-      <a class="inv" href="contributors.html" style="--ia:#F2C230">
-        <span class="inv-h">
-          <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><circle class="d" cx="2.4" cy="7" r="1.7"/><circle class="d" cx="7" cy="7" r="1.7"/><circle class="d" cx="11.6" cy="7" r="1.7"/></svg></span>
-          <span class="ik">Credit</span>
+      <a class="inv" href="./contributors.html" style="--ia:#F8FF4A">
+        <span class="inv-b">
+          <span class="inv-h">
+            <span class="inv-m" aria-hidden="true"><svg viewBox="0 0 14 14" aria-hidden="true"><line class="ln" x1="2" y1="3.6" x2="12" y2="3.6"/><line class="ln" x1="2" y1="7" x2="8.4" y2="7"/><line class="ln" x1="2" y1="10.4" x2="5.6" y2="10.4"/></svg></span>
+            <span class="ik">Roll call</span>
+          </span>
+          <h3>Contributors</h3>
+          <p>Who helped build this, and how credit works. Bug reports count.</p>
         </span>
-        <h3>Contributors</h3>
-        <p>Who helped build this, and how credit works. Bug reports count.</p>
-        <span class="arw">Open <i>&#8594;</i></span>
+        <span class="inv-s" aria-hidden="true">
+          <span class="inv-sw">Contributors</span>
+          <span class="arw"><i aria-hidden="true"></i></span>
+        </span>
       </a></div>
   <div class="foot">
-    <p>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
-    <p>Questions, corrections, or a privacy request — reach <b class="dh">diorswrld</b> on Discord.</p>
+    <p class="contact">Questions, corrections, or a privacy request — reach <a class="dh" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a> on Discord.</p>
     <details class="rev">
-  <summary><span class="rv-i" aria-hidden="true"></span>Prefer email? Reveal address</summary>
+  <summary><span class="rv-i" aria-hidden="true"></span><span class="rv-q">Prefer email?</span><span class="rv-a">Reveal</span></summary>
   <div class="rv-b">
     <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
     <span>The formal route. Named in the Terms and Privacy Policy for legal notices,
@@ -462,10 +1075,22 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
     </span>
     <span class="thm-kn">
       <svg viewBox="0 0 24 24">
+        <defs>
+          <radialGradient id="thm-lit" cx="34%" cy="30%" r="78%">
+            <stop offset="0" stop-color="#FFFFFF"/>
+            <stop offset="0.6" stop-color="#E4EAF9"/>
+            <stop offset="1" stop-color="#C3CDE8"/>
+          </radialGradient>
+          <radialGradient id="thm-sun" cx="34%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#FFE49A"/>
+            <stop offset="0.5" stop-color="#F2A93B"/>
+            <stop offset="1" stop-color="#E08A1E"/>
+          </radialGradient>
+        </defs>
         <mask id="thm-cut">
           <rect width="24" height="24" fill="#000"/>
           <circle cx="12" cy="12" r="7.4" fill="#fff"/>
-          <circle class="cut" cx="12" cy="12" r="6.6" fill="#000"/>
+          <circle class="cut" cx="12" cy="12" r="7" fill="#000"/>
         </mask>
         <g class="rays" stroke-width="1.8" stroke-linecap="round">
           <line x1="12" y1="1.2" x2="12" y2="3.4"/><line x1="12" y1="20.6" x2="12" y2="22.8"/>
@@ -473,14 +1098,26 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
           <line x1="4.4" y1="4.4" x2="6" y2="6"/><line x1="18" y1="18" x2="19.6" y2="19.6"/>
           <line x1="19.6" y1="4.4" x2="18" y2="6"/><line x1="6" y1="18" x2="4.4" y2="19.6"/>
         </g>
-        <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
-        <g class="craters"><circle cx="10.4" cy="9.6" r="1.15"/><circle cx="8.7" cy="14.2" r=".8"/><circle cx="13" cy="13.6" r=".62"/></g>
+        <g class="moon">
+          <rect class="orb" width="24" height="24" mask="url(#thm-cut)"/>
+          <g class="craters" mask="url(#thm-cut)">
+            <circle cx="8.6" cy="13.6" r="1.5"/>
+            <circle cx="10.2" cy="16.4" r="1.05"/>
+            <circle cx="7.6" cy="10.2" r="0.85"/>
+          </g>
+        </g>
       </svg>
     </span>
   </span>
 </button>
   </div>
-</div>
+  <!-- The trademark notice sits last and reads quietest. It is an obligation, not
+       an invitation, and it was competing with the contact block for the end of
+       the page — which is the one place a reader is actually deciding what to do
+       next. Still on every page, still full opacity: quiet is a matter of size and
+       placement, never of contrast. -->
+  <p class="disc fine">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+</main>
 <script>
 (function(){
   var d=document.documentElement, btn=document.getElementById('th');
@@ -489,6 +1126,17 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
       (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
   }
   function sync(){ if(btn) btn.setAttribute('aria-checked', resolved()==='light'?'true':'false'); }
+  /* Until the switch is pressed, NOTHING is stored and the OS setting is the
+     source of truth — which means it can change while the page is open. The CSS
+     follows that live through the media query, but aria-checked would not, so a
+     screen reader would announce "off" on a page that had just gone light. Only
+     re-syncs while no explicit choice exists; once one is stored it must win. */
+  try{
+    var mq=matchMedia('(prefers-color-scheme:dark)');
+    var onSystemChange=function(){ if(!d.getAttribute('data-theme')) sync(); };
+    if(mq.addEventListener) mq.addEventListener('change',onSystemChange);
+    else if(mq.addListener) mq.addListener(onSystemChange);
+  }catch(e){}
   // Theme choice is per-browser and deliberately never sent anywhere.
   try{ var s=localStorage.getItem('db-theme'); if(s) d.setAttribute('data-theme',s); }catch(e){}
   sync();
@@ -497,6 +1145,19 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.05em;line-height:
     d.setAttribute('data-theme',next);
     try{ localStorage.setItem('db-theme',next); }catch(e){}
     sync();
+  });
+
+  /* Cursor-tracked highlight on the action controls. The light source is where
+     your pointer actually is, so the control looks lit rather than merely
+     recoloured — a fixed hover gradient is the tell that nothing is really
+     responding to you. Pure enhancement: --px/--py have defaults in CSS, so
+     without this script the controls simply light from their centre. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-spot]'),function(el){
+    el.addEventListener('pointermove',function(e){
+      var r=el.getBoundingClientRect();
+      el.style.setProperty('--px',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+      el.style.setProperty('--py',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+    });
   });
 })();</script>
 </body></html>

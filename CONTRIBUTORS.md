@@ -1,10 +1,11 @@
 # Contributors
 
-Everyone who has contributed to Dior's Builds, credited by the name or handle
-they asked to be credited under.
+The people who have worked on Dior's Builds. Each one is listed under the name
+or handle they asked for.
 
-If your work ships, your name goes here and in the changelog entry for the release
-it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the
+Ship something and you are added here, and to the changelog entry for the release
+it goes out in. That is an obligation rather than a courtesy, and it cannot be
+withdrawn later: §5.6 of the
 [LICENSE](LICENSE) requires it.
 
 ---
@@ -13,7 +14,7 @@ it shipped in. That isn't a favour anyone can withdraw later — §5.6 of the
 
 | Name | Role |
 |---|---|
-| **Harkirat Mangat** (**dior**) | Creator and maintainer |
+| **Harkirat Mangat** (**dior**, **diorswrld**) | Creator and maintainer |
 
 ---
 
@@ -45,5 +46,11 @@ Format for new entries — keep newest at the bottom:
   or leave it, if you'd rather keep it.
 
 Thanks to everyone who has taken the time to make this better.
+
+---
+
+*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
+holders of any content the game features under licence.*
 
 ♡ Made with love by **dior**

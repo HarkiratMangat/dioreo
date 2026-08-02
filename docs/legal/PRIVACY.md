@@ -1,8 +1,9 @@
 # Privacy Policy — Dior's Builds
 
-**Effective date:** 29 July 2026
-**Version:** 1.1
-**Applies to:** the Dior's Builds Discord application (the "Bot")
+**Effective date:** 1 August 2026
+**Version:** 1.5
+**Applies to:** the Dior's Builds Discord application (the "Bot") and this
+documentation website (the "Site")
 
 ---
 
@@ -18,6 +19,9 @@ unused.
 **Your data is stored in Canada.** No advertising, no analytics, no tracking, no
 cookies, no profiling, and nothing is sold or shared for marketing.
 
+**This website stores exactly one thing on your device:** whether you chose light
+or dark mode. It never leaves your browser and identifies nobody — see §2.6.
+
 You can have everything deleted by emailing **harkirat117@gmail.com** — see §9.
 
 *This summary is for convenience. The sections below are the actual policy.*
@@ -31,6 +35,7 @@ The **data controller** is:
 **Harkirat Mangat**, also known as **"dior"** or **"diorswrld"**, an individual
 based in Ontario, Canada.
 📧 **harkirat117@gmail.com**
+💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
 This is a hobby project run by one person. There is no company, no data
 protection officer (none is required — we do not carry out large-scale or
@@ -139,6 +144,54 @@ Service, and the Bot's behaviour do not depend on that setting** — they apply
 identically either way, and these documents remain published at their permanent
 public URLs regardless.
 
+### 2.6 This website, and the one thing it stores on your device
+
+These documents are served as a static website. It has no accounts, no forms, no
+analytics, no third-party scripts, and no server-side session of any kind — the
+hosting provider serves files and nothing else.
+
+It stores **one** item in your browser's local storage:
+
+| Name | Value | Purpose | Expires |
+|---|---|---|---|
+| `db-theme` | `light` or `dark` | Remembers the appearance you picked, so the site does not reset to dark every time you open a page | Never — it stays until you clear it |
+
+Three things follow from that, and they are the whole of it:
+
+- **It is not a cookie.** Cookies are transmitted to the server with every
+  request; local storage never leaves your browser. The provider serving this
+  site never receives it, and neither do we.
+- **It identifies nobody.** The value is one of two words. It contains no
+  identifier, is not combined with anything else, and cannot distinguish you from
+  any other reader who prefers the same appearance.
+- **It is only written if you ask for it.** Nothing is stored until you press the
+  light/dark switch. If you never touch it, nothing is written at all.
+
+**Why there is no consent banner.** Consent rules for storing things on your
+device are technology-neutral — they cover local storage, not only cookies, so
+"it isn't a cookie" would not on its own be a defence. The reason no banner is
+required is that storage which is strictly necessary to provide something you
+explicitly asked for is exempt from consent, and a display preference you set by
+pressing a switch is precisely that. It is not used for analytics, advertising,
+measurement, or tracking of any kind, so no other basis is needed.
+
+**To remove it:** clear site data for this domain in your browser settings, or
+use private browsing. Removing it costs you nothing but the appearance setting.
+
+**Before you press the switch, nothing is stored at all** — the Site simply
+follows whatever light or dark setting your operating system or browser is
+already using. That happens through an ordinary CSS media query: your browser
+applies one set of colours or the other while drawing the page. We are not told
+which it chose. There is no server-side component that could be told — these are
+static files.
+
+The one place the Site reads that setting in code, it does so only to keep the
+switch's on/off state honest for screen readers, in your own browser. **It is
+never stored, never written to a log, never combined with anything else, and
+never sent anywhere.** We mention it because a colour-scheme preference is one of
+the signals that *can* be used to help fingerprint a browser when it is collected
+and transmitted, and we would rather state plainly that this one is not.
+
 ---
 
 ## 3. What we do NOT collect
@@ -150,11 +203,11 @@ public URLs regardless.
 | **Your email address** | Never requested, never received from Discord. |
 | **Your real name** | Never requested. |
 | **Your Discord username or display name** | Used momentarily to render a response, never written to the database. |
-| **Your IP address** | Discord handles the connection; we never see it. |
+| **Your IP address** | Discord handles the Bot's connection; we never see it. Loading *this website* is a normal web request, so the host that serves it necessarily processes your IP the way any web server does — that is described in §5, and it never reaches us or our database. |
 | **Payment information** | The Bot is free and has no payment feature. |
 | **A list of your servers** | Not collected or stored. |
 | **Analytics or tracking data** | No analytics SDK, no telemetry, no tracking pixel, no ad network, no fingerprinting. |
-| **Cookies** | There is no website. The Bot runs entirely inside Discord and sets no cookies or similar storage on your device. |
+| **Cookies** | None, anywhere. The Bot runs inside Discord and has no web surface at all. This documentation website sets no cookies either; it stores a single light/dark preference in your browser, which is described in full in §2.6 and is never transmitted. |
 | **Voice data, location, contacts, or biometrics** | Not applicable, not collected. |
 
 We do **no** profiling, no behavioural advertising, and **no automated
@@ -505,6 +558,7 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.2 | 31 July 2026 | Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds §2.6 describing that item in full — including how the Site behaves *before* you touch the switch, when it simply follows your operating system's light/dark setting and stores nothing at all — extends the scope line to cover the Site, and corrects the §3 and Appendix C entries. **No change to what the Bot collects, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to versions 1.0 and 1.1. |
 | 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
 | 1.0 | 28 July 2026 | First published version. |
 
@@ -515,8 +569,9 @@ change record you can't reach isn't a change record.
 **Harkirat Mangat ("dior", "diorswrld")** — Data Controller
 Ontario, Canada
 📧 **harkirat117@gmail.com**
+💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
-Email is the canonical contact and always reaches us. We deliberately don't list a
+Email is the canonical contact and always reaches us; Discord is usually faster for a question. A **Privacy Request** under §9 must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a
 repository link here, because the repository's visibility can change (§2.5) and a
 contact point in a privacy policy must not be able to go dead.
 
@@ -544,13 +599,22 @@ you can read yourself at [`models/UserPreference.js`](../../models/UserPreferenc
 - `avatarColorHex` / `avatarColorSource`
 - `bannerColorHex` / `bannerColorSource`
 - `displayNameColorHex` / `displayNameColorSource`
-- `decorationColorSource`, `nameplateColorSource`
-- `avatarPalette`, `bannerPalette`, `decorationPalette`, `nameplatePalette` (+ source hashes)
+- `decorationColorHex` / `decorationColorSource`
+- `nameplateColorHex` / `nameplateColorSource`
+- `avatarPalette` / `avatarPaletteSource`
+- `bannerPalette` / `bannerPaletteSource`
+- `decorationPalette` / `decorationPaletteSource`
+- `nameplatePalette` / `nameplatePaletteSource`
 
 **That's the whole list.** It mirrors the schema in the source code rather than
 paraphrasing it, so it can be checked line-by-line against the software itself. If
 you have access to the repository you can verify it directly; if you don't, ask and
 we will show you the relevant file.
+
+**Stored on your device, not on ours:** the documentation website additionally
+keeps a single `db-theme` entry in your own browser's local storage, holding
+`light` or `dark`. It is listed here for completeness only — it never reaches our
+database or any server, and it is described in full in §2.6.
 
 ---
 
@@ -558,6 +622,11 @@ we will show you the relevant file.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.5** | 1 August 2026 | Appendix A now names `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and names the four `*PaletteSource` fields individually rather than as "(+ source hashes)". **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already being stored and are already described by §2; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again. |
+| **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §13, alongside the canonical email. A Privacy Request under §9 must still come by email. |
+| **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
+| **1.2** | 31 July 2026 | Documented the Site's single `db-theme` local-storage item (§2.6); corrected the "there is no website" statement in §3. |
+| **1.1** | 29 July 2026 | Added the controller's `diorswrld` alias. |
 | **1.0** | 28 July 2026 | Initial policy. |
 
 Future revisions will be listed here. The complete drafting history is kept in the
@@ -585,7 +654,8 @@ against the running software rather than asserted, and this table records how.
 | Admin commands are locked to one account | `ALLOWED_ADMIN_ID` guards in `commands/manage.js`, `commands/autobuild.js`, and the central interaction router. |
 | **There is no automated deletion** | Searched for every `deleteOne` / `deleteMany` / `findOneAndDelete` in the codebase. **None operates on `UserPreference`.** This is why §7.1 discloses a shortcoming instead of claiming a capability. |
 | `/settings` has no reset or delete | Searched `commands/settings.js` for reset/restore-default handling. None exists — it only overwrites individual values. |
-| No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. |
+| No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for `document.cookie` — no occurrences. |
+| One local-storage item on the Site | Searched the site generator for `localStorage` and `sessionStorage`: the only key written is `db-theme`, holding `light` or `dark`, in `THEME_JS` and `THEME_BOOT` in `scripts/buildLegalPages.js`. Nothing else is stored, and nothing is sent anywhere. |
 
 **Where we could not verify something, we said so rather than guessing** — see the
 backup-retention caveat in §9.4 and the honest limits stated in §5.2, §7.1, and §8.
@@ -596,4 +666,5 @@ relevant code.
 ---
 
 *Dior's Builds is an unofficial fan project and is not affiliated with Activision
-Publishing, Inc. or Discord Inc.*
+Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
+holders of any content the game features under licence.*

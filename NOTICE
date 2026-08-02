@@ -63,6 +63,38 @@ Development dependencies:
                                  Not used at runtime; required only by
                                  scripts/migrateBuildsToMongo.js.
 
+Vendored web assets, served from public/assets/:
+
+These are not npm dependencies and do not appear in package.json. They are
+committed to this repository and served from our own origin by the published
+website. That is deliberate: the Privacy Policy is published on the same
+origin and states what is collected, and loading a font or a script from a
+third-party CDN would disclose every visitor's IP address to that third party
+without the policy saying so.
+
+  Martian Mono                   SIL Open Font License 1.1
+                                 Copyright (c) The Martian Mono Project Authors
+                                 https://github.com/evilmartians/mono
+                                 Used for version stamps and display type on
+                                 the changelog and devlog pages.
+
+  Instrument Sans                SIL Open Font License 1.1
+                                 Copyright (c) The Instrument Sans Project
+                                 Authors
+                                 https://github.com/Instrument/instrument-sans
+                                 Used for reading copy on the same pages.
+
+  Motion One 11                  MIT
+                                 Copyright (c) Matt Perry
+                                 https://motion.dev
+                                 Scroll-reveal animation on the changelog and
+                                 devlog pages; the pages render and are fully
+                                 readable without it.
+
+The SIL OFL requires that the fonts be distributed with this notice and that
+they not be sold on their own; neither is affected by how they are used here.
+Both fonts are served as subset .woff2 files, unmodified.
+
 
 ================================================================================
 2. APACHE LICENSE 2.0 OBLIGATIONS
@@ -336,3 +368,7 @@ Attribution errors, omissions, licensing questions, and takedown requests are
 all welcome at that address and will be corrected promptly.
 
 ================================================================================
+
+Dior's Builds is an unofficial fan project and is not affiliated with Activision
+Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
+holders of any content the game features under licence.

@@ -75,24 +75,63 @@ const makeFixture = () => {
   execFileSync("git", ["config", "user.email", "t@t"], { cwd: root });
   execFileSync("git", ["config", "user.name", "t"], { cwd: root });
 
-  write(root, "package.json", JSON.stringify({ name: "fixture", version: "2.33.0" }, null, 2));
+  // A runtime dependency, its lock entry, its installed copy and its NOTICE attribution — all four,
+  // consistent. dep-licences and notice-attribution both examine this; without it they examine 0
+  // items and the ledger correctly calls that a vacuous pass.
+  write(
+    root,
+    "package.json",
+    JSON.stringify({ name: "fixture", version: "2.33.0", dependencies: { widget: "^1.2.3" } }, null, 2)
+  );
+  write(
+    root,
+    "package-lock.json",
+    JSON.stringify({ name: "fixture", version: "2.33.0", lockfileVersion: 3,
+      packages: { "": { version: "2.33.0" }, "node_modules/widget": { version: "1.2.3", license: "MIT" } } }, null, 2)
+  );
+  write(root, "node_modules/widget/package.json", JSON.stringify({ name: "widget", version: "1.2.3", license: "MIT" }));
+  write(
+    root,
+    "NOTICE",
+    "NOTICE — fixture\n\n1. DIRECT DEPENDENCIES\n================================\n\n" +
+      "  widget 1.2.3                   MIT\n                                 Copyright (c) someone\n\n" +
+      "2. TRADEMARKS\n================================\n\nnone\n"
+  );
   // Names every unit the new structural checks look for: the root docs, every top-level directory,
   // each path-scoped rule, and each script. A fixture that doesn't satisfy them reports VACUOUS PASS.
   write(
     root,
     "CLAUDE.md",
-    "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`.\n\n" +
-      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/`.\n" +
+    "# Fixture\n\nSee `docs/README.md`. Licence in `LICENSE`, attributions in `NOTICE`.\n\n" +
+      "Nav map: `.claude/rules/example.md` · dirs `docs/` `.claude/` `.github/` `scripts/` `models/`.\n" +
       "Scripts: `scripts/dofix.js`.\n"
   );
   write(root, "LICENSE", "Fixture licence.\n");
   write(root, "scripts/dofix.js", "// fixture script\n");
+  // privacy-inventory loads the schema rather than regexing it, so the fixture must supply one —
+  // otherwise the check skips, examines nothing, and the ledger correctly calls that a vacuous pass.
+  // ⚠️ It exports a PLAIN object, not a mongoose schema. A `require('mongoose')` here resolves from
+  // the fixture's own directory in /tmp, which has no node_modules, so it threw and the check skipped
+  // — silently turning the "broken fixture must fail" assertion into a false pass. The check only
+  // ever reads `schema.paths`, so this is the same shape without the resolution hazard.
+  write(
+    root,
+    "models/UserPreference.js",
+    "module.exports = { schema: { paths: { discordId: {}, timezone: {} } } };\n"
+  );
+  write(
+    root,
+    "docs/legal/PRIVACY.md",
+    "# Privacy\n\n## Appendix A — Complete data inventory\n\n" +
+      "- `discordId` — the user id\n- `timezone`\n\n**That's the whole list.**\n"
+  );
   write(
     root,
     "docs/README.md",
     "# Map\n\n| File | What |\n|---|---|\n| `CHANGELOG.md` | log |\n| `CHANGELOG-SUMMARY.md` | summary |\n" +
       "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `diors-builds notes.md` | intake |\n" +
       "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n" +
+      "| `legal/PRIVACY.md` | policy |\n" +
       "\nPath-scoped rules: example (1 file).\n"
   );
   // Placeholder hashes are filled in below with a REAL sha. Invented hashes fail `hash-chain`'s
@@ -123,7 +162,7 @@ const makeFixture = () => {
   // **/.claude/settings.local.json, so it is ignored in EVERY repo on this machine including this
   // fixture. Without the negation the file is silently untracked -- which is precisely the bug the real
   // .gitignore documents, and the baseline meta-test caught it here first.
-  write(root, ".gitignore", ".env\n.env.*\n!.claude/settings.local.json\n");
+  write(root, ".gitignore", ".env\n.env.*\nnode_modules/\n!.claude/settings.local.json\n");
   write(root, ".env", "BOT_TOKEN=fake-value-for-fixture\n");
   write(root, ".claude/settings.local.json", JSON.stringify({ permissions: { allow: [] } }, null, 2));
   // ci-wiring: the audit must guard its own CI wiring.
@@ -265,6 +304,30 @@ provesSilent("a LEGACY range heading (pre-v2.19.0), still allowed", "summary-cov
   // have their own heading -- the sibling `proves` case above covers that direction.
   write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.18.3 — 2026-07-16 (#2) — b\n\n## v2.18.0 — 2026-07-14 (#1) — a\n");
   write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
+});
+
+proves("a released version whose CHANGELOG heading was deleted", "summary-orphan", (root) => {
+  // The real shape of the v2.44.0 damage: the heading goes, the BODY stays and welds itself onto
+  // the entry above. A substring test on the version number would still fail here, which is why
+  // the body below deliberately does not name its own version -- exactly like the real one did not.
+  write(root, "docs/CHANGELOG.md", "# Changelog\n\n## v2.33.0 — 2026-07-01 (#2) — two\n\nbody of two\n\nthe absorbed body of the lost entry\n");
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — July 1, 2026\n\n## v2.32.0 — June 1, 2026\n");
+});
+
+provesSilent("a LEGACY range heading in the SUMMARY, which names versions it need not head", "summary-orphan", (root) => {
+  // Ranges cover versions they never give an individual heading to. Expanding one into per-version
+  // expectations would manufacture findings out of a convention that is retired but still valid.
+  //
+  // ⚠️ The modern v2.33.0 pair is here so the corpus is NOT empty. A legacy-only fixture made this
+  // check examine 0 items and the audit's own vacuous-pass detector reported it as firing — which is
+  // that detector working, not a false positive. Keeping a real heading in the fixture proves the
+  // stronger thing anyway: ranges are skipped WHILE individual headings are still being checked.
+  write(
+    root,
+    "docs/CHANGELOG.md",
+    "# Changelog\n\n## v2.33.0 — 2026-08-01 (#3) — c\n\n## v2.18.3 — 2026-07-16 (#2) — b\n\n## v2.18.0 — 2026-07-14 (#1) — a\n"
+  );
+  write(root, "docs/CHANGELOG-SUMMARY.md", "# Summary\n\n## v2.33.0 — August 1, 2026\n\n## v2.18.0–v2.18.3 — July 14–16, 2026\n");
 });
 
 proves("a non-newest changelog entry with no commit hash", "hash-chain", (root) => {
@@ -455,7 +518,11 @@ proves("a NUL byte making a text file invisible to ripgrep", "binary-in-text", (
 });
 
 proves("a root-level document nothing maps", "root-docs", (root) => {
-  write(root, "NOTICE", "Third-party notices.\n");
+  // ⚠️ NOT `NOTICE` any more. This used NOTICE, and then the fixture gained a real NOTICE (for
+  // notice-attribution) that CLAUDE.md maps — so the "break" stopped breaking anything and this test
+  // silently went dead while still reporting a pass. Caught by the suite's own baseline assertion.
+  // Any unmapped root document does the job; this one is not referenced anywhere in the fixture.
+  write(root, "GOVERNANCE.md", "How decisions get made.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
@@ -477,6 +544,61 @@ proves("a rule file missing from the nav map", "nav-map-sync", (root) => {
 proves("a hardcoded rule-file count going stale", "nav-map-sync", (root) => {
   const r = readFileSync(join(root, "docs/README.md"), "utf8") + "\n99 files (commands-overview, ...).\n";
   write(root, "docs/README.md", r);
+});
+
+proves("a CLAUDE.md section growing into subsystem detail", "claude-md-shape", (root) => {
+  // The real failure this was built from: the `public/` section reached 286 lines — 43% of the file
+  // that is loaded in full every session — because nothing measured it. nav-map-sync could not see
+  // it: that check only fires once a rule file EXISTS and is unlisted, never when the detail was
+  // simply never moved into one.
+  const c = readFileSync(join(root, "CLAUDE.md"), "utf8")
+    + "\n### A subsystem that outgrew the map\n"
+    + "detail line\n".repeat(140);
+  write(root, "CLAUDE.md", c);
+});
+
+proves("the lockfile's version drifting from package.json", "lock-version", (root) => {
+  // The real drift: package.json reached 2.47.0 while the lock still said 2.35.3, twelve releases
+  // back, because npm only rewrites that field when a dependency-touching command runs.
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.version = "0.0.1";
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+});
+
+proves("a copyleft package entering the dependency tree", "dep-licences", (root) => {
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.packages["node_modules/evil"] = { version: "1.0.0", license: "GPL-3.0" };
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+});
+
+proves("a package whose licence cannot be determined at all", "dep-licences", (root) => {
+  // Not the same failure as copyleft, and it must not be treated as clean: a scanner that reads
+  // "unknown" as permissive fails open, which is the whole thing it exists to prevent.
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.packages["node_modules/mystery"] = { version: "1.0.0" };
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+  write(root, "node_modules/mystery/package.json", JSON.stringify({ name: "mystery", version: "1.0.0" }));
+});
+
+proves("NOTICE going stale when a dependency is bumped", "notice-attribution", (root) => {
+  const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
+  lock.packages["node_modules/widget"].version = "9.9.9";
+  write(root, "package-lock.json", JSON.stringify(lock, null, 2));
+});
+
+proves("a runtime dependency with no NOTICE attribution", "notice-attribution", (root) => {
+  const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  pkg.dependencies.unattributed = "^1.0.0";
+  write(root, "package.json", JSON.stringify(pkg, null, 2));
+});
+
+proves("a stored field missing from the privacy policy's inventory", "privacy-inventory", (root) => {
+  // Appendix A says it is "a transcription" of the UserPreference schema and ends "That's the whole
+  // list." It had really drifted: two ColorHex fields were stored and unlisted. Dropping a field from
+  // the fixture's appendix reproduces exactly that.
+  const p = join(root, "docs/legal/PRIVACY.md");
+  write(root, "docs/legal/PRIVACY.md",
+    readFileSync(p, "utf8").replace(/^- `discordId`.*$/m, "- (removed)"));
 });
 
 // ---- the evidence ledger: a pass you cannot audit is not a pass -------------------------------

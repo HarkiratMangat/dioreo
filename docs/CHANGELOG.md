@@ -181,7 +181,276 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.46.0 — 2026-07-31 23:50 EDT (#60 · ) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
+## v2.47.0 — 2026-08-02 00:40 EDT (#62) — The record pages, a rebuilt nav indicator, and eight new build gates
+
+The site's navigation had been unusable and nobody could say why. Fixing it turned into a pass over
+most of the surface Harkirat had flagged from live testing.
+
+**The nav swallowed clicks, and the cause was its drag gesture.**
+- The switcher began a drag on **every** `pointerdown` anywhere on the track, and a capture-phase
+  handler cancelled the link's navigation whenever the pointer had moved more than 3px between press
+  and release. Its own fallback then only navigated if the **rounded** settled index differed from the
+  starting one — which a few pixels of hand drift never changes. So an ordinary click with a little
+  movement was swallowed whole: no navigation, no error, nothing in the console.
+- Demonstrated in Chrome against the deployed build rather than argued from the source: identical
+  synthetic click sequences reached the link at 0px of drift and never reached it at 6px. After the
+  rebuild, 0/6/20/40px all reach it. The drag is gone entirely; tabs are plain links again.
+- ⚠️ A first "reproduction" was **invalid** and was retracted — the drag tool used fires only
+  `pointerdown`, never `pointerup` or `click`, so it exercised nothing. The real demonstration
+  came from dispatching the full pointer sequence and watching whether the click reached the anchor.
+
+**Desktop and mobile navigation are now separate controls.**
+- Sharing one control across breakpoints was the source of most of the mobile breakage: an indicator
+  that has to be a horizontal pointer track **and** a vertical thumb-follower does neither well, and
+  every hover rule it carried latched on first tap. Three mobile variants were built and discarded
+  before this one — a two-tab rail, a bottom sheet, and a plain disclosure — and the disclosure lost
+  for the same reason as the other two: it hid the answer behind a tap. What shipped is a **swipeable
+  tab strip**: all six pages on one scrollable row, the current one always on screen, a hairline
+  separating the four instruments from the two invitations, 44px targets, and a section index that
+  sits with the document it indexes rather than in the same menu as the pages.
+- Every hover rule on the site now sits inside `(hover:hover) and (pointer:fine)`. A latched
+  `:hover` after a tap is why buttons appeared "stuck mid-phase" on a phone. **This is applied
+  mechanically, not by hand.** A comment claimed every rule was already guarded; a twelve-line script
+  found sixty that were not. The build now rewrites the finished stylesheet at the single point where
+  it reaches disk — and the first version of that transform destroyed eight rules, because it kept
+  comments in the selector prelude and a comment containing a **comma** was split as if it were a
+  selector list, writing the rewritten rule into the middle of the comment. A gate re-parses the
+  built CSS for unguarded `:hover`, brace balance, and braces inside comments; it fails the build
+  that shipped the bug and passes the one that fixes it.
+- **The two surfaces use different metaball engines, and that is a decision, not an inconsistency.**
+  The desktop indicator tears apart and reforms through an **SVG `feColorMatrix` alpha crush**, which
+  multiplies alpha and leaves RGB untouched — so the indicator keeps its own colour over the
+  translucent glass header, with no bed, no blend and no duplicated label. It runs only during a move,
+  because thresholding a blurred stadium flattens its caps and the resting pill came out a rounded
+  rectangle inside a stadium track.
+  The mobile strip uses the **CSS `blur(7px) contrast(20) blur(0)` crush** instead, because on iOS an
+  SVG filter renders the swarm as hard circles where the CSS chain renders it as liquid — measured on
+  the same device, same page, two panels side by side. The CSS crush can only threshold colour, so it
+  needs an opaque black bed and a blend to erase it; the mobile bar was made opaque to pay for that.
+  The same trade on desktop would mean an opaque header, which is why it was not made.
+
+**Two content defects in the published instruments.**
+- The orphaned `these documents are published on (the "Site")` fragment under the masthead on Terms
+  **and** Privacy was a parser bug, not a typo: those head fields are wrapped across two source lines
+  and the strip that removes them used `.*$`, which stops at the first newline — so the
+  wrapped remainder survived and rendered as an orphaned fragment directly under the masthead.
+  The pattern now consumes any following line that is not blank, another `**field**`, a rule, a
+  heading or a quote: exactly the wrapped remainder and nothing past the head block. Verified
+  against both files — 47 and 36 characters removed, and §1.1's operative definition of the
+  Site untouched. It read like a paragraph cut in half because it was one. The same helper feeds
+  `build()` and `verify()`, so one fix corrects both and the content gate cannot drift from what
+  is rendered.
+- LICENSE clause numbers sat 13.3px above the sentence they label — an empty heading was still
+  generating a 14.5px box plus a margin, pushing the text down while the number stayed pinned.
+
+**Footer, rebuilt to the annotated layout.** Notice left, links top-right, sign-off beneath them. The
+sign-off is **first in the DOM and last on screen**, which is load-bearing: on the warm pages that line
+runs on from the closing paragraph, so putting the nav labels between them lands five links inside that
+sentence and correctly fails gate 1. Grid placement moves it visually without moving it in the document.
+
+**Added.** A back-to-top control whose ring is the scroll position, driven from the same handler as the
+progress bar and section rail so the three cannot disagree · download buttons for the plain-text LICENSE
+and NOTICE, placed in the note that explains why those files govern · copy buttons on every code block.
+
+**The warm pages.** "Ways to contribute" was three thin blocks with a fourth stranded underneath —
+`auto-fit` fits three tracks at that width, so four parallel lanes were laid out as 3+1; now a 2x2 of
+equal tiles · the CLA's 26px bordered circles read as radio buttons on the one page explaining what you
+are agreeing to, and are now bare direction marks with the row carrying the edge · the contributors wall
+stretched its single plate across the whole card, which was most of why that page read as lifeless.
+
+**The landing page was off centre, and this pass caused it.** The goo filter's `<svg>` was injected
+into all three templates but its collapsing style lived in the switcher stylesheet, which the landing
+page does not include — so it kept its intrinsic 300x150 and took part in layout (measured 480px of
+margin against 180px). The style is inline on the element now. Also: the 01/02 numbers all hovered
+orange because a custom property resolves where it is **declared**, not where it is used, so
+`--accent-t:var(--accent)` computed once on `:root` and inherited that finished value · the plus icon
+swung back from the wrong pivot because `transform-origin` was set only in the hover rule · the ticket
+notches were discs filled with the page colour, which does not match a page carrying a radial glow, and
+are now masked out of the card.
+
+**Verification.** All six build gates green. **Gate 1 caught a real defect mid-work**: a copy button's
+"Copy" label landed between a code block and the prose after it and split three source runs, so the
+control is now text-free with a CSS-drawn mark. Motion itself could **not** be verified automatically —
+Chrome throttles `requestAnimationFrame` in a background tab and the preview pane runs zero frames —
+so geometry, colour, endpoints and contrast were measured by taking manual control of the animation
+clock and inspecting specific frames. Contrast was re-derived from scratch: a tinted indicator fails
+WCAG AA at **any** tint (violet-on-dark 4.60 untinted, 4.28 at 6%), which is what drove the solid pill
+with an inverted near-black label (worst pair 5.07 across all six accents and every mid-gradient blend).
+
+**The indicator now comes apart instead of travelling.** The source pill shrinks away by 55% of the
+move, the destination does not begin forming until 28%, and the neck pinches off at 40% — so around the
+middle there is barely any pill on screen and fourteen droplets carry the shape across on their own arcs
+before converging into the destination's centre. Colour is per **piece** and solid; a single ramp across
+the whole control was why the colour appeared to lag behind the motion, because a blob already sitting on
+the destination still carried some of the origin's hue until the move ended.
+Two faults were in the filter rather than the geometry. The droplets were being erased **arithmetically**:
+a disc of radius *r* blurred at stdDeviation *s* peaks near `1-exp(-r²/2s²)` alpha, which at r=3.5 and
+s=4.5 is 0.26 — and the alpha crush `32α-15` does not reach opacity until 0.469, so every small droplet
+was deleted before it could render. Blur drops to 3.6, the threshold to `22α-8`, and droplets grow from
+3.5-10.5px to 7-16px. Long thin shapes survive a blur far better than small round ones, which is exactly
+why the neck stayed visible the whole time the droplets did not. Separately the spray reached `h*1.25` —
+about 40px on a 34px bar — so it left the header entirely and read as confetti.
+The label inversion also fired at 40% of the move, when the destination pill is 11px wide behind a 79px
+label: more than half the word went near-black while still on the dark bar. Held to 80%, where the pill
+is 64px and the existing 300ms colour ease covers the remainder.
+
+**The theme toggle's moon is a crescent now, and was not before.** What is left after subtracting one
+circle from another is a lune of width `R + D - r`. The old values — orb 7.4, cut 6.6, centres 10.46
+apart — give 11.27 of a 14.8 diameter, so that shape was a **gibbous with a bite out of it**; and because
+the width grows with *D*, pushing the cut further away only ever made the bite shallower. Cut radius 7 at
+a centre distance of 2.7 gives 3.1, about a fifth of the disc, with the horn tips landing at ±71° so they
+read as horns rather than closing into a ring. The three craters went with it: at that width the crescent
+renders about 2px across and every crater sat in the mass that is now cut away.
+
+**The mobile indicator is the reference effect, and the colour is a blend rather than a filter.**
+Fifteen 20px discs spawn on a radius of 90 and converge inward to 10, blurred and crushed to a hard
+two-tone image that fuses them into the pill they are building. The colour was the hard part. The
+crush drives every channel to 0 or 1 — amber and lime both land on `#FFFF00`, violet on `#FF00FF` —
+so the accent has to be restored *after* it. The first attempt fitted a
+`sepia/saturate/hue-rotate/brightness` chain per accent: composing the four matrices and solving
+white → accent lands all six within 1/255 **on paper**, and renders visibly desaturated. Two
+different clamping models were tried and neither matches what the browser paints; a five-parameter
+fit with a leading `brightness()` still missed by 74/255 in red on teal. Browsers clamp somewhere no
+published description covers, so this was fitting a curve to a function nobody has the form of.
+It is a blend now, and needs no model at all: `multiply(white, accent)` **is** accent and
+`multiply(black, accent)` **is** black, exactly, for every accent that will ever exist. An accent
+plate blended over the crushed image colours the blobs and leaves the bed alone. Light mode is the
+mirror — invert the crushed image so the bed comes out white, which is `multiply`'s identity, and
+switch the plate to `screen`, whose identities are `screen(white, accent) = white` and
+`screen(black, accent) = accent`. Twelve fitted chains were deleted. The one trap is reach: the plate
+must stay inside the bed's opaque core, or blending against a partly-transparent backdrop shows the
+plate's own colour as a square around the whole effect.
+**How that was settled is worth keeping.** Two colours side by side had already passed the wrong
+chains. A **difference blend** — the candidate over the true accent, `mix-blend-mode: difference` —
+renders pure black on an exact match and glows in the colour of the failing channel otherwise, so one
+screenshot judged twelve candidates at once.
+
+**Four more defects, each found by measuring rather than looking.**
+- The indicator landed **17px off** its tab. It cached `offsetLeft − scrollLeft`, and `scroll-snap`
+  re-settles the strip after the initial scroll — so the cached value was stale before the first
+  paint. It measures rects now, which cannot go stale, and holds alignment at every scroll offset.
+- The pill was armed inside `requestAnimationFrame`, which does not run in a backgrounded tab, so a
+  page opened in one came forward with **no indicator at all**. The forced reflow already restarts
+  the animation; nothing there needed to wait for a frame.
+- **The entire mobile header block was dead code.** The base `.bar` rule is concatenated after it at
+  equal specificity, so the desktop gap and padding won at every width — measured at 375px it was
+  still reporting `gap:1.5rem` and `padding:1rem`. That, plus a missing `overflow` on the wordmark,
+  is why "Dior's Builds" kept its full 90px of text inside a 31px box and painted straight across the
+  repo button. The override is specificity-proofed, the wordmark truncates instead of overflowing,
+  and 19px of hover-only affordance (the mark's padding and its travel arrow) is reclaimed on a
+  surface that has no hover.
+- Droplets on the **desktop** morph were being erased by the same arithmetic that erased them on
+  mobile: the alpha crush `22α−8` does not paint until a droplet's blurred peak clears 0.364, which
+  at stdDeviation 3.6 needs about 10.6px, and a third of them spawned smaller than that.
+
+**The desktop morph inherited what mobile paid for.** The arriving pill now lands on a damped spring
+that overshoots about 4% and rings down to exactly 1, instead of a smoothstep that decelerates and
+stops dead — width rather than `scaleX`, because `border-radius:999px` keeps the caps circular at any
+width and a `scaleX` would flatten them to ellipses at the peak. Droplets rotate, which is invisible
+on a circle but is applied *before* the translate, so it bows each trajectory differently; straight
+lines were the largest remaining tell that this was fourteen elements on fourteen paths rather than
+one mass coming apart.
+**The unreadable label was a timing bug, not a contrast one.** `.lit` toggled every tab in a single
+pass at 80% of the travel, so the tab the pill was *leaving* kept its near-black for 600ms after the
+pill had gone — sitting on the dark bar with nothing behind it. Clearing and setting are opposite
+events and now happen at opposite times.
+
+**The section rail follows the page instead of scrolling itself.** It is taller than the viewport on
+every one of these documents, so it has to scroll, but it was doing so as an independent surface with
+its own bar beside the page's — two things to operate, and no reason to operate that one. The
+scrollspy already knows the tracked section, so it keeps that slot inside the rail's box. `scrollTop`
+is set directly rather than through `scrollIntoView`, which walks every scrollable ancestor and would
+make a sticky rail scroll the page in response to being scrolled. A 2rem mask fade replaces the hard
+crop, because with the bar gone a hard edge claims the list ends there and it does not.
+
+**A record repaired, and a gate so it cannot recur.** The v2.47.0 entry in this file had the
+changelog's own 183-line header spliced into the middle of it, truncating a sentence mid-word — done
+by the very commit that wrote the entry. Every existing check passed: links resolved, versions were
+covered, the hash chain was intact, because none of them look at a file's **shape**. `docs:audit`
+gained `record-structure`, which fails on a repeated top-level heading. Its first version asserted
+"exactly one H1" and the self-test immediately caught that DEVLOG legitimately uses H1 for its parts —
+the invariant that detects a splice is repetition, not count.
+
+**Still open:** every mobile claim here is Chrome emulation at 375/393/430, never a real phone; and
+the contributors page remains thin by nature.
+
+**The changelog, devlog and what's-new pages were published — then withdrawn from the nav.**
+- A third page family (`scripts/lib/chronicle.js`), three voices on one skeleton: a notice board, an
+  engineering ledger and a notebook. What separates them is the **grid**, never the palette — a
+  reader stops seeing colour in two seconds.
+- The pages are still built, deployed and reachable at `/changelog/`, but they are off the switcher,
+  the mobile strip and the footer — **except inside `/changelog/` itself**, where they keep their own
+  group so a reader arriving by link is not stranded. Harkirat withdrew the landing-page row first;
+  leaving the tabs advertising it was half a job.
+
+**The nav indicator's label was illegible, reported four times before the cause was found.**
+- `.tab:hover{color:var(--ink)}` — a brightening affordance from before the tabs had an indicator at
+  all. `(0,2,0)` against `.tab`'s own `(0,1,0)`, so it beat the per-frame coverage colour outright:
+  for as long as a real pointer sat on a tab the label was pinned near-white **on top of** the pill
+  that had just arrived under it, releasing only when the pointer left. Hence "it turns black when
+  the morph is *leaving* it".
+- ⚠️ A scripted `mouseenter` cannot reproduce this — a dispatched event does not create a `:hover`
+  state — so three rounds of measurement read the correct colour while the screen showed the wrong
+  one. Three plausible-but-wrong diagnoses in a row is the signature of an instrument that cannot see
+  the failing state.
+- Also fixed: the current tab was painted in its **own accent**, the same colour as its pill; and a
+  cold group's first hover left the label unpainted because `aim()`'s early return never repainted —
+  the exact mirror of a bug fixed in `rest()` earlier the same day.
+
+**Timing tied to the pill instead of to the clock.** Label coverage is measured against the LABEL, not
+the tab's padding box (roughly half of which is padding), against the head's true centred rect, and
+including the vertical taper — a wide flat head sits *beside* the glyphs, not under them. Measured on
+one hover: the colour used to commit 84ms into a 760ms move as a two-frame flip; it now crosses at
+284ms over 108ms and thirteen frames.
+
+**The pill is assembled on page load.** Droplets converge from a wide ring and the shape forms out of
+them, once per arrival. Not a second animation system: a birth is a move whose source has no width, so
+`paint()` already does the right thing and it cannot drift from the hover morph.
+
+**Sticky section headings on the legal documents.** `sectionise()` wraps each `<h2>` and its clauses in
+a `<section>`, because what bounds a sticky element is its containing block and the parser emits
+headings as flat siblings. The band spans the number gutter (or the previous section's number scrolls
+past beside the pinned one) and fades the prose beneath it (or an arriving line is sliced in half).
+
+**The documents themselves.** Terms and Privacy to **v1.5**: Discord added as a second contact route
+alongside the canonical email — deliberately *not* at every email mention, since §17.1, takedown
+notices and Privacy Requests each name a single route on purpose. Privacy Appendix A had really
+drifted: `decorationColorHex` and `nameplateColorHex` were **stored and unlisted** under a heading
+reading "That's the whole list." All four instruments now close with the full trademark notice, so the
+footer no longer says it a second time in different words. Terms' own change history was missing its
+1.1 and 1.2 rows; backfilled from git.
+
+**Eight new build gates, each proven against broken input before being trusted.**
+- `scriptSyntaxAudit()` — parses every emitted inline `<script>`. It exists because a build shipped a
+  completely dead nav while **twelve gates stayed green**: a comment landed one line below its closing
+  `*/`, and `node --check` on the generator cannot see it, because that code is a string in a template
+  literal until a browser parses it.
+- `privacy-inventory` — Appendix A against the live `UserPreference` schema. Loads the schema rather
+  than regexing it: a regex that misses an oddly-formatted field fails **open**.
+- `dep-licences` — no copyleft anywhere, and every licence must be **known**. `chroma-js` and
+  `exif-parser` declare none at all, so it falls back to reading the licence text; a scanner that reads
+  "unknown" as permissive fails open.
+- `notice-attribution` — every runtime dependency in NOTICE §1 at the version the lockfile resolves.
+- `claude-md-shape` — no `CLAUDE.md` section over 130 lines. The `public/` section had reached 286,
+  43% of the file that loads in full every session.
+- `lock-version` — `package-lock.json` had read **2.35.3** while `package.json` read 2.47.0, twelve
+  releases of drift that `npm ci` ignores and nothing checked.
+- **CI now builds the site and fails if `public/` moved** — it is build output *and* it is committed,
+  so a source edit without a rebuild ships the previous binding wording. It caught a stale tree on its
+  first real run.
+- `scripts/checkEmojiCaptures.js` wired into CI.
+
+**Documentation moved to where it belongs.** The legal site's craft detail left `CLAUDE.md` for
+`.claude/rules/legal-site.md`, which loads only when you touch the generator, `public/`, or one of the
+nine sources. 665 → 417 lines, with zero word-tokens lost.
+
+⚠️ **PR #61 was closed unmerged, not merged.** Its commits are ancestors of this branch, so merging
+both would have applied the same work twice. Everything it contained ships here.
+
+⚠️ **Mobile is UNVERIFIED.** Every measurement in this release was at desktop widths. Filed as
+`[P1 · M]` in `docs/db-deferred-list.md`.
+
+## v2.46.0 — 2026-07-31 23:50 EDT (#60 · `a4b17d6`) — A 3-page calendar, real banners, and a bulk-format guide that finally explains itself
 
 The full follow-up to v2.45.0's launch-bug pass: the calendar redesign notes L184-197 asked for,
 plus everything live-testing turned up once it actually shipped.
@@ -277,6 +546,10 @@ launch-blocking for the new season, not "nice to have":
 of line 191) is a style question, not a bug — the buff/nerf alias covers the concrete, checkable part
 of the ask. Lines 193–196, 198 are extra-feature requests Harkirat explicitly deferred, not part of
 this pass.
+
+---
+
+## v2.44.0 — 2026-07-30 00:40 EDT (#58 · `93aaec2`) — Two pages that stopped reading like a Markdown dump, and a sticky rail that was never actually fixed
 **The legal site's two warm pages get real structure, and a fifth build gate to keep it.** No bot code
 changed; nothing here touches the VM.
 

@@ -52,58 +52,28 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-- `[P1 · M · Opus5-H]` 🔗 **The legal site has outstanding bugs Harkirat has seen and I have not.**
-  *Filed 2026-07-30 00:35 EDT, at the end of the warm-page redesign session (v2.44.0), at his request:
-  "theres still many bugs with the site but lets put it on the deferred list for now."*
+- `[P1 · S]` 🔗 **Two Cloudflare deployments published ZERO files, and the cause is still unexplained.**
+  *Filed 2026-07-30 00:35 EDT; narrowed 2026-08-02 00:40 EDT once the rest of its parent item closed —
+  see `docs/archive/resolved-list.md`.*
 
-  ⚠️ **READ THIS FIRST: the specific bug list does not exist yet.** Harkirat reviewed the live site and
-  found "many bugs"; he went to sleep before enumerating them, and I never saw them. **Nothing below is
-  his list** — it is everything *I* independently know to be unresolved or unverified. **The first action
-  of the session that picks this up is to ask him what he actually saw**, on which page, at which width,
-  in which theme. Do not assume the items below are the same bugs, and do not assume they are all of
-  them. Writing a plausible-looking list from my side and treating it as his would be the failure mode
-  this warning exists to prevent.
+  `2752b4fd` and `2a85d094` (2026-07-30 ~00:08 EDT) returned 404 for *every* path on their own alias
+  URLs, including `/LICENSE`. Production pointed at the newest, so the entire site was down; `/legal/*`
+  only looked healthy because Cloudflare was serving cache (`cf-cache-status: HIT`, `age: 6525`). The
+  bare domain, being an uncacheable redirect, was the only URL that exposed it — which is how Harkirat
+  found it. Redeploying the identical command worked first time and uploaded 9 files + `_redirects`, so
+  **the command is not the bug.** Possible: a transient Cloudflare fault, or a deploy racing a rebuild
+  of `public/`. ⚠️ **If it recurs, capture wrangler's full stdout/stderr** — the only evidence kept was
+  the deployment list, not the failing run's output.
+  Related and already handled: edge propagation presents as 404 for up to ~60s after a deploy (measured
+  2026-07-30 00:15 EDT), and `dior legal check` now retries on non-200 rather than only on a hash
+  mismatch. **Any "the site is down" report within a minute of a deploy should be re-checked before it
+  is believed.** See `[[feedback_green_check_can_mask_outage]]`.
 
-  **What IS known, with evidence:**
-
-  1. **Two Cloudflare deployments published ZERO files, cause unexplained.** `2752b4fd` and `2a85d094`
-     (2026-07-30 ~00:08 EDT) return 404 for *every* path on their own alias URLs, including `/LICENSE`.
-     Production pointed at the newest, so the entire site was down; `/legal/*` only appeared healthy
-     because Cloudflare was serving cache (`cf-cache-status: HIT`, `age: 6525`). The bare domain, being
-     an uncacheable redirect, was the only URL that exposed it — which is how Harkirat found it.
-     Redeploying the identical command (`npx wrangler pages deploy public --project-name=… --branch main
-     --commit-dirty=true`) worked first time and uploaded 9 files + `_redirects`, so **the command is not
-     the bug.** Unresolved: *why* two consecutive deploys uploaded nothing. **If it recurs, capture
-     wrangler's full stdout/stderr** — I only have the deployment list as evidence, not the failing run's
-     output. Possible: a transient Cloudflare-side fault, or a deploy racing a concurrent rebuild of
-     `public/`. `_redirects` itself is fine and was proven working on both older deployments (`/` → 302).
-  2. **Edge propagation presents as 404, not just as drift, and it lasts up to ~60s.** Measured
-     2026-07-30 00:15 EDT: immediately after a successful deploy, `/legal/` and `/legal/privacy` returned
-     404 while the other seven files were already correct; all were 200 sixty seconds later with no
-     action. Already fixed in `dior legal check` (retry now covers non-200, not only hash mismatch) —
-     recorded here because **any future "the site is down" report within a minute of a deploy should be
-     re-checked before it is believed.**
-  3. **Harkirat has still not reviewed several design changes** — they shipped without his eyes on them:
-     the four-tab switcher, the moon/sun theme toggle with craters and clouds, the conic-ring invite
-     cards on the landing page, the light-mode retune, and the larger wordmark. Any of these could be
-     among the bugs he means.
-  4. **Only `terms` was measured at desktop width.** The rail/footer fix was verified on `/legal/terms`
-     at 1440×900 and 1100px. The other three legal pages share the template so they *should* behave
-     identically, but "should" is not "was measured" — and `license` (59.5 KB) and `notice` have
-     markedly different content shapes, including the space-aligned tables.
-  5. **Light mode was never checked at desktop width at all.** Every desktop measurement this session
-     was in dark mode. Geometry is theme-independent, so the rail fix holds, but colour, contrast, and
-     the glow/wash treatments were not looked at above 980px.
-  6. **The warm pages' new devices are structurally verified, not aesthetically reviewed.** The spine,
-     consent slip, CLA ledger, credit wall and promise cards were asserted to *exist and be wired*
-     (counts, data attributes, CSS-vs-DOM placement). Whether they *look* right is exactly what Harkirat
-     was reviewing when he found bugs.
-
-  **Useful context for whoever takes this:** the build has five self-checks and all five are green, which
-  proves content completeness, link resolution, column-block survival, cross-reference liveness and warm
-  structure — and **proves nothing about appearance or layout.** That gap is the entire subject of this
-  item. See `[[feedback_complete_is_not_correct]]`. Verification recipe, mechanism notes and the two
-  backtick traps: CLAUDE.md's `public/` section + `.claude/rules/scripts-and-migrations.md`.
+- `[P2 · S]` **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true
+  2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is
+  theme-independent so the layout work holds, but colour, contrast and the glow/wash treatments were
+  never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every
+  build, which is real coverage — but it proves ratios, not whether the page looks right.
 
 *(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in
 v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
@@ -199,6 +169,56 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
 by items added since. (A count used to live here; it went stale the moment an item was added, so the
 tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
+
+- `[P1 · M]` **The site has NEVER been checked on a real phone since the desktop pass.** *Filed
+  2026-08-02 00:40 EDT, at Harkirat's instruction, before merging v2.47.0.* Everything in that release
+  was designed, measured and verified at desktop widths — the nav restaging, the sticky section
+  headings, the ticket tear, the footer rebuild, the back-to-top parking, the page-load pill
+  animation. **None of it has been looked at on a device.** Chrome's emulator is not a substitute and
+  is explicitly distrusted here: the mobile metaball uses a different engine *because* an SVG filter
+  renders as hard circles on real iOS and as liquid in the CSS chain, which no emulator would have
+  shown.
+  Specific things to check, because each has a known reason to be suspicious:
+  - **Sticky section headings** are scoped to `min-width:981px` and are OFF below it, by design — the
+    mobile nav is itself sticky at `top:54px`. Confirm nothing collides at the boundary.
+  - **The desktop pill's page-load animation** is skipped on coarse pointers via the `still` flag.
+    Confirm it is genuinely skipped and the mobile strip's own convergence still plays.
+  - **The ticket tear** uses a rotate about `left top` plus a shadow; hover does not exist on touch, so
+    confirm the cards read correctly at rest and that `:active` does something sensible.
+  - **The footer's `.nodisc` single-row layout** collapses to one column at 760px — check the sign-off
+    and link row do not overlap.
+  - **Every hover rule** is machine-wrapped in `(hover:hover)`, but `hoverGuardAudit` proves the WRAP,
+    not the behaviour. Latching is the failure mode to look for.
+  Serve it to the phone with `python3 -m http.server 8899 --bind 0.0.0.0 --directory public` and browse
+  the machine's LAN address. ⚠️ `.claude/launch.json` binds localhost only, so it will NOT reach a phone.
+
+- `[P2 · M · 🧩needs-design]` **Legal site: redesign the section scrollspy.** *Filed 2026-08-01 22:05 EDT,
+  from Harkirat's desktop pass.* His words: "While I love that you implemented a scrollspy, I feel like
+  you could improve its design, functionality and animation. Please get creative and think outside the
+  box for something more unique." What exists today is `.rail` in `scripts/buildLegalPages.js` — a
+  sticky left column of numbered slots, tracked by the `paint()` loop in the legal shell's scroll
+  script, which highlights the slot whose heading last crossed a 130px line and nudges the rail's own
+  scrollbox to keep it visible. It works and it is plain. **Not a bug — an open design brief**, so it
+  wants options put in front of him before anything is built (`feedback_ask_before_visual_rework`).
+  Constraints that are already load-bearing and must survive any redesign: the index is rendered
+  TWICE (desktop rail + mobile `.msecd`) and tracking keys on section ID, never on an index into a flat
+  slot list, because whichever copy sits later in the DOM would otherwise win; the rail must not become
+  a second scrollbar; and its containing block is `.cols`, not `.page`, which is what stops it
+  travelling into the footer. Sections are now wrapped in `<section class="dsec">` by `sectionise()`
+  and each heading is sticky, so a redesign has structure to work with that it did not have before.
+
+- `[P2 · M · 🧩needs-design · 🔗bundle]` **Legal site: use the fluid morph on something other than the
+  nav.** *Filed 2026-08-01 22:05 EDT, from the same pass.* His words: "I also want to sprinkle our
+  fluid morphing animation/system to some other elements in the website so it doesn't feel like a
+  standalone design choice. Idk where but if we get an opportunity, let me know." So the deliverable is
+  first a **shortlist of candidate surfaces with a recommendation**, not an implementation. Bundles
+  naturally with the scrollspy item above, which is the most obvious candidate surface.
+  ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
+  SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately
+  (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a
+  fitted filter chain; and the geometry constants are MEASURED against the renderer, not derived — see
+  `reference_goo_metaball_recipe` and `feedback_measure_the_renderer_not_the_model`. Any new surface
+  with a different element height needs its dilation re-measured with the canvas method.
 
 - `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
   2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
@@ -468,6 +488,18 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
+- `[P2 · M · Sonnet5-H]` **The memory index `MEMORY.md` is close to its read limit and needs a
+  compaction pass.** Filed 2026-08-01 16:10 EDT at Harkirat's request, after the harness warned during
+  the changelog-site work. Measured then: **21.1KB against a 24.4KB read limit** — so it is not a
+  tidiness item, it is an approaching failure. Past the limit the index stops loading in full and a
+  session silently starts with an incomplete map of memory, which is exactly the class of failure
+  `project_memory_slug_migration` exists to prevent.
+  The fix is mechanical but must not lose anything: **one line per entry in the index**, detail pushed
+  down into the topic files themselves, and genuinely stale or superseded entries merged or deleted
+  (several already carry "SUPERSEDED"/"PARKED" markers). Target under 17.1KB.
+  ⚠️ **Do not do this as a side-quest inside another task.** It rewrites the file every future session
+  reads first; it wants its own session with Harkirat able to see the before/after, and the working
+  agreement's no-half-measures rule applies — every pointer that moves has to still resolve.
 - `[P2 · S · any model]` **`docs/DEVLOG.md`: a run of dated Part A entries physically sits AFTER the
   Part B ledger.** Found 2026-07-29 11:44 EDT while appending the v2.42.1 entry — I anchored on
   `# Part B — Lessons Ledger` believing it marked the end of Part A, and the TOC check failed on

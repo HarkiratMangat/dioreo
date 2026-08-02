@@ -195,8 +195,14 @@ require it.
 
 ## Questions
 
-Open an issue, or email **harkirat117@gmail.com**.
+Open an issue, email **harkirat117@gmail.com**, or message [diorswrld on Discord](https://discord.com/users/1139845545754632283).
 
 Thanks for being here — genuinely.
+
+---
+
+*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
+holders of any content the game features under licence.*
 
 ♡ Made with love by **dior**

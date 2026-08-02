@@ -45,6 +45,32 @@ jobs:
       - run: npm run docs:audit:test
       - run: npm run docs:audit
 
+      # ⚠️ public/ IS BUILD OUTPUT AND IT IS COMMITTED, so it can be committed STALE. Editing any of
+      # the nine sources (docs/legal/*.md, LICENSE, NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md, and the
+      # three records) and forgetting to rebuild leaves the deployed site showing the previous text —
+      # including, for the four legal instruments, the previous binding wording. Until 2026-08-02 the
+      # only thing preventing that was a prose instruction in CLAUDE.md to remember to run the build.
+      #
+      # The build is DETERMINISTIC — verified by running it twice and hashing the tree, byte-identical
+      # both times, with git reporting no change — so rebuilding and asking git whether anything moved
+      # is an exact test, not an approximation. If this step fails, the fix is to run the build and
+      # commit the result; never to edit public/ by hand.
+      # Emoji ids are captured at RENDER time, never at require time — a module-level const holding
+      # `${emojis.x}` freezes whatever id was loaded when the module was first required, which is the
+      # PROD id, and then the dev bot renders broken emoji. Memory project_emoji_require_time_capture
+      # says to run this after touching emoji rendering; that was a prose instruction and nothing ran
+      # it. Verified to exit 0 on a clean tree before wiring it here.
+      - run: node scripts/checkEmojiCaptures.js
+
+      - run: npm run site
+      - name: public/ is up to date with its sources
+        run: |
+          if ! git diff --quiet -- public/; then
+            echo "::error::public/ is stale — a source was edited without rebuilding the site."
+            git diff --stat -- public/
+            exit 1
+          fi
+
       # Advisory only -- known, already-tracked findings (discord.js/undici/xlsx, see
       # docs/ROADMAP.md's housekeeping notes) shouldn't fail every build; this just keeps them
       # visible in the CI log rather than silently ignored.

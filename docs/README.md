@@ -20,7 +20,7 @@ kind of content lives and who's responsible for keeping it current.
 | File | What it is | When you touch it | Audience |
 |---|---|---|---|
 | **`../CLAUDE.md`** (repo root) | **Invariants + navigation map** (modularized 2026-07-22; deliberately short — `wc -l` it rather than trusting a number written here, which went stale at "~180" while the file was 287). The hard safety/architecture rules that must load every session, a platform cheat-sheet, and the 🗺️ nav map pointing to where each subsystem's detail lives. | When an invariant changes, or a subsystem's home moves. Keep the nav-map table in sync when you add/remove a rule file. | Claude (primarily), Harkirat |
-| **`../.claude/rules/*.md`** | **Path-scoped subsystem detail** — the deep "why" for each subsystem, loaded into context ONLY when you read a matching file (`paths:` frontmatter glob). 13 files (commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui, accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions, models, scripts-and-migrations). | When you change how that subsystem is built. Update the matching rule (the old "update CLAUDE.md" habit now splits by area). | Claude |
+| **`../.claude/rules/*.md`** | **Path-scoped subsystem detail** — the deep "why" for each subsystem, loaded into context ONLY when you read a matching file (`paths:` frontmatter glob). commands-overview, manage-panel, settings-and-expiry, interaction-router, rendering-and-ui, accent-and-colors, loadouts, loadout-images-and-metadata, autobuild, draw-prices, design-decisions, models, scripts-and-migrations, legal-site. **The list is machine-checked by `docs:audit`'s `nav-map-sync`, so it cannot rot** — but the COUNT that used to sit in front of it was not checked and was stale within the hour `legal-site.md` was added, so it is gone. | When you change how that subsystem is built. Update the matching rule (the old "update CLAUDE.md" habit now splits by area). | Claude |
 | **`ROADMAP.md`** | **The authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping) — detailed source of truth, full history/rationale. Moved out of CLAUDE.md 2026-07-22. The `🔮 Planned & Upcoming` (CHANGELOG) and `🔜 Coming soon` (SUMMARY) sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) is a lightweight visual tracker manually refreshed FROM this file — not the other way around. | Every roadmap/planning change — sync all three (+ refresh the board when convenient). | Claude, Harkirat |
 | **`db-deferred-list.md`** | **This project's own deferred work** — 🐞 Active Bugs · 🔔 Reminders · 🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. NOT a copy of `ROADMAP.md`. Split out of the cross-project tracker 2026-07-25 15:56 EDT so it's tracked in-repo; renamed from `deferred-items.md` + completed 2026-07-25 21:43 EDT (that first pass left this project's bugs/reminders/resolved items behind in the cross-project file). | When something's deferred, found broken, or ships/drops. | Claude, Harkirat |
 | **`reference/`** | On-demand reference docs: `deployment-and-ops.md` (stack, GCP VM/systemd/alerting, version tagging, **the local dev bot** — `Dioreo (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning; added 2026-07-26 13:45 EDT), `known-issues.md`, `design-history.md`, `commit-and-branch-naming.md` (the Conventional Commits subject format + branch/PR-title convention). Read when ops/history detail is needed, or before writing any commit subject or branch name. | When ops setup or a flagged issue changes. | Claude |
@@ -33,6 +33,7 @@ kind of content lives and who's responsible for keeping it current.
 | **`legal/`** | **The bot's public-facing legal documents** — `TERMS.md` (Terms of Service) and `PRIVACY.md` (Privacy Policy), both v1.0 as of 2026-07-28 21:36 EDT. **Discord requires both to be publicly linked in the Developer Portal**, so these are live obligations, not internal notes. `PRIVACY.md` §2 + Appendix A describe the actual `UserPreference` schema field-by-field. | **Whenever stored data changes.** Adding, removing, or repurposing a persisted user field makes the policy inaccurate until you update it in the same change. Also on any new third-party service, or a change to retention. | end-users, Discord, regulators |
 | **`../NOTICE`** (repo root) | **Third-party attributions, trademarks, and the AI-assistance disclosure.** Incorporated into `LICENSE` by reference (§7.1). Carries each dependency's licence + copyright holder, the Apache-2.0 obligations (discord.js, xlsx), the trademark acknowledgement list, and the human-authorship assertion the copyright claim rests on. | **Whenever dependencies change** — regenerate §1/§3 and re-check that no copyleft licence has entered the tree. | contributors, forkers, rights holders |
 | **`../LICENSE`**, **`../CONTRIBUTING.md`**, **`../CONTRIBUTORS.md`** (repo root) | **Source-available licence + CLA + credit ledger.** The custom *Dior's Builds Source-Available License v1.0* — not open source; no deployment, no redistribution, no competing services, no AI/ML training. `CONTRIBUTING.md` explains the CLA in plain English; `CONTRIBUTORS.md` is the credit ledger that discharges the **binding** credit obligation in LICENSE §5.6. | When licence terms change, or when an external contribution merges (credit it in `CONTRIBUTORS.md` **and** the changelog entry). | contributors, forkers, anyone |
+| **`../SECURITY.md`** (repo root, NOT published to the site) | **Vulnerability reporting route**, the LICENSE §4.11 testing limits restated, scope, and an explicit no-SLA statement. Repo-only on purpose: GitHub reads it from there for the private "Report a vulnerability" flow, while readers reach the route through the `/security` redirect to the Contributing page. | When the reporting address changes, or when a new host or third-party service changes what is in or out of scope. | security researchers |
 | **`archive/`** | **Dead archive — don't read by default.** `graveyard.md` (resolved + ℋ-confirmed intake swept out of the notes file), `resolved-list.md` (closed entries from `db-deferred-list.md`), and the dated pre-tidy notes snapshot (pre-2026-07-18, largely superseded by git history). Renamed from `notes-archive/` and given its two archive files 2026-07-25 21:43 EDT. | Only when running a sweep, or looking something specific up. | reference |
 
 **Two authoritative records that live OUTSIDE this folder:**
@@ -167,3 +168,27 @@ Harkirat is ET. **Get the real clock time proactively, ONCE, before drafting any
 `PostToolUse` hook flags a bare today-date after the fact, but it's a safety net for the rare miss, not
 license to fetch the time reactively every time (caught doing exactly that 2026-07-26 11:35 EDT — see
 `feedback_docs_at_push_time` / `feedback_be_usage_conscious` memory).
+
+## Where the legal documents live, and why they are not all together
+
+A reasonable question, asked 2026-08-02: there are four legal documents and they sit in two places.
+The split is **forced by tooling, not chosen**, and moving them breaks things:
+
+| Document | Location | Why there |
+|---|---|---|
+| `LICENSE` | repo root, **no extension** | GitHub renders a licence banner from a root file with this exact name; licence scanners look for it. Plain text, not Markdown. |
+| `NOTICE` | repo root, **no extension** | The Apache-2.0 convention. It matters here because discord.js and xlsx are Apache-2.0 and their notices must be reproduced. |
+| `CONTRIBUTING.md` · `CONTRIBUTORS.md` | repo root | GitHub surfaces `CONTRIBUTING.md` in the PR and issue flows. |
+| `SECURITY.md` | repo root | GitHub reads it to power the private "Report a vulnerability" flow. Deliberately NOT published to the site; `/security` redirects to the Contributing page instead. |
+| `TERMS.md` · `PRIVACY.md` | `docs/legal/` | **No tool recognises these two.** They are ordinary project documents, so they live with the other documents rather than cluttering the root. |
+
+So: root is "files a tool reads by name"; `docs/` is everything else. **Do not tidy this into one
+folder** — it would cost the licence banner, the vulnerability-report flow and the contributor prompts.
+
+### And why `LICENSE`/`NOTICE` appear a second time under `public/`
+
+Those two are copied **verbatim, byte-for-byte**, by `buildCompanions()` so the deployed site serves
+the unrendered originals at a stable URL. They are operative legal instruments, and putting a Markdown
+parser between a reader and the binding wording is a lossy transformation. Each therefore has two
+forms: `legal/license.html` to read, `/LICENSE` to rely on. `CONTRIBUTING`/`CONTRIBUTORS` get no such
+copy — they are prose about a process, not instruments.

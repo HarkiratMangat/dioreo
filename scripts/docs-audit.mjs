@@ -59,6 +59,7 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -229,6 +230,52 @@ const checks = [];
 // most checks "matched nothing" means the matcher broke, not that the corpus vanished.
 const check = (id, severity, title, run, opts = {}) =>
   checks.push({ id, severity, title, run, vacuousOk: !!opts.vacuousOk });
+
+/* ------------------------ record-structure -------------------------- */
+// Born 2026-08-01 from a real corruption this suite did NOT catch: an edit to
+// docs/CHANGELOG.md spliced the file's ENTIRE 183-line header back into the
+// middle of the newest entry, truncating a sentence mid-word. Every other check
+// passed — links resolved, versions were covered, the hash chain was intact,
+// because none of them look at the file's SHAPE. A duplicated H1 is the cheapest
+// possible signal that a record has been spliced into itself, and it costs one
+// pass over each file.
+check(
+  "record-structure",
+  "ERROR",
+  "no record file repeats a top-level heading (a splice duplicates one)",
+  () => {
+    const out = [];
+    let examined = 0;
+    for (const f of ["docs/CHANGELOG.md", "docs/CHANGELOG-SUMMARY.md", "docs/DEVLOG.md",
+                     "docs/ROADMAP.md", "docs/README.md", "docs/db-deferred-list.md"]) {
+      const txt = read(f);
+      if (txt === null) continue;
+      examined++;
+      const lines = txt.split("\n");
+      // Fenced code can legitimately contain a '#' line; track fences and skip them.
+      let fence = false;
+      const heads = [];
+      for (const ln of lines) {
+        if (/^\s*(```|~~~)/.test(ln)) { fence = !fence; continue; }
+        if (!fence && /^#{1,3} /.test(ln)) heads.push(ln.trim());
+      }
+      // NOT "exactly one H1": DEVLOG legitimately uses H1 for its major parts
+      // (TOC, Part A, Part B) and the self-test caught that assumption on the
+      // first run. The invariant that actually detects a splice is REPETITION —
+      // a duplicated title, not a second one.
+      const seen = new Map();
+      for (const h of heads) seen.set(h, (seen.get(h) || 0) + 1);
+      for (const [h, n] of seen) {
+        if (n > 1 && /^#{1,2} /.test(h)) {
+          out.push({ msg: `${f} repeats the heading "${h.slice(0, 70)}" ${n} times. ` +
+            `Duplicate top-level headings mean either a copy-paste splice or two entries ` +
+            `claiming the same identity.` });
+        }
+      }
+    }
+    return { findings: out, examined };
+  }
+);
 
 /* ---------------------------- readme-map ---------------------------- */
 check(
@@ -490,6 +537,45 @@ check(
       });
     }
     return { findings: out, examined: versions.length };
+  }
+);
+
+/* --------------------------- summary-orphan ------------------------- */
+check(
+  "summary-orphan",
+  "ERROR",
+  "every CHANGELOG-SUMMARY version has a real heading in CHANGELOG",
+  () => {
+    // The MIRROR of summary-coverage, and it exists because that check runs one way only.
+    // v2.44.0 was released, tagged, and given its summary entry -- and its CHANGELOG heading was
+    // later deleted by an unrelated merge, welding 55 surviving body lines onto the end of the
+    // v2.45.0 entry. Every other check stayed green: the words were all still present, no link
+    // moved, the hash chain skipped it because it had no heading to have a PR on, and
+    // summary-coverage only ever asks "does each CHANGELOG version reach the SUMMARY".
+    //
+    // Deliberately tested at HEADING strictness rather than by substring. The failure mode is a
+    // surviving body under a missing heading, so "the version string appears somewhere in the
+    // file" is exactly the test that would have been satisfied by the damage in a slightly
+    // different form -- a body that still named its own version in prose would have passed.
+    const ch = read("docs/CHANGELOG.md");
+    const su = read("docs/CHANGELOG-SUMMARY.md");
+    if (ch === null || su === null) return [{ msg: "CHANGELOG.md or CHANGELOG-SUMMARY.md is missing." }];
+
+    const headings = new Set([...ch.matchAll(/^## (v\d+\.\d+\.\d+)/gm)].map((m) => m[1]));
+    // Only the SUMMARY's own individual headings. A legacy range heading covers versions it never
+    // names in full, so expanding one here would invent expectations rather than read them.
+    const claimed = [...su.matchAll(/^## (v\d+\.\d+\.\d+)(?!\s*[–—-]\s*v)/gm)].map((m) => m[1]);
+
+    const out = [];
+    for (const v of claimed) {
+      if (headings.has(v)) continue;
+      out.push({
+        msg: `${v} has its own CHANGELOG-SUMMARY heading but NO "## ${v}" heading in CHANGELOG.md. ` +
+          `A released version is missing its detailed entry — check whether the entry is absent ` +
+          `outright or whether its heading was dropped and the body absorbed into the entry above it.`,
+      });
+    }
+    return { findings: out, examined: claimed.length };
   }
 );
 
@@ -1196,6 +1282,274 @@ check(
       });
     }
     return { findings: out, examined: rules.length };
+  }
+);
+
+/* ------------------------- claude-md-shape -------------------------- */
+export const CLAUDE_MD_SECTION_MAX = 130;
+check(
+  "claude-md-shape",
+  "ERROR",
+  "no CLAUDE.md section has grown into subsystem detail that belongs in a rule file",
+  () => {
+    // ⚠️ THIS EXISTS BECAUSE THE RULE WAS PROSE-ONLY AND DEGRADED EXACTLY AS PROSE RULES DO
+    // (2026-08-01 23:40 EDT). CLAUDE.md's own opening states it is "invariants + a navigation map",
+    // cut from ~3,300 lines in the 2026-07-22 modularization so that sessions stop paying for detail
+    // they will never use — it is the one file loaded IN FULL every session. Nothing checked it. The
+    // `public/` section grew to 286 lines, 43% of the whole file, across many sessions, and every
+    // other gate stayed green: nav-map-sync only fires once a rule file EXISTS and is unlisted, so it
+    // cannot see detail that was never moved into one.
+    //
+    // The threshold is DERIVED, not guessed. Measured on the tree the day this was added: the
+    // offending section was 285 lines and the largest legitimate one — the git workflow, a genuine
+    // hard invariant that must survive /compact — was 102. 130 sits clear of the real invariants and
+    // well under the failure, so it fires long before a section reaches the size that prompted this.
+    //
+    // It counts `###` sections because that is the grain the file is organised in. A section over the
+    // limit is not automatically wrong, it is a prompt: either it is genuinely a hard invariant that
+    // must be re-injected after /compact, or it is subsystem craft and belongs in `.claude/rules/`.
+    const claude = read("CLAUDE.md");
+    if (claude === null) return { findings: [], examined: 0 };
+    const lines = claude.split("\n");
+    const secs = [];
+    let cur = null, n = 0, at = 0;
+    const close = () => { if (cur !== null) secs.push({ title: cur, n, at }); };
+    lines.forEach((l, i) => {
+      if (l.startsWith("### ")) { close(); cur = l.slice(4).trim(); n = 0; at = i + 1; }
+      else if (cur !== null) n++;
+    });
+    close();
+    const out = secs
+      .filter((s) => s.n > CLAUDE_MD_SECTION_MAX)
+      .map((s) => ({
+        msg: `CLAUDE.md:${s.at} "${s.title.slice(0, 60)}" is ${s.n} lines (limit ${CLAUDE_MD_SECTION_MAX}). ` +
+          "This file is loaded in full EVERY session. If it is subsystem detail, move it to a " +
+          "path-scoped .claude/rules/*.md and leave a pointer plus any safety line that must " +
+          "survive /compact. If it genuinely is a hard invariant, tighten it.",
+      }));
+    // ⚠️ examined is the LINE count, not the section count, and the self-test's evidence ledger is
+    // what forced that. A CLAUDE.md with no `###` headings at all would have examined 0 sections and
+    // reported a pass that verified nothing — a vacuous pass, which this suite treats as a failure.
+    // The check reads every line of the file to find its sections, so lines are what it examined.
+    return { findings: out, examined: lines.length };
+  }
+);
+
+/* ---------------------------- lock-version -------------------------- */
+check(
+  "lock-version",
+  "ERROR",
+  "package-lock.json carries the same version as package.json",
+  () => {
+    // ⚠️ FOUND AT 2.35.3 WHILE package.json READ 2.47.0 — twelve releases of silent drift, because
+    // npm only rewrites the lock's version when a dependency-touching command runs, and a release here
+    // is a hand-edited bump. `version-sync` never saw it: that check compares package.json against the
+    // changelog, and nothing looked at the lock at all.
+    //
+    // It does not break `npm ci`, which ignores the field — which is exactly why it went unnoticed for
+    // so long, and exactly why it needs a gate rather than a habit. It is still wrong: the lockfile is
+    // the artefact a consumer reads to know what version they resolved.
+    //
+    // ⚠️ FIX IT BY EDITING THE TWO VERSION FIELDS, never with `npm install --package-lock-only`. That
+    // command recomputes the whole tree from package.json's ranges and can bump transitive
+    // dependencies — which at release time silently invalidates NOTICE §1 and the licence audit.
+    const pkg = read("package.json");
+    const lock = read("package-lock.json");
+    if (pkg === null || lock === null) return { findings: [], examined: 0 };
+    let p, l;
+    try { p = JSON.parse(pkg); l = JSON.parse(lock); } catch (e) {
+      return { findings: [{ msg: `package.json or package-lock.json does not parse (${e.message}).` }], examined: 0 };
+    }
+    const out = [];
+    const root = (l.packages && l.packages[""]) || {};
+    if (l.version !== p.version) {
+      out.push({ msg: `package-lock.json "version" is ${l.version} but package.json is ${p.version}. Edit the field; do NOT run npm install --package-lock-only at release time.` });
+    }
+    if (root.version && root.version !== p.version) {
+      out.push({ msg: `package-lock.json packages[""].version is ${root.version} but package.json is ${p.version}. npm writes both — both have to move.` });
+    }
+    return { findings: out, examined: 2 };
+  }
+);
+
+/* --------------------------- dep-licences --------------------------- */
+// Reciprocal licences. Any of these anywhere in the tree could force source publication on terms
+// incompatible with the source-available model this project ships under, so they are a build failure
+// rather than a note. LGPL is included deliberately: its dynamic-linking carve-out is an argument, not
+// a guarantee, and this is not the place to be having that argument.
+const COPYLEFT = /\b(GPL|AGPL|LGPL|MPL|SSPL|CDDL|EPL|CC-BY-SA|OSL|EUPL)\b/i;
+// Phrases from the licence TEXT, for packages that declare nothing in their package.json. Order
+// matters: the copyleft names are tested first so a permissive-sounding preamble cannot mask one.
+const LICENCE_TEXT = [
+  [/GNU\s+AFFERO\s+GENERAL\s+PUBLIC/i, "AGPL"],
+  [/GNU\s+LESSER\s+GENERAL\s+PUBLIC/i, "LGPL"],
+  [/GNU\s+GENERAL\s+PUBLIC/i, "GPL"],
+  [/Mozilla\s+Public\s+License/i, "MPL"],
+  [/Server\s+Side\s+Public\s+License/i, "SSPL"],
+  [/Common\s+Development\s+and\s+Distribution/i, "CDDL"],
+  [/Eclipse\s+Public\s+License/i, "EPL"],
+  [/Apache\s+License/i, "Apache-2.0"],
+  [/Permission\s+is\s+hereby\s+granted,\s+free\s+of\s+charge/i, "MIT"],
+  [/Redistributions\s+of\s+source\s+code\s+must\s+retain/i, "BSD"],
+  [/Permission\s+to\s+use,\s+copy,\s+modify/i, "ISC"],
+];
+
+/** Resolve one installed package's licence: lock metadata → its package.json → its licence TEXT. */
+function licenceOf(dir, lockEntry) {
+  let l = lockEntry && lockEntry.license;
+  if (!l) {
+    try {
+      const p = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+      l = p.license || (Array.isArray(p.licenses) ? p.licenses.map((x) => x.type).join(" OR ") : null);
+    } catch { /* fall through to the text */ }
+  }
+  if (l && typeof l === "object") l = l.type;
+  if (l) return String(l);
+  // ⚠️ THE TEXT FALLBACK IS NOT OPTIONAL. Two real packages in this tree — chroma-js and exif-parser —
+  // declare no licence field at all. Without this they resolve to "unknown", and a scanner that treats
+  // unknown as clean fails OPEN, which is the entire failure mode it exists to prevent. Reading the
+  // file identifies them (BSD and MIT respectively) with no allowlist and no exemption to go stale.
+  let names = [];
+  try { names = readdirSync(dir).filter((f) => /^(licen[sc]e|copying)/i.test(f)); } catch { return null; }
+  for (const f of names) {
+    let body = "";
+    try { body = readFileSync(join(dir, f), "utf8").slice(0, 4000); } catch { continue; }
+    for (const [re, name] of LICENCE_TEXT) if (re.test(body)) return name;
+  }
+  return null;
+}
+
+check(
+  "dep-licences",
+  "ERROR",
+  "no copyleft licence has entered the dependency tree, and every package's licence is known",
+  () => {
+    // CLAUDE.md's licensing section required this be "re-checked whenever dependencies change" and
+    // nothing did it — last hand-verified 2026-07-28, then trusted. NOTICE §3 makes a standing claim
+    // about this tree, so it is a claim the build should be able to defend.
+    const lockRaw = read("package-lock.json");
+    if (lockRaw === null) return { findings: [], examined: 0 };
+    let lock;
+    try { lock = JSON.parse(lockRaw); } catch (e) {
+      return { findings: [{ msg: `package-lock.json does not parse (${e.message}) — the tree cannot be audited.` }], examined: 0 };
+    }
+    const entries = Object.entries(lock.packages || {}).filter(([k]) => k.startsWith("node_modules/"));
+    if (!entries.length) return { findings: [], examined: 0 };
+    if (!existsSync(join(REPO, "node_modules"))) {
+      return { findings: [], skipped: "no node_modules on this machine — licences NOT verified (CI installs them)" };
+    }
+    const out = [];
+    for (const [k, v] of entries) {
+      const name = k.replace(/.*node_modules\//, "");
+      if (v.link) continue;                       // a workspace symlink, not a published package
+      const l = licenceOf(join(REPO, k), v);
+      if (!l) {
+        out.push({ msg: `${name}: licence could NOT be determined from the lockfile, its package.json, or its licence file. An undetermined licence is not a permissive one — identify it by hand.` });
+      } else if (COPYLEFT.test(l)) {
+        out.push({ msg: `${name} is ${l}. A reciprocal licence in this tree could force source publication on terms incompatible with the source-available model (LICENSE §4, NOTICE §3). Remove it or take a deliberate decision and record it.` });
+      }
+    }
+    return { findings: out, examined: entries.length };
+  }
+);
+
+/* ------------------------ notice-attribution ------------------------ */
+check(
+  "notice-attribution",
+  "ERROR",
+  "NOTICE §1 lists every runtime dependency at the version actually installed",
+  () => {
+    // NOTICE is incorporated into LICENSE by reference (§7.1) and carries the Apache-2.0 attributions
+    // that discord.js and xlsx OBLIGE us to reproduce — a duty that attaches upstream and survives
+    // whatever our own licence permits. So a dependency added or bumped without regenerating NOTICE is
+    // a licence-compliance defect, not stale prose. The version is checked as well as the name because
+    // "regenerate when dependencies change" is mostly about CHANGES, and a name-only check would call
+    // a two-major-versions-stale attribution correct.
+    const notice = read("NOTICE");
+    const pkgRaw = read("package.json");
+    if (notice === null || pkgRaw === null) return { findings: [], examined: 0 };
+    const deps = Object.keys(JSON.parse(pkgRaw).dependencies || {});
+    if (!deps.length) return { findings: [], examined: 0 };
+    const from = notice.indexOf("1. DIRECT DEPENDENCIES");
+    if (from < 0) return { findings: [{ msg: "NOTICE has no \"1. DIRECT DEPENDENCIES\" section — the attribution list cannot be located, so it cannot be verified." }], examined: 0 };
+    // ⚠️ The section ends at the next LINE-INITIAL numbered heading, not at the next "2.". The first
+    // version of this searched for the literal "2." and matched inside `chrono-node 2.9.1` — the very
+    // first entry — so the section was empty and every dependency was reported missing. A check that
+    // fires on everything is as useless as one that fires on nothing, and this one did it on its first
+    // run against a NOTICE that was completely correct.
+    const nextHead = /\n(\d+)\.\s+[A-Z]/g;
+    nextHead.lastIndex = from + 1;
+    const m = nextHead.exec(notice);
+    const sec = notice.slice(from, m ? m.index : undefined);
+    const lockRaw = read("package-lock.json");
+    const lock = lockRaw ? JSON.parse(lockRaw) : { packages: {} };
+    const out = [];
+    for (const d of deps) {
+      const line = new RegExp(`^\\s*${d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+([0-9][^\\s]*)`, "m").exec(sec);
+      if (!line) {
+        out.push({ msg: `NOTICE §1 does not list the runtime dependency \`${d}\`. Its attribution is a licence obligation, not documentation — add it and re-check §3.` });
+        continue;
+      }
+      const installed = (lock.packages || {})[`node_modules/${d}`];
+      if (installed && installed.version && installed.version !== line[1]) {
+        out.push({ msg: `NOTICE §1 lists \`${d} ${line[1]}\` but the lockfile resolves ${installed.version}. Regenerate §1 (and re-check §3) — see the licensing section of CLAUDE.md.` });
+      }
+    }
+    return { findings: out, examined: deps.length };
+  }
+);
+
+/* ------------------------ privacy-inventory ------------------------- */
+check(
+  "privacy-inventory",
+  "ERROR",
+  "PRIVACY Appendix A names every field the UserPreference schema actually stores",
+  () => {
+    // ⚠️ THE POLICY DECLARES THIS INVARIANT ITSELF and nothing was checking it. Appendix A says it
+    // "mirrors the UserPreference schema", that it is "a transcription of it, not a summary", and it
+    // ends "That's the whole list." CLAUDE.md said drift here makes the policy "a false statement
+    // about live data collection" — and left it to whoever remembered.
+    //
+    // It had already drifted (found 2026-08-01 23:55 EDT): decorationColorHex and nameplateColorHex
+    // were stored and unlisted, and the four *PaletteSource fields were covered only by a
+    // parenthetical "(+ source hashes)" rather than named. Published, under a heading that claims
+    // completeness.
+    //
+    // The schema is read through mongoose rather than by regex on purpose: a regex that misses an
+    // unusually-formatted field fails OPEN, and failing open is the exact defect this check exists to
+    // catch. If the dependency is unavailable the check SKIPS and says so, rather than reporting a
+    // conclusion it cannot support.
+    const md = read("docs/legal/PRIVACY.md");
+    if (md === null) return { findings: [], examined: 0 };
+    let schema;
+    try {
+      const require_ = createRequire(import.meta.url);
+      schema = require_(join(REPO, "models/UserPreference.js")).schema;
+    } catch (e) {
+      return { findings: [], skipped: `could not load models/UserPreference.js (${e.code || e.message}) — inventory NOT verified` };
+    }
+    const stored = [...new Set(
+      Object.keys(schema.paths)
+        .filter((p) => !["_id", "__v"].includes(p))
+        .map((p) => p.split(".")[0])
+    )];
+    // Bounded to the appendix's own list. Past "That's the whole list." the section discusses the
+    // site's local-storage item, whose backticked VALUES (`light`, `dark`) are not field names.
+    const from = md.indexOf("## Appendix A");
+    const to = md.indexOf("That's the whole list", from);
+    if (from < 0 || to < 0) {
+      return { findings: [{ msg: "docs/legal/PRIVACY.md: Appendix A or its closing \"That's the whole list.\" is missing — the inventory cannot be located, so it cannot be verified." }], examined: 0 };
+    }
+    const named = new Set(
+      [...md.slice(from, to).matchAll(/`([A-Za-z_][A-Za-z0-9_]*)`/g)].map((m) => m[1])
+    );
+    const out = stored.filter((f) => !named.has(f)).map((f) => ({
+      msg: `docs/legal/PRIVACY.md Appendix A does not name \`${f}\`, which UserPreference stores. ` +
+        "The appendix claims to be a complete transcription of the schema, so an unlisted field makes " +
+        "the published policy inaccurate about live data collection. Add it, bump the policy version, " +
+        "and add a change-history row.",
+    }));
+    return { findings: out, examined: stored.length };
   }
 );
 

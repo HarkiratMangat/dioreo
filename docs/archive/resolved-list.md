@@ -227,3 +227,27 @@ active file a given dead item came out of.
   MongoDB cluster and checked directly — already correctly stored as `LW3-TUNDRA` (weaponKey
   `lw3-tundra`). The bare "Tundra" spelling only ever existed in `scripts/applyBadgesBulk.js`'s fuzzy
   match list, not the real data. No fix needed.
+
+## The legal site's unenumerated bug list — CLOSED 2026-08-02 00:40 EDT (v2.47.0)
+
+Filed 2026-07-30 00:35 EDT as `[P1 · M · Opus5-H]` with the warning that **the specific bug list did
+not exist yet** — Harkirat had reviewed the live site, found "many bugs", and gone to sleep before
+enumerating them. The item's own first instruction was "ask him what he actually saw".
+
+**He did enumerate them**, across two page-by-page passes on 2026-08-01, and they were worked through
+in the same session. Closing the parts that are genuinely done:
+
+- **The list arrived.** The premise of the item — an unknown list — no longer holds.
+- **The unreviewed design changes** (four-tab switcher, moon/sun toggle, invite cards, larger wordmark)
+  were all reviewed by him directly, and each was either accepted or replaced. The toggle in particular
+  he called "perfect now".
+- **Desktop measurement is no longer terms-only.** This session measured `license`, `privacy`,
+  `contributors`, `devlog` and the landing page — nav staging at six widths across two tab counts,
+  sticky headings through a real scroll, footer geometry at the scrolled-to-bottom position.
+- **The warm pages' aesthetic review happened** and produced a decision rather than a fix: Harkirat
+  asked for a full redesign of Contributing and Contributors. That is now its own scheduled session
+  with an approved mockup, not an open bug.
+
+**What did NOT close, and stays on the active list:** the two Cloudflare deployments that published
+zero files (cause still unexplained), and light mode at desktop width, which was never checked in
+either session. Both carried forward.

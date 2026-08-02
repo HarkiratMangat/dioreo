@@ -28,7 +28,12 @@ async function migrate() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB Atlas.');
 
-    const workbook = xlsx.readFile('./builds.xlsx');
+    // ⚠️ PATH UPDATED 2026-08-02: the spreadsheet moved out of the repo root to the gitignored
+    // gun-builds/ folder — it is source data for a migration that has already run, not something the
+    // repo needs to carry. This is the ONLY live read of it (the mentions in index.js and
+    // createPlaceholderLoadouts.js are historical comments), so nothing else moved with it. The file
+    // is untracked now, which means this script needs it to be put back by hand before a re-run.
+    const workbook = xlsx.readFile('./gun-builds/builds.xlsx');
     const sheetName = workbook.SheetNames[0];
     const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
     console.log(`Read ${rows.length} rows from builds.xlsx.`);
