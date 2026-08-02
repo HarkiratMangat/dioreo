@@ -87,7 +87,7 @@ if [ -d "$MEM" ]; then
       recent=0
       for f in "$MEM"/*.md; do
         [ -e "$f" ] || continue
-        m=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+        m=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)
         [ "${m:-0}" -gt "${since:-0}" ] && recent=$((recent+1))
       done
       if [ "${recent:-0}" -eq 0 ]; then

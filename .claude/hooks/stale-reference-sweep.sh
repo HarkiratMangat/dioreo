@@ -92,7 +92,7 @@ for s in $subjects; do
     # listed on every single PR including ones that just updated them — and a gate that cries wolf on
     # work you actually did is a gate that gets dismissed unread.
     case "$f" in
-      /*) m=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+      /*) m=$(stat -c %Y "$f" 2>/dev/null || stat -f %m "$f" 2>/dev/null || echo 0)
           [ "${m:-0}" -gt "${branch_start:-0}" ] && continue ;;
     esac
     unswept="$unswept

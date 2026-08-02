@@ -4,7 +4,7 @@ HOOK="$(dirname "$0")/release-ready-check.sh"; pass=0; fail=0
 # not exist on a CI runner, so `cd` fails and it exits 0 — every assertion then read SILENT and six
 # cases "passed" by not running. Caught by CI on 2026-08-02 22:00 UTC, the first run after the
 # required status check was switched on.
-REPO="$(cd "$(dirname "$0")/../.." \&\& pwd)"
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 # $2 = base branch (default main). RELEASE_CHECK_BASE pins it so the v3 branch can be proven
 # without a network call to `gh pr view`.
 r(){ local raw; raw="$(printf '{"tool_input":{"command":"gh pr merge 1 --squash"}}' \
