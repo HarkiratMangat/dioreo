@@ -326,9 +326,13 @@ active file a given dead item came out of.
   directly — no second command needed (Discord has no real alias mechanism anyway). See
   `.claude/rules/loadouts.md`.
 
-- ~~"Contributing/Contributors redesign: direction chosen and mockup approved — this is a build, not
-  an exploration"~~ → **RETIRED 2026-08-02 23:14 EDT.** That framing was true when filed
-  (2026-08-02 01:10 EDT) and is now false twice over. The approved artefact was
+- ~~`[P1 · L · 🧩needs-design · Opus5-H]` **Rebuild Contributing and Contributors as two DISTINCT
+  pages.** *Filed 2026-08-02 01:10 EDT. Direction chosen and mockup approved by Harkirat — this is a
+  build, not an exploration.*~~ — and ~~🧩 **THE ONE OPEN DECISION, and it needs Harkirat — do not
+  guess it.** For Contributing's four routes, which structure carries them?~~
+  → **RETIRED 2026-08-02 23:16 EDT.** *(Both lines quoted verbatim above so the sweep is traceable:
+  the item itself is NOT closed — it lives on, re-headed and re-tiered, in `docs/db-deferred-list.md`.
+  What retired is this FRAMING of it.)* That framing was true when filed and is now false twice over. The approved artefact was
   `local/site-redesign/mockup-v1.html` — the Interchange/Plate concept — and a nine-site reference
   crawl superseded it outright, after which Harkirat released both pages from the legal set's design
   language entirely; mockup-v1 became a fallback nobody chose. Then the redesign itself was **parked**
