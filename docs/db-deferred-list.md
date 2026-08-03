@@ -578,6 +578,38 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       **not** always wearable: the back-to-top computes to `rgb(0,0,0)` and turned the swarm black on
       hover, so a candidate is rejected unless it clears 1.6:1 against the page ground — a contrast
       test, not a darkness test, so it holds in both themes.
+    - ✅ **ROUND 3, 2026-08-03 11:00 EDT — four more, all verified against a live renderer.**
+      · **Mark**: rests as a soft-cornered RECTANGLE (`26%`) and *breaks away* on hover — its own
+      eight-value `border-radius` is driven per frame, so the silhouette deforms instead of the box
+      being scaled. The old read was exact: *"it literally just feels like it's being stretched out
+      towards the left/right and then pulled back in."* Buds now ORBIT (measured 15.6 × 15.7px of
+      travel, was 4.1 × 0.8 — a slide with a curve on it). ⚠️ The orbit rate has to be its own
+      constant; deriving it from the radius clock gave ~0.86 rad/s and looked static.
+      · **Spill**: 19 masses (from 34, from 78). The wavefront is now ANISOTROPIC (`WX 0.52 / WY
+      1.35`) — a plain radial spread grows a circle from the landing point, which is precisely what a
+      falling drop looks like and was read as *"looks like a droplet than a spill."*
+      · **Close bug**: the soak was computed straight from `t`, so closing drove `t` back under 0.5
+      and the body UN-soaked to full accent while leaving — the *"changes colors to a vibrant orange
+      and gets stuck on screen."* It latches now; the text was also held to `fill 0.12` so body and
+      copy empty out together (measured: masses 0 and textOp 0 both by t=306ms), and the close is
+      300ms not 420ms.
+      · **PoC 05 — the header buttons as liquid**, with the shipped pair beside them to compare. The
+      core keeps the control's box (a button has a label and a hit area, unlike a puddle) and the
+      liquid happens at the EDGE. ⚠️ `computer hover` cannot drive a real CSS `:hover` in this
+      harness, so the capsule's 32→108px expansion is UNCONFIRMED by automation — verified only that
+      the masses animate and the core's radius varies under a dispatched `pointerenter`.
+    - ⚠️ **THE TINT RESOLVER TOOK THREE PASSES AND THE MIDDLE ONE MADE IT WORSE — the reusable bit is
+      why.** Pass 2 dropped a "must differ from body ink" guard to fix the GitHub button flashing
+      white then reverting to orange (`.ghb:hover` resolves to `var(--ink)`, which IS `document.body`'s
+      colour, so the guard accepted the mid-transition values and refused the destination). Dropping it
+      fixed that and immediately turned the swarm near-white over the Terms row and over the reveal's
+      `<summary>`, because **row 01's scoped `--accent` equals the page accent**, so it falls past the
+      accent check into the borrow-the-control's-`color` step. **Judging by COLOUR cannot separate
+      these cases** — the GitHub button's wanted colour and the row's unwanted one are both
+      `--ink`-family. Judging by whether the element paints its own CHIP can: borrow a control's ink
+      only if it has a real border or background. Verified across all eight surfaces at once by
+      calling the resolver directly rather than hit-testing, after two earlier probes failed for
+      positional reasons and not logical ones.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
