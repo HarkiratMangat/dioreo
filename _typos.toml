@@ -4,6 +4,12 @@
 [default.extend-words]
 mis = "mis"
 unparseable = "unparseable"
+# `cpy` is the copy-control class family in scripts/buildLegalPages.js — .cpy, .cpy-t, .cpy-s and
+# the CSS-drawn .cpy-g glyph, 30 occurrences. typos reads it as "copy"/"cpu". Flagged 2026-08-02
+# 23:21 EDT while writing a handoff that named the class. Same reasoning as `mis` above: the
+# checker is right about English and wrong about this repo, and a linter that is wrong about your
+# own vocabulary is one you stop reading.
+cpy = "cpy"
 
 # Hook self-tests carry DELIBERATE misspellings as fixtures — typos-check.test.sh has to feed the
 # checker a real typo to prove it still fires. Without this exclusion the spellchecker reports the
