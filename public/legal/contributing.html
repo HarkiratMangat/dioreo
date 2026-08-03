@@ -583,7 +583,29 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rev.rv-anim .rv-i{border-color:transparent}
 .rev.rv-anim .rv-i::after{opacity:0}
 .rv-goo{position:absolute;left:0;top:0;pointer-events:none;z-index:0;
-  filter:url(#dbgoo-r)}/* ⚠️ NO border-radius HERE — it is written per frame as an eight-value string, and
+  filter:url(#dbgoo-r)}/* ⚠️ THE RESTING PILL IS AN UNFILTERED ELEMENT, AND IT HAS TO BE — MEASURED.
+   A shape smaller than roughly 4x the blur's sigma cannot keep its own geometry,
+   because the crush thresholds what survives and the outer boundary is all the
+   blur ever softens. This mark is 14x6.5 against #dbgoo-r's sigma 3.2 — half its
+   own height — so the filter owns the silhouette whatever radius is asked for.
+   Rasterised at 12x and measured by the run of columns at full height (a stadium
+   has straight flanks, an ellipse reaches full height only at its centre):
+
+       rest shape        flat run, filter OFF    flat run, THROUGH the filter
+       pill (999px)              70.2%                      36.4%
+       ellipse (50%)             34.5%                      32.4%
+
+   So filtering collapses a 36-point distinction to 4: a pill and an oval come out
+   the same shape. The plate draws the rest state crisply and hands over to the
+   filtered mark as it wakes, which is what "breaking away" actually is. This is
+   the same mechanism a resting RECTANGLE needed before the card was abandoned —
+   the rectangle went with it, the mechanism is sound and comes back for the pill.
+   ⚠️ It must stay OUTSIDE .rv-goo. Inside, it would be filtered too and there
+   would be nothing crisp left to hand over. */
+
+.rv-plate{position:absolute;left:0;top:0;pointer-events:none;z-index:0;
+  background:var(--accent);border-radius:999px;
+  will-change:transform,opacity}/* ⚠️ NO border-radius HERE — it is written per frame as an eight-value string, and
    that is what makes the OUTLINE deform rather than a fixed shape being scaled.
    A fixed radius on this rule would flatten the whole effect. */
 
@@ -1719,6 +1741,24 @@ html{scroll-behavior:smooth}
      invisible at rest while its inline styles read perfect. The region is
      therefore a margin around a box that is already tall; re-check it if that
      host ever changes size class. -->
+<!-- ⚠️ stdDeviation 3.2. Lower values were built and compared live on 2026-08-03
+     13:46 EDT and this one was kept, so the sweep below is evidence FOR the
+     current setting rather than a note about a pending change.
+     Merging is a function of mass size / sigma, so lowering the blur to sharpen
+     the mark trades directly against the buds fusing with the core — which is the
+     one thing on this surface that needs the filter at all. Measured by counting
+     connected components in the rasterised silhouette across 12 frames (four
+     masses exist, so a LOWER count means more of them have fused):
+       sigma  3.2 -> mean 2.00 bodies, max 2      SHIPPED
+       sigma  2.9 -> mean 2.17, max 3
+       sigma  2.7 -> mean 2.00, max 2             the one free reduction
+       sigma  2.4 -> mean 2.08, max 3
+       sigma  2.0 -> mean 2.42, max 3             visibly a core plus a loose dot
+     ⚠️ Classify those pixels by HUE, not by distance from the background, if this
+     is ever re-run. The crush is an ALPHA matrix, so the mark keeps its accent at
+     every alpha while the neighbouring TEXT does not — the first version of that
+     probe counted glyphs as blobs and reported three bodies at every sigma,
+     including this one. R-B separates them outright: accent is +168, ink is ~0. -->
 <filter id="dbgoo-r" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
 <feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
@@ -2895,6 +2935,10 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
     goo.setAttribute('aria-hidden','true');
     var mark=el('span','rv-m');
     goo.appendChild(mark);
+    /* the crisp resting pill — see .rv-plate in the stylesheet for why the filter
+       cannot draw this one, and outside .rv-goo so it stays unfiltered */
+    var plate=el('span','rv-plate');
+    plate.setAttribute('aria-hidden','true');
 
     var MK_W=14,MK_H=6.5,BUDMAX=6,BUD_R=3.4;
     var buds=[],bi,bn;
@@ -2905,6 +2949,7 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
                  dir:bi%2?1:-1,r0:rnd(1.5,3.5),r1:rnd(1.6,3.2),rj:rnd(0.85,1.15)});
     }
     host.insertBefore(goo,det);
+    host.insertBefore(plate,det);
 
     var aliveT=0,hovering=false,raf=0;
     function aliveWanted(){return hovering||det.open;}
@@ -2922,22 +2967,63 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
       mark.style.width=mW.toFixed(2)+'px';
       mark.style.height=mH.toFixed(2)+'px';
 
-      /* ⚠️ 0.85 + c*0.21 SPANS 0.85-2.32 rad/s, AND THAT IS A MEASURED NUMBER.
-         It is the liquid cursor's own band (its masses pulse at 1.1-2.3 and orbit
-         at 0.9-3.2), which is what "match the cursor" asked for. It is also what
-         produces real topological events: a frame-by-frame comparison at a matched
-         0.14s interval showed the faster rates giving a lobe separating with a
-         visible neck and a pinched two-lobed hourglass, where a x0.7 slowdown gave
-         eight near-identical rotating ovals. THOSE EVENTS COME FROM THIS LINE, not
-         from the buds — opposing corners hitting extremes is what pinches the
-         outline. Mean shape-change per frame across the eight radii: 1.88 at the
-         slow rates, 3.63 measured live at these. Slowing it flattens the surface. */
-      var rr8='',c8,w8;
+      /* ⚠️ 0.85 + c*0.21 SPANS 0.85-2.32 rad/s, WHICH IS THE LIQUID CURSOR'S OWN
+         BAND — its masses pulse at 1.1-2.3 and orbit at 0.9-3.2, and matching the
+         cursor is what this was asked for. Every alternative below was BUILT and
+         compared against it live on 2026-08-03 13:49 EDT, and this one was kept;
+         the table is therefore evidence for the current value, not a menu of
+         pending options. The whole reason these coefficients are written down
+         rather than tuned by eye is that the mean shape-change per 0.14s across
+         the eight radii is a real, reproducible number:
+
+             0.39 + c*0.12   1.88   flat — eight near-identical rotating ovals
+             0.55 + c*0.17   2.62   the v11 band
+             0.70 + c*0.19   3.13   the midpoint between the two ends
+             0.85 + c*0.21   3.65   SHIPPED
+             1.05 + c*0.26   4.19
+             1.30 + c*0.32   6.11   frantic
+
+         The topological events — a lobe separating with a visible neck, a pinched
+         two-lobed hourglass — come from THIS LINE and not from the buds, because
+         it is opposing corners hitting their extremes that pinches the outline.
+         Below roughly the v11 band they stop happening within a glance.
+
+         ⚠️ AND THE REST STATE IS A PILL, NOT AN OVAL. Every other control on the
+         site is a stadium (border-radius:999px on .ghb and .ins), and a lone
+         ellipse read as a different vocabulary. A stadium is not "50% everywhere":
+         it is a corner radius of HALF THE HEIGHT in both axes, which as a
+         percentage of a 14x6.5 box is 23.2% horizontally and 50% vertically — so
+         the two halves of the eight-value string need different rest values, and
+         they are derived from the live box rather than hardcoded so the mark stays
+         a true stadium while it breathes. The awake target is unchanged; only what
+         it eases FROM has moved, which is why the rate figures above still hold. */
+      var pillH=(mH/2)/mW*100;      // a stadium's cap radius, as a % of the width
+      var rr8='',c8,w8,rest;
       for(c8=0;c8<8;c8++){
+        rest=c8<4?pillH:50;         // first four are horizontal radii, last four vertical
         w8=50+26*Math.sin(tsec*(0.85+c8*0.21)+c8*2.1);
-        rr8+=(50+(w8-50)*aliveT).toFixed(1)+'%'+(c8===3?' / ':c8===7?'':' ');
+        rr8+=(rest+(w8-rest)*aliveT).toFixed(1)+'%'+(c8===3?' / ':c8===7?'':' ');
       }
       mark.style.borderRadius=rr8;
+
+      /* ── the handover ────────────────────────────────────────────────────
+         The crisp plate owns the rest state and the filtered mark owns every
+         awake one, crossfading over the first fifth of the wake so the pill is
+         seen to break apart rather than to be swapped out. Quick on purpose: the
+         two are the same colour and nearly the same size, so a slow dissolve just
+         reads as the edge going soft.
+         ⚠️ visibility, not opacity alone, while the goo is idle. A filtered
+         element still allocates its filter REGION at opacity 0, and that region
+         is what once showed as a stray disc parked behind a control. */
+      var hand=Math.min(1,aliveT*5);
+      plate.style.width=MK_W.toFixed(2)+'px';
+      plate.style.height=MK_H.toFixed(2)+'px';
+      plate.style.transform='translate('+(cxp-MK_W/2).toFixed(2)+'px,'
+        +(cys-MK_H/2).toFixed(2)+'px)';
+      plate.style.opacity=(1-hand).toFixed(3);
+      goo.style.opacity=hand.toFixed(3);
+      goo.style.visibility=hand<0.004?'hidden':'visible';
+
       var tilt=8*aliveT*Math.sin(tsec*0.90+1.3);
       mark.style.transform='translate('+(cxp-mW/2).toFixed(2)+'px,'
         +(cys-mH/2).toFixed(2)+'px) rotate('+tilt.toFixed(2)+'deg)';
