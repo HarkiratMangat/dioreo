@@ -109,6 +109,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)
 - 2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)
 - 2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)
+- 2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4052,6 +4053,99 @@ and it is worth running before either silencing a linter or accepting its correc
   is a typo. The decision is measurable, not a judgement call.
 - **When a fix's rationale is already written in the file you are editing, reuse it.** The `mis`
   entry's comment argued this case a week before I met it.
+
+## 2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)
+
+The fluid morph reached the live site, and then four separate times Harkirat
+said *I can't see it* about something the measurements called working. Every one
+of those was a real defect, and none of them was the defect the numbers pointed
+at.
+
+**Round one: the bloom nobody could see.** The pill's cursor-following mesh was
+built, and the gradient string was correct to the channel — the mixed colours
+matched values derived independently. He said it looked identical. It did: the
+liquid cursor is z-index 60 painting *solid* `currentColor`, so it sat on top of
+the mesh as an opaque blob covering precisely the area where the bloom was
+brightest. **The numbers were measuring the CSS I had written, not the pixels the
+browser had painted**, and the two had nothing to do with each other.
+
+Worse, I diagnosed the first report from a *single frame* of an animated GIF —
+the Read tool hands over one frame — and asserted he was hovering the wrong tab.
+He was not. Pulling all 79 frames with `ffmpeg` showed the opaque blob directly,
+and after that every screen recording went through a contact sheet first.
+
+**Round two: the blend that reports success and does nothing.**
+`mix-blend-mode: screen` on the cursor layer applies — `getComputedStyle` reads
+back `screen` — and changes the render not at all. Over the violet pill the
+swarm core stayed `rgb(212,78,99)`; a working screen gives `rgb(237,146,236)`.
+That is the signature of blending against *black*. Hand-built probes carrying
+the filter, the opacity, the child-in-`currentColor` structure and a transform,
+separately and all at once, blended correctly against the same pill in the same
+frame. Whatever defeats it lives in that particular composited layer, and it was
+not worth more turns to name, because **alpha gets there with no blend mode at
+all**. The lesson is the cheaper half: *a computed style is not a rendered
+pixel*, and a property that "applied" is not a property that did anything.
+
+**Round three: thinner made it shorter.** Asked for a thinner, taller text
+caret, I squashed the swarm to 0.24 wide and 2.85 tall. It rasterised as a short
+lozenge about an x-height long. A Gaussian erodes a curve in proportion to its
+curvature, so a thin tall ellipse loses its *ends* first and the alpha crush
+thresholds them away — the same anisotropy the nav pill's dilation table already
+records, running the other way. The fix was to stop treating the caret as one
+shape: it is a **stack of masses merged by the filter**, which cannot be eroded
+from an end because there is another mass there. Then three sub-findings, each
+of which broke it when guessed instead of measured — the stack has to be ordered
+centre-out (by index, the fastest-following mass sits at the top and the bar
+hangs from its top edge), the follow rates have to be equalised (or it flexes
+like a whip), and the mass radius is set by the **paint floor**, not by their
+mean (at the mean they paint 3.5px wide, under the ~4.5px this filter thresholds
+at, and the crush eats the whole stack).
+
+**Round four: the hint that strobed.** It appeared and vanished three times
+inside one button. `pointerout` fires on every *internal* boundary — moving from
+a button's icon to its label is a `pointerout` whose target still resolves to
+the same trigger — so the handler hid it and `pointerover` immediately queued it
+again. `relatedTarget` answers that. A second cause needed geometry: `.ghb`
+grows from 32px on hover, so a *stationary* pointer falls outside its animating
+box for a frame.
+
+### What the gates did and did not catch
+
+`npm run site` stayed green through all of it, and that is the point. It proved
+content complete, links resolving, contrast AA, scripts parsing — and it could
+not see a bloom hidden under an opaque layer, a blend mode doing nothing, or a
+caret eroded to a dot.
+
+Two of its checks turned out to claim more than they do. `contrastAudit()` reads
+`--name: #hex` declarations and pairs the token matrix; a component painting its
+own `color-mix()` surface is **invisible** to it, so its green says nothing
+about the hint. The rule file said it "re-measures every text/background pair",
+which is how a passing build gets read as cover it does not give. Both the claim
+and the hint's real contrast (12.4:1 dark, 10.1:1 light, worked out by hand) are
+recorded now.
+
+The stale-reference hook then caught something neither of us was looking for:
+the **privacy policy** said `db-theme` was the only key the site writes. It has
+been wrong since the record pages launched — they write a `db-booted` session
+flag — because the verification note had searched the *generator*, and that flag
+lives in `scripts/lib/chronicle.js`. A published legal document was making a
+false completeness claim about storage for four days. It searches the built
+pages now.
+
+### Lesson
+
+**When the screen and the measurement disagree, the measurement is asking the
+wrong question.** Every round here had a green number attached to it: the
+gradient string was right, the computed style said `screen`, the shape's
+declared height was 2.85. What none of those measured was *painted pixels*, and
+the moment each check was moved to a rasterised frame the real defect was
+obvious within one reading. The repo's own rule — *measure the renderer, don't
+model it* — was written for exactly this and I still had to be told four times.
+
+**And a GIF is not a screenshot.** One frame of a recording is evidence about
+one instant, and I used it to contradict the person who had watched the whole
+thing.
+
 
 # Part B — Lessons Ledger (thematic)
 
