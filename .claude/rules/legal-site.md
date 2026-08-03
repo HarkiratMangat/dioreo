@@ -260,6 +260,24 @@ it directly with an empty build command, so nothing has to run on their side.
     of this test** — its background computes to `color(srgb …)`, which `parseCol()` does not read,
     so it never counts as a chip at all. The same is true of any `color-mix()` background. Teaching
     `parseCol()` that syntax would hand those controls' ink to the swarm for the first time.
+  - ⚠️ **The text caret is a STACK OF MERGED MASSES, not a squashed cluster**
+    (rebuilt 2026-08-03 16:59 EDT). Squashing the swarm thin and tall rasterises as a short lozenge
+    about an x-height long — a Gaussian erodes a curve in proportion to its curvature and the alpha
+    crush thresholds the ends away, so **thinner also means shorter**. The masses are spread along Y
+    instead and merged by the filter, which cannot erode an end because another mass is there. Four
+    constraints, each measured, each of which broke it when guessed:
+    - **The stack is ordered centre-out (0, +1, −1, +2, −2 …), not by index.** By index, mass 0 —
+      lag 0, the fastest — sits at the top and mass 6 — lag 1.10 — at the bottom, so the bar hangs
+      from its top edge with the bottom dragging. Centre-out puts the fastest mass in the middle.
+    - **Follow rates are equalised in text mode too** (`k` → 0.46). Symmetry alone still let the
+      outer masses arrive late and the bar flexed like a whip.
+    - **The mass radius is set by the PAINT FLOOR (~4.5px painted), not by their mean.** At the mean
+      of 3.79 they paint 3.5px wide and the crush eats the whole stack.
+    - **Its length is the line box under the pointer**, read from the caret rect `onGlyphs()` already
+      computes, so it matches the text it sits in.
+    Rasterised at rest: **6.4 × 22.5px on a 23px line, lean 0.02**. It keeps **75%** of its body
+    through a click, because the burst's travel, opacity *and* scale are all damped in text mode —
+    the scale term was missed first time and it was the one actually erasing the caret.
   - ⚠️ **Verifying it needs a LIVE renderer, and two things impersonate one.** A sleeping display and
     a backgrounded tab both present as `document.hidden` with rAF dead; the tell for the display is
     `screencapture -x` failing with *"could not create image from display"*. And the **coarse-pointer

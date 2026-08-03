@@ -3172,7 +3172,7 @@ html{scroll-behavior:smooth}
        this filter thresholds at, so the crush ate the whole stack. 6.0 paints
        ~5.5px and survives, which is what makes the bar continuous. Re-measure
        it if stdDeviation on #dbgoo-p or the crush matrix changes. */
-    var RBEAM=6.0;
+    var RBEAM=6.2;
 
     var baseCol=(getComputedStyle(document.body)
                   .getPropertyValue('--accent')||'').trim()||'#F2994A';
@@ -3265,7 +3265,7 @@ html{scroll-behavior:smooth}
          breathing and the click burst. See each site there.
          The targets here only do the shape: thinner and taller, because a
          caret's precision is horizontal and its legibility is vertical. */
-      if(m==='text'){tsx=0.46;tsy=0.50;tspread=0.30;}
+      if(m==='text'){tsx=0.39;tsy=0.50;tspread=0.30;}
       else if(m==='link'){tsx=1.5;tsy=1.5;tspread=1.9;}
       else{tsx=1;tsy=1;tspread=1;}
       tbeam=(m==='text')?1:0;
@@ -3366,6 +3366,12 @@ html{scroll-behavior:smooth}
            smear; a caret must not have it, so text mode pulls the trail in to
            a quarter and the masses stack into one bar on the real x. */
         var lagK=8.5*(1-0.76*beam);
+        /* ⚠️ AND THE FOLLOW RATES ARE EQUALISED TOO. Symmetry alone is not
+           enough: the masses lerp at their own k, 0.62 down to 0.12, so the
+           outer ones would still arrive late and the bar would flex like a
+           whip on every move. In text mode they converge on one rate and the
+           caret travels as a single object. */
+        var kk=s.k+beam*(0.46-s.k);
         /* ⚠️ THE CARET IS A STACK OF MASSES, NOT ONE SQUASHED ELLIPSE, and that
            is the whole difference. Squashing the cluster to 0.24 wide and 2.85
            tall looked right in the numbers and rasterised as a SHORT LOZENGE
@@ -3380,9 +3386,20 @@ html{scroll-behavior:smooth}
            the ends because there is another mass there. Its length is the line
            box measured under the pointer, so the caret matches the text it is
            sitting in rather than a constant. */
-        var stack=beam*((i-(parts.length-1)/2)/Math.max(1,parts.length-1))*lineH*0.74;
-        p.x+=((cen.x+gx-dvx*s.lag*lagK)-p.x)*s.k;
-        p.y+=((cen.y+gy+stack-dvy*s.lag*lagK)-p.y)*s.k;
+        /* ⚠️ THE STACK IS ORDERED FROM THE CENTRE OUT, NOT TOP TO BOTTOM.
+           Laid out by raw index it put mass 0 — lag 0, the one that tracks the
+           pointer instantly — at the TOP, and mass 6 — lag 1.10, the slowest —
+           at the bottom. The bar was therefore pinned by its top edge with its
+           bottom dragging behind, reported exactly that way. Ordering by
+           distance from the middle (0, +1, -1, +2, -2, ...) puts the fastest
+           mass at the CENTRE and fans the laggards symmetrically above and
+           below, so the thing that stays under the pointer is the middle of the
+           caret, which is where the eye reads its position. */
+        var half=(parts.length-1)/2;
+        var ord=(i%2?1:-1)*Math.ceil(i/2);
+        var stack=beam*(ord/Math.max(1,half))*lineH*0.45;
+        p.x+=((cen.x+gx-dvx*s.lag*lagK)-p.x)*kk;
+        p.y+=((cen.y+gy+stack-dvy*s.lag*lagK)-p.y)*kk;
         /* the breathing is what makes the blob feel alive and what makes the
            caret feel unsteady, so it is damped as the beam forms, not removed */
         var scl=(1+0.17*(1-0.66*beam)*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
