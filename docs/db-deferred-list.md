@@ -500,6 +500,45 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     meant to read as actual liquid. Verify any future attempt the way these were: drive the animation
     from the console and assert the *shape* changes frame to frame (neck width crossing the 4.5px
     paint floor, per-move re-rolled randomisation), never by eye alone.
+  - 🔬 **A WORKING PoC EXISTS — resume from it, do not restart.** *2026-08-03 09:54 EDT.* Artifact
+    (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
+    It clones the real landing page and layers the effects on. Sources live in the **session
+    scratchpad**, not the repo (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a
+    full map, build command and per-item diagnosis in **`local/morph-poc-handoff.md`**.
+    ⚠️ That handoff is in gitignored `local/` and can vanish, so the load-bearing parts are duplicated
+    here rather than referenced.
+    - ✅ **ACCEPTED by Harkirat: the liquid cursor.** It REPLACES the native pointer (`cursor:none`,
+      restored on toggle-off / pointerleave / tab hidden — never on `blur`, which any screen recorder
+      trips). Seven orbiting masses, tight tracking, deforms to an I-beam over prose and a halo over
+      controls, `position:fixed` + client coords so no scroll term can be wrong.
+    - `[P1 · S]` **Reveal pill invisible when closed — ROOT CAUSE FOUND, FIX NOT WRITTEN.** The goo
+      layer is appended to `<details>`, and a *closed* `<details>` hides every child except
+      `<summary>`, so it is never rendered. **Fix:** append to `.rev`'s parent (`.foot`, give it
+      `position:relative`) and compute coordinates against that parent. **Verify by looking at the
+      closed control, not by reading inline styles** — styles read perfect twice while nothing was on
+      screen.
+    - `[P2 · M · 🧩needs-design]` **Reveal card reads as a strict rectangle** — one hard rounded rect
+      with six bubbles stuck on. **Fix:** drop the rect, build the edge from ~32 overlapping blobs
+      around the perimeter (~15px spacing so they merge), each pulsing on its own period, activated in
+      order from the spout so the liquid visibly draws the card.
+    - `[P2 · S]` **Back-to-top reappears briefly after being tapped.** Fixed twice (a `settling` flag,
+      then re-arm at `scrollY < 4` plus moving it to page level / `position:fixed`). Harkirat's
+      2026-08-03 09:46 clip still shows a faint ring returning. **Confirm against the current build
+      before changing anything** — the last two clips turned out to predate the fix they were testing.
+    - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
+      tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
+      extra temporary shards that fly further and evaporate, plus a core implosion that springs back
+      past its resting size.
+    - `[P2 · M]` **Reduce-motion toggle**, explicitly queued by Harkirat for after the above: turns the
+      morph off site-wide, reverts the homepage rows to their original bar/hue with no animation, and
+      switches the nav to plain pills.
+  - ⚠️ **HOW TO VERIFY ANIMATION AT ALL — this cost most of a session.** Chrome pauses its render loop
+    when the window is backgrounded: `requestAnimationFrame` never fires, CSS transitions never
+    advance, `document.timeline.currentTime` stays 0. Reading computed/inline styles then "passes"
+    while the screen shows nothing. **Run `open -a "Google Chrome"` first, then assert rAF is alive
+    before trusting any visual check.** For motion, take a screen recording and read consecutive
+    frames (`ffmpeg -vf "select=...,tile=NxM"` into a contact sheet) — that method found every real
+    defect here; eyeballing and style-reading found none.
   ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
   SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately
   (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a
