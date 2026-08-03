@@ -724,6 +724,21 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       recipe memory's "no scroll container between it and that backdrop" was too narrow and has been
       corrected. Coarse pointers therefore keep the unfiltered droplets — crisp circles converging,
       an honest downgrade chosen over the iOS artefact and over removing the animation entirely.
+    - 🛑 **THE CARD SURFACE IS ABANDONED — Harkirat, 2026-08-03 12:05 EDT: "just revert it back to the
+      old card style."** Four rounds of rework (perimeter ring → three ellipses → one computed
+      superellipse path) never got it past "bad on mobile", and the spill apparatus is gone with it:
+      body path, resting plate, spout, beads, drain-to-a-remnant, soak colour, wavefront. `.rv-b` is
+      the shipped panel again, untouched. **The findings above are kept because they are platform
+      facts worth having, not because the surface is coming back.**
+      **What survives, and is the thing to port:** the mark's own morph (the filtered core with an
+      eight-value per-frame border-radius plus three orbiting buds — the version he called *"very well
+      done and truly morphing"*), the **Reveal → Hide** label, and the **strike-through** on the
+      question once it is answered. The mark no longer pours: it is a control's indicator, not the
+      source of a liquid.
+      ⚠️ `#dbgoo-r` is BACK — the buds merging is the one thing here that genuinely needs the filter.
+      That re-accepts the iOS hard-circle trade on this surface, knowingly.
+      ⚠️ Back-to-top on touch: **birth dropped, destruction kept.** Narrower than the earlier guard,
+      which skipped both and quietly took the whole effect off mobile.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
