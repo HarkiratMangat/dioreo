@@ -52,6 +52,28 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
+  denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
+
+  The future-stamp branch compares **lexicographically with zero tolerance**:
+  `.claude/hooks/timestamp-check.sh:94` does `[ "$d $hm" \> "$now" ] && echo "$d $hm"`, and in `pre`
+  mode that becomes `permissionDecision:"deny"` (line 101). So a write carrying `10:33` while the
+  clock reads `10:32` is rejected as "invented". It is not invented — the clock is read from a hook
+  message at the *start* of a turn and the bytes land a minute or two later, after intervening tool
+  calls, model latency and edit round-trips. Sub-few-minute drift is the normal cost of doing the
+  work, not evidence of fabrication.
+
+  **Fix:** convert both sides to epoch seconds and allow a grace window (~3 min) instead of comparing
+  strings — e.g. `date -j -f '%Y-%m-%d %H:%M'` on macOS — and treat only stamps beyond the window as
+  fabricated. **Keep the check.** It caught a real incident (30 fabricated stamps reached docs, memory,
+  a released CHANGELOG and a git tag on 2026-08-02), and the failure it guards is expensive; the ask is
+  a tolerance, not a removal. ⚠️ A gate that denies on noise is the kind that gets switched off — the
+  file already says exactly this about its own bare-date branch at lines 106–108, which is *why* that
+  branch may never block. The same reasoning applies here and was not carried across.
+  ⚠️ `.claude/hooks/timestamp-check.test.sh` exists and `run-all-tests.sh` enforces coverage, so the
+  fix updates the test in the same change — including a case at the window edge, or the tolerance is
+  untested.
+
 - `[P1 · S]` 🔗 **Two Cloudflare deployments published ZERO files, and the cause is still unexplained.**
   *Filed 2026-07-30 00:35 EDT; narrowed 2026-08-02 00:40 EDT once the rest of its parent item closed —
   see `docs/archive/resolved-list.md`.*
@@ -502,29 +524,60 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     paint floor, per-move re-rolled randomisation), never by eye alone.
   - 🔬 **A WORKING PoC EXISTS — resume from it, do not restart.** *2026-08-03 09:54 EDT.* Artifact
     (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
-    It clones the real landing page and layers the effects on. Sources live in the **session
-    scratchpad**, not the repo (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a
-    full map, build command and per-item diagnosis in **`local/morph-poc-handoff.md`**.
+    It clones the real landing page and layers the effects on. Sources now live in
+    **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full
+    map, build command and per-item diagnosis in **`local/morph-poc-handoff.md`**.
+    ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location
+    a later session can find.** The next session had to hunt through
+    `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is
+    gitignored, so nothing about the repo changes, but the files survive the session that made them.
     ⚠️ That handoff is in gitignored `local/` and can vanish, so the load-bearing parts are duplicated
     here rather than referenced.
     - ✅ **ACCEPTED by Harkirat: the liquid cursor.** It REPLACES the native pointer (`cursor:none`,
       restored on toggle-off / pointerleave / tab hidden — never on `blur`, which any screen recorder
       trips). Seven orbiting masses, tight tracking, deforms to an I-beam over prose and a halo over
       controls, `position:fixed` + client coords so no scroll term can be wrong.
-    - `[P1 · S]` **Reveal pill invisible when closed — ROOT CAUSE FOUND, FIX NOT WRITTEN.** The goo
-      layer is appended to `<details>`, and a *closed* `<details>` hides every child except
-      `<summary>`, so it is never rendered. **Fix:** append to `.rev`'s parent (`.foot`, give it
-      `position:relative`) and compute coordinates against that parent. **Verify by looking at the
-      closed control, not by reading inline styles** — styles read perfect twice while nothing was on
-      screen.
-    - `[P2 · M · 🧩needs-design]` **Reveal card reads as a strict rectangle** — one hard rounded rect
-      with six bubbles stuck on. **Fix:** drop the rect, build the edge from ~32 overlapping blobs
-      around the perimeter (~15px spacing so they merge), each pulsing on its own period, activated in
-      order from the spout so the liquid visibly draws the card.
-    - `[P2 · S]` **Back-to-top reappears briefly after being tapped.** Fixed twice (a `settling` flag,
-      then re-arm at `scrollY < 4` plus moving it to page level / `position:fixed`). Harkirat's
-      2026-08-03 09:46 clip still shows a faint ring returning. **Confirm against the current build
-      before changing anything** — the last two clips turned out to predate the fix they were testing.
+    - ✅ **RESOLVED 2026-08-03 10:10 EDT — reveal pill invisible when closed.** The goo layer was
+      appended to `<details>`, and a *closed* `<details>` renders no child but `<summary>`. Moved to
+      `.rev`'s parent (`.foot`, `position:relative`), inserted BEFORE `.rev` so tree order keeps the
+      panel painted over it, and all coordinates measured against that host. **Verified by looking at
+      the closed control** — the inline styles had read perfect twice against a blank screen.
+    - ✅ **RESOLVED 2026-08-03 10:30 EDT — but NOT by the fix written here, and the redirect is the
+      lesson.** This said to drop the rect and trace the perimeter with ~32 blobs. That was built, and
+      Harkirat rejected it on sight: *"you're applying the fluid morph to the borders of the
+      rectangular card, when in fact you should scrap the rectangle and make the literal spill its
+      background element, unrestricting its shape."* Correct — **morphing a rectangle's BORDER still
+      leaves a rectangle.** The panel now gives up its background, border and radius entirely and the
+      spill IS its ground: a ring of discs seated on a path inset by the blob radius (the silhouette)
+      plus a spine down the middle (the fill), every mass ordered by straight-line distance from where
+      the spout lands, so the liquid spreads outward from the landing point.
+      Retuned once more after *"too large, too bright, too many bubbly surfaces… smoother, less curves
+      but larger curves, a natural background element rather than a show piece"*: `OUT` 10→4, `RB`
+      22→34, `SPACE` 13→26 (78 masses → 34, larger radii = longer flatter arcs), jitter roughly halved,
+      and the body **soaks** from full accent toward the panel's own `--raised` as it lands. That last
+      part also removed a problem instead of solving it — at full accent the body text had to be
+      knocked out to a luminance-computed near-black; over a quarter-accent wash the site's own ink
+      reads fine.
+    - ✅ **RESOLVED 2026-08-03 10:26 EDT — back-to-top reappearing after a tap, and it was never what
+      two previous fixes assumed.** Both earlier attempts chased a second *birth* (a `settling` flag,
+      then re-arm at `scrollY < 4`). Instrumenting the live control settled it: `on` is **never**
+      re-added after a launch, but computed opacity ran 0.91 → 0.33 → 0.02 between 604ms and 846ms.
+      Removing `on` and `birth` in one statement hands the fade to the `.totop` transition — and
+      `birth` is also what hides `.tt-ring`/`.tt-ar`, so for ~300ms after the liquid flew away the real
+      button chrome popped back and faded out behind it. Fix: drop `on` while `birth` still applies
+      (`.totop.birth` carries `transition:none`, so it goes to 0 instantly), flush with
+      `void tt.offsetWidth`, then drop `birth`. Re-measured: opacity 0 from 604ms onward.
+    - ✅ **ADDED 2026-08-03 10:33 EDT — the liquid cursor tints to the surface under it**, easing back
+      to the page accent on the way out. ⚠️ Only possible because `#dbgoo-p` is an **SVG alpha matrix**
+      that leaves RGB alone; the CSS blur/contrast crush drives every channel to 0 or 1 and would map
+      amber and lime to the same yellow. Surfaces announce themselves three different ways and
+      assuming one left two of them flat — the rows scope `--accent`, the `.inv` cards scope **`--ia`**
+      (`#8B9BFF`, `#F8FF4A`) and leave `--accent` at the page value, and the GitHub button scopes no
+      variable at all (its colour is its own `color`). Resolver runs most-local-first and compares
+      `--accent` against the PAGE value rather than merely reading it. ⚠️ A control's own `color` is
+      **not** always wearable: the back-to-top computes to `rgb(0,0,0)` and turned the swarm black on
+      hover, so a candidate is rejected unless it clears 1.6:1 against the page ground — a contrast
+      test, not a darkness test, so it holds in both themes.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
@@ -536,7 +589,20 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     when the window is backgrounded: `requestAnimationFrame` never fires, CSS transitions never
     advance, `document.timeline.currentTime` stays 0. Reading computed/inline styles then "passes"
     while the screen shows nothing. **Run `open -a "Google Chrome"` first, then assert rAF is alive
-    before trusting any visual check.** For motion, take a screen recording and read consecutive
+    before trusting any visual check.**
+    ⚠️ **A SLEEPING DISPLAY PRESENTS IDENTICALLY — 2026-08-03 10:05 EDT, several turns lost.**
+    `document.hidden` was `true` and rAF dead while AppleScript correctly reported Chrome frontmost
+    with the right tab active, so "front the window" looked done and wasn't. **The tell is that
+    `screencapture -x` fails with *"could not create image from display"*.** Wake the display, then
+    re-assert. Assert with TWO consecutive rAF timestamps, not one callback — a single frame can fire
+    once without the loop advancing.
+    ⚠️ **And instrumenting the page beat recording it.** Reading numbers across frames from inside the
+    page — blob count, radii, neighbour gaps, computed opacity per frame — found every defect this
+    session: a radius under the paint floor, the back-to-top fade misdiagnosed twice as a re-birth,
+    and a hit test silently returning `null` because the target was off-screen. Screenshots then
+    confirmed the look. One caution learned the same day: a failing *probe* is not a failing
+    *feature* — the GitHub button was reported as "not tinting" when in fact the pointer could never
+    be over it. For motion, take a screen recording and read consecutive
     frames (`ffmpeg -vf "select=...,tile=NxM"` into a contact sheet) — that method found every real
     defect here; eyeballing and style-reading found none.
   ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
