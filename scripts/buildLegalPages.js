@@ -3693,8 +3693,21 @@ ${SWITCHER_CSS}
 .mnav{position:sticky;top:54px;z-index:50;margin:0 0 1.6rem}
 
 /* ── the document ────────────────────────────────────────────────── */
-.doc{background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
-  padding:clamp(1.6rem,4.5vw,4rem);margin-bottom:3rem;position:relative;min-width:0}
+/* ⚠️ --gut IS THE STICKY BAND'S REACH, AND IT IS DERIVED FROM THE PADDING ON PURPOSE.
+   The pinned heading widens itself leftwards to cover the margin-number strip (see the
+   .dsec>h2 rules below). That reach used to be a hard -3.8rem, while the gutter it
+   reaches into is fluid (4.5vw) — so between 1120px, where the rule switches on, and
+   ~1351px, where 4.5vw finally grows to 3.8rem, the band and the number BOTH hung
+   outside .doc. Measured live at 1216px: band 5.0px out, number 1.8px out; worst case
+   9.4px at 1120px. Capping the reach at the padding makes the overhang impossible at
+   every width rather than only above one.
+   Keep --pad as the single source of truth: the constant and the padding were written
+   out separately, which is exactly how they drifted apart. */
+.doc{--pad:clamp(1.6rem,4.5vw,4rem);
+  --gut:min(3.8rem,var(--pad));
+  --num:min(3.6rem,var(--gut));
+  background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:var(--pad);margin-bottom:3rem;position:relative;min-width:0}
 .doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
   background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
 
@@ -3764,18 +3777,26 @@ ${SWITCHER_CSS}
      same gutter and passed clean beside the pinned one, so two section numbers were
      on screen at once, one of them half-clipped. Widening the heading's own box
      leftwards by the gutter (negative margin + equal padding) makes the band cover
-     the whole strip, and the number's offset moves with it — 3.8 - 3.6 = 0.2rem. */
+     the whole strip, and the number's offset moves with it — --gut minus --num, which
+     is the old 0.2rem once the gutter is wide enough to hold both, and 0 while it is
+     not, which sits the number flush inside the band's left edge instead of outside
+     it. Both reaches are capped at .doc's own padding — see the --gut note above. */
   @media (min-width:1120px){
-    .doc .dsec>h2{margin-left:-3.8rem;padding-left:3.8rem}
-    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:.2rem}
+    .doc .dsec>h2{margin-left:calc(var(--gut) * -1);padding-left:var(--gut)}
+    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:calc(var(--gut) - var(--num))}
   }
 }
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
 @media (min-width:1120px){
-  .idx{position:absolute;left:-3.6rem;top:.34em;margin:0;text-align:right;width:2.6rem}
-  .doc h3 .idx{left:-3.6rem;top:.28em}
+  /* The fallback keeps any .idx rendered outside .doc — where --num is not declared —
+     at exactly the offset it had before this became fluid. Without it an undeclared
+     custom property makes the whole declaration invalid and left falls back to auto,
+     which moves the number into the text instead of the margin. */
+  .idx{position:absolute;left:calc(var(--num,3.6rem) * -1);top:.34em;margin:0;
+    text-align:right;width:2.6rem}
+  .doc h3 .idx{left:calc(var(--num,3.6rem) * -1);top:.28em}
 }
 .anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
   opacity:0;transition:opacity .15s}
