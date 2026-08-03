@@ -74,6 +74,22 @@ scratchpad for 2 days.*
   fix updates the test in the same change — including a case at the window edge, or the tolerance is
   untested.
 
+- `[P2 · XS]` **Mobile header: the GitHub mark sits 3.2px past the left edge of its own button and is
+  clipped.** *Found 2026-08-03 11:41 EDT while testing the morph PoC on a phone; measured, not eyeballed.*
+
+  At `≤620px` the site collapses `.ghb` to 38px — a **36px content box** — but its flex line still
+  carries the 30px `.ghb-ic` **plus the collapsed label's 14.4px of padding**, totalling **44.4px**.
+  With `justify-content:center` the 8.4px of overflow splits evenly, so the mark lands at
+  `left: −3.2px` with **11.2px of slack on the right**, and `overflow:hidden` clips it.
+  ⚠️ **The trap is that `.ghb-t b` is `opacity:0`** — that hides the label's ink and keeps its box, so
+  the element looks gone while still taking part in the flex line. The existing comment in that rule
+  warns about a 2px plate/border mismatch causing exactly this symptom, which is a *different* cause
+  fixed earlier; this is a second one with the same signature.
+  **Fix:** `@media (max-width:620px){ .ghb .ghb-t{display:none} }` — the label carries no information
+  at that size (the accessible name is on the link). Verified in the PoC clone: gaps went from
+  `−3.2 / 11.2` to `4 / 4 / 4 / 4`. ⚠️ The clone lifts the site's own rules verbatim, so this is a
+  real site bug, not a PoC artefact — but it has only been fixed in the PoC's own stylesheet so far.
+
 - `[P1 · S]` 🔗 **Two Cloudflare deployments published ZERO files, and the cause is still unexplained.**
   *Filed 2026-07-30 00:35 EDT; narrowed 2026-08-02 00:40 EDT once the rest of its parent item closed —
   see `docs/archive/resolved-list.md`.*
@@ -638,6 +654,38 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       remnant; open takes 1100ms; mark rates ×0.7; label reads **"Hide"** and "Prefer email?" takes a
       **strike-through** while open. PoC 05 went 14 small fast masses → 6 large slow ones, because
       many small masses on independent clocks is *boiling*, not morphing.
+    - 🔴 **ROUND 5, 2026-08-03 11:43 EDT — THE MOBILE PASS, AND IT INVALIDATED THE WHOLE APPROACH FOR
+      THE BODY. Read this before building any further surface.** Every effect had been built on SVG
+      `filter:url()`, and on a phone the reveal showed as *"3 balls orbiting the rectangle"* with the
+      card as *"3 large circles — an even worse cloud"*. Contact sheets off two screen recordings
+      (`ffmpeg select+tile`) show discrete hard-edged circles that never merge.
+      · **This was already written down and I built past it.** Dead end 3 in
+      [[reference_goo_metaball_recipe]]: *"SVG filters read as hard circles on iOS where the CSS chain
+      reads as liquid — never reproduced on desktop Chrome."* CLAUDE.md says the same: desktop uses
+      the SVG alpha crush and mobile uses the CSS crush, **deliberately and separately**.
+      · **AND THERE IS A SECOND, SCALE-DEPENDENT REASON THE UNION APPROACH COULD NEVER WORK HERE.**
+      The alpha crush composites overlapping OPAQUE shapes to alpha 1 *before* the blur, so σ only
+      softens the OUTER boundary. Masses must be small relative to σ to merge at all; at ~100px, σ=3.2
+      is invisible and what you see is the plain geometric union — which is why three ellipses read as
+      three tangent circles with cusps no matter how they were tuned. **The rule to carry forward:
+      metaball merging is a function of mass size ÷ σ, not of spacing.**
+      · **Fix: the body is now ONE `<path>` recomputed every frame** — a superellipse
+      (`|x/A|^n + |y/B|^n = 1`, n≈4, which hugs a 3.6:1 panel where an ellipse overshoots) with three
+      low harmonics riding on it, sampled at 30 points and emitted as closed Catmull-Rom → cubic
+      Béziers. `A`/`B` are **solved** so the copy sits inside the contour at its thinnest, worst-case
+      harmonic dip divided out. No filter, nothing to merge — so the iOS failure and the cusp failure
+      both disappear at once, and it is finally *one large smooth fluid blob*.
+      · **The filtered layers now stand down on touch** (`!fine`): the reveal keeps its crisp plate as
+      the mark, the back-to-top uses the plain control, and the button PoC drops its goo. The
+      progress ring is **clamped** — iOS rubber-banding reports scrollY below 0 and past `docMax`, and
+      the URL bar showing/hiding changes `innerHeight` mid-scroll, which is the "resets the circle
+      outline" report.
+      · ⚠️ **A sibling does not inherit a custom property.** `--rv-body` was being set on the goo
+      layer while the new path lives in a sibling `<svg>`, so the body rendered at full accent instead
+      of its soaked colour. Set it on the shared host.
+      · **Still filtered, so still wrong on iOS:** the mark's buds and the button PoC. They are hidden
+      on touch rather than ported to the CSS crush — porting them needs the bed + blend recipe
+      (opaque backdrop, `lighten`/`multiply`), which is a separate job.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
