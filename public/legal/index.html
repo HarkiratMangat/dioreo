@@ -881,11 +881,29 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   max-width:min(72vw,22rem);
   font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
   letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink);background:var(--card);
-  border:1px solid var(--rule2);border-radius:999px;
+  /* ⚠️ BUILT FROM --desk AND --ink ONLY, and that is not a style preference.
+     The first version used var(--card) and var(--rule2), and neither survives
+     the trip across the three page families. --card is declared ONLY by
+     chronicle.js, so on the legal and warm pages it resolved to nothing and the
+     hint had NO BACKGROUND AT ALL — reported as "so transparent", which it
+     literally was. --rule2 has the opposite failure: chronicle emits the legal
+     TOKENS and then overrides --desk/--card/--ink on top, so --rule2 survives
+     with the legal palette's purple and would have dragged it into the terminal
+     world. --desk and --ink are the two every family redefines, so mixing the
+     surface out of them lands native on all three. Check that before reaching
+     for any other token here. */
+  color:var(--ink);
+  background:color-mix(in srgb,
+    color-mix(in srgb,var(--ink) 9%,var(--desk)) 94%, transparent);
+  border:1px solid color-mix(in srgb,var(--ink) 24%,var(--desk));
+  border-radius:999px;
   padding:.42rem .68rem .42rem .58rem;
-  box-shadow:0 10px 26px -14px rgba(0,0,0,.75),
-    0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent);
+  /* the 6% of translucency left above is there to be blurred — fully opaque and
+     the backdrop-filter would be doing nothing at all */
+  backdrop-filter:blur(12px) saturate(1.2);
+  -webkit-backdrop-filter:blur(12px) saturate(1.2);
+  box-shadow:0 12px 30px -14px rgba(0,0,0,.8),
+    0 0 0 4px color-mix(in srgb,var(--accent) 8%,transparent);
   opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
   transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
 .tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;

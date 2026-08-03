@@ -320,11 +320,17 @@ it directly with an empty build command, so nothing has to run on their side.
 - ⚠️ **Each chronicle voice carries TWO signal values, and `sigLight` is not optional.** The terminal
   signals are tuned for a near-black console and are close to invisible on the daylight variant —
   measured 1.50 / 1.16 / 1.47 against a 4.5:1 minimum, covering the version numerals, the dates and the
-  operator line. `--ink3` failed in *both* themes too. **`contrastAudit()` re-measures every
-  text/background pair from the BUILT CSS on every run**, in both themes, against `--desk` *and*
-  `--card`. Tune a colour against the **harder** background of its theme: dark theme's `--card` is
-  *lighter* than its `--desk`, so a value tuned only against `--desk` still fails on cards — which is
-  exactly what happened.
+  operator line. `--ink3` failed in *both* themes too. **`contrastAudit()` re-measures the TOKEN
+  MATRIX from the BUILT CSS on every run** — `--sig`/`--ink`/`--ink2`/`--ink3` against `--desk` *and*
+  `--card`, in both themes. Tune a colour against the **harder** background of its theme: dark
+  theme's `--card` is *lighter* than its `--desk`, so a value tuned only against `--desk` still fails
+  on cards — which is exactly what happened.
+  ⚠️ **It does NOT check individual rules, and this line used to claim it checked "every
+  text/background pair", which is how a green gate gets read as cover it does not give** (corrected
+  2026-08-03 16:37 EDT). It reads `--name: #hex` declarations only: a rule that paints its own
+  surface — `.tipx` mixes one out of `--ink` and `--desk` — is invisible to it, and so is any
+  `color-mix()`, `rgb()` or `color()` value. **A new component that sets its own background must have
+  its contrast worked out by hand; the build passing is not evidence about it.**
   ⚠️ **That gate shipped BLIND on its first version and passed 63 pairs while the signals were still at
   1.47:1.** It matched only the *first* `:root{}` block, which is the legal `TOKENS` — `--sig` is
   declared in a later block and was never read. It merges every matching block in document order now.
