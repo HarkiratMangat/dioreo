@@ -739,6 +739,44 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       That re-accepts the iOS hard-circle trade on this surface, knowingly.
       ⚠️ Back-to-top on touch: **birth dropped, destruction kept.** Narrower than the earlier guard,
       which skipped both and quietly took the whole effect off mobile.
+    - ✅ **SHIPPED TO THE LIVE SITE 2026-08-03 13:08 EDT — six surfaces, ported out of the PoC into
+      `scripts/buildLegalPages.js` + `scripts/lib/chronicle.js`.** The PoC is now history; the code
+      lives in `MORPH_JS` (four self-selecting modules), `GOO_SVG` (three new filters beside the
+      nav's) and `COMPONENT_CSS`. `local/morph-poc/` is kept only as the record of how it was found.
+      - **What shipped:** the reveal's morphing mark (desktop) with **Reveal → Hide** and the
+        strike-through · the GitHub-button alignment fix · the liquid cursor site-wide · the
+        scroll-linked landing rows **extended to the `.inv` tickets** · back-to-top birth +
+        destruction. The header buttons stayed **as shipped** — PoC 05 was deliberately not ported.
+      - **Every number below was measured against a live renderer, not read off the styles.**
+        Mark morph **3.65** mean shape-change per 0.14s across the eight radii (3.67 predicted, 3.63
+        in the PoC) with the radii spanning 51.9 points awake and collapsing to a flat `50%` asleep ·
+        cursor tint correct on **all seven** surfaces at once, including row 01 whose scoped
+        `--accent` equals the page accent · click burst leaves the tip at **11.02px painted** against
+        a 4.5px floor while trailing masses fall to 1.1px and fly 109px · back-to-top opacity **0 at
+        855ms and never returning** (the bug that survived two fixes) · the GitHub mark now sits
+        **dead centre**, 4px each side, where it used to hang 3.2px outside its own button.
+      - ⚠️ **`.on` ON THE BACK-TO-TOP MOVED OWNERS, and both hosts had to change.** `shell()`'s
+        inline script and `chronicle.js`'s each toggled it from their own scroll handler; a birth
+        animates across ~42 frames, so two writers fought every one of them. `MORPH_JS` owns `.on`,
+        the click and the reduced-motion `fire` fallback now; the hosts keep only the ring's progress
+        and the `--lift` that parks the button above the footer. **If a third template ever grows a
+        `.totop`, it inherits the behaviour by having the button — do not re-add a toggle.**
+      - ⚠️ **The landing page had NO `GOO_SVG` at all** — it is the one template that never carried
+        the filter defs, because it has no nav bar to put an indicator in. It needs them now.
+      - ⚠️ **Verification could not use the visible browser and the reason is worth keeping.** The
+        in-app preview pane AND real Chrome both reported `document.hidden` with **0 rAF frames in
+        2s**, and `screencapture -x` failed with *"could not create image from display"* — the
+        documented tell for a sleeping display. Waking it fixed the desktop passes. The **coarse-
+        pointer and reduced-motion branches cannot be reached by resizing a window** (`fine` is what
+        gates them, not width), so they were driven through **CDP `Emulation.setEmulatedMedia`** on a
+        headless Chromium — real media engine, real frame loop. Scripts kept in the session
+        scratchpad pattern `emulate.ts` + `probe-*.js`; re-create rather than hunt for them.
+      - ⚠️ **No regexes in `MORPH_JS`, deliberately.** It is emitted from inside a template literal,
+        where the generator eats a lone backslash — an escaped paren written in the source reaches
+        the page as a bare paren, turning it into a capture group. That changes a regex's MEANING
+        without changing its syntax, so `scriptSyntaxAudit()` cannot catch it. Colour parsing is
+        hand-scanned instead. (The related backtick-in-a-CSS-comment trap fired twice during this
+        port, exactly as documented; `node --check` caught both.)
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back

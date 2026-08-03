@@ -1668,6 +1668,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. The repo button stays a circle
      because it is secondary and its mark is self-explanatory. */
   .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
+  /* ⚠️ THE MARK WAS SITTING 3.2px OUTSIDE ITS OWN BUTTON HERE, and the cause is
+     that opacity:0 hides INK and KEEPS THE BOX. Measured: the collapsed control
+     is 38px with a 36px content box, but its flex line still carries the 30px
+     icon plate PLUS the label's 14.4px of padding-right = 44.4px. With
+     justify-content:center the 8.4px of overflow splits evenly, so the GitHub
+     glyph is pushed 3.2px past the left edge with 11.2px of slack on the right,
+     and the button's own overflow:hidden clips it. The <b> being opacity:0 is
+     exactly what made this invisible to a style read — the label looked absent
+     and was still occupying the line.
+     Taking the label OUT of the line is the fix rather than trimming its
+     padding, because at this width it can never be revealed: .ghb only shows it
+     by growing to 108px on hover, and there is no hover here. It also costs no
+     accessibility — the label is not the accessible name. With .ghb-t removed
+     from the tree the name falls back to the link's own title ("View the source
+     on GitHub"), which is more informative than the word "Source" it replaces. */
+  .ghb .ghb-t{display:none}
+  /* And the capsule must not open to 108px around a label that is not there.
+     This matters on a narrow DESKTOP window, which is the one place a fine
+     pointer and this breakpoint coexist. */
+  .ghb:hover,.ghb:focus-visible{width:38px}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -1888,6 +1908,53 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   to{opacity:1;clip-path:inset(0 0 0 0)}}
 @media (prefers-reduced-motion:reduce){.rv-b{animation:none}}
 
+/* ── the reveal's mark, as liquid ──────────────────────────────────────
+   DESKTOP ONLY, BY DESIGN — the class .rv-anim is added from script and only on
+   a fine pointer, so a phone keeps the original sliding fill above untouched.
+   This is not a gap waiting to be filled: the buds MERGING with the core is the
+   one thing here that genuinely needs the SVG filter, and an SVG filter renders
+   a swarm as hard circles on iOS. That trade is taken knowingly on this surface.
+   Do not "fix" it by tuning the filter, and do not hide the surface from touch
+   instead — an earlier pass gated the whole mark behind the fine-pointer test and
+   the result was a mark that simply never changed on a phone.
+
+   ⚠️ THE LAYER HANGS OFF .foot, NOT OFF THE <details>. A closed <details> renders
+   none of its children but <summary>, so a layer parented to it does not exist
+   while the control is shut — which is why the mark was once invisible at rest
+   while its inline styles read perfect the whole time.
+
+   ⚠️ AND IT IS var(--accent), NOT currentColor. currentColor here resolves to the
+   summary's --ink3/--ink ramp, which is how it once came out white. */
+.rv-host{position:relative}
+/* Load-bearing, not cosmetic: the goo sits BEFORE .rev in tree order, and two
+   positioned siblings at z-index auto/0 paint in tree order. Make .rev static and
+   it drops to the background step, putting the liquid over the panel. */
+.rev{position:relative}
+.rev.rv-anim summary{position:relative}
+/* the original slot hands over to the morph rather than the two coexisting */
+.rev.rv-anim .rv-i{border-color:transparent}
+.rev.rv-anim .rv-i::after{opacity:0}
+.rv-goo{position:absolute;left:0;top:0;pointer-events:none;z-index:0;
+  filter:url(#dbgoo-r)}
+/* ⚠️ NO border-radius HERE — it is written per frame as an eight-value string, and
+   that is what makes the OUTLINE deform rather than a fixed shape being scaled.
+   A fixed radius on this rule would flatten the whole effect. */
+.rv-m{position:absolute;left:0;top:0;background:var(--accent);
+  will-change:transform,width,height,border-radius}
+/* the masses that bud off the core while it is awake and re-merge with it */
+.rv-bud{position:absolute;left:0;top:0;width:12px;height:12px;border-radius:50%;
+  background:var(--accent);transform:scale(0);will-change:transform}
+/* Once the address is on screen the question has been answered, so leaving
+   "Prefer email?" standing reads as though it were still being asked. Struck
+   through, it is a record of a question already dealt with — which is also what
+   the control's own label now says, since it reads "Hide" while open. A muted
+   rule: this is a state, not emphasis. */
+.rev[open] .rv-q{text-decoration:line-through;
+  text-decoration-color:color-mix(in srgb,currentColor 55%,transparent)}
+/* the label rides above the liquid, so it never needs a second copy */
+.rev.rv-anim .rv-a,.rev.rv-anim .rv-q{position:relative;z-index:1}
+.rev.rv-anim .rv-b{position:relative;z-index:1}
+
 /* ── the shared page footer ───────────────────────────────────────────
    One definition for all three templates. It used to be three, which is how the
    legal pages ended up with a plainer footer than the warm ones for no reason
@@ -2036,6 +2103,89 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .tt-ar i{transition:none}
   .totop.fire .tt-ar{animation:none}
 }
+
+/* ── back to top, coalescing ───────────────────────────────────────────
+   The control assembles from droplets falling inward when it first arrives, and
+   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
+   and .totop.on: they are all (0,2,0), so source order is what decides, and
+   .totop.birth has to win over both while the liquid is on screen.
+
+   ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
+   filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
+   and that disc is exactly the size of the "gradient circle stuck behind the
+   button" this was reported as. visibility:hidden takes it out of the paint tree
+   between births, so there is nothing left to leak on any platform.
+
+   ⚠️ COARSE POINTERS DROP THE FILTER, NOT THE ANIMATION (.nogoo). An earlier pass
+   skipped the whole effect on touch, which quietly removed the animation from
+   mobile; the artefact was the SVG filter misbehaving on iOS, not the droplets.
+   Unfiltered they converge as crisp circles instead of coalescing as liquid — an
+   honest downgrade, and it cannot produce the artefact.
+   ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
+   measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
+   black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
+   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
+   background .birth has just made transparent. Black against nothing stays black.
+   Giving the button an opaque background does not help either: the bed is inset
+   -90px, far outside a 46px control. The nav can use that recipe because it sits
+   ON a bar; a floating control has no surface to sit on. Do not re-attempt it. */
+.tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
+  opacity:0;visibility:hidden}
+.totop.birth .tt-ink{opacity:1;visibility:visible}
+.tt-goo{position:absolute;inset:0}
+.totop.birth .tt-goo{filter:url(#dbgoo-c)}
+.totop.nogoo.birth .tt-goo{filter:none}
+/* The real chrome stands down while the liquid is on screen. transition:none is
+   what lets the launch drop opacity to 0 instantly at the end — handing that fade
+   to .totop's own transition is what made the button appear to come back after a
+   tap, because .birth is also what hides the ring and the arrow. */
+.totop.birth{background:transparent;border-color:transparent;transition:none}
+.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
+  margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
+  transform:scale(0);will-change:transform}
+.tt-d{position:absolute;left:50%;top:50%;width:12px;height:12px;
+  margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);
+  opacity:0;will-change:transform}
+
+/* ── the liquid cursor ─────────────────────────────────────────────────
+   It REPLACES the pointer rather than following it. An earlier version left the
+   native arrow on screen and trailed a blob behind it, which read as exactly what
+   it was: two things, one chasing the other.
+
+   ⚠️ THE NATIVE ARROW IS HIDDEN ONLY WHILE THE EFFECT IS LIVE, and html.liq is
+   removed the instant it is not — on pointerleave, on visibilitychange, and under
+   reduced motion, where the layer never exists at all. A hidden cursor with
+   nothing drawn in its place is the worst failure this could have, so the class is
+   also not applied until the first pointermove has actually seeded the swarm.
+   !important because the site sets cursor:pointer on its own controls at a
+   specificity a bare html rule cannot beat, and a control still showing an arrow
+   breaks the illusion at exactly the moment the cursor is saying something.
+
+   ⚠️ NO :hover COLOUR RULE MAY EVER BE ADDED FOR THIS. The swarm is retinted per
+   frame from the surface under the pointer, written inline; a (0,2,0) hover
+   selector would beat a per-frame inline value outright. That trap already cost
+   four reports on the nav. */
+html.liq,html.liq *{cursor:none !important}
+/* fixed, not absolute: a cursor belongs to the viewport, which removes every
+   scroll-compensation term at the source rather than correcting for it */
+.cur-ink{position:fixed;left:0;top:0;width:220px;height:220px;
+  pointer-events:none;z-index:60;opacity:0;
+  transition:opacity .22s ease;filter:url(#dbgoo-p)}
+.cur-ink.on{opacity:.82}
+/* quieter over prose, where it sits on top of what is actually being read */
+.cur-ink.on.soft{opacity:.72}
+/* currentColor, not var(--accent): the swarm is retinted per frame from the
+   accent under the pointer, and inheriting one colour off the container is ONE
+   style write a frame instead of seven. */
+.cur-d{position:absolute;left:0;top:0;border-radius:50%;
+  background:currentColor;will-change:transform}
+@media (prefers-reduced-motion:reduce){.cur-ink{display:none}}
+/* It is a fixed layer that exists for as long as the page does, so without this
+   it would print on every sheet of a legal document. */
+@media print{.cur-ink{display:none!important}}
+
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
@@ -3536,10 +3686,54 @@ const SWITCHER_CSS = `
 // kept its intrinsic 300x150 and took part in layout, shoving the whole document
 // sideways. A fragment injected into three templates with three different CSS
 // compositions cannot depend on any one of them having styled it.
+/* Four alpha-crush filters, one per surface. The MATRIX is identical in all of
+   them — it multiplies ALPHA and leaves RGB alone, which is the whole reason the
+   liquid cursor can be recoloured per frame (a CSS blur/contrast crush drives
+   every channel to 0 or 1 and maps amber and lime to the same yellow).
+   What differs per filter is the blur radius and the REGION, and neither is
+   cosmetic:
+     · a filter region is a percentage of the FILTERED ELEMENT's box, and anything
+       outside it is simply not painted, so a region sized for one element is
+       wrong for another;
+     · a filtered element allocates its region even at opacity 0 — #dbgoo-c at
+       260% of a 44px layer is a ~114px disc, and that disc is what once showed as
+       "a gradient circle stuck behind the button". That is why .tt-ink carries
+       visibility:hidden between births rather than opacity alone.
+   ⚠️ On iOS an SVG filter renders a metaball swarm as HARD CIRCLES where the CSS
+   chain renders it as liquid (measured, same device, two panels on one page).
+   Every surface below either accepts that trade knowingly (the reveal's mark,
+   which is why the mobile mark stays the original sliding fill) or drops the
+   filter on a coarse pointer (the back-to-top). The liquid cursor never runs on
+   touch at all, so the question does not arise there. */
 const GOO_SVG = `<svg class="goodef" aria-hidden="true" focusable="false"
  style="position:absolute;width:0;height:0;overflow:hidden"><filter id="dbgoo"
  x="-60%" y="-260%" width="220%" height="620%" color-interpolation-filters="sRGB">
 <feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
+</filter>
+<!-- the reveal's mark. Its layer spans .foot, not the <details> — a CLOSED
+     <details> renders none of its children but <summary>, so a layer parented to
+     it does not exist while the control is shut, which is why the mark was once
+     invisible at rest while its inline styles read perfect. The region is
+     therefore a margin around a box that is already tall; re-check it if that
+     host ever changes size class. -->
+<filter id="dbgoo-r" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
+</filter>
+<!-- back-to-top: droplets start up to 96px out from a 44px layer, so the region
+     has to be generous in both axes. -->
+<filter id="dbgoo-c" x="-80%" y="-80%" width="260%" height="260%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
+</filter>
+<!-- the liquid cursor. A smaller blur than the rest: its masses are 2.2-5.6px
+     radius, and merging is a function of mass size / sigma, not of spacing. -->
+<filter id="dbgoo-p" x="-18%" y="-18%" width="136%" height="136%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="2.9" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
 </filter></svg>`;
@@ -4056,10 +4250,19 @@ ${mobileNav(cur, slots)}
   var queued=false;
   function paint(){
     var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
-    var frac=max>0?h.scrollTop/max:0;
+    /* ⚠️ CLAMPED. iOS rubber-band scrolling reports scrollTop below 0 and past
+       max, and the URL bar showing or hiding changes clientHeight — and therefore
+       max — mid-scroll. Unclamped, the progress bar and the ring both jumped and
+       re-drew themselves whenever the page was overscrolled past either end,
+       which is the "resets the circle outline" report. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
     prog.style.width=(frac*100)+'%';
     if(top){
-      top.classList.toggle('on', h.scrollTop>h.clientHeight*0.6);
+      /* ⚠️ .on IS OWNED BY MORPH_JS NOW, not by this loop. Its back-to-top module
+         runs a birth animation across many frames, and a second handler toggling
+         the same class from a scroll position would fight it every frame. What
+         stays here is the ring's progress and the --lift that parks the button
+         above the footer — position, not state, and each has exactly one writer. */
       if(ttBar) ttBar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
       /* Park above the footer. base is the button's own CSS bottom offset, so the
          un-lifted bottom edge sits at innerHeight-base; anything below the
@@ -4144,16 +4347,10 @@ ${mobileNav(cur, slots)}
     }
     queued=false;
   }
-  if(top){
-    top.addEventListener('click',function(){
-      top.classList.remove('fire');
-      void top.offsetWidth;   /* restart the animation on a rapid second click */
-      top.classList.add('fire');
-      var slow=matchMedia('(prefers-reduced-motion:reduce)').matches;
-      scrollTo({top:0,behavior:slow?'auto':'smooth'});
-    });
-    top.addEventListener('animationend',function(){ top.classList.remove('fire'); });
-  }
+  /* The click handler moved to MORPH_JS with .on, for the same reason: pressing
+     the button starts a destruction animation, and the arrow's fire keyframes
+     are the REDUCED-MOTION path rather than a separate effect that could run
+     alongside it. Both live in one place now. */
   addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
   addEventListener('resize',function(){ ttMeasure(); paint(); }); paint();
 
@@ -4161,6 +4358,7 @@ ${mobileNav(cur, slots)}
 })();
 ${THEME_JS}
 ${NAV_JS}
+${MORPH_JS}
 </script>
 </body>
 </html>`;
@@ -4617,6 +4815,669 @@ const WARM_JS = `
   Array.prototype.forEach.call(secs,function(s){io.observe(s)});
 })();`;
 
+/* ────────────────────────── the fluid morph, client side ────────────────── */
+
+/**
+ * Four surfaces, one script, emitted on every page.
+ *
+ * Each module SELECTS ITSELF out of the DOM rather than being switched on by the
+ * template, so nothing has to remember which page carries which surface: the
+ * reveal's mark and the landing rows exist only on the landing page, the
+ * back-to-top only on the document and chronicle pages, and the cursor everywhere.
+ * A module whose element is absent returns immediately and costs one querySelector.
+ *
+ * ⚠️ THE BACK-TO-TOP MODULE OWNS `.on` NOW. Both host scripts used to toggle it
+ * from their own scroll handler; that has been removed in both, because two
+ * handlers writing the same class would fight over every frame of a birth. What
+ * stays in the hosts is the ring's stroke offset and the --lift that parks the
+ * button above the footer — position and progress, not state, and each has exactly
+ * one writer.
+ *
+ * ⚠️ NO REGULAR EXPRESSIONS IN HERE, DELIBERATELY. This code lives inside a JS
+ * template literal, so a backslash is consumed by the generator before a browser
+ * ever sees it: `\\(` written here reaches the page as `(`, which turns an escaped
+ * literal paren into a capture group. That changes a regex's MEANING without
+ * changing its syntax, so scriptSyntaxAudit() — which only parses — could not
+ * catch it. Colour parsing is hand-scanned instead; it is a dozen lines and cannot
+ * fail that way.
+ *
+ * The design record for every constant here, and the dead ends behind them, is in
+ * docs/db-deferred-list.md and the reference_goo_metaball_recipe memory.
+ */
+const MORPH_JS = `
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+  function el(t,c){var n=document.createElement(t);if(c)n.className=c;return n;}
+  function rnd(a,b){return a+Math.random()*(b-a);}
+  function cl01(x){return x<0?0:x>1?1:x;}
+  function ease(x,k){return 1-Math.pow(1-cl01(x),k);}
+  function scrollY_(){return window.scrollY||document.documentElement.scrollTop||0;}
+
+  /* every run of digits in a string, in order — enough to read rgb()/rgba() */
+  function nums(s){
+    var out=[],cur='',i,ch;
+    for(i=0;i<s.length;i++){
+      ch=s.charAt(i);
+      if((ch>='0'&&ch<='9')||ch==='.')cur+=ch;
+      else if(cur){out.push(parseFloat(cur));cur='';}
+    }
+    if(cur)out.push(parseFloat(cur));
+    return out;
+  }
+  function parseCol(c){
+    c=(c||'').trim();
+    if(!c)return null;
+    if(c.charAt(0)==='#'){
+      var h=c.slice(1);
+      if(h.length===3)h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)
+                       +h.charAt(2)+h.charAt(2);
+      if(h.length<6)return null;
+      return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),
+              parseInt(h.slice(4,6),16)];
+    }
+    if(c.indexOf('rgb')===0){
+      var q=nums(c.slice(c.indexOf('(')+1));
+      if(q.length<3)return null;
+      return [q[0],q[1],q[2]];
+    }
+    return null;
+  }
+  /* a colour that actually paints — 'transparent' and a zero alpha both fail */
+  function opaque(c){
+    c=(c||'').trim();
+    if(!c||c==='transparent')return false;
+    var q=nums(c.indexOf('(')>=0?c.slice(c.indexOf('(')+1):'');
+    if(q.length>3&&q[3]===0)return false;
+    return !!parseCol(c);
+  }
+  function mix(a,b,t){
+    var x=parseCol(a),y=parseCol(b);
+    if(!x||!y)return b;
+    return 'rgb('+Math.round(x[0]+(y[0]-x[0])*t)+','
+                 +Math.round(x[1]+(y[1]-x[1])*t)+','
+                 +Math.round(x[2]+(y[2]-x[2])*t)+')';
+  }
+  function lum(c){
+    var q=parseCol(c);
+    if(!q)return null;
+    var l=[],i,v;
+    for(i=0;i<3;i++){
+      v=q[i]/255;
+      l.push(v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));
+    }
+    return 0.2126*l[0]+0.7152*l[1]+0.0722*l[2];
+  }
+  /* nearest ancestor that actually paints, so a colour can be judged against the
+     ground it will be seen on rather than against an assumption about the theme */
+  function groundOf(node){
+    for(var n=node;n&&n!==document;n=n.parentElement){
+      var c=getComputedStyle(n).backgroundColor;
+      if(opaque(c))return c;
+    }
+    return '#0F0D14';
+  }
+
+  /* ══ 1 · the reveal's mark ══════════════════════════════════════════════
+     The mark wakes, deforms in place and sleeps. It is a control's indicator,
+     not the source of a liquid: an earlier design had it pour into the panel
+     below and the whole spill apparatus was abandoned after four rounds. */
+  (function(){
+    var det=document.querySelector('.rev');
+    if(!det)return;
+    var sum=det.querySelector('summary');
+    var slot=det.querySelector('.rv-i');
+    if(!sum||!slot)return;
+
+    /* The label swap runs on EVERY pointer type and under reduced motion, because
+       it is information rather than decoration: "Reveal" is what the control does
+       while shut, and once the address is on screen the only thing left to do is
+       put it away. The strike-through on the question is pure CSS for the same
+       reason. Both degrade correctly with JS off — the <details> still opens, and
+       a statutory contact route may not depend on scripting (PRIVACY 13). */
+    var actionLabel=det.querySelector('.rv-a');
+    function syncLabel(){
+      if(actionLabel)actionLabel.textContent=det.open?'Hide':'Reveal';
+    }
+    syncLabel();
+    det.addEventListener('toggle',syncLabel);
+
+    /* ⚠️ DESKTOP ONLY, AND THE FILTER IS WHY. The buds merging with the core is
+       the one thing on this surface that genuinely needs the SVG crush, and an
+       SVG filter renders a swarm as hard circles on iOS. So touch keeps the
+       site's original sliding fill, which is a complete treatment in its own
+       right rather than a degraded one. */
+    if(!fine||reduce)return;
+
+    det.classList.add('rv-anim');
+    var host=det.parentElement||det;
+    host.classList.add('rv-host');
+    var goo=el('span','rv-goo');
+    goo.setAttribute('aria-hidden','true');
+    var mark=el('span','rv-m');
+    goo.appendChild(mark);
+
+    var MK_W=14,MK_H=6.5,BUDMAX=6,BUD_R=3.4;
+    var buds=[],bi,bn;
+    for(bi=0;bi<3;bi++){
+      bn=el('span','rv-bud');
+      goo.appendChild(bn);
+      buds.push({n:bn,ph:rnd(0,6.28),sp:rnd(1.1,1.9),orb:rnd(1.7,2.7),
+                 dir:bi%2?1:-1,r0:rnd(1.5,3.5),r1:rnd(1.6,3.2),rj:rnd(0.85,1.15)});
+    }
+    host.insertBefore(goo,det);
+
+    var aliveT=0,hovering=false,raf=0;
+    function aliveWanted(){return hovering||det.open;}
+
+    function draw(now){
+      var tsec=now/1000;
+      var R=host.getBoundingClientRect(),S=slot.getBoundingClientRect();
+      goo.style.width=R.width+'px';
+      goo.style.height=R.height+'px';
+      var cxp=S.left-R.left+S.width/2;
+      var cys=S.top-R.top+S.height/2;
+
+      var mW=MK_W*(1+0.07*aliveT*Math.sin(tsec*1.90+0.7));
+      var mH=MK_H*(1+0.14*aliveT*Math.sin(tsec*2.70));
+      mark.style.width=mW.toFixed(2)+'px';
+      mark.style.height=mH.toFixed(2)+'px';
+
+      /* ⚠️ 0.85 + c*0.21 SPANS 0.85-2.32 rad/s, AND THAT IS A MEASURED NUMBER.
+         It is the liquid cursor's own band (its masses pulse at 1.1-2.3 and orbit
+         at 0.9-3.2), which is what "match the cursor" asked for. It is also what
+         produces real topological events: a frame-by-frame comparison at a matched
+         0.14s interval showed the faster rates giving a lobe separating with a
+         visible neck and a pinched two-lobed hourglass, where a x0.7 slowdown gave
+         eight near-identical rotating ovals. THOSE EVENTS COME FROM THIS LINE, not
+         from the buds — opposing corners hitting extremes is what pinches the
+         outline. Mean shape-change per frame across the eight radii: 1.88 at the
+         slow rates, 3.63 measured live at these. Slowing it flattens the surface. */
+      var rr8='',c8,w8;
+      for(c8=0;c8<8;c8++){
+        w8=50+26*Math.sin(tsec*(0.85+c8*0.21)+c8*2.1);
+        rr8+=(50+(w8-50)*aliveT).toFixed(1)+'%'+(c8===3?' / ':c8===7?'':' ');
+      }
+      mark.style.borderRadius=rr8;
+      var tilt=8*aliveT*Math.sin(tsec*0.90+1.3);
+      mark.style.transform='translate('+(cxp-mW/2).toFixed(2)+'px,'
+        +(cys-mH/2).toFixed(2)+'px) rotate('+tilt.toFixed(2)+'deg)';
+
+      /* The buds ORBIT rather than shuttle: each walks a continuous ellipse at its
+         own rate and direction, so a neck thins somewhere unpredictable and
+         re-merges somewhere else. Deriving the orbit rate from the radius clock
+         gave ~0.86 rad/s and looked static, so it is its own constant.
+         At aliveT 0 the radius goes to 0, which puts them under the crush's paint
+         floor — they stop being drawn rather than fading out. */
+      for(var i=0;i<buds.length;i++){
+        var bd=buds[i],bph=tsec*bd.sp+bd.ph;
+        var ang=bd.dir*tsec*bd.orb+bd.ph;
+        var rad=bd.r0+bd.r1*Math.sin(bph*1.3);
+        var br=BUD_R*bd.rj*aliveT*(0.68+0.5*(0.5+0.5*Math.sin(bph*0.8+1.1)));
+        var bxo=cxp+Math.cos(ang)*(mW*0.40+rad);
+        var byo=cys+Math.sin(ang)*(mH*0.95+rad*0.8);
+        bd.n.style.transform='translate('+(bxo-BUDMAX).toFixed(2)+'px,'
+          +(byo-BUDMAX).toFixed(2)+'px) scale('+(br/BUDMAX).toFixed(3)+')';
+      }
+    }
+
+    function loop(now){
+      var want=aliveWanted()?1:0;
+      aliveT+=(want-aliveT)*0.12;
+      if(Math.abs(want-aliveT)<0.004)aliveT=want;
+      draw(now);
+      if(aliveT>0.002)raf=requestAnimationFrame(loop);
+      else{raf=0;draw(now);}
+    }
+    function kick(){if(!raf)raf=requestAnimationFrame(loop);}
+    function setHover(h){hovering=h;kick();}
+    sum.addEventListener('pointerenter',function(){setHover(true);});
+    sum.addEventListener('pointerleave',function(){setHover(false);});
+    sum.addEventListener('focus',function(){setHover(true);});
+    sum.addEventListener('blur',function(){setHover(false);});
+    det.addEventListener('toggle',kick);
+    addEventListener('resize',function(){draw(performance.now());});
+    draw(performance.now());
+    if(aliveWanted())kick();
+  })();
+
+  /* ══ 2 · the liquid cursor ══════════════════════════════════════════════ */
+  (function(){
+    if(!fine||reduce)return;
+
+    var BOX=220,HALF=BOX/2;
+    var ink=el('div','cur-ink');
+    ink.setAttribute('aria-hidden','true');
+
+    /* Seven masses. lag 0 is the tip you actually point with; the rest trail, so
+       the body smears into a teardrop when you move and gathers when you stop.
+       orb/w give each one a slow orbit at its own rate and direction, which is
+       what stops the silhouette repeating — a single circle read as dead. */
+    var spec=[
+      {R:5.6,lag:0.00,orb:1.8,w:0.9,k:0.62},
+      {R:5.0,lag:0.09,orb:3.4,w:-1.3,k:0.52},
+      {R:4.3,lag:0.19,orb:4.6,w:1.7,k:0.44},
+      {R:3.7,lag:0.32,orb:4.0,w:-2.2,k:0.36},
+      {R:3.1,lag:0.62,orb:2.8,w:2.7,k:0.22},
+      {R:2.6,lag:0.86,orb:1.9,w:-3.2,k:0.16},
+      {R:2.2,lag:1.10,orb:1.4,w:2.3,k:0.12}
+    ];
+    var parts=[],si,dot;
+    for(si=0;si<spec.length;si++){
+      dot=el('span','cur-d');
+      dot.style.width=(spec[si].R*2).toFixed(1)+'px';
+      dot.style.height=(spec[si].R*2).toFixed(1)+'px';
+      dot.style.marginLeft=(-spec[si].R).toFixed(1)+'px';
+      dot.style.marginTop=(-spec[si].R).toFixed(1)+'px';
+      ink.appendChild(dot);
+      parts.push({n:dot,s:spec[si],x:0,y:0,ph:rnd(0,6.28),os:rnd(1.1,2.3),ba:0,bd:0});
+    }
+    document.body.appendChild(ink);
+
+    var cx=0,cy=0,seeded=false,on=true;
+    var cen={x:0,y:0,px:0,py:0};
+    var raf=0,hitT=0,lastHost=null;
+    /* ⚠️ THE CRUSH DOES THE DESTROYING. At the apex a trailing mass is scaled to
+       about a third of its radius, which puts it under the ~4.5px paint floor
+       measured for this filter — so it genuinely stops being painted rather than
+       fading, then is drawn back in as the parts return and re-merge. */
+    var BURST=620,burstAt=-1e9;
+    var sx=1,sy=1,spread=1,tsx=1,tsy=1,tspread=1;
+
+    var baseCol=(getComputedStyle(document.body)
+                  .getPropertyValue('--accent')||'').trim()||'#F2994A';
+    var tgtCol=baseCol,curCol=baseCol,wroteCol='';
+
+    /* ⚠️ NOT EVERY SURFACE ANNOUNCES ITSELF THE SAME WAY, and assuming --accent
+       was the whole story left two surfaces flat. Measured on the live page: the
+       landing rows scope --accent (and custom properties inherit, so the computed
+       value under the pointer is already the nearest one); the .inv tickets scope
+       --ia instead and leave --accent at the page value; and the GitHub button
+       scopes no variable at all, its identity being its own color.
+       So the chain runs most-local-first, and the --accent step compares against
+       the PAGE value rather than merely reading it — equal means nothing in scope
+       has overridden it, which is what separates a row from open prose. */
+    function accentOf(e){
+      var cs=getComputedStyle(e);
+      var ia=cs.getPropertyValue('--ia').trim();
+      if(ia)return ia;
+      var ac=cs.getPropertyValue('--accent').trim();
+      if(ac&&ac!==baseCol)return ac;
+      /* ⚠️ ONLY BORROW THE INK OF A CONTROL THAT PAINTS ITS OWN CHIP. This step
+         exists for the GitHub capsule, whose identity really is its color. But a
+         landing row and the reveal's <summary> match the same selector list and
+         their color is the body text ramp, so borrowing it turned the swarm
+         near-white over "Terms" and over "Prefer email?". Judging by COLOUR cannot
+         separate those cases — both wanted and unwanted are --ink-family. Judging
+         by whether the element draws a box can: a chip has an edge, a text surface
+         does not. Row 01 proves the guard is needed at all, because its scoped
+         --accent EQUALS the page accent and so falls through to here. */
+      var h=e.closest('a,button,summary,[role="button"]');
+      if(h){
+        var hs=getComputedStyle(h),c=hs.color;
+        var chip=(parseFloat(hs.borderTopWidth)>0&&opaque(hs.borderTopColor))
+              ||opaque(hs.backgroundColor);
+        if(c&&chip&&legible(c))return c;
+      }
+      return ac||baseCol;
+    }
+    /* ⚠️ A CONTROL'S OWN color IS NOT ALWAYS WORTH WEARING. The back-to-top
+       computes to black — its ring paints from --accent, but the element's color
+       is rgb(0,0,0) — so the step above once handed the swarm black and it
+       disappeared into the page on hover. Rejecting on CONTRAST against the page
+       ground rather than on darkness keeps that right in both themes: a near-white
+       candidate on light paper fails the same test. Everything wanted passes
+       comfortably (the GitHub lavender-grey 7.3:1, the darkest row accent 5.7:1);
+       black is 1.16:1. */
+    function legible(c){
+      var a=lum(c),b=lum(groundOf(document.body));
+      if(a==null||b==null)return true;
+      return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)>=1.6;
+    }
+    /* ⚠️ THE FORM IS THE AFFORDANCE. A cursor that replaces the arrow has to say
+       what the arrow said: an I-beam over prose, a wider softer halo over anything
+       pressable. Doing it by squashing the same body keeps it one creature rather
+       than a set of swapped icons. */
+    function shapeFor(m){
+      if(m==='text'){tsx=0.30;tsy=2.45;tspread=0.48;}
+      else if(m==='link'){tsx=1.5;tsy=1.5;tspread=1.9;}
+      else{tsx=1;tsy=1;tspread=1;}
+      ink.classList.toggle('soft',m==='text');
+    }
+    /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
+       not free, and the shape and the colour both want the same element. */
+    function probe(){
+      var e=document.elementFromPoint(cx,cy);
+      if(!e)return;
+      shapeFor(
+        e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
+        :e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')?'text':'idle');
+      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
+         color over 220ms on hover, so sampling every 90ms walked the swarm up that
+         ramp (a white flash) and then dropped it. Latching on the surface reads the
+         colour once on arrival and holds it. */
+      var h=e.closest('.inv,.entry,a,button,summary,[role="button"]')||document.body;
+      if(h===lastHost)return;
+      lastHost=h;
+      var v=accentOf(e);
+      if(v)tgtCol=v;
+    }
+
+    function tick(now){
+      var t=now/1000;
+      /* VIEWPORT COORDINATES, and the layer is position:fixed. Positioning it in
+         the document and adding scrollY is only correct when the document itself
+         is the scroller; a pointer lives in viewport space, so there is no scroll
+         term left to get wrong. */
+      cen.x+=(cx-cen.x)*0.62;
+      cen.y+=(cy-cen.y)*0.62;
+      var dvx=cen.x-cen.px,dvy=cen.y-cen.py;
+      cen.px=cen.x;cen.py=cen.y;
+      var sp=Math.min(1,Math.sqrt(dvx*dvx+dvy*dvy)/24);
+
+      if(now-hitT>90){hitT=now;probe();}
+      sx+=(tsx-sx)*0.16;sy+=(tsy-sy)*0.16;
+      spread+=(tspread-spread)*0.16;
+      /* Eased per frame rather than by a CSS transition: the target changes every
+         time the pointer crosses a boundary, and a transition would restart from
+         wherever it had reached and stutter. mix() rounds to whole channels, so
+         the write stops by itself once it has arrived. */
+      curCol=mix(curCol,tgtCol,0.09);
+      if(curCol!==wroteCol){ink.style.color=curCol;wroteCol=curCol;}
+
+      var ox=cen.x-HALF,oy=cen.y-HALF;
+      ink.style.transform='translate('+ox.toFixed(1)+'px,'+oy.toFixed(1)+'px)';
+
+      for(var i=0;i<parts.length;i++){
+        var p=parts[i],s=p.s;
+        var ang=p.ph+t*s.w;
+        /* the orbit itself is squashed by the shape, so becoming an I-beam is a
+           deformation of the same cluster rather than a different object */
+        var gx=Math.cos(ang)*s.orb*spread*sx*(1-0.45*sp);
+        var gy=Math.sin(ang)*s.orb*spread*sy*(1-0.45*sp);
+        p.x+=((cen.x+gx-dvx*s.lag*8.5)-p.x)*s.k;
+        p.y+=((cen.y+gy-dvy*s.lag*8.5)-p.y)*s.k;
+        var scl=(1+0.17*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
+        var bx=0,by=0;
+        var bt=(now-burstAt)/BURST;
+        if(bt>=0&&bt<1){
+          /* ⚠️ THE TIP STAYS. The first burst scaled every mass to a third, which
+             put ALL of them under the paint floor — the pointer vanished outright
+             mid-drag, which is unusable when the native arrow is hidden. Only the
+             trailing masses fly out and evaporate; the tip moves and shrinks a
+             little and never leaves the screen. */
+          var out=Math.sin(Math.PI*Math.pow(bt,0.55));
+          var w=s.lag;
+          bx=Math.cos(p.ba)*p.bd*out*(0.18+w);
+          by=Math.sin(p.ba)*p.bd*out*(0.18+w);
+          scl*=1-(0.14+0.5*w)*Math.sin(Math.PI*Math.pow(bt,0.8));
+          if(w>0.25)p.n.style.opacity=String(1-0.92*out);
+        }else if(p.n.style.opacity!==''){p.n.style.opacity='';}
+        p.n.style.transform='translate('+(p.x-ox+bx).toFixed(1)+'px,'
+          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx).toFixed(3)+','
+          +(scl*sy).toFixed(3)+')';
+      }
+
+      /* ⚠️ NO IDLE FADE-OUT WHILE THIS IS THE POINTER. An earlier version faded the
+         swarm after 2.6s of stillness — harmless when it merely followed the arrow,
+         catastrophic now that it replaces it, because cursor:none stays applied and
+         holding still would leave no pointer on screen at all. */
+      raf=requestAnimationFrame(tick);
+    }
+
+    /* ⚠️ THE ARROW IS NOT HIDDEN UNTIL THE SWARM IS ACTUALLY DRAWN. html.liq used
+       to go on at load, but .cur-ink only becomes visible on the first pointermove
+       — so a reader who had not moved the mouse yet had no arrow AND no swarm. The
+       class now goes on at the same moment the masses are seeded. */
+    function wake(){
+      ink.classList.add('on');
+      if(on)document.documentElement.classList.add('liq');
+      if(!raf)raf=requestAnimationFrame(tick);
+    }
+    function sleep(){
+      ink.classList.remove('on');
+      document.documentElement.classList.remove('liq');
+      cancelAnimationFrame(raf);raf=0;
+    }
+    addEventListener('pointermove',function(ev){
+      if(!on||ev.pointerType==='touch')return;
+      cx=ev.clientX;cy=ev.clientY;
+      if(!seeded){
+        seeded=true;
+        cen.x=cen.px=cx;cen.y=cen.py=cy;
+        for(var i=0;i<parts.length;i++){parts[i].x=cen.x;parts[i].y=cen.y;}
+      }
+      wake();
+    },{passive:true});
+    /* no scroll handler at all: in viewport space the pointer does not move when
+       the page does, so there is nothing to compensate for */
+    addEventListener('pointerdown',function(ev){
+      if(!on||ev.pointerType==='touch')return;
+      burstAt=performance.now();
+      for(var i=0;i<parts.length;i++){
+        parts[i].ba=rnd(0,6.283);
+        parts[i].bd=rnd(24,62)*(0.6+parts[i].s.lag*0.7);
+      }
+      wake();
+    },{passive:true});
+    addEventListener('pointerleave',sleep);
+    addEventListener('pointerenter',function(){
+      if(on&&seeded)document.documentElement.classList.add('liq');
+    });
+    /* ⚠️ NO blur HANDLER. One was added so an alt-tab could not strand the page
+       without a pointer, and it backfired: any overlay taking focus — a screen
+       recorder, devtools, a notification — fires blur while the pointer is still
+       over the page, which stripped cursor:none AND cancelled the frame loop.
+       visibilitychange covers the case that actually matters. */
+    document.addEventListener('visibilitychange',function(){
+      if(document.hidden)sleep();
+    });
+    addEventListener('pagehide',sleep);
+  })();
+
+  /* ══ 3 · landing rows and tickets, scroll-linked ════════════════════════
+     ⚠️ ON A PHONE THOSE ROWS HAD NO ANIMATION WHATSOEVER, and the reason is
+     structural rather than a missing feature: every rule that drives them — the
+     wiping bar, the accent wash, the number's colour — sits inside
+     (hover:hover), which the build applies MECHANICALLY to every :hover rule on
+     the site. That is correct (on touch, :hover latches until you tap elsewhere)
+     and it also means nothing there can ever fire. POSITION is the only input a
+     phone has, so the same treatment gets a different driver. */
+  (function(){
+    var wrap=document.querySelector('main.wrap');
+    var list=document.querySelector('.list');
+    if(!wrap||!list)return;
+    var rows=[].slice.call(list.querySelectorAll('.entry'))
+      .concat([].slice.call(document.querySelectorAll('.inv')));
+    if(!rows.length)return;
+
+    /* Any coarse pointer, and also a narrow window so this is testable without
+       reaching for a phone. */
+    var mq=matchMedia('(max-width:700px)');
+    function wanted(){return !fine||mq.matches;}
+
+    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    function pick(){
+      queued=0;
+      if(!wrap.classList.contains('scrolly'))return;
+      var y=scrollY_();
+      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
+      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
+         A fixed line only marks a row once the row has reached it, so on the way
+         down the highlight always trails what you are looking at. Offsetting the
+         line by a tenth of the viewport in the direction of travel moves it DOWN
+         while scrolling down, which is the direction rows arrive from, so a row is
+         claimed on approach instead of on arrival — and symmetrically on the way
+         back up. 0.46 rather than dead centre because the row being read sits
+         above the middle of a phone screen, not on it. */
+      var line=innerHeight*(0.46+dir*0.10);
+      var best=-1,bestD=1e9,i,r,d;
+      for(i=0;i<rows.length;i++){
+        r=rows[i].getBoundingClientRect();
+        if(r.bottom<8||r.top>innerHeight-8)continue;
+        d=Math.abs(r.top+r.height/2-line);
+        if(d<bestD){bestD=d;best=i;}
+      }
+      if(best===cur)return;
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=best;
+      if(cur>=0)rows[cur].classList.add('act');
+    }
+    function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    function sync(){
+      var want=wanted(),i;
+      wrap.classList.toggle('scrolly',want);
+      if(!want){
+        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
+        cur=-1;
+      }else{cur=-1;pick();}
+    }
+    addEventListener('scroll',onScroll,{passive:true});
+    addEventListener('resize',function(){sync();onScroll();},{passive:true});
+    if(mq.addEventListener)mq.addEventListener('change',sync);
+    sync();
+  })();
+
+  /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
+  (function(){
+    var tt=document.getElementById('totop');
+    if(!tt)return;
+    function past(){return scrollY_()>innerHeight*0.6;}
+
+    /* Under reduced motion the shipped behaviour is kept exactly as it was — a
+       plain appear/disappear plus the arrow's own fire animation. This branch is
+       the whole reason the hosts could hand ownership of .on over: there is
+       always exactly one writer, and here it is this one. */
+    if(reduce){
+      var plain=function(){tt.classList.toggle('on',past());};
+      addEventListener('scroll',plain,{passive:true});
+      tt.addEventListener('click',function(){
+        tt.classList.remove('fire');
+        void tt.offsetWidth;
+        tt.classList.add('fire');
+        scrollTo({top:0,behavior:'auto'});
+      });
+      tt.addEventListener('animationend',function(){tt.classList.remove('fire');});
+      plain();
+      return;
+    }
+
+    var tink=el('span','tt-ink');
+    tink.setAttribute('aria-hidden','true');
+    var tgoo=el('span','tt-goo');
+    var blob=el('span','tt-blob');
+    tgoo.appendChild(blob);
+    var TN=16,tds=[],ti,td;
+    for(ti=0;ti<TN;ti++){td=el('span','tt-d');tgoo.appendChild(td);tds.push(td);}
+    tink.appendChild(tgoo);
+    tt.insertBefore(tink,tt.firstChild);
+    /* the swarm runs on touch too — only its FILTER is dropped there */
+    if(!fine)tt.classList.add('nogoo');
+
+    var born=false,traf=0,busy=false,settling=false,settleT=0;
+    function ringRoll(lo,hi){
+      var out=[],k;
+      for(k=0;k<TN;k++)
+        out.push({a:(k/TN)*Math.PI*2+rnd(-0.5,0.5),r:rnd(lo,hi),
+                  dl:Math.random()*0.26,sz:rnd(0.6,1.25)});
+      return out;
+    }
+    /* ⚠️ NO BIRTH ON TOUCH, AND ONLY THE BIRTH. The coalescence is the part that
+       needs masses to MERGE, and merging needs the filter iOS renders as hard
+       circles; the launch reads fine as plain droplets flying apart, so only the
+       arrival is dropped and the button simply appears. This is narrower than an
+       earlier guard, which skipped both and quietly took the whole effect off
+       mobile. */
+    function birth(){
+      if(!fine){tt.classList.add('on');busy=false;return;}
+      busy=true;
+      tt.classList.add('on','birth');
+      var seat=ringRoll(30,58),dur=rnd(560,760),s0=performance.now();
+      cancelAnimationFrame(traf);
+      (function frame(now){
+        var q=Math.min(1,(now-s0)/dur),i,g,u,rr;
+        blob.style.transform='translate(0,0) scale('+ease(q,2.6).toFixed(3)+')';
+        for(i=0;i<TN;i++){
+          g=seat[i];u=cl01((q-g.dl)/(0.90-g.dl));
+          rr=g.r*Math.pow(1-u,2.3);
+          tds[i].style.opacity=(u<=0||u>=1)?'0':'1';
+          tds[i].style.transform='translate('+(Math.cos(g.a)*rr).toFixed(2)+'px,'
+            +(Math.sin(g.a)*rr).toFixed(2)+'px) scale('
+            +(g.sz*(0.45+0.55*Math.sin(Math.PI*Math.min(u,1)))).toFixed(3)+')';
+        }
+        if(q<1)traf=requestAnimationFrame(frame);
+        else{
+          tt.style.transition='background .14s ease,border-color .14s ease';
+          tt.classList.remove('birth');busy=false;
+          setTimeout(function(){tt.style.transition='';},200);
+        }
+      })(s0);
+    }
+    function launch(){
+      if(busy)return;
+      busy=true;settling=true;
+      clearTimeout(settleT);
+      settleT=setTimeout(function(){settling=false;born=false;},2600);
+      tt.classList.add('birth');
+      var seat=ringRoll(44,96),s0=performance.now();
+      cancelAnimationFrame(traf);
+      scrollTo({top:0,behavior:'smooth'});
+      (function frame(now){
+        var q=Math.min(1,(now-s0)/560),i,g,u,rr,k;
+        var sq=q<0.18?1+q*0.9:1.16-ease((q-0.18)/0.82,1.8)*1.16;
+        blob.style.transform='translate(0,'+(-26*ease(q,2.1)).toFixed(2)
+          +'px) scale('+Math.max(0,sq).toFixed(3)+')';
+        for(i=0;i<TN;i++){
+          g=seat[i];u=cl01((q-g.dl*0.6)/(1-g.dl*0.6));
+          rr=g.r*ease(u,1.7);
+          tds[i].style.opacity=String(u>=1?0:(1-u*u)*0.95);
+          tds[i].style.transform='translate('+(Math.cos(g.a)*rr*0.55).toFixed(2)
+            +'px,'+(-Math.abs(Math.sin(g.a))*rr-rr*0.35).toFixed(2)
+            +'px) scale('+(g.sz*(1-u*0.75)).toFixed(3)+')';
+        }
+        if(q<1)traf=requestAnimationFrame(frame);
+        else{
+          /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
+             BUG. Measured: on is never re-added after a launch, but the control's
+             computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
+             Removing on and birth in one statement hands the fade to the .totop
+             transition, and birth is also what hides the ring and the arrow — so
+             for ~300ms after the liquid has flown away the REAL button chrome pops
+             back and fades out behind it. It never was a second birth, which is
+             why two fixes aimed at the threshold missed it.
+             Drop on while birth still applies (.totop.birth carries
+             transition:none, so it goes to 0 instantly), flush that state, and
+             only then drop birth. */
+          tt.classList.remove('on');
+          void tt.offsetWidth;
+          tt.classList.remove('birth');
+          blob.style.transform='scale(0)';
+          for(k=0;k<TN;k++)tds[k].style.opacity='0';
+          busy=false;
+        }
+      })(s0);
+    }
+    addEventListener('scroll',function(){
+      if(busy)return;
+      /* ⚠️ RE-ARM ON ARRIVAL, NOT ON CROSSING THE LINE. Clearing the flag the
+         moment the threshold was no longer passed let a momentum bounce push it
+         back over and start a second birth. It re-arms only once the page has
+         genuinely reached the top. */
+      if(settling){
+        tt.classList.remove('on');
+        if(scrollY_()<4){settling=false;born=false;clearTimeout(settleT);}
+        return;
+      }
+      var p=past();
+      if(p&&!born){born=true;birth();}
+      else if(p)tt.classList.add('on');
+      else tt.classList.remove('on');
+    },{passive:true});
+    tt.addEventListener('click',launch);
+  })();
+})();`;
+
 function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine, dir }) {
     // See the same note in shell(): a page is identified by directory AND filename.
     const cur = { out, dir };
@@ -4990,7 +5851,7 @@ ${mobileNav(cur, '')}
        exception — it has no fixed header, so its switch lives at the foot.) -->
   ${pageFoot(cur, sig, false)}
 </div>
-<script>${THEME_JS}${NAV_JS}${WARM_JS}</script>
+<script>${THEME_JS}${NAV_JS}${WARM_JS}${MORPH_JS}</script>
 </body>
 </html>`;
 }
@@ -5283,6 +6144,50 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
   .inv:hover,.inv:focus-visible{transform:none}
 }
 
+/* ── the SCROLL-DRIVEN mirror of every hover treatment above ───────────
+   ⚠️ THIS EXISTS BECAUSE A PHONE HAS NO HOVER AT ALL, and not by oversight: the
+   build wraps every :hover rule on the site in (hover:hover) and (pointer:fine)
+   MECHANICALLY, which is correct — on touch, :hover latches until you tap
+   somewhere else — and it also means every rule that drives these rows and cards
+   is unreachable there. So a phone got four rows and two tickets with no state
+   of any kind. Position is the only input it has, and .act is the same treatment
+   on a different driver: the script marks whichever row or ticket is nearest a
+   reading line that leads the scroll.
+   ⚠️ These must NOT be written as :hover rules or folded into the ones above.
+   The guard transform would put them straight back behind (hover:hover), which
+   is precisely the query that cannot match on the device they exist for.
+   The scope class sits on main.wrap rather than on .list, because the tickets
+   are in .invite and both families take the same driver. */
+.wrap.scrolly .entry.act{padding-left:1.3rem;
+  background:linear-gradient(90deg,
+    color-mix(in srgb,var(--accent) 7%,transparent),transparent 42%)}
+.wrap.scrolly .entry.act::before{transform:scaleY(1)}
+.wrap.scrolly .entry.act i{color:var(--accent-t)}
+.wrap.scrolly .inv.act{transform:translateY(-4px);
+  border-color:color-mix(in srgb,var(--ia) 44%,var(--rule));
+  box-shadow:0 24px 50px -28px color-mix(in srgb,var(--ia) 65%,transparent)}
+.wrap.scrolly .inv.act::before{opacity:1}
+.wrap.scrolly .inv.act::after{background-size:2px 15px}
+.wrap.scrolly .inv.act .inv-s{background:color-mix(in srgb,var(--ia) 18%,transparent);
+  transform:translateX(5px) rotate(1.15deg);
+  box-shadow:-7px 0 12px -7px rgba(0,0,0,.6)}
+.wrap.scrolly .inv.act .inv-s::before{opacity:.45}
+/* If a fine pointer is ALSO present — a narrow desktop window, which is how this
+   is testable without reaching for a phone — hover would mark a second row and
+   two would read as active at once. Scroll wins while scrolly is on. */
+@media (hover:hover) and (pointer:fine){
+  .wrap.scrolly .entry:hover{background:none;padding-left:.4rem}
+  .wrap.scrolly .entry:hover::before{transform:scaleY(0)}
+  .wrap.scrolly .entry.act:hover{padding-left:1.3rem;
+    background:linear-gradient(90deg,
+      color-mix(in srgb,var(--accent) 7%,transparent),transparent 42%)}
+  .wrap.scrolly .entry.act:hover::before{transform:scaleY(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  .wrap.scrolly .inv.act{transform:none}
+  .wrap.scrolly .inv.act .inv-s{transform:none}
+}
+
 .inv-h{display:flex;align-items:center;gap:.6rem}
 /* A small mark per card, animated in a way that means something: the plus draws
    itself open (an invitation to add), and the three dots light in sequence (a
@@ -5356,7 +6261,13 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
   display:flex;align-items:center;gap:.7rem}
 .tray .lab{margin-right:auto}
 </style></head><body>
-<a class="skip" href="#main">Skip to content</a>\n<main class="wrap" id="main" tabindex="-1">
+<!-- ⚠️ THE LANDING PAGE HAD NO FILTER DEFS AT ALL until the morph port — it is the
+     one template that never carried GOO_SVG, because it is also the one without a
+     nav bar to put an indicator in. It now needs them for the reveal's mark and
+     for the liquid cursor, and a filter that nothing on a given page references
+     costs nothing: the <svg> is 0x0 and hidden. -->
+<a class="skip" href="#main">Skip to content</a>\n${GOO_SVG}
+<main class="wrap" id="main" tabindex="-1">
   <div class="top">
     ${wordmark(null)}
     ${repoBtn}
@@ -5382,7 +6293,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
        placement, never of contrast. -->
   <p class="disc fine">${TRADEMARK_NOTE}</p>
 </main>
-<script>${THEME_JS}</script>
+<script>${THEME_JS}${MORPH_JS}</script>
 </body></html>`;
 }
 
@@ -5463,6 +6374,7 @@ const chronicleResults = {};
 const CHROME = {
     esc, parseBlocks, linkifyRefs, slug,
     TOKENS, COMPONENT_CSS, SWITCHER_CSS, THEME_BOOT, THEME_JS, NAV_JS, GOO_SVG,
+    MORPH_JS,
     wordmark, repoBtn, installBtn, themeBtn, navSwitcher, mobileNav, pageFoot,
 };
 

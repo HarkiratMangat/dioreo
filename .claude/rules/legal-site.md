@@ -185,6 +185,45 @@ it directly with an empty build command, so nothing has to run on their side.
   is NOT a scroller (a scroll container composites its contents and drops the blend, leaving a black
   rectangle). Making the desktop header opaque to match would destroy the frosted bar; that trade was
   considered and refused.
+- ⚠️ **THE MORPH IS NO LONGER ONLY THE NAV — `MORPH_JS` carries four more surfaces** (shipped
+  2026-08-03 13:09 EDT, v2.51.0, out of the PoC in `local/morph-poc/`). One constant, emitted on **every**
+  template, containing four modules that **select themselves out of the DOM** rather than being
+  switched on per page: the reveal's morphing mark and the scroll-linked landing rows exist only on
+  the landing page, the back-to-top only where that button is, and the liquid cursor everywhere.
+  A module whose element is absent returns after one `querySelector`. `GOO_SVG` gained `#dbgoo-r`,
+  `#dbgoo-c` and `#dbgoo-p` beside the nav's `#dbgoo` — same alpha-crush matrix, different blur and
+  **region**, and a region is a percentage of the FILTERED ELEMENT's box, so it is never portable
+  between surfaces.
+  - ⚠️ **`MORPH_JS` OWNS `.on` ON THE BACK-TO-TOP. Both host scripts had to give it up.** `shell()`'s
+    inline script and `chronicle.js`'s each toggled that class from their own scroll handler, and a
+    birth animates across ~42 frames — two writers fought every one. The hosts keep the ring's
+    progress and the `--lift` that parks the button above the footer; state, click, and the
+    reduced-motion `fire` fallback all live in the module. **A new template that grows a `.totop`
+    inherits the behaviour by having the button — do not re-add a toggle.**
+  - ⚠️ **`prefers-reduced-motion` builds NOTHING liquid.** No cursor layer, no `html.liq`, no
+    `.tt-ink` — a reduced-motion reader gets the site exactly as it shipped. That matters more than
+    usual here because the cursor sets `cursor:none !important` site-wide; a hidden pointer with
+    nothing drawn in its place is the worst failure this could have, which is also why `html.liq` is
+    not applied until the first `pointermove` has actually seeded the swarm.
+  - ⚠️ **NO REGEXES IN `MORPH_JS`.** It is emitted from inside a template literal, so the generator
+    eats a lone backslash: an escaped paren written in the source reaches the page as a bare paren
+    and becomes a capture group. That changes a regex's MEANING without changing its SYNTAX, so
+    `scriptSyntaxAudit()` — which only parses — cannot catch it. Colour parsing is hand-scanned.
+  - ⚠️ **The mark is desktop-only and that is the design, not a gap.** The buds merging need the SVG
+    crush, which iOS renders as hard circles; touch keeps the original `.rv-i` sliding fill, which is
+    a complete treatment rather than a degraded one. The **label swap and the strike-through run on
+    every pointer type** — they are information, not decoration. The back-to-top drops only its
+    FILTER on touch (`.totop.nogoo`) and only its BIRTH, never the whole animation: hiding a surface
+    from a platform that cannot render it is what once took the effect off mobile entirely.
+  - ⛔ **Do not try the CSS blur/contrast crush on the back-to-top.** Built and measured
+    2026-08-03 12:03 EDT: the masses merged and the bed rendered as a solid square, because `.totop` is
+    `position:fixed; z-index:55` — its own stacking context, so `lighten` composites inside it.
+    The nav works because it sits ON a bar. Full record in `reference_goo_metaball_recipe`.
+  - ⚠️ **Verifying it needs a LIVE renderer, and two things impersonate one.** A sleeping display and
+    a backgrounded tab both present as `document.hidden` with rAF dead; the tell for the display is
+    `screencapture -x` failing with *"could not create image from display"*. And the **coarse-pointer
+    and reduced-motion branches cannot be reached by resizing a window** — `fine` gates them, not
+    width — so they need CDP `Emulation.setEmulatedMedia` against a headless Chromium.
 - ⚠️ **THE DESKTOP INDICATOR'S GEOMETRY IS MEASURED, NOT DERIVED — don't "simplify" its constants.**
   The goo filter dilates every edge it paints, so attaching it at the start of a move and dropping it
   at the end steps the pill's size. Four fixes failed before one worked (2026-08-01 21:40 EDT), and the
