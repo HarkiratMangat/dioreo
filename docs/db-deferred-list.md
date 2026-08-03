@@ -12,6 +12,16 @@ pulled all of them in, added the priority legend, and moved resolved entries out
 `docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is
 now `/Applications/Claude Code/meta-deferred-list.md`.
 
+## Closing the loop back to the notes file
+When a Queued/bug item here that was **filed FROM `docs/diors-builds notes.md`** ships or gets fixed,
+go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a
+separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31,
+shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions,
+because closing THIS file's entry was treated as the finish line and the originating bullet was never
+revisited — even though the shipping commit's own code comment cited the notes-file line number. A
+filed item's real origin is worth a quick grep for ("notes L###" or the item's own wording) whenever
+you check something off here.
+
 ## What is NOT in this file
 - **The feature roadmap** — `docs/ROADMAP.md` is authoritative (v2 remaining · v3 · v4 · v5 ·
   housekeeping). This file is deliberately NOT a copy of it: pointer, not duplicate.
