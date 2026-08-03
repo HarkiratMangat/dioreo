@@ -1,7 +1,7 @@
 {
   "name": "diors-builds",
-  "version": "2.50.2",
-  "description": "Discord bot for Call of Duty: Mobile \u2014 loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
+  "version": "2.50.3",
+  "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
   "private": true,
   "scripts": {

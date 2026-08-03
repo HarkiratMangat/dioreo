@@ -314,10 +314,62 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   behind they are in the meantime — it is a meter, not an error. 🔗 Bundles with the chronicle-page
   design work, since that is when they become reachable.
 
-- `[P1 · L · 🧩needs-design · Opus5-H]` **Rebuild Contributing and Contributors as two DISTINCT pages.**
-  *Filed 2026-08-02 01:10 EDT. Direction chosen and mockup approved by Harkirat — this is a build, not
-  an exploration.* They currently share `warmShell()`; the decision is that they stop sharing it and
-  become their own things, sharing only header, footer and tokens.
+- `[P2 · L · 🧩needs-design · ⛓️blocked-on-design]` **Rebuild Contributing and Contributors as two
+  DISTINCT pages.** *Filed 2026-08-02 01:10 EDT.* They currently share `warmShell()`; the decision is
+  that they stop sharing it and become their own things, sharing only header, footer and tokens.
+
+  - ⏸️ **PARKED 2026-08-02 23:00 EDT at Harkirat's call. Dropped from P1 to P2.** His words: *"its
+    buggy to say the least. needs heavy designing and discussion work. honestly i'm tired of this…
+    let's defer this redesign to some other time. just leave the current design as-is on the website
+    for now."* **The LIVE SITE IS UNCHANGED and stays that way** — nothing from this exploration
+    reached `scripts/buildLegalPages.js`, `public/`, or either source Markdown file. Zero risk of a
+    half-applied redesign: every artefact is in gitignored `local/`.
+    ⚠️ **Do not restart this from the top.** Two full exploration passes are already paid for. Read
+    the settled decisions below before proposing anything, and expect the next session to be about
+    *design quality and discussion*, not about choosing a direction — the direction is chosen.
+  - ⛔ **DO NOT RESURFACE THIS UNPROMPTED — Harkirat's explicit request, 2026-08-02 23:03 EDT.**
+    Do not raise it in a session-opening summary, do not offer to pick it up, do not list it among
+    "what's next", and do not treat its P2 tag or its 🧩 flag as a prompt to suggest it. He is tired
+    of it and knows exactly where it is. **This item is READ-WHEN-ASKED.** It stays here so that the
+    moment he *does* raise it nothing has to be re-derived — that is its only job. The same applies
+    to its offshoot in `docs/reference/design-ideas.md` and to the parked landing-page ticket-tear
+    item below, which was already blocked behind this one.
+  - ✅ **SETTLED — the structural fork is ANSWERED** (it was the blocking question for two sessions):
+    **constellation on desktop, a full-width STACK on mobile.** Harkirat, 2026-08-02 22:42 EDT: *"on
+    desktop id say constellation looks coolest… as for mobile, i think the naive reflow… might
+    actually work best (again with a heavy design heal to actually make it nice)."* Gradient bands,
+    gradient cards, a swipe deck and scroll-driven ground inversion were all built and all rejected.
+  - ⚠️ **The desktop fork CANNOT be judged on a phone, and that wasted a round.** Constellation and
+    bands collapse into the same object at 375px — the constellation's identity is free coordinates
+    plus convergence curves, which need width, and bands' identity is a full-bleed field with a
+    CURSOR-following orb, and a phone has no cursor. Mobile and desktop are **independent choices**;
+    the mobile form does not have to be the desktop one's degradation.
+  - ⚠️ **"Naive reflow" was a mislabel that nearly buried the winning answer.** It was presented as
+    the failure case; it was in fact the *unstyled* version of the right answer, judged by how
+    finished it looked rather than whether the structure held. On a phone a quiet full-width read
+    beats a mechanic. **Never let an unstyled option carry a pejorative name in a comparison.**
+  - **Current work-in-progress: `local/site-redesign/mockup-v2.html`** (gitignored; run it with
+    `python3 -m http.server --directory local/site-redesign` — a `file://` URL renders as a static
+    snapshot in the preview pane and will not respond). It implements both chosen forms and **is
+    known to still need heavy design work**. What is worth keeping from it:
+    - The **convergence hub** — all four curves terminate at one node, `CREDITED — by name, and it
+      cannot be withdrawn`, because that convergence *is* the page's claim under §5.6.
+    - The **CLA gate**: a ring sitting ON the Code curve, since the CLA is literally a gate on that
+      one path and no other. It is positioned by measuring the path at its arc-length midpoint, not
+      from a constant.
+    - **Four route hues re-spread** to rose 348° · amber 40° · mint 158° · periwinkle 232° (gaps
+      52/118/74/116). mockup-v1's set had three warm values 19–26° apart that read as one colour.
+      Code takes the page's own accent, because the one route that binds you should be the page's
+      colour. These are page-local and only have to clear `contrastAudit` at 4.5:1 in both themes.
+    - The **named-section roster** for Contributors, which is the settled answer to emptiness.
+  - ⚠️ **Verification traps paid for in that file, all real:** a mask on a parent applies to its whole
+    SUBTREE (it was fading the outermost route names to ~60%); an animation on `transform` REPLACES a
+    `translate(-50%,-50%)` used for centring; `nth-child` counts non-`.mk` siblings; `[hidden]` is
+    (0,1,0) and loses to any class that sets `display`; and **`document.timeline.currentTime` is
+    frozen at 0 in the preview pane**, so animations never advance and elements measure at their
+    from-state — strip the intro class to measure settled geometry.
+  - The **cross-referenced contributor index** was split out and parked separately in
+    `docs/reference/design-ideas.md` (parked on timing, not merit — one contributor, one release).
   - **Approved mockup: `local/site-redesign/mockup-v1.html`** (gitignored, open it directly).
     **Contributing = "The Interchange"** — four ways in (bug report · security · idea · code) on
     tinted lanes, converging on one shared track that ends at *merged & credited*. The route DIAGRAM is
@@ -335,8 +387,9 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     below (shrink-the-plate and reserved-slot). Harkirat has also released these two pages from the
     legal set's design language entirely — the Interchange/Plate mockup is a **fallback only**, and
     two distinct identities is fine. Dark AND light both required; he prefers dark.
-  - 🧩 **THE ONE OPEN DECISION, and it needs Harkirat — do not guess it.** For Contributing's four
-    routes, which structure carries them?
+  - ✅ **ANSWERED 2026-08-02 22:42 EDT — kept only for the reasoning.** The question below was "which
+    structure carries the four routes"; the answer is **(a) constellation on desktop**, with a
+    full-width stack on mobile rather than any of the fallbacks sketched here. Do not re-ask it.
     **(a) Constellation** (ensambles) — four markers as free coordinates, each owning a hue, label
     unfolding on hover and the page aura shifting with it. Delivers the four independent hues as a
     live mechanic and is spatially unlike anything else on the site, which is the changelog lesson

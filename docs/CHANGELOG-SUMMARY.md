@@ -26,6 +26,12 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.50.3 — August 2, 2026
+- **Nothing changed in the bot, or on the website.** A planned redesign of the Contributing and
+  Contributors pages is on hold, so those pages stay exactly as they are. The ideas from it are
+  written down properly so nothing has to be worked out twice.
+
+
 ## v2.50.2 — August 2, 2026
 - **Nothing changed in the bot.** One of the project's internal writing checks was complaining far
   more often than it was right — roughly four times out of five it was flagging ordinary sentences

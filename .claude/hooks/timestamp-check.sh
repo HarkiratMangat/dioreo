@@ -134,6 +134,15 @@ findings=""
 #      for most of the 18 suppressions. A record stamp never reads that way.
 #   2. RANGE ENDPOINT — an arrow or dash on either side ("2026-07-24 → 2026-08-02"). A bound is a
 #      date, not a moment; a clock time there would be wrong, not merely verbose.
+#   3. LIST ITEM — the date is directly followed by a comma or semicolon, as in an enumeration of
+#      occurrence dates ("caught in three sessions (2026-07-24, 2026-07-26, 2026-08-02)"). Added
+#      2026-08-02 23:08 EDT after this branch fired on exactly that sentence, in a memory file being
+#      edited to explain this very rule. A record stamp is followed by a TIME, or by ` — `/`)`/`:`
+#      — never by a comma, because a stamp is one moment and a comma means there is another one
+#      coming. ⚠️ Note what this says about the "100% precision" figure above: that was measured on
+#      164 real lines from ONE day, and this shape simply was not among them. The number was honest
+#      for its corpus and is not a guarantee for shapes outside it — which is the argument for
+#      keeping this branch ADVISORY rather than promoting it to a deny.
 # Double-quoted spans are stripped alongside backticks — the same trick the deferral-tell hook uses.
 # A date inside a string literal is data, not a record.
 #
@@ -147,17 +156,29 @@ clean=$(printf '%s' "$joined" \
 # timestamp can still be reported for a bare date beside it. Only then judge what survives, line by
 # line — because "which word precedes the date" is a question about a line.
 PROSE_LEAD='(on|in|at|by|since|from|until|to|after|before|a|an|the|of|during|around|through|between|and|this|that|its|dated)'
+# Any ISO date, used to spot an ENUMERATION. The list test deliberately requires a comma adjacent to
+# ANOTHER date rather than just any trailing comma: "(added 2026-08-02)" is a genuine record stamp
+# and must keep firing, while "(2026-07-24, 2026-07-26, 2026-08-02)" is data. A first attempt used a
+# bare trailing [,;] and did BOTH things wrong — it would have silenced the real stamp, and it did
+# not even match the list, because the date there is followed by ')' before the comma. Tested both
+# directions, since today's date can be first or last in the list.
+ISO='[0-9]{4}-[0-9]{2}-[0-9]{2}'
 bare=$(printf '%s' "$clean" | sed -E "s/${today} [0-9]{2}:[0-9]{2}//g" | grep -F "$today" \
   | grep -viE "(^|[^A-Za-z])${PROSE_LEAD}[[:space:]]+${today}" \
-  | grep -vE "(→|–|—|\.\.|->)[[:space:]]*${today}|${today}[[:space:]]*(→|–|—|\.\.|->)")
+  | grep -vE "(→|–|—|\.\.|->)[[:space:]]*${today}|${today}[[:space:]]*(→|–|—|\.\.|->)" \
+  | grep -vE "${ISO}[])]*[[:space:]]*,[[:space:]]*[([]*${today}|${today}[])]*[[:space:]]*,[[:space:]]*[([]*${ISO}")
 if [ -n "$bare" ]; then
   findings="${findings}
   ⏱️ BARE DATE — today's date appears with no HH:MM TZ beside it. Working-agreement rule 10: dated
      content in docs, memory, DEVLOG, changelogs, notes marks and code comments carries
      YYYY-MM-DD HH:MM TZ. Filenames, \`--flag DATE\` arguments, backticked spans and timestamps
      wrapped across a line break are all stripped before this check, so this is prose. Add the
-     time, or confirm it is a deliberate bare date (a historical reference, or the player-facing
-     summary)."
+     time, or confirm it is a deliberate bare date (a historical reference, a list of dates, a range
+     endpoint, or the player-facing summary).
+     ⏰ RIGHT NOW IT IS: $(date '+%Y-%m-%d %H:%M %Z') — paste that, do not derive it.
+     ⚠️ This branch runs AFTER the bytes land, so it cannot prevent anything: reaching it already
+     cost an extra edit. It is a backstop for the rare miss, NOT the mechanism. The mechanism is
+     that the moment you type the year inside content, the time follows it in the same keystroke."
 fi
 
 [ -z "$findings" ] && exit 0

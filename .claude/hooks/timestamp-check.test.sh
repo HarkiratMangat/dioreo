@@ -87,6 +87,14 @@ a "range with arrow silent"         post "BARE DATE" no  "Baseline — control w
 a "range, date on the left, silent" post "BARE DATE" no  "The window is $TODAY → 2026-08-10 (exclusive)."
 # A date inside a string literal is data, not a record.
 a "date in a quoted literal silent" post "BARE DATE" no  "assert \"the actual $TODAY failure blocks\" block"
+# An ENUMERATION of dates is data too. Added 2026-08-02 23:10 EDT after the branch fired on exactly
+# this sentence, in a memory file being edited to explain the rule — a shape absent from the 164-line
+# corpus the "100% precision" figure was measured on. The test is a comma adjacent to ANOTHER date,
+# never a bare trailing comma: a stamp followed by a comma is still a stamp (see below), and a first
+# attempt using [,;] alone would have silenced that while not even matching the list.
+a "date list, today last, silent"   post "BARE DATE" no  "caught in three sessions (2026-07-24, 2026-07-26, $TODAY), each time"
+a "date list, today first, silent"  post "BARE DATE" no  "sessions $TODAY, 2026-07-26 and 2026-07-24 all repeated it."
+a "stamp + comma still fires"       post "BARE DATE" yes "A reasonable question, asked $TODAY, and nobody answered."
 # …and the shapes that MUST still fire: these are record stamps missing their time.
 a "'(added DATE)' still fires"      post "BARE DATE" yes "## Licence & attribution gates (added $TODAY)"
 a "'UPDATED DATE:' still fires"     post "BARE DATE" yes "PATH UPDATED $TODAY: the spreadsheet moved out of the repo root."
