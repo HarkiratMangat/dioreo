@@ -9,6 +9,13 @@ shape is not lost and so the same ground is not re-explored from scratch in a ye
 *The backward-looking counterpart is `docs/reference/design-history.md`, which narrates redesigns
 that already happened. This file is the forward-looking one.*
 
+⛔ **THIS FILE IS READ-WHEN-ASKED. Do not pitch its contents.** *(Harkirat's explicit request,
+2026-08-02 23:03 EDT.)* Nothing here goes in a session-opening summary, a "what's next" list, or an
+unprompted suggestion — an idea parked on timing is not a backlog item, and treating it as one turns
+a reference into nagging. Read it when the relevant surface is actually being worked on, or when he
+raises it. Its whole value is that the thinking is waiting when it is wanted, not that it reminds
+anyone it exists.
+
 **How to use it.** Add an entry when an idea is rejected **for timing rather than on merit** —
 that distinction is the whole filter. An idea rejected on merit belongs in the deferred list's
 🚫 Decided-no section, where the reasoning stops it coming back. An idea rejected on timing

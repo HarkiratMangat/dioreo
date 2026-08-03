@@ -107,6 +107,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)
 - 2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)
 - 2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)
+- 2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -3980,6 +3981,54 @@ Three smaller things worth keeping:
 - **A deliberate limit, pinned by a test:** only the word immediately before the date is examined, so
   `the actual <date> failure` still fires. Widening to "article plus any adjective" starts guessing
   at grammar. Better a known, documented edge than a rule nobody can predict.
+
+## 2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)
+
+The Contributing/Contributors redesign is parked. Harkirat: *"its buggy to say the least. needs heavy
+designing and discussion work. honestly i'm tired of this."* Fair — and the useful thing to record is
+not the fatigue but what produced it.
+
+**Two mistakes cost most of the session, and they are the same mistake.**
+
+The first: I offered a desktop-only fork as a decision and asked him to judge it on a phone.
+Constellation and gradient bands are genuinely different at 980px and *identical* at 375px — the
+constellation is free coordinates plus convergence curves, which need width, and bands are a
+full-bleed field with a cursor-following orb, and a phone has no cursor. He said he couldn't see a
+difference because there wasn't one. I had built the same object twice and labelled it a choice.
+
+The second: I named the unstyled stacked layout **"naive reflow"** and presented it as the failure
+case. He picked it. It was never a failure — it was the *unstyled version of the right answer*, and I
+had judged it by how finished it looked rather than by whether the structure held. **Never let an
+option carry a pejorative name in a comparison, because the label does the deciding.**
+
+Both are the same error: presenting my own framing as the finding. A comparison harness is supposed
+to remove my judgement from the decision, and twice I baked it back in.
+
+**What went right.** Nothing reached the live site. Every artefact stayed in gitignored `local/`, so
+parking cost exactly nothing to unwind — no half-applied redesign, no revert, no `public/` drift. The
+generator and both source files are untouched.
+
+**And the reason this release exists at all:** the thinking needed somewhere to live, and the two
+obvious homes were both wrong. `db-deferred-list.md` tracks work with a pending outcome; its
+🚫 Decided-no section holds ideas killed **on merit**, where the recorded reasoning is what stops
+them coming back. An idea that is good but has nothing to operate on yet fits neither — file it as
+work and it reads as overdue, file it as decided-no and you have argued against your own future self.
+Hence `docs/reference/design-ideas.md`, split on one line: **rejected on timing, with the condition
+that would make it right; not rejected on merit.**
+
+The concrete risk that closes: the nine-site research driving all of this lives in gitignored
+`local/`. It exists on one machine and would not survive a fresh clone.
+
+### Lesson
+
+- **A comparison is only honest if the options are genuinely different at the width being judged.**
+  Check that before asking, not after.
+- **An unstyled option needs a neutral name.** "Naive reflow" nearly buried the answer.
+- **Parked ≠ forgotten, and parked ≠ nagging.** Harkirat asked not to be reminded about this, which
+  is a real requirement and now written into both files: the entries are READ-WHEN-ASKED. A deferral
+  that keeps announcing itself is a worse outcome than one that is quietly findable.
+- **Exploration that ships no code is not wasted** *if* the decisions are recorded — and is close to
+  worthless if they are not. That is the entire justification for this release.
 
 # Part B — Lessons Ledger (thematic)
 

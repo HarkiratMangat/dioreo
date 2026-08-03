@@ -181,7 +181,67 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.50.2 — 2026-08-02 18:43 EDT (#70) — The bare-date check was wrong four times in five
+## v2.50.3 — 2026-08-02 23:01 EDT (#71) — A third home for an idea that was right but early
+
+The Contributing/Contributors redesign is **parked**, and the live site is
+untouched — nothing from two sessions of exploration reached the generator,
+`public/`, or either source file. What needed keeping was the *thinking*, and
+there was nowhere correct to put it.
+
+`docs/db-deferred-list.md` tracks work with a pending outcome: a bug to fix, a
+chore to do, a decision to make. Its 🚫 Decided-no section holds ideas rejected
+**on merit**, where the recorded reasoning is what stops them coming back. Neither
+fits an idea that is *good* and simply has nothing to operate on yet — file it as
+work and it reads as overdue; file it as decided-no and the reasoning argues
+against rebuilding it when the time is actually right.
+
+So **`docs/reference/design-ideas.md`** exists now, as the forward-looking
+counterpart to `design-history.md`. One rule decides what belongs: an idea
+rejected **on timing** goes here with the condition that would make it right
+written down; an idea rejected **on merit** does not. When a condition is met the
+entry graduates into the deferred list as real queued work.
+
+Its first entry is snp.agency's **cross-referenced contributor index** — three
+columns (*Who* · *Route in* · *First shipped in*) where touching any item lights
+its relations and greys the rest. The strongest structural idea in the nine-site
+research, and unbuildable today: with one contributor and one release it renders a
+relationship diagram of a single node, which reads as broken rather than as empty.
+
+The concrete risk this closes: that research lives in **gitignored `local/`**, so
+it exists on one machine and would not survive a fresh clone. The entry carries
+enough to rebuild the idea without it.
+
+Also recorded: the redesign's structural fork is **answered** — constellation on
+desktop, a full-width stack on mobile — so the next session starts on design
+quality, not on choosing a direction.
+
+### The bare-date check found a shape its corpus never had
+
+Harkirat: *"whole point of the hook was so you wouldn't forget to include the time…
+especially considering the fact u get the current date+time injected into your
+context on every tool use."* Correct — a `PostToolUse` fire costs an extra edit and
+prevents nothing, so it is a failure signal, not a save. That is now written into
+the working agreement as a keystroke-level rule: the moment you type the year
+inside content, the time follows in the same keystroke.
+
+Two changes to `timestamp-check.sh`, both proven against the shapes:
+
+- **The advisory now prints the real clock** — `⏰ RIGHT NOW IT IS: …` — so
+  correcting a miss needs no second lookup, and states plainly that it runs after
+  the bytes land and cannot prevent anything.
+- **An enumeration of dates is data, not a record stamp.** `(2026-07-24,
+  2026-07-26, 2026-08-02)` fired the branch — while editing a memory file to
+  explain this very rule. The test is a comma adjacent to **another date**, never a
+  bare trailing comma, because `asked <date>, and nobody answered` is still a stamp
+  and must keep firing. A first attempt using `[,;]` alone got both halves wrong.
+
+⚠️ **Worth being straight about the "100% precision" figure from v2.50.2**: it was
+measured on 164 real lines from one day, and this shape simply was not among them.
+Honest for its corpus, not a guarantee beyond it — which is the argument for
+keeping this branch **advisory**. Its own comment already says a gate that blocks
+on noise is a gate that gets switched off, so it was not promoted to a deny.
+
+## v2.50.2 — 2026-08-02 18:43 EDT (#70 · `3b14f2e`) — The bare-date check was wrong four times in five
 
 Harkirat: *"it's triggered way too many false positives."* He was right, and the
 number is worse than it felt.
