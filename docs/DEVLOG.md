@@ -108,6 +108,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)
 - 2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)
 - 2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)
+- 2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4029,6 +4030,28 @@ The concrete risk that closes: the nine-site research driving all of this lives 
   that keeps announcing itself is a worse outcome than one that is quietly findable.
 - **Exploration that ships no code is not wasted** *if* the decisions are recorded — and is close to
   worthless if they are not. That is the entire justification for this release.
+
+## 2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)
+
+`typos` flagged `cpy` while I was writing a handoff. It is not a typo — it is the copy-control class
+family in `buildLegalPages.js`, 30 occurrences of it.
+
+Worth recording because the fix was already written down. `_typos.toml` carries `mis` for exactly
+this reason, with the rationale attached: *"a linter that is usually wrong is one you learn to
+ignore."* That is the same sentence, in different words, as the one on the bare-date hook narrowed
+earlier today at 18:39 EDT — **a gate that is usually wrong trains you to scroll past it.** Two
+independent tools, one failure mode, and both notes already existed before I hit it.
+
+The tell that it was vocabulary and not a mistake was cheap: `rg -c "cpy" scripts/buildLegalPages.js`
+returned 30. One command separates "I misspelled a word" from "the checker does not know this word",
+and it is worth running before either silencing a linter or accepting its correction.
+
+### Lesson
+
+- **Before silencing a linter OR obeying it, count the occurrences.** 30 hits is vocabulary; 1 hit
+  is a typo. The decision is measurable, not a judgement call.
+- **When a fix's rationale is already written in the file you are editing, reuse it.** The `mis`
+  entry's comment argued this case a week before I met it.
 
 # Part B — Lessons Ledger (thematic)
 

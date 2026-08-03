@@ -26,6 +26,11 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.50.4 — August 2, 2026
+- **Nothing changed in the bot.** A spellchecking tool kept flagging one of the project's own
+  internal names as a mistake. It now knows the word.
+
+
 ## v2.50.3 — August 2, 2026
 - **Nothing changed in the bot, or on the website.** A planned redesign of the Contributing and
   Contributors pages is on hold, so those pages stay exactly as they are. The ideas from it are

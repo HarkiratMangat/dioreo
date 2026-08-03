@@ -181,7 +181,21 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.50.3 — 2026-08-02 23:01 EDT (#71) — A third home for an idea that was right but early
+## v2.50.4 — 2026-08-02 23:22 EDT (#72) — The spellchecker did not know the codebase's own vocabulary
+
+`cpy` is the copy-control class family in the site generator — `.cpy`, `.cpy-t`,
+`.cpy-s`, and the CSS-drawn `.cpy-g` glyph, **30 occurrences**. `typos` reads it
+as a misspelling of "copy" or "cpu", so any prose naming the class gets flagged.
+
+This is the same problem `mis` was added for, and `_typos.toml` already states the
+reasoning: *"a linter that is usually wrong is one you learn to ignore."* A
+checker that fires on your own vocabulary trains you to scroll past it, and then
+it catches nothing when it is finally right — the identical failure mode the
+bare-date hook was narrowed for in v2.50.2.
+
+Caught while writing a session handoff that happened to name the class.
+
+## v2.50.3 — 2026-08-02 23:01 EDT (#71 · `f74d212`) — A third home for an idea that was right but early
 
 The Contributing/Contributors redesign is **parked**, and the live site is
 untouched — nothing from two sessions of exploration reached the generator,
