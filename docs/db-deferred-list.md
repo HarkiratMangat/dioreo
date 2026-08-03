@@ -52,6 +52,44 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
+  denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
+
+  The future-stamp branch compares **lexicographically with zero tolerance**:
+  `.claude/hooks/timestamp-check.sh:94` does `[ "$d $hm" \> "$now" ] && echo "$d $hm"`, and in `pre`
+  mode that becomes `permissionDecision:"deny"` (line 101). So a write carrying `10:33` while the
+  clock reads `10:32` is rejected as "invented". It is not invented — the clock is read from a hook
+  message at the *start* of a turn and the bytes land a minute or two later, after intervening tool
+  calls, model latency and edit round-trips. Sub-few-minute drift is the normal cost of doing the
+  work, not evidence of fabrication.
+
+  **Fix:** convert both sides to epoch seconds and allow a grace window (~3 min) instead of comparing
+  strings — e.g. `date -j -f '%Y-%m-%d %H:%M'` on macOS — and treat only stamps beyond the window as
+  fabricated. **Keep the check.** It caught a real incident (30 fabricated stamps reached docs, memory,
+  a released CHANGELOG and a git tag on 2026-08-02), and the failure it guards is expensive; the ask is
+  a tolerance, not a removal. ⚠️ A gate that denies on noise is the kind that gets switched off — the
+  file already says exactly this about its own bare-date branch at lines 106–108, which is *why* that
+  branch may never block. The same reasoning applies here and was not carried across.
+  ⚠️ `.claude/hooks/timestamp-check.test.sh` exists and `run-all-tests.sh` enforces coverage, so the
+  fix updates the test in the same change — including a case at the window edge, or the tolerance is
+  untested.
+
+- `[P2 · XS]` **Mobile header: the GitHub mark sits 3.2px past the left edge of its own button and is
+  clipped.** *Found 2026-08-03 11:41 EDT while testing the morph PoC on a phone; measured, not eyeballed.*
+
+  At `≤620px` the site collapses `.ghb` to 38px — a **36px content box** — but its flex line still
+  carries the 30px `.ghb-ic` **plus the collapsed label's 14.4px of padding**, totalling **44.4px**.
+  With `justify-content:center` the 8.4px of overflow splits evenly, so the mark lands at
+  `left: −3.2px` with **11.2px of slack on the right**, and `overflow:hidden` clips it.
+  ⚠️ **The trap is that `.ghb-t b` is `opacity:0`** — that hides the label's ink and keeps its box, so
+  the element looks gone while still taking part in the flex line. The existing comment in that rule
+  warns about a 2px plate/border mismatch causing exactly this symptom, which is a *different* cause
+  fixed earlier; this is a second one with the same signature.
+  **Fix:** `@media (max-width:620px){ .ghb .ghb-t{display:none} }` — the label carries no information
+  at that size (the accessible name is on the link). Verified in the PoC clone: gaps went from
+  `−3.2 / 11.2` to `4 / 4 / 4 / 4`. ⚠️ The clone lifts the site's own rules verbatim, so this is a
+  real site bug, not a PoC artefact — but it has only been fixed in the PoC's own stylesheet so far.
+
 - `[P1 · S]` 🔗 **Two Cloudflare deployments published ZERO files, and the cause is still unexplained.**
   *Filed 2026-07-30 00:35 EDT; narrowed 2026-08-02 00:40 EDT once the rest of its parent item closed —
   see `docs/archive/resolved-list.md`.*
@@ -464,8 +502,308 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   nav.** *Filed 2026-08-01 22:05 EDT, from the same pass.* His words: "I also want to sprinkle our
   fluid morphing animation/system to some other elements in the website so it doesn't feel like a
   standalone design choice. Idk where but if we get an opportunity, let me know." So the deliverable is
-  first a **shortlist of candidate surfaces with a recommendation**, not an implementation. Bundles
-  naturally with the scrollspy item above, which is the most obvious candidate surface.
+  first a **shortlist of candidate surfaces with a recommendation**, not an implementation.
+  ⛔ **THE SCROLLSPY IS RULED OUT AS A MORPH TARGET — Harkirat, 2026-08-02 23:40 EDT:** *"no dont use
+  the morph for the scrollspy, i plan to make you properly dehaul/redesign that scrollspy in the
+  future anyway."* This item used to say it "bundles naturally with the scrollspy item above, which is
+  the most obvious candidate surface"; that is now **false** and the bundle is broken. The scrollspy
+  redesign above stands entirely on its own.
+  ---
+  🔴 **STATUS 2026-08-03 08:29 EDT — THREE DESIGNS BUILT, ALL THREE REJECTED. Read this before
+  proposing a fourth.** Work happened in a PoC artifact that clones the real landing page (built by
+  `local/`-side scratch files, never committed; the repo carries none of it, and `stash@{0}` is a
+  first-draft generator version that is now three designs stale — **drop it, do not pop it**).
+  - **Rejected — 7px travelling bar.** *"the bar and the morph feel like 2 different elements stacked
+    on top of each other instead of 1 build morph."* A sliver has almost no area, so the crush paints
+    it as a hard stick and the droplets beside it read as a separate particle layer.
+  - **Rejected — 40px capsule carrying the row number.** *"arguably worse and a very lazy attempt at
+    utilizing the animation. its not creative at all."* Bar→capsule is the same idea twice: **a blob
+    that translates between slots**, which is what the nav already does. Translation is spoken for.
+  - **Rejected — the row hairline as nine overlapping segments that bead apart and ripple.**
+    *"SOOO unrefined and choppy. the complete opposite of fluid morph."* The IDEA was sound (fission/
+    fusion rather than translation) but the MEDIUM cannot carry it, and that is the reusable finding:
+    it was N rigid rectangles translating on staggered delays with a blur asked to hide that they are
+    rigid. It cannot. Overlapping them fixes the seam at rest and is worse in motion.
+  - ✅ **What DID work and should survive into any next attempt:** the **reveal-toggle fission** (one
+    blob splits into two as the disclosure opens, bridge thinning 9px→0 as the halves reach ±13px,
+    re-merging on close) and the **back-to-top coalescence + click burst**. Both verified in-browser.
+  - 📐 **The rule this settled, now recorded as a case in `reference_goo_metaball_recipe`:** DOM boxes
+    + `#dbgoo` can do **2–4 compact masses merging and parting at short range**; they **cannot** do a
+    body of liquid deforming, a line breaking into a wave, or anything spanning hundreds of px. That
+    needs the isosurface computed per frame — a canvas scalar field or a per-frame SVG path.
+    **Ask which of the two kinds a candidate surface is before designing for it.** All three rejects
+    were the second kind attempted with the first kind's tools.
+  - **Next decision (Harkirat's, not a build task):** accept the medium's ceiling and use the effect
+    only where a few masses merge at close range, **or** move to a canvas metaball field for anything
+    meant to read as actual liquid. Verify any future attempt the way these were: drive the animation
+    from the console and assert the *shape* changes frame to frame (neck width crossing the 4.5px
+    paint floor, per-move re-rolled randomisation), never by eye alone.
+  - 🔬 **A WORKING PoC EXISTS — resume from it, do not restart.** *2026-08-03 09:54 EDT.* Artifact
+    (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
+    It clones the real landing page and layers the effects on. Sources now live in
+    **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full
+    map, build command and per-item diagnosis in **`local/morph-poc-handoff.md`**.
+    ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location
+    a later session can find.** The next session had to hunt through
+    `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is
+    gitignored, so nothing about the repo changes, but the files survive the session that made them.
+    ⚠️ That handoff is in gitignored `local/` and can vanish, so the load-bearing parts are duplicated
+    here rather than referenced.
+    - ✅ **ACCEPTED by Harkirat: the liquid cursor.** It REPLACES the native pointer (`cursor:none`,
+      restored on toggle-off / pointerleave / tab hidden — never on `blur`, which any screen recorder
+      trips). Seven orbiting masses, tight tracking, deforms to an I-beam over prose and a halo over
+      controls, `position:fixed` + client coords so no scroll term can be wrong.
+    - ✅ **RESOLVED 2026-08-03 10:10 EDT — reveal pill invisible when closed.** The goo layer was
+      appended to `<details>`, and a *closed* `<details>` renders no child but `<summary>`. Moved to
+      `.rev`'s parent (`.foot`, `position:relative`), inserted BEFORE `.rev` so tree order keeps the
+      panel painted over it, and all coordinates measured against that host. **Verified by looking at
+      the closed control** — the inline styles had read perfect twice against a blank screen.
+    - ✅ **RESOLVED 2026-08-03 10:30 EDT — but NOT by the fix written here, and the redirect is the
+      lesson.** This said to drop the rect and trace the perimeter with ~32 blobs. That was built, and
+      Harkirat rejected it on sight: *"you're applying the fluid morph to the borders of the
+      rectangular card, when in fact you should scrap the rectangle and make the literal spill its
+      background element, unrestricting its shape."* Correct — **morphing a rectangle's BORDER still
+      leaves a rectangle.** The panel now gives up its background, border and radius entirely and the
+      spill IS its ground: a ring of discs seated on a path inset by the blob radius (the silhouette)
+      plus a spine down the middle (the fill), every mass ordered by straight-line distance from where
+      the spout lands, so the liquid spreads outward from the landing point.
+      Retuned once more after *"too large, too bright, too many bubbly surfaces… smoother, less curves
+      but larger curves, a natural background element rather than a show piece"*: `OUT` 10→4, `RB`
+      22→34, `SPACE` 13→26 (78 masses → 34, larger radii = longer flatter arcs), jitter roughly halved,
+      and the body **soaks** from full accent toward the panel's own `--raised` as it lands. That last
+      part also removed a problem instead of solving it — at full accent the body text had to be
+      knocked out to a luminance-computed near-black; over a quarter-accent wash the site's own ink
+      reads fine.
+    - ✅ **RESOLVED 2026-08-03 10:26 EDT — back-to-top reappearing after a tap, and it was never what
+      two previous fixes assumed.** Both earlier attempts chased a second *birth* (a `settling` flag,
+      then re-arm at `scrollY < 4`). Instrumenting the live control settled it: `on` is **never**
+      re-added after a launch, but computed opacity ran 0.91 → 0.33 → 0.02 between 604ms and 846ms.
+      Removing `on` and `birth` in one statement hands the fade to the `.totop` transition — and
+      `birth` is also what hides `.tt-ring`/`.tt-ar`, so for ~300ms after the liquid flew away the real
+      button chrome popped back and faded out behind it. Fix: drop `on` while `birth` still applies
+      (`.totop.birth` carries `transition:none`, so it goes to 0 instantly), flush with
+      `void tt.offsetWidth`, then drop `birth`. Re-measured: opacity 0 from 604ms onward.
+    - ✅ **ADDED 2026-08-03 10:33 EDT — the liquid cursor tints to the surface under it**, easing back
+      to the page accent on the way out. ⚠️ Only possible because `#dbgoo-p` is an **SVG alpha matrix**
+      that leaves RGB alone; the CSS blur/contrast crush drives every channel to 0 or 1 and would map
+      amber and lime to the same yellow. Surfaces announce themselves three different ways and
+      assuming one left two of them flat — the rows scope `--accent`, the `.inv` cards scope **`--ia`**
+      (`#8B9BFF`, `#F8FF4A`) and leave `--accent` at the page value, and the GitHub button scopes no
+      variable at all (its colour is its own `color`). Resolver runs most-local-first and compares
+      `--accent` against the PAGE value rather than merely reading it. ⚠️ A control's own `color` is
+      **not** always wearable: the back-to-top computes to `rgb(0,0,0)` and turned the swarm black on
+      hover, so a candidate is rejected unless it clears 1.6:1 against the page ground — a contrast
+      test, not a darkness test, so it holds in both themes.
+    - ✅ **ROUND 3, 2026-08-03 11:00 EDT — four more, all verified against a live renderer.**
+      · **Mark**: rests as a soft-cornered RECTANGLE (`26%`) and *breaks away* on hover — its own
+      eight-value `border-radius` is driven per frame, so the silhouette deforms instead of the box
+      being scaled. The old read was exact: *"it literally just feels like it's being stretched out
+      towards the left/right and then pulled back in."* Buds now ORBIT (measured 15.6 × 15.7px of
+      travel, was 4.1 × 0.8 — a slide with a curve on it). ⚠️ The orbit rate has to be its own
+      constant; deriving it from the radius clock gave ~0.86 rad/s and looked static.
+      · **Spill**: 19 masses (from 34, from 78). The wavefront is now ANISOTROPIC (`WX 0.52 / WY
+      1.35`) — a plain radial spread grows a circle from the landing point, which is precisely what a
+      falling drop looks like and was read as *"looks like a droplet than a spill."*
+      · **Close bug**: the soak was computed straight from `t`, so closing drove `t` back under 0.5
+      and the body UN-soaked to full accent while leaving — the *"changes colors to a vibrant orange
+      and gets stuck on screen."* It latches now; the text was also held to `fill 0.12` so body and
+      copy empty out together (measured: masses 0 and textOp 0 both by t=306ms), and the close is
+      300ms not 420ms.
+      · **PoC 05 — the header buttons as liquid**, with the shipped pair beside them to compare. The
+      core keeps the control's box (a button has a label and a hit area, unlike a puddle) and the
+      liquid happens at the EDGE. ⚠️ `computer hover` cannot drive a real CSS `:hover` in this
+      harness, so the capsule's 32→108px expansion is UNCONFIRMED by automation — verified only that
+      the masses animate and the core's radius varies under a dispatched `pointerenter`.
+    - ⚠️ **THE TINT RESOLVER TOOK THREE PASSES AND THE MIDDLE ONE MADE IT WORSE — the reusable bit is
+      why.** Pass 2 dropped a "must differ from body ink" guard to fix the GitHub button flashing
+      white then reverting to orange (`.ghb:hover` resolves to `var(--ink)`, which IS `document.body`'s
+      colour, so the guard accepted the mid-transition values and refused the destination). Dropping it
+      fixed that and immediately turned the swarm near-white over the Terms row and over the reveal's
+      `<summary>`, because **row 01's scoped `--accent` equals the page accent**, so it falls past the
+      accent check into the borrow-the-control's-`color` step. **Judging by COLOUR cannot separate
+      these cases** — the GitHub button's wanted colour and the row's unwanted one are both
+      `--ink`-family. Judging by whether the element paints its own CHIP can: borrow a control's ink
+      only if it has a real border or background. Verified across all eight surfaces at once by
+      calling the resolver directly rather than hit-testing, after two earlier probes failed for
+      positional reasons and not logical ones.
+    - ✅ **ROUND 4, 2026-08-03 11:27 EDT — eight more. Three findings are reusable:**
+      · **A shape smaller than ~4× the blur's σ cannot keep its own geometry — the crush owns the
+      silhouette.** The resting mark would not read as a rectangle at ANY radius, because a 14×6.5 box
+      meets `#dbgoo-r`'s σ=3.2 blur (half its own height) and the alpha crush then thresholds what
+      survives. Nothing about the radius was wrong; it was being destroyed downstream. Fixed by
+      drawing the resting shape as **`.rv-plate`, a plain UNFILTERED element**, which hands over to
+      the filtered mark on wake — which is what "breaks away from the rectangle" actually means.
+      · **A ring of similar masses around a perimeter is a CLOUD, by construction.** Many convex bumps
+      of similar size is what a cloud *is*, and that is exactly how it was read. A body of liquid has
+      long smooth runs and a couple of gentle waists, so the silhouette must come from a FEW large
+      overlapping masses of UNEQUAL size, where most of the boundary is one mass's arc. **Count
+      creates cloudiness; asymmetry creates character.** Ring, end caps and spine are all gone —
+      three masses, no interior fill needed.
+      · **Use ELLIPSES on a wide surface.** Covering a 3.6:1 panel's CORNERS with circles forces a
+      radius so large the body overshot by 40–73px a side (measured). Ellipses matched to the panel's
+      aspect cover the same copy at ~33/31/17/23px. And **derive rx/ry from where the COPY ends, not
+      from the panel box**: two conditions must hold at the copy's top edge, where the ellipses are
+      narrowest — neighbours must still overlap there, and the outermost must still reach the first
+      character. Both are solved for. Verified 0 uncovered points of 546 sampled, repeatedly.
+      · Also: arc-length seating **cannot be trusted to reach a path's extremes** (a flattened path's
+      side segments have zero length, so the extremes survive only as ~4px arcs — 25px of a 553px
+      perimeter — and evenly-spaced masses skipped them, leaving the body 5.6px *inside* the panel's
+      left edge). Superseded by the three-ellipse layout, but the lesson stands for any future path
+      seating. The `slide` is outward-only; the copy is tied to `fill` with **no floor** so the last
+      mass and the last of the text go together; the mark **drains into the body** leaving a 6.5×5.5
+      remnant; open takes 1100ms; mark rates ×0.7; label reads **"Hide"** and "Prefer email?" takes a
+      **strike-through** while open. PoC 05 went 14 small fast masses → 6 large slow ones, because
+      many small masses on independent clocks is *boiling*, not morphing.
+    - 🔴 **ROUND 5, 2026-08-03 11:43 EDT — THE MOBILE PASS, AND IT INVALIDATED THE WHOLE APPROACH FOR
+      THE BODY. Read this before building any further surface.** Every effect had been built on SVG
+      `filter:url()`, and on a phone the reveal showed as *"3 balls orbiting the rectangle"* with the
+      card as *"3 large circles — an even worse cloud"*. Contact sheets off two screen recordings
+      (`ffmpeg select+tile`) show discrete hard-edged circles that never merge.
+      · **This was already written down and I built past it.** Dead end 3 in
+      [[reference_goo_metaball_recipe]]: *"SVG filters read as hard circles on iOS where the CSS chain
+      reads as liquid — never reproduced on desktop Chrome."* CLAUDE.md says the same: desktop uses
+      the SVG alpha crush and mobile uses the CSS crush, **deliberately and separately**.
+      · **AND THERE IS A SECOND, SCALE-DEPENDENT REASON THE UNION APPROACH COULD NEVER WORK HERE.**
+      The alpha crush composites overlapping OPAQUE shapes to alpha 1 *before* the blur, so σ only
+      softens the OUTER boundary. Masses must be small relative to σ to merge at all; at ~100px, σ=3.2
+      is invisible and what you see is the plain geometric union — which is why three ellipses read as
+      three tangent circles with cusps no matter how they were tuned. **The rule to carry forward:
+      metaball merging is a function of mass size ÷ σ, not of spacing.**
+      · **Fix: the body is now ONE `<path>` recomputed every frame** — a superellipse
+      (`|x/A|^n + |y/B|^n = 1`, n≈4, which hugs a 3.6:1 panel where an ellipse overshoots) with three
+      low harmonics riding on it, sampled at 30 points and emitted as closed Catmull-Rom → cubic
+      Béziers. `A`/`B` are **solved** so the copy sits inside the contour at its thinnest, worst-case
+      harmonic dip divided out. No filter, nothing to merge — so the iOS failure and the cusp failure
+      both disappear at once, and it is finally *one large smooth fluid blob*.
+      · **The filtered layers now stand down on touch** (`!fine`): the reveal keeps its crisp plate as
+      the mark, the back-to-top uses the plain control, and the button PoC drops its goo. The
+      progress ring is **clamped** — iOS rubber-banding reports scrollY below 0 and past `docMax`, and
+      the URL bar showing/hiding changes `innerHeight` mid-scroll, which is the "resets the circle
+      outline" report.
+      · ⚠️ **A sibling does not inherit a custom property.** `--rv-body` was being set on the goo
+      layer while the new path lives in a sibling `<svg>`, so the body rendered at full accent instead
+      of its soaked colour. Set it on the shared host.
+      · **Still filtered, so still wrong on iOS:** the mark's buds and the button PoC. They are hidden
+      on touch rather than ported to the CSS crush — porting them needs the bed + blend recipe
+      (opaque backdrop, `lighten`/`multiply`), which is a separate job.
+    - ✅ **ROUND 6, 2026-08-03 11:58 EDT — four fixes, and one of them is a process lesson.**
+      · **"Too smooth / no dynamic element" was the RATES, not the amplitudes.** The harmonics ran at
+      0.33–0.73 rad/s — 9 to 19 SECONDS for one circuit — so in any glance the outline was effectively
+      static (measured: 4.3px of vertex travel over 10 frames). At ~2.4× it is 14.3px/s and 19.5px
+      over 2s, with the four waves beating against each other because no two rates share a factor.
+      · **"Overly large" was the EXPONENT.** Covering a wide panel's corners is what drives overshoot,
+      and the superellipse exponent controls exactly that: at n=4 the contour needed A=198 against a
+      182 half-width; at n≈5 it needs 184. Margins went 41/18/22/29 → 15/12/6/7. **Raising n is free
+      — a squircle still reads smooth.** A second lever: making the harmonics **outward-only** removes
+      the ~13% inflation that existed purely so the smallest moment still cleared the text.
+      · **"The mark doesn't change on mobile" was MY OWN GUARD, and it is the lesson.** I had gated the
+      mark behind `fine` because its filtered buds render as hard circles on iOS. That hid the broken
+      layer *and* every awake state with it — the mark simply stayed a rectangle forever. ⚠️ **Hiding
+      a surface from the platform that cannot render it is not a fix.** The mark is now a computed
+      path like the body, so nothing under `.rev` is filtered and touch gets exactly what desktop
+      gets. `#dbgoo-r` is deleted; do not re-add it.
+      · **Same mistake, same fix, on the back-to-top:** the earlier pass skipped the whole coalescence
+      on a coarse pointer, which quietly removed the particle animation from mobile. Now only the
+      FILTER is dropped there (`.totop.nogoo`), so the droplets still converge — crisp rather than
+      liquid, an honest downgrade, but a real animation that cannot produce the artefact.
+      · **The stuck "gradient circle" was the filter REGION.** `#dbgoo-c` is 260% of a 44px layer —
+      a ~114px disc, which is the size of the thing that was showing. `opacity:0` does not prevent
+      that: the element is still in the paint tree and a filtered one still allocates its region.
+      `.tt-ink` now carries `visibility:hidden` between births. Verified nothing paints for 2.5s after
+      a tap, with the filter off.
+    - ⛔ **THE CSS CRUSH DOES NOT TRANSFER TO THE BACK-TO-TOP — built, measured, reverted
+      2026-08-03 12:03 EDT. Do not re-attempt without reading this.** Two rounds of notes here said
+      "the full fix is the CSS blur/contrast crush with the bed + blend recipe, a separate job". It
+      was built. **The masses merged correctly — the crush is fine — and the black bed rendered as a
+      solid square.** The recipe's precondition is an opaque backdrop with *no isolating ancestor*
+      between the blend group and it; `.totop` is `position:fixed; z-index:55`, so it is its own
+      stacking context and `mix-blend-mode:lighten` composites inside it, against a background that
+      `.birth` sets transparent. Black against nothing stays black. Nor can it be patched by giving
+      the button an opaque background: the bed is inset −90px, far outside a 46px control.
+      **The nav works because it sits ON a bar; a floating control has no surface to sit on.** The
+      recipe memory's "no scroll container between it and that backdrop" was too narrow and has been
+      corrected. Coarse pointers therefore keep the unfiltered droplets — crisp circles converging,
+      an honest downgrade chosen over the iOS artefact and over removing the animation entirely.
+    - 🛑 **THE CARD SURFACE IS ABANDONED — Harkirat, 2026-08-03 12:05 EDT: "just revert it back to the
+      old card style."** Four rounds of rework (perimeter ring → three ellipses → one computed
+      superellipse path) never got it past "bad on mobile", and the spill apparatus is gone with it:
+      body path, resting plate, spout, beads, drain-to-a-remnant, soak colour, wavefront. `.rv-b` is
+      the shipped panel again, untouched. **The findings above are kept because they are platform
+      facts worth having, not because the surface is coming back.**
+      **What survives, and is the thing to port:** the mark's own morph (the filtered core with an
+      eight-value per-frame border-radius plus three orbiting buds — the version he called *"very well
+      done and truly morphing"*), the **Reveal → Hide** label, and the **strike-through** on the
+      question once it is answered. The mark no longer pours: it is a control's indicator, not the
+      source of a liquid.
+      ⚠️ `#dbgoo-r` is BACK — the buds merging is the one thing here that genuinely needs the filter.
+      That re-accepts the iOS hard-circle trade on this surface, knowingly.
+      ⚠️ Back-to-top on touch: **birth dropped, destruction kept.** Narrower than the earlier guard,
+      which skipped both and quietly took the whole effect off mobile.
+    - ✅ **SHIPPED TO THE LIVE SITE 2026-08-03 13:08 EDT — six surfaces, ported out of the PoC into
+      `scripts/buildLegalPages.js` + `scripts/lib/chronicle.js`.** The PoC is now history; the code
+      lives in `MORPH_JS` (four self-selecting modules), `GOO_SVG` (three new filters beside the
+      nav's) and `COMPONENT_CSS`. `local/morph-poc/` is kept only as the record of how it was found.
+      - **What shipped:** the reveal's morphing mark (desktop) with **Reveal → Hide** and the
+        strike-through · the GitHub-button alignment fix · the liquid cursor site-wide · the
+        scroll-linked landing rows **extended to the `.inv` tickets** · back-to-top birth +
+        destruction. The header buttons stayed **as shipped** — PoC 05 was deliberately not ported.
+      - **Every number below was measured against a live renderer, not read off the styles.**
+        Mark morph **3.65** mean shape-change per 0.14s across the eight radii (3.67 predicted, 3.63
+        in the PoC) with the radii spanning 51.9 points awake and collapsing to a flat `50%` asleep ·
+        cursor tint correct on **all seven** surfaces at once, including row 01 whose scoped
+        `--accent` equals the page accent · click burst leaves the tip at **11.02px painted** against
+        a 4.5px floor while trailing masses fall to 1.1px and fly 109px · back-to-top opacity **0 at
+        855ms and never returning** (the bug that survived two fixes) · the GitHub mark now sits
+        **dead centre**, 4px each side, where it used to hang 3.2px outside its own button.
+      - ⚠️ **`.on` ON THE BACK-TO-TOP MOVED OWNERS, and both hosts had to change.** `shell()`'s
+        inline script and `chronicle.js`'s each toggled it from their own scroll handler; a birth
+        animates across ~42 frames, so two writers fought every one of them. `MORPH_JS` owns `.on`,
+        the click and the reduced-motion `fire` fallback now; the hosts keep only the ring's progress
+        and the `--lift` that parks the button above the footer. **If a third template ever grows a
+        `.totop`, it inherits the behaviour by having the button — do not re-add a toggle.**
+      - ⚠️ **The landing page had NO `GOO_SVG` at all** — it is the one template that never carried
+        the filter defs, because it has no nav bar to put an indicator in. It needs them now.
+      - ⚠️ **Verification could not use the visible browser and the reason is worth keeping.** The
+        in-app preview pane AND real Chrome both reported `document.hidden` with **0 rAF frames in
+        2s**, and `screencapture -x` failed with *"could not create image from display"* — the
+        documented tell for a sleeping display. Waking it fixed the desktop passes. The **coarse-
+        pointer and reduced-motion branches cannot be reached by resizing a window** (`fine` is what
+        gates them, not width), so they were driven through **CDP `Emulation.setEmulatedMedia`** on a
+        headless Chromium — real media engine, real frame loop. Scripts kept in the session
+        scratchpad pattern `emulate.ts` + `probe-*.js`; re-create rather than hunt for them.
+      - ⚠️ **No regexes in `MORPH_JS`, deliberately.** It is emitted from inside a template literal,
+        where the generator eats a lone backslash — an escaped paren written in the source reaches
+        the page as a bare paren, turning it into a capture group. That changes a regex's MEANING
+        without changing its syntax, so `scriptSyntaxAudit()` cannot catch it. Colour parsing is
+        hand-scanned instead. (The related backtick-in-a-CSS-comment trap fired twice during this
+        port, exactly as documented; `node --check` caught both.)
+    - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
+      tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
+      extra temporary shards that fly further and evaporate, plus a core implosion that springs back
+      past its resting size.
+    - `[P2 · M]` **Reduce-motion toggle**, explicitly queued by Harkirat for after the above: turns the
+      morph off site-wide, reverts the homepage rows to their original bar/hue with no animation, and
+      switches the nav to plain pills.
+  - ⚠️ **HOW TO VERIFY ANIMATION AT ALL — this cost most of a session.** Chrome pauses its render loop
+    when the window is backgrounded: `requestAnimationFrame` never fires, CSS transitions never
+    advance, `document.timeline.currentTime` stays 0. Reading computed/inline styles then "passes"
+    while the screen shows nothing. **Run `open -a "Google Chrome"` first, then assert rAF is alive
+    before trusting any visual check.**
+    ⚠️ **A SLEEPING DISPLAY PRESENTS IDENTICALLY — 2026-08-03 10:05 EDT, several turns lost.**
+    `document.hidden` was `true` and rAF dead while AppleScript correctly reported Chrome frontmost
+    with the right tab active, so "front the window" looked done and wasn't. **The tell is that
+    `screencapture -x` fails with *"could not create image from display"*.** Wake the display, then
+    re-assert. Assert with TWO consecutive rAF timestamps, not one callback — a single frame can fire
+    once without the loop advancing.
+    ⚠️ **And instrumenting the page beat recording it.** Reading numbers across frames from inside the
+    page — blob count, radii, neighbour gaps, computed opacity per frame — found every defect this
+    session: a radius under the paint floor, the back-to-top fade misdiagnosed twice as a re-birth,
+    and a hit test silently returning `null` because the target was off-screen. Screenshots then
+    confirmed the look. One caution learned the same day: a failing *probe* is not a failing
+    *feature* — the GitHub button was reported as "not tinting" when in fact the pointer could never
+    be over it. For motion, take a screen recording and read consecutive
+    frames (`ffmpeg -vf "select=...,tile=NxM"` into a contact sheet) — that method found every real
+    defect here; eyeballing and style-reading found none.
   ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
   SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately
   (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a

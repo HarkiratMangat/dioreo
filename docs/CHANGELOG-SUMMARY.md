@@ -26,6 +26,20 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.51.0 — August 3, 2026
+
+The site's nav indicator now stirs two colours together. Point at a tab and the
+pill picks up your cursor's colour — the page's own accent — and mixes it into
+that tab's, in a slow field that keeps moving while you hover.
+
+- The landing page has its own coral accent instead of borrowing the Terms page's.
+- The pointer becomes a proper text cursor over writing, and only over writing —
+  it used to go thin anywhere inside a paragraph's box, including the empty space
+  past the end of a line.
+- Hovering a control now shows a small label saying what it does, on 57 of them.
+- The dark blob the pointer makes over the Install button now happens in dark mode
+  too, not just light.
+
 ## v2.50.4 — August 2, 2026
 - **Nothing changed in the bot.** A spellchecking tool kept flagging one of the project's own
   internal names as a mistake. It now knows the word.

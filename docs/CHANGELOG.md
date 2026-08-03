@@ -181,7 +181,87 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.50.4 — 2026-08-02 23:22 EDT (#72) — The spellchecker did not know the codebase's own vocabulary
+## v2.51.0 — 2026-08-03 17:04 EDT (#73) — Two colours meeting inside a pill, and a cursor you can aim
+
+The fluid morph left the proof-of-concept and reached the live site, and then
+four rounds of tuning turned it into something usable. Every round started the
+same way: Harkirat said what he could see, the claim was measured against a live
+renderer, and the measurement disagreed with the code more often than it agreed.
+
+**The morph, on six surfaces.** One constant, `MORPH_JS`, emitted on every
+template, holding modules that select themselves out of the DOM rather than
+being switched on per page — a module whose element is absent returns after one
+`querySelector`. The reveal's morphing mark (desktop only; it rests as an
+unfiltered pill on a plate and hands over to the filtered morph on wake), the
+GitHub button's alignment, the liquid cursor site-wide, the scroll-linked
+landing rows extended to the `.inv` tickets, and the back-to-top's birth and
+destruction.
+
+**A contained mesh inside the nav pill.** Five blobs on the morph's own
+`0.85 + c*0.21` rhythm, mixing the cursor's colour — the page accent, which it
+keeps everywhere — into the hovered tab's. Each piece mixes against *its own*
+fill, so mid-move the tail stirs the colour you are leaving and the head the one
+you are arriving at, and the stadium border-box clips the field for free.
+
+**The landing page got its own accent.** It wore `BRAND.amber` — the identical
+value to Terms — so the index and the first instrument in the series were the
+same colour. Its coral is placed at 11°, which is forced: the arc between
+crimson and amber is 34° wide, so that is the midpoint and the best separation
+available, 17° each way. Under the line the six tab hues are held to,
+deliberately, because this hue is never a tab.
+
+**A caret you can aim.** The liquid cursor's text mode is now a stack of masses
+merged by the filter, ordered centre-out, sized to the line box under the
+pointer. It rasterises at 6.4 × 22.5px on a 23px line with a lean of 0.02, and
+keeps 75% of its body through a click, where it used to disappear entirely.
+
+**A hint on 57 controls**, replacing the single native `title=` the site had.
+
+### The findings, because most of them contradicted the obvious answer
+
+- **`mix-blend-mode` does nothing on `.cur-ink`.** The property applies —
+  computed style reads back `screen` — and the render does not change: over the
+  violet pill the swarm core stayed `rgb(212,78,99)` where a working screen
+  gives `rgb(237,146,236)`, the signature of blending against black. Not the
+  filter, the opacity, the nesting or the transform; hand-built probes carrying
+  each of those, and all at once, blended correctly against the same pill in the
+  same frame. **The swarm's alpha is what lets the pill through.**
+- **Screened gradient layers pile into a near-white core**, which defeats the
+  point when what should be visible is two *accents* mixing. Plain alpha caps
+  the field at the mixture itself.
+- **Thinner also means shorter.** A Gaussian erodes a curve in proportion to its
+  curvature, so squashing the cursor thin and tall rasterised as a short lozenge
+  about an x-height long. Hence the stack — it cannot be eroded from an end,
+  because there is another mass there.
+- **A `position:fixed` element centred by `left` + `translate(-50%)` is
+  shrink-wrapped by the space remaining to the viewport edge** before the
+  transform moves it. The back-to-top hint came out 56px wide and 4.2 lines
+  tall, overlapping the button.
+- **`contrastAudit()` checks the token matrix, not individual rules.** It reads
+  `--name: #hex` declarations only, so a component painting its own
+  `color-mix()` surface is invisible to it and a green build says nothing about
+  it. The hint's contrast was worked out by hand: 12.4:1 dark, 10.1:1 light.
+- **The dark blob over the Install button was never a light-mode flourish.**
+  `.ins` is `color:#141021` on `background:var(--accent)` in both themes; the
+  legibility test compared that ink against the *page* ground, which passed on
+  light paper and failed at 1.16:1 on the dark page. It judges against the
+  chip's own fill now, so the behaviour is the same in both.
+
+### Also
+
+`.tipx` had no background at all on six of the nine pages: it was painted with
+`var(--card)`, a token only `chronicle.js` declares. The privacy policy's
+storage disclosure was corrected in the same pass — see below.
+
+**Privacy policy → v1.6.** §2.6 and Appendix A now list the Site's second
+browser-storage item, `db-booted`, a session-storage flag set on the three
+record pages so their opening animation plays once per browsing session. It has
+been written since those pages launched while the policy said `db-theme` was the
+only key: the verification note had searched the *generator*, and the flag is
+written by `scripts/lib/chronicle.js`. The note searches the *built pages* now.
+No change to what is collected, why, who receives it, or how long it is kept.
+
+## v2.50.4 — 2026-08-02 23:22 EDT (#72 · `300c274`) — The spellchecker did not know the codebase's own vocabulary
 
 `cpy` is the copy-control class family in the site generator — `.cpy`, `.cpy-t`,
 `.cpy-s`, and the CSS-drawn `.cpy-g` glyph, **30 occurrences**. `typos` reads it

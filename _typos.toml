@@ -10,6 +10,12 @@ unparseable = "unparseable"
 # checker is right about English and wrong about this repo, and a linter that is wrong about your
 # own vocabulary is one you stop reading.
 cpy = "cpy"
+# `ba` is the liquid cursor's per-mass BURST ANGLE in MORPH_JS (paired with `bd`, the burst
+# distance) — a local in a per-frame loop, where two-letter names keep the transform expression
+# readable across a line. typos reads it as "by"/"be". Added 2026-08-03 12:56 EDT during the morph
+# port. Same reasoning as `mis` and `cpy` above: the checker is right about English and wrong about
+# this repo's code vocabulary.
+ba = "ba"
 
 # Hook self-tests carry DELIBERATE misspellings as fixtures — typos-check.test.sh has to feed the
 # checker a real typo to prove it still fires. Without this exclusion the spellchecker reports the

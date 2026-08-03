@@ -83,6 +83,7 @@
 const CHROME_KEYS = [
     'esc', 'parseBlocks', 'linkifyRefs', 'slug',
     'TOKENS', 'COMPONENT_CSS', 'SWITCHER_CSS', 'THEME_BOOT', 'THEME_JS', 'NAV_JS', 'GOO_SVG',
+    'MORPH_JS',
     'wordmark', 'repoBtn', 'installBtn', 'themeBtn', 'navSwitcher', 'mobileNav', 'pageFoot',
 ];
 
@@ -932,7 +933,7 @@ ${C.mobileNav(cur, railSlots)}
   ${C.pageFoot(cur)}
 </div>
 
-<button class="totop" id="totop" aria-label="Back to top">
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -1063,10 +1064,16 @@ ${C.mobileNav(cur, railSlots)}
   var queued=false;
   function paint(){
     var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
-    var frac=max>0?h.scrollTop/max:0;
+    /* ⚠️ CLAMPED — iOS rubber-band scrolling reports scrollTop below 0 and past
+       max, and a mobile URL bar showing or hiding changes clientHeight, and so
+       max, mid-scroll. Unclamped, the progress bar and the ring jump and re-draw
+       whenever the page is overscrolled past either end. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
     if(prog) prog.style.width=(frac*100)+'%';
     if(top){
-      top.classList.toggle('on', h.scrollTop>h.clientHeight*0.6);
+      /* ⚠️ .on IS OWNED BY MORPH_JS NOW — its back-to-top module animates a birth
+         across many frames, and a second handler toggling the same class from a
+         scroll position would fight it every frame. Progress stays here. */
       if(ttBar) ttBar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
     }
     var cur=-1;
@@ -1112,20 +1119,15 @@ ${C.mobileNav(cur, railSlots)}
     }
     queued=false;
   }
-  if(top){
-    top.addEventListener('click',function(){
-      top.classList.remove('fire');
-      void top.offsetWidth;
-      top.classList.add('fire');
-      scrollTo({top:0,behavior:reduce?'auto':'smooth'});
-    });
-    top.addEventListener('animationend',function(){ top.classList.remove('fire'); });
-  }
+  /* The click handler moved to MORPH_JS along with .on — pressing the button
+     starts a destruction animation, and the arrow's fire keyframes are the
+     reduced-motion path for it rather than a separate effect. One place. */
   addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
   addEventListener('resize',paint); paint();
 })();
 ${C.THEME_JS}
 ${C.NAV_JS}
+${C.MORPH_JS}
 </script>
 </body>
 </html>`;

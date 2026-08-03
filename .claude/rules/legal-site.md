@@ -127,10 +127,19 @@ it directly with an empty build command, so nothing has to run on their side.
   ⚠️ **A scripted `mouseenter` CANNOT reproduce it** — a dispatched event does not create a `:hover`
   state, so every measurement of the hovered tab read the correct colour while the screen showed the
   wrong one. Verify hover states by moving the real cursor and asserting `el.matches(':hover')` first.
-  ⚠️ **`.tab.on` is NOT painted in its own accent either** — `--rest` was `var(--accent-t)`, so the
-  current tab's label and its pill were the same colour, and every partial-coverage frame mixed toward
-  the pill's own hue. It is `var(--ink)` now: dark on the pill, bright off it, nothing in between that
-  can vanish. Crossover band tightened to 0.30/0.58 so the mid-mix lasts ~6 frames, not half the move.
+  ⚠️ **`.tab.on`'s `--rest` IS `var(--accent-t)` — this line said `var(--ink)` and was wrong**
+  (corrected 2026-08-03 14:53 EDT). The code has read `.tab.on{--rest:var(--accent-t)}` throughout, and
+  the built page shows it: with the pill on Notice, the current page's own tab is still accent-tinted.
+  So the current tab's label off the pill is the accent (`--accent-t` is the raw accent in dark and a
+  38%-accent/`#120E1C` mix in light), and only `--cov` carries it to near-black as the pill arrives.
+  Two prose numbers here had gone stale against the code at once — the exact rot
+  `feedback_no_duplicated_state_in_prose` describes. **Read `paint()`, not this paragraph.**
+  ⚠️ **The crossover band is SYMMETRIC — `band(0.28,0.72,cov)`, centred on 0.5**, and the only reason
+  it is written down at all is that the superseded value is easy to "restore" by mistake. The earlier
+  **0.30/0.58** was biased early to compensate for `cov` measuring the tab's PADDING box; once `cov`
+  was changed to measure the LABEL, `cov` 0.5 means half the glyphs are on the pill, and the bias
+  became a distortion. Width 0.44 is deliberate — the label spends about a fifth of the move in the
+  mid tone. **Do not re-tighten it toward the old numbers without re-deriving what `cov` measures.**
 - ⚠️ **The desktop pill is ASSEMBLED on page load, and that is not a second animation system.**
   `birth()` is just a move whose source has no width: set `srcX = dstX` and `srcW = 0` and every line
   of `paint()` already does the right thing — the tail is skipped, the neck collapses, and the head
@@ -185,6 +194,95 @@ it directly with an empty build command, so nothing has to run on their side.
   is NOT a scroller (a scroll container composites its contents and drops the blend, leaving a black
   rectangle). Making the desktop header opaque to match would destroy the frosted bar; that trade was
   considered and refused.
+- ⚠️ **THE MORPH IS NO LONGER ONLY THE NAV — `MORPH_JS` carries four more surfaces** (shipped
+  2026-08-03 13:09 EDT, v2.51.0, out of the PoC in `local/morph-poc/`). One constant, emitted on **every**
+  template, containing four modules that **select themselves out of the DOM** rather than being
+  switched on per page: the reveal's morphing mark and the scroll-linked landing rows exist only on
+  the landing page, the back-to-top only where that button is, and the liquid cursor everywhere.
+  A module whose element is absent returns after one `querySelector`. `GOO_SVG` gained `#dbgoo-r`,
+  `#dbgoo-c` and `#dbgoo-p` beside the nav's `#dbgoo` — same alpha-crush matrix, different blur and
+  **region**, and a region is a percentage of the FILTERED ELEMENT's box, so it is never portable
+  between surfaces.
+  - ⚠️ **`MORPH_JS` OWNS `.on` ON THE BACK-TO-TOP. Both host scripts had to give it up.** `shell()`'s
+    inline script and `chronicle.js`'s each toggled that class from their own scroll handler, and a
+    birth animates across ~42 frames — two writers fought every one. The hosts keep the ring's
+    progress and the `--lift` that parks the button above the footer; state, click, and the
+    reduced-motion `fire` fallback all live in the module. **A new template that grows a `.totop`
+    inherits the behaviour by having the button — do not re-add a toggle.**
+  - ⚠️ **`prefers-reduced-motion` builds NOTHING liquid.** No cursor layer, no `html.liq`, no
+    `.tt-ink` — a reduced-motion reader gets the site exactly as it shipped. That matters more than
+    usual here because the cursor sets `cursor:none !important` site-wide; a hidden pointer with
+    nothing drawn in its place is the worst failure this could have, which is also why `html.liq` is
+    not applied until the first `pointermove` has actually seeded the swarm.
+  - ⚠️ **NO REGEXES IN `MORPH_JS`.** It is emitted from inside a template literal, so the generator
+    eats a lone backslash: an escaped paren written in the source reaches the page as a bare paren
+    and becomes a capture group. That changes a regex's MEANING without changing its SYNTAX, so
+    `scriptSyntaxAudit()` — which only parses — cannot catch it. Colour parsing is hand-scanned.
+  - ⚠️ **The mark is desktop-only and that is the design, not a gap.** The buds merging need the SVG
+    crush, which iOS renders as hard circles; touch keeps the original `.rv-i` sliding fill, which is
+    a complete treatment rather than a degraded one. The **label swap and the strike-through run on
+    every pointer type** — they are information, not decoration. The back-to-top drops only its
+    FILTER on touch (`.totop.nogoo`) and only its BIRTH, never the whole animation: hiding a surface
+    from a platform that cannot render it is what once took the effect off mobile entirely.
+  - ⛔ **Do not try the CSS blur/contrast crush on the back-to-top.** Built and measured
+    2026-08-03 12:03 EDT: the masses merged and the bed rendered as a solid square, because `.totop` is
+    `position:fixed; z-index:55` — its own stacking context, so `lighten` composites inside it.
+    The nav works because it sits ON a bar. Full record in `reference_goo_metaball_recipe`.
+  - ⚠️ **Module 5 is the nav pill's CONTAINED MESH** (added 2026-08-03 15:59 EDT). A field of five
+    blobs inside `.ib-a`/`.ib-b`, on the same `0.85 + c*0.21` rhythm as every other morph, carrying
+    the mixture of the liquid cursor's colour (the page accent, which it keeps everywhere) and the
+    hovered tab's. Each piece mixes against **its own** inline fill, so mid-move the tail stirs the
+    colour you are leaving and the head the one you are arriving at. The stadium border-box clips it
+    for free — nothing masks it. Three findings that cost real time and must not be re-derived:
+    - ⛔ **`mix-blend-mode` on `.cur-ink` DOES NOTHING — do not try it again without measuring the
+      painted pixel.** The property applies (computed style reads `screen`) and the render is
+      unchanged: over the violet pill the swarm core stayed `rgb(212,78,99)` where a working screen
+      gives `rgb(237,146,236)` — blending against black, not against the pill. Not the filter, the
+      opacity, the nesting or the transform; hand-built probes carrying each, and all at once,
+      blended correctly against the same pill in the same frame.
+    - ⚠️ **The swarm's ALPHA is half the effect.** `.cur-ink` paints solid `currentColor` at
+      z-index 60, so over the pill it is an opaque blob ON TOP of the mesh — the first working
+      version was invisible for exactly that reason while every measurement said it was fine.
+      Module 5 drops that layer to `0.42` while over the bar and clears it on the way out; it writes
+      **only** opacity there, module 2 keeps colour and transform.
+    - ⚠️ **Layers composite with plain alpha, NOT `background-blend-mode:screen`.** Five screened
+      layers pile into a near-white core, and white defeats the whole point — two ACCENTS are
+      mixing. Under plain alpha the field's ceiling is the mixture itself.
+    - Label contrast is **safer** than the flat pill and was checked, not assumed: worst case across
+      all nine accents as page × all nine as tab is **6.25:1**, where the flat pills bottom out at
+      **5.07:1**. Luminance is monotonic along a linear RGB segment, so the composite is bounded by
+      its endpoints. Re-run it if the mix, the lift or an accent moves.
+  - ⚠️ **`accentOf()` judges a borrowed ink against the CHIP'S OWN FILL, not the page ground**
+    (changed 2026-08-03 15:57 EDT). `.ins` is `color:#141021` on `background:var(--accent)` in both
+    themes; against the page ground that near-black passed on light paper and failed at 1.16:1 on
+    the dark page, so the dark blob over the Install button was a light-mode-only accident. It is
+    the seat the swarm sits on that decides. **The back-to-top is unaffected and it is NOT because
+    of this test** — its background computes to `color(srgb …)`, which `parseCol()` does not read,
+    so it never counts as a chip at all. The same is true of any `color-mix()` background. Teaching
+    `parseCol()` that syntax would hand those controls' ink to the swarm for the first time.
+  - ⚠️ **The text caret is a STACK OF MERGED MASSES, not a squashed cluster**
+    (rebuilt 2026-08-03 16:59 EDT). Squashing the swarm thin and tall rasterises as a short lozenge
+    about an x-height long — a Gaussian erodes a curve in proportion to its curvature and the alpha
+    crush thresholds the ends away, so **thinner also means shorter**. The masses are spread along Y
+    instead and merged by the filter, which cannot erode an end because another mass is there. Four
+    constraints, each measured, each of which broke it when guessed:
+    - **The stack is ordered centre-out (0, +1, −1, +2, −2 …), not by index.** By index, mass 0 —
+      lag 0, the fastest — sits at the top and mass 6 — lag 1.10 — at the bottom, so the bar hangs
+      from its top edge with the bottom dragging. Centre-out puts the fastest mass in the middle.
+    - **Follow rates are equalised in text mode too** (`k` → 0.46). Symmetry alone still let the
+      outer masses arrive late and the bar flexed like a whip.
+    - **The mass radius is set by the PAINT FLOOR (~4.5px painted), not by their mean.** At the mean
+      of 3.79 they paint 3.5px wide and the crush eats the whole stack.
+    - **Its length is the line box under the pointer**, read from the caret rect `onGlyphs()` already
+      computes, so it matches the text it sits in.
+    Rasterised at rest: **6.4 × 22.5px on a 23px line, lean 0.02**. It keeps **75%** of its body
+    through a click, because the burst's travel, opacity *and* scale are all damped in text mode —
+    the scale term was missed first time and it was the one actually erasing the caret.
+  - ⚠️ **Verifying it needs a LIVE renderer, and two things impersonate one.** A sleeping display and
+    a backgrounded tab both present as `document.hidden` with rAF dead; the tell for the display is
+    `screencapture -x` failing with *"could not create image from display"*. And the **coarse-pointer
+    and reduced-motion branches cannot be reached by resizing a window** — `fine` gates them, not
+    width — so they need CDP `Emulation.setEmulatedMedia` against a headless Chromium.
 - ⚠️ **THE DESKTOP INDICATOR'S GEOMETRY IS MEASURED, NOT DERIVED — don't "simplify" its constants.**
   The goo filter dilates every edge it paints, so attaching it at the start of a move and dropping it
   at the end steps the pill's size. Four fixes failed before one worked (2026-08-01 21:40 EDT), and the
@@ -240,11 +338,17 @@ it directly with an empty build command, so nothing has to run on their side.
 - ⚠️ **Each chronicle voice carries TWO signal values, and `sigLight` is not optional.** The terminal
   signals are tuned for a near-black console and are close to invisible on the daylight variant —
   measured 1.50 / 1.16 / 1.47 against a 4.5:1 minimum, covering the version numerals, the dates and the
-  operator line. `--ink3` failed in *both* themes too. **`contrastAudit()` re-measures every
-  text/background pair from the BUILT CSS on every run**, in both themes, against `--desk` *and*
-  `--card`. Tune a colour against the **harder** background of its theme: dark theme's `--card` is
-  *lighter* than its `--desk`, so a value tuned only against `--desk` still fails on cards — which is
-  exactly what happened.
+  operator line. `--ink3` failed in *both* themes too. **`contrastAudit()` re-measures the TOKEN
+  MATRIX from the BUILT CSS on every run** — `--sig`/`--ink`/`--ink2`/`--ink3` against `--desk` *and*
+  `--card`, in both themes. Tune a colour against the **harder** background of its theme: dark
+  theme's `--card` is *lighter* than its `--desk`, so a value tuned only against `--desk` still fails
+  on cards — which is exactly what happened.
+  ⚠️ **It does NOT check individual rules, and this line used to claim it checked "every
+  text/background pair", which is how a green gate gets read as cover it does not give** (corrected
+  2026-08-03 16:37 EDT). It reads `--name: #hex` declarations only: a rule that paints its own
+  surface — `.tipx` mixes one out of `--ink` and `--desk` — is invisible to it, and so is any
+  `color-mix()`, `rgb()` or `color()` value. **A new component that sets its own background must have
+  its contrast worked out by hand; the build passing is not evidence about it.**
   ⚠️ **That gate shipped BLIND on its first version and passed 63 pairs while the signals were still at
   1.47:1.** It matched only the *first* `:root{}` block, which is the legal `TOKENS` — `--sig` is
   declared in a later block and was never read. It merges every matching block in document order now.

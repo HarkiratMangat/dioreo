@@ -313,7 +313,27 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      install link, and the word is what says so. The repo button stays a circle
      because it is secondary and its mark is self-explanatory. */
   
-  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}
+  .ghb{width:38px;height:38px;flex:0 0 38px;padding:0;justify-content:center}/* ⚠️ THE MARK WAS SITTING 3.2px OUTSIDE ITS OWN BUTTON HERE, and the cause is
+     that opacity:0 hides INK and KEEPS THE BOX. Measured: the collapsed control
+     is 38px with a 36px content box, but its flex line still carries the 30px
+     icon plate PLUS the label's 14.4px of padding-right = 44.4px. With
+     justify-content:center the 8.4px of overflow splits evenly, so the GitHub
+     glyph is pushed 3.2px past the left edge with 11.2px of slack on the right,
+     and the button's own overflow:hidden clips it. The <b> being opacity:0 is
+     exactly what made this invisible to a style read — the label looked absent
+     and was still occupying the line.
+     Taking the label OUT of the line is the fix rather than trimming its
+     padding, because at this width it can never be revealed: .ghb only shows it
+     by growing to 108px on hover, and there is no hover here. It also costs no
+     accessibility — the label is not the accessible name. With .ghb-t removed
+     from the tree the name falls back to the link's own title ("View the source
+     on GitHub"), which is more informative than the word "Source" it replaces. */
+  
+  .ghb .ghb-t{display:none}/* And the capsule must not open to 108px around a label that is not there.
+     This matters on a narrow DESKTOP window, which is the one place a fine
+     pointer and this breakpoint coexist. */.ghb:focus-visible{width:38px}@media (hover:hover) and (pointer:fine){
+  
+  .ghb:hover{width:38px}}
   .ins{height:38px;width:auto;flex:0 0 auto;padding:0 .82rem;gap:.4rem;
     justify-content:center}
   .ins-t{display:inline-flex;font-size:.6rem;letter-spacing:.11em}
@@ -534,7 +554,76 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .rv-b span{color:var(--ink3);line-height:1.7;letter-spacing:.03em;max-width:52ch}
 @keyframes uncover{from{opacity:0;clip-path:inset(0 0 100% 0)}
   to{opacity:1;clip-path:inset(0 0 0 0)}}
-@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}/* ── the shared page footer ───────────────────────────────────────────
+@media (prefers-reduced-motion:reduce){.rv-b{animation:none}}/* ── the reveal's mark, as liquid ──────────────────────────────────────
+   DESKTOP ONLY, BY DESIGN — the class .rv-anim is added from script and only on
+   a fine pointer, so a phone keeps the original sliding fill above untouched.
+   This is not a gap waiting to be filled: the buds MERGING with the core is the
+   one thing here that genuinely needs the SVG filter, and an SVG filter renders
+   a swarm as hard circles on iOS. That trade is taken knowingly on this surface.
+   Do not "fix" it by tuning the filter, and do not hide the surface from touch
+   instead — an earlier pass gated the whole mark behind the fine-pointer test and
+   the result was a mark that simply never changed on a phone.
+
+   ⚠️ THE LAYER HANGS OFF .foot, NOT OFF THE <details>. A closed <details> renders
+   none of its children but <summary>, so a layer parented to it does not exist
+   while the control is shut — which is why the mark was once invisible at rest
+   while its inline styles read perfect the whole time.
+
+   ⚠️ AND IT IS var(--accent), NOT currentColor. currentColor here resolves to the
+   summary's --ink3/--ink ramp, which is how it once came out white. */
+
+
+.rv-host{position:relative}/* Load-bearing, not cosmetic: the goo sits BEFORE .rev in tree order, and two
+   positioned siblings at z-index auto/0 paint in tree order. Make .rev static and
+   it drops to the background step, putting the liquid over the panel. */
+
+.rev{position:relative}
+.rev.rv-anim summary{position:relative}/* the original slot hands over to the morph rather than the two coexisting */
+
+.rev.rv-anim .rv-i{border-color:transparent}
+.rev.rv-anim .rv-i::after{opacity:0}
+.rv-goo{position:absolute;left:0;top:0;pointer-events:none;z-index:0;
+  filter:url(#dbgoo-r)}/* ⚠️ THE RESTING PILL IS AN UNFILTERED ELEMENT, AND IT HAS TO BE — MEASURED.
+   A shape smaller than roughly 4x the blur's sigma cannot keep its own geometry,
+   because the crush thresholds what survives and the outer boundary is all the
+   blur ever softens. This mark is 14x6.5 against #dbgoo-r's sigma 3.2 — half its
+   own height — so the filter owns the silhouette whatever radius is asked for.
+   Rasterised at 12x and measured by the run of columns at full height (a stadium
+   has straight flanks, an ellipse reaches full height only at its centre):
+
+       rest shape        flat run, filter OFF    flat run, THROUGH the filter
+       pill (999px)              70.2%                      36.4%
+       ellipse (50%)             34.5%                      32.4%
+
+   So filtering collapses a 36-point distinction to 4: a pill and an oval come out
+   the same shape. The plate draws the rest state crisply and hands over to the
+   filtered mark as it wakes, which is what "breaking away" actually is. This is
+   the same mechanism a resting RECTANGLE needed before the card was abandoned —
+   the rectangle went with it, the mechanism is sound and comes back for the pill.
+   ⚠️ It must stay OUTSIDE .rv-goo. Inside, it would be filtered too and there
+   would be nothing crisp left to hand over. */
+
+.rv-plate{position:absolute;left:0;top:0;pointer-events:none;z-index:0;
+  background:var(--accent);border-radius:999px;
+  will-change:transform,opacity}/* ⚠️ NO border-radius HERE — it is written per frame as an eight-value string, and
+   that is what makes the OUTLINE deform rather than a fixed shape being scaled.
+   A fixed radius on this rule would flatten the whole effect. */
+
+.rv-m{position:absolute;left:0;top:0;background:var(--accent);
+  will-change:transform,width,height,border-radius}/* the masses that bud off the core while it is awake and re-merge with it */
+
+.rv-bud{position:absolute;left:0;top:0;width:12px;height:12px;border-radius:50%;
+  background:var(--accent);transform:scale(0);will-change:transform}/* Once the address is on screen the question has been answered, so leaving
+   "Prefer email?" standing reads as though it were still being asked. Struck
+   through, it is a record of a question already dealt with — which is also what
+   the control's own label now says, since it reads "Hide" while open. A muted
+   rule: this is a state, not emphasis. */
+
+.rev[open] .rv-q{text-decoration:line-through;
+  text-decoration-color:color-mix(in srgb,currentColor 55%,transparent)}/* the label rides above the liquid, so it never needs a second copy */
+
+.rev.rv-anim .rv-a,.rev.rv-anim .rv-q{position:relative;z-index:1}
+.rev.rv-anim .rv-b{position:relative;z-index:1}/* ── the shared page footer ───────────────────────────────────────────
    One definition for all three templates. It used to be three, which is how the
    legal pages ended up with a plainer footer than the warm ones for no reason
    anybody chose.
@@ -683,10 +772,166 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   .totop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
   .totop.fire .tt-ar{animation:none}
-}
+}/* ── back to top, coalescing ───────────────────────────────────────────
+   The control assembles from droplets falling inward when it first arrives, and
+   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
+   and .totop.on: they are all (0,2,0), so source order is what decides, and
+   .totop.birth has to win over both while the liquid is on screen.
+
+   ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
+   filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
+   and that disc is exactly the size of the "gradient circle stuck behind the
+   button" this was reported as. visibility:hidden takes it out of the paint tree
+   between births, so there is nothing left to leak on any platform.
+
+   ⚠️ COARSE POINTERS DROP THE FILTER, NOT THE ANIMATION (.nogoo). An earlier pass
+   skipped the whole effect on touch, which quietly removed the animation from
+   mobile; the artefact was the SVG filter misbehaving on iOS, not the droplets.
+   Unfiltered they converge as crisp circles instead of coalescing as liquid — an
+   honest downgrade, and it cannot produce the artefact.
+   ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
+   measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
+   black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
+   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
+   background .birth has just made transparent. Black against nothing stays black.
+   Giving the button an opaque background does not help either: the bed is inset
+   -90px, far outside a 46px control. The nav can use that recipe because it sits
+   ON a bar; a floating control has no surface to sit on. Do not re-attempt it. */
+
+
+.tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
+  opacity:0;visibility:hidden}
+.totop.birth .tt-ink{opacity:1;visibility:visible}
+.tt-goo{position:absolute;inset:0}
+.totop.birth .tt-goo{filter:url(#dbgoo-c)}
+.totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
+   what lets the launch drop opacity to 0 instantly at the end — handing that fade
+   to .totop's own transition is what made the button appear to come back after a
+   tap, because .birth is also what hides the ring and the arrow. */
+
+.totop.birth{background:transparent;border-color:transparent;transition:none}
+.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
+  margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
+  transform:scale(0);will-change:transform}
+.tt-d{position:absolute;left:50%;top:50%;width:12px;height:12px;
+  margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);
+  opacity:0;will-change:transform}/* ── the liquid cursor ─────────────────────────────────────────────────
+   It REPLACES the pointer rather than following it. An earlier version left the
+   native arrow on screen and trailed a blob behind it, which read as exactly what
+   it was: two things, one chasing the other.
+
+   ⚠️ THE NATIVE ARROW IS HIDDEN ONLY WHILE THE EFFECT IS LIVE, and html.liq is
+   removed the instant it is not — on pointerleave, on visibilitychange, and under
+   reduced motion, where the layer never exists at all. A hidden cursor with
+   nothing drawn in its place is the worst failure this could have, so the class is
+   also not applied until the first pointermove has actually seeded the swarm.
+   !important because the site sets cursor:pointer on its own controls at a
+   specificity a bare html rule cannot beat, and a control still showing an arrow
+   breaks the illusion at exactly the moment the cursor is saying something.
+
+   ⚠️ NO :hover COLOUR RULE MAY EVER BE ADDED FOR THIS. The swarm is retinted per
+   frame from the surface under the pointer, written inline; a (0,2,0) hover
+   selector would beat a per-frame inline value outright. That trap already cost
+   four reports on the nav. */
+
+
+html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belongs to the viewport, which removes every
+   scroll-compensation term at the source rather than correcting for it */
+
+.cur-ink{position:fixed;left:0;top:0;width:220px;height:220px;
+  pointer-events:none;z-index:60;opacity:0;
+  transition:opacity .22s ease;filter:url(#dbgoo-p)}
+.cur-ink.on{opacity:.82}/* quieter over prose, where it sits on top of what is actually being read */
+
+.cur-ink.on.soft{opacity:.72}/* currentColor, not var(--accent): the swarm is retinted per frame from the
+   accent under the pointer, and inheriting one colour off the container is ONE
+   style write a frame instead of seven. */
+
+.cur-d{position:absolute;left:0;top:0;border-radius:50%;
+  background:currentColor;will-change:transform}
+@media (prefers-reduced-motion:reduce){.cur-ink{display:none}}/* It is a fixed layer that exists for as long as the page does, so without this
+   it would print on every sheet of a legal document. */
+
+@media print{.cur-ink{display:none!important}}
+
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-@media (prefers-reduced-motion:reduce){.hrt{animation:none}}/* ── top bar ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}/* ── the hint ─────────────────────────────────────────────────────────────
+   Replaces the native title= tooltip, which the OS draws in its own font, in
+   its own colours, after its own delay, with no way to match anything around
+   it. One control had one; the rest announced themselves only to screen
+   readers.
+
+   ⚠️ IT IS DECORATIVE, aria-hidden, AND THAT IS DELIBERATE. Every control it
+   describes already carries its own accessible name (aria-label, or visible
+   text). Wiring aria-describedby to this as well would make a screen reader
+   read most of them twice. The hint adds nothing for assistive tech and
+   everything for a sighted pointer, so it is scoped to exactly that.
+
+   ⚠️ NO :hover RULE. It is driven by a class from MORPH_JS, because the thing
+   that positions it has to measure the trigger anyway, and a CSS-only tooltip
+   cannot flip off a viewport edge. That also keeps it out of guardCss's way.
+
+   It is a capsule rather than the legal family's squared card on purpose: it
+   floats over every one of the three page families, and the one shape all
+   three already share is the pill in their own nav. The accent dot is what
+   ties it to the page it is on — the type is deliberately neutral so the
+   colour is the only thing that changes between pages. */
+
+
+.tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  /* ⚠️ width:max-content IS LOAD-BEARING, not a nicety. The capsule is centred
+     by left + translate(-50%), and a transform does not affect LAYOUT — so a
+     fixed element whose left sits near the right edge is shrink-wrapped by the
+     space remaining to that edge before the transform ever moves it. Measured
+     on the back-to-top: "Back to top" came out 56px wide and 4.2 lines tall,
+     overlapping the button. max-content sizes it to its text first and lets the
+     transform place it afterwards. */
+  width:max-content;max-width:min(72vw,22rem);
+  font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
+  letter-spacing:.13em;text-transform:uppercase;
+  /* ⚠️ BUILT FROM --desk AND --ink ONLY, and that is not a style preference.
+     The first version used var(--card) and var(--rule2), and neither survives
+     the trip across the three page families. --card is declared ONLY by
+     chronicle.js, so on the legal and warm pages it resolved to nothing and the
+     hint had NO BACKGROUND AT ALL — reported as "so transparent", which it
+     literally was. --rule2 has the opposite failure: chronicle emits the legal
+     TOKENS and then overrides --desk/--card/--ink on top, so --rule2 survives
+     with the legal palette's purple and would have dragged it into the terminal
+     world. --desk and --ink are the two every family redefines, so mixing the
+     surface out of them lands native on all three. Check that before reaching
+     for any other token here. */
+  color:var(--ink);
+  background:color-mix(in srgb,
+    color-mix(in srgb,var(--ink) 9%,var(--desk)) 94%, transparent);
+  border:1px solid color-mix(in srgb,var(--ink) 24%,var(--desk));
+  border-radius:999px;
+  /* even on all four sides now the leading dot is gone — it was .58/.68 to
+     balance the dot's optical weight, which read as crushed once removed */
+  padding:.46rem .8rem;
+  /* the 6% of translucency left above is there to be blurred — fully opaque and
+     the backdrop-filter would be doing nothing at all */
+  backdrop-filter:blur(12px) saturate(1.2);
+  -webkit-backdrop-filter:blur(12px) saturate(1.2);
+  box-shadow:0 12px 30px -14px rgba(0,0,0,.8),
+    0 0 0 4px color-mix(in srgb,var(--accent) 8%,transparent);
+  opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}/* wraps onto a second line rather than running off a phone-width viewport,
+   balanced so a two-line hint does not leave one word alone on the second */
+
+.tipx-t{display:block;white-space:normal;text-wrap:balance;line-height:1.5}
+.tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
+
+.tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
+.tipx.under.on{transform:translate(-50%,0) scale(1)}
+@media (prefers-reduced-motion:reduce){
+  .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
+  .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
+}
+@media print{.tipx{display:none!important}}/* ── top bar ─────────────────────────────────────────────────────── */
 
 
 
@@ -1303,11 +1548,24 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    control. It is not restyled for small screens any more — it is hidden. */
 
 @media (max-width:980px){ .rail{display:none} }
-.mnav{position:sticky;top:54px;z-index:50;margin:0 0 1.6rem}/* ── the document ────────────────────────────────────────────────── */
+.mnav{position:sticky;top:54px;z-index:50;margin:0 0 1.6rem}/* ── the document ────────────────────────────────────────────────── *//* ⚠️ --gut IS THE STICKY BAND'S REACH, AND IT IS DERIVED FROM THE PADDING ON PURPOSE.
+   The pinned heading widens itself leftwards to cover the margin-number strip (see the
+   .dsec>h2 rules below). That reach used to be a hard -3.8rem, while the gutter it
+   reaches into is fluid (4.5vw) — so between 1120px, where the rule switches on, and
+   ~1351px, where 4.5vw finally grows to 3.8rem, the band and the number BOTH hung
+   outside .doc. Measured live at 1216px: band 5.0px out, number 1.8px out; worst case
+   9.4px at 1120px. Capping the reach at the padding makes the overhang impossible at
+   every width rather than only above one.
+   Keep --pad as the single source of truth: the constant and the padding were written
+   out separately, which is exactly how they drifted apart. */
 
 
-.doc{background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
-  padding:clamp(1.6rem,4.5vw,4rem);margin-bottom:3rem;position:relative;min-width:0}
+
+.doc{--pad:clamp(1.6rem,4.5vw,4rem);
+  --gut:min(3.8rem,var(--pad));
+  --num:min(3.6rem,var(--gut));
+  background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:var(--pad);margin-bottom:3rem;position:relative;min-width:0}
 .doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
   background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
 
@@ -1376,19 +1634,27 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
      same gutter and passed clean beside the pinned one, so two section numbers were
      on screen at once, one of them half-clipped. Widening the heading's own box
      leftwards by the gutter (negative margin + equal padding) makes the band cover
-     the whole strip, and the number's offset moves with it — 3.8 - 3.6 = 0.2rem. */
+     the whole strip, and the number's offset moves with it — --gut minus --num, which
+     is the old 0.2rem once the gutter is wide enough to hold both, and 0 while it is
+     not, which sits the number flush inside the band's left edge instead of outside
+     it. Both reaches are capped at .doc's own padding — see the --gut note above. */
   
   @media (min-width:1120px){
-    .doc .dsec>h2{margin-left:-3.8rem;padding-left:3.8rem}
-    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:.2rem}
+    .doc .dsec>h2{margin-left:calc(var(--gut) * -1);padding-left:var(--gut)}
+    .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:calc(var(--gut) - var(--num))}
   }
 }
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
-@media (min-width:1120px){
-  .idx{position:absolute;left:-3.6rem;top:.34em;margin:0;text-align:right;width:2.6rem}
-  .doc h3 .idx{left:-3.6rem;top:.28em}
+@media (min-width:1120px){/* The fallback keeps any .idx rendered outside .doc — where --num is not declared —
+     at exactly the offset it had before this became fluid. Without it an undeclared
+     custom property makes the whole declaration invalid and left falls back to auto,
+     which moves the number into the text instead of the margin. */
+  
+  .idx{position:absolute;left:calc(var(--num,3.6rem) * -1);top:.34em;margin:0;
+    text-align:right;width:2.6rem}
+  .doc h3 .idx{left:calc(var(--num,3.6rem) * -1);top:.28em}
 }
 .anchor{margin-left:.5rem;color:var(--rule2);text-decoration:none;font-size:.75em;
   opacity:0;transition:opacity .15s}@media (hover:hover) and (pointer:fine){
@@ -1557,6 +1823,49 @@ html{scroll-behavior:smooth}
 <feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
 <feColorMatrix in="blur" type="matrix"
  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
+</filter>
+<!-- the reveal's mark. Its layer spans .foot, not the <details> — a CLOSED
+     <details> renders none of its children but <summary>, so a layer parented to
+     it does not exist while the control is shut, which is why the mark was once
+     invisible at rest while its inline styles read perfect. The region is
+     therefore a margin around a box that is already tall; re-check it if that
+     host ever changes size class. -->
+<!-- ⚠️ stdDeviation 3.2. Lower values were built and compared live on 2026-08-03
+     13:46 EDT and this one was kept, so the sweep below is evidence FOR the
+     current setting rather than a note about a pending change.
+     Merging is a function of mass size / sigma, so lowering the blur to sharpen
+     the mark trades directly against the buds fusing with the core — which is the
+     one thing on this surface that needs the filter at all. Measured by counting
+     connected components in the rasterised silhouette across 12 frames (four
+     masses exist, so a LOWER count means more of them have fused):
+       sigma  3.2 -> mean 2.00 bodies, max 2      SHIPPED
+       sigma  2.9 -> mean 2.17, max 3
+       sigma  2.7 -> mean 2.00, max 2             the one free reduction
+       sigma  2.4 -> mean 2.08, max 3
+       sigma  2.0 -> mean 2.42, max 3             visibly a core plus a loose dot
+     ⚠️ Classify those pixels by HUE, not by distance from the background, if this
+     is ever re-run. The crush is an ALPHA matrix, so the mark keeps its accent at
+     every alpha while the neighbouring TEXT does not — the first version of that
+     probe counted glyphs as blobs and reported three bodies at every sigma,
+     including this one. R-B separates them outright: accent is +168, ink is ~0. -->
+<filter id="dbgoo-r" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
+</filter>
+<!-- back-to-top: droplets start up to 96px out from a 44px layer, so the region
+     has to be generous in both axes. -->
+<filter id="dbgoo-c" x="-80%" y="-80%" width="260%" height="260%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
+</filter>
+<!-- the liquid cursor. A smaller blur than the rest: its masses are 2.2-5.6px
+     radius, and merging is a function of mass size / sigma, not of spacing. -->
+<filter id="dbgoo-p" x="-18%" y="-18%" width="136%" height="136%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceGraphic" stdDeviation="2.9" result="blur"/>
+<feColorMatrix in="blur" type="matrix"
+ values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -8"/>
 </filter></svg>
 
 <div class="bar">
@@ -1578,12 +1887,13 @@ html{scroll-behavior:smooth}
       <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot title="View the source on GitHub">
+  data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
+  data-tip="Add to Discord"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1682,134 +1992,134 @@ html{scroll-behavior:smooth}
         <div class="rule"></div>
         <div class="meta"><span>Effective <b>1 August 2026</b></span><span>Revision <b>1.4</b></span><span>Ontario, Canada</span></div>
       </header>
-      <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" aria-label="Link to this section">¶</a></h2>
+      <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
 <p><strong>If you do not agree, do not install or use the Bot.</strong></p></blockquote>
 <hr>
 <section class="dsec">
-<h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>This is a free, unofficial Call of Duty: Mobile info bot run by one person as a hobby. Use it, enjoy it, don't abuse it. The game data is best-effort and often changes — don't spend money based on it. It comes with no warranty, and our liability is limited. Nothing here removes rights your local law gives you that can't be signed away.</p>
 <p><em>This summary is for convenience only. The numbered sections are the actual terms.</em></p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
 <p><strong>Contact:</strong> harkirat117@gmail.com, or <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a></p>
 <p>There is no company behind this. It's one person, and support is best-effort.</p>
-<h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">The Site</span><a class="anchor" href="#s-1.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">The Site</span><a class="anchor" href="#s-1.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>These documents are published on a website (the <strong>"Site"</strong>). It is a set of static pages: no accounts, no forms, no analytics, and nothing to sign up for. The only thing it keeps is the light or dark appearance you pick, stored in your own browser and never transmitted — the Privacy Policy describes it in <a class="xref" href="#s-2.6">§2.6</a>.</p>
 <p>Where these Terms would sensibly apply to it, they do: in particular the disclaimer of warranties (<a class="xref" href="#s-14">§14</a>), the limitation of liability (<a class="xref" href="#s-15">§15</a>), and the intellectual-property terms (<a class="xref" href="#s-7">§7</a>) cover the Site and its contents as well as the Bot. Everything written about <em>using the Bot</em> — the eligibility, conduct, suspension and account provisions — applies to the Bot only, because there is nothing on the Site to use in that sense.</p>
 <p><strong>If the two ever conflict about a document's contents, the plain-text original governs</strong>, as stated on each rendered page.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">Agreement to these Terms</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">How you accept</span><a class="anchor" href="#s-2.1" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">Agreement to these Terms</span><a class="anchor" href="#s-2" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">How you accept</span><a class="anchor" href="#s-2.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>You accept these Terms by doing any of the following:</strong></p>
 <ol><li><strong>Installing</strong> the Bot to your Discord account, or authorising it via Discord's OAuth flow;</li><li><strong>Invoking any command</strong> — every slash command, at every invocation;</li><li><strong>Interacting with any component</strong> the Bot presents — any button, dropdown, modal, or menu;</li><li><strong>Receiving output</strong> from the Bot in response to something you did; or</li><li><strong>Continuing to use</strong> the Bot after a change to these Terms takes effect.</li></ol>
 <p><strong>Each of those is a separate and independent act of acceptance.</strong> You do not need to accept more than once, and accepting once binds you to these Terms for all subsequent use.</p>
-<h3 id="s-2.2" class="numbered"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Notice</span><a class="anchor" href="#s-2.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.2" class="numbered"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Notice</span><a class="anchor" href="#s-2.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>These Terms and the <a href="privacy.html">Privacy Policy</a> are:</p>
 <ul><li>linked from the Bot's Discord Developer Portal listing, where Discord displays them on the Bot's profile;</li><li>published at a permanent public URL (see <a class="xref" href="#s-20">§20</a>);</li><li>referenced in the Bot's own help output; and</li><li>available on request at harkirat117@gmail.com.</li></ul>
 <p><strong>You are responsible for reading them.</strong> Choosing not to read terms you were given the opportunity to read does not stop them applying to you.</p>
-<h3 id="s-2.3" class="numbered"><span class="idx" aria-hidden="true">2.3</span><span class="ht">Acknowledgement</span><a class="anchor" href="#s-2.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.3" class="numbered"><span class="idx" aria-hidden="true">2.3</span><span class="ht">Acknowledgement</span><a class="anchor" href="#s-2.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>By using the Bot you acknowledge that you have had a reasonable opportunity to read these Terms and the Privacy Policy, that you understand them, that you agree to be bound by them, and that you accept them as a binding agreement between you and us with the same effect as a signed written contract.</p>
-<h3 id="s-2.4" class="numbered"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Electronic agreement</span><a class="anchor" href="#s-2.4" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.4" class="numbered"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Electronic agreement</span><a class="anchor" href="#s-2.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>You consent to contract electronically. These Terms satisfy any requirement that an agreement be in writing, and your acceptance under <a class="xref" href="#s-2.1">§2.1</a> has the same legal effect as a handwritten signature under Ontario's <em>Electronic Commerce Act, 2000</em> and equivalent legislation elsewhere.</p>
-<h3 id="s-2.5" class="numbered"><span class="idx" aria-hidden="true">2.5</span><span class="ht">Incorporated documents</span><a class="anchor" href="#s-2.5" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.5" class="numbered"><span class="idx" aria-hidden="true">2.5</span><span class="ht">Incorporated documents</span><a class="anchor" href="#s-2.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The <a href="privacy.html">Privacy Policy</a> forms part of these Terms. The <a href="../LICENSE">LICENSE</a> governs the Bot's <strong>source code</strong> and is a separate agreement — using the Bot does not license you its code.</p>
-<h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Don't install or use the Bot.</strong> If you've already installed it, remove it via Discord's "Authorized Apps" settings and stop issuing commands. See <a class="xref" href="#s-13.1">§13.1</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">Eligibility</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">Eligibility</span><a class="anchor" href="#s-3" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>To use the Bot you must:</p>
 <ol><li>Be at least <strong>13 years old</strong>, or the higher minimum age Discord requires in your country — in parts of the EU and elsewhere this is <strong>14, 15, or 16</strong>. Discord's <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> set the controlling minimum, and you must meet it.</li><li>Have the legal capacity to enter into these Terms, or have your parent or guardian's consent, in which case they accept these Terms on your behalf and are responsible for your use.</li><li>Not be barred from using Discord under Discord's terms.</li><li>Not be located in, or ordinarily resident in, a country subject to a comprehensive Canadian trade embargo, and not be listed on any applicable sanctions or restricted-party list.</li></ol>
 <p><strong>We do not knowingly permit use below Discord's minimum age.</strong> We have no independent age-verification mechanism and rely on Discord's enforcement. If we learn a user is under that age, we will delete their stored preferences — see <a class="xref" href="#s-10">§10</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">What the Bot does</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">What the Bot does</span><a class="anchor" href="#s-4" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The Bot is a <strong>user-installed Discord application</strong> providing Call of Duty: Mobile reference information:</p>
 <div class="tw"><table><thead><tr><th>Feature</th><th>What it gives you</th></tr></thead><tbody><tr><td>Weapon loadouts</td><td>Curated multiplayer and DMZ builds, attachments, rankings</td></tr><tr><td>Lucky draw info</td><td>Draw contents, items, and CP pricing</td></tr><tr><td>Patch notes</td><td>Season balance changes and patch history</td></tr><tr><td>Seasonal calendar</td><td>Events, start and end dates</td></tr><tr><td>Countdowns</td><td>Season, rank, and DMZ end timers</td></tr><tr><td><code>/timestamp</code></td><td>Discord timestamp generation in your timezone</td></tr><tr><td><code>/settings</code></td><td>Your display preferences</td></tr><tr><td>Accent colours</td><td>Message colours matched to your Discord profile</td></tr></tbody></table></div>
-<h3 id="s-4.1" class="numbered"><span class="idx" aria-hidden="true">4.1</span><span class="ht">What "user-installed" means</span><a class="anchor" href="#s-4.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.1" class="numbered"><span class="idx" aria-hidden="true">4.1</span><span class="ht">What "user-installed" means</span><a class="anchor" href="#s-4.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The Bot installs <strong>to your Discord account</strong>, not to a server:</p>
 <ul><li>It travels with you across servers and DMs.</li><li><strong>It has no permissions in any server.</strong> It is not a member, holds no role, and cannot read your messages, see your channels, moderate, or act on its own.</li><li>It only responds to interactions <strong>you</strong> initiate.</li><li>Whether it works in a given server is controlled by that server and by Discord — not by us.</li></ul>
-<h3 id="s-4.2" class="numbered"><span class="idx" aria-hidden="true">4.2</span><span class="ht">It's free</span><a class="anchor" href="#s-4.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.2" class="numbered"><span class="idx" aria-hidden="true">4.2</span><span class="ht">It's free</span><a class="anchor" href="#s-4.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>No paid tier, no subscription, no advertising, no in-app purchase. We are not obliged to keep it that way, but we will not start charging for access you already have without notice.</p>
-<h3 id="s-4.3" class="numbered"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Experimental features</span><a class="anchor" href="#s-4.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.3" class="numbered"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Experimental features</span><a class="anchor" href="#s-4.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Some features are experimental and may be changed, broken, or removed without notice. Where a feature is marked beta or experimental, expect it to be less reliable — and know that <a class="xref" href="#s-14">§14</a> and <a class="xref" href="#s-15">§15</a> apply to it with full force.</p>
-<h3 id="s-4.4" class="numbered"><span class="idx" aria-hidden="true">4.4</span><span class="ht">No support obligation</span><a class="anchor" href="#s-4.4" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.4" class="numbered"><span class="idx" aria-hidden="true">4.4</span><span class="ht">No support obligation</span><a class="anchor" href="#s-4.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We have no obligation to provide support, respond to reports, fix bugs, maintain the Bot, or keep any feature working. We generally try. That is a courtesy, not a commitment, and no course of dealing creates one.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Accuracy — please read this one</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Accuracy — please read this one</span><a class="anchor" href="#s-5" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>The game information in the Bot is best-effort and may be wrong.</strong></p>
 <ul><li>Loadouts, rankings, and "meta" designations reflect <strong>opinion and community consensus</strong>, not objective fact.</li><li>Call of Duty: Mobile is patched frequently. Data can go stale immediately after an update, and there may be a lag before it's corrected.</li><li>Draw contents, prices, and odds are <strong>as observed</strong>, may vary by region, account, and over time, and are <strong>not a representation of what you will receive</strong>.</li><li>Dates, countdowns, and calendar entries depend on information published by others and on your timezone setting being correct.</li></ul>
-<h3 id="s-5.1" class="numbered"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Spending money — the important part</span><a class="anchor" href="#s-5.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-5.1" class="numbered"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Spending money — the important part</span><a class="anchor" href="#s-5.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Do not make purchasing decisions in reliance on the Bot.</strong></p>
 <p>Lucky draws and similar mechanics are <strong>games of chance operated entirely by third parties</strong>. We do not operate, host, facilitate, promote, or take any part in them. We receive no commission, referral fee, or benefit of any kind from your spending. We have no control over odds, contents, pricing, or outcomes, and no ability to influence or predict them.</p>
 <p><strong>Nothing in the Bot is a recommendation, inducement, or encouragement to spend money.</strong> Information about draw contents and pricing is descriptive reference material only.</p>
 <p>If you're concerned about spending on in-game purchases, please seek support appropriate to your situation. Some jurisdictions regulate loot boxes and similar mechanics; where yours does, comply with your local law — that's your responsibility, not ours.</p>
-<h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">No professional advice</span><a class="anchor" href="#s-5.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">No professional advice</span><a class="anchor" href="#s-5.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Nothing in the Bot is financial, legal, medical, or other professional advice.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You must not:</p>
 <ol><li><strong>Abuse or overload it</strong> — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.</li><li><strong>Attack it</strong> — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.</li><li><strong>Circumvent controls</strong> — no bypassing cooldowns, permission checks, or admin-only gates.</li><li><strong>Impersonate</strong> — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.</li><li><strong>Break the law or Discord's rules</strong> — no use in connection with harassment, fraud, hate speech, or illegal activity, and no use violating <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Discord's Terms</a> or <a href="https://discord.com/guidelines" target="_blank" rel="noopener noreferrer">Community Guidelines</a>.</li><li><strong>Extract the data</strong> — no bulk collection, mirroring, re-hosting, or republishing of the Bot's curated datasets or output.</li><li><strong>Train models on it</strong> — no using the Bot's output or data as training, fine-tuning, evaluation, or retrieval input for any AI or machine-learning system.</li><li><strong>Redistribute the software</strong> — the source code is governed by the <a href="../LICENSE">LICENSE</a>, separate from these Terms. Reading it is allowed; deploying or redistributing it is not.</li></ol>
 <p><strong>Security researchers:</strong> good-faith research is welcome, but test against your own local instance, not the live Bot. See §4.11 of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
-<h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>To report misuse of the Bot, a security issue, or content that shouldn't be there, email <strong>harkirat117@gmail.com</strong>. Security issues should never go in a public GitHub issue.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dior's Builds" name and visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
 <p>Source code licensing is governed separately by the <a href="../LICENSE">LICENSE</a>.</p>
 <p><strong>The source repository's visibility may change at any time, without notice</strong> — it may be public or private at any given moment, at our sole discretion, and we are under no obligation to publish the source at all or to keep publishing it. <strong>These Terms, the Privacy Policy, and the Bot itself are unaffected either way</strong>, and these documents stay published at their permanent public URLs regardless. Nothing in these Terms grants you any right of access to the source code.</p>
-<h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Call of Duty®</strong> and <strong>Call of Duty®: Mobile</strong> are trademarks of <strong>Activision Publishing, Inc.</strong> Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
 <blockquote class="callout"><p><strong>Dior's Builds is an unofficial, non-commercial fan project. It is not developed, published, licensed, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, Discord Inc., or any of their affiliates.</strong></p></blockquote>
 <p>Weapon names, item names, in-game imagery, and other game content shown by the Bot remain the property of their respective owners. We claim no ownership and grant you no rights in them. They are displayed for identification, commentary, and reference in a manner we believe constitutes fair dealing under the <em>Copyright Act</em> (Canada) and fair use under 17 U.S.C. § 107.</p>
 <p>We take that position seriously rather than assuming it: the Bot is <strong>free and non-commercial</strong>, its purpose is <strong>informational and referential</strong> rather than a substitute for the game, it uses <strong>no official logos or branding</strong>, it does not reproduce game code, assets in bulk, or anything playable, it makes clear on its face that it is unofficial, and it operates a <strong>prompt takedown process</strong> (<a class="xref" href="#s-7.5">§7.5</a>). Those are the factors that matter, and they are deliberate choices.</p>
 <p>We nonetheless acknowledge plainly that fan projects operate at the rights holder's sufferance. <strong>If Activision or any other rights holder asks us to change or remove something, we will comply promptly</strong> rather than argue.</p>
-<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Not ours — crossover and collaboration content</span><a class="anchor" href="#s-7.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Not ours — crossover and collaboration content</span><a class="anchor" href="#s-7.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Call of Duty: Mobile regularly features <strong>licensed content from third-party rights holders who have nothing to do with us and no connection to this project</strong> — crossover seasons, guest characters, themed weapon blueprints, and tie-in events drawn from films, television, comics, music, anime, sports, and other franchises. Those collaborations come and go every season.</p>
 <p>Where the Bot names, describes, dates, or lists such content, the following applies in full:</p>
 <ul><li>The characters, titles, logos, likenesses, designs, and other elements of that content are the property of <strong>their own respective rights holders</strong>, who are typically not Activision, TiMi Studio Group, Tencent, or any of the publishers named in <a class="xref" href="#s-7.2">§7.2</a>.</li><li><strong>We are not affiliated with, licensed by, endorsed by, or sponsored by any of those rights holders either</strong>, and nothing in the Bot's output should be read as suggesting otherwise. The disclaimer in <a class="xref" href="#s-7.2">§7.2</a> extends to every one of them.</li><li>We claim no ownership of and grant you no rights in any of it. It is named and described for identification, commentary, and reference on the same fair dealing / fair use basis set out in <a class="xref" href="#s-7.2">§7.2</a>.</li><li>The takedown process in <a class="xref" href="#s-7.5">§7.5</a> is open to <strong>any</strong> rights holder, not only the game's publishers, and we action valid requests the same way.</li></ul>
 <blockquote class="callout"><p><strong>We deliberately do not list individual collaborations here.</strong> Any list would be out of date within a season, and a stale list of third-party marks is worse than none: it implies we track and vet each one, and it goes wrong silently. This clause is written to cover every collaboration — past, current, and future — without needing to be revised each time one launches.</p></blockquote>
 <p>We also deliberately <strong>do not reproduce other companies' own copyright notices</strong> (the "© / ™ / ® [YEAR] [COMPANY]. All Rights Reserved." blocks you see in the game itself and in officially licensed products). Those notices are published by the rights holders and their licensees to assert <em>their</em> rights under <em>their</em> licence agreements. We hold no such licence, so reproducing them here would misrepresent our relationship with those companies — the opposite of what a disclaimer is for. We acknowledge their rights instead, which is the accurate thing for an unofficial project to do. A consolidated acknowledgement list is kept in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
-<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.4" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
-<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.5" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>If you own rights in material displayed by the Bot and want it removed, email <strong>harkirat117@gmail.com</strong> with:</p>
 <ul><li>identification of the work;</li><li>where it appears in the Bot;</li><li>your contact details;</li><li>a statement that you believe the use is unauthorised; and</li><li>a statement that your notice is accurate and that you are the rights holder or authorised to act for them.</li></ul>
 <p><strong>We action valid requests promptly</strong> — usually within a few days — and we don't require a formal legal process to do so. We will also consider counter-notices.</p>
-<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Yours</span><a class="anchor" href="#s-7.6" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Yours</span><a class="anchor" href="#s-7.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>You retain ownership of anything you send us. By sending feedback, ideas, bug reports, or suggestions, you grant us a perpetual, worldwide, royalty-free, irrevocable licence to use them without restriction, obligation, or compensation, and you agree we owe you nothing for them. Code contributions are governed instead by <a class="xref" href="#s-5">§5</a> of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
-<h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We may develop, acquire, or operate features, products, or services similar to anything you suggest. Nothing in these Terms restricts that, and submitting an idea gives you no rights in what we later build.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>Portions of this project — its source code, documentation, and these legal documents — were <strong>written with the assistance of AI tools</strong>, principally Claude (Anthropic PBC), under human direction. Full disclosure: <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-6">§6</a>.</p>
 <p><strong>No AI system processes your data.</strong> The only AI in the running Bot is an administrator-only image-extraction command that never receives end-user data. See <a class="xref" href="#s-5.1">§5.1</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Third-party services</span><a class="anchor" href="#s-9" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Third-party services</span><a class="anchor" href="#s-9" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The Bot runs on and interoperates with services we don't control:</p>
 <div class="tw"><table><thead><tr><th>Service</th><th>Role</th></tr></thead><tbody><tr><td><strong>Discord Inc.</strong></td><td>The platform the Bot runs on</td></tr><tr><td><strong>MongoDB Atlas</strong></td><td>Stores preferences and content data (Canada)</td></tr><tr><td><strong>Cloudinary</strong></td><td>Hosts and serves cached game images</td></tr><tr><td><strong>Google Cloud Platform</strong></td><td>Hosts the server; Vertex AI for admin-only image extraction</td></tr></tbody></table></div>
 <p>Your use of Discord is governed by Discord's own terms and privacy policy. We are not responsible for these services' availability, security, or acts. An outage or change at any of them can break the Bot without notice.</p>
 <p><strong>Discord Inc. is not a party to these Terms</strong>, has no obligation or liability to you in connection with the Bot, and does not sponsor or endorse it. Any dispute about the Bot is between you and us.</p>
-<h3 id="s-9.1" class="numbered"><span class="idx" aria-hidden="true">9.1</span><span class="ht">If a provider acts outside its terms</span><a class="anchor" href="#s-9.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-9.1" class="numbered"><span class="idx" aria-hidden="true">9.1</span><span class="ht">If a provider acts outside its terms</span><a class="anchor" href="#s-9.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We select providers on the basis of their published terms and data processing agreements, and we do not authorise any of them to use your data for their own purposes. <strong>We cannot audit, inspect, or control what any of them does inside its own systems.</strong></p>
 <p><strong>To the fullest extent permitted by law, we are not liable for any act or omission of a third-party provider that falls outside the terms it publishes</strong> — including any unauthorised use, disclosure, retention, or loss of data by that provider. Your remedy in that situation lies against them, not us.</p>
 <p>Discord in particular is an <strong>independent controller</strong> of the data it collects about you through Discord itself. That is Discord's responsibility under <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a>, not ours.</p>
@@ -1818,7 +2128,7 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Availability and changes</span><a class="anchor" href="#s-10" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Availability and changes</span><a class="anchor" href="#s-10" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>The Bot is provided on an "as is" and "as available" basis.</strong> We make no promise about uptime.</p>
 <p>We may, at any time and without notice or liability:</p>
 <ul><li>Change, add, or remove features, commands, or data</li><li>Suspend, interrupt, or discontinue the Bot entirely</li><li>Impose or change rate limits and cooldowns</li><li>Modify or delete stored content, including curated data</li></ul>
@@ -1826,29 +2136,29 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Force majeure</span><a class="anchor" href="#s-11" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Force majeure</span><a class="anchor" href="#s-11" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>We are not liable for any failure or delay caused by events beyond our reasonable control — including acts of God, natural disaster, fire, flood, epidemic or pandemic, war, terrorism, civil unrest, strike, government action, change of law, power or internet failure, hosting or cloud-provider outage, denial-of-service attack, or <strong>any act, omission, outage, policy change, suspension, or termination by Discord, GitHub, Google, MongoDB, Cloudinary, or Activision</strong>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Export control and sanctions</span><a class="anchor" href="#s-12" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Export control and sanctions</span><a class="anchor" href="#s-12" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You must not use the Bot in violation of Canadian, US, EU, UK, or other applicable export-control or sanctions laws, and you represent that you are not a restricted party under any of them.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Suspension and termination</span><a class="anchor" href="#s-13" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-13.1" class="numbered"><span class="idx" aria-hidden="true">13.1</span><span class="ht">By you</span><a class="anchor" href="#s-13.1" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Suspension and termination</span><a class="anchor" href="#s-13" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-13.1" class="numbered"><span class="idx" aria-hidden="true">13.1</span><span class="ht">By you</span><a class="anchor" href="#s-13.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Remove the Bot from your Discord account at any time via Discord's "Authorized Apps" settings. That stops all future interaction immediately.</p>
 <p>Removing it does <strong>not</strong> automatically delete your stored preferences — see <a class="xref" href="#s-7.1">§7.1</a> and <a class="xref" href="#s-9">§9</a> of the <a href="privacy.html">Privacy Policy</a> for how to request deletion.</p>
-<h3 id="s-13.2" class="numbered"><span class="idx" aria-hidden="true">13.2</span><span class="ht">By us</span><a class="anchor" href="#s-13.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-13.2" class="numbered"><span class="idx" aria-hidden="true">13.2</span><span class="ht">By us</span><a class="anchor" href="#s-13.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We may restrict, suspend, or permanently block your access, with or without notice, if we reasonably believe you have breached these Terms — particularly <a class="xref" href="#s-6">§6</a> — or where necessary to protect the Bot, its users, or ourselves. We may also do so if we discontinue the Bot.</p>
 <p>We have no obligation to give reasons, though we generally will if you ask in good faith.</p>
-<h3 id="s-13.3" class="numbered"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Survival</span><a class="anchor" href="#s-13.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-13.3" class="numbered"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Survival</span><a class="anchor" href="#s-13.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Sections 5, 6, 7, 8, 11, 12, 13.3, 14, 15, 16, 17, and 18 survive termination.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">Disclaimer of warranties</span><a class="anchor" href="#s-14" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">Disclaimer of warranties</span><a class="anchor" href="#s-14" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE BOT IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY, CONDITION, OR REPRESENTATION OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE.</strong></p>
 <p><strong>WE EXPRESSLY DISCLAIM ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</strong></p>
 <p><strong>WE DO NOT WARRANT THAT THE BOT WILL BE AVAILABLE, UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE; THAT DEFECTS WILL BE CORRECTED; THAT IT IS FREE OF HARMFUL COMPONENTS; OR THAT ANY INFORMATION IT PROVIDES IS ACCURATE, CURRENT, OR COMPLETE.</strong></p>
@@ -1857,7 +2167,7 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">Limitation of liability</span><a class="anchor" href="#s-15" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">Limitation of liability</span><a class="anchor" href="#s-15" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, WE WILL NOT BE LIABLE — WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY — FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, IN-GAME CURRENCY, IN-GAME ITEMS, ACCOUNT STANDING, OR ANTICIPATED SAVINGS, ARISING OUT OF OR RELATING TO THE BOT — EVEN IF ADVISED OF THE POSSIBILITY AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</strong></p>
 <p><strong>OUR TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THE BOT AND THESE TERMS WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</strong></p>
 <p>Since the Bot is free, (A) will normally be nil.</p>
@@ -1866,29 +2176,29 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">Indemnity</span><a class="anchor" href="#s-16" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">Indemnity</span><a class="anchor" href="#s-16" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You will indemnify and hold us harmless from any claim, loss, liability, damage, cost, or expense (including reasonable legal fees) arising out of your use of the Bot, your breach of these Terms, or your violation of any law or third-party right.</p>
 <p>This does not apply to the extent the claim arises from our own breach, negligence, or wilful misconduct, and it does not apply where you are a consumer and the law prohibits it.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">Governing law and disputes</span><a class="anchor" href="#s-17" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-17.1" class="numbered"><span class="idx" aria-hidden="true">17.1</span><span class="ht">Informal resolution first</span><a class="anchor" href="#s-17.1" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">Governing law and disputes</span><a class="anchor" href="#s-17" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-17.1" class="numbered"><span class="idx" aria-hidden="true">17.1</span><span class="ht">Informal resolution first</span><a class="anchor" href="#s-17.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Before starting formal proceedings, please email harkirat117@gmail.com.</strong> Most problems are solvable in one message, and we ask for 30 days to try.</p>
-<h3 id="s-17.2" class="numbered"><span class="idx" aria-hidden="true">17.2</span><span class="ht">Governing law and venue</span><a class="anchor" href="#s-17.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-17.2" class="numbered"><span class="idx" aria-hidden="true">17.2</span><span class="ht">Governing law and venue</span><a class="anchor" href="#s-17.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>These Terms are governed by the laws of the <strong>Province of Ontario</strong> and the federal laws of Canada applicable in it, without regard to conflict-of-laws rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
 <p>The courts of Ontario, sitting in Toronto, have exclusive jurisdiction, and you attorn to that jurisdiction and waive any objection based on venue or forum non conveniens.</p>
 <p><strong>If you are a consumer resident elsewhere</strong>, this section does not deprive you of the protection of mandatory consumer-protection rules of your country of residence, or of the right to bring proceedings in your local courts where that right cannot lawfully be excluded.</p>
-<h3 id="s-17.3" class="numbered"><span class="idx" aria-hidden="true">17.3</span><span class="ht">Class-action waiver</span><a class="anchor" href="#s-17.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-17.3" class="numbered"><span class="idx" aria-hidden="true">17.3</span><span class="ht">Class-action waiver</span><a class="anchor" href="#s-17.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>To the maximum extent permitted by applicable law, you and we agree that each may bring claims against the other only in an individual capacity, and not as a plaintiff or class member in any purported class, collective, consolidated, or representative proceeding.</strong></p>
 <p><strong>This waiver does not apply where it is prohibited or unenforceable by law</strong> — which includes claims by consumers under Ontario's <em>Consumer Protection Act, 2002</em>, under Quebec law, and under equivalent consumer-protection statutes elsewhere. In those cases the waiver has no effect on your rights, and the rest of this section continues to apply.</p>
 <p>We have deliberately <strong>not</strong> included a mandatory arbitration clause. Requiring an individual to arbitrate a small claim can be unconscionable and unenforceable, and we would rather have terms that work than terms that look strong and fail.</p>
-<h3 id="s-17.4" class="numbered"><span class="idx" aria-hidden="true">17.4</span><span class="ht">Limitation period</span><a class="anchor" href="#s-17.4" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-17.4" class="numbered"><span class="idx" aria-hidden="true">17.4</span><span class="ht">Limitation period</span><a class="anchor" href="#s-17.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Any claim must be commenced within <strong>one year</strong> after it arose, except where a longer period is required by law.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">General</span><a class="anchor" href="#s-18" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">General</span><a class="anchor" href="#s-18" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>Entire agreement.</strong> These Terms, the Privacy Policy, and (for source code) the LICENSE are the entire agreement between you and us regarding the Bot, superseding all prior understandings. Nothing here limits liability for fraudulent misrepresentation.</p>
 <p><strong>Severability.</strong> If a provision is held unenforceable, it is modified to the minimum extent needed to make it enforceable, or severed, and the rest continues in full force. This applies with particular force to §<a class="xref" href="#s-14">§14</a>, 15, and 17.3, each of which is intended to be given the maximum effect the law permits.</p>
 <p><strong>No waiver.</strong> Not enforcing a right on one occasion doesn't waive it.</p>
@@ -1901,24 +2211,24 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-19" class="numbered"><span class="idx" aria-hidden="true">19</span><span class="ht">Changes to these Terms</span><a class="anchor" href="#s-19" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-19" class="numbered"><span class="idx" aria-hidden="true">19</span><span class="ht">Changes to these Terms</span><a class="anchor" href="#s-19" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>We may update these Terms. When we do:</p>
 <ul><li>The <strong>effective date and version</strong> at the top change.</li><li>The change is recorded in the repository's git history.</li><li>For <strong>material</strong> changes we will make reasonable efforts to give notice — typically through the project's Discord presence, a repository release note, or a notice in the Bot itself.</li></ul>
 <p>Continued use after a change takes effect means you accept the updated Terms. If you don't accept them, remove the Bot.</p>
-<h3 id="s-19.1" class="numbered"><span class="idx" aria-hidden="true">19.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-19.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-19.1" class="numbered"><span class="idx" aria-hidden="true">19.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-19.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Kept here as well as in git, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a change record you can't reach isn't a change record.</p>
 <div class="tw"><table><thead><tr><th>Version</th><th>Effective</th><th>What changed</th></tr></thead><tbody><tr><td>1.2</td><td>31 July 2026</td><td>Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (<a class="xref" href="#s-14">§14</a>) and the limitation of liability (<a class="xref" href="#s-15">§15</a>) did not reach the pages these documents are published on. Adds <a class="xref" href="#s-1.1">§1.1</a> defining the Site and saying exactly which Terms cover it and which do not. <strong>No new obligation on you and no reduction of your rights</strong> — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone.</td></tr><tr><td>1.1</td><td>29 July 2026</td><td>Added <a class="xref" href="#s-7.3">§7.3</a> (crossover and collaboration content — third-party IP featured in the game); noted the operator's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>; renumbered the former <a class="xref" href="#s-7.3">§7.3</a>–<a class="xref" href="#s-7.6">§7.6</a> to <a class="xref" href="#s-7.4">§7.4</a>–<a class="xref" href="#s-7.7">§7.7</a> to make room. <strong>Clarifying additions only</strong> — no reduction of your rights, no new data collected, no new obligation on you.</td></tr><tr><td>1.0</td><td>28 July 2026</td><td>First published version.</td></tr></tbody></table></div>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong> 💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
 <p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under <a class="xref" href="#s-17">§17</a> — goes to the email address. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
 <p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" aria-label="Link to this section">¶</a></h2>
+<h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.4</strong></td><td>1 August 2026</td><td>Added Discord (diorswrld) as a second contact route in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>, alongside the canonical email. Anything that has to be on the record still goes by email.</td></tr><tr><td><strong>1.3</strong></td><td>1 August 2026</td><td>Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr><td><strong>1.2</strong></td><td>31 July 2026</td><td>Brought the Site — the website these documents are published on — into scope alongside the Bot.</td></tr><tr><td><strong>1.1</strong></td><td>29 July 2026</td><td>Added the controller's "diorswrld" alias; added <a class="xref" href="#s-7.3">§7.3</a> covering third-party crossover and collaboration content, renumbering the takedown process to <a class="xref" href="#s-7.5">§7.5</a>.</td></tr><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial terms.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is public in the repository's git log.</p>
 <hr>
@@ -1932,7 +2242,7 @@ html{scroll-behavior:smooth}
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
   <footer class="foot nodisc">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
     
     <nav class="endnav"><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
@@ -1941,7 +2251,7 @@ html{scroll-behavior:smooth}
 <!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
      transform or backdrop-filter, which is exactly what once anchored a fixed
      control to the 54px bar instead of the viewport, so this sits outside .page. -->
-<button class="totop" id="totop" aria-label="Back to top">
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -1979,10 +2289,19 @@ html{scroll-behavior:smooth}
   var queued=false;
   function paint(){
     var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
-    var frac=max>0?h.scrollTop/max:0;
+    /* ⚠️ CLAMPED. iOS rubber-band scrolling reports scrollTop below 0 and past
+       max, and the URL bar showing or hiding changes clientHeight — and therefore
+       max — mid-scroll. Unclamped, the progress bar and the ring both jumped and
+       re-drew themselves whenever the page was overscrolled past either end,
+       which is the "resets the circle outline" report. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
     prog.style.width=(frac*100)+'%';
     if(top){
-      top.classList.toggle('on', h.scrollTop>h.clientHeight*0.6);
+      /* ⚠️ .on IS OWNED BY MORPH_JS NOW, not by this loop. Its back-to-top module
+         runs a birth animation across many frames, and a second handler toggling
+         the same class from a scroll position would fight it every frame. What
+         stays here is the ring's progress and the --lift that parks the button
+         above the footer — position, not state, and each has exactly one writer. */
       if(ttBar) ttBar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
       /* Park above the footer. base is the button's own CSS bottom offset, so the
          un-lifted bottom edge sits at innerHeight-base; anything below the
@@ -2067,16 +2386,10 @@ html{scroll-behavior:smooth}
     }
     queued=false;
   }
-  if(top){
-    top.addEventListener('click',function(){
-      top.classList.remove('fire');
-      void top.offsetWidth;   /* restart the animation on a rapid second click */
-      top.classList.add('fire');
-      var slow=matchMedia('(prefers-reduced-motion:reduce)').matches;
-      scrollTo({top:0,behavior:slow?'auto':'smooth'});
-    });
-    top.addEventListener('animationend',function(){ top.classList.remove('fire'); });
-  }
+  /* The click handler moved to MORPH_JS with .on, for the same reason: pressing
+     the button starts a destruction animation, and the arrow's fire keyframes
+     are the REDUCED-MOTION path rather than a separate effect that could run
+     alongside it. Both live in one place now. */
   addEventListener('scroll',function(){ if(!queued){queued=true;requestAnimationFrame(paint);} },{passive:true});
   addEventListener('resize',function(){ ttMeasure(); paint(); }); paint();
 
@@ -2955,6 +3268,1143 @@ html{scroll-behavior:smooth}
       a.addEventListener('click',function(){ cur=i; place(i,true); });
     });
   }
+})();
+
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+  function el(t,c){var n=document.createElement(t);if(c)n.className=c;return n;}
+  function rnd(a,b){return a+Math.random()*(b-a);}
+  function cl01(x){return x<0?0:x>1?1:x;}
+  function ease(x,k){return 1-Math.pow(1-cl01(x),k);}
+  function scrollY_(){return window.scrollY||document.documentElement.scrollTop||0;}
+
+  /* every run of digits in a string, in order — enough to read rgb()/rgba() */
+  function nums(s){
+    var out=[],cur='',i,ch;
+    for(i=0;i<s.length;i++){
+      ch=s.charAt(i);
+      if((ch>='0'&&ch<='9')||ch==='.')cur+=ch;
+      else if(cur){out.push(parseFloat(cur));cur='';}
+    }
+    if(cur)out.push(parseFloat(cur));
+    return out;
+  }
+  function parseCol(c){
+    c=(c||'').trim();
+    if(!c)return null;
+    if(c.charAt(0)==='#'){
+      var h=c.slice(1);
+      if(h.length===3)h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)
+                       +h.charAt(2)+h.charAt(2);
+      if(h.length<6)return null;
+      return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),
+              parseInt(h.slice(4,6),16)];
+    }
+    if(c.indexOf('rgb')===0){
+      var q=nums(c.slice(c.indexOf('(')+1));
+      if(q.length<3)return null;
+      return [q[0],q[1],q[2]];
+    }
+    return null;
+  }
+  /* a colour that actually paints — 'transparent' and a zero alpha both fail */
+  function opaque(c){
+    c=(c||'').trim();
+    if(!c||c==='transparent')return false;
+    var q=nums(c.indexOf('(')>=0?c.slice(c.indexOf('(')+1):'');
+    if(q.length>3&&q[3]===0)return false;
+    return !!parseCol(c);
+  }
+  function mix(a,b,t){
+    var x=parseCol(a),y=parseCol(b);
+    if(!x||!y)return b;
+    return 'rgb('+Math.round(x[0]+(y[0]-x[0])*t)+','
+                 +Math.round(x[1]+(y[1]-x[1])*t)+','
+                 +Math.round(x[2]+(y[2]-x[2])*t)+')';
+  }
+  function lum(c){
+    var q=parseCol(c);
+    if(!q)return null;
+    var l=[],i,v;
+    for(i=0;i<3;i++){
+      v=q[i]/255;
+      l.push(v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));
+    }
+    return 0.2126*l[0]+0.7152*l[1]+0.0722*l[2];
+  }
+  /* nearest ancestor that actually paints, so a colour can be judged against the
+     ground it will be seen on rather than against an assumption about the theme */
+  function groundOf(node){
+    for(var n=node;n&&n!==document;n=n.parentElement){
+      var c=getComputedStyle(n).backgroundColor;
+      if(opaque(c))return c;
+    }
+    return '#0F0D14';
+  }
+
+  /* ══ 1 · the reveal's mark ══════════════════════════════════════════════
+     The mark wakes, deforms in place and sleeps. It is a control's indicator,
+     not the source of a liquid: an earlier design had it pour into the panel
+     below and the whole spill apparatus was abandoned after four rounds. */
+  (function(){
+    var det=document.querySelector('.rev');
+    if(!det)return;
+    var sum=det.querySelector('summary');
+    var slot=det.querySelector('.rv-i');
+    if(!sum||!slot)return;
+
+    /* The label swap runs on EVERY pointer type and under reduced motion, because
+       it is information rather than decoration: "Reveal" is what the control does
+       while shut, and once the address is on screen the only thing left to do is
+       put it away. The strike-through on the question is pure CSS for the same
+       reason. Both degrade correctly with JS off — the <details> still opens, and
+       a statutory contact route may not depend on scripting (PRIVACY 13). */
+    var actionLabel=det.querySelector('.rv-a');
+    function syncLabel(){
+      if(actionLabel)actionLabel.textContent=det.open?'Hide':'Reveal';
+    }
+    syncLabel();
+    det.addEventListener('toggle',syncLabel);
+
+    /* ⚠️ DESKTOP ONLY, AND THE FILTER IS WHY. The buds merging with the core is
+       the one thing on this surface that genuinely needs the SVG crush, and an
+       SVG filter renders a swarm as hard circles on iOS. So touch keeps the
+       site's original sliding fill, which is a complete treatment in its own
+       right rather than a degraded one. */
+    if(!fine||reduce)return;
+
+    det.classList.add('rv-anim');
+    var host=det.parentElement||det;
+    host.classList.add('rv-host');
+    var goo=el('span','rv-goo');
+    goo.setAttribute('aria-hidden','true');
+    var mark=el('span','rv-m');
+    goo.appendChild(mark);
+    /* the crisp resting pill — see .rv-plate in the stylesheet for why the filter
+       cannot draw this one, and outside .rv-goo so it stays unfiltered */
+    var plate=el('span','rv-plate');
+    plate.setAttribute('aria-hidden','true');
+
+    var MK_W=14,MK_H=6.5,BUDMAX=6,BUD_R=3.4;
+    var buds=[],bi,bn;
+    for(bi=0;bi<3;bi++){
+      bn=el('span','rv-bud');
+      goo.appendChild(bn);
+      buds.push({n:bn,ph:rnd(0,6.28),sp:rnd(1.1,1.9),orb:rnd(1.7,2.7),
+                 dir:bi%2?1:-1,r0:rnd(1.5,3.5),r1:rnd(1.6,3.2),rj:rnd(0.85,1.15)});
+    }
+    host.insertBefore(goo,det);
+    host.insertBefore(plate,det);
+
+    var aliveT=0,hovering=false,raf=0;
+    function aliveWanted(){return hovering||det.open;}
+
+    function draw(now){
+      var tsec=now/1000;
+      var R=host.getBoundingClientRect(),S=slot.getBoundingClientRect();
+      goo.style.width=R.width+'px';
+      goo.style.height=R.height+'px';
+      var cxp=S.left-R.left+S.width/2;
+      var cys=S.top-R.top+S.height/2;
+
+      var mW=MK_W*(1+0.07*aliveT*Math.sin(tsec*1.90+0.7));
+      var mH=MK_H*(1+0.14*aliveT*Math.sin(tsec*2.70));
+      mark.style.width=mW.toFixed(2)+'px';
+      mark.style.height=mH.toFixed(2)+'px';
+
+      /* ⚠️ 0.85 + c*0.21 SPANS 0.85-2.32 rad/s, WHICH IS THE LIQUID CURSOR'S OWN
+         BAND — its masses pulse at 1.1-2.3 and orbit at 0.9-3.2, and matching the
+         cursor is what this was asked for. Every alternative below was BUILT and
+         compared against it live on 2026-08-03 13:49 EDT, and this one was kept;
+         the table is therefore evidence for the current value, not a menu of
+         pending options. The whole reason these coefficients are written down
+         rather than tuned by eye is that the mean shape-change per 0.14s across
+         the eight radii is a real, reproducible number:
+
+             0.39 + c*0.12   1.88   flat — eight near-identical rotating ovals
+             0.55 + c*0.17   2.62   the v11 band
+             0.70 + c*0.19   3.13   the midpoint between the two ends
+             0.85 + c*0.21   3.65   SHIPPED
+             1.05 + c*0.26   4.19
+             1.30 + c*0.32   6.11   frantic
+
+         The topological events — a lobe separating with a visible neck, a pinched
+         two-lobed hourglass — come from THIS LINE and not from the buds, because
+         it is opposing corners hitting their extremes that pinches the outline.
+         Below roughly the v11 band they stop happening within a glance.
+
+         ⚠️ AND THE REST STATE IS A PILL, NOT AN OVAL. Every other control on the
+         site is a stadium (border-radius:999px on .ghb and .ins), and a lone
+         ellipse read as a different vocabulary. A stadium is not "50% everywhere":
+         it is a corner radius of HALF THE HEIGHT in both axes, which as a
+         percentage of a 14x6.5 box is 23.2% horizontally and 50% vertically — so
+         the two halves of the eight-value string need different rest values, and
+         they are derived from the live box rather than hardcoded so the mark stays
+         a true stadium while it breathes. The awake target is unchanged; only what
+         it eases FROM has moved, which is why the rate figures above still hold. */
+      var pillH=(mH/2)/mW*100;      // a stadium's cap radius, as a % of the width
+      var rr8='',c8,w8,rest;
+      for(c8=0;c8<8;c8++){
+        rest=c8<4?pillH:50;         // first four are horizontal radii, last four vertical
+        w8=50+26*Math.sin(tsec*(0.85+c8*0.21)+c8*2.1);
+        rr8+=(rest+(w8-rest)*aliveT).toFixed(1)+'%'+(c8===3?' / ':c8===7?'':' ');
+      }
+      mark.style.borderRadius=rr8;
+
+      /* ── the handover ────────────────────────────────────────────────────
+         The crisp plate owns the rest state and the filtered mark owns every
+         awake one, crossfading over the first fifth of the wake so the pill is
+         seen to break apart rather than to be swapped out. Quick on purpose: the
+         two are the same colour and nearly the same size, so a slow dissolve just
+         reads as the edge going soft.
+         ⚠️ visibility, not opacity alone, while the goo is idle. A filtered
+         element still allocates its filter REGION at opacity 0, and that region
+         is what once showed as a stray disc parked behind a control. */
+      var hand=Math.min(1,aliveT*5);
+      plate.style.width=MK_W.toFixed(2)+'px';
+      plate.style.height=MK_H.toFixed(2)+'px';
+      plate.style.transform='translate('+(cxp-MK_W/2).toFixed(2)+'px,'
+        +(cys-MK_H/2).toFixed(2)+'px)';
+      plate.style.opacity=(1-hand).toFixed(3);
+      goo.style.opacity=hand.toFixed(3);
+      goo.style.visibility=hand<0.004?'hidden':'visible';
+
+      var tilt=8*aliveT*Math.sin(tsec*0.90+1.3);
+      mark.style.transform='translate('+(cxp-mW/2).toFixed(2)+'px,'
+        +(cys-mH/2).toFixed(2)+'px) rotate('+tilt.toFixed(2)+'deg)';
+
+      /* The buds ORBIT rather than shuttle: each walks a continuous ellipse at its
+         own rate and direction, so a neck thins somewhere unpredictable and
+         re-merges somewhere else. Deriving the orbit rate from the radius clock
+         gave ~0.86 rad/s and looked static, so it is its own constant.
+         At aliveT 0 the radius goes to 0, which puts them under the crush's paint
+         floor — they stop being drawn rather than fading out. */
+      for(var i=0;i<buds.length;i++){
+        var bd=buds[i],bph=tsec*bd.sp+bd.ph;
+        var ang=bd.dir*tsec*bd.orb+bd.ph;
+        var rad=bd.r0+bd.r1*Math.sin(bph*1.3);
+        var br=BUD_R*bd.rj*aliveT*(0.68+0.5*(0.5+0.5*Math.sin(bph*0.8+1.1)));
+        var bxo=cxp+Math.cos(ang)*(mW*0.40+rad);
+        var byo=cys+Math.sin(ang)*(mH*0.95+rad*0.8);
+        bd.n.style.transform='translate('+(bxo-BUDMAX).toFixed(2)+'px,'
+          +(byo-BUDMAX).toFixed(2)+'px) scale('+(br/BUDMAX).toFixed(3)+')';
+      }
+    }
+
+    function loop(now){
+      var want=aliveWanted()?1:0;
+      aliveT+=(want-aliveT)*0.12;
+      if(Math.abs(want-aliveT)<0.004)aliveT=want;
+      draw(now);
+      if(aliveT>0.002)raf=requestAnimationFrame(loop);
+      else{raf=0;draw(now);}
+    }
+    function kick(){if(!raf)raf=requestAnimationFrame(loop);}
+    function setHover(h){hovering=h;kick();}
+    sum.addEventListener('pointerenter',function(){setHover(true);});
+    sum.addEventListener('pointerleave',function(){setHover(false);});
+    sum.addEventListener('focus',function(){setHover(true);});
+    sum.addEventListener('blur',function(){setHover(false);});
+    det.addEventListener('toggle',kick);
+    addEventListener('resize',function(){draw(performance.now());});
+    draw(performance.now());
+    if(aliveWanted())kick();
+  })();
+
+  /* ══ 2 · the liquid cursor ══════════════════════════════════════════════ */
+  (function(){
+    if(!fine||reduce)return;
+
+    var BOX=220,HALF=BOX/2;
+    var ink=el('div','cur-ink');
+    ink.setAttribute('aria-hidden','true');
+
+    /* Seven masses. lag 0 is the tip you actually point with; the rest trail, so
+       the body smears into a teardrop when you move and gathers when you stop.
+       orb/w give each one a slow orbit at its own rate and direction, which is
+       what stops the silhouette repeating — a single circle read as dead. */
+    var spec=[
+      {R:5.6,lag:0.00,orb:1.8,w:0.9,k:0.62},
+      {R:5.0,lag:0.09,orb:3.4,w:-1.3,k:0.52},
+      {R:4.3,lag:0.19,orb:4.6,w:1.7,k:0.44},
+      {R:3.7,lag:0.32,orb:4.0,w:-2.2,k:0.36},
+      {R:3.1,lag:0.62,orb:2.8,w:2.7,k:0.22},
+      {R:2.6,lag:0.86,orb:1.9,w:-3.2,k:0.16},
+      {R:2.2,lag:1.10,orb:1.4,w:2.3,k:0.12}
+    ];
+    var parts=[],si,dot;
+    for(si=0;si<spec.length;si++){
+      dot=el('span','cur-d');
+      dot.style.width=(spec[si].R*2).toFixed(1)+'px';
+      dot.style.height=(spec[si].R*2).toFixed(1)+'px';
+      dot.style.marginLeft=(-spec[si].R).toFixed(1)+'px';
+      dot.style.marginTop=(-spec[si].R).toFixed(1)+'px';
+      ink.appendChild(dot);
+      parts.push({n:dot,s:spec[si],x:0,y:0,ph:rnd(0,6.28),os:rnd(1.1,2.3),ba:0,bd:0});
+    }
+    document.body.appendChild(ink);
+
+    var cx=0,cy=0,seeded=false,on=true;
+    var cen={x:0,y:0,px:0,py:0};
+    var raf=0,hitT=0,lastHost=null;
+    /* ⚠️ THE CRUSH DOES THE DESTROYING. At the apex a trailing mass is scaled to
+       about a third of its radius, which puts it under the ~4.5px paint floor
+       measured for this filter — so it genuinely stops being painted rather than
+       fading, then is drawn back in as the parts return and re-merge. */
+    var BURST=620,burstAt=-1e9;
+    var sx=1,sy=1,spread=1,tsx=1,tsy=1,tspread=1;
+    var beam=0,tbeam=0;   /* 0 = blob, 1 = fully a text caret */
+    var lineH=20;         /* the line box under the pointer, from onGlyphs() */
+    /* ⚠️ THE SEVEN MASSES ARE DELIBERATELY UNEQUAL — 5.6 down to 2.2 — because a
+       teardrop needs a heavy head and a thin tail. Stacked into a caret that
+       taper becomes a defect: the small masses at one end erode away under the
+       crush and the bar hangs off-centre, which is exactly how it rasterised.
+       So text mode eases every mass toward ONE radius; the swarm keeps its
+       tapered silhouette everywhere else.
+       ⚠️ THAT RADIUS IS SET BY THE PAINT FLOOR, NOT BY THE MEAN. Easing to the
+       mean (3.79) was tried and rasterised as a short lozenge again: at 0.46 of
+       horizontal scale a 3.79 mass paints 3.5px wide, under the ~4.5px floor
+       this filter thresholds at, so the crush ate the whole stack. 6.0 paints
+       ~5.5px and survives, which is what makes the bar continuous. Re-measure
+       it if stdDeviation on #dbgoo-p or the crush matrix changes. */
+    var RBEAM=6.2;
+
+    var baseCol=(getComputedStyle(document.body)
+                  .getPropertyValue('--accent')||'').trim()||'#F2994A';
+    var tgtCol=baseCol,curCol=baseCol,wroteCol='';
+
+    /* ⚠️ NOT EVERY SURFACE ANNOUNCES ITSELF THE SAME WAY, and assuming --accent
+       was the whole story left two surfaces flat. Measured on the live page: the
+       landing rows scope --accent (and custom properties inherit, so the computed
+       value under the pointer is already the nearest one); the .inv tickets scope
+       --ia instead and leave --accent at the page value; and the GitHub button
+       scopes no variable at all, its identity being its own color.
+       So the chain runs most-local-first, and the --accent step compares against
+       the PAGE value rather than merely reading it — equal means nothing in scope
+       has overridden it, which is what separates a row from open prose. */
+    function accentOf(e){
+      var cs=getComputedStyle(e);
+      var ia=cs.getPropertyValue('--ia').trim();
+      if(ia)return ia;
+      var ac=cs.getPropertyValue('--accent').trim();
+      if(ac&&ac!==baseCol)return ac;
+      /* ⚠️ ONLY BORROW THE INK OF A CONTROL THAT PAINTS ITS OWN CHIP. This step
+         exists for the GitHub capsule, whose identity really is its color. But a
+         landing row and the reveal's <summary> match the same selector list and
+         their color is the body text ramp, so borrowing it turned the swarm
+         near-white over "Terms" and over "Prefer email?". Judging by COLOUR cannot
+         separate those cases — both wanted and unwanted are --ink-family. Judging
+         by whether the element draws a box can: a chip has an edge, a text surface
+         does not. Row 01 proves the guard is needed at all, because its scoped
+         --accent EQUALS the page accent and so falls through to here. */
+      var h=e.closest('a,button,summary,[role="button"]');
+      if(h){
+        var hs=getComputedStyle(h),c=hs.color;
+        var chip=(parseFloat(hs.borderTopWidth)>0&&opaque(hs.borderTopColor))
+              ||opaque(hs.backgroundColor);
+        /* the chip's OWN fill is the ground the swarm will be seen against; a
+           chip identified only by its border has none, so fall back to the page */
+        var seat=opaque(hs.backgroundColor)?hs.backgroundColor:groundOf(h);
+        if(c&&chip&&legible(c,seat))return c;
+      }
+      return ac||baseCol;
+    }
+    /* ⚠️ A CONTROL'S OWN color IS NOT ALWAYS WORTH WEARING. The back-to-top
+       computes to black — its ring paints from --accent, but the element's color
+       is rgb(0,0,0) — so the step above once handed the swarm black and it
+       disappeared into the page on hover. Rejecting on CONTRAST against the page
+       ground rather than on darkness keeps that right in both themes: a near-white
+       candidate on light paper fails the same test. Everything wanted passes
+       comfortably (the GitHub lavender-grey 7.3:1, the darkest row accent 5.7:1);
+       black is 1.16:1. */
+    /* ⚠️ JUDGED AGAINST THE SURFACE IT WILL SIT ON, NOT AGAINST THE PAGE, and
+       that correction is what makes the Install button behave the same way in
+       both themes (changed 2026-08-03 15:57 EDT).
+       .ins is color:#141021 on background:var(--accent) in BOTH themes. Tested
+       against the PAGE ground, that near-black passed on light paper and failed
+       at 1.16:1 on the dark page — so the swarm went dark over the button in
+       light mode and fell back to the page accent in dark mode, which is orange
+       on orange and all but invisible. Harkirat saw the light-mode version,
+       liked it, and asked for it in dark mode; it was never a light-mode
+       flourish, it was this test asking about the wrong background.
+       The swarm is drawn ON the chip, so the chip's own fill is the ground that
+       decides whether its ink is legible. #141021 on amber clears comfortably in
+       either theme, so the dark blob is now the behaviour in both.
+       ⚠️ The back-to-top — the case this test was built for — is untouched, and
+       MEASURED so rather than argued: the swarm stays at the page accent over it
+       in both themes. The reason is not this test at all, which is worth writing
+       down because the obvious explanation is wrong. Its background computes to
+       color(srgb 0.11 0.10 0.15 / 0.9), and parseCol() reads # and rgb() only,
+       so opaque() is false, so it never counts as a chip and never reaches the
+       colour-borrowing branch. Any control whose background is a color-mix()
+       lands the same way, because Chrome serialises those as color(srgb …).
+       Teaching parseCol() that syntax is therefore NOT a tidy-up — it would make
+       those controls chips for the first time and hand the swarm their ink.
+       A chip with no opaque fill of its own falls back to the page ground. */
+    function legible(c,ground){
+      var a=lum(c),b=lum(ground||groundOf(document.body));
+      if(a==null||b==null)return true;
+      return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)>=1.6;
+    }
+    /* ⚠️ THE FORM IS THE AFFORDANCE. A cursor that replaces the arrow has to say
+       what the arrow said: an I-beam over prose, a wider softer halo over anything
+       pressable. Doing it by squashing the same body keeps it one creature rather
+       than a set of swapped icons. */
+    function shapeFor(m){
+      /* ⚠️ THE BEAM IS A CARET, AND A CARET'S JOB IS TO SAY WHICH LETTER.
+         Three separate faults were reported together on 2026-08-03 16:40 EDT —
+         it nearly vanished on click, it breathed too hard, and it was hard to
+         tell where the selection would start — and only the second is about
+         breathing. They are fixed by the eased 0-1 'beam', which says how far
+         into text mode the swarm is, applied in tick() to the LAG, the
+         breathing and the click burst. See each site there.
+         The targets here only do the shape: thinner and taller, because a
+         caret's precision is horizontal and its legibility is vertical. */
+      if(m==='text'){tsx=0.39;tsy=0.50;tspread=0.30;}
+      else if(m==='link'){tsx=1.5;tsy=1.5;tspread=1.9;}
+      else{tsx=1;tsy=1;tspread=1;}
+      tbeam=(m==='text')?1:0;
+      ink.classList.toggle('soft',m==='text');
+    }
+    /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
+       not free, and the shape and the colour both want the same element. */
+    /* ⚠️ A PARAGRAPH'S BOX IS NOT ITS TEXT, and treating them as the same thing
+       is what put the I-beam on half the page. A <p> is a block: it spans the
+       full measure, so its box covers the ragged right of every line and the
+       whole width below the last one. closest('p') therefore said "text" while
+       the pointer sat in open space several centimetres from a glyph — reported
+       2026-08-03 16:21 EDT with a screenshot of exactly that.
+       The caret is the honest test. caretRangeFromPoint snaps to the nearest
+       insertion point, so its rect sits AT the end of a short line while the
+       pointer is out in the margin; requiring the pointer to be within a glyph's
+       width of it turns "inside the block" into "on the writing". 14px is about
+       one character at body size, which keeps the beam from flickering off in
+       the gaps between words. */
+    function onGlyphs(x,y){
+      var r=null,rg,cp;
+      if(document.caretRangeFromPoint){
+        rg=document.caretRangeFromPoint(x,y);
+        if(rg)r=rg.getBoundingClientRect();
+      }else if(document.caretPositionFromPoint){
+        cp=document.caretPositionFromPoint(x,y);
+        if(cp&&cp.offsetNode){
+          rg=document.createRange();
+          rg.setStart(cp.offsetNode,cp.offset);
+          rg.collapse(true);
+          r=rg.getBoundingClientRect();
+        }
+      }
+      /* No caret API, or a caret with no box: fall back to the old behaviour
+         rather than losing the I-beam entirely. */
+      if(!r)return true;
+      if(!r.width&&!r.height)return true;
+      /* the caret rect is the LINE BOX, so this is the height the beam should
+         be — measured off the text it is actually over, not assumed */
+      if(r.height>6&&r.height<80)lineH=r.height;
+      return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
+    }
+    function probe(){
+      var e=document.elementFromPoint(cx,cy);
+      if(!e)return;
+      shapeFor(
+        e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
+        :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
+          &&onGlyphs(cx,cy))?'text':'idle');
+      /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
+         color over 220ms on hover, so sampling every 90ms walked the swarm up that
+         ramp (a white flash) and then dropped it. Latching on the surface reads the
+         colour once on arrival and holds it. */
+      var h=e.closest('.inv,.entry,a,button,summary,[role="button"]')||document.body;
+      if(h===lastHost)return;
+      lastHost=h;
+      var v=accentOf(e);
+      if(v)tgtCol=v;
+    }
+
+    function tick(now){
+      var t=now/1000;
+      /* VIEWPORT COORDINATES, and the layer is position:fixed. Positioning it in
+         the document and adding scrollY is only correct when the document itself
+         is the scroller; a pointer lives in viewport space, so there is no scroll
+         term left to get wrong. */
+      cen.x+=(cx-cen.x)*0.62;
+      cen.y+=(cy-cen.y)*0.62;
+      var dvx=cen.x-cen.px,dvy=cen.y-cen.py;
+      cen.px=cen.x;cen.py=cen.y;
+      var sp=Math.min(1,Math.sqrt(dvx*dvx+dvy*dvy)/24);
+
+      if(now-hitT>90){hitT=now;probe();}
+      sx+=(tsx-sx)*0.16;sy+=(tsy-sy)*0.16;
+      spread+=(tspread-spread)*0.16;
+      beam+=(tbeam-beam)*0.16;
+      /* Eased per frame rather than by a CSS transition: the target changes every
+         time the pointer crosses a boundary, and a transition would restart from
+         wherever it had reached and stutter. mix() rounds to whole channels, so
+         the write stops by itself once it has arrived. */
+      curCol=mix(curCol,tgtCol,0.09);
+      if(curCol!==wroteCol){ink.style.color=curCol;wroteCol=curCol;}
+
+      var ox=cen.x-HALF,oy=cen.y-HALF;
+      ink.style.transform='translate('+ox.toFixed(1)+'px,'+oy.toFixed(1)+'px)';
+
+      for(var i=0;i<parts.length;i++){
+        var p=parts[i],s=p.s;
+        var ang=p.ph+t*s.w;
+        /* the orbit itself is squashed by the shape, so becoming an I-beam is a
+           deformation of the same cluster rather than a different object */
+        var gx=Math.cos(ang)*s.orb*spread*sx*(1-0.45*sp);
+        var gy=Math.sin(ang)*s.orb*spread*sy*(1-0.45*sp);
+        /* ⚠️ THE LAG IS WHY IT WAS HARD TO AIM. Seven masses trailing the
+           pointer put the swarm's visible centre BEHIND the true position, so
+           the thing you were reading as the caret sat a few pixels back from
+           the letter it would actually select from. A teardrop wants that
+           smear; a caret must not have it, so text mode pulls the trail in to
+           a quarter and the masses stack into one bar on the real x. */
+        var lagK=8.5*(1-0.76*beam);
+        /* ⚠️ AND THE FOLLOW RATES ARE EQUALISED TOO. Symmetry alone is not
+           enough: the masses lerp at their own k, 0.62 down to 0.12, so the
+           outer ones would still arrive late and the bar would flex like a
+           whip on every move. In text mode they converge on one rate and the
+           caret travels as a single object. */
+        var kk=s.k+beam*(0.46-s.k);
+        /* ⚠️ THE CARET IS A STACK OF MASSES, NOT ONE SQUASHED ELLIPSE, and that
+           is the whole difference. Squashing the cluster to 0.24 wide and 2.85
+           tall looked right in the numbers and rasterised as a SHORT LOZENGE
+           about an x-height long: a Gaussian erodes a curve in proportion to
+           its curvature, so a thin tall ellipse loses its ends first and the
+           alpha crush then thresholds them away. Making it thinner made it
+           shorter — the same anisotropy the nav pill's dilation table records,
+           running the other way.
+           So the masses are spread along Y instead and left round enough to
+           survive on their own. The crush merges them into one continuous bar,
+           which is what the filter is FOR, and the bar cannot be eroded from
+           the ends because there is another mass there. Its length is the line
+           box measured under the pointer, so the caret matches the text it is
+           sitting in rather than a constant. */
+        /* ⚠️ THE STACK IS ORDERED FROM THE CENTRE OUT, NOT TOP TO BOTTOM.
+           Laid out by raw index it put mass 0 — lag 0, the one that tracks the
+           pointer instantly — at the TOP, and mass 6 — lag 1.10, the slowest —
+           at the bottom. The bar was therefore pinned by its top edge with its
+           bottom dragging behind, reported exactly that way. Ordering by
+           distance from the middle (0, +1, -1, +2, -2, ...) puts the fastest
+           mass at the CENTRE and fans the laggards symmetrically above and
+           below, so the thing that stays under the pointer is the middle of the
+           caret, which is where the eye reads its position. */
+        var half=(parts.length-1)/2;
+        var ord=(i%2?1:-1)*Math.ceil(i/2);
+        var stack=beam*(ord/Math.max(1,half))*lineH*0.45;
+        p.x+=((cen.x+gx-dvx*s.lag*lagK)-p.x)*kk;
+        p.y+=((cen.y+gy+stack-dvy*s.lag*lagK)-p.y)*kk;
+        /* the breathing is what makes the blob feel alive and what makes the
+           caret feel unsteady, so it is damped as the beam forms, not removed */
+        var scl=(1+0.17*(1-0.66*beam)*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
+        var bx=0,by=0;
+        var bt=(now-burstAt)/BURST;
+        if(bt>=0&&bt<1){
+          /* ⚠️ THE TIP STAYS. The first burst scaled every mass to a third, which
+             put ALL of them under the paint floor — the pointer vanished outright
+             mid-drag, which is unusable when the native arrow is hidden. Only the
+             trailing masses fly out and evaporate; the tip moves and shrinks a
+             little and never leaves the screen. */
+          /* ⚠️ THE BURST IS SUPPRESSED IN TEXT MODE. Its whole design is that
+             trailing masses fall under the paint floor and stop being drawn —
+             correct for a blob, catastrophic for a caret, because a click is
+             exactly the moment you need to see where it is. Reported as "it
+             nearly disappears upon a click". */
+          var out=Math.sin(Math.PI*Math.pow(bt,0.55))*(1-0.82*beam);
+          var w=s.lag;
+          bx=Math.cos(p.ba)*p.bd*out*(0.18+w);
+          by=Math.sin(p.ba)*p.bd*out*(0.18+w);
+          /* ⚠️ DAMPED BY beam TOO. Scaling only the travel and the opacity left
+             this line at full strength, and it is the one that actually removes
+             the caret: measured, the bar still lost half its height on a click
+             (20.5px down to 8.9px) while the other two were already suppressed. */
+          scl*=1-(0.14+0.5*w)*(1-0.86*beam)*Math.sin(Math.PI*Math.pow(bt,0.8));
+          if(w>0.25)p.n.style.opacity=String(1-(0.92-0.74*beam)*out);
+        }else if(p.n.style.opacity!==''){p.n.style.opacity='';}
+        var eq=1+beam*(RBEAM/s.R-1);
+        p.n.style.transform='translate('+(p.x-ox+bx).toFixed(1)+'px,'
+          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx*eq).toFixed(3)+','
+          +(scl*sy*eq).toFixed(3)+')';
+      }
+
+      /* ⚠️ NO IDLE FADE-OUT WHILE THIS IS THE POINTER. An earlier version faded the
+         swarm after 2.6s of stillness — harmless when it merely followed the arrow,
+         catastrophic now that it replaces it, because cursor:none stays applied and
+         holding still would leave no pointer on screen at all. */
+      raf=requestAnimationFrame(tick);
+    }
+
+    /* ⚠️ THE ARROW IS NOT HIDDEN UNTIL THE SWARM IS ACTUALLY DRAWN. html.liq used
+       to go on at load, but .cur-ink only becomes visible on the first pointermove
+       — so a reader who had not moved the mouse yet had no arrow AND no swarm. The
+       class now goes on at the same moment the masses are seeded. */
+    function wake(){
+      ink.classList.add('on');
+      if(on)document.documentElement.classList.add('liq');
+      if(!raf)raf=requestAnimationFrame(tick);
+    }
+    function sleep(){
+      ink.classList.remove('on');
+      document.documentElement.classList.remove('liq');
+      cancelAnimationFrame(raf);raf=0;
+    }
+    addEventListener('pointermove',function(ev){
+      if(!on||ev.pointerType==='touch')return;
+      cx=ev.clientX;cy=ev.clientY;
+      if(!seeded){
+        seeded=true;
+        cen.x=cen.px=cx;cen.y=cen.py=cy;
+        for(var i=0;i<parts.length;i++){parts[i].x=cen.x;parts[i].y=cen.y;}
+      }
+      wake();
+    },{passive:true});
+    /* no scroll handler at all: in viewport space the pointer does not move when
+       the page does, so there is nothing to compensate for */
+    addEventListener('pointerdown',function(ev){
+      if(!on||ev.pointerType==='touch')return;
+      burstAt=performance.now();
+      for(var i=0;i<parts.length;i++){
+        parts[i].ba=rnd(0,6.283);
+        parts[i].bd=rnd(24,62)*(0.6+parts[i].s.lag*0.7);
+      }
+      wake();
+    },{passive:true});
+    addEventListener('pointerleave',sleep);
+    addEventListener('pointerenter',function(){
+      if(on&&seeded)document.documentElement.classList.add('liq');
+    });
+    /* ⚠️ NO blur HANDLER. One was added so an alt-tab could not strand the page
+       without a pointer, and it backfired: any overlay taking focus — a screen
+       recorder, devtools, a notification — fires blur while the pointer is still
+       over the page, which stripped cursor:none AND cancelled the frame loop.
+       visibilitychange covers the case that actually matters. */
+    document.addEventListener('visibilitychange',function(){
+      if(document.hidden)sleep();
+    });
+    addEventListener('pagehide',sleep);
+  })();
+
+  /* ══ 3 · landing rows and tickets, scroll-linked ════════════════════════
+     ⚠️ ON A PHONE THOSE ROWS HAD NO ANIMATION WHATSOEVER, and the reason is
+     structural rather than a missing feature: every rule that drives them — the
+     wiping bar, the accent wash, the number's colour — sits inside
+     (hover:hover), which the build applies MECHANICALLY to every :hover rule on
+     the site. That is correct (on touch, :hover latches until you tap elsewhere)
+     and it also means nothing there can ever fire. POSITION is the only input a
+     phone has, so the same treatment gets a different driver. */
+  (function(){
+    var wrap=document.querySelector('main.wrap');
+    var list=document.querySelector('.list');
+    if(!wrap||!list)return;
+    var rows=[].slice.call(list.querySelectorAll('.entry'))
+      .concat([].slice.call(document.querySelectorAll('.inv')));
+    if(!rows.length)return;
+
+    /* Any coarse pointer, and also a narrow window so this is testable without
+       reaching for a phone. */
+    var mq=matchMedia('(max-width:700px)');
+    function wanted(){return !fine||mq.matches;}
+
+    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    function pick(){
+      queued=0;
+      if(!wrap.classList.contains('scrolly'))return;
+      var y=scrollY_();
+      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
+      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
+         A fixed line only marks a row once the row has reached it, so on the way
+         down the highlight always trails what you are looking at. Offsetting the
+         line by a tenth of the viewport in the direction of travel moves it DOWN
+         while scrolling down, which is the direction rows arrive from, so a row is
+         claimed on approach instead of on arrival — and symmetrically on the way
+         back up. 0.46 rather than dead centre because the row being read sits
+         above the middle of a phone screen, not on it. */
+      var line=innerHeight*(0.46+dir*0.10);
+      var best=-1,bestD=1e9,i,r,d;
+      for(i=0;i<rows.length;i++){
+        r=rows[i].getBoundingClientRect();
+        if(r.bottom<8||r.top>innerHeight-8)continue;
+        d=Math.abs(r.top+r.height/2-line);
+        if(d<bestD){bestD=d;best=i;}
+      }
+      if(best===cur)return;
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=best;
+      if(cur>=0)rows[cur].classList.add('act');
+    }
+    function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    function sync(){
+      var want=wanted(),i;
+      wrap.classList.toggle('scrolly',want);
+      if(!want){
+        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
+        cur=-1;
+      }else{cur=-1;pick();}
+    }
+    addEventListener('scroll',onScroll,{passive:true});
+    addEventListener('resize',function(){sync();onScroll();},{passive:true});
+    if(mq.addEventListener)mq.addEventListener('change',sync);
+    sync();
+  })();
+
+  /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
+  (function(){
+    var tt=document.getElementById('totop');
+    if(!tt)return;
+    function past(){return scrollY_()>innerHeight*0.6;}
+
+    /* Under reduced motion the shipped behaviour is kept exactly as it was — a
+       plain appear/disappear plus the arrow's own fire animation. This branch is
+       the whole reason the hosts could hand ownership of .on over: there is
+       always exactly one writer, and here it is this one. */
+    if(reduce){
+      var plain=function(){tt.classList.toggle('on',past());};
+      addEventListener('scroll',plain,{passive:true});
+      tt.addEventListener('click',function(){
+        tt.classList.remove('fire');
+        void tt.offsetWidth;
+        tt.classList.add('fire');
+        scrollTo({top:0,behavior:'auto'});
+      });
+      tt.addEventListener('animationend',function(){tt.classList.remove('fire');});
+      plain();
+      return;
+    }
+
+    var tink=el('span','tt-ink');
+    tink.setAttribute('aria-hidden','true');
+    var tgoo=el('span','tt-goo');
+    var blob=el('span','tt-blob');
+    tgoo.appendChild(blob);
+    var TN=16,tds=[],ti,td;
+    for(ti=0;ti<TN;ti++){td=el('span','tt-d');tgoo.appendChild(td);tds.push(td);}
+    tink.appendChild(tgoo);
+    tt.insertBefore(tink,tt.firstChild);
+    /* the swarm runs on touch too — only its FILTER is dropped there */
+    if(!fine)tt.classList.add('nogoo');
+
+    var born=false,traf=0,busy=false,settling=false,settleT=0;
+    function ringRoll(lo,hi){
+      var out=[],k;
+      for(k=0;k<TN;k++)
+        out.push({a:(k/TN)*Math.PI*2+rnd(-0.5,0.5),r:rnd(lo,hi),
+                  dl:Math.random()*0.26,sz:rnd(0.6,1.25)});
+      return out;
+    }
+    /* ⚠️ NO BIRTH ON TOUCH, AND ONLY THE BIRTH. The coalescence is the part that
+       needs masses to MERGE, and merging needs the filter iOS renders as hard
+       circles; the launch reads fine as plain droplets flying apart, so only the
+       arrival is dropped and the button simply appears. This is narrower than an
+       earlier guard, which skipped both and quietly took the whole effect off
+       mobile. */
+    function birth(){
+      if(!fine){tt.classList.add('on');busy=false;return;}
+      busy=true;
+      tt.classList.add('on','birth');
+      var seat=ringRoll(30,58),dur=rnd(560,760),s0=performance.now();
+      cancelAnimationFrame(traf);
+      (function frame(now){
+        var q=Math.min(1,(now-s0)/dur),i,g,u,rr;
+        blob.style.transform='translate(0,0) scale('+ease(q,2.6).toFixed(3)+')';
+        for(i=0;i<TN;i++){
+          g=seat[i];u=cl01((q-g.dl)/(0.90-g.dl));
+          rr=g.r*Math.pow(1-u,2.3);
+          tds[i].style.opacity=(u<=0||u>=1)?'0':'1';
+          tds[i].style.transform='translate('+(Math.cos(g.a)*rr).toFixed(2)+'px,'
+            +(Math.sin(g.a)*rr).toFixed(2)+'px) scale('
+            +(g.sz*(0.45+0.55*Math.sin(Math.PI*Math.min(u,1)))).toFixed(3)+')';
+        }
+        if(q<1)traf=requestAnimationFrame(frame);
+        else{
+          tt.style.transition='background .14s ease,border-color .14s ease';
+          tt.classList.remove('birth');busy=false;
+          setTimeout(function(){tt.style.transition='';},200);
+        }
+      })(s0);
+    }
+    function launch(){
+      if(busy)return;
+      busy=true;settling=true;
+      clearTimeout(settleT);
+      settleT=setTimeout(function(){settling=false;born=false;},2600);
+      tt.classList.add('birth');
+      var seat=ringRoll(44,96),s0=performance.now();
+      cancelAnimationFrame(traf);
+      scrollTo({top:0,behavior:'smooth'});
+      (function frame(now){
+        var q=Math.min(1,(now-s0)/560),i,g,u,rr,k;
+        var sq=q<0.18?1+q*0.9:1.16-ease((q-0.18)/0.82,1.8)*1.16;
+        blob.style.transform='translate(0,'+(-26*ease(q,2.1)).toFixed(2)
+          +'px) scale('+Math.max(0,sq).toFixed(3)+')';
+        for(i=0;i<TN;i++){
+          g=seat[i];u=cl01((q-g.dl*0.6)/(1-g.dl*0.6));
+          rr=g.r*ease(u,1.7);
+          tds[i].style.opacity=String(u>=1?0:(1-u*u)*0.95);
+          tds[i].style.transform='translate('+(Math.cos(g.a)*rr*0.55).toFixed(2)
+            +'px,'+(-Math.abs(Math.sin(g.a))*rr-rr*0.35).toFixed(2)
+            +'px) scale('+(g.sz*(1-u*0.75)).toFixed(3)+')';
+        }
+        if(q<1)traf=requestAnimationFrame(frame);
+        else{
+          /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
+             BUG. Measured: on is never re-added after a launch, but the control's
+             computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
+             Removing on and birth in one statement hands the fade to the .totop
+             transition, and birth is also what hides the ring and the arrow — so
+             for ~300ms after the liquid has flown away the REAL button chrome pops
+             back and fades out behind it. It never was a second birth, which is
+             why two fixes aimed at the threshold missed it.
+             Drop on while birth still applies (.totop.birth carries
+             transition:none, so it goes to 0 instantly), flush that state, and
+             only then drop birth. */
+          tt.classList.remove('on');
+          void tt.offsetWidth;
+          tt.classList.remove('birth');
+          blob.style.transform='scale(0)';
+          for(k=0;k<TN;k++)tds[k].style.opacity='0';
+          busy=false;
+        }
+      })(s0);
+    }
+    addEventListener('scroll',function(){
+      if(busy)return;
+      /* ⚠️ RE-ARM ON ARRIVAL, NOT ON CROSSING THE LINE. Clearing the flag the
+         moment the threshold was no longer passed let a momentum bounce push it
+         back over and start a second birth. It re-arms only once the page has
+         genuinely reached the top. */
+      if(settling){
+        tt.classList.remove('on');
+        if(scrollY_()<4){settling=false;born=false;clearTimeout(settleT);}
+        return;
+      }
+      var p=past();
+      if(p&&!born){born=true;birth();}
+      else if(p)tt.classList.add('on');
+      else tt.classList.remove('on');
+    },{passive:true});
+    tt.addEventListener('click',launch);
+  })();
+
+  /* ══ 5 · the nav pill's contained mesh ══════════════════════════════════
+     A field of blobs living INSIDE the indicator, on the same rhythm as every
+     other morph on the site, carrying the mixture of two colours: the liquid
+     cursor's (the page's accent, which it keeps everywhere) and the hovered
+     tab's (the pill it is standing on). Hover Notice from the Terms page and
+     the crimson pointer stirs crimson through the amber pill; hover Privacy
+     and it stirs the same crimson through teal.
+
+     ⚠️ THE SWARM'S ALPHA IS HALF THE EFFECT. .cur-ink paints its masses as
+     SOLID currentColor at z-index 60, so over the pill it is an opaque blob
+     sitting on top of the mesh — the first working version of this was
+     invisible for exactly that reason and measured fine the whole time.
+     Dropping the layer's opacity while it is over the bar lets the pill through
+     it, so what you see under the pointer is the two colours composited. This
+     module writes ONLY opacity on that element and only while over the bar,
+     and clears it on the way out; module 2 keeps colour and transform, so the
+     two never write the same property.
+
+     ⚠️ mix-blend-mode ON .cur-ink DOES NOT WORK AND IS NOT THE ANSWER. The
+     property applies — computed style reads back 'screen' — and the painted
+     result is unchanged: over the violet pill the swarm core stayed at
+     rgb(212,78,99) where a working screen gives rgb(237,146,236), which is the
+     signature of blending against black rather than against the pill. It is not
+     the filter, the opacity, the nesting or the transform; hand-built probes
+     carrying each of those, and all of them at once, blended correctly against
+     the same pill in the same frame. If you try it again, MEASURE THE PAINTED
+     PIXEL — the computed style will tell you it is on while the screen shows it
+     doing nothing.
+
+     ⚠️ THE LAYERS COMPOSITE WITH PLAIN ALPHA, NOT background-blend-mode:screen.
+     Five screened layers pile up to a near-white core, and white is the one
+     thing this must not be — the point is that two ACCENTS are mixing. Under
+     plain alpha the ceiling of the field is the mixture itself, so no amount of
+     overlap can leave the pill↔cursor range.
+
+     ⚠️ Label contrast is SAFER than the flat pill, not riskier, and that was
+     checked rather than assumed: across all nine accents as page × all nine as
+     tab, the strongest blob's worst contrast against the label is 6.25:1, where
+     the shipped flat pills bottom out at 5.07:1. Relative luminance is monotonic
+     along a linear RGB segment, so the composite between pill and blob is
+     bounded by its endpoints and cannot dip below either. Re-run that if the
+     mix, the lift or an accent changes.
+
+     ⚠️ The blobs are CLIPPED BY THE PILL FOR FREE — a background paints inside
+     the border box and the border box is a 999px stadium. Nothing masks it,
+     which is why the field stays inside the shape even while paint() is tearing
+     that shape in half. The tail and the head each mix against THEIR OWN fill,
+     read from the inline background paint() writes, so mid-move the piece you
+     are leaving stirs the old colour and the arriving one stirs the new. */
+  (function(){
+    if(!fine||reduce)return;
+    var segs=[].slice.call(document.querySelectorAll('.seg')).map(function(seg){
+      return {ink:seg.querySelector('.seg-ink'),
+              pieces:[seg.querySelector('.ib-a'),seg.querySelector('.ib-b')],
+              tabs:[].slice.call(seg.querySelectorAll('.tab')),
+              mx:0,mx2:0,tx:0,amt:0,hot:null,clean:true};
+    }).filter(function(g){return g.ink&&g.pieces[0]&&g.pieces[1]&&g.tabs.length;});
+    if(!segs.length)return;
+
+    var BLOBS=5, RX=40, RY=22, ORBIT=20, RATE=1.5, STR=1.5,
+        FOLLOW=0.16, MIXV=0.9, LIFT=0.14, SWARM=0.42;
+
+    var curInk=document.querySelector('.cur-ink');
+    var page=parseCol(getComputedStyle(document.body).getPropertyValue('--accent'))
+             ||[242,153,74];
+    segs.forEach(function(g){
+      g.hot=parseCol(g.tabs[0].getAttribute('data-accent'))||page;
+    });
+    function blend(a,b,t){
+      return [Math.round(a[0]+(b[0]-a[0])*t),Math.round(a[1]+(b[1]-a[1])*t),
+              Math.round(a[2]+(b[2]-a[2])*t)];
+    }
+    /* Raise HSL lightness, leaving hue and saturation exactly alone. NOT a mix
+       toward white, and not a channel multiply either: multiplying by 255/max
+       is a no-op on any accent that already has a channel at 255, which is most
+       of this palette, so the control did nothing on most of the bar. */
+    function lift(c,t){
+      if(t<=0)return c;
+      var r=c[0]/255,g2=c[1]/255,b=c[2]/255;
+      var mx=Math.max(r,g2,b),mn=Math.min(r,g2,b),l=(mx+mn)/2;
+      if(mx===mn)return c;
+      var d=mx-mn, s=l>0.5?d/(2-mx-mn):d/(mx+mn), h;
+      if(mx===r)h=(g2-b)/d+(g2<b?6:0); else if(mx===g2)h=(b-r)/d+2; else h=(r-g2)/d+4;
+      h/=6;
+      l=Math.min(1,l+t*(1-l));
+      var q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+      function ch(x){
+        if(x<0)x+=1; if(x>1)x-=1;
+        if(x<1/6)return p+(q-p)*6*x;
+        if(x<1/2)return q;
+        if(x<2/3)return p+(q-p)*(2/3-x)*6;
+        return p;
+      }
+      return [Math.round(ch(h+1/3)*255),Math.round(ch(h)*255),Math.round(ch(h-1/3)*255)];
+    }
+    function field(g,piece,t){
+      var r=piece.getBoundingClientRect();
+      if(r.width<1.5)return '';
+      var pill=parseCol(piece.style.backgroundColor)||g.hot;
+      var cur=(curInk&&parseCol(curInk.style.color))||page;
+      var h=r.height||25, out='', i;
+      for(i=0;i<BLOBS;i++){
+        var rate=0.85+i*0.21, ph=i*2.1;
+        /* odd blobs hang off the LAGGING follower, so the field stretches when
+           the pointer moves and gathers when it stops */
+        var base=(i%2)?(g.mx2-r.left):(g.mx-r.left);
+        var ox=Math.cos(t*rate+ph)*ORBIT*(0.62+0.38*Math.sin(t*0.53+i));
+        var oy=Math.sin(t*rate*0.71+ph)*h*0.19;
+        var rx=RX*(0.48+0.52*((i%3)/2))*(1+0.30*Math.sin(t*(0.9+i*0.17)+ph));
+        var ry=RY*(1+0.24*Math.sin(t*(1.1+i*0.13)+ph));
+        var c=lift(blend(pill,cur,MIXV*(0.5+0.5*((i%3)/2))),LIFT*((i%2)?1:0.45));
+        var a=STR*g.amt*(0.62-i*0.05);
+        if(a<0)a=0;
+        /* rgba(c,0), never 'transparent' — that is rgba(0,0,0,0), so an sRGB
+           ramp to it runs through black and every blob gets a dirty edge */
+        out+=(i?',':'')+'radial-gradient('+rx.toFixed(1)+'px '+ry.toFixed(1)+'px at '
+          +(base+ox).toFixed(1)+'px '+(h/2+oy).toFixed(1)+'px,rgba('+c+','+a.toFixed(3)
+          +') 0%,rgba('+c+','+(a*0.46).toFixed(3)+') 42%,rgba('+c+',0) 100%)';
+      }
+      return out;
+    }
+    /* ⚠️ paint() rewrites .style.background on these pieces EVERY FRAME of a
+       move, and the shorthand clears background-image. So the field is also
+       re-applied from a MutationObserver on the style attribute, which fires as
+       a microtask after each write and before paint. The rAF alone loses every
+       frame where paint() runs after it; the observer alone never fires while
+       the bar is at rest. */
+    var writing=false;
+    function draw(g,t){
+      writing=true;
+      for(var i=0;i<g.pieces.length;i++){
+        var v=field(g,g.pieces[i],t);
+        if(g.pieces[i].style.backgroundImage!==v)g.pieces[i].style.backgroundImage=v;
+      }
+      writing=false;
+    }
+    function clear(g){
+      writing=true;
+      for(var i=0;i<g.pieces.length;i++)g.pieces[i].style.backgroundImage='';
+      writing=false;
+    }
+    segs.forEach(function(g){
+      var o=new MutationObserver(function(){
+        if(!writing&&g.amt>0.012)draw(g,performance.now()/1000);
+      });
+      g.pieces.forEach(function(p){
+        o.observe(p,{attributes:true,attributeFilter:['style']});
+      });
+    });
+
+    var px=-1e4,py=-1e4,raf=0;
+    addEventListener('pointermove',function(e){
+      if(e.pointerType==='touch')return;
+      px=e.clientX;py=e.clientY;
+      if(!raf)raf=requestAnimationFrame(tick);
+    },{passive:true,capture:true});
+
+    function tick(now){
+      var t=now/1000*RATE, any=false, live=false, i, j;
+      for(i=0;i<segs.length;i++){
+        var g=segs[i], ir=g.ink.getBoundingClientRect(), hot=null;
+        for(j=0;j<g.tabs.length;j++){
+          var tr=g.tabs[j].getBoundingClientRect();
+          if(px>=tr.left&&px<=tr.right&&py>=tr.top&&py<=tr.bottom){hot=g.tabs[j];break;}
+        }
+        /* the bar's own box, not just the tabs: crossing the gap between two
+           tabs must not blink the field out and back */
+        var over=!!hot||(px>=ir.left&&px<=ir.right&&py>=ir.top-8&&py<=ir.bottom+8);
+        if(hot){var hc=parseCol(hot.getAttribute('data-accent'));if(hc)g.hot=hc;}
+        if(over){g.tx=px;any=true;}
+        g.amt+=((over?1:0)-g.amt)*0.11;
+        g.mx+=(g.tx-g.mx)*FOLLOW;
+        g.mx2+=(g.tx-g.mx2)*(FOLLOW*0.42);
+        if(g.amt>0.012){ draw(g,t); g.clean=false; live=true; }
+        else if(!g.clean){ clear(g); g.clean=true; }
+      }
+      if(curInk){
+        var wa=any?String(SWARM):'';
+        if(curInk.style.opacity!==wa)curInk.style.opacity=wa;
+      }
+      /* stop the loop once the field has faded out, so a reader who never goes
+         near the bar pays nothing for this after the pointer leaves */
+      raf = live ? requestAnimationFrame(tick) : 0;
+    }
+  })();
+
+  /* ══ 6 · the hint ═══════════════════════════════════════════════════════
+     One floating capsule, reused, positioned over whatever [data-tip] the
+     pointer or the keyboard is on. It replaces the native title= tooltip, which
+     drew in the OS's font after the OS's delay and could not be styled at all.
+
+     ⚠️ A CONTROL MUST NOT CARRY BOTH title= AND data-tip — the browser would
+     draw its own tooltip underneath this one. The repo button had the only
+     title on the site and it was removed in the same change.
+
+     ⚠️ POINTER TRIGGERS ARE GATED ON fine, FOCUS TRIGGERS ARE NOT. On a touch
+     screen pointerenter fires on tap, so an ungated hint would flash on every
+     link a thumb touches, one frame before the page navigates away. Keyboard
+     focus is a real request to know what something is on any device, so
+     focusin/focusout stay live.
+
+     ⚠️ It hides on scroll, on wheel and on click. A position:fixed capsule
+     anchored to an element that has moved is worse than no hint: it points at
+     the wrong control with total confidence. */
+  (function(){
+    var tipEl=null,showT=0,cur=null,pending=null;
+    function build(){
+      if(tipEl)return tipEl;
+      tipEl=el('div','tipx');
+      tipEl.setAttribute('aria-hidden','true');
+      var t=el('span','tipx-t');
+      tipEl.appendChild(t);
+      document.body.appendChild(tipEl);
+      return tipEl;
+    }
+    function place(node){
+      var tip=build();
+      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      /* measured with the class off, so the transform is not folded into the
+         box the arithmetic is done against */
+      tip.classList.remove('on');
+      var r=node.getBoundingClientRect(), tr=tip.getBoundingClientRect();
+      var GAP=10, under=r.top-tr.height-GAP<6;
+      tip.classList.toggle('under',under);
+      var y=under?r.bottom+GAP:r.top-tr.height-GAP;
+      /* clamped so a control at the edge of the bar does not push it off screen;
+         the capsule is centre-anchored, hence the half-width either side */
+      var half=tr.width/2, x=r.left+r.width/2;
+      if(x-half<8)x=8+half;
+      if(x+half>innerWidth-8)x=innerWidth-8-half;
+      tip.style.left=x.toFixed(1)+'px';
+      tip.style.top=Math.max(6,y).toFixed(1)+'px';
+      tip.classList.add('on');
+      cur=node;
+    }
+    function hide(){
+      clearTimeout(showT);
+      cur=null;pending=null;
+      if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
+       the wrong lever — it just makes the wanted case feel broken too. The
+       trigger is a pointer that has COME TO REST on a control; a pointer still
+       travelling across one is passing through. So the timer checks that the
+       pointer has actually stopped and reschedules itself if it has not,
+       which is what turns "hovered for 420ms" into "settled here". */
+    var lastMove=0,lastX=-1e4,lastY=-1e4;
+    if(fine)addEventListener('pointermove',function(e){
+      lastMove=performance.now();lastX=e.clientX;lastY=e.clientY;
+    },{passive:true,capture:true});
+    /* ⚠️ pending IS NOT A TIDY-UP. Without it, every pointerover on a CHILD of
+       the trigger restarted the timer, so crossing a button's icon and then its
+       label reset the wait twice and the hint could take three delays to arrive
+       — or never, on a control with several children. Re-asking for the node
+       that is already queued is a no-op now. */
+    function want(node,delay){
+      if(!node||node===cur||node===pending)return;
+      pending=node;
+      clearTimeout(showT);
+      showT=setTimeout(function fire(){
+        if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        pending=null;
+        place(node);
+      },delay);
+    }
+    function tipOf(e){
+      var n=e.target;
+      return n&&n.closest?n.closest('[data-tip]'):null;
+    }
+    if(fine){
+      document.addEventListener('pointerover',function(e){
+        if(e.pointerType==='touch')return;
+        var n=tipOf(e);
+        if(!n){ if(cur)hide(); return; }
+        /* 700ms, not the 190 this started at and not the 420 that followed.
+           Reported as naggy at both: a hint that arrives while you are still
+           deciding whether you wanted it reads as an interruption, and the
+           delay is what separates a nudge from a nag. Paired with the settle
+           check below, which is the half that stops sweep-through triggers —
+           raising the delay alone would only have made the WANTED case feel
+           broken too. */
+        want(n,700);
+      },true);
+      /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
+         pointer left" is what made the hint strobe across a single button —
+         reported 2026-08-03 16:40 EDT with a recording of it appearing and
+         vanishing three times inside the Source capsule. Moving from .ghb-ic to
+         .ghb-t is a pointerout on the icon whose target still resolves to the
+         same trigger, so the old check hid it and pointerover then queued it
+         again. relatedTarget is the element being entered: if it is still
+         inside the same trigger, nothing has been left. */
+      document.addEventListener('pointerout',function(e){
+        var n=tipOf(e);
+        if(!n)return;
+        var to=e.relatedTarget;
+        if(to&&n.contains(to))return;
+        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
+           from 32px to its full width over 420ms on hover, so a pointer that
+           has not moved can fall outside the box for a frame and come back —
+           pointerout fires with relatedTarget outside, and the hint hid and
+           re-queued. Ask the geometry instead: if the pointer is still within
+           the trigger's current rect, nothing has been left. */
+        var r=n.getBoundingClientRect();
+        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        hide();
+      },true);
+    }
+    document.addEventListener('focusin',function(e){
+      var n=tipOf(e);
+      if(n)want(n,0); else hide();
+    },true);
+    document.addEventListener('focusout',hide,true);
+    addEventListener('scroll',hide,{passive:true,capture:true});
+    addEventListener('wheel',hide,{passive:true});
+    addEventListener('click',hide,true);
+    addEventListener('blur',hide);
+  })();
 })();
 </script>
 </body>

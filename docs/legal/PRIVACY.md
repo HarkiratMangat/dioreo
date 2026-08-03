@@ -1,7 +1,7 @@
 # Privacy Policy — Dior's Builds
 
-**Effective date:** 1 August 2026
-**Version:** 1.5
+**Effective date:** 3 August 2026
+**Version:** 1.6
 **Applies to:** the Dior's Builds Discord application (the "Bot") and this
 documentation website (the "Site")
 
@@ -150,11 +150,12 @@ These documents are served as a static website. It has no accounts, no forms, no
 analytics, no third-party scripts, and no server-side session of any kind — the
 hosting provider serves files and nothing else.
 
-It stores **one** item in your browser's local storage:
+It stores **two** items in your browser's own storage, both of which stay there:
 
-| Name | Value | Purpose | Expires |
-|---|---|---|---|
-| `db-theme` | `light` or `dark` | Remembers the appearance you picked, so the site does not reset to dark every time you open a page | Never — it stays until you clear it |
+| Name | Where | Value | Purpose | Expires |
+|---|---|---|---|---|
+| `db-theme` | Local storage | `light` or `dark` | Remembers the appearance you picked, so the site does not reset to dark every time you open a page | Never — it stays until you clear it |
+| `db-booted` | Session storage | `1` | Set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session instead of on every page you open | When you close the tab |
 
 Three things follow from that, and they are the whole of it:
 
@@ -612,9 +613,10 @@ you have access to the repository you can verify it directly; if you don't, ask 
 we will show you the relevant file.
 
 **Stored on your device, not on ours:** the documentation website additionally
-keeps a single `db-theme` entry in your own browser's local storage, holding
-`light` or `dark`. It is listed here for completeness only — it never reaches our
-database or any server, and it is described in full in §2.6.
+keeps a `db-theme` entry in your own browser's local storage, holding `light` or
+`dark`, and a `db-booted` entry in session storage on the record pages. They are
+listed here for completeness only — neither reaches our database or any server,
+and both are described in full in §2.6.
 
 ---
 
@@ -622,6 +624,7 @@ database or any server, and it is described in full in §2.6.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.6** | 3 August 2026 | §2.6 and Appendix A now list the Site's **second** browser-storage item, `db-booted`, a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It has been written since those pages launched, while the policy said `db-theme` was the only key — the verification note had searched the GENERATOR and the flag is written by `scripts/lib/chronicle.js`, so it was never in scope. The note now searches the BUILT pages. **No change to what is collected, why, who receives it, or how long it is kept:** the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
 | **1.5** | 1 August 2026 | Appendix A now names `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and names the four `*PaletteSource` fields individually rather than as "(+ source hashes)". **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already being stored and are already described by §2; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again. |
 | **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §13, alongside the canonical email. A Privacy Request under §9 must still come by email. |
 | **1.3** | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
@@ -655,7 +658,7 @@ against the running software rather than asserted, and this table records how.
 | **There is no automated deletion** | Searched for every `deleteOne` / `deleteMany` / `findOneAndDelete` in the codebase. **None operates on `UserPreference`.** This is why §7.1 discloses a shortcoming instead of claiming a capability. |
 | `/settings` has no reset or delete | Searched `commands/settings.js` for reset/restore-default handling. None exists — it only overwrites individual values. |
 | No cookies | The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for `document.cookie` — no occurrences. |
-| One local-storage item on the Site | Searched the site generator for `localStorage` and `sessionStorage`: the only key written is `db-theme`, holding `light` or `dark`, in `THEME_JS` and `THEME_BOOT` in `scripts/buildLegalPages.js`. Nothing else is stored, and nothing is sent anywhere. |
+| Two storage items on the Site | Searched the built pages, not just the generator, for `localStorage`, `sessionStorage` and `document.cookie`: `db-theme` (`light`/`dark`, written by `THEME_JS`/`THEME_BOOT` in `scripts/buildLegalPages.js`) and `db-booted` (`1`, written by `scripts/lib/chronicle.js` on the three record pages). No cookies are set. Nothing else is stored, and nothing is sent anywhere. |
 
 **Where we could not verify something, we said so rather than guessing** — see the
 backup-retention caveat in §9.4 and the honest limits stated in §5.2, §7.1, and §8.
