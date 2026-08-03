@@ -127,10 +127,19 @@ it directly with an empty build command, so nothing has to run on their side.
   ⚠️ **A scripted `mouseenter` CANNOT reproduce it** — a dispatched event does not create a `:hover`
   state, so every measurement of the hovered tab read the correct colour while the screen showed the
   wrong one. Verify hover states by moving the real cursor and asserting `el.matches(':hover')` first.
-  ⚠️ **`.tab.on` is NOT painted in its own accent either** — `--rest` was `var(--accent-t)`, so the
-  current tab's label and its pill were the same colour, and every partial-coverage frame mixed toward
-  the pill's own hue. It is `var(--ink)` now: dark on the pill, bright off it, nothing in between that
-  can vanish. Crossover band tightened to 0.30/0.58 so the mid-mix lasts ~6 frames, not half the move.
+  ⚠️ **`.tab.on`'s `--rest` IS `var(--accent-t)` — this line said `var(--ink)` and was wrong**
+  (corrected 2026-08-03 14:53 EDT). The code has read `.tab.on{--rest:var(--accent-t)}` throughout, and
+  the built page shows it: with the pill on Notice, the current page's own tab is still accent-tinted.
+  So the current tab's label off the pill is the accent (`--accent-t` is the raw accent in dark and a
+  38%-accent/`#120E1C` mix in light), and only `--cov` carries it to near-black as the pill arrives.
+  Two prose numbers here had gone stale against the code at once — the exact rot
+  `feedback_no_duplicated_state_in_prose` describes. **Read `paint()`, not this paragraph.**
+  ⚠️ **The crossover band is SYMMETRIC — `band(0.28,0.72,cov)`, centred on 0.5**, and the only reason
+  it is written down at all is that the superseded value is easy to "restore" by mistake. The earlier
+  **0.30/0.58** was biased early to compensate for `cov` measuring the tab's PADDING box; once `cov`
+  was changed to measure the LABEL, `cov` 0.5 means half the glyphs are on the pill, and the bias
+  became a distortion. Width 0.44 is deliberate — the label spends about a fifth of the move in the
+  mid tone. **Do not re-tighten it toward the old numbers without re-deriving what `cov` measures.**
 - ⚠️ **The desktop pill is ASSEMBLED on page load, and that is not a second animation system.**
   `birth()` is just a move whose source has no width: set `srcX = dstX` and `srcW = 0` and every line
   of `paint()` already does the right thing — the tail is skipped, the neck collapses, and the head
@@ -219,6 +228,38 @@ it directly with an empty build command, so nothing has to run on their side.
     2026-08-03 12:03 EDT: the masses merged and the bed rendered as a solid square, because `.totop` is
     `position:fixed; z-index:55` — its own stacking context, so `lighten` composites inside it.
     The nav works because it sits ON a bar. Full record in `reference_goo_metaball_recipe`.
+  - ⚠️ **Module 5 is the nav pill's CONTAINED MESH** (added 2026-08-03 15:59 EDT). A field of five
+    blobs inside `.ib-a`/`.ib-b`, on the same `0.85 + c*0.21` rhythm as every other morph, carrying
+    the mixture of the liquid cursor's colour (the page accent, which it keeps everywhere) and the
+    hovered tab's. Each piece mixes against **its own** inline fill, so mid-move the tail stirs the
+    colour you are leaving and the head the one you are arriving at. The stadium border-box clips it
+    for free — nothing masks it. Three findings that cost real time and must not be re-derived:
+    - ⛔ **`mix-blend-mode` on `.cur-ink` DOES NOTHING — do not try it again without measuring the
+      painted pixel.** The property applies (computed style reads `screen`) and the render is
+      unchanged: over the violet pill the swarm core stayed `rgb(212,78,99)` where a working screen
+      gives `rgb(237,146,236)` — blending against black, not against the pill. Not the filter, the
+      opacity, the nesting or the transform; hand-built probes carrying each, and all at once,
+      blended correctly against the same pill in the same frame.
+    - ⚠️ **The swarm's ALPHA is half the effect.** `.cur-ink` paints solid `currentColor` at
+      z-index 60, so over the pill it is an opaque blob ON TOP of the mesh — the first working
+      version was invisible for exactly that reason while every measurement said it was fine.
+      Module 5 drops that layer to `0.42` while over the bar and clears it on the way out; it writes
+      **only** opacity there, module 2 keeps colour and transform.
+    - ⚠️ **Layers composite with plain alpha, NOT `background-blend-mode:screen`.** Five screened
+      layers pile into a near-white core, and white defeats the whole point — two ACCENTS are
+      mixing. Under plain alpha the field's ceiling is the mixture itself.
+    - Label contrast is **safer** than the flat pill and was checked, not assumed: worst case across
+      all nine accents as page × all nine as tab is **6.25:1**, where the flat pills bottom out at
+      **5.07:1**. Luminance is monotonic along a linear RGB segment, so the composite is bounded by
+      its endpoints. Re-run it if the mix, the lift or an accent moves.
+  - ⚠️ **`accentOf()` judges a borrowed ink against the CHIP'S OWN FILL, not the page ground**
+    (changed 2026-08-03 15:57 EDT). `.ins` is `color:#141021` on `background:var(--accent)` in both
+    themes; against the page ground that near-black passed on light paper and failed at 1.16:1 on
+    the dark page, so the dark blob over the Install button was a light-mode-only accident. It is
+    the seat the swarm sits on that decides. **The back-to-top is unaffected and it is NOT because
+    of this test** — its background computes to `color(srgb …)`, which `parseCol()` does not read,
+    so it never counts as a chip at all. The same is true of any `color-mix()` background. Teaching
+    `parseCol()` that syntax would hand those controls' ink to the swarm for the first time.
   - ⚠️ **Verifying it needs a LIVE renderer, and two things impersonate one.** A sleeping display and
     a backgrounded tab both present as `document.hidden` with rAF dead; the tell for the display is
     `screencapture -x` failing with *"could not create image from display"*. And the **coarse-pointer

@@ -3473,7 +3473,10 @@ html{scroll-behavior:smooth}
         var hs=getComputedStyle(h),c=hs.color;
         var chip=(parseFloat(hs.borderTopWidth)>0&&opaque(hs.borderTopColor))
               ||opaque(hs.backgroundColor);
-        if(c&&chip&&legible(c))return c;
+        /* the chip's OWN fill is the ground the swarm will be seen against; a
+           chip identified only by its border has none, so fall back to the page */
+        var seat=opaque(hs.backgroundColor)?hs.backgroundColor:groundOf(h);
+        if(c&&chip&&legible(c,seat))return c;
       }
       return ac||baseCol;
     }
@@ -3485,8 +3488,32 @@ html{scroll-behavior:smooth}
        candidate on light paper fails the same test. Everything wanted passes
        comfortably (the GitHub lavender-grey 7.3:1, the darkest row accent 5.7:1);
        black is 1.16:1. */
-    function legible(c){
-      var a=lum(c),b=lum(groundOf(document.body));
+    /* ⚠️ JUDGED AGAINST THE SURFACE IT WILL SIT ON, NOT AGAINST THE PAGE, and
+       that correction is what makes the Install button behave the same way in
+       both themes (changed 2026-08-03 15:57 EDT).
+       .ins is color:#141021 on background:var(--accent) in BOTH themes. Tested
+       against the PAGE ground, that near-black passed on light paper and failed
+       at 1.16:1 on the dark page — so the swarm went dark over the button in
+       light mode and fell back to the page accent in dark mode, which is orange
+       on orange and all but invisible. Harkirat saw the light-mode version,
+       liked it, and asked for it in dark mode; it was never a light-mode
+       flourish, it was this test asking about the wrong background.
+       The swarm is drawn ON the chip, so the chip's own fill is the ground that
+       decides whether its ink is legible. #141021 on amber clears comfortably in
+       either theme, so the dark blob is now the behaviour in both.
+       ⚠️ The back-to-top — the case this test was built for — is untouched, and
+       MEASURED so rather than argued: the swarm stays at the page accent over it
+       in both themes. The reason is not this test at all, which is worth writing
+       down because the obvious explanation is wrong. Its background computes to
+       color(srgb 0.11 0.10 0.15 / 0.9), and parseCol() reads # and rgb() only,
+       so opaque() is false, so it never counts as a chip and never reaches the
+       colour-borrowing branch. Any control whose background is a color-mix()
+       lands the same way, because Chrome serialises those as color(srgb …).
+       Teaching parseCol() that syntax is therefore NOT a tidy-up — it would make
+       those controls chips for the first time and hand the swarm their ink.
+       A chip with no opaque fill of its own falls back to the page ground. */
+    function legible(c,ground){
+      var a=lum(c),b=lum(ground||groundOf(document.body));
       if(a==null||b==null)return true;
       return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)>=1.6;
     }
@@ -3830,6 +3857,192 @@ html{scroll-behavior:smooth}
       else tt.classList.remove('on');
     },{passive:true});
     tt.addEventListener('click',launch);
+  })();
+
+  /* ══ 5 · the nav pill's contained mesh ══════════════════════════════════
+     A field of blobs living INSIDE the indicator, on the same rhythm as every
+     other morph on the site, carrying the mixture of two colours: the liquid
+     cursor's (the page's accent, which it keeps everywhere) and the hovered
+     tab's (the pill it is standing on). Hover Notice from the Terms page and
+     the crimson pointer stirs crimson through the amber pill; hover Privacy
+     and it stirs the same crimson through teal.
+
+     ⚠️ THE SWARM'S ALPHA IS HALF THE EFFECT. .cur-ink paints its masses as
+     SOLID currentColor at z-index 60, so over the pill it is an opaque blob
+     sitting on top of the mesh — the first working version of this was
+     invisible for exactly that reason and measured fine the whole time.
+     Dropping the layer's opacity while it is over the bar lets the pill through
+     it, so what you see under the pointer is the two colours composited. This
+     module writes ONLY opacity on that element and only while over the bar,
+     and clears it on the way out; module 2 keeps colour and transform, so the
+     two never write the same property.
+
+     ⚠️ mix-blend-mode ON .cur-ink DOES NOT WORK AND IS NOT THE ANSWER. The
+     property applies — computed style reads back 'screen' — and the painted
+     result is unchanged: over the violet pill the swarm core stayed at
+     rgb(212,78,99) where a working screen gives rgb(237,146,236), which is the
+     signature of blending against black rather than against the pill. It is not
+     the filter, the opacity, the nesting or the transform; hand-built probes
+     carrying each of those, and all of them at once, blended correctly against
+     the same pill in the same frame. If you try it again, MEASURE THE PAINTED
+     PIXEL — the computed style will tell you it is on while the screen shows it
+     doing nothing.
+
+     ⚠️ THE LAYERS COMPOSITE WITH PLAIN ALPHA, NOT background-blend-mode:screen.
+     Five screened layers pile up to a near-white core, and white is the one
+     thing this must not be — the point is that two ACCENTS are mixing. Under
+     plain alpha the ceiling of the field is the mixture itself, so no amount of
+     overlap can leave the pill↔cursor range.
+
+     ⚠️ Label contrast is SAFER than the flat pill, not riskier, and that was
+     checked rather than assumed: across all nine accents as page × all nine as
+     tab, the strongest blob's worst contrast against the label is 6.25:1, where
+     the shipped flat pills bottom out at 5.07:1. Relative luminance is monotonic
+     along a linear RGB segment, so the composite between pill and blob is
+     bounded by its endpoints and cannot dip below either. Re-run that if the
+     mix, the lift or an accent changes.
+
+     ⚠️ The blobs are CLIPPED BY THE PILL FOR FREE — a background paints inside
+     the border box and the border box is a 999px stadium. Nothing masks it,
+     which is why the field stays inside the shape even while paint() is tearing
+     that shape in half. The tail and the head each mix against THEIR OWN fill,
+     read from the inline background paint() writes, so mid-move the piece you
+     are leaving stirs the old colour and the arriving one stirs the new. */
+  (function(){
+    if(!fine||reduce)return;
+    var segs=[].slice.call(document.querySelectorAll('.seg')).map(function(seg){
+      return {ink:seg.querySelector('.seg-ink'),
+              pieces:[seg.querySelector('.ib-a'),seg.querySelector('.ib-b')],
+              tabs:[].slice.call(seg.querySelectorAll('.tab')),
+              mx:0,mx2:0,tx:0,amt:0,hot:null,clean:true};
+    }).filter(function(g){return g.ink&&g.pieces[0]&&g.pieces[1]&&g.tabs.length;});
+    if(!segs.length)return;
+
+    var BLOBS=5, RX=40, RY=22, ORBIT=20, RATE=1.5, STR=1.5,
+        FOLLOW=0.16, MIXV=0.9, LIFT=0.14, SWARM=0.42;
+
+    var curInk=document.querySelector('.cur-ink');
+    var page=parseCol(getComputedStyle(document.body).getPropertyValue('--accent'))
+             ||[242,153,74];
+    segs.forEach(function(g){
+      g.hot=parseCol(g.tabs[0].getAttribute('data-accent'))||page;
+    });
+    function blend(a,b,t){
+      return [Math.round(a[0]+(b[0]-a[0])*t),Math.round(a[1]+(b[1]-a[1])*t),
+              Math.round(a[2]+(b[2]-a[2])*t)];
+    }
+    /* Raise HSL lightness, leaving hue and saturation exactly alone. NOT a mix
+       toward white, and not a channel multiply either: multiplying by 255/max
+       is a no-op on any accent that already has a channel at 255, which is most
+       of this palette, so the control did nothing on most of the bar. */
+    function lift(c,t){
+      if(t<=0)return c;
+      var r=c[0]/255,g2=c[1]/255,b=c[2]/255;
+      var mx=Math.max(r,g2,b),mn=Math.min(r,g2,b),l=(mx+mn)/2;
+      if(mx===mn)return c;
+      var d=mx-mn, s=l>0.5?d/(2-mx-mn):d/(mx+mn), h;
+      if(mx===r)h=(g2-b)/d+(g2<b?6:0); else if(mx===g2)h=(b-r)/d+2; else h=(r-g2)/d+4;
+      h/=6;
+      l=Math.min(1,l+t*(1-l));
+      var q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+      function ch(x){
+        if(x<0)x+=1; if(x>1)x-=1;
+        if(x<1/6)return p+(q-p)*6*x;
+        if(x<1/2)return q;
+        if(x<2/3)return p+(q-p)*(2/3-x)*6;
+        return p;
+      }
+      return [Math.round(ch(h+1/3)*255),Math.round(ch(h)*255),Math.round(ch(h-1/3)*255)];
+    }
+    function field(g,piece,t){
+      var r=piece.getBoundingClientRect();
+      if(r.width<1.5)return '';
+      var pill=parseCol(piece.style.backgroundColor)||g.hot;
+      var cur=(curInk&&parseCol(curInk.style.color))||page;
+      var h=r.height||25, out='', i;
+      for(i=0;i<BLOBS;i++){
+        var rate=0.85+i*0.21, ph=i*2.1;
+        /* odd blobs hang off the LAGGING follower, so the field stretches when
+           the pointer moves and gathers when it stops */
+        var base=(i%2)?(g.mx2-r.left):(g.mx-r.left);
+        var ox=Math.cos(t*rate+ph)*ORBIT*(0.62+0.38*Math.sin(t*0.53+i));
+        var oy=Math.sin(t*rate*0.71+ph)*h*0.19;
+        var rx=RX*(0.48+0.52*((i%3)/2))*(1+0.30*Math.sin(t*(0.9+i*0.17)+ph));
+        var ry=RY*(1+0.24*Math.sin(t*(1.1+i*0.13)+ph));
+        var c=lift(blend(pill,cur,MIXV*(0.5+0.5*((i%3)/2))),LIFT*((i%2)?1:0.45));
+        var a=STR*g.amt*(0.62-i*0.05);
+        if(a<0)a=0;
+        /* rgba(c,0), never 'transparent' — that is rgba(0,0,0,0), so an sRGB
+           ramp to it runs through black and every blob gets a dirty edge */
+        out+=(i?',':'')+'radial-gradient('+rx.toFixed(1)+'px '+ry.toFixed(1)+'px at '
+          +(base+ox).toFixed(1)+'px '+(h/2+oy).toFixed(1)+'px,rgba('+c+','+a.toFixed(3)
+          +') 0%,rgba('+c+','+(a*0.46).toFixed(3)+') 42%,rgba('+c+',0) 100%)';
+      }
+      return out;
+    }
+    /* ⚠️ paint() rewrites .style.background on these pieces EVERY FRAME of a
+       move, and the shorthand clears background-image. So the field is also
+       re-applied from a MutationObserver on the style attribute, which fires as
+       a microtask after each write and before paint. The rAF alone loses every
+       frame where paint() runs after it; the observer alone never fires while
+       the bar is at rest. */
+    var writing=false;
+    function draw(g,t){
+      writing=true;
+      for(var i=0;i<g.pieces.length;i++){
+        var v=field(g,g.pieces[i],t);
+        if(g.pieces[i].style.backgroundImage!==v)g.pieces[i].style.backgroundImage=v;
+      }
+      writing=false;
+    }
+    function clear(g){
+      writing=true;
+      for(var i=0;i<g.pieces.length;i++)g.pieces[i].style.backgroundImage='';
+      writing=false;
+    }
+    segs.forEach(function(g){
+      var o=new MutationObserver(function(){
+        if(!writing&&g.amt>0.012)draw(g,performance.now()/1000);
+      });
+      g.pieces.forEach(function(p){
+        o.observe(p,{attributes:true,attributeFilter:['style']});
+      });
+    });
+
+    var px=-1e4,py=-1e4,raf=0;
+    addEventListener('pointermove',function(e){
+      if(e.pointerType==='touch')return;
+      px=e.clientX;py=e.clientY;
+      if(!raf)raf=requestAnimationFrame(tick);
+    },{passive:true,capture:true});
+
+    function tick(now){
+      var t=now/1000*RATE, any=false, live=false, i, j;
+      for(i=0;i<segs.length;i++){
+        var g=segs[i], ir=g.ink.getBoundingClientRect(), hot=null;
+        for(j=0;j<g.tabs.length;j++){
+          var tr=g.tabs[j].getBoundingClientRect();
+          if(px>=tr.left&&px<=tr.right&&py>=tr.top&&py<=tr.bottom){hot=g.tabs[j];break;}
+        }
+        /* the bar's own box, not just the tabs: crossing the gap between two
+           tabs must not blink the field out and back */
+        var over=!!hot||(px>=ir.left&&px<=ir.right&&py>=ir.top-8&&py<=ir.bottom+8);
+        if(hot){var hc=parseCol(hot.getAttribute('data-accent'));if(hc)g.hot=hc;}
+        if(over){g.tx=px;any=true;}
+        g.amt+=((over?1:0)-g.amt)*0.11;
+        g.mx+=(g.tx-g.mx)*FOLLOW;
+        g.mx2+=(g.tx-g.mx2)*(FOLLOW*0.42);
+        if(g.amt>0.012){ draw(g,t); g.clean=false; live=true; }
+        else if(!g.clean){ clear(g); g.clean=true; }
+      }
+      if(curInk){
+        var wa=any?String(SWARM):'';
+        if(curInk.style.opacity!==wa)curInk.style.opacity=wa;
+      }
+      /* stop the loop once the field has faded out, so a reader who never goes
+         near the bar pays nothing for this after the pointer leaves */
+      raf = live ? requestAnimationFrame(tick) : 0;
+    }
   })();
 })();
 </script>
