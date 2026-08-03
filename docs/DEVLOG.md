@@ -110,6 +110,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)
 - 2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)
 - 2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)
+- 2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4145,6 +4146,70 @@ model it* — was written for exactly this and I still had to be told four times
 **And a GIF is not a screenshot.** One frame of a recording is evidence about
 one instant, and I used it to contradict the person who had watched the whole
 thing.
+
+## 2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)
+
+A two-week-old MarkEdit bug ("Return adds a blank line between bullets") had
+one standing theory: the 2026-07-18 confirm-mark extension work broke
+something in CodeMirror's keymap handling. That theory was never actually
+tested against the code — it just fit the timing. Moving every custom
+`scripts/*.js` file out of MarkEdit's extensions folder and reproducing the
+bug in **vanilla MarkEdit** killed it in one step: none of Dior's Builds' own
+extensions were involved. The real trigger, isolated with two control cases
+(a plain paragraph, a top-level standalone comment — both took a single
+Return correctly): pressing Return at the end of a line that is *entirely* a
+single-line HTML comment double-inserts a blank line, native MarkEdit
+list-continuation behaviour. Fixed with a `Prec.highest` Return-key
+intercept in `editor.js`, live-verified twice.
+
+**The harder bug wasn't the Return key.** A second, real complaint — typing
+right after inserting a confirm mark puts the character *before* the mark,
+not after — looked, on first reading, like it couldn't be the insert
+function's own cursor math: `insertAtCursor()`'s
+`EditorSelection.cursor(range.from + text.length)` via `state.changeByRange`
+is exactly the pattern `case-tools.js`'s already-working `applyCaseToSelection`
+uses. That similarity was treated as evidence the code was fine, and it was
+the wrong inference. Live-testing (a temporary keyboard shortcut bound
+straight to the insert function, and a full one-second wait before the next
+keystroke, both to rule out focus-stealing and render races) proved the
+cursor genuinely ended up *before* the inserted text every time — a real bug,
+not a timing artefact. The actual difference, found only by systematically
+diffing every insert helper in both files: `insertAtCursor()` was the *one*
+function passing the change+selection and the `userEvent` tag as **two
+separate arguments** to `state.update()`; every other helper
+(`insertAtBulletFront`, `insertFollowupOnNextLine`) merges everything into
+**one** spec object, and those never had the bug. `applyCaseToSelection`
+likely has the identical defect but never surfaced it, because replacing a
+whole selected *range* with its own transform happens to still map back onto
+itself under the wrong composition — a single empty cursor mapped through
+its own insertion is the case that actually exposes it. Fixed by merging into
+one spec everywhere the two-argument pattern appeared (three functions,
+including one written fresh this same session with the same latent bug).
+
+**Two more failures, orthogonal to the code itself.** Wrote a placeholder
+timestamp (`18:xx`) mid-comment, meaning to fill in the real minute later —
+the bare-date advisory caught it (correctly, since a placeholder doesn't match
+its real-digit-only strip pattern) but only after the bytes had already
+landed. Fixed at the mechanism level: `timestamp-check.sh` now denies a
+date-paired-with-a-placeholder-time in `pre` mode, the same tier as an
+impossible future stamp, since unlike an ordinary bare date this shape is
+never legitimate. Separately, went an entire long session without calling
+`mark_chapter` even once, despite the per-turn self-check literally saying
+"call mark_chapter now" every turn — the reminder had no hard consequence for
+being skipped, so it got filtered out as boilerplate alongside everything
+else injected every turn. Neither of these needed more hooks so much as
+actually reading what was already firing.
+
+### Lesson
+
+**A pattern matching working code elsewhere is a hypothesis, not a proof —
+and "not checkable from reading" is usually just "not tested yet."** Both
+MarkEdit theories this session (the keymap-timing theory for the Return bug,
+the applyCaseToSelection-precedent theory for the cursor bug) were plausible,
+internally consistent, and wrong — and both only broke under actual live
+testing, not further code reading. The same session that fixed a hook meant
+to catch fabricated timestamps needed that exact hook to catch itself doing
+it, twice, live, while writing the fix.
 
 
 # Part B — Lessons Ledger (thematic)

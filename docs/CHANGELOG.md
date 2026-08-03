@@ -181,7 +181,27 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.51.0 — 2026-08-03 17:04 EDT (#73) — Two colours meeting inside a pill, and a cursor you can aim
+## v2.51.1 — 2026-08-03 18:22 EDT (#74) — A placeholder time is not a bare date
+
+Closed out two resolved MarkEdit-extension notes-file items — the Return-key
+double-blank-line bug (root-caused live: not any of Dior's Builds' own
+extensions, but MarkEdit's own native list-continuation logic double-inserting
+a blank line after a whole-line HTML comment) and the standalone timestamp
+toolbar button + `Option+T` shortcut. Both fixes live in MarkEdit's own
+extension files outside this repo; tracked in full in
+`/Applications/Claude Code/meta-deferred-list.md`.
+
+`timestamp-check.sh` gained a real gap fix: the bare-date advisory only
+stripped a stamp when its `HH:MM` was real digits, so a placeholder like
+`18:xx` or `XX:XX` slipped past as unflagged new content instead of a caught
+mistake. Added a dedicated `pre`-mode deny for a date paired with a
+placeholder time slot — same tier as the existing impossible-future-timestamp
+deny, since unlike an ordinary bare date, a placeholder character in an
+`HH:MM` slot is never legitimate. Deliberately excludes `h`/`H` so the
+project's own literal `YYYY-MM-DD HH:MM TZ` format spec is never flagged as a
+fake instance of itself. 7 new tests, 45/45 passing.
+
+## v2.51.0 — 2026-08-03 17:04 EDT (#73 · `6502764`) — Two colours meeting inside a pill, and a cursor you can aim
 
 The fluid morph left the proof-of-concept and reached the live site, and then
 four rounds of tuning turned it into something usable. Every round started the

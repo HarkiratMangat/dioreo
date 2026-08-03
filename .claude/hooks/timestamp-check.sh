@@ -50,6 +50,20 @@
 # accident. This has to be typed next to the stamp, shows up in the diff, and greps in one command
 # (`rg TS-EXAMPLE`) if it is ever suspected of hiding a real fabrication.
 
+# WHY IT CHANGED AGAIN (2026-08-03 18:12 EDT) — a placeholder time slipped past every existing check.
+# Wrote `2026-08-03 18:xx EDT` mid-comment (genuinely meaning to fill in the real minute later and
+# then forgetting to), in the SAME session that had already been corrected once for a bare date with
+# no time at all. The bare-date branch (B) only strips a stamp when its HH:MM is real digits
+# (`s/${today} [0-9]{2}:[0-9]{2}//g`); `18:xx` doesn't match that, so the date survived the strip and
+# the advisory DID fire correctly — but advisory-after-the-fact is what this file's own comments
+# already call "a backstop for the rare miss, NOT the mechanism": it caught the mistake one edit too
+# late instead of stopping it. Unlike an ordinary bare date (sometimes legitimate prose), a placeholder
+# character sitting inside an HH:MM-shaped slot is never legitimate content — nobody means to publish
+# literal "xx" or "??" as a time. That asymmetry is exactly what a bare-date advisory can't have (its
+# whole design constraint is "must never be able to block a write," given its false-positive history)
+# but a narrow, high-confidence pattern like this one can: DENY it in `pre`, same tier as an impossible
+# future stamp, so the placeholder never reaches disk in the first place.
+
 mode="${1:-post}"
 
 content=$(jq -r '.tool_input.new_string // .tool_input.content // empty')
@@ -103,6 +117,25 @@ if [ -n "$future" ]; then
   fi
 fi
 
+# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. --------------
+# Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same
+# reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so
+# this file's own header can keep quoting the bad pattern as an example.
+# x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format
+# spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance.
+placeholder=$(printf '%s' "$joined" \
+  | grep -v 'TS-EXAMPLE' \
+  | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}' \
+  | grep -E '[xX?]' | sort -u | tr '\n' ' ')
+
+if [ -n "$placeholder" ]; then
+  pmsg="PLACEHOLDER TIMESTAMP — \"${placeholder}\"has a date but no real clock time (x/X/? standing in for digits). This is exactly the 2026-08-03 mishap: a timestamp gets typed with the intent to fill in the real minute later, and later never comes before the write lands. Run \`date\` and paste the real HH:MM now, in the same edit — do not save a placeholder to fix in a follow-up."
+  if [ "$mode" = "pre" ]; then
+    jq -n --arg r "$pmsg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
+    exit 0
+  fi
+fi
+
 # `pre` mode judges only the objective check. The bare-date branch has a false-positive history and
 # must never be able to block a write — noise that blocks is how a gate gets switched off.
 [ "$mode" = "pre" ] && exit 0
@@ -110,6 +143,8 @@ fi
 findings=""
 [ -n "$future" ] && findings="
   🚨 $msg"
+[ -n "$placeholder" ] && findings="${findings}
+  🚨 $pmsg"
 
 # --- (B) BARE DATE: advisory, and the only branch that strips known-legitimate shapes ------------
 #
