@@ -948,8 +948,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 .tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
-  display:flex;align-items:center;gap:.42rem;
-  max-width:min(72vw,22rem);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  /* ⚠️ width:max-content IS LOAD-BEARING, not a nicety. The capsule is centred
+     by left + translate(-50%), and a transform does not affect LAYOUT — so a
+     fixed element whose left sits near the right edge is shrink-wrapped by the
+     space remaining to that edge before the transform ever moves it. Measured
+     on the back-to-top: "Back to top" came out 56px wide and 4.2 lines tall,
+     overlapping the button. max-content sizes it to its text first and lets the
+     transform place it afterwards. */
+  width:max-content;max-width:min(72vw,22rem);
   font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
   letter-spacing:.13em;text-transform:uppercase;
   /* ⚠️ BUILT FROM --desk AND --ink ONLY, and that is not a style preference.
@@ -968,7 +975,9 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     color-mix(in srgb,var(--ink) 9%,var(--desk)) 94%, transparent);
   border:1px solid color-mix(in srgb,var(--ink) 24%,var(--desk));
   border-radius:999px;
-  padding:.42rem .68rem .42rem .58rem;
+  /* even on all four sides now the leading dot is gone — it was .58/.68 to
+     balance the dot's optical weight, which read as crushed once removed */
+  padding:.46rem .8rem;
   /* the 6% of translucency left above is there to be blurred — fully opaque and
      the backdrop-filter would be doing nothing at all */
   backdrop-filter:blur(12px) saturate(1.2);
@@ -976,12 +985,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   box-shadow:0 12px 30px -14px rgba(0,0,0,.8),
     0 0 0 4px color-mix(in srgb,var(--accent) 8%,transparent);
   opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
-  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
-.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}/* wraps onto a second line rather than running off a phone-width viewport */
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}/* wraps onto a second line rather than running off a phone-width viewport,
+   balanced so a two-line hint does not leave one word alone on the second */
 
-.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx-t{display:block;white-space:normal;text-wrap:balance;line-height:1.5}
 .tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
 
 .tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
@@ -1776,28 +1783,25 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <nav>
     <div class="navwrap" data-fit="9"><div class="seg" data-at="-1" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../legal/terms.html"
-        data-tip="Documents pages">Documents</a>
-      <a class="tab" href="../legal/terms.html" data-accent="#F2994A" data-tip="What the bot does, what you agree to, and the limits of what we promise.">Terms</a><a class="tab" href="../legal/privacy.html" data-accent="#17A2A2" data-tip="Every field stored about you, where it lives, and how to have it deleted.">Privacy</a><a class="tab" href="../legal/license.html" data-accent="#9B6BE3" data-tip="Read it, study it, run it on your own machine. Source-available, not open source.">License</a><a class="tab" href="../legal/notice.html" data-accent="#FF5264" data-tip="Every dependency and its licence, the marks that are not ours, and where AI helped.">Notice</a>
+      <a class="segchip" href="../legal/terms.html">Documents</a>
+      <a class="tab" href="../legal/terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="../legal/privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="../legal/license.html" data-accent="#9B6BE3">License</a><a class="tab" href="../legal/notice.html" data-accent="#FF5264">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../legal/contributing.html"
-        data-tip="Community pages">Community</a>
-      <a class="tab" href="../legal/contributing.html" data-accent="#8B9BFF" data-tip="How to report a bug, send a fix, and what the CLA actually asks of you.">Contributing</a><a class="tab" href="../legal/contributors.html" data-accent="#F8FF4A" data-tip="Who helped build this, and how credit works. Bug reports count.">Contributors</a>
+      <a class="segchip" href="../legal/contributing.html">Community</a>
+      <a class="tab" href="../legal/contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="../legal/contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" data-label="Releases">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./"
-        data-tip="Releases pages">Releases</a>
-      <a class="tab on" href="./" data-accent="#FF9E3D" data-tip="What changed in each release of Dior’s Builds, in plain language." aria-current="page">What's New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B" data-tip="The detailed, developer-facing release history.">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF" data-tip="Discoveries, real root causes, the things we walked back, and the lessons.">Devlog</a>
+      <a class="segchip" href="./">Releases</a>
+      <a class="tab on" href="./" data-accent="#FF9E3D" aria-current="page">What's New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF">Devlog</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot data-tip="View the source on GitHub">
+  data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
-  data-tip="Add the bot to your Discord account"
+  data-tip="Add to Discord"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1805,8 +1809,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" data-tip="Switch light and dark"
-  aria-label="Switch between light and dark">
+  aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1883,7 +1886,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <h2 id="coming-soon">🔜 Coming soon</h2>
         <p>A peek at what's planned (not built yet):</p>
 <ul><li><strong>Faster, safer bulk editing</strong> in the admin panel — search for items and pick them from a list instead of pasting names.</li><li><strong>Reliability polish</strong> so the bot never double-responds or drops a click.</li><li><strong>Snappier page-switching</strong> in busier commands (like flipping between New/Returning draws).</li><li><strong>Richer colour extraction</strong> — more variety pulled from your avatar, so a standout colour doesn't get missed.</li></ul>
-<h3 id="further-out" class="plain"><span class="ht">Further out</span><a class="anchor" href="#further-out" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="further-out" class="plain"><span class="ht">Further out</span><a class="anchor" href="#further-out" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>A <code>/help</code> command</strong> explaining everything the bot can do, with a way to reach Dior directly for bug reports or requests.</li><li><strong><code>/meta</code></strong> — see every weapon currently marked Meta, in one place.</li><li><strong>A draw cost calculator</strong> — tells you what it'll cost to finish a draw from where you are, and which top-up you'd need.</li><li><strong>In-bot announcements</strong> — a heads-up message (e.g. "sorry the bot was down — we've moved to a better host") shown once the next time you use any command.</li><li><strong>An easier way to add &amp; share the bot</strong>, including where user-installed apps are blocked.</li><li><strong>A <code>/define</code> command</strong> (Urban Dictionary lookup) — just for fun.</li><li>Eventually: <strong>text commands</strong> (like <code>d b ak117</code>) with a custom prefix per server, <strong>submitting your own loadouts</strong> for review, and further out still, <strong>building your own gunsmith right in the bot</strong>.</li></ul>
 <hr>
       </section>
@@ -2403,7 +2406,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
           
           <div class="pn-cb"><ul><li>Complete visual overhaul of the entire bot using Discord's newest UI system.</li><li>Weapon loadouts moved to a proper database instead of a spreadsheet.</li><li>This is the point Harkirat started building the bot together with Claude.</li></ul>
 <hr>
-<h3 id="earlier-history-solo-built" class="plain"><span class="ht">Earlier history (solo-built)</span><a class="anchor" href="#earlier-history-solo-built" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3></div>
+<h3 id="earlier-history-solo-built" class="plain"><span class="ht">Earlier history (solo-built)</span><a class="anchor" href="#earlier-history-solo-built" data-tip="Link to section" aria-label="Link to this section">¶</a></h3></div>
         </article>
         <article class="pn-card" data-entry data-rv>
           <h2 id="v1-7-0" class="pn-cv">v1.7.0</h2>
@@ -2448,7 +2451,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     </main>
   </div>
   <footer class="foot">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
     <p class="disc">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="../legal/terms.html">Terms</a><span>&middot;</span><a href="../legal/privacy.html">Privacy</a><span>&middot;</span><a href="../legal/license.html">License</a><span>&middot;</span><a href="../legal/notice.html">Notice</a><span>&middot;</span><a href="../legal/contributing.html">Contributing</a><span>&middot;</span><a href="../legal/contributors.html">Contributors</a><span>&middot;</span><a href="./detailed.html">Changelog</a><span>&middot;</span><a href="./devlog.html">Devlog</a></nav>
   </footer>
@@ -3800,6 +3803,21 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        fading, then is drawn back in as the parts return and re-merge. */
     var BURST=620,burstAt=-1e9;
     var sx=1,sy=1,spread=1,tsx=1,tsy=1,tspread=1;
+    var beam=0,tbeam=0;   /* 0 = blob, 1 = fully a text caret */
+    var lineH=20;         /* the line box under the pointer, from onGlyphs() */
+    /* ⚠️ THE SEVEN MASSES ARE DELIBERATELY UNEQUAL — 5.6 down to 2.2 — because a
+       teardrop needs a heavy head and a thin tail. Stacked into a caret that
+       taper becomes a defect: the small masses at one end erode away under the
+       crush and the bar hangs off-centre, which is exactly how it rasterised.
+       So text mode eases every mass toward ONE radius; the swarm keeps its
+       tapered silhouette everywhere else.
+       ⚠️ THAT RADIUS IS SET BY THE PAINT FLOOR, NOT BY THE MEAN. Easing to the
+       mean (3.79) was tried and rasterised as a short lozenge again: at 0.46 of
+       horizontal scale a 3.79 mass paints 3.5px wide, under the ~4.5px floor
+       this filter thresholds at, so the crush ate the whole stack. 6.0 paints
+       ~5.5px and survives, which is what makes the bar continuous. Re-measure
+       it if stdDeviation on #dbgoo-p or the crush matrix changes. */
+    var RBEAM=6.0;
 
     var baseCol=(getComputedStyle(document.body)
                   .getPropertyValue('--accent')||'').trim()||'#F2994A';
@@ -3883,9 +3901,19 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        pressable. Doing it by squashing the same body keeps it one creature rather
        than a set of swapped icons. */
     function shapeFor(m){
-      if(m==='text'){tsx=0.30;tsy=2.45;tspread=0.48;}
+      /* ⚠️ THE BEAM IS A CARET, AND A CARET'S JOB IS TO SAY WHICH LETTER.
+         Three separate faults were reported together on 2026-08-03 16:40 EDT —
+         it nearly vanished on click, it breathed too hard, and it was hard to
+         tell where the selection would start — and only the second is about
+         breathing. They are fixed by the eased 0-1 'beam', which says how far
+         into text mode the swarm is, applied in tick() to the LAG, the
+         breathing and the click burst. See each site there.
+         The targets here only do the shape: thinner and taller, because a
+         caret's precision is horizontal and its legibility is vertical. */
+      if(m==='text'){tsx=0.46;tsy=0.50;tspread=0.30;}
       else if(m==='link'){tsx=1.5;tsy=1.5;tspread=1.9;}
       else{tsx=1;tsy=1;tspread=1;}
+      tbeam=(m==='text')?1:0;
       ink.classList.toggle('soft',m==='text');
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
@@ -3920,6 +3948,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          rather than losing the I-beam entirely. */
       if(!r)return true;
       if(!r.width&&!r.height)return true;
+      /* the caret rect is the LINE BOX, so this is the height the beam should
+         be — measured off the text it is actually over, not assumed */
+      if(r.height>6&&r.height<80)lineH=r.height;
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -3955,6 +3986,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       if(now-hitT>90){hitT=now;probe();}
       sx+=(tsx-sx)*0.16;sy+=(tsy-sy)*0.16;
       spread+=(tspread-spread)*0.16;
+      beam+=(tbeam-beam)*0.16;
       /* Eased per frame rather than by a CSS transition: the target changes every
          time the pointer crosses a boundary, and a transition would restart from
          wherever it had reached and stutter. mix() rounds to whole channels, so
@@ -3972,9 +4004,33 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            deformation of the same cluster rather than a different object */
         var gx=Math.cos(ang)*s.orb*spread*sx*(1-0.45*sp);
         var gy=Math.sin(ang)*s.orb*spread*sy*(1-0.45*sp);
-        p.x+=((cen.x+gx-dvx*s.lag*8.5)-p.x)*s.k;
-        p.y+=((cen.y+gy-dvy*s.lag*8.5)-p.y)*s.k;
-        var scl=(1+0.17*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
+        /* ⚠️ THE LAG IS WHY IT WAS HARD TO AIM. Seven masses trailing the
+           pointer put the swarm's visible centre BEHIND the true position, so
+           the thing you were reading as the caret sat a few pixels back from
+           the letter it would actually select from. A teardrop wants that
+           smear; a caret must not have it, so text mode pulls the trail in to
+           a quarter and the masses stack into one bar on the real x. */
+        var lagK=8.5*(1-0.76*beam);
+        /* ⚠️ THE CARET IS A STACK OF MASSES, NOT ONE SQUASHED ELLIPSE, and that
+           is the whole difference. Squashing the cluster to 0.24 wide and 2.85
+           tall looked right in the numbers and rasterised as a SHORT LOZENGE
+           about an x-height long: a Gaussian erodes a curve in proportion to
+           its curvature, so a thin tall ellipse loses its ends first and the
+           alpha crush then thresholds them away. Making it thinner made it
+           shorter — the same anisotropy the nav pill's dilation table records,
+           running the other way.
+           So the masses are spread along Y instead and left round enough to
+           survive on their own. The crush merges them into one continuous bar,
+           which is what the filter is FOR, and the bar cannot be eroded from
+           the ends because there is another mass there. Its length is the line
+           box measured under the pointer, so the caret matches the text it is
+           sitting in rather than a constant. */
+        var stack=beam*((i-(parts.length-1)/2)/Math.max(1,parts.length-1))*lineH*0.74;
+        p.x+=((cen.x+gx-dvx*s.lag*lagK)-p.x)*s.k;
+        p.y+=((cen.y+gy+stack-dvy*s.lag*lagK)-p.y)*s.k;
+        /* the breathing is what makes the blob feel alive and what makes the
+           caret feel unsteady, so it is damped as the beam forms, not removed */
+        var scl=(1+0.17*(1-0.66*beam)*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
         var bx=0,by=0;
         var bt=(now-burstAt)/BURST;
         if(bt>=0&&bt<1){
@@ -3983,16 +4039,26 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
              mid-drag, which is unusable when the native arrow is hidden. Only the
              trailing masses fly out and evaporate; the tip moves and shrinks a
              little and never leaves the screen. */
-          var out=Math.sin(Math.PI*Math.pow(bt,0.55));
+          /* ⚠️ THE BURST IS SUPPRESSED IN TEXT MODE. Its whole design is that
+             trailing masses fall under the paint floor and stop being drawn —
+             correct for a blob, catastrophic for a caret, because a click is
+             exactly the moment you need to see where it is. Reported as "it
+             nearly disappears upon a click". */
+          var out=Math.sin(Math.PI*Math.pow(bt,0.55))*(1-0.82*beam);
           var w=s.lag;
           bx=Math.cos(p.ba)*p.bd*out*(0.18+w);
           by=Math.sin(p.ba)*p.bd*out*(0.18+w);
-          scl*=1-(0.14+0.5*w)*Math.sin(Math.PI*Math.pow(bt,0.8));
-          if(w>0.25)p.n.style.opacity=String(1-0.92*out);
+          /* ⚠️ DAMPED BY beam TOO. Scaling only the travel and the opacity left
+             this line at full strength, and it is the one that actually removes
+             the caret: measured, the bar still lost half its height on a click
+             (20.5px down to 8.9px) while the other two were already suppressed. */
+          scl*=1-(0.14+0.5*w)*(1-0.86*beam)*Math.sin(Math.PI*Math.pow(bt,0.8));
+          if(w>0.25)p.n.style.opacity=String(1-(0.92-0.74*beam)*out);
         }else if(p.n.style.opacity!==''){p.n.style.opacity='';}
+        var eq=1+beam*(RBEAM/s.R-1);
         p.n.style.transform='translate('+(p.x-ox+bx).toFixed(1)+'px,'
-          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx).toFixed(3)+','
-          +(scl*sy).toFixed(3)+')';
+          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx*eq).toFixed(3)+','
+          +(scl*sy*eq).toFixed(3)+')';
       }
 
       /* ⚠️ NO IDLE FADE-OUT WHILE THIS IS THE POINTER. An earlier version faded the
@@ -4458,7 +4524,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
      anchored to an element that has moved is worse than no hint: it points at
      the wrong control with total confidence. */
   (function(){
-    var host=null,tipEl=null,showT=0,cur=null;
+    var tipEl=null,showT=0,cur=null,pending=null;
     function build(){
       if(tipEl)return tipEl;
       tipEl=el('div','tipx');
@@ -4490,15 +4556,33 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     }
     function hide(){
       clearTimeout(showT);
-      cur=null;
+      cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
     }
+    /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
+       the wrong lever — it just makes the wanted case feel broken too. The
+       trigger is a pointer that has COME TO REST on a control; a pointer still
+       travelling across one is passing through. So the timer checks that the
+       pointer has actually stopped and reschedules itself if it has not,
+       which is what turns "hovered for 420ms" into "settled here". */
+    var lastMove=0,lastX=-1e4,lastY=-1e4;
+    if(fine)addEventListener('pointermove',function(e){
+      lastMove=performance.now();lastX=e.clientX;lastY=e.clientY;
+    },{passive:true,capture:true});
+    /* ⚠️ pending IS NOT A TIDY-UP. Without it, every pointerover on a CHILD of
+       the trigger restarted the timer, so crossing a button's icon and then its
+       label reset the wait twice and the hint could take three delays to arrive
+       — or never, on a control with several children. Re-asking for the node
+       that is already queued is a no-op now. */
     function want(node,delay){
-      if(!node||node===cur)return;
+      if(!node||node===cur||node===pending)return;
+      pending=node;
       clearTimeout(showT);
-      /* a delay, so sweeping the pointer across a row of controls does not
-         strobe a capsule at every one of them */
-      showT=setTimeout(function(){ place(node); },delay);
+      showT=setTimeout(function fire(){
+        if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        pending=null;
+        place(node);
+      },delay);
     }
     function tipOf(e){
       var n=e.target;
@@ -4509,12 +4593,37 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         if(e.pointerType==='touch')return;
         var n=tipOf(e);
         if(!n){ if(cur)hide(); return; }
-        want(n,190);
+        /* 700ms, not the 190 this started at and not the 420 that followed.
+           Reported as naggy at both: a hint that arrives while you are still
+           deciding whether you wanted it reads as an interruption, and the
+           delay is what separates a nudge from a nag. Paired with the settle
+           check below, which is the half that stops sweep-through triggers —
+           raising the delay alone would only have made the WANTED case feel
+           broken too. */
+        want(n,700);
       },true);
+      /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
+         pointer left" is what made the hint strobe across a single button —
+         reported 2026-08-03 16:40 EDT with a recording of it appearing and
+         vanishing three times inside the Source capsule. Moving from .ghb-ic to
+         .ghb-t is a pointerout on the icon whose target still resolves to the
+         same trigger, so the old check hid it and pointerover then queued it
+         again. relatedTarget is the element being entered: if it is still
+         inside the same trigger, nothing has been left. */
       document.addEventListener('pointerout',function(e){
         var n=tipOf(e);
-        if(n&&n===cur)hide();
-        else if(!n)hide();
+        if(!n)return;
+        var to=e.relatedTarget;
+        if(to&&n.contains(to))return;
+        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
+           from 32px to its full width over 420ms on hover, so a pointer that
+           has not moved can fall outside the box for a frame and come back —
+           pointerout fires with relatedTarget outside, and the hint hid and
+           re-queued. Ask the geometry instead: if the pointer is still within
+           the trigger's current rect, nothing has been left. */
+        var r=n.getBoundingClientRect();
+        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        hide();
       },true);
     }
     document.addEventListener('focusin',function(e){

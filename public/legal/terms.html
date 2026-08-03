@@ -882,8 +882,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 .tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
-  display:flex;align-items:center;gap:.42rem;
-  max-width:min(72vw,22rem);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  /* ⚠️ width:max-content IS LOAD-BEARING, not a nicety. The capsule is centred
+     by left + translate(-50%), and a transform does not affect LAYOUT — so a
+     fixed element whose left sits near the right edge is shrink-wrapped by the
+     space remaining to that edge before the transform ever moves it. Measured
+     on the back-to-top: "Back to top" came out 56px wide and 4.2 lines tall,
+     overlapping the button. max-content sizes it to its text first and lets the
+     transform place it afterwards. */
+  width:max-content;max-width:min(72vw,22rem);
   font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
   letter-spacing:.13em;text-transform:uppercase;
   /* ⚠️ BUILT FROM --desk AND --ink ONLY, and that is not a style preference.
@@ -902,7 +909,9 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     color-mix(in srgb,var(--ink) 9%,var(--desk)) 94%, transparent);
   border:1px solid color-mix(in srgb,var(--ink) 24%,var(--desk));
   border-radius:999px;
-  padding:.42rem .68rem .42rem .58rem;
+  /* even on all four sides now the leading dot is gone — it was .58/.68 to
+     balance the dot's optical weight, which read as crushed once removed */
+  padding:.46rem .8rem;
   /* the 6% of translucency left above is there to be blurred — fully opaque and
      the backdrop-filter would be doing nothing at all */
   backdrop-filter:blur(12px) saturate(1.2);
@@ -910,12 +919,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   box-shadow:0 12px 30px -14px rgba(0,0,0,.8),
     0 0 0 4px color-mix(in srgb,var(--accent) 8%,transparent);
   opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
-  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
-.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}/* wraps onto a second line rather than running off a phone-width viewport */
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}/* wraps onto a second line rather than running off a phone-width viewport,
+   balanced so a two-line hint does not leave one word alone on the second */
 
-.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx-t{display:block;white-space:normal;text-wrap:balance;line-height:1.5}
 .tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
 
 .tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
@@ -1872,23 +1879,21 @@ html{scroll-behavior:smooth}
   <nav>
     <div class="navwrap" data-fit="6"><div class="seg" data-at="0" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./terms.html"
-        data-tip="Documents pages">Documents</a>
-      <a class="tab on" href="./terms.html" data-accent="#F2994A" data-tip="What the bot does, what you agree to, and the limits of what we promise." aria-current="page">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2" data-tip="Every field stored about you, where it lives, and how to have it deleted.">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3" data-tip="Read it, study it, run it on your own machine. Source-available, not open source.">License</a><a class="tab" href="./notice.html" data-accent="#FF5264" data-tip="Every dependency and its licence, the marks that are not ours, and where AI helped.">Notice</a>
+      <a class="segchip" href="./terms.html">Documents</a>
+      <a class="tab on" href="./terms.html" data-accent="#F2994A" aria-current="page">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#FF5264">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./contributing.html"
-        data-tip="Community pages">Community</a>
-      <a class="tab" href="./contributing.html" data-accent="#8B9BFF" data-tip="How to report a bug, send a fix, and what the CLA actually asks of you.">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A" data-tip="Who helped build this, and how credit works. Bug reports count.">Contributors</a>
+      <a class="segchip" href="./contributing.html">Community</a>
+      <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot data-tip="View the source on GitHub">
+  data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
-  data-tip="Add the bot to your Discord account"
+  data-tip="Add to Discord"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1896,8 +1901,7 @@ html{scroll-behavior:smooth}
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" data-tip="Switch light and dark"
-  aria-label="Switch between light and dark">
+  aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1988,134 +1992,134 @@ html{scroll-behavior:smooth}
         <div class="rule"></div>
         <div class="meta"><span>Effective <b>1 August 2026</b></span><span>Revision <b>1.4</b></span><span>Ontario, Canada</span></div>
       </header>
-      <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+      <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
 <p><strong>If you do not agree, do not install or use the Bot.</strong></p></blockquote>
 <hr>
 <section class="dsec">
-<h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>This is a free, unofficial Call of Duty: Mobile info bot run by one person as a hobby. Use it, enjoy it, don't abuse it. The game data is best-effort and often changes — don't spend money based on it. It comes with no warranty, and our liability is limited. Nothing here removes rights your local law gives you that can't be signed away.</p>
 <p><em>This summary is for convenience only. The numbered sections are the actual terms.</em></p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
 <p><strong>Contact:</strong> harkirat117@gmail.com, or <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a></p>
 <p>There is no company behind this. It's one person, and support is best-effort.</p>
-<h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">The Site</span><a class="anchor" href="#s-1.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">The Site</span><a class="anchor" href="#s-1.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>These documents are published on a website (the <strong>"Site"</strong>). It is a set of static pages: no accounts, no forms, no analytics, and nothing to sign up for. The only thing it keeps is the light or dark appearance you pick, stored in your own browser and never transmitted — the Privacy Policy describes it in <a class="xref" href="#s-2.6">§2.6</a>.</p>
 <p>Where these Terms would sensibly apply to it, they do: in particular the disclaimer of warranties (<a class="xref" href="#s-14">§14</a>), the limitation of liability (<a class="xref" href="#s-15">§15</a>), and the intellectual-property terms (<a class="xref" href="#s-7">§7</a>) cover the Site and its contents as well as the Bot. Everything written about <em>using the Bot</em> — the eligibility, conduct, suspension and account provisions — applies to the Bot only, because there is nothing on the Site to use in that sense.</p>
 <p><strong>If the two ever conflict about a document's contents, the plain-text original governs</strong>, as stated on each rendered page.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">Agreement to these Terms</span><a class="anchor" href="#s-2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">How you accept</span><a class="anchor" href="#s-2.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">Agreement to these Terms</span><a class="anchor" href="#s-2" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-2.1" class="numbered"><span class="idx" aria-hidden="true">2.1</span><span class="ht">How you accept</span><a class="anchor" href="#s-2.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>You accept these Terms by doing any of the following:</strong></p>
 <ol><li><strong>Installing</strong> the Bot to your Discord account, or authorising it via Discord's OAuth flow;</li><li><strong>Invoking any command</strong> — every slash command, at every invocation;</li><li><strong>Interacting with any component</strong> the Bot presents — any button, dropdown, modal, or menu;</li><li><strong>Receiving output</strong> from the Bot in response to something you did; or</li><li><strong>Continuing to use</strong> the Bot after a change to these Terms takes effect.</li></ol>
 <p><strong>Each of those is a separate and independent act of acceptance.</strong> You do not need to accept more than once, and accepting once binds you to these Terms for all subsequent use.</p>
-<h3 id="s-2.2" class="numbered"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Notice</span><a class="anchor" href="#s-2.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.2" class="numbered"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Notice</span><a class="anchor" href="#s-2.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>These Terms and the <a href="privacy.html">Privacy Policy</a> are:</p>
 <ul><li>linked from the Bot's Discord Developer Portal listing, where Discord displays them on the Bot's profile;</li><li>published at a permanent public URL (see <a class="xref" href="#s-20">§20</a>);</li><li>referenced in the Bot's own help output; and</li><li>available on request at harkirat117@gmail.com.</li></ul>
 <p><strong>You are responsible for reading them.</strong> Choosing not to read terms you were given the opportunity to read does not stop them applying to you.</p>
-<h3 id="s-2.3" class="numbered"><span class="idx" aria-hidden="true">2.3</span><span class="ht">Acknowledgement</span><a class="anchor" href="#s-2.3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.3" class="numbered"><span class="idx" aria-hidden="true">2.3</span><span class="ht">Acknowledgement</span><a class="anchor" href="#s-2.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>By using the Bot you acknowledge that you have had a reasonable opportunity to read these Terms and the Privacy Policy, that you understand them, that you agree to be bound by them, and that you accept them as a binding agreement between you and us with the same effect as a signed written contract.</p>
-<h3 id="s-2.4" class="numbered"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Electronic agreement</span><a class="anchor" href="#s-2.4" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.4" class="numbered"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Electronic agreement</span><a class="anchor" href="#s-2.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>You consent to contract electronically. These Terms satisfy any requirement that an agreement be in writing, and your acceptance under <a class="xref" href="#s-2.1">§2.1</a> has the same legal effect as a handwritten signature under Ontario's <em>Electronic Commerce Act, 2000</em> and equivalent legislation elsewhere.</p>
-<h3 id="s-2.5" class="numbered"><span class="idx" aria-hidden="true">2.5</span><span class="ht">Incorporated documents</span><a class="anchor" href="#s-2.5" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.5" class="numbered"><span class="idx" aria-hidden="true">2.5</span><span class="ht">Incorporated documents</span><a class="anchor" href="#s-2.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The <a href="privacy.html">Privacy Policy</a> forms part of these Terms. The <a href="../LICENSE">LICENSE</a> governs the Bot's <strong>source code</strong> and is a separate agreement — using the Bot does not license you its code.</p>
-<h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Don't install or use the Bot.</strong> If you've already installed it, remove it via Discord's "Authorized Apps" settings and stop issuing commands. See <a class="xref" href="#s-13.1">§13.1</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">Eligibility</span><a class="anchor" href="#s-3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">Eligibility</span><a class="anchor" href="#s-3" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>To use the Bot you must:</p>
 <ol><li>Be at least <strong>13 years old</strong>, or the higher minimum age Discord requires in your country — in parts of the EU and elsewhere this is <strong>14, 15, or 16</strong>. Discord's <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> set the controlling minimum, and you must meet it.</li><li>Have the legal capacity to enter into these Terms, or have your parent or guardian's consent, in which case they accept these Terms on your behalf and are responsible for your use.</li><li>Not be barred from using Discord under Discord's terms.</li><li>Not be located in, or ordinarily resident in, a country subject to a comprehensive Canadian trade embargo, and not be listed on any applicable sanctions or restricted-party list.</li></ol>
 <p><strong>We do not knowingly permit use below Discord's minimum age.</strong> We have no independent age-verification mechanism and rely on Discord's enforcement. If we learn a user is under that age, we will delete their stored preferences — see <a class="xref" href="#s-10">§10</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">What the Bot does</span><a class="anchor" href="#s-4" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">What the Bot does</span><a class="anchor" href="#s-4" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The Bot is a <strong>user-installed Discord application</strong> providing Call of Duty: Mobile reference information:</p>
 <div class="tw"><table><thead><tr><th>Feature</th><th>What it gives you</th></tr></thead><tbody><tr><td>Weapon loadouts</td><td>Curated multiplayer and DMZ builds, attachments, rankings</td></tr><tr><td>Lucky draw info</td><td>Draw contents, items, and CP pricing</td></tr><tr><td>Patch notes</td><td>Season balance changes and patch history</td></tr><tr><td>Seasonal calendar</td><td>Events, start and end dates</td></tr><tr><td>Countdowns</td><td>Season, rank, and DMZ end timers</td></tr><tr><td><code>/timestamp</code></td><td>Discord timestamp generation in your timezone</td></tr><tr><td><code>/settings</code></td><td>Your display preferences</td></tr><tr><td>Accent colours</td><td>Message colours matched to your Discord profile</td></tr></tbody></table></div>
-<h3 id="s-4.1" class="numbered"><span class="idx" aria-hidden="true">4.1</span><span class="ht">What "user-installed" means</span><a class="anchor" href="#s-4.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.1" class="numbered"><span class="idx" aria-hidden="true">4.1</span><span class="ht">What "user-installed" means</span><a class="anchor" href="#s-4.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The Bot installs <strong>to your Discord account</strong>, not to a server:</p>
 <ul><li>It travels with you across servers and DMs.</li><li><strong>It has no permissions in any server.</strong> It is not a member, holds no role, and cannot read your messages, see your channels, moderate, or act on its own.</li><li>It only responds to interactions <strong>you</strong> initiate.</li><li>Whether it works in a given server is controlled by that server and by Discord — not by us.</li></ul>
-<h3 id="s-4.2" class="numbered"><span class="idx" aria-hidden="true">4.2</span><span class="ht">It's free</span><a class="anchor" href="#s-4.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.2" class="numbered"><span class="idx" aria-hidden="true">4.2</span><span class="ht">It's free</span><a class="anchor" href="#s-4.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>No paid tier, no subscription, no advertising, no in-app purchase. We are not obliged to keep it that way, but we will not start charging for access you already have without notice.</p>
-<h3 id="s-4.3" class="numbered"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Experimental features</span><a class="anchor" href="#s-4.3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.3" class="numbered"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Experimental features</span><a class="anchor" href="#s-4.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Some features are experimental and may be changed, broken, or removed without notice. Where a feature is marked beta or experimental, expect it to be less reliable — and know that <a class="xref" href="#s-14">§14</a> and <a class="xref" href="#s-15">§15</a> apply to it with full force.</p>
-<h3 id="s-4.4" class="numbered"><span class="idx" aria-hidden="true">4.4</span><span class="ht">No support obligation</span><a class="anchor" href="#s-4.4" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4.4" class="numbered"><span class="idx" aria-hidden="true">4.4</span><span class="ht">No support obligation</span><a class="anchor" href="#s-4.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We have no obligation to provide support, respond to reports, fix bugs, maintain the Bot, or keep any feature working. We generally try. That is a courtesy, not a commitment, and no course of dealing creates one.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Accuracy — please read this one</span><a class="anchor" href="#s-5" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Accuracy — please read this one</span><a class="anchor" href="#s-5" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>The game information in the Bot is best-effort and may be wrong.</strong></p>
 <ul><li>Loadouts, rankings, and "meta" designations reflect <strong>opinion and community consensus</strong>, not objective fact.</li><li>Call of Duty: Mobile is patched frequently. Data can go stale immediately after an update, and there may be a lag before it's corrected.</li><li>Draw contents, prices, and odds are <strong>as observed</strong>, may vary by region, account, and over time, and are <strong>not a representation of what you will receive</strong>.</li><li>Dates, countdowns, and calendar entries depend on information published by others and on your timezone setting being correct.</li></ul>
-<h3 id="s-5.1" class="numbered"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Spending money — the important part</span><a class="anchor" href="#s-5.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-5.1" class="numbered"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Spending money — the important part</span><a class="anchor" href="#s-5.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Do not make purchasing decisions in reliance on the Bot.</strong></p>
 <p>Lucky draws and similar mechanics are <strong>games of chance operated entirely by third parties</strong>. We do not operate, host, facilitate, promote, or take any part in them. We receive no commission, referral fee, or benefit of any kind from your spending. We have no control over odds, contents, pricing, or outcomes, and no ability to influence or predict them.</p>
 <p><strong>Nothing in the Bot is a recommendation, inducement, or encouragement to spend money.</strong> Information about draw contents and pricing is descriptive reference material only.</p>
 <p>If you're concerned about spending on in-game purchases, please seek support appropriate to your situation. Some jurisdictions regulate loot boxes and similar mechanics; where yours does, comply with your local law — that's your responsibility, not ours.</p>
-<h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">No professional advice</span><a class="anchor" href="#s-5.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">No professional advice</span><a class="anchor" href="#s-5.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Nothing in the Bot is financial, legal, medical, or other professional advice.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You must not:</p>
 <ol><li><strong>Abuse or overload it</strong> — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.</li><li><strong>Attack it</strong> — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.</li><li><strong>Circumvent controls</strong> — no bypassing cooldowns, permission checks, or admin-only gates.</li><li><strong>Impersonate</strong> — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.</li><li><strong>Break the law or Discord's rules</strong> — no use in connection with harassment, fraud, hate speech, or illegal activity, and no use violating <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Discord's Terms</a> or <a href="https://discord.com/guidelines" target="_blank" rel="noopener noreferrer">Community Guidelines</a>.</li><li><strong>Extract the data</strong> — no bulk collection, mirroring, re-hosting, or republishing of the Bot's curated datasets or output.</li><li><strong>Train models on it</strong> — no using the Bot's output or data as training, fine-tuning, evaluation, or retrieval input for any AI or machine-learning system.</li><li><strong>Redistribute the software</strong> — the source code is governed by the <a href="../LICENSE">LICENSE</a>, separate from these Terms. Reading it is allowed; deploying or redistributing it is not.</li></ol>
 <p><strong>Security researchers:</strong> good-faith research is welcome, but test against your own local instance, not the live Bot. See §4.11 of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
-<h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>To report misuse of the Bot, a security issue, or content that shouldn't be there, email <strong>harkirat117@gmail.com</strong>. Security issues should never go in a public GitHub issue.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dior's Builds" name and visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
 <p>Source code licensing is governed separately by the <a href="../LICENSE">LICENSE</a>.</p>
 <p><strong>The source repository's visibility may change at any time, without notice</strong> — it may be public or private at any given moment, at our sole discretion, and we are under no obligation to publish the source at all or to keep publishing it. <strong>These Terms, the Privacy Policy, and the Bot itself are unaffected either way</strong>, and these documents stay published at their permanent public URLs regardless. Nothing in these Terms grants you any right of access to the source code.</p>
-<h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Call of Duty®</strong> and <strong>Call of Duty®: Mobile</strong> are trademarks of <strong>Activision Publishing, Inc.</strong> Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
 <blockquote class="callout"><p><strong>Dior's Builds is an unofficial, non-commercial fan project. It is not developed, published, licensed, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, Discord Inc., or any of their affiliates.</strong></p></blockquote>
 <p>Weapon names, item names, in-game imagery, and other game content shown by the Bot remain the property of their respective owners. We claim no ownership and grant you no rights in them. They are displayed for identification, commentary, and reference in a manner we believe constitutes fair dealing under the <em>Copyright Act</em> (Canada) and fair use under 17 U.S.C. § 107.</p>
 <p>We take that position seriously rather than assuming it: the Bot is <strong>free and non-commercial</strong>, its purpose is <strong>informational and referential</strong> rather than a substitute for the game, it uses <strong>no official logos or branding</strong>, it does not reproduce game code, assets in bulk, or anything playable, it makes clear on its face that it is unofficial, and it operates a <strong>prompt takedown process</strong> (<a class="xref" href="#s-7.5">§7.5</a>). Those are the factors that matter, and they are deliberate choices.</p>
 <p>We nonetheless acknowledge plainly that fan projects operate at the rights holder's sufferance. <strong>If Activision or any other rights holder asks us to change or remove something, we will comply promptly</strong> rather than argue.</p>
-<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Not ours — crossover and collaboration content</span><a class="anchor" href="#s-7.3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.3" class="numbered"><span class="idx" aria-hidden="true">7.3</span><span class="ht">Not ours — crossover and collaboration content</span><a class="anchor" href="#s-7.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Call of Duty: Mobile regularly features <strong>licensed content from third-party rights holders who have nothing to do with us and no connection to this project</strong> — crossover seasons, guest characters, themed weapon blueprints, and tie-in events drawn from films, television, comics, music, anime, sports, and other franchises. Those collaborations come and go every season.</p>
 <p>Where the Bot names, describes, dates, or lists such content, the following applies in full:</p>
 <ul><li>The characters, titles, logos, likenesses, designs, and other elements of that content are the property of <strong>their own respective rights holders</strong>, who are typically not Activision, TiMi Studio Group, Tencent, or any of the publishers named in <a class="xref" href="#s-7.2">§7.2</a>.</li><li><strong>We are not affiliated with, licensed by, endorsed by, or sponsored by any of those rights holders either</strong>, and nothing in the Bot's output should be read as suggesting otherwise. The disclaimer in <a class="xref" href="#s-7.2">§7.2</a> extends to every one of them.</li><li>We claim no ownership of and grant you no rights in any of it. It is named and described for identification, commentary, and reference on the same fair dealing / fair use basis set out in <a class="xref" href="#s-7.2">§7.2</a>.</li><li>The takedown process in <a class="xref" href="#s-7.5">§7.5</a> is open to <strong>any</strong> rights holder, not only the game's publishers, and we action valid requests the same way.</li></ul>
 <blockquote class="callout"><p><strong>We deliberately do not list individual collaborations here.</strong> Any list would be out of date within a season, and a stale list of third-party marks is worse than none: it implies we track and vet each one, and it goes wrong silently. This clause is written to cover every collaboration — past, current, and future — without needing to be revised each time one launches.</p></blockquote>
 <p>We also deliberately <strong>do not reproduce other companies' own copyright notices</strong> (the "© / ™ / ® [YEAR] [COMPANY]. All Rights Reserved." blocks you see in the game itself and in officially licensed products). Those notices are published by the rights holders and their licensees to assert <em>their</em> rights under <em>their</em> licence agreements. We hold no such licence, so reproducing them here would misrepresent our relationship with those companies — the opposite of what a disclaimer is for. We acknowledge their rights instead, which is the accurate thing for an unofficial project to do. A consolidated acknowledgement list is kept in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
-<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.4" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
-<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.5" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>If you own rights in material displayed by the Bot and want it removed, email <strong>harkirat117@gmail.com</strong> with:</p>
 <ul><li>identification of the work;</li><li>where it appears in the Bot;</li><li>your contact details;</li><li>a statement that you believe the use is unauthorised; and</li><li>a statement that your notice is accurate and that you are the rights holder or authorised to act for them.</li></ul>
 <p><strong>We action valid requests promptly</strong> — usually within a few days — and we don't require a formal legal process to do so. We will also consider counter-notices.</p>
-<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Yours</span><a class="anchor" href="#s-7.6" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Yours</span><a class="anchor" href="#s-7.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>You retain ownership of anything you send us. By sending feedback, ideas, bug reports, or suggestions, you grant us a perpetual, worldwide, royalty-free, irrevocable licence to use them without restriction, obligation, or compensation, and you agree we owe you nothing for them. Code contributions are governed instead by <a class="xref" href="#s-5">§5</a> of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
-<h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We may develop, acquire, or operate features, products, or services similar to anything you suggest. Nothing in these Terms restricts that, and submitting an idea gives you no rights in what we later build.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>Portions of this project — its source code, documentation, and these legal documents — were <strong>written with the assistance of AI tools</strong>, principally Claude (Anthropic PBC), under human direction. Full disclosure: <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-6">§6</a>.</p>
 <p><strong>No AI system processes your data.</strong> The only AI in the running Bot is an administrator-only image-extraction command that never receives end-user data. See <a class="xref" href="#s-5.1">§5.1</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Third-party services</span><a class="anchor" href="#s-9" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Third-party services</span><a class="anchor" href="#s-9" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The Bot runs on and interoperates with services we don't control:</p>
 <div class="tw"><table><thead><tr><th>Service</th><th>Role</th></tr></thead><tbody><tr><td><strong>Discord Inc.</strong></td><td>The platform the Bot runs on</td></tr><tr><td><strong>MongoDB Atlas</strong></td><td>Stores preferences and content data (Canada)</td></tr><tr><td><strong>Cloudinary</strong></td><td>Hosts and serves cached game images</td></tr><tr><td><strong>Google Cloud Platform</strong></td><td>Hosts the server; Vertex AI for admin-only image extraction</td></tr></tbody></table></div>
 <p>Your use of Discord is governed by Discord's own terms and privacy policy. We are not responsible for these services' availability, security, or acts. An outage or change at any of them can break the Bot without notice.</p>
 <p><strong>Discord Inc. is not a party to these Terms</strong>, has no obligation or liability to you in connection with the Bot, and does not sponsor or endorse it. Any dispute about the Bot is between you and us.</p>
-<h3 id="s-9.1" class="numbered"><span class="idx" aria-hidden="true">9.1</span><span class="ht">If a provider acts outside its terms</span><a class="anchor" href="#s-9.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-9.1" class="numbered"><span class="idx" aria-hidden="true">9.1</span><span class="ht">If a provider acts outside its terms</span><a class="anchor" href="#s-9.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We select providers on the basis of their published terms and data processing agreements, and we do not authorise any of them to use your data for their own purposes. <strong>We cannot audit, inspect, or control what any of them does inside its own systems.</strong></p>
 <p><strong>To the fullest extent permitted by law, we are not liable for any act or omission of a third-party provider that falls outside the terms it publishes</strong> — including any unauthorised use, disclosure, retention, or loss of data by that provider. Your remedy in that situation lies against them, not us.</p>
 <p>Discord in particular is an <strong>independent controller</strong> of the data it collects about you through Discord itself. That is Discord's responsibility under <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a>, not ours.</p>
@@ -2124,7 +2128,7 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Availability and changes</span><a class="anchor" href="#s-10" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Availability and changes</span><a class="anchor" href="#s-10" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>The Bot is provided on an "as is" and "as available" basis.</strong> We make no promise about uptime.</p>
 <p>We may, at any time and without notice or liability:</p>
 <ul><li>Change, add, or remove features, commands, or data</li><li>Suspend, interrupt, or discontinue the Bot entirely</li><li>Impose or change rate limits and cooldowns</li><li>Modify or delete stored content, including curated data</li></ul>
@@ -2132,29 +2136,29 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Force majeure</span><a class="anchor" href="#s-11" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Force majeure</span><a class="anchor" href="#s-11" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>We are not liable for any failure or delay caused by events beyond our reasonable control — including acts of God, natural disaster, fire, flood, epidemic or pandemic, war, terrorism, civil unrest, strike, government action, change of law, power or internet failure, hosting or cloud-provider outage, denial-of-service attack, or <strong>any act, omission, outage, policy change, suspension, or termination by Discord, GitHub, Google, MongoDB, Cloudinary, or Activision</strong>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Export control and sanctions</span><a class="anchor" href="#s-12" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Export control and sanctions</span><a class="anchor" href="#s-12" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You must not use the Bot in violation of Canadian, US, EU, UK, or other applicable export-control or sanctions laws, and you represent that you are not a restricted party under any of them.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Suspension and termination</span><a class="anchor" href="#s-13" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-13.1" class="numbered"><span class="idx" aria-hidden="true">13.1</span><span class="ht">By you</span><a class="anchor" href="#s-13.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Suspension and termination</span><a class="anchor" href="#s-13" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-13.1" class="numbered"><span class="idx" aria-hidden="true">13.1</span><span class="ht">By you</span><a class="anchor" href="#s-13.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Remove the Bot from your Discord account at any time via Discord's "Authorized Apps" settings. That stops all future interaction immediately.</p>
 <p>Removing it does <strong>not</strong> automatically delete your stored preferences — see <a class="xref" href="#s-7.1">§7.1</a> and <a class="xref" href="#s-9">§9</a> of the <a href="privacy.html">Privacy Policy</a> for how to request deletion.</p>
-<h3 id="s-13.2" class="numbered"><span class="idx" aria-hidden="true">13.2</span><span class="ht">By us</span><a class="anchor" href="#s-13.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-13.2" class="numbered"><span class="idx" aria-hidden="true">13.2</span><span class="ht">By us</span><a class="anchor" href="#s-13.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We may restrict, suspend, or permanently block your access, with or without notice, if we reasonably believe you have breached these Terms — particularly <a class="xref" href="#s-6">§6</a> — or where necessary to protect the Bot, its users, or ourselves. We may also do so if we discontinue the Bot.</p>
 <p>We have no obligation to give reasons, though we generally will if you ask in good faith.</p>
-<h3 id="s-13.3" class="numbered"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Survival</span><a class="anchor" href="#s-13.3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-13.3" class="numbered"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Survival</span><a class="anchor" href="#s-13.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Sections 5, 6, 7, 8, 11, 12, 13.3, 14, 15, 16, 17, and 18 survive termination.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">Disclaimer of warranties</span><a class="anchor" href="#s-14" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">Disclaimer of warranties</span><a class="anchor" href="#s-14" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE BOT IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY, CONDITION, OR REPRESENTATION OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE.</strong></p>
 <p><strong>WE EXPRESSLY DISCLAIM ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</strong></p>
 <p><strong>WE DO NOT WARRANT THAT THE BOT WILL BE AVAILABLE, UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE; THAT DEFECTS WILL BE CORRECTED; THAT IT IS FREE OF HARMFUL COMPONENTS; OR THAT ANY INFORMATION IT PROVIDES IS ACCURATE, CURRENT, OR COMPLETE.</strong></p>
@@ -2163,7 +2167,7 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">Limitation of liability</span><a class="anchor" href="#s-15" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">Limitation of liability</span><a class="anchor" href="#s-15" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, WE WILL NOT BE LIABLE — WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY — FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, IN-GAME CURRENCY, IN-GAME ITEMS, ACCOUNT STANDING, OR ANTICIPATED SAVINGS, ARISING OUT OF OR RELATING TO THE BOT — EVEN IF ADVISED OF THE POSSIBILITY AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</strong></p>
 <p><strong>OUR TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THE BOT AND THESE TERMS WILL NOT EXCEED THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</strong></p>
 <p>Since the Bot is free, (A) will normally be nil.</p>
@@ -2172,29 +2176,29 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">Indemnity</span><a class="anchor" href="#s-16" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">Indemnity</span><a class="anchor" href="#s-16" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You will indemnify and hold us harmless from any claim, loss, liability, damage, cost, or expense (including reasonable legal fees) arising out of your use of the Bot, your breach of these Terms, or your violation of any law or third-party right.</p>
 <p>This does not apply to the extent the claim arises from our own breach, negligence, or wilful misconduct, and it does not apply where you are a consumer and the law prohibits it.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">Governing law and disputes</span><a class="anchor" href="#s-17" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-17.1" class="numbered"><span class="idx" aria-hidden="true">17.1</span><span class="ht">Informal resolution first</span><a class="anchor" href="#s-17.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">Governing law and disputes</span><a class="anchor" href="#s-17" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-17.1" class="numbered"><span class="idx" aria-hidden="true">17.1</span><span class="ht">Informal resolution first</span><a class="anchor" href="#s-17.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Before starting formal proceedings, please email harkirat117@gmail.com.</strong> Most problems are solvable in one message, and we ask for 30 days to try.</p>
-<h3 id="s-17.2" class="numbered"><span class="idx" aria-hidden="true">17.2</span><span class="ht">Governing law and venue</span><a class="anchor" href="#s-17.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-17.2" class="numbered"><span class="idx" aria-hidden="true">17.2</span><span class="ht">Governing law and venue</span><a class="anchor" href="#s-17.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>These Terms are governed by the laws of the <strong>Province of Ontario</strong> and the federal laws of Canada applicable in it, without regard to conflict-of-laws rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
 <p>The courts of Ontario, sitting in Toronto, have exclusive jurisdiction, and you attorn to that jurisdiction and waive any objection based on venue or forum non conveniens.</p>
 <p><strong>If you are a consumer resident elsewhere</strong>, this section does not deprive you of the protection of mandatory consumer-protection rules of your country of residence, or of the right to bring proceedings in your local courts where that right cannot lawfully be excluded.</p>
-<h3 id="s-17.3" class="numbered"><span class="idx" aria-hidden="true">17.3</span><span class="ht">Class-action waiver</span><a class="anchor" href="#s-17.3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-17.3" class="numbered"><span class="idx" aria-hidden="true">17.3</span><span class="ht">Class-action waiver</span><a class="anchor" href="#s-17.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>To the maximum extent permitted by applicable law, you and we agree that each may bring claims against the other only in an individual capacity, and not as a plaintiff or class member in any purported class, collective, consolidated, or representative proceeding.</strong></p>
 <p><strong>This waiver does not apply where it is prohibited or unenforceable by law</strong> — which includes claims by consumers under Ontario's <em>Consumer Protection Act, 2002</em>, under Quebec law, and under equivalent consumer-protection statutes elsewhere. In those cases the waiver has no effect on your rights, and the rest of this section continues to apply.</p>
 <p>We have deliberately <strong>not</strong> included a mandatory arbitration clause. Requiring an individual to arbitrate a small claim can be unconscionable and unenforceable, and we would rather have terms that work than terms that look strong and fail.</p>
-<h3 id="s-17.4" class="numbered"><span class="idx" aria-hidden="true">17.4</span><span class="ht">Limitation period</span><a class="anchor" href="#s-17.4" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-17.4" class="numbered"><span class="idx" aria-hidden="true">17.4</span><span class="ht">Limitation period</span><a class="anchor" href="#s-17.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Any claim must be commenced within <strong>one year</strong> after it arose, except where a longer period is required by law.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">General</span><a class="anchor" href="#s-18" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">General</span><a class="anchor" href="#s-18" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>Entire agreement.</strong> These Terms, the Privacy Policy, and (for source code) the LICENSE are the entire agreement between you and us regarding the Bot, superseding all prior understandings. Nothing here limits liability for fraudulent misrepresentation.</p>
 <p><strong>Severability.</strong> If a provision is held unenforceable, it is modified to the minimum extent needed to make it enforceable, or severed, and the rest continues in full force. This applies with particular force to §<a class="xref" href="#s-14">§14</a>, 15, and 17.3, each of which is intended to be given the maximum effect the law permits.</p>
 <p><strong>No waiver.</strong> Not enforcing a right on one occasion doesn't waive it.</p>
@@ -2207,24 +2211,24 @@ html{scroll-behavior:smooth}
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-19" class="numbered"><span class="idx" aria-hidden="true">19</span><span class="ht">Changes to these Terms</span><a class="anchor" href="#s-19" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-19" class="numbered"><span class="idx" aria-hidden="true">19</span><span class="ht">Changes to these Terms</span><a class="anchor" href="#s-19" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>We may update these Terms. When we do:</p>
 <ul><li>The <strong>effective date and version</strong> at the top change.</li><li>The change is recorded in the repository's git history.</li><li>For <strong>material</strong> changes we will make reasonable efforts to give notice — typically through the project's Discord presence, a repository release note, or a notice in the Bot itself.</li></ul>
 <p>Continued use after a change takes effect means you accept the updated Terms. If you don't accept them, remove the Bot.</p>
-<h3 id="s-19.1" class="numbered"><span class="idx" aria-hidden="true">19.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-19.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-19.1" class="numbered"><span class="idx" aria-hidden="true">19.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-19.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Kept here as well as in git, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a change record you can't reach isn't a change record.</p>
 <div class="tw"><table><thead><tr><th>Version</th><th>Effective</th><th>What changed</th></tr></thead><tbody><tr><td>1.2</td><td>31 July 2026</td><td>Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (<a class="xref" href="#s-14">§14</a>) and the limitation of liability (<a class="xref" href="#s-15">§15</a>) did not reach the pages these documents are published on. Adds <a class="xref" href="#s-1.1">§1.1</a> defining the Site and saying exactly which Terms cover it and which do not. <strong>No new obligation on you and no reduction of your rights</strong> — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone.</td></tr><tr><td>1.1</td><td>29 July 2026</td><td>Added <a class="xref" href="#s-7.3">§7.3</a> (crossover and collaboration content — third-party IP featured in the game); noted the operator's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>; renumbered the former <a class="xref" href="#s-7.3">§7.3</a>–<a class="xref" href="#s-7.6">§7.6</a> to <a class="xref" href="#s-7.4">§7.4</a>–<a class="xref" href="#s-7.7">§7.7</a> to make room. <strong>Clarifying additions only</strong> — no reduction of your rights, no new data collected, no new obligation on you.</td></tr><tr><td>1.0</td><td>28 July 2026</td><td>First published version.</td></tr></tbody></table></div>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong> 💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
 <p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under <a class="xref" href="#s-17">§17</a> — goes to the email address. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
 <p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
 <hr>
 </section>
 <section class="dsec">
-<h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h2 id="appendix-change-history" class="plain"><span class="ht">Appendix — Change history</span><a class="anchor" href="#appendix-change-history" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table><thead><tr><th>Version</th><th>Date</th><th>Change</th></tr></thead><tbody><tr><td><strong>1.4</strong></td><td>1 August 2026</td><td>Added Discord (diorswrld) as a second contact route in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>, alongside the canonical email. Anything that has to be on the record still goes by email.</td></tr><tr><td><strong>1.3</strong></td><td>1 August 2026</td><td>Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr><td><strong>1.2</strong></td><td>31 July 2026</td><td>Brought the Site — the website these documents are published on — into scope alongside the Bot.</td></tr><tr><td><strong>1.1</strong></td><td>29 July 2026</td><td>Added the controller's "diorswrld" alias; added <a class="xref" href="#s-7.3">§7.3</a> covering third-party crossover and collaboration content, renumbering the takedown process to <a class="xref" href="#s-7.5">§7.5</a>.</td></tr><tr><td><strong>1.0</strong></td><td>28 July 2026</td><td>Initial terms.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is public in the repository's git log.</p>
 <hr>
@@ -2238,7 +2242,7 @@ html{scroll-behavior:smooth}
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
   <footer class="foot nodisc">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
     
     <nav class="endnav"><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
@@ -3551,6 +3555,21 @@ html{scroll-behavior:smooth}
        fading, then is drawn back in as the parts return and re-merge. */
     var BURST=620,burstAt=-1e9;
     var sx=1,sy=1,spread=1,tsx=1,tsy=1,tspread=1;
+    var beam=0,tbeam=0;   /* 0 = blob, 1 = fully a text caret */
+    var lineH=20;         /* the line box under the pointer, from onGlyphs() */
+    /* ⚠️ THE SEVEN MASSES ARE DELIBERATELY UNEQUAL — 5.6 down to 2.2 — because a
+       teardrop needs a heavy head and a thin tail. Stacked into a caret that
+       taper becomes a defect: the small masses at one end erode away under the
+       crush and the bar hangs off-centre, which is exactly how it rasterised.
+       So text mode eases every mass toward ONE radius; the swarm keeps its
+       tapered silhouette everywhere else.
+       ⚠️ THAT RADIUS IS SET BY THE PAINT FLOOR, NOT BY THE MEAN. Easing to the
+       mean (3.79) was tried and rasterised as a short lozenge again: at 0.46 of
+       horizontal scale a 3.79 mass paints 3.5px wide, under the ~4.5px floor
+       this filter thresholds at, so the crush ate the whole stack. 6.0 paints
+       ~5.5px and survives, which is what makes the bar continuous. Re-measure
+       it if stdDeviation on #dbgoo-p or the crush matrix changes. */
+    var RBEAM=6.0;
 
     var baseCol=(getComputedStyle(document.body)
                   .getPropertyValue('--accent')||'').trim()||'#F2994A';
@@ -3634,9 +3653,19 @@ html{scroll-behavior:smooth}
        pressable. Doing it by squashing the same body keeps it one creature rather
        than a set of swapped icons. */
     function shapeFor(m){
-      if(m==='text'){tsx=0.30;tsy=2.45;tspread=0.48;}
+      /* ⚠️ THE BEAM IS A CARET, AND A CARET'S JOB IS TO SAY WHICH LETTER.
+         Three separate faults were reported together on 2026-08-03 16:40 EDT —
+         it nearly vanished on click, it breathed too hard, and it was hard to
+         tell where the selection would start — and only the second is about
+         breathing. They are fixed by the eased 0-1 'beam', which says how far
+         into text mode the swarm is, applied in tick() to the LAG, the
+         breathing and the click burst. See each site there.
+         The targets here only do the shape: thinner and taller, because a
+         caret's precision is horizontal and its legibility is vertical. */
+      if(m==='text'){tsx=0.46;tsy=0.50;tspread=0.30;}
       else if(m==='link'){tsx=1.5;tsy=1.5;tspread=1.9;}
       else{tsx=1;tsy=1;tspread=1;}
+      tbeam=(m==='text')?1:0;
       ink.classList.toggle('soft',m==='text');
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
@@ -3671,6 +3700,9 @@ html{scroll-behavior:smooth}
          rather than losing the I-beam entirely. */
       if(!r)return true;
       if(!r.width&&!r.height)return true;
+      /* the caret rect is the LINE BOX, so this is the height the beam should
+         be — measured off the text it is actually over, not assumed */
+      if(r.height>6&&r.height<80)lineH=r.height;
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -3706,6 +3738,7 @@ html{scroll-behavior:smooth}
       if(now-hitT>90){hitT=now;probe();}
       sx+=(tsx-sx)*0.16;sy+=(tsy-sy)*0.16;
       spread+=(tspread-spread)*0.16;
+      beam+=(tbeam-beam)*0.16;
       /* Eased per frame rather than by a CSS transition: the target changes every
          time the pointer crosses a boundary, and a transition would restart from
          wherever it had reached and stutter. mix() rounds to whole channels, so
@@ -3723,9 +3756,33 @@ html{scroll-behavior:smooth}
            deformation of the same cluster rather than a different object */
         var gx=Math.cos(ang)*s.orb*spread*sx*(1-0.45*sp);
         var gy=Math.sin(ang)*s.orb*spread*sy*(1-0.45*sp);
-        p.x+=((cen.x+gx-dvx*s.lag*8.5)-p.x)*s.k;
-        p.y+=((cen.y+gy-dvy*s.lag*8.5)-p.y)*s.k;
-        var scl=(1+0.17*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
+        /* ⚠️ THE LAG IS WHY IT WAS HARD TO AIM. Seven masses trailing the
+           pointer put the swarm's visible centre BEHIND the true position, so
+           the thing you were reading as the caret sat a few pixels back from
+           the letter it would actually select from. A teardrop wants that
+           smear; a caret must not have it, so text mode pulls the trail in to
+           a quarter and the masses stack into one bar on the real x. */
+        var lagK=8.5*(1-0.76*beam);
+        /* ⚠️ THE CARET IS A STACK OF MASSES, NOT ONE SQUASHED ELLIPSE, and that
+           is the whole difference. Squashing the cluster to 0.24 wide and 2.85
+           tall looked right in the numbers and rasterised as a SHORT LOZENGE
+           about an x-height long: a Gaussian erodes a curve in proportion to
+           its curvature, so a thin tall ellipse loses its ends first and the
+           alpha crush then thresholds them away. Making it thinner made it
+           shorter — the same anisotropy the nav pill's dilation table records,
+           running the other way.
+           So the masses are spread along Y instead and left round enough to
+           survive on their own. The crush merges them into one continuous bar,
+           which is what the filter is FOR, and the bar cannot be eroded from
+           the ends because there is another mass there. Its length is the line
+           box measured under the pointer, so the caret matches the text it is
+           sitting in rather than a constant. */
+        var stack=beam*((i-(parts.length-1)/2)/Math.max(1,parts.length-1))*lineH*0.74;
+        p.x+=((cen.x+gx-dvx*s.lag*lagK)-p.x)*s.k;
+        p.y+=((cen.y+gy+stack-dvy*s.lag*lagK)-p.y)*s.k;
+        /* the breathing is what makes the blob feel alive and what makes the
+           caret feel unsteady, so it is damped as the beam forms, not removed */
+        var scl=(1+0.17*(1-0.66*beam)*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
         var bx=0,by=0;
         var bt=(now-burstAt)/BURST;
         if(bt>=0&&bt<1){
@@ -3734,16 +3791,26 @@ html{scroll-behavior:smooth}
              mid-drag, which is unusable when the native arrow is hidden. Only the
              trailing masses fly out and evaporate; the tip moves and shrinks a
              little and never leaves the screen. */
-          var out=Math.sin(Math.PI*Math.pow(bt,0.55));
+          /* ⚠️ THE BURST IS SUPPRESSED IN TEXT MODE. Its whole design is that
+             trailing masses fall under the paint floor and stop being drawn —
+             correct for a blob, catastrophic for a caret, because a click is
+             exactly the moment you need to see where it is. Reported as "it
+             nearly disappears upon a click". */
+          var out=Math.sin(Math.PI*Math.pow(bt,0.55))*(1-0.82*beam);
           var w=s.lag;
           bx=Math.cos(p.ba)*p.bd*out*(0.18+w);
           by=Math.sin(p.ba)*p.bd*out*(0.18+w);
-          scl*=1-(0.14+0.5*w)*Math.sin(Math.PI*Math.pow(bt,0.8));
-          if(w>0.25)p.n.style.opacity=String(1-0.92*out);
+          /* ⚠️ DAMPED BY beam TOO. Scaling only the travel and the opacity left
+             this line at full strength, and it is the one that actually removes
+             the caret: measured, the bar still lost half its height on a click
+             (20.5px down to 8.9px) while the other two were already suppressed. */
+          scl*=1-(0.14+0.5*w)*(1-0.86*beam)*Math.sin(Math.PI*Math.pow(bt,0.8));
+          if(w>0.25)p.n.style.opacity=String(1-(0.92-0.74*beam)*out);
         }else if(p.n.style.opacity!==''){p.n.style.opacity='';}
+        var eq=1+beam*(RBEAM/s.R-1);
         p.n.style.transform='translate('+(p.x-ox+bx).toFixed(1)+'px,'
-          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx).toFixed(3)+','
-          +(scl*sy).toFixed(3)+')';
+          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx*eq).toFixed(3)+','
+          +(scl*sy*eq).toFixed(3)+')';
       }
 
       /* ⚠️ NO IDLE FADE-OUT WHILE THIS IS THE POINTER. An earlier version faded the
@@ -4209,7 +4276,7 @@ html{scroll-behavior:smooth}
      anchored to an element that has moved is worse than no hint: it points at
      the wrong control with total confidence. */
   (function(){
-    var host=null,tipEl=null,showT=0,cur=null;
+    var tipEl=null,showT=0,cur=null,pending=null;
     function build(){
       if(tipEl)return tipEl;
       tipEl=el('div','tipx');
@@ -4241,15 +4308,33 @@ html{scroll-behavior:smooth}
     }
     function hide(){
       clearTimeout(showT);
-      cur=null;
+      cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
     }
+    /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
+       the wrong lever — it just makes the wanted case feel broken too. The
+       trigger is a pointer that has COME TO REST on a control; a pointer still
+       travelling across one is passing through. So the timer checks that the
+       pointer has actually stopped and reschedules itself if it has not,
+       which is what turns "hovered for 420ms" into "settled here". */
+    var lastMove=0,lastX=-1e4,lastY=-1e4;
+    if(fine)addEventListener('pointermove',function(e){
+      lastMove=performance.now();lastX=e.clientX;lastY=e.clientY;
+    },{passive:true,capture:true});
+    /* ⚠️ pending IS NOT A TIDY-UP. Without it, every pointerover on a CHILD of
+       the trigger restarted the timer, so crossing a button's icon and then its
+       label reset the wait twice and the hint could take three delays to arrive
+       — or never, on a control with several children. Re-asking for the node
+       that is already queued is a no-op now. */
     function want(node,delay){
-      if(!node||node===cur)return;
+      if(!node||node===cur||node===pending)return;
+      pending=node;
       clearTimeout(showT);
-      /* a delay, so sweeping the pointer across a row of controls does not
-         strobe a capsule at every one of them */
-      showT=setTimeout(function(){ place(node); },delay);
+      showT=setTimeout(function fire(){
+        if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        pending=null;
+        place(node);
+      },delay);
     }
     function tipOf(e){
       var n=e.target;
@@ -4260,12 +4345,37 @@ html{scroll-behavior:smooth}
         if(e.pointerType==='touch')return;
         var n=tipOf(e);
         if(!n){ if(cur)hide(); return; }
-        want(n,190);
+        /* 700ms, not the 190 this started at and not the 420 that followed.
+           Reported as naggy at both: a hint that arrives while you are still
+           deciding whether you wanted it reads as an interruption, and the
+           delay is what separates a nudge from a nag. Paired with the settle
+           check below, which is the half that stops sweep-through triggers —
+           raising the delay alone would only have made the WANTED case feel
+           broken too. */
+        want(n,700);
       },true);
+      /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
+         pointer left" is what made the hint strobe across a single button —
+         reported 2026-08-03 16:40 EDT with a recording of it appearing and
+         vanishing three times inside the Source capsule. Moving from .ghb-ic to
+         .ghb-t is a pointerout on the icon whose target still resolves to the
+         same trigger, so the old check hid it and pointerover then queued it
+         again. relatedTarget is the element being entered: if it is still
+         inside the same trigger, nothing has been left. */
       document.addEventListener('pointerout',function(e){
         var n=tipOf(e);
-        if(n&&n===cur)hide();
-        else if(!n)hide();
+        if(!n)return;
+        var to=e.relatedTarget;
+        if(to&&n.contains(to))return;
+        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
+           from 32px to its full width over 420ms on hover, so a pointer that
+           has not moved can fall outside the box for a frame and come back —
+           pointerout fires with relatedTarget outside, and the hint hid and
+           re-queued. Ask the geometry instead: if the pointer is still within
+           the trigger's current rect, nothing has been left. */
+        var r=n.getBoundingClientRect();
+        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        hide();
       },true);
     }
     document.addEventListener('focusin',function(e){

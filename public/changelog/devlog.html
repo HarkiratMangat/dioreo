@@ -948,8 +948,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 .tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
-  display:flex;align-items:center;gap:.42rem;
-  max-width:min(72vw,22rem);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  /* ⚠️ width:max-content IS LOAD-BEARING, not a nicety. The capsule is centred
+     by left + translate(-50%), and a transform does not affect LAYOUT — so a
+     fixed element whose left sits near the right edge is shrink-wrapped by the
+     space remaining to that edge before the transform ever moves it. Measured
+     on the back-to-top: "Back to top" came out 56px wide and 4.2 lines tall,
+     overlapping the button. max-content sizes it to its text first and lets the
+     transform place it afterwards. */
+  width:max-content;max-width:min(72vw,22rem);
   font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
   letter-spacing:.13em;text-transform:uppercase;
   /* ⚠️ BUILT FROM --desk AND --ink ONLY, and that is not a style preference.
@@ -968,7 +975,9 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     color-mix(in srgb,var(--ink) 9%,var(--desk)) 94%, transparent);
   border:1px solid color-mix(in srgb,var(--ink) 24%,var(--desk));
   border-radius:999px;
-  padding:.42rem .68rem .42rem .58rem;
+  /* even on all four sides now the leading dot is gone — it was .58/.68 to
+     balance the dot's optical weight, which read as crushed once removed */
+  padding:.46rem .8rem;
   /* the 6% of translucency left above is there to be blurred — fully opaque and
      the backdrop-filter would be doing nothing at all */
   backdrop-filter:blur(12px) saturate(1.2);
@@ -976,12 +985,10 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   box-shadow:0 12px 30px -14px rgba(0,0,0,.8),
     0 0 0 4px color-mix(in srgb,var(--accent) 8%,transparent);
   opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
-  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
-.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}/* wraps onto a second line rather than running off a phone-width viewport */
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}/* wraps onto a second line rather than running off a phone-width viewport,
+   balanced so a two-line hint does not leave one word alone on the second */
 
-.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx-t{display:block;white-space:normal;text-wrap:balance;line-height:1.5}
 .tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
 
 .tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
@@ -1784,28 +1791,25 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <nav>
     <div class="navwrap" data-fit="9"><div class="seg" data-at="-1" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../legal/terms.html"
-        data-tip="Documents pages">Documents</a>
-      <a class="tab" href="../legal/terms.html" data-accent="#F2994A" data-tip="What the bot does, what you agree to, and the limits of what we promise.">Terms</a><a class="tab" href="../legal/privacy.html" data-accent="#17A2A2" data-tip="Every field stored about you, where it lives, and how to have it deleted.">Privacy</a><a class="tab" href="../legal/license.html" data-accent="#9B6BE3" data-tip="Read it, study it, run it on your own machine. Source-available, not open source.">License</a><a class="tab" href="../legal/notice.html" data-accent="#FF5264" data-tip="Every dependency and its licence, the marks that are not ours, and where AI helped.">Notice</a>
+      <a class="segchip" href="../legal/terms.html">Documents</a>
+      <a class="tab" href="../legal/terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="../legal/privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="../legal/license.html" data-accent="#9B6BE3">License</a><a class="tab" href="../legal/notice.html" data-accent="#FF5264">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../legal/contributing.html"
-        data-tip="Community pages">Community</a>
-      <a class="tab" href="../legal/contributing.html" data-accent="#8B9BFF" data-tip="How to report a bug, send a fix, and what the CLA actually asks of you.">Contributing</a><a class="tab" href="../legal/contributors.html" data-accent="#F8FF4A" data-tip="Who helped build this, and how credit works. Bug reports count.">Contributors</a>
+      <a class="segchip" href="../legal/contributing.html">Community</a>
+      <a class="tab" href="../legal/contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="../legal/contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="2" data-label="Releases">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./"
-        data-tip="Releases pages">Releases</a>
-      <a class="tab" href="./" data-accent="#FF9E3D" data-tip="What changed in each release of Dior’s Builds, in plain language.">What's New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B" data-tip="The detailed, developer-facing release history.">Changelog</a><a class="tab on" href="./devlog.html" data-accent="#8FB8FF" data-tip="Discoveries, real root causes, the things we walked back, and the lessons." aria-current="page">Devlog</a>
+      <a class="segchip" href="./">Releases</a>
+      <a class="tab" href="./" data-accent="#FF9E3D">What's New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B">Changelog</a><a class="tab on" href="./devlog.html" data-accent="#8FB8FF" aria-current="page">Devlog</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot data-tip="View the source on GitHub">
+  data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
-  data-tip="Add the bot to your Discord account"
+  data-tip="Add to Discord"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1813,8 +1817,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" data-tip="Switch light and dark"
-  aria-label="Switch between light and dark">
+  aria-checked="false" aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1899,25 +1902,25 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p><strong>Part B — Lessons Ledger (thematic, no dated entries)</strong> — reusable takeaways grouped by theme: War stories / root causes · Walk-backs &amp; reversals · Design decisions &amp; the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.</p>
 <hr>
 <p>Durable, reusable takeaways. Each is a compressed version of a story in Part A.</p>
-<h3 id="measuring-vs-modelling" class="plain"><span class="ht">Measuring vs. modelling</span><a class="anchor" href="#measuring-vs-modelling" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="measuring-vs-modelling" class="plain"><span class="ht">Measuring vs. modelling</span><a class="anchor" href="#measuring-vs-modelling" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Do not model a filter chain — measure it.</strong> Recorded three times now on the same SVG goo filter, each time about a different quantity. Fitted colour chains were exact on paper and visibly desaturated on screen; a geometry constant derived from <code>erfc</code> was 1.26px when the truth was 1.125px vertically and 0.50px horizontally. <strong>Rasterise the real thing</strong>: build the same filter over a known shape in a standalone SVG, draw it to a canvas at 4×, read the alpha extents. That is 0.25px resolution, takes one tool call, and settles in seconds what argument cannot.</li><li><strong>Filter dilation is ANISOTROPIC on a short shape.</strong> A blur erodes/dilates in proportion to curvature, so a 25px-tall pill's caps spread ~2.5× more than its flanks at the same blur. Any correction assuming one isotropic number will fix one axis and break the other — which is exactly how three consecutive fixes failed.</li><li><strong>A correction proportional to a parameter does not vanish when you ramp that parameter.</strong> Ramping the goo blur to zero at both ends of a move looked like it should cancel the dilation; it only spread the same size change over ~76ms. Smoother is not absent, and at the end of a move, when nothing else is moving, the eye still reads it as a snap.</li><li><strong>Verify with a check that can RESOLVE the difference.</strong> Comparing two zoom captures by eye and calling a 2.5px difference "verified" is a soft check reported as a hard one. If the quantity is 2.5px, the check needs sub-pixel resolution, not a screenshot and an opinion.</li><li><strong>Extract CONSECUTIVE frames from a screen recording, not a sparse sample.</strong> <code>ffmpeg -vsync 0</code> then a contact sheet. Sampling every tenth frame of an animation missed a one-frame artifact that Harkirat then had to point at by hand — the visual equivalent of only running the happy path. A still frame can never show an animation at all; do not diagnose motion from one.</li><li><strong>Change ONE parameter at a time when tuning something you can only judge by eye.</strong> Fixing an overflow, I cut count, size, vertical throw, horizontal scatter and the connecting neck in a single change and deleted the effect outright. The fix and the regression were indistinguishable afterwards.</li><li><strong>A bug that scales with a dimension gets worse when that dimension grows.</strong> The droplets' vertical fling was <code>sin(rotation) × travel distance</code>, invisible while the nav was short. Adding a third nav group lengthened the possible travel and turned a bow into a launch. When adding to a system, ask what in it was already proportional to the thing you are enlarging.</li></ul>
-<h3 id="reading-what-already-exists" class="plain"><span class="ht">Reading what already exists</span><a class="anchor" href="#reading-what-already-exists" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="reading-what-already-exists" class="plain"><span class="ht">Reading what already exists</span><a class="anchor" href="#reading-what-already-exists" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Before designing anything for a surface, read the project memory FOR THAT SURFACE.</strong> An entire changelog-site design was built and thrown away because <code>project_changelog_redesign</code> — which held a complete, already-approved design including its identity mechanism — went unread. The index line was one line; the file was the spec.</li></ul>
-<h3 id="war-stories-root-causes" class="plain"><span class="ht">War stories / root causes</span><a class="anchor" href="#war-stories-root-causes" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="war-stories-root-causes" class="plain"><span class="ht">War stories / root causes</span><a class="anchor" href="#war-stories-root-causes" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Multiple instances of a single-token bot collide invisibly.</strong> Discord routes each interaction to a random connected instance; they race <code>deferReply</code> (→ 10062/40060) and can render different code versions per click. Erratic <em>inconsistency</em> is the tell. A <code>git push</code> doesn't stop local processes.</li><li>**Tab is an IFS <em>whitespace</em> char, so bash <code>read</code> silently collapses empty fields.** Parsing tab-separated <code>jq</code> output with <code>IFS=$'\t' read -r A B C</code> shifts every field left when any earlier one is empty — no error, just wrong data in the wrong variable. Use a non-whitespace delimiter (<code>\x1f</code>) when empties are possible. Found in the status line (2026-07-15); the happy-path tests all passed.</li><li><strong>Synchronous CPU work starves the event loop on a 0.1-CPU tier.</strong> k-means with no <code>await</code> blocked ACKs for <em>unrelated</em> commands. Fix by doing <em>less</em> work (lazy extraction) and <em>yielding</em> (<code>setImmediate</code>).</li><li><strong>Hash-keyed caches don't invalidate on an algorithm change</strong> — only when the source asset changes. Any logic/shape change to a cached computation needs a manual, <strong>scoped</strong> cache clear (never unscoped).</li><li><strong>discord.js: a <code>ModalSubmitInteraction</code> can't <code>showModal()</code></strong> (Discord disallows modal-from-modal) — route single-match Edit through an intermediate button instead.</li><li><strong><code>Object.assign</code> drops non-enumerable props</strong> — discord.js sets <code>client</code>/<code>token</code> non-enumerably, so hand-rolled synthetic interactions silently lost them and crashed. Use the shared builder.</li><li><strong><code>client.on('error')</code> must be registered</strong> — discord.js constructs with <code>captureRejections: true</code>, so a rejected async listener becomes an <code>error</code> event on the client that crashes the process <em>past</em> the try/catch if unhandled.</li><li><strong>A bare <code>return interaction.reply(...)</code> in a catch escapes the enclosing try</strong> — the try has already exited by the time that promise rejects. Always <code>await</code> reply/editReply/followUp in error branches.</li><li><strong>Alpha-transparency in pixel sampling</strong> — transparent padding (0,0,0) was counted as real black on nameplate/decoration until the sampling loops skipped <code>alpha === 0</code>.</li><li><strong>A handler placed in the wrong interaction-type branch is dead code, silently</strong> — the loadout "Browse other builds" select handler sat inside <code>isButton()</code> and never fired; only a trace log revealed it. Verify a handler is even <em>reached</em> before theorizing about its logic.</li><li><strong><code>sendV2Payload</code> must send <code>attachments: []</code> when uploading new files</strong> — else Discord keeps the old attachments and swaps only text/components (stale swatches).</li><li><strong>Never log a raw Cloudinary error object</strong> — its rejected-promise shape carries the account's live API key+secret. Sanitize via dedicated helpers.</li></ul>
-<h3 id="walk-backs-reversals-things-tried-then-reverted-and-why" class="plain"><span class="ht">Walk-backs &amp; reversals (things tried, then reverted — and why)</span><a class="anchor" href="#walk-backs-reversals-things-tried-then-reverted-and-why" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="walk-backs-reversals-things-tried-then-reverted-and-why" class="plain"><span class="ht">Walk-backs &amp; reversals (things tried, then reverted — and why)</span><a class="anchor" href="#walk-backs-reversals-things-tried-then-reverted-and-why" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Blank-emoji vertical centering</strong> of a Section heading — Components V2 has no vertical-align; looked wrong on mobile, reverted. Still unsolved, accepted as cosmetic.</li><li><strong>Nameplate <code>.webm</code> / animated decoration</strong> — Discord requires a manual tap to play inline; reverted to static. The real fix (APNG→GIF per render) was rejected as not worth per-render latency.</li><li><strong>Accent extraction: flat average → saturation-weighted → vivid hue-cluster.</strong> Each revision was found wrong by testing against Harkirat's <em>real</em> avatar, not a hypothetical.</li><li><strong>Palette: synthetic 6-swatch model → real k-means</strong> — the categories were "mostly useless" vs real palette tools; and the naive "top-N by population" alternative was tested first and found <em>worse</em> (4 near-identical off-whites), which justified the k-means rebuild with evidence.</li><li><strong><code>?size=512</code> on the collectibles CDN</strong> — assumed it would resize the nameplate; verified it's ignored. Fell back to fetch+resize ourselves.</li><li><strong>Heading size H2 → H3 → H2</strong> and <strong><code>private</code> → <code>hidden</code></strong> option rename, <strong><code>CATEGORY_SORT_ORDER</code></strong> added then dropped for plain alphabetical — small reversals, all driven by Harkirat's direct feedback.</li></ul>
-<h3 id="design-decisions-the-why" class="plain"><span class="ht">Design decisions &amp; the "why"</span><a class="anchor" href="#design-decisions-the-why" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="design-decisions-the-why" class="plain"><span class="ht">Design decisions &amp; the "why"</span><a class="anchor" href="#design-decisions-the-why" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Option A — one shared visibility toggle</strong> for all seasonal commands, not five.</li><li><strong>Admin dates forced to UTC-0</strong> (<code>chrono</code> with <code>timezone: 0</code>) — a past DMZ "1 hour off" bug traced to ambient-timezone parsing.</li><li><strong><code>chrono</code> defaults a bare date to NOON</strong> — <code>/timestamp</code> manually zeroes it to midnight.</li><li><strong>Bulk imports REPLACE, not append</strong> — a paste is the complete current list; re-running fixes typos without duplicating.</li><li><strong>Single-token, user-installed-only</strong> — the bot has zero standing guild permissions; it can only answer via the interaction-response webhook. Any raw channel POST fails <code>50001</code> (this bit "Share Publicly").</li><li><strong>Draw-price totals computed from raw pull arrays</strong>, never hand-typed — repeated arithmetic typos forced this; a total can no longer drift from its own draws.</li><li><strong>Three-part <code>vMAJOR.MODERATE.MINOR</code> versioning</strong> — the old flat-decimal scheme broke once MODERATE hit double digits.</li></ul>
-<h3 id="platform-library-gotchas" class="plain"><span class="ht">Platform / library gotchas</span><a class="anchor" href="#platform-library-gotchas" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="platform-library-gotchas" class="plain"><span class="ht">Platform / library gotchas</span><a class="anchor" href="#platform-library-gotchas" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Components V2:</strong> selects/buttons still need an Action Row even inside a Container; <strong>40 components max, counted recursively</strong> (a real production crash); buttons can't have hex colors (only Container <code>accent_color</code> can); a button <code>label</code> won't render an emoji mention — use the <code>emoji</code> field.</li><li><strong>Media Gallery has no width control</strong>; the <strong>collectibles CDN ignores <code>?size=</code></strong> (but the avatar/ banner CDN honors it).</li><li><strong>Jimp can't decode APNG</strong> — animated decorations need an <code>ffmpeg</code> still-frame first.</li><li><strong>Slash-command registration belongs to the APPLICATION, not the process, and there is no UI for it.</strong> Killing a bot leaves its commands in the <code>/</code> picker forever (they just time out with "did not respond"); only another API call removes them. The Developer Portal has no page for this at all — hence <code>scripts/devCommands.js</code>. Same reason a <em>user-installed</em> app's stale commands are extra annoying: they follow the user into every server and DM, not one guild.</li><li><strong>Cloudinary has no native per-asset TTL</strong> — expiry is something the bot does on a schedule.</li><li><strong>Render free tier = 0.1 shared CPU</strong>, no <code>suspend</code> in the CLI (REST API only); <strong>Railway free tier blocks CLI deploys 8am–8pm ET</strong> and isn't git-connected.</li></ul>
-<h3 id="process-lessons-tips-for-us-and-anyone-after-us" class="plain"><span class="ht">Process lessons / tips (for us and anyone after us)</span><a class="anchor" href="#process-lessons-tips-for-us-and-anyone-after-us" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="process-lessons-tips-for-us-and-anyone-after-us" class="plain"><span class="ht">Process lessons / tips (for us and anyone after us)</span><a class="anchor" href="#process-lessons-tips-for-us-and-anyone-after-us" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>When the environment and the project docs disagree about a path, trust the project docs and verify both.</strong> The harness pointed at a memory directory that didn't exist while the real 26-file store sat at the path CLAUDE.md named. Following the environment blindly would have forked memory into two half-empty stores, failing silently and only showing up much later as inexplicable amnesia.</li><li><strong>A convention documented but never implemented is worse than no convention.</strong> CHANGELOG.md promised an <code>Unreleased</code> section at the bottom for months; it didn't exist, so committed-but-unpushed work had nowhere to go. Check that a rule you're citing is actually <em>real</em> in the file before relying on it.</li><li><strong>Never <code>2&gt;/dev/null</code> the loading of your own safety rails.</strong> The SessionStart hook silently injected an empty string for an unknown number of sessions after the repo moved — every non-negotiable it enforces was simply never delivered, and nothing errored. If a mechanism's job is to <em>deliver rules</em>, its failure mode must be loud, and it should resolve paths dynamically (<code>$CLAUDE_PROJECT_DIR</code>) rather than hardcoding a location that can move underneath it.</li><li><strong>"Is it documented?" and "will it actually fire?" are different questions.</strong> A rule written into a linked memory file only works if something reads it. The auto-loaded file is the only guaranteed delivery path — verify what a <em>fresh</em> session actually receives, don't infer it from where you wrote it.</li><li><strong>Test the degenerate input, not just the populated one.</strong> Absent/null/zero fields are where parsing bugs live. A status line whose happy path is perfect but which misreports the model when one field is missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.</li><li>**Verify the fix actually *works*** — boot-test, and for a live interaction get a real repro or add a cheap trace point before theorizing.</li><li><strong>Check sibling/reference code before guessing</strong> from prose or screenshots — the pattern is usually already in the codebase.</li><li><strong>Test the naive alternative first</strong> — a bad result there justifies a bigger rebuild with evidence.</li><li><strong>When behavior is erratic, suspect multiple instances FIRST</strong> (<code>ps aux</code>, Railway, Render) before code/cache theories.</li><li><strong>"Document" includes the CHANGELOG</strong> — and the changelog is the one that keeps getting skipped. Update all three record layers at push time.</li><li><strong>Kill stray local instances as part of every push</strong> — only the deployed instance should be live.</li><li><strong>A project's own <code>.env</code> is in-scope for a credential; a personal <code>~/.</code> config file is not.</strong></li><li><strong>Be usage-conscious</strong> — batch tool calls, don't re-read what's already in context.</li><li><strong>Mark chat chapters at phase shifts</strong> — can't be hook-automated, has to be done deliberately.</li><li><strong>A split/move/rename is done when nothing is LEFT BEHIND, not when the obvious block has moved.</strong> Four checks before calling it: nothing project-specific still in the source, every cross-reference updated, the new file stands alone (its legend came with it), and prose describing the old layout rewritten. (2026-07-25 21:43 EDT, <code>feedback_no_half_measures_on_reorgs</code>.)</li><li><strong>A file rename IS a code change when something parses the file.</strong> The grep surface is docs + rules + <strong><code>.claude/settings*.json</code> hooks</strong> + scripts + memory + <em>other projects'</em> memory dirs. A <code>SessionStart</code> hook here was anchored to a <code># Graveyard</code> heading an archive split removed — it would have failed silently, never loudly. Dry-run the hook after touching what it reads.</li><li><strong>Deferred items containing a measurement rot; re-measure before you re-file.</strong> Two examples the same day: a reminder still claiming CHANGELOG/DEVLOG were "~730 lines each, not there yet" when they were 1,366 and 1,792, and a <code>[P2 now → P0 ~2026-07-24]</code> self-escalating tag whose trigger date had quietly passed. The note freezes; the world doesn't.</li></ul>
-<h3 id="concerns-open-risks" class="plain"><span class="ht">Concerns / open risks</span><a class="anchor" href="#concerns-open-risks" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="concerns-open-risks" class="plain"><span class="ht">Concerns / open risks</span><a class="anchor" href="#concerns-open-risks" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong><code>ffmpeg</code> is unverified on Render's container</strong> — decoration extraction works locally; if it breaks in prod <em>only</em>, check for ffmpeg first.</li><li><strong>Render free-tier CPU ceiling</strong> — the color feature is right at the edge of it; the lazy-extraction work bought headroom, but the last-resort levers (worker threads, plan bump) are documented.</li><li><strong>Deferred dependabot vulnerabilities</strong> — undici/discord.js chain + xlsx (dead at runtime); tracked, decided not worth acting on yet.</li><li><strong>Changelog-drift habit</strong> — recurred across multiple sessions; now guarded by a self-check callout, but worth staying honest about.</li></ul>
-<h3 id="modelling-and-measurement" class="plain"><span class="ht">Modelling and measurement</span><a class="anchor" href="#modelling-and-measurement" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="modelling-and-measurement" class="plain"><span class="ht">Modelling and measurement</span><a class="anchor" href="#modelling-and-measurement" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>A model is not ground truth; validate it against the thing it predicts.</strong> A colour transform that was exact on paper rendered visibly wrong, through two different clamping models. Computing beats guessing from screenshots — and it still has to be checked against the renderer.</li><li><strong>Prefer a mechanism with exact identities over one with fitted constants.</strong> <code>multiply(white, x) = x</code> needs no model, no re-derivation when a value changes, and cannot drift.</li><li><strong>Build the check so it answers in one glance.</strong> A difference blend renders black on an exact match and glows in the failing channel otherwise; one screenshot judged twelve candidates. Eyeballing the same pairs had already passed the wrong ones.</li><li><strong>A transform that reports its own success is not a check.</strong> Re-parse what reached disk. Both the CSS hover guard and <code>docs:audit</code> do this now, and both new gates were proven by running them against the broken output first.</li><li><strong>A gate that has never failed is a gate nobody has tested.</strong> The first version of the new <code>record-structure</code> check asserted "exactly one H1" and the self-test immediately caught that DEVLOG legitimately uses H1 for its parts.</li><li><strong>Dead CSS is invisible; measure the computed value.</strong> An entire mobile override block lost to concatenation order looked perfectly correct in the source and had never applied once.</li></ul>
-<h3 id="collaboration-insights" class="plain"><span class="ht">Collaboration insights</span><a class="anchor" href="#collaboration-insights" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="collaboration-insights" class="plain"><span class="ht">Collaboration insights</span><a class="anchor" href="#collaboration-insights" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Systematic debugging beat guess-and-check repeatedly</strong> — the session above is the clearest case: four wrong "the bug is X" answers before the real one, each discarded by <em>evidence</em>, not vibes.</li><li><strong>Screenshot/real-device review caught what logs didn't</strong> — the "different version per click" report, and most of the walk-backs, came from Harkirat actually <em>looking</em> on mobile.</li><li><strong>Confirm before push, every time</strong> — approval doesn't carry over; and "push" means the whole cycle (deploy + verify live + only one instance running), not just <code>git push</code>.</li><li><strong>Honest reporting builds trust</strong> — recording the 0%-benefit convergence result, the misread Railway logs, and "I had the memory and didn't apply it" is the point of this file, not a footnote.</li></ul></div></details></div>
       <div class="tl"><span class="tl-line" aria-hidden="true"><i id="tlfill"></i></span><div class="tl-station" id="part-part-a-the-journey-chronological">
               <span class="tl-node tl-node-b" aria-hidden="true"></span>
@@ -2676,22 +2679,22 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>Harkirat's objection was aimed at a single sentence I'd written:</p>
 <blockquote class="callout"><p><em>"As for the memory and notes file, im not satisfied because we currently have a hook or something which checks the notes file at session start and was designed to actively keep it updated and not stale. Not to mention, you didn't say anything about the deferred items files or the graveyard/resolved items, or the readme."</em></p></blockquote>
 <p>He was right on both counts, and the second one is the more embarrassing. I had shipped a hook whose own message declared items 6 (memory) and 7 (notes file) <strong>"NOT CHECKED BY ANY HOOK"</strong>, and written the same claim into <code>docs/README.md</code> — while a <code>SessionStart</code> hook had been counting the notes file's open items the whole time. I'd looked at the merge-time hooks, not found a notes check there, and concluded none existed anywhere.</p>
-<h3 id="the-diagnosis-which-turned-out-to-generalize" class="plain"><span class="ht">The diagnosis, which turned out to generalize</span><a class="anchor" href="#the-diagnosis-which-turned-out-to-generalize" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-diagnosis-which-turned-out-to-generalize" class="plain"><span class="ht">The diagnosis, which turned out to generalize</span><a class="anchor" href="#the-diagnosis-which-turned-out-to-generalize" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The gaps weren't one problem. They were three shapes, and I'd mislabelled all of them "not checkable":</p>
 <p><strong>Right check, wrong moment.</strong> The notes file <em>is</em> checked — at session start. That is the moment of <strong>discovery</strong>, when nothing has been filed yet and there is nothing to compare against. It is never re-checked at the moment of <strong>closure</strong>. This is the exact shape of the DEVLOG failure measured at 8/22 two releases earlier: a condition evaluated precisely when it cannot be acted on. I had fixed that one and walked straight past its twin next door.</p>
 <p><strong>Invariant never stated.</strong> The deferred lists, graveyard, and resolved-list had a perfectly mechanical rule nobody had written down: <strong>an item leaves an active list only by appearing in an archive.</strong> Conservation. A shrink in one file with no matching growth in the other is either an unswept item or a <em>deleted</em> one — and the destructive case is the one worth catching.</p>
 <p><strong>Plain filesystem truth.</strong> The README doc map, and every path referenced across <code>CLAUDE.md</code> and the rules files. Checkable against <code>ls</code> and never once checked.</p>
 <p>So: <strong>"not checkable" is almost always "I haven't worked out what the derivable invariant is."</strong> What genuinely stays uncheckable is whether the <em>judgment</em> was right. A gate proves an artifact was opened; it can never prove the right thing was written in it.</p>
-<h3 id="why-a-program-instead-of-another-hook" class="plain"><span class="ht">Why a program instead of another hook</span><a class="anchor" href="#why-a-program-instead-of-another-hook" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="why-a-program-instead-of-another-hook" class="plain"><span class="ht">Why a program instead of another hook</span><a class="anchor" href="#why-a-program-instead-of-another-hook" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Every previous fix here had been another Claude Code hook, and that was the structural mistake. Hooks fire only inside a Claude session, on this one Mac; each rule had become 1.4KB of backslash-escaped bash inlined in JSON, unreadable and impossible to run by hand to ask "is the tree clean *now*?"</p>
 <p><code>scripts/docs-audit.mjs</code> is 10 named checks with two severities, callable from a hook, from CI, and from the terminal. The CI wiring is the durable half — it holds for PRs opened by a future session, by another agent, or by Harkirat.</p>
-<h3 id="three-things-that-only-surfaced-because-i-tried-to-break-my-own-work" class="plain"><span class="ht">Three things that only surfaced because I tried to break my own work</span><a class="anchor" href="#three-things-that-only-surfaced-because-i-tried-to-break-my-own-work" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="three-things-that-only-surfaced-because-i-tried-to-break-my-own-work" class="plain"><span class="ht">Three things that only surfaced because I tried to break my own work</span><a class="anchor" href="#three-things-that-only-surfaced-because-i-tried-to-break-my-own-work" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>The self-test found a dead check on its first run.</strong> <code>tag-integrity</code> stayed silent against a deliberately mismatched tag — because the fixture had picked <code>v2.35.0</code>, which sits in the known-bad allowlist. Had I only eyeballed the output, I'd have shipped a check I believed worked. Two more fixtures were wrong in the same run: fake commit hashes (the check was right), and a removed line 14 characters long, under the 40-char churn threshold.</p>
 <p><strong>CI would have failed on correct documentation.</strong> <code>actions/checkout@v4</code> defaults to a depth-1 clone with no tags. Measured against a real <code>git clone --depth 1</code>: <strong>42 spurious <code>hash-chain</code> errors, and 1 tag visible instead of 100+.</strong> So <code>fetch-depth: 0</code> is a requirement, not a preference — and the audit now detects a shallow clone itself and downgrades to a warning that names the limitation, rather than reporting a conclusion it cannot support in either direction.</p>
 <p><strong>The audit's first real finding was against the audit.</strong> <code>summary-coverage</code> reported <code>v2.17.1</code> and <code>v2.11.0</code> missing from <code>CHANGELOG-SUMMARY.md</code>. I was one edit from "fixing" the documentation before checking: the SUMMARY folds ops-only releases into <strong>range headings</strong> (<code>## v2.17.0–v2.17.3</code>), exactly as designed. The records were right; my check was wrong. That is the failure mode of every automated gate — it makes you trust its output over the thing it's measuring — so the fix came with an inverse self-test asserting that valid input stays <em>silent</em>, not just that broken input fires.</p>
-<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Two assertions per check, always: the broken tree fails <strong>and</strong> the valid tree passes. The second is the one everyone skips, and it is the one that catches a matcher firing on everything. And when a guard and a record disagree, check the record before you edit it.</p>
-<h3 id="the-second-pass-i-feel-like-you-began-to-rush-things-at-the-end-due-to-your-60-turn-budget-check" class="plain"><span class="ht">The second pass — "I feel like you began to rush things at the end due to your 60 turn budget check"</span><a class="anchor" href="#the-second-pass-i-feel-like-you-began-to-rush-things-at-the-end-due-to-your-60-turn-budget-check" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-second-pass-i-feel-like-you-began-to-rush-things-at-the-end-due-to-your-60-turn-budget-check" class="plain"><span class="ht">The second pass — "I feel like you began to rush things at the end due to your 60 turn budget check"</span><a class="anchor" href="#the-second-pass-i-feel-like-you-began-to-rush-things-at-the-end-due-to-your-60-turn-budget-check" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Harkirat's follow-up named the mechanism exactly, and led with the specific defect:</p>
 <blockquote class="callout"><p><em>"Regarding the v2.17.0-v2.17.3 grouping, that method of grouping is actually stale behavior now. Now we create individual headings for each version bump if im not mistaken?"</em></p></blockquote>
 <p>He was right, and it is the worst kind of wrong. Earlier in that same session I had reported the range finding as a <strong>success</strong> — the audit's first finding was against itself, I checked the record before editing it, and I wrote a note-to-self about exactly that. Then I taught the checker to <em>accept</em> ranges. I had verified that ranges existed; I never asked whether they were still <strong>policy</strong>. Verifying that a thing is true today is not the same as verifying it is still the rule, and the difference is invisible when the corpus is mostly history.</p>
@@ -2701,23 +2704,23 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p><strong>The space in <code>/Applications/Claude Code/</code>.</strong> <code>nested-worktree</code> was completely dead, because <code>line.split(" ")[0]</code> yields <code>/Applications/Claude</code>. <code>hook-integrity</code>'s regex stopped at the same space and worked only because a later <code>.slice()</code> happened to rescue it — correct by accident, which is one refactor away from correct by nothing. Neither bug could ever have surfaced, because the test fixtures were built in a space-free tmpdir. <strong>A fixture that doesn't reproduce production's hazards certifies the wrong thing.</strong> The fixture directory name now contains a deliberate space.</p>
 <p><strong>The baseline meta-test I should have written first.</strong> Every per-check test only asserted that <em>its own</em> check was quiet on valid input, so a check firing for unrelated reasons — or not running at all — hid in plain sight. Asserting that an untouched fixture reports <em>nothing</em> immediately surfaced three more defects, including a perfect reproduction of a trap this repo had already documented: the global <code>~/.config/git/ignore</code> silently un-tracks <code>settings.local.json</code> in every repo, fixtures included.</p>
 <p><strong>And one real bug the audit had been masking.</strong> <code>CLAUDE.md</code> and the notes file both pointed at <code>local/Harkirats-Space.md</code>; the file lives at <code>docs/Harkirats-Space.md</code>. The <code>.gitignore</code> had been updated when it moved and the two prose references had not — precisely the "no half-measures on reorgs" failure <code>xref</code> exists to catch. It was hidden because I had told <code>xref</code> to skip gitignored paths entirely. Ambiguity should be <em>reported</em>, not silently resolved in favour of passing.</p>
-<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Verify that a convention is still <strong>current</strong>, not merely that it is <strong>present</strong> — a corpus is mostly history, and history is not policy. When a check cannot find its anchor, that is a finding, never a pass. And the honest read on the turn budget: it measures cost, never correctness, and I let it end a unit of work that wasn't finished. The budget is not a reason to stop verifying; stopping to <em>report</em> is fine, declaring done is not.</p>
-<h3 id="the-third-pass-how-does-it-handle-the-future-and-its-growth-and-change" class="plain"><span class="ht">The third pass — "how does it handle the future, and its growth and change?"</span><a class="anchor" href="#the-third-pass-how-does-it-handle-the-future-and-its-growth-and-change" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-third-pass-how-does-it-handle-the-future-and-its-growth-and-change" class="plain"><span class="ht">The third pass — "how does it handle the future, and its growth and change?"</span><a class="anchor" href="#the-third-pass-how-does-it-handle-the-future-and-its-growth-and-change" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Harkirat's questions were the ones I had not asked myself: what happens when a file or folder is added, deleted, or silently moved? What about directories this project may one day rely on, or that rely on it? <strong>How does a future session tell a true pass from a false one?</strong> And: what did you sideline?</p>
 <p>The honest answer to most of them was "badly", and the repo supplied its own test case. While I was working, a <strong>parallel session</strong> on another branch added <code>LICENSE</code>, <code>NOTICE</code>, <code>CONTRIBUTING.md</code>, <code>CONTRIBUTORS.md</code>, a <code>docs/legal/</code> folder and an entire <code>public/</code> tree. Pointing the audit at that branch was the most useful thing I did all session: it correctly passed <code>readme-map</code> (they <em>had</em> updated the map) and correctly passed <code>version-sync</code> — and it was completely blind to four new root-level records and a whole new top-level directory, because it had only ever looked under <code>docs/</code>.</p>
-<h3 id="the-false-pass-problem-which-was-the-real-question" class="plain"><span class="ht">The false-pass problem, which was the real question</span><a class="anchor" href="#the-false-pass-problem-which-was-the-real-question" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-false-pass-problem-which-was-the-real-question" class="plain"><span class="ht">The false-pass problem, which was the real question</span><a class="anchor" href="#the-false-pass-problem-which-was-the-real-question" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><code>19 checks passed</code> was hiding three different outcomes: <strong>verified</strong>, <strong>skipped</strong>, and <strong>vacuous</strong> — the check ran, matched zero things, and passed because there was nothing to disagree with. The third is the dangerous one, and it is invisible: reformat the docs so <code>xref</code> finds no path-shaped tokens and it passes forever, having verified nothing.</p>
 <p>Every check now declares what it examined, or why it did not run. The summary reports all three states, and a zero-item pass warns unless an empty corpus is legitimate for that check. It earned its place on the first run by catching <code>root-docs</code> passing vacuously.</p>
-<h3 id="three-things-i-could-only-have-found-by-going-looking" class="plain"><span class="ht">Three things I could only have found by going looking</span><a class="anchor" href="#three-things-i-could-only-have-found-by-going-looking" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="three-things-i-could-only-have-found-by-going-looking" class="plain"><span class="ht">Three things I could only have found by going looking</span><a class="anchor" href="#three-things-i-could-only-have-found-by-going-looking" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>The audit had made itself unsearchable.</strong> <code>docs-audit.mjs</code> contained two NUL bytes — a placeholder in a regex translation. ripgrep classifies any file with a NUL as <strong>binary and shows no matches</strong>. In a project whose CLAUDE.md mandates <code>rg</code> as the primary search tool, the enforcement script was invisible to the only tool anyone would use to read it. Nothing could ever have surfaced that, because the search you would run to find it is the search that fails. There is now a <code>binary-in-text</code> check.</p>
 <p><strong>Every hook was auditing the wrong tree.</strong> All three <code>gh pr create</code> gates hardcoded <code>/Applications/Claude Code/Diors-Builds</code>. The superpowers workflow actively encourages git worktrees, and inside one, every gate silently inspected the main working tree instead — reporting confidently about a branch you are not on. I only found it because a parallel session's uncommitted work forced me into a worktree to avoid repeating the v2.41.4 incident. The safety measure found the bug.</p>
 <p><strong>Two fingerprint matchers were broken in exactly the same way</strong>, and neither had ever run. Both built their search window from filtered words while searching an unfiltered haystack, so a window reading <code>open intake item long enough count</code> could never match a haystack still reading <code>long enough to count</code>. One of them, <code>traceable()</code>, only executes when the archive actually grew — and the zero-growth branch had fired first every single time, so its bug was never once exercised. A test that forced the branch found it immediately.</p>
-<h3 id="the-one-i-got-wrong-twice-in-the-same-file" class="plain"><span class="ht">The one I got wrong twice in the same file</span><a class="anchor" href="#the-one-i-got-wrong-twice-in-the-same-file" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-one-i-got-wrong-twice-in-the-same-file" class="plain"><span class="ht">The one I got wrong twice in the same file</span><a class="anchor" href="#the-one-i-got-wrong-twice-in-the-same-file" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>I restored bare-filename <code>xref</code> checking, measured the false-positive rate with a probe, wrote "0 false positives" into the code comment, and shipped a check that scanned a <strong>wider set of file types than the probe had</strong>. It immediately flagged discord.js internals. Measuring one thing and shipping another — inside the very file written to catch that class of error.</p>
-<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Ask what a green tick is actually asserting. "All checks passed" is not a claim about the records; it is a claim about the checks, and only if they ran, and only if they looked at something. Report the evidence, not just the verdict. And when a safety measure forces you into an unfamiliar setup — a worktree, a fresh clone, a shallow checkout — pay attention to what breaks there, because that is where the assumptions you never wrote down are keeping score.</p>
-<h3 id="the-failsafe-i-removed-without-noticing" class="plain"><span class="ht">The failsafe I removed without noticing</span><a class="anchor" href="#the-failsafe-i-removed-without-noticing" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-failsafe-i-removed-without-noticing" class="plain"><span class="ht">The failsafe I removed without noticing</span><a class="anchor" href="#the-failsafe-i-removed-without-noticing" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Harkirat, approving the merge: <em>"keep any fallbacks/failsafes so even if this program doesn't work, the prior detection methods can still catch claude slacking."</em></p>
 <p>That landed on a regression I had shipped proudly. <code>devlog-toc-check.sh</code> used to carry its own TOC comparison. I replaced it with a call to <code>docs-audit.mjs</code> and wrote a satisfied comment about "one implementation" — which is true, and which also converted a standalone gate into a dependent one. If the audit is deleted, renamed, or throws, the delegating call returns nothing and a bare <code>exit 0</code> reads that as a clean pass. I had spent the whole session hunting checks that pass while doing nothing, and then built one.</p>
 <p>The fix is not a duplicated fallback. Two copies of a rule drift, and the drift is silent too — that is precisely why the delegation happened. Instead, <strong>"the audit could not run" is now a finding in its own right</strong>: missing file and crashed-with-invalid-JSON are separate messages, and both were verified by actually deleting and then breaking the script rather than reasoning about it. Missing and found-nothing must never look the same.</p>
@@ -2737,17 +2740,17 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <pre class="code" data-lang="bash"><code>git fetch origin main:main v3-pre-release:v3-pre-release</code></pre>
 <p>That writes the local refs directly and cannot disturb the working tree; git rejects the refspec outright if the target branch is checked out. It is precisely the tool for "make the pointer current, leave the tree alone", and I went a whole release without reaching for it.</p>
 <p>Which is this release's lesson pointed back at me from a slightly different angle. <em>"Can't be done safely"</em> and <em>"I only know one way to do it"</em> produce identical output — nothing — and I reported the first while meaning the second. Same shape as <strong>"not checkable"</strong> one entry above: a constraint asserted rather than tested.</p>
-<h3 id="a-stale-pointer-is-not-stale-state" class="plain"><span class="ht">A stale pointer is not stale state</span><a class="anchor" href="#a-stale-pointer-is-not-stale-state" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="a-stale-pointer-is-not-stale-state" class="plain"><span class="ht">A stale pointer is not stale state</span><a class="anchor" href="#a-stale-pointer-is-not-stale-state" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Two different things were getting conflated in how I reported it, and the alarming reading was the wrong one. A local ref being behind is a fact about <em>my clone</em>. It says nothing whatsoever about the remote. The check that actually answered his question was never run:</p>
 <pre class="code"><code>git rev-list --left-right --count origin/main...origin/v3-pre-release
 0	0</code></pre>
 <p>Zero divergence in both directions — <code>origin/v3-pre-release</code> identical to <code>origin/main</code> at the merge commit. <code>sync-v3-pre-release.yml</code> had done its job within seconds of the merge. The remote was never out of sync; only my view of it was, and I let the weaker fact stand in for the stronger one because I hadn't separated them.</p>
-<h3 id="the-warning-id-have-kept-scrolling-past" class="plain"><span class="ht">The warning I'd have kept scrolling past</span><a class="anchor" href="#the-warning-id-have-kept-scrolling-past" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-warning-id-have-kept-scrolling-past" class="plain"><span class="ht">The warning I'd have kept scrolling past</span><a class="anchor" href="#the-warning-id-have-kept-scrolling-past" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>He also asked about something on the CI run I had marked green and moved on from:</p>
 <blockquote class="callout"><p><code>Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4.</code></p></blockquote>
 <p>Worth understanding rather than dismissing, because the instinct — <em>"our Node version is fine, the VM runs 24"</em> — is wrong in an interesting way. The runtime being deprecated isn't ours. A JavaScript action carries its own <code>action.yml</code> declaring <code>using: node20</code>, and GitHub is retiring that runtime from the runners, force-running those actions on Node 24 as a temporary shim. It is a dependency's runtime, warned about in our logs, and nothing we pin controls it.</p>
 <p>Filed as its own session in <code>docs/db-deferred-list.md</code> rather than bolted onto a docs release — three <code>@v4</code> → <code>@v5</code> bumps across two workflows, with the one real trap written down: <code>checkout@v5</code> keeps the depth-1 default, so <code>fetch-depth: 0</code> has to survive the bump or the audit regresses to 42 false hash-chain errors. <code>ci-wiring</code> already guards that, which is the first time this audit has protected work that hadn't been done yet.</p>
-<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>A "behind" marker in <code>git branch -vv</code> is about your clone, not about the project — check the remotes against <em>each other</em> before reporting drift. And when a safety constraint blocks the obvious command, ask whether it blocks the <strong>goal</strong> or just that one command. Plumbing usually has a way through, and "I'd have to do the unsafe thing" is a claim worth testing before it becomes a reason.</p>
 <hr>
         </div>
@@ -2763,7 +2766,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>The move itself was a single contiguous block, chronology already correct end-to-end — no resequencing needed, just relocation. Verified three ways beyond the audit: the exact set and order of every dated heading identical before and after (hashed the list), no dated heading anywhere after the <code># Part B</code> marker post-move, and the file still ending in exactly one trailing newline.</p>
 <p>Added <code>devlog-parts</code> (ERROR) to <code>scripts/docs-audit.mjs</code> so this stops being a thing a session has to notice by reading — it asserts no <code>## 20\d\d-</code> heading appears after <code># Part B</code>, using the same <code>anchorMissing()</code> pattern <code>devlog-toc</code> uses so a renamed marker fails loudly rather than quietly turning the check off. Gave it both required self-test assertions (broken fixture fails, valid fixture stays silent) plus an anchor-missing case, and had to add a real <code># Part B</code> heading to the test fixture's <code>docs/DEVLOG.md</code> — without it, the new check reported "anchor missing" against the <em>baseline</em> fixture, which is exactly the vacuous-pass failure mode this whole audit exists to catch.</p>
 <p>Re-checked the three warnings standing since v2.42.1 while here. Two close clean: <code>root-docs</code>'s VACUOUS PASS is still the documented, correct behavior (self-corrects once <code>LICENSE</code>/<code>NOTICE</code> land on <code>main</code>). The <code>xref</code> warning for <code>memory-migration-handoff.md</code> turned out to be exactly what it looked like it might be — the file is real (<code>docs/db-deferred-list.md</code> calls it "now-complete"), it just lives in gitignored <code>local/</code>, which this working tree doesn't carry. Not a stale pointer, just the audit's own documented gitignored-file blind spot. The third, <code>memory-index</code> on Harkirat's WIP licensing doc, stays open — it's his file mid-edit, not something to paper over with an invented pointer line.</p>
-<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="note-to-future-self" class="plain"><span class="ht">Note to future self</span><a class="anchor" href="#note-to-future-self" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>"No dated entries" and "no dated heading appears after the <code># Part B</code> marker" read like the same claim until one of them is actually machine-checked and the other is prose sitting at the top of a file nobody re-reads. A structural invariant that's only ever verified by eyeballing degrades exactly the way this one did — silently, then compounding, for two release cycles running.</p>
 <hr>
         </div>
@@ -2832,7 +2835,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>Given that, I asked Harkirat directly which fix he wanted rather than guessing — a real draft/staging sub-document (biggest build, most turns), a lighter partial fix (pin dates + a queued title/date only), or just root-causing 201 and deferring 192/197. He picked the full staging area, explicitly accepting the turn cost up front. That's the right way to spend a clarifying question: not "does this look right" after building it, but "which of these three real tradeoffs do you want" before starting, when the answer still changes what gets built.</p>
 <p>The other three (199/200/191's alias half) were unambiguous once traced to source:</p>
 <ul><li><strong>200</strong> was <code>toTitleCase()</code>'s hyphen-splitting logic never having been extended to slashes — "Cannon/Void" is one whitespace token with no hyphen, so <code>capitalizeSegment()</code> treated it as an atomic unit and lowercased everything past its first letter. Same shape bug the hyphen fix already solved once; just needed the same treatment applied to a second separator character.</li><li><strong>199</strong> was a missing case, not a wrong one — <code>-#</code> never matched any tier shorthand, so it fell through to the generic "unrecognized tier" path and got title-cased like a weapon name. Added the case before the generic parse runs, deliberately excluded from <code>toTitleCase()</code> since a free-text note isn't a game item name.</li><li><strong>191's alias half</strong> was the easy, load-bearing-free kind of feature: read the existing emoji-capture rule (render-time only, never module-scope), follow it, done in two functions.</li></ul>
-<h3 id="verification-honestly-stated" class="plain"><span class="ht">Verification, honestly stated</span><a class="anchor" href="#verification-honestly-stated" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="verification-honestly-stated" class="plain"><span class="ht">Verification, honestly stated</span><a class="anchor" href="#verification-honestly-stated" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Ran a syntax check on every touched file, <code>scripts/checkEmojiCaptures.js</code> (clean), and a real dev-bot boot (Mongo connected, gateway routing integrated, no crash). What I could NOT do from this environment: click through the actual <code>/manage</code> → Next Season Draft buttons in a live Discord client — there's no authenticated Discord session available here to drive that. The boot log did surface one real, expected gap: the two new buff/nerf emojis are unmatched on the DEV bot's application (<code>2 unmatched (buff, nerf)</code>) since Harkirat only uploaded them to the prod app's dev portal — they'll render fine on prod (the ids in <code>emojiMap.js</code> are prod's real ids) but show as broken text on the dev bot until those two are also cloned over there, same as any newly-added emoji before a clone pass. Flagged to Harkirat rather than silently claimed as fully tested.</p>
         </div>
       </article>
@@ -2884,12 +2887,12 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
           <h2 id="2026-08-01">21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</h2>
           <p><em>(Unmerged as of writing. The changelog/devlog site, plus a long correction pass on the desktop nav.)</em></p>
 <p>Two jobs, one long evening. The first was a changelog website. The second was supposed to be a quick polish of the nav indicator and instead took <strong>four failed attempts and a fifth that worked</strong>, which is the more useful half of the story.</p>
-<h3 id="the-changelog-site-built-twice" class="plain"><span class="ht">The changelog site, built twice</span><a class="anchor" href="#the-changelog-site-built-twice" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-changelog-site-built-twice" class="plain"><span class="ht">The changelog site, built twice</span><a class="anchor" href="#the-changelog-site-built-twice" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The brief was a third page family: <code>docs/CHANGELOG.md</code>, <code>CHANGELOG-SUMMARY.md</code> and <code>DEVLOG.md</code> as web pages, sharing the legal site's header, nav and footer. I built one skeleton with three "voices" — three accent colours, three entry treatments, same masthead, same column, same rail — and Harkirat rejected it the moment he saw it. Correctly. <strong>Three colours of one page is not three identities</strong>, and colour is the weakest carrier of identity there is: a reader stops seeing it in two seconds.</p>
 <p>Then he said the thing that mattered: <em>"don't forget the original changelogs website attempt and the reference designs."</em> There was a memory file — <code>project_changelog_redesign</code> — describing a design he had already commissioned and approved in July: <strong>"The Armory Terminal"</strong>, a gunmetal ordnance-terminal world with Martian Mono, a tracer-amber signal, an ordnance-belt version rail, and a concept hook of <strong>two operators reading the same terminal</strong>. It had the answer to the exact question I had just spent hours getting wrong, including the identity mechanism.</p>
 <p>I had not read it. The build I threw away was the cost of that. The second build implements the terminal, extends two operators to three because the devlog is now its own page, and separates the pages by <strong>grid</strong> — notice board, ledger, timeline — rather than by hue.</p>
 <p><em>Lesson, and it is not "read memory" in the abstract: <strong>before designing anything for a surface, read the project memory FOR THAT SURFACE.</strong> The index line is one line; the file had a full spec.</em></p>
-<h3 id="the-nav-indicator-four-wrong-fixes" class="plain"><span class="ht">The nav indicator: four wrong fixes</span><a class="anchor" href="#the-nav-indicator-four-wrong-fixes" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-nav-indicator-four-wrong-fixes" class="plain"><span class="ht">The nav indicator: four wrong fixes</span><a class="anchor" href="#the-nav-indicator-four-wrong-fixes" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Harkirat reported the hover effect looked wrong. What followed is worth recording in full because the failures rhyme.</p>
 <p><strong>Attempt 0 — diagnosis from a screenshot.</strong> I proposed that my new <code>.segchip</code> element had shifted the indicator's measurements. It had not; the indicator selects <code>.tab</code>, not children by index. A still frame cannot show an animation, and I nearly spent the evening on that theory.</p>
 <p><strong>What actually worked was frame extraction.</strong> <code>ffmpeg</code> on his screen recordings, then contact sheets of <em>consecutive</em> frames — not a sparse sample, which missed a one-frame bump he then had to point at by hand. Sparse sampling of an animation is the visual equivalent of a happy-path test.</p>
@@ -2900,10 +2903,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>The fifth attempt stopped deriving and measured. I rasterised the actual filter chain over a 100×25 rounded rect into a canvas at 4× and read the alpha extents:</p>
 <p>stdDeviation   0.6   1.2   1.8   2.4   3.0   3.6 dW per side   0.25  0.25  0.25  0.50  0.50  0.50 dH per side   0.25  0.25  0.50  0.75  1.00  1.25</p>
 <p><strong>The dilation is anisotropic</strong> — at full blur the height grows 2.5× as much as the width, because a 25px pill is short relative to a 3.6 blur and its caps are pure curvature. Every earlier attempt had assumed one isotropic number. That single fact explains all three failures at once. The shipped constants are then <em>solved</em> rather than read off that table — feed a pre-shrunk rect back through the filter and search for the shrink that paints 100×25 again, which lands the height correction at 1.125, not 1.25. Verified across the blur range: worst error 0.50px, exactly 0 at full blur, against 2.5px uncorrected.</p>
-<h3 id="the-failure-mode-underneath-all-of-it" class="plain"><span class="ht">The failure mode underneath all of it</span><a class="anchor" href="#the-failure-mode-underneath-all-of-it" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-failure-mode-underneath-all-of-it" class="plain"><span class="ht">The failure mode underneath all of it</span><a class="anchor" href="#the-failure-mode-underneath-all-of-it" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Every wrong attempt had the same shape: <strong>derive a number from theory, then "verify" it with a check that could not resolve the difference.</strong> I compared two zoom captures by eye and called a 2.5px difference verified. It was not. Harkirat's frame-by-frame measurements broke the loop every time — and the tool that finally settled it, canvas rasterisation of the filter, was available from the first minute and measures the real renderer at 0.25px.</p>
 <p>This is the <em>third</em> time this exact trap has been recorded on this one filter. <code>reference_goo_metaball_recipe</code> already said, about accent colour: fitted chains are exact on paper and visibly wrong on screen, because browsers clamp unmodellably. I read that file, applied its conclusion to colour, and then re-derived a geometry constant from <code>erfc</code> anyway. <strong>The lesson generalises past the specific quantity: do not model this filter, measure it.</strong></p>
-<h3 id="also-shipped-quietly" class="plain"><span class="ht">Also shipped, quietly</span><a class="anchor" href="#also-shipped-quietly" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="also-shipped-quietly" class="plain"><span class="ht">Also shipped, quietly</span><a class="anchor" href="#also-shipped-quietly" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong><code>docs/CHANGELOG.md</code> was damaged and a build would have published it.</strong> v2.44.0's heading had been deleted by an unrelated merge, welding 55 surviving body lines onto the end of v2.45.0. Every check was green: <code>summary-coverage</code> only runs CHANGELOG → SUMMARY, so a missing <em>detailed</em> entry is invisible to it. New <code>summary-orphan</code> gate closes that direction.</li><li><strong>Light theme failed contrast catastrophically</strong> — every signal colour between 1.16:1 and 1.70:1 against a 4.5 minimum. I nearly missed it by eye, because a washed-out heading looks like an animation mid-fade. Contrast is arithmetic; it now has a gate that re-measures the built CSS. ⚠️ That gate shipped <strong>blind</strong> first, reporting "63 pairs pass" while the signals were still failing, because it matched only the first <code>:root{}</code> block — the legal tokens — and never read <code>--sig</code>. Caught only by reverting a known-bad value and watching it stay green.</li><li><strong>The site failed WCAG 2.4.1 (Level A) on every page</strong> — no skip link, so ~13 tab stops before the document. The first fix half-applied: both warm pages got the link and neither got the target, which is worse than no link. Gated now.</li></ul>
         </div>
       </article>
@@ -2949,7 +2952,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p><strong>Every fix this session was a check, never a think.</strong> That turned out to be the answer to a question Harkirat asked later — whether <code>sequential-thinking</code> should be used more freely. Structured reasoning would not have caught one of those; <code>ls</code>, <code>sqlite3</code> and reading package source did. Worse, it would have made the unverified premises <em>feel</em> rigorous. When reasoning and checking compete, checking wins.</p>
 <p><strong>But the honest version of that answer is that we don't know.</strong> The tool has been invoked twice ever — and it was installed by the same integration that restricted it, so the number measures the rule, not the tool. Inferring "barely used, therefore not worth using" is circular. So it is unrestricted for seven days, with metrics pre-registered <em>before</em> any data exists, a scripted instrument so both windows are measured identically, an auto-expiring suspension, and the design-heavy task mix declared as a known confound up front rather than discovered in the analysis.</p>
 <p><strong>The other thing Harkirat had to ask for.</strong> Whether we were using the MCP layer at all. We were barely, and partly wrongly: the global <code>usage-guard</code> hook had been injecting a stale <em>"codebase-index is PYTHON-ONLY"</em> claim into <strong>every large Read</strong> for nine days, steering away from a graph tool that does index this repo — cost: <code>search_graph</code> used once in 35 sessions. An entire session ran with zero <code>ctx_execute*</code> calls. The linksee skill taught four tools removed in v0.11.x. All of it was already "documented somewhere". Prose has never carried a rule on this repo; that is why the routing is a hook now.</p>
-<h3 id="what-id-keep" class="plain"><span class="ht">What I'd keep</span><a class="anchor" href="#what-id-keep" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="what-id-keep" class="plain"><span class="ht">What I'd keep</span><a class="anchor" href="#what-id-keep" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>"Blocked", "not possible without X", "not checkable" are CLAIMS.</strong> They need the same evidence as any other claim, and the cheapest version of X is usually four tool calls away.</li><li><strong>A restriction and the behaviour it governs, introduced together, produce a statistic that measures the restriction.</strong> Check whether an unrestricted window ever existed before reading low usage as a verdict.</li><li><strong>A check whose healthy state is indistinguishable from its dead state is not a check.</strong> Two of mine were, in one session — one printed the finding and "clean" underneath it.</li><li><strong>When a session is explicitly ABOUT a topic, a deferral inside that topic is nearly always wrong.</strong> Deferring the memory-architecture problem in the memory-architecture session should have been self-evidently absurd, and it wasn't, because it was well-formatted.</li></ul>
         </div>
       </article>
@@ -2965,7 +2968,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>Harkirat then asked the question that reframed the session: <em>"nothing you want to file for future sessions? or just fixed on the spot so they don't have to know?"</em> Auditing which lessons were mechanically enforced versus prose-only found three gaps — and one of them was a <strong>rule that already existed and had already been corrected twice</strong>, in the working agreement, about this exact hook-then-patch loop. Today was the third occurrence. The rule said <em>"get <code>date</code> ONCE per turn and reuse it"</em>, which is safe <strong>within</strong> a turn and dangerous <strong>across</strong> turns — a boundary the wording never marked, and precisely the gap I fell through.</p>
 <p>The fix was not better wording. <strong>The clock is now injected into every turn</strong>, so the judgement call is gone.</p>
 <p>Then: <em>what tools would help?</em> The honest answer was <strong>none — they were already installed.</strong> <code>shellcheck</code> had been sitting there unrun while the exact bug it catches shipped in a sweep that reported success while updating zero files. So the lesson filed was not about tooling: <strong>a capability has three states — absent, installed, and ROUTED — and only the third does anything.</strong></p>
-<h3 id="what-id-keep" class="plain"><span class="ht">What I'd keep</span><a class="anchor" href="#what-id-keep" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="what-id-keep" class="plain"><span class="ht">What I'd keep</span><a class="anchor" href="#what-id-keep" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>A well-formed value is not a verified value.</strong> A fabricated timestamp is byte-identical to a true one. Shape checks cannot see truth; only a source can.</li><li><strong>Write the test file WITH the guard, never after.</strong> The one exception today needed four fixes.</li><li><strong>An impossible-looking finding is an instrument fault until proven otherwise.</strong> <code>curl</code> cannot trip an <code>rg</code> guard.</li><li><strong>A correction carries borrowed credibility.</strong> I got two wrong today — Opus rates on a Sonnet session, and a batch size read as a total — both while feeling most rigorous.</li><li><strong>What makes a guard work is being point-of-use, not being a hook.</strong> A catalogue injected at session start is the same shape as the prose that already failed 788× to 4×.</li></ul>
         </div>
       </article>
@@ -2982,7 +2985,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p><strong>Then this very entry existed only because a hook demanded it — and the hook was itself broken.</strong> The DEVLOG check fired <em>after</em> the merge, pointing out that a release carrying two real lessons had no narrative entry. Correct finding, useless timing: the branch was gone, so the only remedy it could offer was "ship a follow-up release", and I started doing exactly that. Harkirat stopped me mid-flow: <em>"thats just poor timing for the hook to trigger, no? it stopped you AFTER you had already merged and thus caused another merge."</em></p>
 <p>He was right, and it is a failure this repo had <strong>already written down</strong> — <em>a check at the wrong MOMENT is the same bug as no check</em> — and shipped anyway. <strong>Four</strong> release checks sat <code>PostToolUse</code> on <code>gh pr merge</code>, all firing where nothing could be fixed. They now run <code>PreToolUse</code> against the branch's own diff, which is not an event-name swap: the post-merge versions read <code>origin/main</code> after the fact, answering a different question entirely.</p>
 <p>So v2.49.2 stopped being paperwork. It carries the entry v2.49.1 should have had <strong>and</strong> the fix that stops the gate manufacturing releases to satisfy itself.</p>
-<h3 id="what-id-keep" class="plain"><span class="ht">What I'd keep</span><a class="anchor" href="#what-id-keep" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="what-id-keep" class="plain"><span class="ht">What I'd keep</span><a class="anchor" href="#what-id-keep" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>A guard firing on its own author and getting sharpened is the intended lifecycle, not a defect.</strong> Four of them improved that way today. The failure mode to fear is the guard nobody argues with.</li><li><strong>When widening an escape, name the line you refuse to cross</strong> and pin it with a test. "Already filed" passing is correct; "about to file" passing destroys the guard.</li><li><strong>Printing a check's exit code is not reading it.</strong> <code>docs:audit exit=1</code> scrolled past under a push.</li><li><strong>When the user and the documentation disagree, measure — do not pick a side.</strong> He was right and the doc was stale, and only the measurement could have told me which.</li></ul>
         </div>
       </article>
@@ -2994,22 +2997,22 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
           <p>Harkirat opened the session's real work with a complaint that turned out to be exactly diagnostic: <em>"i literally spent hours last session working on some of these gates and literally within the first few minutes of this session, they dont even seem to hold despite their 'tests'."</em></p>
 <p>He was right about the symptom and the cause was one level below where either of us was looking. <strong>The tests were correct. Nothing executed them.</strong> Each of the six <code>.claude/hooks/*.test.sh</code> files was referenced by <code>package.json</code>, <code>.github/workflows/</code> and <code>.claude/settings.json</code> a combined <strong>zero</strong> times. They ran when someone hand-typed <code>bash &lt;file&gt;</code> — which meant the session that wrote them, once. <code>scripts/calendarDedup.test.js</code> was in the same state, reachable only through an <code>npm test</code> that CI never called.</p>
 <p>This is the third instance of one pattern in this repo: shellcheck installed and unrun while the bug it catches shipped; <code>usage-guard.mjs</code> shipping with every Bash rule dead from line 2 and looking fine; now six green test files that nothing invoked. <strong>Being on disk is not being run, and a test nobody runs is worse than no test</strong> — it manufactures a documented belief that the behaviour is covered.</p>
-<h3 id="what-the-audit-actually-found" class="plain"><span class="ht">What the audit actually found</span><a class="anchor" href="#what-the-audit-actually-found" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="what-the-audit-actually-found" class="plain"><span class="ht">What the audit actually found</span><a class="anchor" href="#what-the-audit-actually-found" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Before writing anything I inventoried the whole layer rather than the three hooks that had misfired. That was the right call, because the interesting findings were structural:</p>
 <ul><li><strong>12 of 13 hook scripts could not block anything.</strong> Only <code>main-push-guard.sh</code> exits 2. Everything else prints advisory text. That is often correct — but it was never a decision, just an accretion.</li><li><strong>PreToolUse had seven hooks and none on <code>Edit|Write</code>.</strong> So nothing could prevent a bad <em>write</em>, only complain afterwards. Both failures I hit earlier in the session — editing tracked files on <code>main</code>, and writing an invented timestamp — were in that hole.</li><li><strong>CI was not a required status check.</strong> A red PR could merge, and one run had gone red that day.</li></ul>
-<h3 id="the-two-gates-that-had-never-worked" class="plain"><span class="ht">The two gates that had never worked</span><a class="anchor" href="#the-two-gates-that-had-never-worked" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-two-gates-that-had-never-worked" class="plain"><span class="ht">The two gates that had never worked</span><a class="anchor" href="#the-two-gates-that-had-never-worked" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Writing the eight missing tests is what found them. Neither was findable by reading.</p>
 <p><strong><code>main-push-guard.sh</code> passed <code>rtk git push</code> straight through</strong> — and it is the <em>only</em> hook that can actually block. Its anchor demanded <code>git</code> at the start of a command, while RTK.md documents that shell commands are transparently rewritten through <code>rtk</code>. The same naive anchor sat in <strong>nine</strong> gate invocations. The fix is trivial; the lesson is that a per-hook test cannot catch the <em>next</em> gate written the old way, so <code>command-anchors.test.sh</code> now scans the whole layer for the pattern.</p>
 <p><strong><code>records-close-check.sh</code>'s memory check used <code>find -newermt "@epoch"</code>, which BSD find cannot parse.</strong> It errored into <code>2&gt;/dev/null</code>, the count was always 0, and the gate fired on every PR regardless of whether a memory had been written. A gate that always fires is dismissed exactly like a gate that never does.</p>
 <p>That one nearly escaped twice. My first probe of <code>find -newermt @N</code> <strong>succeeded</strong> — because this machine's shell aliases <code>find</code> to a function dispatching to <code>bfs</code>, a different implementation that accepts the epoch form. Hooks run in a plain non-interactive shell and get <code>/usr/bin/find</code>. <strong>Test a hook the way the hook runs, not the way your prompt runs.</strong></p>
-<h3 id="the-pattern-worth-keeping" class="plain"><span class="ht">The pattern worth keeping</span><a class="anchor" href="#the-pattern-worth-keeping" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-pattern-worth-keeping" class="plain"><span class="ht">The pattern worth keeping</span><a class="anchor" href="#the-pattern-worth-keeping" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Three separate gates were wrong in the same way, and the shape has a name now: <strong>the check exists, its diagnosis is correct, and it fires where it can no longer prevent anything.</strong> The timestamp check was PostToolUse when the content sits in <code>tool_input</code> at PreToolUse. The branch guard watched <code>push</code> when the violation is the <em>commit</em>. The squash gate was an <code>ask</code>, which is a prompt, and a prompt is something a session in a hurry clicks past — measurably so: of the last 8 squash commits only one has the correct 2 trailer lines, and the three worst offenders are the merges that shipped the hook work itself.</p>
 <p><code>c6cd875</code> had already fixed exactly one instance of this ("move the release checks before the merge, where they can still be acted on") and the sweep was never done. <strong>When a fix names a class, sweep the class.</strong></p>
-<h3 id="harkirats-suggestion-and-why-it-was-the-better-half" class="plain"><span class="ht">Harkirat's suggestion, and why it was the better half</span><a class="anchor" href="#harkirats-suggestion-and-why-it-was-the-better-half" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="harkirats-suggestion-and-why-it-was-the-better-half" class="plain"><span class="ht">Harkirat's suggestion, and why it was the better half</span><a class="anchor" href="#harkirats-suggestion-and-why-it-was-the-better-half" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Mid-session he proposed injecting the clock on tool calls, not just on his messages. The <code>UserPromptSubmit</code> half already existed — but his framing named the gap precisely: <em>"if i send a message or if u trigger a tool."</em> The existing hook refreshes only when he speaks, and this turn ran 120+ tool calls after one 16:32 injection. I invented four timestamps in that window by adding an imagined elapsed time to a stale anchor, and the new <code>pre</code> gate denied two of them.</p>
 <p>That is the distinction worth recording: <strong><code>timestamp-check</code> is the net, <code>clock-inject</code> is the supply.</strong> A net without supply means guessing and getting denied; supply without a net means one careless turn ships a fabrication into the CHANGELOG again. Keeping both is not redundancy.</p>
 <p>His hook's own test then caught it broken on the first run — <code>rtrimstr(.;"\n")</code> is a two-argument form that does not exist, so it failed to compile on every write. A hook written, reviewed, wired up, and completely dead. Which is the entire argument of this release in one line.</p>
-<h3 id="the-finding-that-only-appeared-because-i-ran-the-merge-flow" class="plain"><span class="ht">The finding that only appeared because I ran the merge flow</span><a class="anchor" href="#the-finding-that-only-appeared-because-i-ran-the-merge-flow" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-finding-that-only-appeared-because-i-ran-the-merge-flow" class="plain"><span class="ht">The finding that only appeared because I ran the merge flow</span><a class="anchor" href="#the-finding-that-only-appeared-because-i-ran-the-merge-flow" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Everything above came from the audit. <strong>The biggest finding came from actually using the thing.</strong></p>
 <p>Opening this release's own PR, <code>gh pr create</code> produced no prompt and no output — yet running <code>records-close-check.sh</code> by hand emitted a full "RECORDS NOT CLOSED" finding. I could have shrugged at that. Instead I ruled out the innocent explanations in order: the wrapper regex <strong>does</strong> match the real command string, and the hook <strong>does</strong> emit <code>permissionDecision:"ask"</code>. So it fired and vanished.</p>
 <p>The discriminating test mattered more than the observation. <code>gh pr merge 999999 --squash</code> — a PR that cannot exist, so nothing could merge whichever way it went — and the <code>deny</code> <strong>blocked hard, message and all</strong>. Three decision types, three different fates:</p>
@@ -3018,12 +3021,12 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>The fix is a rule with a shape: <strong>objective violation → <code>deny</code>; judgement call → visible <code>additionalContext</code>; never <code>ask</code>.</strong> A visible advisory beats an invisible ask, always. Proven the only way worth trusting — the identical <code>gh pr create --help</code> that had been silent now prints both findings.</p>
 <p>Two things I want to keep from this. First, <strong>the merge flow is itself a test</strong>, and it exercised paths the whole audit had not. Second, <strong>"the hook didn't fire" and "the hook fired and was swallowed" look identical from the outside</strong> — and the second one is the failure mode that survives an audit, because every artifact says the gate exists.</p>
 <p>And the gates repaid it immediately: the newly-visible stale-reference sweep flagged four files describing behaviour I had just changed, including a spec step telling a future session to add a <code>-maxdepth 1</code> to a <code>find</code> call that no longer exists. All four fixed on this branch.</p>
-<h3 id="the-required-status-check-paid-for-itself-on-its-first-run" class="plain"><span class="ht">The required status check paid for itself on its first run</span><a class="anchor" href="#the-required-status-check-paid-for-itself-on-its-first-run" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-required-status-check-paid-for-itself-on-its-first-run" class="plain"><span class="ht">The required status check paid for itself on its first run</span><a class="anchor" href="#the-required-status-check-paid-for-itself-on-its-first-run" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Switching <code>syntax-check</code> from "runs" to "required" took one API call. The very first gated run <strong>failed</strong> — not on the hooks, on my own tests, in five distinct ways that a Mac can structurally never show:</p>
 <ol><li><code>timestamp-check.test.sh</code> read the <strong>date</strong> from now and the <strong>time</strong> from now+3h independently. At 17:00 EDT that is harmlessly same-day. At 22:00 UTC it produced "today 01:00" — a <em>past</em> stamp — so seven "future is denied" assertions were quietly testing the opposite of their name.</li><li><code>release-ready-check.test.sh</code> never set <code>CLAUDE_PROJECT_DIR</code>, so the hook <code>cd</code>'d to an absolute Mac path that does not exist on a runner, exited 0, and six cases "passed" <strong>by not running</strong>.</li><li><code>records-close-check.test.sh</code> wrote its memory fixture in the same second as the branch commit on the faster CI filesystem, so <code>mtime &gt; branch-point</code> was false.</li><li><code>stale-reference-sweep.sh</code> is one <code>rg</code> call, and the runner has no ripgrep — so it found nothing and exited silently, byte-identical to a clean branch. <strong>Five real assertions passed as SILENT.</strong></li><li><code>typos-check.test.sh</code> demanded a binary that only matters on the dev machine.</li></ol>
 <p>Then a second round, and the better one: <code>stat -f %m "$f" || stat -c %Y "$f"</code> is <strong>BSD-first</strong>, and on GNU <code>-f</code> means <code>--file-system</code> — it <em>prints filesystem info to stdout</em> and only then fails, so the fallback appends its number to that garbage. The captured value is not an integer and every mtime comparison silently went false. That idiom was pre-existing in two hooks. And my own fix to (2) had been written with <code>sd</code>, whose escaping left a literal <code>\&amp;\&amp;</code> in the <code>REPO=</code> line, so <code>cd</code> took <code>'&amp;'</code> as arguments and <code>REPO</code> was empty — <strong>it passed locally for the wrong reason.</strong></p>
 <p>Every one of these is the same shape as the day's main finding: <em>the check ran, reported success, and had tested nothing.</em> Four of them were introduced by me, in this release, while writing the suite whose entire purpose is to stop exactly that. The suite is not the safeguard — <strong>a second, different environment is.</strong> Running <code>TZ=UTC CI=1</code> locally now reproduces the runner and is the pre-push check.</p>
-<h3 id="where-it-landed" class="plain"><span class="ht">Where it landed</span><a class="anchor" href="#where-it-landed" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
+<h3 id="where-it-landed" class="plain"><span class="ht">Where it landed</span><a class="anchor" href="#where-it-landed" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>17 hook test suites, 0 untested hooks, shellcheck-clean, <code>npm test</code> runs them and CI runs <code>npm test</code>. Coverage is computed from the scripts on disk, so deleting a test fails the suite rather than quietly shrinking it.</p>
 <p><strong>One thing I could not do:</strong> adding <code>syntax-check</code> as a required status check on <code>main</code> was blocked by the permission classifier, twice. The check name is confirmed (<code>syntax-check</code>, and <em>not</em> <code>sync</code>, which only runs on push to <code>main</code> and would deadlock every PR) — the command is handed over rather than run.</p>
         </div>
@@ -3087,7 +3090,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     </main>
   </div>
   <footer class="foot">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
     <p class="disc">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="../legal/terms.html">Terms</a><span>&middot;</span><a href="../legal/privacy.html">Privacy</a><span>&middot;</span><a href="../legal/license.html">License</a><span>&middot;</span><a href="../legal/notice.html">Notice</a><span>&middot;</span><a href="../legal/contributing.html">Contributing</a><span>&middot;</span><a href="../legal/contributors.html">Contributors</a><span>&middot;</span><a href="./">What's New</a><span>&middot;</span><a href="./detailed.html">Changelog</a></nav>
   </footer>
@@ -4439,6 +4442,21 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        fading, then is drawn back in as the parts return and re-merge. */
     var BURST=620,burstAt=-1e9;
     var sx=1,sy=1,spread=1,tsx=1,tsy=1,tspread=1;
+    var beam=0,tbeam=0;   /* 0 = blob, 1 = fully a text caret */
+    var lineH=20;         /* the line box under the pointer, from onGlyphs() */
+    /* ⚠️ THE SEVEN MASSES ARE DELIBERATELY UNEQUAL — 5.6 down to 2.2 — because a
+       teardrop needs a heavy head and a thin tail. Stacked into a caret that
+       taper becomes a defect: the small masses at one end erode away under the
+       crush and the bar hangs off-centre, which is exactly how it rasterised.
+       So text mode eases every mass toward ONE radius; the swarm keeps its
+       tapered silhouette everywhere else.
+       ⚠️ THAT RADIUS IS SET BY THE PAINT FLOOR, NOT BY THE MEAN. Easing to the
+       mean (3.79) was tried and rasterised as a short lozenge again: at 0.46 of
+       horizontal scale a 3.79 mass paints 3.5px wide, under the ~4.5px floor
+       this filter thresholds at, so the crush ate the whole stack. 6.0 paints
+       ~5.5px and survives, which is what makes the bar continuous. Re-measure
+       it if stdDeviation on #dbgoo-p or the crush matrix changes. */
+    var RBEAM=6.0;
 
     var baseCol=(getComputedStyle(document.body)
                   .getPropertyValue('--accent')||'').trim()||'#F2994A';
@@ -4522,9 +4540,19 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        pressable. Doing it by squashing the same body keeps it one creature rather
        than a set of swapped icons. */
     function shapeFor(m){
-      if(m==='text'){tsx=0.30;tsy=2.45;tspread=0.48;}
+      /* ⚠️ THE BEAM IS A CARET, AND A CARET'S JOB IS TO SAY WHICH LETTER.
+         Three separate faults were reported together on 2026-08-03 16:40 EDT —
+         it nearly vanished on click, it breathed too hard, and it was hard to
+         tell where the selection would start — and only the second is about
+         breathing. They are fixed by the eased 0-1 'beam', which says how far
+         into text mode the swarm is, applied in tick() to the LAG, the
+         breathing and the click burst. See each site there.
+         The targets here only do the shape: thinner and taller, because a
+         caret's precision is horizontal and its legibility is vertical. */
+      if(m==='text'){tsx=0.46;tsy=0.50;tspread=0.30;}
       else if(m==='link'){tsx=1.5;tsy=1.5;tspread=1.9;}
       else{tsx=1;tsy=1;tspread=1;}
+      tbeam=(m==='text')?1:0;
       ink.classList.toggle('soft',m==='text');
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
@@ -4559,6 +4587,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          rather than losing the I-beam entirely. */
       if(!r)return true;
       if(!r.width&&!r.height)return true;
+      /* the caret rect is the LINE BOX, so this is the height the beam should
+         be — measured off the text it is actually over, not assumed */
+      if(r.height>6&&r.height<80)lineH=r.height;
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -4594,6 +4625,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       if(now-hitT>90){hitT=now;probe();}
       sx+=(tsx-sx)*0.16;sy+=(tsy-sy)*0.16;
       spread+=(tspread-spread)*0.16;
+      beam+=(tbeam-beam)*0.16;
       /* Eased per frame rather than by a CSS transition: the target changes every
          time the pointer crosses a boundary, and a transition would restart from
          wherever it had reached and stutter. mix() rounds to whole channels, so
@@ -4611,9 +4643,33 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
            deformation of the same cluster rather than a different object */
         var gx=Math.cos(ang)*s.orb*spread*sx*(1-0.45*sp);
         var gy=Math.sin(ang)*s.orb*spread*sy*(1-0.45*sp);
-        p.x+=((cen.x+gx-dvx*s.lag*8.5)-p.x)*s.k;
-        p.y+=((cen.y+gy-dvy*s.lag*8.5)-p.y)*s.k;
-        var scl=(1+0.17*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
+        /* ⚠️ THE LAG IS WHY IT WAS HARD TO AIM. Seven masses trailing the
+           pointer put the swarm's visible centre BEHIND the true position, so
+           the thing you were reading as the caret sat a few pixels back from
+           the letter it would actually select from. A teardrop wants that
+           smear; a caret must not have it, so text mode pulls the trail in to
+           a quarter and the masses stack into one bar on the real x. */
+        var lagK=8.5*(1-0.76*beam);
+        /* ⚠️ THE CARET IS A STACK OF MASSES, NOT ONE SQUASHED ELLIPSE, and that
+           is the whole difference. Squashing the cluster to 0.24 wide and 2.85
+           tall looked right in the numbers and rasterised as a SHORT LOZENGE
+           about an x-height long: a Gaussian erodes a curve in proportion to
+           its curvature, so a thin tall ellipse loses its ends first and the
+           alpha crush then thresholds them away. Making it thinner made it
+           shorter — the same anisotropy the nav pill's dilation table records,
+           running the other way.
+           So the masses are spread along Y instead and left round enough to
+           survive on their own. The crush merges them into one continuous bar,
+           which is what the filter is FOR, and the bar cannot be eroded from
+           the ends because there is another mass there. Its length is the line
+           box measured under the pointer, so the caret matches the text it is
+           sitting in rather than a constant. */
+        var stack=beam*((i-(parts.length-1)/2)/Math.max(1,parts.length-1))*lineH*0.74;
+        p.x+=((cen.x+gx-dvx*s.lag*lagK)-p.x)*s.k;
+        p.y+=((cen.y+gy+stack-dvy*s.lag*lagK)-p.y)*s.k;
+        /* the breathing is what makes the blob feel alive and what makes the
+           caret feel unsteady, so it is damped as the beam forms, not removed */
+        var scl=(1+0.17*(1-0.66*beam)*Math.sin(p.ph*2+t*p.os))*(1-0.26*sp*s.lag);
         var bx=0,by=0;
         var bt=(now-burstAt)/BURST;
         if(bt>=0&&bt<1){
@@ -4622,16 +4678,26 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
              mid-drag, which is unusable when the native arrow is hidden. Only the
              trailing masses fly out and evaporate; the tip moves and shrinks a
              little and never leaves the screen. */
-          var out=Math.sin(Math.PI*Math.pow(bt,0.55));
+          /* ⚠️ THE BURST IS SUPPRESSED IN TEXT MODE. Its whole design is that
+             trailing masses fall under the paint floor and stop being drawn —
+             correct for a blob, catastrophic for a caret, because a click is
+             exactly the moment you need to see where it is. Reported as "it
+             nearly disappears upon a click". */
+          var out=Math.sin(Math.PI*Math.pow(bt,0.55))*(1-0.82*beam);
           var w=s.lag;
           bx=Math.cos(p.ba)*p.bd*out*(0.18+w);
           by=Math.sin(p.ba)*p.bd*out*(0.18+w);
-          scl*=1-(0.14+0.5*w)*Math.sin(Math.PI*Math.pow(bt,0.8));
-          if(w>0.25)p.n.style.opacity=String(1-0.92*out);
+          /* ⚠️ DAMPED BY beam TOO. Scaling only the travel and the opacity left
+             this line at full strength, and it is the one that actually removes
+             the caret: measured, the bar still lost half its height on a click
+             (20.5px down to 8.9px) while the other two were already suppressed. */
+          scl*=1-(0.14+0.5*w)*(1-0.86*beam)*Math.sin(Math.PI*Math.pow(bt,0.8));
+          if(w>0.25)p.n.style.opacity=String(1-(0.92-0.74*beam)*out);
         }else if(p.n.style.opacity!==''){p.n.style.opacity='';}
+        var eq=1+beam*(RBEAM/s.R-1);
         p.n.style.transform='translate('+(p.x-ox+bx).toFixed(1)+'px,'
-          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx).toFixed(3)+','
-          +(scl*sy).toFixed(3)+')';
+          +(p.y-oy+by).toFixed(1)+'px) scale('+(scl*sx*eq).toFixed(3)+','
+          +(scl*sy*eq).toFixed(3)+')';
       }
 
       /* ⚠️ NO IDLE FADE-OUT WHILE THIS IS THE POINTER. An earlier version faded the
@@ -5097,7 +5163,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
      anchored to an element that has moved is worse than no hint: it points at
      the wrong control with total confidence. */
   (function(){
-    var host=null,tipEl=null,showT=0,cur=null;
+    var tipEl=null,showT=0,cur=null,pending=null;
     function build(){
       if(tipEl)return tipEl;
       tipEl=el('div','tipx');
@@ -5129,15 +5195,33 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     }
     function hide(){
       clearTimeout(showT);
-      cur=null;
+      cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
     }
+    /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
+       the wrong lever — it just makes the wanted case feel broken too. The
+       trigger is a pointer that has COME TO REST on a control; a pointer still
+       travelling across one is passing through. So the timer checks that the
+       pointer has actually stopped and reschedules itself if it has not,
+       which is what turns "hovered for 420ms" into "settled here". */
+    var lastMove=0,lastX=-1e4,lastY=-1e4;
+    if(fine)addEventListener('pointermove',function(e){
+      lastMove=performance.now();lastX=e.clientX;lastY=e.clientY;
+    },{passive:true,capture:true});
+    /* ⚠️ pending IS NOT A TIDY-UP. Without it, every pointerover on a CHILD of
+       the trigger restarted the timer, so crossing a button's icon and then its
+       label reset the wait twice and the hint could take three delays to arrive
+       — or never, on a control with several children. Re-asking for the node
+       that is already queued is a no-op now. */
     function want(node,delay){
-      if(!node||node===cur)return;
+      if(!node||node===cur||node===pending)return;
+      pending=node;
       clearTimeout(showT);
-      /* a delay, so sweeping the pointer across a row of controls does not
-         strobe a capsule at every one of them */
-      showT=setTimeout(function(){ place(node); },delay);
+      showT=setTimeout(function fire(){
+        if(fine&&performance.now()-lastMove<130){ showT=setTimeout(fire,130); return; }
+        pending=null;
+        place(node);
+      },delay);
     }
     function tipOf(e){
       var n=e.target;
@@ -5148,12 +5232,37 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         if(e.pointerType==='touch')return;
         var n=tipOf(e);
         if(!n){ if(cur)hide(); return; }
-        want(n,190);
+        /* 700ms, not the 190 this started at and not the 420 that followed.
+           Reported as naggy at both: a hint that arrives while you are still
+           deciding whether you wanted it reads as an interruption, and the
+           delay is what separates a nudge from a nag. Paired with the settle
+           check below, which is the half that stops sweep-through triggers —
+           raising the delay alone would only have made the WANTED case feel
+           broken too. */
+        want(n,700);
       },true);
+      /* ⚠️ pointerout FIRES ON EVERY INTERNAL BOUNDARY, and reading it as "the
+         pointer left" is what made the hint strobe across a single button —
+         reported 2026-08-03 16:40 EDT with a recording of it appearing and
+         vanishing three times inside the Source capsule. Moving from .ghb-ic to
+         .ghb-t is a pointerout on the icon whose target still resolves to the
+         same trigger, so the old check hid it and pointerover then queued it
+         again. relatedTarget is the element being entered: if it is still
+         inside the same trigger, nothing has been left. */
       document.addEventListener('pointerout',function(e){
         var n=tipOf(e);
-        if(n&&n===cur)hide();
-        else if(!n)hide();
+        if(!n)return;
+        var to=e.relatedTarget;
+        if(to&&n.contains(to))return;
+        /* ⚠️ relatedTarget IS NOT ENOUGH ON A CONTROL THAT RESIZES. .ghb grows
+           from 32px to its full width over 420ms on hover, so a pointer that
+           has not moved can fall outside the box for a frame and come back —
+           pointerout fires with relatedTarget outside, and the hint hid and
+           re-queued. Ask the geometry instead: if the pointer is still within
+           the trigger's current rect, nothing has been left. */
+        var r=n.getBoundingClientRect();
+        if(lastX>=r.left-1&&lastX<=r.right+1&&lastY>=r.top-1&&lastY<=r.bottom+1)return;
+        hide();
       },true);
     }
     document.addEventListener('focusin',function(e){
