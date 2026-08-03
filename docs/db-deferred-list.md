@@ -610,6 +610,34 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       only if it has a real border or background. Verified across all eight surfaces at once by
       calling the resolver directly rather than hit-testing, after two earlier probes failed for
       positional reasons and not logical ones.
+    - ✅ **ROUND 4, 2026-08-03 11:27 EDT — eight more. Three findings are reusable:**
+      · **A shape smaller than ~4× the blur's σ cannot keep its own geometry — the crush owns the
+      silhouette.** The resting mark would not read as a rectangle at ANY radius, because a 14×6.5 box
+      meets `#dbgoo-r`'s σ=3.2 blur (half its own height) and the alpha crush then thresholds what
+      survives. Nothing about the radius was wrong; it was being destroyed downstream. Fixed by
+      drawing the resting shape as **`.rv-plate`, a plain UNFILTERED element**, which hands over to
+      the filtered mark on wake — which is what "breaks away from the rectangle" actually means.
+      · **A ring of similar masses around a perimeter is a CLOUD, by construction.** Many convex bumps
+      of similar size is what a cloud *is*, and that is exactly how it was read. A body of liquid has
+      long smooth runs and a couple of gentle waists, so the silhouette must come from a FEW large
+      overlapping masses of UNEQUAL size, where most of the boundary is one mass's arc. **Count
+      creates cloudiness; asymmetry creates character.** Ring, end caps and spine are all gone —
+      three masses, no interior fill needed.
+      · **Use ELLIPSES on a wide surface.** Covering a 3.6:1 panel's CORNERS with circles forces a
+      radius so large the body overshot by 40–73px a side (measured). Ellipses matched to the panel's
+      aspect cover the same copy at ~33/31/17/23px. And **derive rx/ry from where the COPY ends, not
+      from the panel box**: two conditions must hold at the copy's top edge, where the ellipses are
+      narrowest — neighbours must still overlap there, and the outermost must still reach the first
+      character. Both are solved for. Verified 0 uncovered points of 546 sampled, repeatedly.
+      · Also: arc-length seating **cannot be trusted to reach a path's extremes** (a flattened path's
+      side segments have zero length, so the extremes survive only as ~4px arcs — 25px of a 553px
+      perimeter — and evenly-spaced masses skipped them, leaving the body 5.6px *inside* the panel's
+      left edge). Superseded by the three-ellipse layout, but the lesson stands for any future path
+      seating. The `slide` is outward-only; the copy is tied to `fill` with **no floor** so the last
+      mass and the last of the text go together; the mark **drains into the body** leaving a 6.5×5.5
+      remnant; open takes 1100ms; mark rates ×0.7; label reads **"Hide"** and "Prefer email?" takes a
+      **strike-through** while open. PoC 05 went 14 small fast masses → 6 large slow ones, because
+      many small masses on independent clocks is *boiling*, not morphing.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
