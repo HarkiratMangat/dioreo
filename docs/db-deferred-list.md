@@ -464,8 +464,42 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   nav.** *Filed 2026-08-01 22:05 EDT, from the same pass.* His words: "I also want to sprinkle our
   fluid morphing animation/system to some other elements in the website so it doesn't feel like a
   standalone design choice. Idk where but if we get an opportunity, let me know." So the deliverable is
-  first a **shortlist of candidate surfaces with a recommendation**, not an implementation. Bundles
-  naturally with the scrollspy item above, which is the most obvious candidate surface.
+  first a **shortlist of candidate surfaces with a recommendation**, not an implementation.
+  ⛔ **THE SCROLLSPY IS RULED OUT AS A MORPH TARGET — Harkirat, 2026-08-02 23:40 EDT:** *"no dont use
+  the morph for the scrollspy, i plan to make you properly dehaul/redesign that scrollspy in the
+  future anyway."* This item used to say it "bundles naturally with the scrollspy item above, which is
+  the most obvious candidate surface"; that is now **false** and the bundle is broken. The scrollspy
+  redesign above stands entirely on its own.
+  ---
+  🔴 **STATUS 2026-08-03 08:29 EDT — THREE DESIGNS BUILT, ALL THREE REJECTED. Read this before
+  proposing a fourth.** Work happened in a PoC artifact that clones the real landing page (built by
+  `local/`-side scratch files, never committed; the repo carries none of it, and `stash@{0}` is a
+  first-draft generator version that is now three designs stale — **drop it, do not pop it**).
+  - **Rejected — 7px travelling bar.** *"the bar and the morph feel like 2 different elements stacked
+    on top of each other instead of 1 build morph."* A sliver has almost no area, so the crush paints
+    it as a hard stick and the droplets beside it read as a separate particle layer.
+  - **Rejected — 40px capsule carrying the row number.** *"arguably worse and a very lazy attempt at
+    utilizing the animation. its not creative at all."* Bar→capsule is the same idea twice: **a blob
+    that translates between slots**, which is what the nav already does. Translation is spoken for.
+  - **Rejected — the row hairline as nine overlapping segments that bead apart and ripple.**
+    *"SOOO unrefined and choppy. the complete opposite of fluid morph."* The IDEA was sound (fission/
+    fusion rather than translation) but the MEDIUM cannot carry it, and that is the reusable finding:
+    it was N rigid rectangles translating on staggered delays with a blur asked to hide that they are
+    rigid. It cannot. Overlapping them fixes the seam at rest and is worse in motion.
+  - ✅ **What DID work and should survive into any next attempt:** the **reveal-toggle fission** (one
+    blob splits into two as the disclosure opens, bridge thinning 9px→0 as the halves reach ±13px,
+    re-merging on close) and the **back-to-top coalescence + click burst**. Both verified in-browser.
+  - 📐 **The rule this settled, now recorded as a case in `reference_goo_metaball_recipe`:** DOM boxes
+    + `#dbgoo` can do **2–4 compact masses merging and parting at short range**; they **cannot** do a
+    body of liquid deforming, a line breaking into a wave, or anything spanning hundreds of px. That
+    needs the isosurface computed per frame — a canvas scalar field or a per-frame SVG path.
+    **Ask which of the two kinds a candidate surface is before designing for it.** All three rejects
+    were the second kind attempted with the first kind's tools.
+  - **Next decision (Harkirat's, not a build task):** accept the medium's ceiling and use the effect
+    only where a few masses merge at close range, **or** move to a canvas metaball field for anything
+    meant to read as actual liquid. Verify any future attempt the way these were: drive the animation
+    from the console and assert the *shape* changes frame to frame (neck width crossing the 4.5px
+    paint floor, per-move re-rolled randomisation), never by eye alone.
   ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
   SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately
   (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a
