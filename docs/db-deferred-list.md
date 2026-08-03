@@ -686,6 +686,31 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       · **Still filtered, so still wrong on iOS:** the mark's buds and the button PoC. They are hidden
       on touch rather than ported to the CSS crush — porting them needs the bed + blend recipe
       (opaque backdrop, `lighten`/`multiply`), which is a separate job.
+    - ✅ **ROUND 6, 2026-08-03 11:58 EDT — four fixes, and one of them is a process lesson.**
+      · **"Too smooth / no dynamic element" was the RATES, not the amplitudes.** The harmonics ran at
+      0.33–0.73 rad/s — 9 to 19 SECONDS for one circuit — so in any glance the outline was effectively
+      static (measured: 4.3px of vertex travel over 10 frames). At ~2.4× it is 14.3px/s and 19.5px
+      over 2s, with the four waves beating against each other because no two rates share a factor.
+      · **"Overly large" was the EXPONENT.** Covering a wide panel's corners is what drives overshoot,
+      and the superellipse exponent controls exactly that: at n=4 the contour needed A=198 against a
+      182 half-width; at n≈5 it needs 184. Margins went 41/18/22/29 → 15/12/6/7. **Raising n is free
+      — a squircle still reads smooth.** A second lever: making the harmonics **outward-only** removes
+      the ~13% inflation that existed purely so the smallest moment still cleared the text.
+      · **"The mark doesn't change on mobile" was MY OWN GUARD, and it is the lesson.** I had gated the
+      mark behind `fine` because its filtered buds render as hard circles on iOS. That hid the broken
+      layer *and* every awake state with it — the mark simply stayed a rectangle forever. ⚠️ **Hiding
+      a surface from the platform that cannot render it is not a fix.** The mark is now a computed
+      path like the body, so nothing under `.rev` is filtered and touch gets exactly what desktop
+      gets. `#dbgoo-r` is deleted; do not re-add it.
+      · **Same mistake, same fix, on the back-to-top:** the earlier pass skipped the whole coalescence
+      on a coarse pointer, which quietly removed the particle animation from mobile. Now only the
+      FILTER is dropped there (`.totop.nogoo`), so the droplets still converge — crisp rather than
+      liquid, an honest downgrade, but a real animation that cannot produce the artefact.
+      · **The stuck "gradient circle" was the filter REGION.** `#dbgoo-c` is 260% of a 44px layer —
+      a ~114px disc, which is the size of the thing that was showing. `opacity:0` does not prevent
+      that: the element is still in the paint tree and a filtered one still allocates its region.
+      `.tt-ink` now carries `visibility:hidden` between births. Verified nothing paints for 2.5s after
+      a tap, with the filter off.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
