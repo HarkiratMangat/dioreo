@@ -113,6 +113,18 @@ a "explicit foreign TZ is skipped"  pre "deny:" no  "The run finished $FUTSTAMP 
 a "explicit LOCAL tz still denied"  pre "deny:" yes "Measured $FUTSTAMP $LOCALTZ during the run."
 a "no timezone at all still denied" pre "deny:" yes "Measured $FUTSTAMP during the run."
 
+echo "  -- placeholder time: a date paired with a fake HH:MM (2026-08-03 mishap) --"
+# The actual incident: a real date, but "xx" standing in for the minute, meant to be filled in later.
+a "'HH:xx' placeholder denied"      pre "deny:"        yes "root-caused live $TODAY 18:xx EDT the glitch"
+a "'XX:XX' placeholder denied"      pre "deny:"        yes "filed $TODAY XX:XX EDT for review"
+a "'??:??' placeholder denied"      pre "deny:"        yes "queued $TODAY ??:?? EDT pending confirmation"
+a "a REAL timestamp is not caught"  pre "deny:"        no  "filed $TODAY 18:13 EDT for review"
+# The project's own literal format spec must never be flagged as a fake instance -- h/H is
+# deliberately excluded from the placeholder character set for exactly this reason.
+a "'HH:MM' format spec not caught" pre "deny:"        no  "dated content carries YYYY-MM-DD HH:MM TZ"
+a "TS-EXAMPLE placeholder exempt"   pre "deny:"        no  "example: $TODAY 18:xx EDT (TS-EXAMPLE)"
+a "placeholder reported in post"    post "PLACEHOLDER" yes "root-caused live $TODAY 18:xx EDT the glitch"
+
 echo "  -- the line-wrap false positive (defect 4) --"
 # A timestamp split across a wrapped comment must NOT read as a bare date. This is verbatim the
 # shape that fired while writing main-push-guard.test.sh.
