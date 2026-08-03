@@ -711,6 +711,19 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
       that: the element is still in the paint tree and a filtered one still allocates its region.
       `.tt-ink` now carries `visibility:hidden` between births. Verified nothing paints for 2.5s after
       a tap, with the filter off.
+    - ⛔ **THE CSS CRUSH DOES NOT TRANSFER TO THE BACK-TO-TOP — built, measured, reverted
+      2026-08-03 12:03 EDT. Do not re-attempt without reading this.** Two rounds of notes here said
+      "the full fix is the CSS blur/contrast crush with the bed + blend recipe, a separate job". It
+      was built. **The masses merged correctly — the crush is fine — and the black bed rendered as a
+      solid square.** The recipe's precondition is an opaque backdrop with *no isolating ancestor*
+      between the blend group and it; `.totop` is `position:fixed; z-index:55`, so it is its own
+      stacking context and `mix-blend-mode:lighten` composites inside it, against a background that
+      `.birth` sets transparent. Black against nothing stays black. Nor can it be patched by giving
+      the button an opaque background: the bed is inset −90px, far outside a 46px control.
+      **The nav works because it sits ON a bar; a floating control has no surface to sit on.** The
+      recipe memory's "no scroll container between it and that backdrop" was too narrow and has been
+      corrected. Coarse pointers therefore keep the unfiltered droplets — crisp circles converging,
+      an honest downgrade chosen over the iOS artefact and over removing the animation entirely.
     - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
       tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
       extra temporary shards that fly further and evaporate, plus a core implosion that springs back
