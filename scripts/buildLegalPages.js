@@ -510,7 +510,7 @@ function parseBlocks(md) {
             out.push(
                 `<h${lvl} id="${id}" class="${num ? 'numbered' : 'plain'}">${chip}` +
                 `<span class="ht">${inline(text)}</span>` +
-                `<a class="anchor" href="#${id}" aria-label="Link to this section">¶</a></h${lvl}>`
+                `<a class="anchor" href="#${id}" data-tip="Link to this section" aria-label="Link to this section">¶</a></h${lvl}>`
             );
             i++; continue;
         }
@@ -671,7 +671,7 @@ function parsePlainLegal(txt) {
                 out.push(
                     `<h2 id="${id}" class="${num ? 'numbered' : 'plain'}">${chip}` +
                     `<span class="ht">${inlineText(text)}</span>` +
-                    `<a class="anchor" href="#${id}" aria-label="Link to this section">¶</a></h2>`
+                    `<a class="anchor" href="#${id}" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>`
                 );
                 i = j + 1;
                 continue;
@@ -715,7 +715,7 @@ function parsePlainLegal(txt) {
                 // document text as the literal token "8203", because tag-stripping
                 // leaves numeric entities behind. `h3.clause .ht:empty` hides it.
                 `<span class="ht">${titleTxt ? inlineText(titleTxt) : ''}</span>` +
-                `<a class="anchor" href="#${id}" aria-label="Link to this section">¶</a></h3>`
+                `<a class="anchor" href="#${id}" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>`
             );
             i++;
 
@@ -1133,6 +1133,7 @@ const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path f
 // data-spot opts the control into the cursor-tracked highlight in THEME_JS.
 const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INSTALL_URL}"
   target="_blank" rel="noopener noreferrer" data-spot
+  data-tip="Add the bot to your Discord account"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
@@ -1179,7 +1180,7 @@ const wordmark = (href, cur) => {
 // not a defective legal instrument. TERMS §20 still deliberately withholds the
 // repo as a *contact* route, which this does not change.
 const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"
-  data-spot title="View the source on GitHub">
+  data-spot data-tip="View the source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>`;
@@ -1198,7 +1199,8 @@ const repoBtn = `<a class="ghb" href="${REPO_URL}" target="_blank" rel="noopener
  * control with a state, and a bare <button> would announce neither.
  */
 const themeBtn = (cls = '') => `<button id="th" class="thm ${cls}" role="switch"
-  aria-checked="false" aria-label="Switch between light and dark">
+  aria-checked="false" data-tip="Switch light and dark"
+  aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1334,9 +1336,10 @@ const navGroups = (cur, i0 = 0) => navSetFor(cur).map((grp, gi) => {
     const first = grp[0];
     return `<div class="seg" data-at="${at}" data-label="${esc(navLabelFor(gi))}">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="${hrefTo(first, cur || first)}">${esc(navLabelFor(gi))}</a>
+      <a class="segchip" href="${hrefTo(first, cur || first)}"
+        data-tip="${esc(navLabelFor(gi))} pages">${esc(navLabelFor(gi))}</a>
       ${grp.map(p => `<a class="tab${isHere(p, cur) ? ' on' : ''}" href="${hrefTo(p, cur || p)}"` +
-        ` data-accent="${p.accent}"` +
+        ` data-accent="${p.accent}" data-tip="${esc(p.blurb || p.title)}"` +
         `${isHere(p, cur) ? ' aria-current="page"' : ''}>${esc(p.short)}</a>`).join('')}
     </div>`;
 }).join('<span class="seg-gap" aria-hidden="true"></span>');
@@ -2227,6 +2230,54 @@ html.liq,html.liq *{cursor:none !important}
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.hrt{animation:none}}
+
+/* ── the hint ─────────────────────────────────────────────────────────────
+   Replaces the native title= tooltip, which the OS draws in its own font, in
+   its own colours, after its own delay, with no way to match anything around
+   it. One control had one; the rest announced themselves only to screen
+   readers.
+
+   ⚠️ IT IS DECORATIVE, aria-hidden, AND THAT IS DELIBERATE. Every control it
+   describes already carries its own accessible name (aria-label, or visible
+   text). Wiring aria-describedby to this as well would make a screen reader
+   read most of them twice. The hint adds nothing for assistive tech and
+   everything for a sighted pointer, so it is scoped to exactly that.
+
+   ⚠️ NO :hover RULE. It is driven by a class from MORPH_JS, because the thing
+   that positions it has to measure the trigger anyway, and a CSS-only tooltip
+   cannot flip off a viewport edge. That also keeps it out of guardCss's way.
+
+   It is a capsule rather than the legal family's squared card on purpose: it
+   floats over every one of the three page families, and the one shape all
+   three already share is the pill in their own nav. The accent dot is what
+   ties it to the page it is on — the type is deliberately neutral so the
+   colour is the only thing that changes between pages. */
+.tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
+  display:flex;align-items:center;gap:.42rem;
+  max-width:min(72vw,22rem);
+  font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
+  letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink);background:var(--card);
+  border:1px solid var(--rule2);border-radius:999px;
+  padding:.42rem .68rem .42rem .58rem;
+  box-shadow:0 10px 26px -14px rgba(0,0,0,.75),
+    0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent);
+  opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
+.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+/* wraps onto a second line rather than running off a phone-width viewport */
+.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}
+/* below the trigger instead of above it, when there is no room above */
+.tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
+.tipx.under.on{transform:translate(-50%,0) scale(1)}
+@media (prefers-reduced-motion:reduce){
+  .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
+  .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
+}
+@media print{.tipx{display:none!important}}
 `;
 
 // One implementation, used by both templates. `aria-checked` is kept in step with
@@ -4268,7 +4319,7 @@ ${mobileNav(cur, slots)}
 <!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
      transform or backdrop-filter, which is exactly what once anchored a fixed
      control to the 54px bar instead of the viewport, so this sits outside .page. -->
-<button class="totop" id="totop" aria-label="Back to top">
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -4682,7 +4733,7 @@ function withCopyButtons(html) {
                first build. An icon-only control is the convention for a code block
                anyway; the accessible name comes from aria-label and the result is
                announced through the live region beside it. */
-            + '<button class="cpy cpy-f" type="button" aria-label="Copy code" data-copy="' + id + '">'
+            + '<button class="cpy cpy-f" type="button" data-tip="Copy this block" aria-label="Copy code" data-copy="' + id + '">'
             + '<span class="cpy-g" aria-hidden="true"></span></button>'
             + '<span class="cpy-s" role="status" aria-live="polite"></span></div>';
     });
@@ -5276,12 +5327,45 @@ const MORPH_JS = `
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
        not free, and the shape and the colour both want the same element. */
+    /* ⚠️ A PARAGRAPH'S BOX IS NOT ITS TEXT, and treating them as the same thing
+       is what put the I-beam on half the page. A <p> is a block: it spans the
+       full measure, so its box covers the ragged right of every line and the
+       whole width below the last one. closest('p') therefore said "text" while
+       the pointer sat in open space several centimetres from a glyph — reported
+       2026-08-03 16:21 EDT with a screenshot of exactly that.
+       The caret is the honest test. caretRangeFromPoint snaps to the nearest
+       insertion point, so its rect sits AT the end of a short line while the
+       pointer is out in the margin; requiring the pointer to be within a glyph's
+       width of it turns "inside the block" into "on the writing". 14px is about
+       one character at body size, which keeps the beam from flickering off in
+       the gaps between words. */
+    function onGlyphs(x,y){
+      var r=null,rg,cp;
+      if(document.caretRangeFromPoint){
+        rg=document.caretRangeFromPoint(x,y);
+        if(rg)r=rg.getBoundingClientRect();
+      }else if(document.caretPositionFromPoint){
+        cp=document.caretPositionFromPoint(x,y);
+        if(cp&&cp.offsetNode){
+          rg=document.createRange();
+          rg.setStart(cp.offsetNode,cp.offset);
+          rg.collapse(true);
+          r=rg.getBoundingClientRect();
+        }
+      }
+      /* No caret API, or a caret with no box: fall back to the old behaviour
+         rather than losing the I-beam entirely. */
+      if(!r)return true;
+      if(!r.width&&!r.height)return true;
+      return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
+    }
     function probe(){
       var e=document.elementFromPoint(cx,cy);
       if(!e)return;
       shapeFor(
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
-        :e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')?'text':'idle');
+        :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
+          &&onGlyphs(cx,cy))?'text':'idle');
       /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
@@ -5790,6 +5874,95 @@ const MORPH_JS = `
          near the bar pays nothing for this after the pointer leaves */
       raf = live ? requestAnimationFrame(tick) : 0;
     }
+  })();
+
+  /* ══ 6 · the hint ═══════════════════════════════════════════════════════
+     One floating capsule, reused, positioned over whatever [data-tip] the
+     pointer or the keyboard is on. It replaces the native title= tooltip, which
+     drew in the OS's font after the OS's delay and could not be styled at all.
+
+     ⚠️ A CONTROL MUST NOT CARRY BOTH title= AND data-tip — the browser would
+     draw its own tooltip underneath this one. The repo button had the only
+     title on the site and it was removed in the same change.
+
+     ⚠️ POINTER TRIGGERS ARE GATED ON fine, FOCUS TRIGGERS ARE NOT. On a touch
+     screen pointerenter fires on tap, so an ungated hint would flash on every
+     link a thumb touches, one frame before the page navigates away. Keyboard
+     focus is a real request to know what something is on any device, so
+     focusin/focusout stay live.
+
+     ⚠️ It hides on scroll, on wheel and on click. A position:fixed capsule
+     anchored to an element that has moved is worse than no hint: it points at
+     the wrong control with total confidence. */
+  (function(){
+    var host=null,tipEl=null,showT=0,cur=null;
+    function build(){
+      if(tipEl)return tipEl;
+      tipEl=el('div','tipx');
+      tipEl.setAttribute('aria-hidden','true');
+      var t=el('span','tipx-t');
+      tipEl.appendChild(t);
+      document.body.appendChild(tipEl);
+      return tipEl;
+    }
+    function place(node){
+      var tip=build();
+      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      /* measured with the class off, so the transform is not folded into the
+         box the arithmetic is done against */
+      tip.classList.remove('on');
+      var r=node.getBoundingClientRect(), tr=tip.getBoundingClientRect();
+      var GAP=10, under=r.top-tr.height-GAP<6;
+      tip.classList.toggle('under',under);
+      var y=under?r.bottom+GAP:r.top-tr.height-GAP;
+      /* clamped so a control at the edge of the bar does not push it off screen;
+         the capsule is centre-anchored, hence the half-width either side */
+      var half=tr.width/2, x=r.left+r.width/2;
+      if(x-half<8)x=8+half;
+      if(x+half>innerWidth-8)x=innerWidth-8-half;
+      tip.style.left=x.toFixed(1)+'px';
+      tip.style.top=Math.max(6,y).toFixed(1)+'px';
+      tip.classList.add('on');
+      cur=node;
+    }
+    function hide(){
+      clearTimeout(showT);
+      cur=null;
+      if(tipEl)tipEl.classList.remove('on');
+    }
+    function want(node,delay){
+      if(!node||node===cur)return;
+      clearTimeout(showT);
+      /* a delay, so sweeping the pointer across a row of controls does not
+         strobe a capsule at every one of them */
+      showT=setTimeout(function(){ place(node); },delay);
+    }
+    function tipOf(e){
+      var n=e.target;
+      return n&&n.closest?n.closest('[data-tip]'):null;
+    }
+    if(fine){
+      document.addEventListener('pointerover',function(e){
+        if(e.pointerType==='touch')return;
+        var n=tipOf(e);
+        if(!n){ if(cur)hide(); return; }
+        want(n,190);
+      },true);
+      document.addEventListener('pointerout',function(e){
+        var n=tipOf(e);
+        if(n&&n===cur)hide();
+        else if(!n)hide();
+      },true);
+    }
+    document.addEventListener('focusin',function(e){
+      var n=tipOf(e);
+      if(n)want(n,0); else hide();
+    },true);
+    document.addEventListener('focusout',hide,true);
+    addEventListener('scroll',hide,{passive:true,capture:true});
+    addEventListener('wheel',hide,{passive:true});
+    addEventListener('click',hide,true);
+    addEventListener('blur',hide);
   })();
 })();`;
 

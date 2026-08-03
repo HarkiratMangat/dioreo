@@ -858,7 +858,55 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-@media (prefers-reduced-motion:reduce){.hrt{animation:none}}/* ── top bar ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}/* ── the hint ─────────────────────────────────────────────────────────────
+   Replaces the native title= tooltip, which the OS draws in its own font, in
+   its own colours, after its own delay, with no way to match anything around
+   it. One control had one; the rest announced themselves only to screen
+   readers.
+
+   ⚠️ IT IS DECORATIVE, aria-hidden, AND THAT IS DELIBERATE. Every control it
+   describes already carries its own accessible name (aria-label, or visible
+   text). Wiring aria-describedby to this as well would make a screen reader
+   read most of them twice. The hint adds nothing for assistive tech and
+   everything for a sighted pointer, so it is scoped to exactly that.
+
+   ⚠️ NO :hover RULE. It is driven by a class from MORPH_JS, because the thing
+   that positions it has to measure the trigger anyway, and a CSS-only tooltip
+   cannot flip off a viewport edge. That also keeps it out of guardCss's way.
+
+   It is a capsule rather than the legal family's squared card on purpose: it
+   floats over every one of the three page families, and the one shape all
+   three already share is the pill in their own nav. The accent dot is what
+   ties it to the page it is on — the type is deliberately neutral so the
+   colour is the only thing that changes between pages. */
+
+
+.tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
+  display:flex;align-items:center;gap:.42rem;
+  max-width:min(72vw,22rem);
+  font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
+  letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink);background:var(--card);
+  border:1px solid var(--rule2);border-radius:999px;
+  padding:.42rem .68rem .42rem .58rem;
+  box-shadow:0 10px 26px -14px rgba(0,0,0,.75),
+    0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent);
+  opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
+.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}/* wraps onto a second line rather than running off a phone-width viewport */
+
+.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
+
+.tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
+.tipx.under.on{transform:translate(-50%,0) scale(1)}
+@media (prefers-reduced-motion:reduce){
+  .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
+  .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
+}
+@media print{.tipx{display:none!important}}/* ── top bar ─────────────────────────────────────────────────────── */
 
 
 
@@ -1806,20 +1854,23 @@ html{scroll-behavior:smooth}
   <nav>
     <div class="navwrap" data-fit="6"><div class="seg" data-at="3" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./terms.html">Documents</a>
-      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab on" href="./notice.html" data-accent="#FF5264" aria-current="page">Notice</a>
+      <a class="segchip" href="./terms.html"
+        data-tip="Documents pages">Documents</a>
+      <a class="tab" href="./terms.html" data-accent="#F2994A" data-tip="What the bot does, what you agree to, and the limits of what we promise.">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2" data-tip="Every field stored about you, where it lives, and how to have it deleted.">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3" data-tip="Read it, study it, run it on your own machine. Source-available, not open source.">License</a><a class="tab on" href="./notice.html" data-accent="#FF5264" data-tip="Every dependency and its licence, the marks that are not ours, and where AI helped." aria-current="page">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./contributing.html">Community</a>
-      <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
+      <a class="segchip" href="./contributing.html"
+        data-tip="Community pages">Community</a>
+      <a class="tab" href="./contributing.html" data-accent="#8B9BFF" data-tip="How to report a bug, send a fix, and what the CLA actually asks of you.">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A" data-tip="Who helped build this, and how credit works. Bug reports count.">Contributors</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot title="View the source on GitHub">
+  data-spot data-tip="View the source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
+  data-tip="Add the bot to your Discord account"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1827,7 +1878,8 @@ html{scroll-behavior:smooth}
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" aria-label="Switch between light and dark">
+  aria-checked="false" data-tip="Switch light and dark"
+  aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1922,7 +1974,7 @@ html{scroll-behavior:smooth}
 <p>This file records (1) the third-party software Dior's Builds depends on and the licenses that govern it, (2) third-party trademarks referenced by the project, and (3) a disclosure of AI assistance in authoring the project.</p>
 <p>This file is required reading alongside LICENSE. Nothing in LICENSE restricts, enlarges, or otherwise varies your rights in any third-party component listed below — those components are licensed to you by their own licensors, on their own terms.</p>
 <section class="dsec">
-<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DIRECT DEPENDENCIES</span><a class="anchor" href="#s-1" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DIRECT DEPENDENCIES</span><a class="anchor" href="#s-1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>Runtime dependencies, as declared in package.json:</p>
 <pre class="aligned">chrono-node 2.9.1              MIT
                                Copyright (c) Wanasit Tanakitrungruang
@@ -1977,7 +2029,7 @@ html{scroll-behavior:smooth}
 <p>The SIL OFL requires that the fonts be distributed with this notice and that they not be sold on their own; neither is affected by how they are used here. Both fonts are served as subset .woff2 files, unmodified.</p>
 </section>
 <section class="dsec">
-<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">APACHE LICENSE 2.0 OBLIGATIONS</span><a class="anchor" href="#s-2" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">APACHE LICENSE 2.0 OBLIGATIONS</span><a class="anchor" href="#s-2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>discord.js and xlsx are licensed under the Apache License, Version 2.0. If you redistribute this project or any work containing those components, Apache-2.0 <a class="xref" href="#s-4">§4</a> requires you to:</p>
 <ul class="lettered"><li>(a) give recipients a copy of the Apache License 2.0;</li><li>(b) retain all copyright, patent, trademark, and attribution notices;</li><li>(c) state prominently that you changed any Apache-licensed file, if you did; and</li><li>(d) include the contents of any NOTICE file distributed with those works.</li></ul>
 <p>The full Apache License 2.0 text is available at:</p>
@@ -1986,7 +2038,7 @@ html{scroll-behavior:smooth}
 <p>Note that LICENSE §4.2 prohibits you from redistributing Dior's Builds in any event. This section exists because the obligation attaches to the upstream components independently of what the Licensor permits, and because a GitHub fork places a copy in your hands.</p>
 </section>
 <section class="dsec">
-<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">TRANSITIVE DEPENDENCIES</span><a class="anchor" href="#s-3" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">TRANSITIVE DEPENDENCIES</span><a class="anchor" href="#s-3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>The installed dependency tree resolves to 127 top-level packages under node_modules/, distributed across these licenses:</p>
 <pre class="aligned">90   MIT
 19   Apache-2.0
@@ -2002,7 +2054,7 @@ html{scroll-behavior:smooth}
 <p class="sub">Counts measured 2026-07-28 21:36 EDT against the committed package-lock.json. They will drift as dependencies change; regenerate rather than trusting the numbers above. Authoritative per-package license text lives in each package's own directory under node_modules/.</p>
 </section>
 <section class="dsec">
-<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PLATFORM AND SERVICE PROVIDERS</span><a class="anchor" href="#s-4" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PLATFORM AND SERVICE PROVIDERS</span><a class="anchor" href="#s-4" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>Dior's Builds interoperates with, and depends on, services operated by third parties. Their terms govern their services, not this LICENSE.</p>
 <pre class="aligned">Discord                Discord Inc.            <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">https://discord.com/terms</a>
 GitHub                 GitHub, Inc.            <a href="https://docs.github.com/site-policy" target="_blank" rel="noopener noreferrer">https://docs.github.com/site-policy</a>
@@ -2023,8 +2075,8 @@ FFmpeg                 FFmpeg team             <a href="https://ffmpeg.org" targ
                        as a separate process, never linked or redistributed)</pre>
 </section>
 <section class="dsec">
-<h2 id="s-4a" class="numbered"><span class="idx" aria-hidden="true">4A</span><span class="ht">THIRD-PARTY CREATIVE ASSETS</span><a class="anchor" href="#s-4a" aria-label="Link to this section">¶</a></h2>
-<h3 id="s-4a.1" class="clause"><span class="idx" aria-hidden="true">4A.1</span><span class="ht">EMOJI</span><a class="anchor" href="#s-4a.1" aria-label="Link to this section">¶</a></h3>
+<h2 id="s-4a" class="numbered"><span class="idx" aria-hidden="true">4A</span><span class="ht">THIRD-PARTY CREATIVE ASSETS</span><a class="anchor" href="#s-4a" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-4a.1" class="clause"><span class="idx" aria-hidden="true">4A.1</span><span class="ht">EMOJI</span><a class="anchor" href="#s-4a.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 
 <p>Some custom emoji used in the Bot's interface were created by third-party artists and obtained through emoji.gg. With thanks:</p>
 <pre class="block">tofooo                      <a href="https://emoji.gg/user/tofooo" target="_blank" rel="noopener noreferrer">https://emoji.gg/user/tofooo</a></pre>
@@ -2034,12 +2086,12 @@ any other platform where the user is not charged for access to the emoji."</pre>
 <p>The Bot satisfies this: it is distributed free of charge, has no paid tier, no subscription, and no in-app purchase, so no user is ever charged for access to these emoji. The Licensor additionally credits the creator (not strictly required by the Basic License, but given regardless), claims no ownership, and does not redistribute them as standalone assets. See emoji.gg's terms (<a href="https://emoji.gg/terms" target="_blank" rel="noopener noreferrer">https://emoji.gg/terms</a>) and license reference (<a href="https://emoji.gg/licenses" target="_blank" rel="noopener noreferrer">https://emoji.gg/licenses</a>).</p>
 <p class="sub">&gt;&gt; STANDING CONSTRAINT — READ BEFORE MONETISING. The Basic License is &gt;&gt; conditional on users not being charged for access. If the Bot ever &gt;&gt; introduces a paid tier, subscription, or any paywall, the license no longer &gt;&gt; covers this use and these emoji MUST be replaced or separately licensed &gt;&gt; first. This is a real limit on the project's commercial options, not a &gt;&gt; formality. It is cross-referenced in TERMS.md §4.2 (the Bot is free).</p>
 <p>Creators whose work appears here and who want different attribution, or removal, should email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
-<h3 id="s-4a.2" class="clause"><span class="idx" aria-hidden="true">4A.2</span><span class="ht">OTHER VISUAL MATERIAL</span><a class="anchor" href="#s-4a.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-4a.2" class="clause"><span class="idx" aria-hidden="true">4A.2</span><span class="ht">OTHER VISUAL MATERIAL</span><a class="anchor" href="#s-4a.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 
 <p>Game imagery, weapon renders, and screenshots displayed by the Bot are covered by <a class="xref" href="#s-5">Section&nbsp;5</a> below and remain the property of their respective owners.</p>
 </section>
 <section class="dsec">
-<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">TRADEMARK ACKNOWLEDGEMENTS</span><a class="anchor" href="#s-5" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">TRADEMARK ACKNOWLEDGEMENTS</span><a class="anchor" href="#s-5" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>All trademarks, service marks, and trade names referenced in this project or in its output are the property of their respective owners. Their use here is nominative — for identification and reference only — and does not imply endorsement, sponsorship, affiliation, or any commercial relationship.</p>
 <p class="sub">Call of Duty(R), Call of Duty(R): Mobile, Activision(R) Trademarks of Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
 <pre class="aligned">Discord(R)             Discord Inc.
@@ -2067,26 +2119,26 @@ Claude(TM), Anthropic(R)
 <p>Rights holders: to request removal of any material, email <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>. Requests are actioned promptly.</p>
 </section>
 <section class="dsec">
-<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">AI ASSISTANCE DISCLOSURE</span><a class="anchor" href="#s-6" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">AI ASSISTANCE DISCLOSURE</span><a class="anchor" href="#s-6" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>Portions of Dior's Builds — including source code, documentation, and these legal documents — were authored with the assistance of AI coding assistants, principally Claude (Anthropic PBC), used as a drafting and implementation tool under the continuous direction of the human author.</p>
 <p>This disclosure is made deliberately, for three reasons.</p>
-<h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">HONESTY.</span><a class="anchor" href="#s-6.1" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">HONESTY.</span><a class="anchor" href="#s-6.1" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Anyone reading, auditing, or contributing to this project is entitled to know how it was built.</p>
-<h3 id="s-6.2" class="clause"><span class="idx" aria-hidden="true">6.2</span><span class="ht">COPYRIGHT.</span><a class="anchor" href="#s-6.2" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-6.2" class="clause"><span class="idx" aria-hidden="true">6.2</span><span class="ht">COPYRIGHT.</span><a class="anchor" href="#s-6.2" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The enforceability of LICENSE depends on copyright subsisting in this work. The position in the United States, as set out by the Copyright Office and left undisturbed when the Supreme Court denied certiorari on 2 March 2026, is that:</p>
 <ul class="lettered"><li>material generated autonomously by AI, without human creative control, is NOT protected by copyright; but</li><li>a work is protected where a human exercised meaningful creative control over its expressive elements, and AI-assisted works are copyrightable to the extent of that human contribution.</li></ul>
 <p class="sub">Accordingly, the Licensor states affirmatively that throughout this project a human author (Harkirat Mangat) conceived the project and its features; specified requirements and behaviour; directed, reviewed, selected, rejected, corrected, and revised all generated output; determined the architecture, structure, sequence, and organisation of the codebase; and personally researched, selected, verified, arranged, and curated the game data compilations. The creative choices that give this work its expressive character are human choices.</p>
 <p class="sub">Nothing in this disclosure is an admission that any part of the work lacks copyright protection, and no waiver of any right is intended or should be inferred.</p>
-<h3 id="s-6.3" class="clause"><span class="idx" aria-hidden="true">6.3</span><span class="ht">NO USER DATA IS SENT TO AI SYSTEMS.</span><a class="anchor" href="#s-6.3" aria-label="Link to this section">¶</a></h3>
+<h3 id="s-6.3" class="clause"><span class="idx" aria-hidden="true">6.3</span><span class="ht">NO USER DATA IS SENT TO AI SYSTEMS.</span><a class="anchor" href="#s-6.3" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">AI assistance was used in *development*. It is not used to process end-user data at runtime. The only AI call in the running application is Google Vertex AI (Gemini) image-to-text extraction in the /autobuild command, which is restricted to the administrator's own Discord account and never receives end-user data, messages, or images. See PRIVACY.md §5.1.</p>
 <p>LICENSE §4.7 separately prohibits YOU from using this project, its data, or its output to train or otherwise feed any AI or machine-learning system. That prohibition is unaffected by the Licensor's own use of AI tooling in development.</p>
 </section>
 <section class="dsec">
-<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">CONTRIBUTIONS</span><a class="anchor" href="#s-7" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">CONTRIBUTIONS</span><a class="anchor" href="#s-7" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <p>Contributions from third parties are governed by LICENSE <a class="xref" href="#s-5">§5</a> and CONTRIBUTING.md. Contributors are credited in CONTRIBUTORS.md and in the changelog entry for the release in which their contribution first ships. Credit is a binding obligation of the Licensor under LICENSE §5.6, not a courtesy.</p>
 </section>
 <section class="dsec">
-<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">CONTACT</span><a class="anchor" href="#s-8" aria-label="Link to this section">¶</a></h2>
+<h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">CONTACT</span><a class="anchor" href="#s-8" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2>
 <pre class="block">Harkirat Mangat ("dior", "diorswrld")
 <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
 <a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a></pre>
@@ -2110,7 +2162,7 @@ Claude(TM), Anthropic(R)
 <!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
      transform or backdrop-filter, which is exactly what once anchored a fixed
      control to the 54px bar instead of the viewport, so this sits outside .page. -->
-<button class="totop" id="totop" aria-label="Back to top">
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -3504,12 +3556,45 @@ Claude(TM), Anthropic(R)
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
        not free, and the shape and the colour both want the same element. */
+    /* ⚠️ A PARAGRAPH'S BOX IS NOT ITS TEXT, and treating them as the same thing
+       is what put the I-beam on half the page. A <p> is a block: it spans the
+       full measure, so its box covers the ragged right of every line and the
+       whole width below the last one. closest('p') therefore said "text" while
+       the pointer sat in open space several centimetres from a glyph — reported
+       2026-08-03 16:21 EDT with a screenshot of exactly that.
+       The caret is the honest test. caretRangeFromPoint snaps to the nearest
+       insertion point, so its rect sits AT the end of a short line while the
+       pointer is out in the margin; requiring the pointer to be within a glyph's
+       width of it turns "inside the block" into "on the writing". 14px is about
+       one character at body size, which keeps the beam from flickering off in
+       the gaps between words. */
+    function onGlyphs(x,y){
+      var r=null,rg,cp;
+      if(document.caretRangeFromPoint){
+        rg=document.caretRangeFromPoint(x,y);
+        if(rg)r=rg.getBoundingClientRect();
+      }else if(document.caretPositionFromPoint){
+        cp=document.caretPositionFromPoint(x,y);
+        if(cp&&cp.offsetNode){
+          rg=document.createRange();
+          rg.setStart(cp.offsetNode,cp.offset);
+          rg.collapse(true);
+          r=rg.getBoundingClientRect();
+        }
+      }
+      /* No caret API, or a caret with no box: fall back to the old behaviour
+         rather than losing the I-beam entirely. */
+      if(!r)return true;
+      if(!r.width&&!r.height)return true;
+      return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
+    }
     function probe(){
       var e=document.elementFromPoint(cx,cy);
       if(!e)return;
       shapeFor(
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
-        :e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')?'text':'idle');
+        :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
+          &&onGlyphs(cx,cy))?'text':'idle');
       /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
@@ -4018,6 +4103,95 @@ Claude(TM), Anthropic(R)
          near the bar pays nothing for this after the pointer leaves */
       raf = live ? requestAnimationFrame(tick) : 0;
     }
+  })();
+
+  /* ══ 6 · the hint ═══════════════════════════════════════════════════════
+     One floating capsule, reused, positioned over whatever [data-tip] the
+     pointer or the keyboard is on. It replaces the native title= tooltip, which
+     drew in the OS's font after the OS's delay and could not be styled at all.
+
+     ⚠️ A CONTROL MUST NOT CARRY BOTH title= AND data-tip — the browser would
+     draw its own tooltip underneath this one. The repo button had the only
+     title on the site and it was removed in the same change.
+
+     ⚠️ POINTER TRIGGERS ARE GATED ON fine, FOCUS TRIGGERS ARE NOT. On a touch
+     screen pointerenter fires on tap, so an ungated hint would flash on every
+     link a thumb touches, one frame before the page navigates away. Keyboard
+     focus is a real request to know what something is on any device, so
+     focusin/focusout stay live.
+
+     ⚠️ It hides on scroll, on wheel and on click. A position:fixed capsule
+     anchored to an element that has moved is worse than no hint: it points at
+     the wrong control with total confidence. */
+  (function(){
+    var host=null,tipEl=null,showT=0,cur=null;
+    function build(){
+      if(tipEl)return tipEl;
+      tipEl=el('div','tipx');
+      tipEl.setAttribute('aria-hidden','true');
+      var t=el('span','tipx-t');
+      tipEl.appendChild(t);
+      document.body.appendChild(tipEl);
+      return tipEl;
+    }
+    function place(node){
+      var tip=build();
+      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      /* measured with the class off, so the transform is not folded into the
+         box the arithmetic is done against */
+      tip.classList.remove('on');
+      var r=node.getBoundingClientRect(), tr=tip.getBoundingClientRect();
+      var GAP=10, under=r.top-tr.height-GAP<6;
+      tip.classList.toggle('under',under);
+      var y=under?r.bottom+GAP:r.top-tr.height-GAP;
+      /* clamped so a control at the edge of the bar does not push it off screen;
+         the capsule is centre-anchored, hence the half-width either side */
+      var half=tr.width/2, x=r.left+r.width/2;
+      if(x-half<8)x=8+half;
+      if(x+half>innerWidth-8)x=innerWidth-8-half;
+      tip.style.left=x.toFixed(1)+'px';
+      tip.style.top=Math.max(6,y).toFixed(1)+'px';
+      tip.classList.add('on');
+      cur=node;
+    }
+    function hide(){
+      clearTimeout(showT);
+      cur=null;
+      if(tipEl)tipEl.classList.remove('on');
+    }
+    function want(node,delay){
+      if(!node||node===cur)return;
+      clearTimeout(showT);
+      /* a delay, so sweeping the pointer across a row of controls does not
+         strobe a capsule at every one of them */
+      showT=setTimeout(function(){ place(node); },delay);
+    }
+    function tipOf(e){
+      var n=e.target;
+      return n&&n.closest?n.closest('[data-tip]'):null;
+    }
+    if(fine){
+      document.addEventListener('pointerover',function(e){
+        if(e.pointerType==='touch')return;
+        var n=tipOf(e);
+        if(!n){ if(cur)hide(); return; }
+        want(n,190);
+      },true);
+      document.addEventListener('pointerout',function(e){
+        var n=tipOf(e);
+        if(n&&n===cur)hide();
+        else if(!n)hide();
+      },true);
+    }
+    document.addEventListener('focusin',function(e){
+      var n=tipOf(e);
+      if(n)want(n,0); else hide();
+    },true);
+    document.addEventListener('focusout',hide,true);
+    addEventListener('scroll',hide,{passive:true,capture:true});
+    addEventListener('wheel',hide,{passive:true});
+    addEventListener('click',hide,true);
+    addEventListener('blur',hide);
   })();
 })();
 </script>

@@ -858,7 +858,55 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-@media (prefers-reduced-motion:reduce){.hrt{animation:none}}
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}/* ── the hint ─────────────────────────────────────────────────────────────
+   Replaces the native title= tooltip, which the OS draws in its own font, in
+   its own colours, after its own delay, with no way to match anything around
+   it. One control had one; the rest announced themselves only to screen
+   readers.
+
+   ⚠️ IT IS DECORATIVE, aria-hidden, AND THAT IS DELIBERATE. Every control it
+   describes already carries its own accessible name (aria-label, or visible
+   text). Wiring aria-describedby to this as well would make a screen reader
+   read most of them twice. The hint adds nothing for assistive tech and
+   everything for a sighted pointer, so it is scoped to exactly that.
+
+   ⚠️ NO :hover RULE. It is driven by a class from MORPH_JS, because the thing
+   that positions it has to measure the trigger anyway, and a CSS-only tooltip
+   cannot flip off a viewport edge. That also keeps it out of guardCss's way.
+
+   It is a capsule rather than the legal family's squared card on purpose: it
+   floats over every one of the three page families, and the one shape all
+   three already share is the pill in their own nav. The accent dot is what
+   ties it to the page it is on — the type is deliberately neutral so the
+   colour is the only thing that changes between pages. */
+
+
+.tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
+  display:flex;align-items:center;gap:.42rem;
+  max-width:min(72vw,22rem);
+  font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
+  letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink);background:var(--card);
+  border:1px solid var(--rule2);border-radius:999px;
+  padding:.42rem .68rem .42rem .58rem;
+  box-shadow:0 10px 26px -14px rgba(0,0,0,.75),
+    0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent);
+  opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
+.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}/* wraps onto a second line rather than running off a phone-width viewport */
+
+.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
+
+.tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
+.tipx.under.on{transform:translate(-50%,0) scale(1)}
+@media (prefers-reduced-motion:reduce){
+  .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
+  .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
+}
+@media print{.tipx{display:none!important}}
 
 
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
@@ -1793,20 +1841,23 @@ html{scroll-behavior:smooth}
   <nav>
     <div class="navwrap" data-fit="6"><div class="seg" data-at="-1" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./terms.html">Documents</a>
-      <a class="tab" href="./terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3">License</a><a class="tab" href="./notice.html" data-accent="#FF5264">Notice</a>
+      <a class="segchip" href="./terms.html"
+        data-tip="Documents pages">Documents</a>
+      <a class="tab" href="./terms.html" data-accent="#F2994A" data-tip="What the bot does, what you agree to, and the limits of what we promise.">Terms</a><a class="tab" href="./privacy.html" data-accent="#17A2A2" data-tip="Every field stored about you, where it lives, and how to have it deleted.">Privacy</a><a class="tab" href="./license.html" data-accent="#9B6BE3" data-tip="Read it, study it, run it on your own machine. Source-available, not open source.">License</a><a class="tab" href="./notice.html" data-accent="#FF5264" data-tip="Every dependency and its licence, the marks that are not ours, and where AI helped.">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="0" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./contributing.html">Community</a>
-      <a class="tab on" href="./contributing.html" data-accent="#8B9BFF" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
+      <a class="segchip" href="./contributing.html"
+        data-tip="Community pages">Community</a>
+      <a class="tab on" href="./contributing.html" data-accent="#8B9BFF" data-tip="How to report a bug, send a fix, and what the CLA actually asks of you." aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A" data-tip="Who helped build this, and how credit works. Bug reports count.">Contributors</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot title="View the source on GitHub">
+  data-spot data-tip="View the source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
+  data-tip="Add the bot to your Discord account"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1814,7 +1865,8 @@ html{scroll-behavior:smooth}
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" aria-label="Switch between light and dark">
+  aria-checked="false" data-tip="Switch light and dark"
+  aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1877,34 +1929,34 @@ html{scroll-behavior:smooth}
   </header>
   <main class="card spine" id="main" tabindex="-1"><div class="lead"><p>Contributions are genuinely welcome — bug reports, security findings, fixes, and features. If your contribution ships, <strong>you get credited by name in the <a href="contributors.html">contributors list</a> and in the changelog entry for the release it lands in.</strong> That's a binding commitment, written into §5.6 of the <a href="../LICENSE">LICENSE</a>, not just a nice intention.</p>
 <p>Before you start, please read this whole file. It's short, and the legal part at the end matters.</p></div>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="the-one-line-version-of-the-licence" class="plain"><span class="ht">The one-line version of the licence</span><a class="anchor" href="#the-one-line-version-of-the-licence" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Dior's Builds is <strong>source-available, not open source</strong>. You can read it, study it, audit it, and run it locally by yourself. You <strong>cannot</strong> deploy it anywhere other people can use it, redistribute it, or build a competing bot from it. Full terms: <a href="../LICENSE">LICENSE</a>.</p>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="the-one-line-version-of-the-licence" class="plain"><span class="ht">The one-line version of the licence</span><a class="anchor" href="#the-one-line-version-of-the-licence" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Dior's Builds is <strong>source-available, not open source</strong>. You can read it, study it, audit it, and run it locally by yourself. You <strong>cannot</strong> deploy it anywhere other people can use it, redistribute it, or build a competing bot from it. Full terms: <a href="../LICENSE">LICENSE</a>.</p>
 <p>This means contributing here is a bit different from contributing to an MIT project: your contribution becomes part of software that only the maintainer operates and distributes. The Contributor Licence Agreement below is what makes that work legally. Please make sure you're comfortable with it.</p></div></section>
-<section class="sec" data-t="options"><span class="node" aria-hidden="true"></span><h2 id="ways-to-contribute" class="plain"><span class="ht">Ways to contribute</span><a class="anchor" href="#ways-to-contribute" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="opts"><article class="opt"><span class="opt-m" aria-hidden="true">🐞</span><h3 id="bug-reports" class="plain"><span class="ht">Bug reports</span><a class="anchor" href="#bug-reports" aria-label="Link to this section">¶</a></h3><div><p>Open a <a href="https://github.com/HarkiratMangat/diors-builds/issues" target="_blank" rel="noopener noreferrer">GitHub issue</a>. Useful reports include:</p>
-<ul><li>What you did (the exact slash command and options)</li><li>What you expected</li><li>What actually happened, with a screenshot if it's a rendering issue</li><li>Roughly when it happened, and your timezone — it helps correlate against logs</li></ul></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔒</span><h3 id="security-vulnerabilities" class="plain"><span class="ht">Security vulnerabilities</span><a class="anchor" href="#security-vulnerabilities" aria-label="Link to this section">¶</a></h3><div><p><strong>Do not open a public issue for a security problem.</strong></p>
+<section class="sec" data-t="options"><span class="node" aria-hidden="true"></span><h2 id="ways-to-contribute" class="plain"><span class="ht">Ways to contribute</span><a class="anchor" href="#ways-to-contribute" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="opts"><article class="opt"><span class="opt-m" aria-hidden="true">🐞</span><h3 id="bug-reports" class="plain"><span class="ht">Bug reports</span><a class="anchor" href="#bug-reports" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>Open a <a href="https://github.com/HarkiratMangat/diors-builds/issues" target="_blank" rel="noopener noreferrer">GitHub issue</a>. Useful reports include:</p>
+<ul><li>What you did (the exact slash command and options)</li><li>What you expected</li><li>What actually happened, with a screenshot if it's a rendering issue</li><li>Roughly when it happened, and your timezone — it helps correlate against logs</li></ul></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔒</span><h3 id="security-vulnerabilities" class="plain"><span class="ht">Security vulnerabilities</span><a class="anchor" href="#security-vulnerabilities" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p><strong>Do not open a public issue for a security problem.</strong></p>
 <p>Email <strong>harkirat117@gmail.com</strong> with the details. Please read §4.11 of the LICENSE first — the short version:</p>
 <ul><li>✅ Test against <strong>your own local instance</strong></li><li>❌ Do <strong>not</strong> test against the live bot or its infrastructure</li><li>❌ Do <strong>not</strong> access or exfiltrate anyone's data</li><li>❌ Do <strong>not</strong> disclose publicly until it's been fixed, or a reasonable time has passed</li></ul>
-<p>Good-faith research within those limits is explicitly permitted by the licence and is welcome.</p></div></article><article class="opt"><span class="opt-m" aria-hidden="true">💡</span><h3 id="feature-ideas" class="plain"><span class="ht">Feature ideas</span><a class="anchor" href="#feature-ideas" aria-label="Link to this section">¶</a></h3><div><p>Open an issue and describe the problem you want solved rather than the implementation you have in mind. The <span class="ref">roadmap</span> shows what's already planned — worth a look first, so you don't duplicate something in flight.</p></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔧</span><h3 id="code" class="plain"><span class="ht">Code</span><a class="anchor" href="#code" aria-label="Link to this section">¶</a></h3><div><p>Open an issue before writing anything substantial. It saves you from building something that doesn't fit the architecture or is already half-done on a branch.</p></div></article></div></div></section>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="setting-up-locally" class="plain"><span class="ht">Setting up locally</span><a class="anchor" href="#setting-up-locally" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>You'll need Node.js 24+, a MongoDB instance, and <strong>your own Discord application</strong> — never the production bot's token.</p>
-<div class="cw"><pre class="code" data-lang="bash" id="code-1"><code>git clone https://github.com/HarkiratMangat/diors-builds.git</code></pre><button class="cpy cpy-f" type="button" aria-label="Copy code" data-copy="code-1"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
-<div class="cw"><pre class="code" data-lang="bash" id="code-2"><code>npm install</code></pre><button class="cpy cpy-f" type="button" aria-label="Copy code" data-copy="code-2"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+<p>Good-faith research within those limits is explicitly permitted by the licence and is welcome.</p></div></article><article class="opt"><span class="opt-m" aria-hidden="true">💡</span><h3 id="feature-ideas" class="plain"><span class="ht">Feature ideas</span><a class="anchor" href="#feature-ideas" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>Open an issue and describe the problem you want solved rather than the implementation you have in mind. The <span class="ref">roadmap</span> shows what's already planned — worth a look first, so you don't duplicate something in flight.</p></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔧</span><h3 id="code" class="plain"><span class="ht">Code</span><a class="anchor" href="#code" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>Open an issue before writing anything substantial. It saves you from building something that doesn't fit the architecture or is already half-done on a branch.</p></div></article></div></div></section>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="setting-up-locally" class="plain"><span class="ht">Setting up locally</span><a class="anchor" href="#setting-up-locally" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>You'll need Node.js 24+, a MongoDB instance, and <strong>your own Discord application</strong> — never the production bot's token.</p>
+<div class="cw"><pre class="code" data-lang="bash" id="code-1"><code>git clone https://github.com/HarkiratMangat/diors-builds.git</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy this block" aria-label="Copy code" data-copy="code-1"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+<div class="cw"><pre class="code" data-lang="bash" id="code-2"><code>npm install</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy this block" aria-label="Copy code" data-copy="code-2"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
 <p>Create a <code>.env.dev</code> file with your own credentials (it's gitignored):</p>
 <div class="cw"><pre class="code" data-lang="bash" id="code-3"><code>BOT_TOKEN=your_own_dev_bot_token
 MONGODB_URI=mongodb://localhost:27017/diors-builds-dev
-NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-label="Copy code" data-copy="code-3"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy this block" aria-label="Copy code" data-copy="code-3"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
 <p>Run it with auto-reload:</p>
-<div class="cw"><pre class="code" data-lang="bash" id="code-4"><code>node --watch --env-file=.env.dev index.js</code></pre><button class="cpy cpy-f" type="button" aria-label="Copy code" data-copy="code-4"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+<div class="cw"><pre class="code" data-lang="bash" id="code-4"><code>node --watch --env-file=.env.dev index.js</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy this block" aria-label="Copy code" data-copy="code-4"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
 <blockquote class="callout warn"><p>⚠️ <strong><code>dotenv.config()</code> runs after <code>--env-file</code> and backfills anything you omit.</strong> Leaving a key out of <code>.env.dev</code> doesn't unset it — it silently inherits whatever is in <code>.env</code>. To disable something in dev, set it <strong>explicitly blank</strong>.</p></blockquote>
 <p>Deployment notes and the fuller dev-bot setup: <span class="ref"><code>docs/reference/deployment-and-ops.md</code></span>.</p></div></section>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="code-conventions" class="plain"><span class="ht">Code conventions</span><a class="anchor" href="#code-conventions" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>The repo has detailed, path-scoped conventions in <code>.claude/rules/*.md</code> and architectural invariants in <span class="ref"><code>CLAUDE.md</code></span>. The essentials:</p>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="code-conventions" class="plain"><span class="ht">Code conventions</span><a class="anchor" href="#code-conventions" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>The repo has detailed, path-scoped conventions in <code>.claude/rules/*.md</code> and architectural invariants in <span class="ref"><code>CLAUDE.md</code></span>. The essentials:</p>
 <ul><li><strong>Commit messages follow <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank" rel="noopener noreferrer">Conventional Commits v1.0.0</a></strong> — <code>&lt;type&gt;(&lt;scope&gt;): &lt;description&gt;</code>, colon and one space, imperative, lowercase, no trailing period. Only the 11 standard types.</li><li><strong>Branch names</strong> are <code>&lt;type&gt;/&lt;kebab-description&gt;</code>.</li><li><strong>Keep the "why" comments.</strong> This codebase explains <em>why</em> code is written a certain way — especially around fixed bugs and Discord platform quirks. If your change makes a comment stale, update it. If you fix a bug or work around a platform limitation, add one in the same style.</li><li><strong>New schema fields must be added to the Mongoose schema in <code>models/</code> in the same change.</strong> Mongoose silently drops undeclared fields — they work in memory and vanish on the next fetch. This has caused real bugs more than once.</li><li><strong>Test on a dev bot before opening the PR.</strong> Boot it, run the affected command, confirm it actually works.</li></ul></div></section>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="pull-requests" class="plain"><span class="ht">Pull requests</span><a class="anchor" href="#pull-requests" aria-label="Link to this section">¶</a></h2><div class="sec-b"><ol><li>Branch off <code>main</code> (or off <code>v3-pre-release</code> for v3 work).</li><li>Keep the PR focused on one thing.</li><li>Describe what you changed and how you tested it.</li><li>Confirm the CLA (see below).</li></ol>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="pull-requests" class="plain"><span class="ht">Pull requests</span><a class="anchor" href="#pull-requests" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><ol><li>Branch off <code>main</code> (or off <code>v3-pre-release</code> for v3 work).</li><li>Keep the PR focused on one thing.</li><li>Describe what you changed and how you tested it.</li><li>Confirm the CLA (see below).</li></ol>
 <p>Review is by the maintainer. There's no SLA — this is a hobby project.</p></div></section>
-<section class="sec" data-t="ledger"><span class="node" aria-hidden="true"></span><h2 id="contributor-licence-agreement-cla" class="plain"><span class="ht">Contributor Licence Agreement (CLA)</span><a class="anchor" href="#contributor-licence-agreement-cla" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p><strong>By submitting a contribution, you agree to the terms in <a href="../LICENSE">§5 of the LICENSE</a>.</strong> That section is the operative legal text; this is a plain-English explanation of it, not a replacement.</p><div class="ldg"><div class="ldg-r" data-d="out"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-granting" class="plain"><span class="ht">What you're granting</span><a class="anchor" href="#what-youre-granting" aria-label="Link to this section">¶</a></h3><div><p>You give the maintainer a <strong>perpetual, worldwide, irrevocable, royalty-free licence</strong> to use your contribution — to modify it, ship it, deploy it, commercialise it, and to license or relicense it under any terms, including proprietary ones.</p>
-<p>This is necessary because the project is source-available and may change licensing later. Without it, every contributor would effectively hold a veto over the project's future.</p></div></div><div class="ldg-r" data-d="hold"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-you-keep" class="plain"><span class="ht">What you keep</span><a class="anchor" href="#what-you-keep" aria-label="Link to this section">¶</a></h3><div><ul><li><strong>You keep your copyright.</strong> This is a licence, not an assignment.</li><li><strong>The licence is non-exclusive</strong> — you can still use your own code elsewhere.</li><li><strong>You keep your credit.</strong> §5.6 obliges the maintainer to credit you and not to pass your work off as his own.</li></ul></div></div><div class="ldg-r" data-d="check"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-confirming" class="plain"><span class="ht">What you're confirming</span><a class="anchor" href="#what-youre-confirming" aria-label="Link to this section">¶</a></h3><div><p>That you actually have the right to give this — specifically:</p>
-<ul><li>The contribution is <strong>your own work</strong>, or you have the rights to submit it</li><li>Any third-party code in it is <strong>clearly identified with its licence</strong> when you submit it</li><li>It doesn't knowingly infringe anyone's copyright, patent, trademark, or trade secret</li><li><strong>If your employer has rights to what you create</strong>, you've either got their permission or they've waived those rights — please check this properly if you write code professionally</li><li>It contains <strong>no malicious code, backdoors, or hidden functionality</strong></li></ul></div></div><div class="ldg-r" data-d="none"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-not-getting" class="plain"><span class="ht">What you're not getting</span><a class="anchor" href="#what-youre-not-getting" aria-label="Link to this section">¶</a></h3><div><p>No payment, no co-ownership of the project, no approval right over how your contribution is later modified or used, and no ownership stake in Dior's Builds as a whole.</p></div></div></div><h3 id="how-to-confirm-it" class="plain"><span class="ht">How to confirm it</span><a class="anchor" href="#how-to-confirm-it" aria-label="Link to this section">¶</a></h3><div><p>Include this line in your pull request description:</p>
+<section class="sec" data-t="ledger"><span class="node" aria-hidden="true"></span><h2 id="contributor-licence-agreement-cla" class="plain"><span class="ht">Contributor Licence Agreement (CLA)</span><a class="anchor" href="#contributor-licence-agreement-cla" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p><strong>By submitting a contribution, you agree to the terms in <a href="../LICENSE">§5 of the LICENSE</a>.</strong> That section is the operative legal text; this is a plain-English explanation of it, not a replacement.</p><div class="ldg"><div class="ldg-r" data-d="out"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-granting" class="plain"><span class="ht">What you're granting</span><a class="anchor" href="#what-youre-granting" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>You give the maintainer a <strong>perpetual, worldwide, irrevocable, royalty-free licence</strong> to use your contribution — to modify it, ship it, deploy it, commercialise it, and to license or relicense it under any terms, including proprietary ones.</p>
+<p>This is necessary because the project is source-available and may change licensing later. Without it, every contributor would effectively hold a veto over the project's future.</p></div></div><div class="ldg-r" data-d="hold"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-you-keep" class="plain"><span class="ht">What you keep</span><a class="anchor" href="#what-you-keep" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><ul><li><strong>You keep your copyright.</strong> This is a licence, not an assignment.</li><li><strong>The licence is non-exclusive</strong> — you can still use your own code elsewhere.</li><li><strong>You keep your credit.</strong> §5.6 obliges the maintainer to credit you and not to pass your work off as his own.</li></ul></div></div><div class="ldg-r" data-d="check"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-confirming" class="plain"><span class="ht">What you're confirming</span><a class="anchor" href="#what-youre-confirming" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>That you actually have the right to give this — specifically:</p>
+<ul><li>The contribution is <strong>your own work</strong>, or you have the rights to submit it</li><li>Any third-party code in it is <strong>clearly identified with its licence</strong> when you submit it</li><li>It doesn't knowingly infringe anyone's copyright, patent, trademark, or trade secret</li><li><strong>If your employer has rights to what you create</strong>, you've either got their permission or they've waived those rights — please check this properly if you write code professionally</li><li>It contains <strong>no malicious code, backdoors, or hidden functionality</strong></li></ul></div></div><div class="ldg-r" data-d="none"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-not-getting" class="plain"><span class="ht">What you're not getting</span><a class="anchor" href="#what-youre-not-getting" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>No payment, no co-ownership of the project, no approval right over how your contribution is later modified or used, and no ownership stake in Dior's Builds as a whole.</p></div></div></div><h3 id="how-to-confirm-it" class="plain"><span class="ht">How to confirm it</span><a class="anchor" href="#how-to-confirm-it" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3><div><p>Include this line in your pull request description:</p>
 <div class="slip"><p class="slip-t" id="cla-line">I have read and agree to the Contributor Licence Agreement in §5 of the LICENSE.</p><button class="cpy" type="button" data-copy="cla-line"><span class="cpy-g" aria-hidden="true"></span><span class="cpy-t">Copy</span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
 <p>If you'd rather not agree to the CLA, you can still help enormously — file issues, report bugs, report security findings, and suggest ideas. Those don't require it.</p></div></div></section>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="questions" class="plain"><span class="ht">Questions</span><a class="anchor" href="#questions" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Open an issue, email <strong>harkirat117@gmail.com</strong>, or message <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a>.</p>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="questions" class="plain"><span class="ht">Questions</span><a class="anchor" href="#questions" data-tip="Link to this section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Open an issue, email <strong>harkirat117@gmail.com</strong>, or message <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a>.</p>
 <p>Thanks for being here — genuinely.</p>
 <p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
   <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
@@ -3198,12 +3250,45 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
        not free, and the shape and the colour both want the same element. */
+    /* ⚠️ A PARAGRAPH'S BOX IS NOT ITS TEXT, and treating them as the same thing
+       is what put the I-beam on half the page. A <p> is a block: it spans the
+       full measure, so its box covers the ragged right of every line and the
+       whole width below the last one. closest('p') therefore said "text" while
+       the pointer sat in open space several centimetres from a glyph — reported
+       2026-08-03 16:21 EDT with a screenshot of exactly that.
+       The caret is the honest test. caretRangeFromPoint snaps to the nearest
+       insertion point, so its rect sits AT the end of a short line while the
+       pointer is out in the margin; requiring the pointer to be within a glyph's
+       width of it turns "inside the block" into "on the writing". 14px is about
+       one character at body size, which keeps the beam from flickering off in
+       the gaps between words. */
+    function onGlyphs(x,y){
+      var r=null,rg,cp;
+      if(document.caretRangeFromPoint){
+        rg=document.caretRangeFromPoint(x,y);
+        if(rg)r=rg.getBoundingClientRect();
+      }else if(document.caretPositionFromPoint){
+        cp=document.caretPositionFromPoint(x,y);
+        if(cp&&cp.offsetNode){
+          rg=document.createRange();
+          rg.setStart(cp.offsetNode,cp.offset);
+          rg.collapse(true);
+          r=rg.getBoundingClientRect();
+        }
+      }
+      /* No caret API, or a caret with no box: fall back to the old behaviour
+         rather than losing the I-beam entirely. */
+      if(!r)return true;
+      if(!r.width&&!r.height)return true;
+      return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
+    }
     function probe(){
       var e=document.elementFromPoint(cx,cy);
       if(!e)return;
       shapeFor(
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
-        :e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')?'text':'idle');
+        :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
+          &&onGlyphs(cx,cy))?'text':'idle');
       /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
@@ -3712,6 +3797,95 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" aria-la
          near the bar pays nothing for this after the pointer leaves */
       raf = live ? requestAnimationFrame(tick) : 0;
     }
+  })();
+
+  /* ══ 6 · the hint ═══════════════════════════════════════════════════════
+     One floating capsule, reused, positioned over whatever [data-tip] the
+     pointer or the keyboard is on. It replaces the native title= tooltip, which
+     drew in the OS's font after the OS's delay and could not be styled at all.
+
+     ⚠️ A CONTROL MUST NOT CARRY BOTH title= AND data-tip — the browser would
+     draw its own tooltip underneath this one. The repo button had the only
+     title on the site and it was removed in the same change.
+
+     ⚠️ POINTER TRIGGERS ARE GATED ON fine, FOCUS TRIGGERS ARE NOT. On a touch
+     screen pointerenter fires on tap, so an ungated hint would flash on every
+     link a thumb touches, one frame before the page navigates away. Keyboard
+     focus is a real request to know what something is on any device, so
+     focusin/focusout stay live.
+
+     ⚠️ It hides on scroll, on wheel and on click. A position:fixed capsule
+     anchored to an element that has moved is worse than no hint: it points at
+     the wrong control with total confidence. */
+  (function(){
+    var host=null,tipEl=null,showT=0,cur=null;
+    function build(){
+      if(tipEl)return tipEl;
+      tipEl=el('div','tipx');
+      tipEl.setAttribute('aria-hidden','true');
+      var t=el('span','tipx-t');
+      tipEl.appendChild(t);
+      document.body.appendChild(tipEl);
+      return tipEl;
+    }
+    function place(node){
+      var tip=build();
+      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      /* measured with the class off, so the transform is not folded into the
+         box the arithmetic is done against */
+      tip.classList.remove('on');
+      var r=node.getBoundingClientRect(), tr=tip.getBoundingClientRect();
+      var GAP=10, under=r.top-tr.height-GAP<6;
+      tip.classList.toggle('under',under);
+      var y=under?r.bottom+GAP:r.top-tr.height-GAP;
+      /* clamped so a control at the edge of the bar does not push it off screen;
+         the capsule is centre-anchored, hence the half-width either side */
+      var half=tr.width/2, x=r.left+r.width/2;
+      if(x-half<8)x=8+half;
+      if(x+half>innerWidth-8)x=innerWidth-8-half;
+      tip.style.left=x.toFixed(1)+'px';
+      tip.style.top=Math.max(6,y).toFixed(1)+'px';
+      tip.classList.add('on');
+      cur=node;
+    }
+    function hide(){
+      clearTimeout(showT);
+      cur=null;
+      if(tipEl)tipEl.classList.remove('on');
+    }
+    function want(node,delay){
+      if(!node||node===cur)return;
+      clearTimeout(showT);
+      /* a delay, so sweeping the pointer across a row of controls does not
+         strobe a capsule at every one of them */
+      showT=setTimeout(function(){ place(node); },delay);
+    }
+    function tipOf(e){
+      var n=e.target;
+      return n&&n.closest?n.closest('[data-tip]'):null;
+    }
+    if(fine){
+      document.addEventListener('pointerover',function(e){
+        if(e.pointerType==='touch')return;
+        var n=tipOf(e);
+        if(!n){ if(cur)hide(); return; }
+        want(n,190);
+      },true);
+      document.addEventListener('pointerout',function(e){
+        var n=tipOf(e);
+        if(n&&n===cur)hide();
+        else if(!n)hide();
+      },true);
+    }
+    document.addEventListener('focusin',function(e){
+      var n=tipOf(e);
+      if(n)want(n,0); else hide();
+    },true);
+    document.addEventListener('focusout',hide,true);
+    addEventListener('scroll',hide,{passive:true,capture:true});
+    addEventListener('wheel',hide,{passive:true});
+    addEventListener('click',hide,true);
+    addEventListener('blur',hide);
   })();
 })();</script>
 </body>

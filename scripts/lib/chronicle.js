@@ -933,7 +933,7 @@ ${C.mobileNav(cur, railSlots)}
   ${C.pageFoot(cur)}
 </div>
 
-<button class="totop" id="totop" aria-label="Back to top">
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>

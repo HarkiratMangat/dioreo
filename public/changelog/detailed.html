@@ -924,7 +924,55 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 .hrt{color:var(--accent-t);display:inline-block;animation:pulse 2.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-@media (prefers-reduced-motion:reduce){.hrt{animation:none}}
+@media (prefers-reduced-motion:reduce){.hrt{animation:none}}/* ── the hint ─────────────────────────────────────────────────────────────
+   Replaces the native title= tooltip, which the OS draws in its own font, in
+   its own colours, after its own delay, with no way to match anything around
+   it. One control had one; the rest announced themselves only to screen
+   readers.
+
+   ⚠️ IT IS DECORATIVE, aria-hidden, AND THAT IS DELIBERATE. Every control it
+   describes already carries its own accessible name (aria-label, or visible
+   text). Wiring aria-describedby to this as well would make a screen reader
+   read most of them twice. The hint adds nothing for assistive tech and
+   everything for a sighted pointer, so it is scoped to exactly that.
+
+   ⚠️ NO :hover RULE. It is driven by a class from MORPH_JS, because the thing
+   that positions it has to measure the trigger anyway, and a CSS-only tooltip
+   cannot flip off a viewport edge. That also keeps it out of guardCss's way.
+
+   It is a capsule rather than the legal family's squared card on purpose: it
+   floats over every one of the three page families, and the one shape all
+   three already share is the pill in their own nav. The accent dot is what
+   ties it to the page it is on — the type is deliberately neutral so the
+   colour is the only thing that changes between pages. */
+
+
+.tipx{position:fixed;left:0;top:0;z-index:70;pointer-events:none;
+  display:flex;align-items:center;gap:.42rem;
+  max-width:min(72vw,22rem);
+  font-family:var(--mono);font-size:.56rem;font-weight:600;line-height:1.25;
+  letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink);background:var(--card);
+  border:1px solid var(--rule2);border-radius:999px;
+  padding:.42rem .68rem .42rem .58rem;
+  box-shadow:0 10px 26px -14px rgba(0,0,0,.75),
+    0 0 0 4px color-mix(in srgb,var(--accent) 7%,transparent);
+  opacity:0;transform:translate(-50%,2px) scale(.97);transform-origin:50% 120%;
+  transition:opacity .15s ease,transform .22s cubic-bezier(.2,.85,.28,1)}
+.tipx::before{content:"";flex:0 0 auto;width:4px;height:4px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}/* wraps onto a second line rather than running off a phone-width viewport */
+
+.tipx-t{display:block;white-space:normal;text-wrap:balance}
+.tipx.on{opacity:1;transform:translate(-50%,0) scale(1)}/* below the trigger instead of above it, when there is no room above */
+
+.tipx.under{transform-origin:50% -20%;transform:translate(-50%,-2px) scale(.97)}
+.tipx.under.on{transform:translate(-50%,0) scale(1)}
+@media (prefers-reduced-motion:reduce){
+  .tipx{transition:opacity .12s ease;transform:translate(-50%,0)}
+  .tipx.on,.tipx.under,.tipx.under.on{transform:translate(-50%,0)}
+}
+@media print{.tipx{display:none!important}}
 
 
 .bar{position:fixed;inset:0 0 auto;height:54px;z-index:60;display:flex;align-items:center;
@@ -1715,24 +1763,28 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <nav>
     <div class="navwrap" data-fit="9"><div class="seg" data-at="-1" data-label="Documents">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../legal/terms.html">Documents</a>
-      <a class="tab" href="../legal/terms.html" data-accent="#F2994A">Terms</a><a class="tab" href="../legal/privacy.html" data-accent="#17A2A2">Privacy</a><a class="tab" href="../legal/license.html" data-accent="#9B6BE3">License</a><a class="tab" href="../legal/notice.html" data-accent="#FF5264">Notice</a>
+      <a class="segchip" href="../legal/terms.html"
+        data-tip="Documents pages">Documents</a>
+      <a class="tab" href="../legal/terms.html" data-accent="#F2994A" data-tip="What the bot does, what you agree to, and the limits of what we promise.">Terms</a><a class="tab" href="../legal/privacy.html" data-accent="#17A2A2" data-tip="Every field stored about you, where it lives, and how to have it deleted.">Privacy</a><a class="tab" href="../legal/license.html" data-accent="#9B6BE3" data-tip="Read it, study it, run it on your own machine. Source-available, not open source.">License</a><a class="tab" href="../legal/notice.html" data-accent="#FF5264" data-tip="Every dependency and its licence, the marks that are not ours, and where AI helped.">Notice</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="-1" data-label="Community">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="../legal/contributing.html">Community</a>
-      <a class="tab" href="../legal/contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="../legal/contributors.html" data-accent="#F8FF4A">Contributors</a>
+      <a class="segchip" href="../legal/contributing.html"
+        data-tip="Community pages">Community</a>
+      <a class="tab" href="../legal/contributing.html" data-accent="#8B9BFF" data-tip="How to report a bug, send a fix, and what the CLA actually asks of you.">Contributing</a><a class="tab" href="../legal/contributors.html" data-accent="#F8FF4A" data-tip="Who helped build this, and how credit works. Bug reports count.">Contributors</a>
     </div><span class="seg-gap" aria-hidden="true"></span><div class="seg" data-at="1" data-label="Releases">
       <span class="seg-ink" aria-hidden="true"><i class="ib ib-a"></i><i class="ib ib-c"></i><i class="ib ib-b"></i></span>
-      <a class="segchip" href="./">Releases</a>
-      <a class="tab" href="./" data-accent="#FF9E3D">What's New</a><a class="tab on" href="./detailed.html" data-accent="#7CE38B" aria-current="page">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF">Devlog</a>
+      <a class="segchip" href="./"
+        data-tip="Releases pages">Releases</a>
+      <a class="tab" href="./" data-accent="#FF9E3D" data-tip="What changed in each release of Dior’s Builds, in plain language.">What's New</a><a class="tab on" href="./detailed.html" data-accent="#7CE38B" data-tip="The detailed, developer-facing release history." aria-current="page">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF" data-tip="Discoveries, real root causes, the things we walked back, and the lessons.">Devlog</a>
     </div></div>
     <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
-  data-spot title="View the source on GitHub">
+  data-spot data-tip="View the source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
 </a>
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
+  data-tip="Add the bot to your Discord account"
   aria-label="Install Dior&#8217;s Builds on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
@@ -1740,7 +1792,8 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
     <button id="th" class="thm " role="switch"
-  aria-checked="false" aria-label="Switch between light and dark">
+  aria-checked="false" data-tip="Switch light and dark"
+  aria-label="Switch between light and dark">
   <span class="thm-tr" aria-hidden="true">
     <span class="thm-sky">
       <span class="thm-st"><i></i><i></i><i></i><i></i><i></i></span>
@@ -1823,17 +1876,17 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p><strong>Detailed vs. summary coverage:</strong> every merged PR gets an entry here, including purely internal housekeeping (repo/tooling changes, nothing a player would notice). <a href="index.html">CHANGELOG-SUMMARY.md</a> <strong>represents every version number too — no number is skipped</strong> (Harkirat's rule, 2026-07-21: "easier to delete than to add"). It stays player-focused, so trivial/internal/docs-only point releases aren't given their own prose write-up — instead they're folded into a neighbouring entry's version range (e.g. <code>v2.18.0–v2.18.3</code>) or noted in one line (e.g. "*v2.22.1 was a docs-only point release*"), so a reader can still see the version existed. Only genuinely user-facing changes get a real bullet.</p>
 <hr>
 <p>Ideas, committed work, and known small gaps — nothing in this section has shipped. Roughly ordered by how committed we are. Items graduate into a numbered version entry below once they actually ship.</p>
-<h3 id="planned-intend-to-build" class="plain"><span class="ht">🛠️ Planned — intend to build</span><a class="anchor" href="#planned-intend-to-build" aria-label="Link to this section">¶</a></h3>
+<h3 id="planned-intend-to-build" class="plain"><span class="ht">🛠️ Planned — intend to build</span><a class="anchor" href="#planned-intend-to-build" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Real "search + multi-select" admin flow</strong> — for "Delete Multiple" (all entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today these are placeholder paste-a-list-of-names flows; this is the genuinely new interaction they're meant to become.</li><li><strong>General bot/code housekeeping session</strong> (added 2026-07-15) — one dedicated cleanup pass instead of piecemeal mid-feature tidying: delete leftover <code>*.bak-*</code> config backups, sweep for any stale absolute paths left over from the 2026-07-14 repo relocation (the known ones are already fixed; prefer relative/dynamic paths so a future move can't rot them), dead-code/stale-comment/unused-dependency review, and decide whether <code>/patch notes</code>' media carousel needs component-count chunking.</li><li><strong>Write a user-friendly bot/ops guide</strong> (added 2026-07-18) — a rich but noob-friendly how-to for operating the bot end-to-end (the GCP VM, hosting, deploy flow, checking status/logs), so Harkirat can maintain it himself. Distinct from CLAUDE.md and the terse VM command card — a human operator's guide.</li></ul>
-<h4 id="remaining-v2-polish-batch-filed-2026-07-1415-from-the-plan-notes-file" class="plain"><span class="ht">Remaining v2 polish batch (filed 2026-07-14/15 from the plan-notes file)</span><a class="anchor" href="#remaining-v2-polish-batch-filed-2026-07-1415-from-the-plan-notes-file" aria-label="Link to this section">¶</a></h4>
+<h4 id="remaining-v2-polish-batch-filed-2026-07-1415-from-the-plan-notes-file" class="plain"><span class="ht">Remaining v2 polish batch (filed 2026-07-14/15 from the plan-notes file)</span><a class="anchor" href="#remaining-v2-polish-batch-filed-2026-07-1415-from-the-plan-notes-file" data-tip="Link to this section" aria-label="Link to this section">¶</a></h4>
 <p>Ships to <code>main</code>/live as normal <code>v2.x</code> pushes, in parallel with v3 pre-release work. Most of this batch has already shipped and graduated into the numbered list below: <strong>8 items in v2.21.0</strong> (<code>/timestamp</code> <code>format</code>→<code>view</code>, <code>/settings</code> <code>hidden</code> option, mobile description trim, short/partial loadout search, admin override + reworded action-blocked message, View Colors download buttons, <code>/manage</code> <code>section</code>→<code>data_for</code>), plus <strong><code>/manage</code> loadout data-entry UX</strong> (v2.23.0), <strong><code>/manage</code> per-page accent colors</strong> (v2.24.0), <strong>webhook alerting heavy-half</strong> (v2.26.0 — per-alert IDs, <code>/alerts</code>, text-log export, legibility fixes), and <strong>pagination loop-back</strong> (v2.28.0, with its 2-page crash fixed in v2.30.2). Still open from this batch:</p>
 <ul><li><strong>View Colors: wider colour variety</strong> — a real avatar returned 6 of 8 requested colours and missed a useful yellow. Minimal images correctly returning 2-4 on one page must NOT be padded out to a quota. Needs its own focused session — determinism is a hard constraint (Refresh's change-detection).</li><li><strong>View Colors: humour pages for unset Display Name / Nameplate / Deco</strong> instead of hiding them.</li><li><strong>Richer in-bot diagnostic logging</strong> (filed 2026-07-18) — so a failure points at exactly which component broke and why (distinct from the webhook alerting heavy-half, now shipped, and the v3 DB-change audit log).</li><li><strong>Admin <code>/status</code> command</strong> (filed 2026-07-18) — VM health/metrics (gateway state, RAM/CPU, restart count) surfaced in-bot, built on <code>scripts/vmstatus.sh</code> / <code>vmpeaks.sh</code>. <strong>Un-bundled from the webhook work 2026-07-20</strong> (Harkirat's call — unsure of its usability right now); still deferred as its own session.</li></ul>
-<h4 id="v3-next-major-pre-release-track" class="plain"><span class="ht">v3 (next MAJOR — pre-release track)</span><a class="anchor" href="#v3-next-major-pre-release-track" aria-label="Link to this section">¶</a></h4>
+<h4 id="v3-next-major-pre-release-track" class="plain"><span class="ht">v3 (next MAJOR — pre-release track)</span><a class="anchor" href="#v3-next-major-pre-release-track" data-tip="Link to this section" aria-label="Link to this section">¶</a></h4>
 <p>Built on a <code>v3-pre-release</code> branch, logged here as <code>Pre-Release v3.x.x</code>, kept out of the summary changelog until v3 actually launches.</p>
 <ul><li><strong><code>/manage</code> → <code>/admin</code></strong>, keeping the dashboard panel but adding slash-driven actions (<code>/admin command:{x} action:{y}</code>), with <code>action</code> choices scoped to the chosen command. Plus an internal DB-change logging/tracking system.</li><li><strong><code>/meta</code></strong> — browse every weapon marked Meta, paginated, category-switchable, per-category accent.</li><li><strong>Draw cost calculator</strong> — cost to finish a draw from region + attempts done/remaining + CP balance, with a suggested top-up package.</li><li><strong>Consolidate MP loadout commands into one <code>/loadout</code></strong> (with a meta subcommand — overlaps <code>/meta</code> above; pick one shape at design time). <code>/dmz</code> stays as-is.</li><li><strong><code>/settings</code> jump-to options</strong> and <strong>detaching <code>/colors</code>' visibility</strong> from settings.</li><li><strong><code>/help</code></strong> detailing commands/features, referenced from the bot's Discord description — must include a way to contact Harkirat (his Discord) for bug reports/requests.</li><li>A <strong>personality pass</strong> ("bully people who are broke") sprinkled through, starting with the humour pages and the reworded block message.</li><li><strong>Announcement feature</strong> — post an announcement from <code>/manage</code>; each user sees it once (as a follow-up embed) on their next command run, until the next announcement replaces it. Per-user "last seen" tracking.</li><li><strong>Easy bot sharing / <code>/invite</code></strong> — a share path that works even in servers where user-apps are blocked (every reply ephemeral), and is shareable outside Discord entirely. Relates to the v4 guild-install shift.</li><li><strong>Privacy Policy / Terms of Service</strong> — needed for Discord compliance, especially once verified/past 100 servers (same threshold as the MESSAGE CONTENT intent below). Should cover the usage-analytics item below if that ships first.</li><li><strong>Richer usage analytics</strong> — who ran what command, when, how often, and how people actually navigate a feature (dropdown vs retyping, etc.) — distinct from the diagnostic-logging item above (that's failure attribution, this is usage telemetry).</li><li><strong><code>/define</code> (Urban Dictionary integration)</strong> — pure fun, not CODM-related, low priority.</li><li><strong>Extend the passive auto-disable pattern</strong> beyond <code>/settings</code> (which shipped it in v2.22.0) to draws/calendar/drawprices/loadouts, which currently have none — mechanical (reuse <code>utils/passiveExpiry.js</code>), open question is whether 10 minutes is the right window everywhere.</li></ul>
-<h3 id="considering-ideas-not-committed" class="plain"><span class="ht">💭 Considering — ideas, not committed</span><a class="anchor" href="#considering-ideas-not-committed" aria-label="Link to this section">¶</a></h3>
+<h3 id="considering-ideas-not-committed" class="plain"><span class="ht">💭 Considering — ideas, not committed</span><a class="anchor" href="#considering-ideas-not-committed" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <ul><li>Continue the stylized visual "release log" redesign (the "Armory Terminal" artifact) — paused.</li><li>Possibly promote the View Colors / accent-personalization system to a <strong><code>v3.0.0</code></strong> milestone rather than leaving it inside the v2 line — Harkirat's call (a MAJOR bump is never made without his OK).</li><li><strong>v4 — guild install + text/prefix commands</strong> (<code>d b ak117</code>), with a settable per-server prefix and server-exclusive commands. ⚠️ This reverses the bot's user-installed-only architecture and needs Dev Portal changes: Guild Install enabled, <code>setIntegrationTypes([0, 1])</code>, and the <strong>privileged MESSAGE CONTENT intent</strong> (which needs Discord approval past 100 servers).</li><li><strong>v4 — user-submitted loadouts</strong>, gated behind manual review (deny / accept / accept-with-edit).</li><li><strong>v5 — generate the gunsmith image + share code ourselves</strong>, removing the manual-screenshot step: teach the code structure + layout, supply per-weapon base pages, store output in Cloudinary.</li><li><strong>v5 — user-built custom gunsmiths in-bot</strong> (depends on the above), plus a "my builds" command that merges a user's own builds into <code>/loadout</code> results, visually distinct from official ones.</li></ul>
-<h3 id="known-issues-small-fixes-deferred-mostly-cosmetic" class="plain"><span class="ht">🐛 Known issues / small fixes — deferred, mostly cosmetic</span><a class="anchor" href="#known-issues-small-fixes-deferred-mostly-cosmetic" aria-label="Link to this section">¶</a></h3>
+<h3 id="known-issues-small-fixes-deferred-mostly-cosmetic" class="plain"><span class="ht">🐛 Known issues / small fixes — deferred, mostly cosmetic</span><a class="anchor" href="#known-issues-small-fixes-deferred-mostly-cosmetic" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>View Colors heading isn't vertically centered</strong> against its thumbnail — Components V2 has no vertical-align control; a workaround was tried and reverted. Purely cosmetic.</li><li><strong>Decoration &amp; nameplate previews show as static posters, not animated</strong> — a genuine Discord-client limitation, not a bug here; the real fix (re-encoding to GIF per render) was rejected as not worth the per-render latency for a cosmetic nicety.</li><li><strong>Cloudinary folder organization — verify</strong> (added 2026-07-18) — confirm draw thumbnails actually land in <code>temp_draws/</code> and patch-notes images in <code>patch_notes/{patchId}/</code> as designed; Harkirat noticed assets that look like they're in the main folder + secondary-weapon files not following the old naming. Read-only check; escalate to a real bug only if a genuine discrepancy is confirmed.</li><li><strong><code>/patch notes</code> media carousel has no component-count chunking</strong> yet, unlike <code>/draws</code>/<code>/calendar</code> — untested at scale; likely fine (few screenshots per entry) but not empirically verified.</li><li><strong><code>ffmpeg</code> is an unverified production dependency</strong> — used for decoration still-frames; confirmed on the local Mac, not guaranteed on Render's container. If decoration color extraction ever breaks in production only, check for <code>ffmpeg</code> on the deployed image first.</li><li><strong>Pagination/toggle clicks pay a structural double network round-trip</strong> (<code>deferUpdate()</code> then a separate <code>PATCH</code> to update the message) — not a CPU/DB bug this time, just the current architecture. Real fix is switching to a single direct <code>UPDATE_MESSAGE</code> response; touches every paginated command, deferred as its own future pass rather than bundled into v2.18.0.</li><li>~~Disabling expired buttons — a reactive "friendly message but buttons stay live" gap~~ — <strong>SHIPPED for <code>/settings</code> in v2.22.0</strong> as a genuinely PASSIVE, no-click auto-disable (a held interaction token + <code>setTimeout</code> PATCHes the message on its own after 10 idle minutes) — see that entry below for the mechanism, and CLAUDE.md's "Passive idle-timeout auto-disable" section for the full design. This entry itself went through two rounds of correction before landing there: first wrongly claimed disabling was impossible at all, then wrongly claimed a proactive zero-click update specifically was impossible — both wrong, see CLAUDE.md's "Known open issues" for the full trail. Still open: the same pattern for draws/calendar/drawprices/loadouts (see the v3 roadmap list above).</li><li><strong>Global profile only, never per-server "Server Profile" overrides</strong> (confirmed 2026-07-18) — every avatar/banner/deco/nameplate read uses the user's global Discord profile; a user with a different avatar set for one specific server won't see that reflected. Keep in mind for the v4 guild-install pivot (Harkirat's call, 2026-07-18) rather than solving now, since v4 already changes how guild-member context is available to the bot.</li></ul>
 <hr>
 <p><strong>Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:</strong> an open branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on <code>feat/*</code> awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at the TOP of the list above) <strong>in the final pre-merge checkpoint on the branch, citing the PR number and no hash</strong> — the hash is backfilled one release later (see the citation-format note in the versioning header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on <code>main</code> instead; that model is retired now that all work flows through a branch first.)</p>
@@ -1868,7 +1921,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p>Its first entry is snp.agency's <strong>cross-referenced contributor index</strong> — three columns (<em>Who</em> · <em>Route in</em> · <em>First shipped in</em>) where touching any item lights its relations and greys the rest. The strongest structural idea in the nine-site research, and unbuildable today: with one contributor and one release it renders a relationship diagram of a single node, which reads as broken rather than as empty.</p>
 <p>The concrete risk this closes: that research lives in <strong>gitignored <code>local/</code></strong>, so it exists on one machine and would not survive a fresh clone. The entry carries enough to rebuild the idea without it.</p>
 <p>Also recorded: the redesign's structural fork is <strong>answered</strong> — constellation on desktop, a full-width stack on mobile — so the next session starts on design quality, not on choosing a direction.</p>
-<h3 id="the-bare-date-check-found-a-shape-its-corpus-never-had" class="plain"><span class="ht">The bare-date check found a shape its corpus never had</span><a class="anchor" href="#the-bare-date-check-found-a-shape-its-corpus-never-had" aria-label="Link to this section">¶</a></h3>
+<h3 id="the-bare-date-check-found-a-shape-its-corpus-never-had" class="plain"><span class="ht">The bare-date check found a shape its corpus never had</span><a class="anchor" href="#the-bare-date-check-found-a-shape-its-corpus-never-had" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p>Harkirat: <em>"whole point of the hook was so you wouldn't forget to include the time… especially considering the fact u get the current date+time injected into your context on every tool use."</em> Correct — a <code>PostToolUse</code> fire costs an extra edit and prevents nothing, so it is a failure signal, not a save. That is now written into the working agreement as a keystroke-level rule: the moment you type the year inside content, the time follows in the same keystroke.</p>
 <p>Two changes to <code>timestamp-check.sh</code>, both proven against the shapes:</p>
 <ul><li><strong>The advisory now prints the real clock</strong> — <code>⏰ RIGHT NOW IT IS: …</code> — so correcting a miss needs no second lookup, and states plainly that it runs after the bytes land and cannot prevent anything.</li><li><strong>An enumeration of dates is data, not a record stamp.</strong> <code>(2026-07-24, 2026-07-26, 2026-08-02)</code> fired the branch — while editing a memory file to explain this very rule. The test is a comma adjacent to <strong>another date</strong>, never a bare trailing comma, because <code>asked &lt;date&gt;, and nobody answered</code> is still a stamp and must keep firing. A first attempt using <code>[,;]</code> alone got both halves wrong.</li></ul>
@@ -2856,9 +2909,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <div class="lg-b">
           <p class="lg-t">/autobuild v2-test fixes · loadout data corrections</p>
           <p>Second <code>/autobuild</code> round from Harkirat's live v2 test (<code>local/Autobuild testing v2.md</code>), plus a batch of loadout data corrections he verified by hand. <strong>Admin/back-end only</strong> — nothing changes for players.</p>
-<h3 id="autobuild-extraction-fixes" class="plain"><span class="ht"><code>/autobuild</code> extraction fixes</span><a class="anchor" href="#autobuild-extraction-fixes" aria-label="Link to this section">¶</a></h3>
+<h3 id="autobuild-extraction-fixes" class="plain"><span class="ht"><code>/autobuild</code> extraction fixes</span><a class="anchor" href="#autobuild-extraction-fixes" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>Weapon SKIN name no longer mistaken for the weapon.</strong> The vision model was reading the equipped skin's stylized title (e.g. <code>R9-0 - Death's Voice</code>) as the weapon name, which cascaded into a wrong <code>weaponKey</code>/<code>imageKey</code> and created a brand-new "weapon" instead of adding a build to the existing one (and broke category auto-inference along the way). Fixed at two layers: the prompt now asks for the <strong>base weapon only</strong> (<code>utils/visionExtract.js</code>), and a structural backstop <code>normalizeWeaponName()</code> (<code>utils/adminParser.js</code>) strips a spaced-dash/em-dash skin suffix — base weapon hyphens are unspaced (<code>R9-0</code>, <code>CX-9</code>, <code>L-CAR 9</code>) so a real name is never touched.</li><li><strong>Weapon names normalized to ALL-CAPS.</strong> Autobuild stored title-case (<code>Machine Pistol</code>) while every migrated build is uppercase (<code>MACHINE PISTOL</code>), so a new build showed out of place in <code>/manage</code>'s disambiguation dropdown. <code>normalizeWeaponName()</code> now uppercases too (weaponKey is already case-insensitive and imageKey already uppercased, so only the stored display value needed fixing).</li><li><strong>Restricted attachment slots are skipped.</strong> A slot locked by another attachment (crossed-out / prohibited icon) was being emitted as if the slot LABEL were an attachment (that's how J358 got a <code>"Trigger Action"</code> attachment). The prompt now explicitly skips restricted AND empty slots and never outputs a slot label as a name; the old "exactly 5" wording that forced a hallucinated 5th is gone.</li><li><strong>Attachments always display in canonical slot order</strong> (Optic → Muzzle → Barrel → Stock → Laser → Underbarrel → Trigger Action → Rear Grip → Ammunition → Perk), via <code>orderAttachmentsBySlot()</code>. Applies to <code>/autobuild</code> builds (which carry per-slot labels); builds created before this keep their entry order until a separate reorder pass. Empty/restricted slots are filtered before storage, kept aligned with their slot labels so per-slot Cloudinary metadata never maps a name onto the wrong slot.</li><li><code>/manage</code>'s <strong>"How Images Work"</strong> info block updated — it said the bot never uploads images; <code>/autobuild</code> now does (screenshot → Cloudinary + loadout in one step), so it's presented as the fast path alongside the manual-key entry.</li></ul>
-<h3 id="loadout-data-corrections-harkirat-verified" class="plain"><span class="ht">Loadout data corrections (Harkirat-verified)</span><a class="anchor" href="#loadout-data-corrections-harkirat-verified" aria-label="Link to this section">¶</a></h3>
+<h3 id="loadout-data-corrections-harkirat-verified" class="plain"><span class="ht">Loadout data corrections (Harkirat-verified)</span><a class="anchor" href="#loadout-data-corrections-harkirat-verified" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <ul><li><strong>L-CAR 9 Build 2 ↔ Crossbow Build 1 images were swapped</strong> (each screenshot uploaded under the other's Cloudinary key during the 2026-07-19 re-upload; the attachment data was always correct). Bytes swapped back and verified by etag; metadata re-synced.</li><li><strong>J358's <code>"Trigger Action"</code></strong> removed — it was a restricted slot, not an attachment.</li><li><strong>3 <code>/autobuild</code> test builds deleted</strong> (Mongo + Cloudinary): Machine Pistol Build 2, R9-0 — Death's Voice Build 1 &amp; 2.</li><li><strong>Striker's "Fast Reload Reload Case"</strong> confirmed correct as-is (real in-game label, not a typo) — no change.</li></ul>
         </div>
       </article>
@@ -2872,13 +2925,13 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <div class="lg-b">
           <p class="lg-t">/autobuild live-test fixes · Cloudinary metadata · new Advanced Double Legendary draw · looping pagination</p>
           <p>One push bundling four workstreams (the <code>/autobuild</code> + Cloudinary metadata batch had been sitting uncommitted across sessions; the draw-prices + pagination work is from the 2026-07-21 session). <strong>Shipped live to the VM 2026-07-21.</strong> Player-facing parts: the new draw type + looping pagination. Admin/back-end parts: the <code>/autobuild</code> fixes + Cloudinary metadata.</p>
-<h3 id="autobuild-live-test-bug-fixes" class="plain"><span class="ht"><code>/autobuild</code> live-test bug fixes</span><a class="anchor" href="#autobuild-live-test-bug-fixes" aria-label="Link to this section">¶</a></h3>
+<h3 id="autobuild-live-test-bug-fixes" class="plain"><span class="ht"><code>/autobuild</code> live-test bug fixes</span><a class="anchor" href="#autobuild-live-test-bug-fixes" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p>First round of fixes from Harkirat's live <code>/autobuild</code> test (notes: <code>local/autobuild testing notes.md</code>). Admin-only feature.</p>
 <ul><li><strong>Open Loadout now renders the weapon's full build set + real pagination.</strong> The PoC passed a single-element array to <code>buildLoadoutCard</code>, so every "Open Loadout" card read <strong>"Build 1 of 1"</strong> with no Prev/Next arrows, even for a weapon with several builds (live tests 1/3/4). Now queries every build of that <code>weaponKey</code> and opens <strong>on the just-created build</strong> — correct "Build N of M", working pagination. (<code>index.js</code> <code>autobuild_openloadout_</code> handler.)</li><li><strong>Confirm now edits the review card in place</strong> into the "Loadout created / Open Loadout" card, instead of leaving a stale review panel above a brand-new message (Harkirat's note #11). Applies to the retry paths too. (<code>utils/autobuildPipeline.js</code> — <code>replaceWithV2Card</code> via <code>sendV2Payload</code> PATCH <code>@original</code>, replacing the old new-message <code>followUpV2Card</code> POST.)</li><li><strong>Badges now propagate across every build of a weapon.</strong> Setting e.g. "Meta" during <code>/autobuild</code> review used to land the badge only on the newly-created build (live test 3) — badges describe the weapon, not one variant. <code>writeLoadoutDoc</code> now <code>updateMany</code>s siblings (same <code>weaponKey</code>/<code>mode</code>), guarded on "a badge is actually set" so a blank can never wipe siblings. Mirrors <code>/manage</code>'s <code>edit_loadout_</code> convention.</li><li><strong>Duplicate-loadout detection (advisory warning).</strong> Re-submitting a screenshot of a build already in the DB silently created a second identical doc (live test 1). New <code>findDuplicateLoadouts</code> (<code>utils/loadoutRender.js</code>) flags a likely dupe on the review card via two soft rules (Harkirat's idea): code <strong>identical</strong> + ≥4/5 attachments match, <strong>or</strong> code within <strong>2 char edits</strong> + all 5 attachments match. Advisory only — Confirm still works, so a genuine new variant isn't blocked.</li><li><strong>Category-conflict warning.</strong> Picking a category that differs from an existing build of the same weapon silently registered the weapon under two categories (live test 4 — AK117 ended up both AR and MARKSMAN). The review card now warns when the chosen category ≠ an existing build's category. <strong>Build numbering stays per-<code>weaponKey</code>, deliberately</strong> (a weapon's identity is its key; the real bug is the miscategoriz- ation, which this warning surfaces — not the numbering).</li><li><strong>Cloudinary metadata: switched to Structured Metadata Fields, then fully expanded + backfilled + kept in sync</strong> (Harkirat's follow-up calls). <strong>22 account-level fields</strong> created via the idempotent <code>scripts/createCloudinaryMetadataFields.js</code>:</li><li><strong>Loadouts (18):</strong> one per Gunsmith slot (Muzzle/Barrel/Optic/Stock/Perk/Laser/Underbarrel/Ammunition/ Rear_Grip), <strong>Weapon_Name</strong>, <strong>Mode</strong>, <strong>Build_Number</strong> (int), <strong>Gunsmith_Code</strong>, badges <strong>Is_Meta</strong>/ <strong>Is_Toxic</strong>/<strong>Rank</strong>, and dates <strong>Created_At</strong>/<strong>Last_Updated</strong> (Created_At read for free from the Mongo ObjectId timestamp — no schema change).</li><li><strong>Patch notes (4):</strong> <strong>Patch_Id</strong>, <strong>Patch_Season</strong>, <strong>Patch_Image_Order</strong> (int), <strong>Patch_Release_Date</strong> — so each cached screenshot knows its season, carousel order, and release date.</li><li><strong>Backfilled</strong> all existing assets from Mongo: <strong>132/133</strong> loadouts (the 1 skip is PHARO's external-URL "Coming Soon" placeholder) + all 5 Season 6 patch images.</li><li><strong>Per-slot fields backfilled too, via a one-time vision batch</strong> (<code>scripts/backfillLoadoutSlots.js</code>, GCP-authorized spend) — ran the Gemini model over every existing loadout image to recover the slot→attachment mapping Mongo didn't store, mapping vision's slot labels onto the authoritative stored attachment names. <strong>122/132 fully mapped.</strong> The 10 partials turned out to be pre-existing data bugs the batch <em>surfaced</em> (two loadout images fully swapped — <code>L-CAR-9-2</code>↔<code>CROSSBOW-1</code>, a few builds with crossed attachments between variants, a stored typo, one revolver-slot miss) — flagged for Harkirat, not auto-fixed. <code>visionExtract</code> gained an optional <code>maxAttachments</code> (default 5; DMZ uses 9) — <code>/autobuild</code> behavior unchanged.</li><li><strong>Auto-syncs on every edit</strong> (the "if I edit these it updates Cloudinary by itself" ask): loadout add/edit/bulk + badge propagation, and patch-notes date/URL/season-rename edits. Doc-centric design — <code>syncLoadoutMetadata(doc)</code> / <code>syncPatchEntryMetadata(entry)</code> are the single sync points; metadata is always a best-effort step decoupled from any image upload so it can never fail a save.</li><li>Verified live end-to-end (write + <code>api.resource</code> read-back + queryable searches). Real gotcha handled: a Cloudinary public_id has no file extension, so <code>AK117-1.png</code> had to be stripped to <code>AK117-1</code> for the metadata API (which silently no-ops on a mismatched id).</li><li><strong>Removed the AK117 test data</strong> created during the live test — the 3 MP dupe builds (<code>AK117-2/3/4</code>, Mongo docs + Cloudinary images), guarded by a created-date check. The real MP <code>AK117-1</code> and DMZ <code>AK117-1</code> kept.</li></ul>
-<h3 id="new-advanced-double-legendary-weapon-draw-in-draw-prices" class="plain"><span class="ht">New "Advanced Double Legendary Weapon Draw" in <code>/draw prices</code></span><a class="anchor" href="#new-advanced-double-legendary-weapon-draw-in-draw-prices" aria-label="Link to this section">¶</a></h3>
+<h3 id="new-advanced-double-legendary-weapon-draw-in-draw-prices" class="plain"><span class="ht">New "Advanced Double Legendary Weapon Draw" in <code>/draw prices</code></span><a class="anchor" href="#new-advanced-double-legendary-weapon-draw-in-draw-prices" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p>A brand-new draw type added to <code>/draw prices</code> from Harkirat's own 10/30 CP breakdown. User-facing.</p>
 <ul><li><strong>New 3rd page in <code>/draw prices</code></strong> dedicated to the <strong>Advanced Double Legendary Weapon Draw</strong> — a more elaborate draw than the others: it offers <strong>three purchase modes per spin</strong> (Regular / Advanced / the "Trap") plus a <strong>strategy breakdown</strong>, so it doesn't fit the shared <code>draws: []</code> model every other entry uses. It gets its own builder (<code>buildAdvancedDoubleLegendaryEntry</code>) on its own page, reached via the same Prev/Next pagination (now <strong>3 pages</strong>, was 2). Both CP regions have full data.</li><li><strong>Rendered with the same multi-component "section" style as the rest of the command</strong> (separate Text Displays grouped by spacing-2 dividers: headline totals → the 3 purchase modes → the two NOTE/THE-TRAP cautions → the strategy list), not one flat text block. Keeps the literal in-game <strong>"Regular Purchase"</strong> / <strong>"Advanced Purchase"</strong> labels verbatim.</li><li><strong>Every number is derived, never hand-typed</strong> — same rule the rest of this file already enforces. Only the Regular and Advanced per-pull arrays are stored per region; from those the code derives the <strong>Trap</strong> (always exactly 2× Regular), all three totals, the running "CP Spent" lines, the three <strong>strategy costs</strong> (Reg/Adv cumulative slices), and even the "cheaper than a Normal Draw (X vs Y)" comparison (Y read from the region's own Legendary Weapon Non-Reactive total). So a wrong number can only ever live in one place.</li><li>Verified: all rendered totals/sequences match the source breakdown exactly for both regions; every page stays under Discord's 40-component cap (max 33); and out-of-range pages clamp safely.</li></ul>
-<h3 id="bot-wide-pagination-arrows-now-loop-instead-of-disabling-on-the-ends" class="plain"><span class="ht">Bot-wide: pagination arrows now LOOP instead of disabling on the ends</span><a class="anchor" href="#bot-wide-pagination-arrows-now-loop-instead-of-disabling-on-the-ends" aria-label="Link to this section">¶</a></h3>
+<h3 id="bot-wide-pagination-arrows-now-loop-instead-of-disabling-on-the-ends" class="plain"><span class="ht">Bot-wide: pagination arrows now LOOP instead of disabling on the ends</span><a class="anchor" href="#bot-wide-pagination-arrows-now-loop-instead-of-disabling-on-the-ends" data-tip="Link to this section" aria-label="Link to this section">¶</a></h3>
 <p>Every Prev/Next pager in the bot (draws &amp; calendar sub-pages, draw prices, <code>/settings</code>, View Colors, <code>/alerts</code>, loadout cards) now <strong>wraps around</strong> — Next on the last page jumps to the first page, Prev on the first page jumps to the last — instead of the arrow going disabled at the end (Harkirat's request).</p>
 <ul><li>Centralised in the shared <code>utils/paginationRow.js</code>: the arrows are no longer disabled (only the middle page counter stays a disabled label), and the wrap modulo lives in ONE place via a new <code>makeCustomId(targetPage)</code> callback the 6 target-page callers now pass instead of pre-baked <code>prevCustomId</code>/<code>nextCustomId</code> strings.</li><li>Loadout cards kept their existing direction-based custom_ids — their index.js handler already did the modulo wrap on click, so they just needed the buttons un-disabled.</li><li>Applies at exactly 2 pages too (both arrows then simply point at the other page) — a deliberate part of "loop everywhere"; flag if you'd rather 2-page pagers keep a disabled end instead.</li></ul>
         </div>
@@ -3597,7 +3650,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   </footer>
 </div>
 
-<button class="totop" id="totop" aria-label="Back to top">
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -5033,12 +5086,45 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     }
     /* ⚠️ ONE elementFromPoint SERVES BOTH QUESTIONS — it is a hit test, cheap but
        not free, and the shape and the colour both want the same element. */
+    /* ⚠️ A PARAGRAPH'S BOX IS NOT ITS TEXT, and treating them as the same thing
+       is what put the I-beam on half the page. A <p> is a block: it spans the
+       full measure, so its box covers the ragged right of every line and the
+       whole width below the last one. closest('p') therefore said "text" while
+       the pointer sat in open space several centimetres from a glyph — reported
+       2026-08-03 16:21 EDT with a screenshot of exactly that.
+       The caret is the honest test. caretRangeFromPoint snaps to the nearest
+       insertion point, so its rect sits AT the end of a short line while the
+       pointer is out in the margin; requiring the pointer to be within a glyph's
+       width of it turns "inside the block" into "on the writing". 14px is about
+       one character at body size, which keeps the beam from flickering off in
+       the gaps between words. */
+    function onGlyphs(x,y){
+      var r=null,rg,cp;
+      if(document.caretRangeFromPoint){
+        rg=document.caretRangeFromPoint(x,y);
+        if(rg)r=rg.getBoundingClientRect();
+      }else if(document.caretPositionFromPoint){
+        cp=document.caretPositionFromPoint(x,y);
+        if(cp&&cp.offsetNode){
+          rg=document.createRange();
+          rg.setStart(cp.offsetNode,cp.offset);
+          rg.collapse(true);
+          r=rg.getBoundingClientRect();
+        }
+      }
+      /* No caret API, or a caret with no box: fall back to the old behaviour
+         rather than losing the I-beam entirely. */
+      if(!r)return true;
+      if(!r.width&&!r.height)return true;
+      return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
+    }
     function probe(){
       var e=document.elementFromPoint(cx,cy);
       if(!e)return;
       shapeFor(
         e.closest('a,button,summary,[role="button"],input,select,textarea,label')?'link'
-        :e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')?'text':'idle');
+        :(e.closest('p,li,h1,h2,h3,h4,td,blockquote,code,.lede,.disc,dd,dt')
+          &&onGlyphs(cx,cy))?'text':'idle');
       /* ⚠️ RESOLVE ONCE PER SURFACE, NOT ONCE PER SAMPLE. .ghb transitions its own
          color over 220ms on hover, so sampling every 90ms walked the swarm up that
          ramp (a white flash) and then dropped it. Latching on the surface reads the
@@ -5547,6 +5633,95 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
          near the bar pays nothing for this after the pointer leaves */
       raf = live ? requestAnimationFrame(tick) : 0;
     }
+  })();
+
+  /* ══ 6 · the hint ═══════════════════════════════════════════════════════
+     One floating capsule, reused, positioned over whatever [data-tip] the
+     pointer or the keyboard is on. It replaces the native title= tooltip, which
+     drew in the OS's font after the OS's delay and could not be styled at all.
+
+     ⚠️ A CONTROL MUST NOT CARRY BOTH title= AND data-tip — the browser would
+     draw its own tooltip underneath this one. The repo button had the only
+     title on the site and it was removed in the same change.
+
+     ⚠️ POINTER TRIGGERS ARE GATED ON fine, FOCUS TRIGGERS ARE NOT. On a touch
+     screen pointerenter fires on tap, so an ungated hint would flash on every
+     link a thumb touches, one frame before the page navigates away. Keyboard
+     focus is a real request to know what something is on any device, so
+     focusin/focusout stay live.
+
+     ⚠️ It hides on scroll, on wheel and on click. A position:fixed capsule
+     anchored to an element that has moved is worse than no hint: it points at
+     the wrong control with total confidence. */
+  (function(){
+    var host=null,tipEl=null,showT=0,cur=null;
+    function build(){
+      if(tipEl)return tipEl;
+      tipEl=el('div','tipx');
+      tipEl.setAttribute('aria-hidden','true');
+      var t=el('span','tipx-t');
+      tipEl.appendChild(t);
+      document.body.appendChild(tipEl);
+      return tipEl;
+    }
+    function place(node){
+      var tip=build();
+      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      /* measured with the class off, so the transform is not folded into the
+         box the arithmetic is done against */
+      tip.classList.remove('on');
+      var r=node.getBoundingClientRect(), tr=tip.getBoundingClientRect();
+      var GAP=10, under=r.top-tr.height-GAP<6;
+      tip.classList.toggle('under',under);
+      var y=under?r.bottom+GAP:r.top-tr.height-GAP;
+      /* clamped so a control at the edge of the bar does not push it off screen;
+         the capsule is centre-anchored, hence the half-width either side */
+      var half=tr.width/2, x=r.left+r.width/2;
+      if(x-half<8)x=8+half;
+      if(x+half>innerWidth-8)x=innerWidth-8-half;
+      tip.style.left=x.toFixed(1)+'px';
+      tip.style.top=Math.max(6,y).toFixed(1)+'px';
+      tip.classList.add('on');
+      cur=node;
+    }
+    function hide(){
+      clearTimeout(showT);
+      cur=null;
+      if(tipEl)tipEl.classList.remove('on');
+    }
+    function want(node,delay){
+      if(!node||node===cur)return;
+      clearTimeout(showT);
+      /* a delay, so sweeping the pointer across a row of controls does not
+         strobe a capsule at every one of them */
+      showT=setTimeout(function(){ place(node); },delay);
+    }
+    function tipOf(e){
+      var n=e.target;
+      return n&&n.closest?n.closest('[data-tip]'):null;
+    }
+    if(fine){
+      document.addEventListener('pointerover',function(e){
+        if(e.pointerType==='touch')return;
+        var n=tipOf(e);
+        if(!n){ if(cur)hide(); return; }
+        want(n,190);
+      },true);
+      document.addEventListener('pointerout',function(e){
+        var n=tipOf(e);
+        if(n&&n===cur)hide();
+        else if(!n)hide();
+      },true);
+    }
+    document.addEventListener('focusin',function(e){
+      var n=tipOf(e);
+      if(n)want(n,0); else hide();
+    },true);
+    document.addEventListener('focusout',hide,true);
+    addEventListener('scroll',hide,{passive:true,capture:true});
+    addEventListener('wheel',hide,{passive:true});
+    addEventListener('click',hide,true);
+    addEventListener('blur',hide);
   })();
 })();
 </script>
