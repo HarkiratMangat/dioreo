@@ -326,6 +326,19 @@ active file a given dead item came out of.
   directly — no second command needed (Discord has no real alias mechanism anyway). See
   `.claude/rules/loadouts.md`.
 
+- ~~"Contributing/Contributors redesign: direction chosen and mockup approved — this is a build, not
+  an exploration"~~ → **RETIRED 2026-08-02 23:14 EDT.** That framing was true when filed
+  (2026-08-02 01:10 EDT) and is now false twice over. The approved artefact was
+  `local/site-redesign/mockup-v1.html` — the Interchange/Plate concept — and a nine-site reference
+  crawl superseded it outright, after which Harkirat released both pages from the legal set's design
+  language entirely; mockup-v1 became a fallback nobody chose. Then the redesign itself was **parked**
+  (*"needs heavy designing and discussion work"*), so it is neither approved-as-built nor in flight.
+  **The live site never changed** — everything stayed in gitignored `local/`.
+  What survives, on the active item in `docs/db-deferred-list.md`: the structural fork IS answered
+  (constellation on desktop, full-width stack on mobile), and it is marked **read-when-asked** so it
+  stops being raised unprompted. *This also corrects the line in the section above, which still said
+  the redesign was "its own scheduled session with an approved mockup" — it is neither now.*
+
 ## Not a real issue
 
 - ~~[Diors Builds] "Tundra" weapon name~~ → **NON-ISSUE, confirmed 2026-07-18.** Connected to the live
