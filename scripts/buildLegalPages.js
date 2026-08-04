@@ -522,11 +522,28 @@ function parseBlocks(md) {
             i += 2;
             const rows = [];
             while (i < lines.length && /^\s*\|/.test(lines[i])) { rows.push(cells(lines[i])); i++; }
+            // ⚠️ data-label is what makes the narrow-screen stacked layout possible: below
+            // 620px the <thead> is taken out of the visual flow and every cell reprints its
+            // own column name from this attribute. Derived from the RAW source cell with
+            // markdown emphasis stripped, never from inline()'s HTML — an attribute cannot
+            // carry markup, so a <code> span in a header would reach the page as visible
+            // escaped angle brackets. Quotes are escaped here because esc() deliberately
+            // does not: everywhere else it feeds text content, where a quote is harmless.
+            const labelOf = c => esc(c.replace(/`|\*\*|__|(?<![A-Za-z0-9])[*_](?![A-Za-z0-9])/g, '').trim())
+                .replace(/"/g, '&quot;');
+            // ⚠️ THE ROLES ARE REDUNDANT ON DESKTOP AND LOAD-BEARING ON A PHONE. The
+            // narrow-screen rules set display:block on the table, its groups, its rows and
+            // its cells, and a browser drops the implicit table semantics the moment it
+            // stops laying the element out as a table — so a screen reader would read four
+            // orphaned strings with no column names attached. Re-declaring the same roles
+            // the elements already have natively costs nothing where the layout is intact
+            // and is what keeps the header association alive where it is not.
             out.push(
-                '<div class="tw"><table><thead><tr>' +
-                head.map(c => `<th>${inline(c)}</th>`).join('') +
-                '</tr></thead><tbody>' +
-                rows.map(r => '<tr>' + r.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>').join('') +
+                '<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row">' +
+                head.map(c => `<th role="columnheader" scope="col">${inline(c)}</th>`).join('') +
+                '</tr></thead><tbody role="rowgroup">' +
+                rows.map(r => '<tr role="row">' + r.map((c, ci) =>
+                    `<td role="cell" data-label="${labelOf(head[ci] || '')}">${inline(c)}</td>`).join('') + '</tr>').join('') +
                 '</tbody></table></div>'
             );
             continue;
@@ -4253,6 +4270,51 @@ pre.aligned a{color:var(--ink)}
 .doc td{font-family:var(--serif);font-size:.95rem;line-height:1.6;color:var(--ink2)}
 .doc tbody tr:last-child td{border-bottom:0}
 .doc tbody tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+
+/* ⚠️ NARROW SCREENS GET A STACK, NOT A SCROLLER, AND THAT IS THE WHOLE POINT.
+   Measured on a 375px viewport before this existed: .tw had a 288px content box
+   around a table whose columns could not compress below 340px, so every one of
+   these tables side-scrolled AND clipped its last column. Three columns of prose
+   in 288px is about 95px each, which is narrower than the words inside them, so
+   the code chips broke mid-token and a four-letter value wrapped across three
+   lines. A column narrower than its own longest word cannot be fixed by tuning,
+   only by removing the column constraint.
+   min-width has to be reset explicitly: min(540px,100%) resolves against the
+   wrapper, so it was already yielding to the wrapper and doing nothing useful,
+   but it still pins the table to the wrapper's width once display goes to block.
+   Every one of these tables is a KEY plus attributes about the key — Discord user
+   ID, db-theme, version 1.4 — so the first cell becomes the card's title strip and
+   the rest carry their column name above the value. That shape is structural, not
+   a match on header text, which is why it does not rot the way the warm treatments
+   warn about. */
+@media (max-width:620px){
+  .tw{overflow-x:visible;border:0;background:none}
+  .doc table{display:block;min-width:0;width:100%}
+  /* Clipped, never display:none. The column names are the only thing tying a value
+     to its meaning, and a screen reader loses the native header association the
+     moment display:block strips the table roles — so the header row stays in the
+     accessibility tree and the roles are re-declared on the markup itself. */
+  .doc thead{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .doc tbody{display:block}
+  .doc tbody tr{display:block;margin:0 0 .8rem;border:1px solid var(--rule);
+    background:var(--raised);overflow:hidden}
+  .doc tbody tr:last-child{margin-bottom:0}
+  .doc td{display:block;padding:.6rem .85rem;border-bottom:1px solid var(--rule)}
+  .doc td::before{content:attr(data-label);display:block;margin-bottom:.22rem;
+    font-family:var(--mono);font-size:.57rem;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink3);font-weight:500}
+  /* The key cell reads as the card's heading: same family and weight the document
+     gives an h3, on the paper tone so the strip separates from the attributes under
+     it without needing a second border. */
+  .doc tbody td:first-child{background:var(--paper);font-family:var(--display);
+    font-weight:650;color:var(--ink);font-size:.92rem;line-height:1.35}
+  .doc tbody tr td:last-child{border-bottom:0}
+  /* A row-wide tint on a card that already has its own surface just muddies it, and
+     there is no hover on the devices this branch is for. */
+  .doc tbody tr:hover td{background:none}
+  .doc tbody tr:hover td:first-child{background:var(--paper)}
+}
 
 /* ── footer ──────────────────────────────────────────────────────── */
 /* No grid-column here any more: the footer left the grid when .cols was introduced,
