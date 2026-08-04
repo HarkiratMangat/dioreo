@@ -62,6 +62,29 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P1 · XS · Harkirat action, not a build]` **Every GitHub link on the live site is a 404 until the
+  repo is renamed to `dioreo`.** *Filed 2026-08-04 16:23 EDT, shipped-broken in v2.52.0 with Harkirat's
+  prior go-ahead for the rename itself.*
+
+  The v2.52.0 rename changed the repo URL everywhere it appears — `package.json`'s three URL fields,
+  `LICENSE` §17, `NOTICE` §8, `CONTRIBUTING.md`'s issue link and its `git clone` snippet, and
+  `REPO_URL` in the generator, which is what the **Source** button in every page header points at.
+  They all now read `github.com/HarkiratMangat/dioreo`, and **the repository is still called
+  `Diors-Builds`**, so each one 404s.
+
+  ⚠️ **This was a deliberate ordering choice, not an oversight.** Harkirat selected the GitHub rename
+  when asked which identifiers should move, and the alternative — landing the release with the OLD
+  URLs and re-editing seven files afterwards — is strictly worse. GitHub 301-redirects the old path
+  after a rename, so doing it in either order ends up correct; only this order has a window.
+
+  **Fix — one command, Harkirat's to run** (it is outward-facing, so it was not run unasked):
+  ```
+  gh repo rename dioreo --repo HarkiratMangat/Diors-Builds
+  ```
+  Then `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local clone.
+  ⚠️ **Do NOT rename the local folder** — the memory-store slug derives from that path. See
+  `project_rename_to_dioreo` in the memory store for the full did/didn't-move boundary.
+
 - `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
   animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
   and chased across the mobile-polish session.*
@@ -242,30 +265,18 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **🌿 `fix/mobile-site-polish` is FINISHED and PUSHED but UNMERGED — nothing is released** `[P1 · S]`
-  ⛓️ blocked *(filed 2026-08-04 13:42 EDT)*. Trigger: the next session that touches this repo.
+- **🚀 v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3** `[P1 · XS]`
+  *(filed 2026-08-04 16:23 EDT, replacing the branch reminder this supersedes)*. Trigger: the next
+  session that touches this repo, or any report that a site/bot change "did not land".
 
-  19 commits, cut from `main`, remote at `bc93afb` with one later local-only commit (`fe9cf55`,
-  the section-number revert) that **still needs pushing**. `main` is untouched and there is **no
-  PR**. Everything in it is built, verified and green — `npm test` 18/18, `npm run site` all gates,
-  `npm run docs:audit` 37/37 — so this is a release-flow gap, not unfinished work.
+  Deploy is a separate, optional step and is deliberately NOT implied by a merge — Harkirat asked for
+  "commit, push, pr, and merge" and said nothing about deploying, so it was held. On the VM:
+  `./scripts/deploy.sh` (git pull → restart), then verify with `scripts/vmstatus.sh`. **Ask first.**
 
-  ⛓️ **Blocked on one decision only: the version number.** Harkirat was asked (v2.52.0 moderate /
-  v2.51.4 minor / a v3 base) and **denied the question**; the denial was then misread as approval
-  to choose, which is what put the branch on the remote at all — see
-  `feedback_denial_is_not_approval` in the memory store. **Do not pick a version to unblock this.**
-  Ask, and if the framing was the problem, reframe rather than re-ask verbatim.
-
-  **What remains, in order** (the repo's own flow, `project_git_workflow`): push `fe9cf55` →
-  `gh pr create` → the final pre-merge commit ON THE BRANCH (a `docs/CHANGELOG.md` entry citing
-  `(#PR)` with **no hash**, matching entries in `CHANGELOG-SUMMARY.md` and `DEVLOG.md`, the
-  `package.json` bump, and backfilling **v2.51.3's hash `eb0b82d`**, which is currently blank as
-  designed) → `gh pr merge --squash --delete-branch` (ask) → `git tag -a` on the squash SHA (ask)
-  → deploy, separately (ask). ⚠️ Deploy is NOT implied by merge; a merged version can sit
-  undeployed indefinitely.
-
-  **Verify** it actually shipped with `git rev-list --left-right --count origin/main...HEAD` and
-  by checking the live site's `<title>`/headline — a 200 alone can be cache.
+  ⚠️ **The SITE half is already live regardless.** `.github/workflows/deploy-site.yml` publishes
+  `public/` to Cloudflare Pages on any merge to `main` that touches it, so the renamed site went out
+  with the merge while the bot on the VM is still the old build. That split is normal here and is
+  exactly why "merged" must never be reported as "live" — say which of the two actually happened.
 
 - **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE)
   (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
@@ -1259,6 +1270,14 @@ well-specified execution/polish, not novel design.*
   into v3 2026-07-27 23:23 EDT (Harkirat's call) — downgraded from a standalone P1 since the description
   rewrite depends on `/help` shipping first. Pure Discord Dev Portal task, not something Claude has UI
   access to do.
+  ⚠️ **The NAME half is no longer blocked and no longer P3** *(updated 2026-08-04 16:21 EDT)*. The
+  project was renamed to **Dioreo** in v2.52.0 and the live site, the licence, the Terms and the
+  Privacy Policy now all say Dioreo — while the production Discord application is still called
+  *Dior's Builds*, so the bot introduces itself in Discord under a name none of its own documents
+  use. That is a real inconsistency a user can see, and it does not depend on `/help`. **Rename the
+  production application in the Developer Portal — `[P1 · XS]`, Harkirat only.** The description and
+  banner stay blocked on `/help` as before. *(The DEV application `Dioreo (Dev)` has carried the new
+  name since 2026-07-26 and needs nothing.)*
   ⇄ Also on `docs/ROADMAP.md`'s v3 list (canonical scope/dependency detail).
 - `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable**
   *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries

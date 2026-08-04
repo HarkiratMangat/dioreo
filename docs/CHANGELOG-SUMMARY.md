@@ -26,6 +26,19 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.52.0 — August 4, 2026
+- **The bot is now called Dioreo.** Same bot, same person running it, same everything it remembers
+  about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored.
+  The Terms and Privacy Policy both spell this out, and every mention of the old name still counts as
+  a mention of the new one.
+- **The website has a proper front page.** It used to open by introducing the legal documents; now it
+  introduces the bot, with the legal documents still one tap away underneath.
+- **Easier to read on a phone.** Code examples got a cleaner layout with a copy button that actually
+  sits where you'd expect and tells you when it's copied, the footer spacing was evened out, and the
+  Contributing and Contributors pages got a back-to-top button.
+- **You can download the licence and notice files directly** from the menu on those pages, wherever
+  you happen to be scrolled to.
+
 ## v2.51.3 — August 4, 2026
 - **Nothing changed in the bot.** Made the project's own release tooling a bit safer and smarter.
 

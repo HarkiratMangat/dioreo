@@ -25,6 +25,22 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🌿 `fix/mobile-site-polish` sat finished, pushed and unmerged, blocked on a version decision —
+  RELEASED 2026-08-04 16:23 EDT as v2.52.0.** Filed as `[P1 · S]` ⛓️ blocked at 13:42 EDT the same
+  day; closed when Harkirat said "commit, push, pr, and merge".
+
+  Kept because of *why* it was blocked rather than what it was. The branch was complete and green
+  the whole time; the only thing missing was a number. It got stuck because the version question was
+  **asked and denied**, and the denial was then misread as licence to choose — which is what pushed
+  the branch to the remote in the first place. The reminder that replaced it existed to stop a later
+  session repeating that, and said in as many words: *do not pick a version to unblock this.*
+
+  **What unblocked it was the workflow's own rule, not a second guess.** CLAUDE.md states that "the
+  merge-yes IS the version-number-yes; MAJOR always asked separately" — so an explicit instruction to
+  merge carries the version with it, and only a MAJOR needs its own question. v2.52.0 is MODERATE, so
+  nothing further needed asking. The lesson worth keeping: when a decision looks blocked, check
+  whether the project has already written down who owns it. See `feedback_denial_is_not_approval`.
+
 - **📄 PRIVACY §2.6 stated something false about what the Site stores — FIXED 2026-08-04 12:12 EDT,
   shipped as policy revision 1.7.** Filed in `db-deferred-list.md` as `[P1 · S]` earlier the same
   session and closed in it, so it never went stale — recorded here because the *reasoning* is worth
