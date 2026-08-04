@@ -112,6 +112,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)
 - 2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)
 - 2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)
+- 2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4255,6 +4256,27 @@ gets missed because it was never one thing to begin with — two copies of
 the same regex will drift the instant only one of them is looked at. The
 question worth asking before calling a fix done isn't just "does the bug
 still reproduce here," it's "does anything else contain the same logic."
+
+## 2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)
+
+A small repo-side follow-up to a `dior` CLI consolidation item filed in `meta-deferred-list.md`
+on 2026-08-01: `npm run site` ran `node --check` on its two build scripts before building; the
+`dior legal build`/`deploy` commands (a separate personal zsh CLI, `dior-cli`) called the same
+builder directly, with no such check. Since `dior legal deploy` is the command that actually
+publishes, that made the CLI path the *less* safe of the two ways to build the site — a backtick
+inside a stylesheet comment (the site's CSS lives in JS template literals) had already bitten
+this repeatedly. Fixed on the CLI side (`_dior_legal_syntax_check`, shared by both commands,
+verified live against a stub repo with a deliberately broken script — both bailed before writing
+or publishing anything); `CLAUDE.md`'s "known wart" note here is rewritten to say the two paths
+are equally safe now, rather than still warning about an asymmetry that no longer exists.
+
+Also adds `cliff.toml`: config for a new `dior changelog` command that drafts release notes via
+git-cliff, grouped by this repo's own 11 Conventional Commits types rather than git-cliff's
+default parser set. Deliberately scoped as a draft generator, never a replacement for this
+file's own hand-curated system — the lagged hash backfill, the sync across three files,
+`docs-audit.mjs`'s structural checks are all things a generator has no way to reproduce, and the
+config's own header comment says so. Verified against real tagged releases and a real unreleased
+commit range before landing, rather than trusting the template unread.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.51.3 — August 4, 2026
+- **Nothing changed in the bot.** Made the project's own release tooling a bit safer and smarter.
+
 ## v2.51.2 — August 3, 2026
 - **Nothing changed in the bot.** Internal housekeeping: tidied up the project's own working notes
   and to-do list, and fixed a bug in one of the automated checks that made sure open items in those
