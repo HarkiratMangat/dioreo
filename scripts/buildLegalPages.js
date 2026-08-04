@@ -938,8 +938,8 @@ function renderIndented(head, region) {
  * copy to exist. Add a token here and both selectors get it.
  */
 const LIGHT_TOKENS = `
-  --desk:#D8CFDC; --paper:#F8F2E4; --raised:#EDE5D3;
-  --rule:#C3B8A0; --rule2:#978C78;
+  --desk:#E7E9EE; --paper:#F8F9FB; --raised:#EDEFF3;
+  --rule:#B9C0CC; --rule2:#8D94A4;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);`;
@@ -972,15 +972,21 @@ const TOKENS = `
    which is to say invisible: every divider, table border and callout edge that
    structures these documents simply vanished in light mode while looking fine in
    dark. Light is not dark with the values flipped; the same separation needs more
-   contrast on a bright ground. --rule sits at 1.76:1 against paper and --rule2 at
-   2.97:1, and --raised is pulled further from --paper so callouts and table
-   headers read as distinct surfaces rather than the same cream.
-   ⚠️ --paper IS DELIBERATELY NOT WHITE. It was #FDFCFA, which is white in all but
-   name; it is manila cream now, so the document reads as a sheet of stock rather
-   than as an unstyled page. The rule tokens were re-derived against the new paper
-   in the same pass — they were tuned against the old one, and a hairline keeps
-   its job only if it keeps its ratio. Every figure here was computed, not
-   eyeballed; recompute them if any of these four move. */
+   contrast on a bright ground, and --raised is pulled further from --paper so
+   callouts and table headers read as distinct surfaces rather than one flat tone.
+   ⚠️ TWO CONSTRAINTS ON THIS PALETTE, both learned the expensive way, neither
+   visible in the values themselves.
+   NOT WHITE, AND NOT WARM. --paper was #FDFCFA, which is white in all but name and
+   read as an unstyled page. A cream/manila family was then tried and rejected on
+   sight for looking yellow; the direction asked for is clean and neutral, so the
+   family is a cool off-white on a soft cool ground. Do not "warm it up" and do not
+   flatten it back to #FFF.
+   THE RULE TOKENS ARE DERIVED FROM --paper, NOT CHOSEN BESIDE IT. A hairline only
+   does its job at its ratio, so moving --paper without re-deriving --rule/--rule2
+   leaves dividers either invisible or heavy — and they went brown once by being
+   carried across a palette change unexamined. contrastAudit will not catch it: it
+   reads ink against surfaces and never looks at a rule. Recompute by hand when any
+   surface here moves. */
 :root[data-theme=light]{${LIGHT_TOKENS}
 }
 @media (prefers-color-scheme:light){
@@ -997,24 +1003,22 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    to place the document card against. A wide soft lift behind the top of the page
    gives the card something to sit ON. The dark theme gets this for free — its
    card is LIGHTER than its ground, so the separation already exists.
-   ⚠️ THE GROUND IS PLUM-STONE, NOT BEIGE, AND THE BEIGE IS NOT COMING BACK. It
-   was a warm near-neutral (#D6D1CA, then #DBD3C6) and both read as muddy on a
-   phone — a low-chroma yellow-brown at high lightness is the exact recipe for
-   dirty, because there is not enough chroma to name a colour and just enough to
-   dull the grey. It now mirrors the DARK theme's own description — warm
-   plum-tinted graphite — in light form, which also puts a cool ground under the
-   warm manila paper instead of beige on beige.
-   ⚠️ Values are MEASURED, not picked: --ink3 against the ground is the binding
-   constraint at 4.67:1 against a 4.5 floor, and a deeper plum tried at the same
-   time (#CFC6D2) came out at 4.29 and would have failed the build. Re-measure
-   before darkening this token; there is very little headroom.
+   ⚠️ THE GROUND IS COOL AND IT IS NOT COMING BACK TO BEIGE. Two warm near-neutrals
+   were tried and both read as muddy on a phone: a low-chroma yellow-brown at high
+   lightness has too little chroma to name a colour and just enough to dull the
+   grey, which is the exact recipe for dirty. The tint here is a lighter relative of
+   the ground, so it lifts the surface without introducing a second hue.
+   ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
+   three times the headroom and will happily pass while --ink3 fails. Darkening the
+   ground eats that margin fastest; a plum tried during this work measured 4.29
+   against the 4.5 floor and would have failed the build. Measure before darkening. */
    Specificity is deliberately above body's own shorthand so it survives it; the
    warm pages restate the whole background later and keep their accent wash. */
 :root[data-theme=light] body{background-image:
-  radial-gradient(140% 90% at 50% -10%,#EBE5EF,transparent 66%)}
+  radial-gradient(140% 90% at 50% -10%,#F1F3F7,transparent 66%)}
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]) body{background-image:
-    radial-gradient(140% 90% at 50% -10%,#EBE5EF,transparent 66%)}
+    radial-gradient(140% 90% at 50% -10%,#F1F3F7,transparent 66%)}
 }
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
