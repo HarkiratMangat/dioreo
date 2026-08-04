@@ -45,9 +45,9 @@ msg=""
 # Same scoping as the SessionStart counter: the working sections only. The 🔑 Legend above them
 # documents the markers using identical syntax and must not be counted as intake.
 if [ -f "$NOTES" ]; then
-  open=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' "$NOTES" | grep -cE '^- [^<[]' || true)
+  open=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' "$NOTES" | grep -cE '^- (\[ \]|[^<[])' || true)
   if [ "${open:-0}" -gt 0 ] && ! printf '%s' "$changed" | grep -qx 'docs/diors-builds notes.md'; then
-    preview=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' "$NOTES" | grep -E '^- [^<[]' | cut -c1-100 | head -3)
+    preview=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' "$NOTES" | grep -E '^- (\[ \]|[^<[])' | cut -c1-100 | head -3)
     msg="$msg(7) NOTES FILE: it carries $open open item(s) and this branch never touched it. Items are marked and filed IN-FILE the same session -- a note that stays open across sessions is how the DMZ /autobuild item sat only in the scratchpad for days. Open items:
 $preview
 "

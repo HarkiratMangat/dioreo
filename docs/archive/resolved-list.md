@@ -25,6 +25,19 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **📋 Cross-session notice — REMOVED 2026-08-03 21:00 EDT, verified reconciled, not just aged
+  out.** Was carried in `db-deferred-list.md` as: *"⚠️ CROSS-SESSION NOTICE — a parallel session
+  was mid-flight on hooks + the DEVLOG backfill when v2.41.0 landed."* Written 2026-07-28 16:45 EDT;
+  the notice itself said to remove it "once that session has resumed and reconciled." Confirmed
+  rather than assumed:
+  `stale-reference-sweep.sh` (the hook it described as newly added) is live in
+  `.claude/settings.json`, `utils/logger.js` (the file it flagged as new) exists, and
+  `docs/DEVLOG.md` carries 17+ dated entries after it with no sign of an unresolved conflict —
+  six days and several releases (through v2.50.0) passed cleanly. Two other db-deferred-list
+  items still pointed at "the Render deletion above/reminder above," which had itself shipped and
+  moved to this file's own **Dropped / replaced → n/a, see Shipped above: `[Diors Builds] Delete
+  the suspended Render service`** entry on 2026-07-27 — both reworded to point here instead.
+
 - **🌿 `fix/legal-site-nav-and-mobile-sheet` — VERIFIED SUPERSEDED AND DELETED 2026-08-02 18:29 EDT.**
   *Filed and closed the same session; the filing is what forced the verification.*
   The branch (`704994b`, PR [#61](https://github.com/HarkiratMangat/Diors-Builds/pull/61),
