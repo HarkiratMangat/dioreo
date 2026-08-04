@@ -718,6 +718,42 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
   }
 }
 
+// A HEADING edit must not read as a deletion either, and this is the case the in-place test above
+// does NOT cover: editedInPlace() pairs a removal with an addition by a six-word fingerprint, so it
+// only rescues an edit that kept six consecutive words. Renaming the product changes the file's own
+// H1 and breaks exactly that — which is how a project rename got reported as an item deleted rather
+// than resolved (v2.52.0, 2026-08-04 16:29 EDT). The fixture renames the title and nothing else.
+{
+  const root = makeFixture();
+  try {
+    const p = join(root, "docs/diors-builds notes.md");
+    // ⚠️ The stock fixture's H1 is "# Notes" — seven characters, which the 40-char churn filter drops
+    // before the heading rule is ever consulted. Renaming THAT would pass whether or not the fix
+    // exists, which is the vacuous-test failure this suite is built to prevent. So the baseline gets
+    // a long title first, in its own commit, and the rename is measured against that.
+    const OLD_H1 = "# Deferred intake notes for Dior's Builds, the project scratchpad";
+    const NEW_H1 = "# Deferred intake notes for Dioreo, the project scratchpad";
+    write(root, "docs/diors-builds notes.md", readFileSync(p, "utf8").replace(/^# Notes$/m, OLD_H1));
+    execFileSync("git", ["add", "-A"], { cwd: root });
+    execFileSync("git", ["commit", "-qm", "baseline with a long title"], { cwd: root });
+    // ⚠️ The rename must change a word INSIDE the fingerprint, not append to it. editedInPlace()
+    // pairs a removal with an addition on any surviving six-word window, so a heading that merely
+    // grew would be rescued by that branch and prove nothing about the heading rule.
+    write(root, "docs/diors-builds notes.md", readFileSync(p, "utf8").replace(OLD_H1, NEW_H1));
+    execFileSync("git", ["add", "-A"], { cwd: root });
+    execFileSync("git", ["commit", "-qm", "rename in the title"], { cwd: root });
+    const ids = idsReported(root, ["--diff", "HEAD~1"]);
+    if (ids.has("archive-conservation")) {
+      failures.push("a heading rename in the notes file: [archive-conservation] fired on a HEADING, which is structure and never an item.");
+    } else {
+      passed++;
+      console.log(`  ✓ ${"archive-conservation".padEnd(22)} a heading rename is not a deletion`);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
 // The conservation check is a fact about a CHANGE, so it needs a second commit to diff against.
 proves(
   "items deleted from the notes file with nothing swept to the graveyard",

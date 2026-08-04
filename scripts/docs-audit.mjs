@@ -1739,7 +1739,22 @@ const conservation = (base) => {
       return false;
     };
 
+    // ⚠️ A MARKDOWN HEADING IS STRUCTURE, NEVER AN ITEM, and counting one as an item made this gate
+    // fire on a project RENAME — caught 2026-08-04 16:29 EDT on v2.52.0. The active list's own H1
+    // ("# Deferred list — Dior's Builds (db-deferred-list.md)") changed to say Dioreo, which a
+    // unified diff renders as a removal plus an addition. editedInPlace() could not pair them
+    // because the old title's six-word fingerprint contains the old NAME and the new one does not,
+    // so it was reported as an item deleted rather than resolved. The finding was false and the
+    // branch it blocked had swept its one real item correctly.
+    // Excluding headings costs no coverage: on the active side every item is a bullet (the notes
+    // file's Legend makes that explicit — "always `- [ ]`, never a bare `-`"), and deleting a
+    // sub-section takes its bullets with it, which this still catches. What it removes is a whole
+    // class of false positive — any heading edit, of which a rename is only the loudest.
+    // ⚠️ Its self-test was VACUOUS on the first attempt and the removal proof is what caught it:
+    // the fixture's own H1 is "# Notes", seven characters, dropped by the length filter below before
+    // this rule is ever reached. Never trust a conservation test that has not been watched to fail.
     const removed = minus
+      .filter((l) => !/^#{1,6}\s/.test(l)) // a heading is structure, not an item
       .filter((l) => l.length > 40) // ignore whitespace/rewrap churn; real items are long
       .filter((l) => !editedInPlace(l));
     if (!removed.length) continue;
