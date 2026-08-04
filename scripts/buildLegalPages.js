@@ -2126,11 +2126,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .foot.nodisc .endnav{grid-row:1}
 /* One column once the two would fight for width; the notice leads, as it does
    on every other narrow layout here. */
+/* ⚠️ NARROW GOES TO FLEX, NOT TO A ONE-COLUMN GRID, AND THAT IS THE FIX FOR THE
+   SIGN-OFF PRINTING ON TOP OF THE LINK ROW.
+   The old block collapsed the columns and reset grid-COLUMN on both children —
+   and left grid-ROW alone. On a legal page .foot.nodisc deliberately puts the
+   sign-off and the link row both in row 1, which is correct with two columns:
+   they sit side by side. Collapse to one column without touching the rows and
+   "both in row 1" becomes both in the SAME CELL, so they render stacked on each
+   other. That is the overlap in the report, and the empty row 1 left by the
+   absent notice is the odd whitespace beside it.
+   Flex makes the whole class of bug impossible: grid-row and grid-column are
+   inert on a flex item, so neither the base rules nor the .nodisc pair can place
+   anything, and gap cannot open a gap around a child that does not exist the way
+   an empty grid row does. Order is set explicitly because the sign-off is FIRST
+   in the DOM and must stay LAST on screen — see the note above on why the markup
+   order may not be "tidied" to match. */
 @media (max-width:760px){
-  .foot{grid-template-columns:minmax(0,1fr);row-gap:1.3rem}
-  .disc{grid-row:auto;max-width:none}
-  .endnav{grid-column:1;justify-content:flex-start}
-  .sig{grid-column:1;text-align:left;margin:0}
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem}
+  .disc{order:1;max-width:none}
+  .endnav{order:2;justify-content:flex-start}
+  .sig{order:3;margin:0}
 }
 .sig b,.sig .sig-a{color:var(--ink2);font-weight:600}
 /* The sign-off's name is a link to the controller's Discord profile. Underlined on
@@ -2247,7 +2262,21 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
    to .totop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. */
-.totop.birth{background:transparent;border-color:transparent;transition:none}
+/* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
+   "gradient circle behind the button". Clearing background and border-color takes
+   away the button's own paint, but a backdrop-filter is not paint — it is a
+   FILTER ON WHAT IS BEHIND, clipped to the border box, and it keeps rendering a
+   blurred saturated disc long after the surface it belonged to is invisible. With
+   the background gone there is nothing left to read that disc as part of a
+   control, so it reads as a stray circle hanging behind the launching droplets.
+   Exactly the button's own 46px, which is how it was finally identified.
+   ⚠️ This is a DIFFERENT bug from the filter-region disc documented on GOO_SVG,
+   which is why that fix did not cover it: that one is #dbgoo-c allocating a
+   ~114px region while idle, and it is handled by .tt-ink's visibility:hidden
+   BETWEEN births. This one only appears DURING a birth, when .birth strips the
+   background. Two circles, two causes; the first fix made the second visible. */
+.totop.birth{background:transparent;border-color:transparent;
+  backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
 .totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
@@ -4288,9 +4317,21 @@ ${SWITCHER_CSS}
     .doc .dsec>h2 .idx{top:calc(.34em + .9rem);left:calc(var(--gut) - var(--num))}
   }
 }
+/* ⚠️ THE NUMBER'S HORIZONTAL ALIGNMENT IS ALREADY EXACT — do not "fix" it with a
+   nudge. Measured 2026-08-04 12:10 EDT on the built page: the .idx box and the h2
+   box share a left edge to the pixel (42.59 both), and rasterised glyph ink
+   differs by 0.68px in the WORST case — a mono "1", which is a narrow glyph
+   floating in a fixed advance and so carries the largest side bearing of any
+   digit. Wider digits sit closer still. That is below perception, and a negative
+   margin to "correct" it would be visible noise chasing a measurement error.
+   What was actually loose is the VERTICAL binding. At .45rem with no line-height
+   control the number sat in its own leading, reading as a stray figure above the
+   heading rather than as that heading's number. Tightened, and line-height:1 makes
+   the gap the margin actually says it is instead of margin plus half a line box. */
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
-  letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;margin-bottom:.45rem}
-.doc h3 .idx{color:var(--ink3);margin-bottom:.3rem}
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;
+  line-height:1;margin-bottom:.32rem}
+.doc h3 .idx{color:var(--ink3);margin-bottom:.26rem}
 @media (min-width:1120px){
   /* The fallback keeps any .idx rendered outside .doc — where --num is not declared —
      at exactly the offset it had before this became fluid. Without it an undeclared
