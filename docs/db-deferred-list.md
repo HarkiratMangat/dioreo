@@ -12,6 +12,16 @@ pulled all of them in, added the priority legend, and moved resolved entries out
 `docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is
 now `/Applications/Claude Code/meta-deferred-list.md`.
 
+## Closing the loop back to the notes file
+When a Queued/bug item here that was **filed FROM `docs/diors-builds notes.md`** ships or gets fixed,
+go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a
+separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31,
+shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions,
+because closing THIS file's entry was treated as the finish line and the originating bullet was never
+revisited — even though the shipping commit's own code comment cited the notes-file line number. A
+filed item's real origin is worth a quick grep for ("notes L###" or the item's own wording) whenever
+you check something off here.
+
 ## What is NOT in this file
 - **The feature roadmap** — `docs/ROADMAP.md` is authoritative (v2 remaining · v3 · v4 · v5 ·
   housekeeping). This file is deliberately NOT a copy of it: pointer, not duplicate.
@@ -170,34 +180,6 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   usage, `search_graph` adoption, `ctx-execute*` share. If those do not move, the SessionStart routing
   hook failed the same way prose did, which is the more valuable finding.
 
-- `[P0 · XS · read before resuming]` **⚠️ CROSS-SESSION NOTICE — a parallel session was mid-flight on
-  hooks + the DEVLOG backfill when v2.41.0 landed. Read this before continuing that work.** Written
-  2026-07-28 16:45 EDT. A second Claude Code session (paused on a usage limit) was working on: improving
-  the turn-budget hook, edits to other hooks, and **backfilling `docs/DEVLOG.md`**. Meanwhile this session
-  merged **v2.41.0 (#47)** and **v2.41.1 (#48)**, which touched overlapping ground. What changed under it:
-  - **`.claude/settings.json` gained a PreToolUse/Bash hook** (`stale-reference-sweep`), and there is now
-    a **new `.claude/hooks/` directory** — the first tracked hook *script* in this repo; every prior hook
-    is an inline command string. If that session also edited `settings.json`, **merge, don't overwrite** —
-    check `git log -- .claude/settings.json` before assuming your copy is current.
-  - **⚠️ `docs/DEVLOG.md` is the likely conflict.** A new entry was appended ("The error counter that could
-    never have been right"), and the **table of contents was rebuilt — it had drifted 15 entries behind
-    the body**, so TOC lines for every 2026-07-27 and 2026-07-28 entry were added at once. A backfill
-    branch cut before that will conflict in the TOC block. Take *both* sides; the TOC is additive.
-  - **New runtime file `utils/logger.js`, and `index.js` now patches `console` at the top** (before the
-    crash handlers, deliberately — see `.claude/rules/interaction-router.md`). Any hook or doc that
-    assumes `console.error` is Node's is out of date.
-  - **Memory files edited:** `reference_vm_bot_commands` (rewritten; it had been documenting the retired
-    direct-push deploy flow), `project_deployment_migration_render_to_gcp`, `MEMORY.md`,
-    `reference_enforcement_hooks`.
-  - ⚠️ **YOUR UNCOMMITTED WORK WAS BRIEFLY LOST AND RESTORED — verify it before continuing.** At
-    2026-07-28 16:35 EDT a `git reset --hard HEAD~2` (cleaning up two throwaway commits made to test a
-    new hook) also discarded the **unstaged** modification sitting in `.claude/settings.local.json`.
-    Recovered 2026-07-28 18:40 EDT from the reflog — the scaffold commit had incidentally captured the
-    file — and restored to unstaged-modified, byte-identical to how it was found. The three permission
-    entries are back: `Bash(rtk git *)`, a `node -p` package.json version read, and `Bash(gh api *)`.
-    **Nothing else of that session's was in the working tree at the time**, but confirm against your own
-    notes rather than trusting this line. Consider committing them so they can't be lost again.
-  Remove this entry once that session has resumed and reconciled.
 - `[P1 · XS · Harkirat action, not a build]` **Finish the GitHub Projects roadmap board's view setup.**
   Added 2026-07-26 12:12 EDT. The board (https://github.com/users/HarkiratMangat/projects/2) has all 15
   items and every custom field (`Status`/`Priority`/`Effort`/`Model suggestion`/`Flags`) populated via the
@@ -216,7 +198,8 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   alerting + `scripts/vmstatus.sh` are the watch mechanism. The original "staying green through
   ~2026-07-24" checkpoint has passed with no incident recorded in the alert log or DEVLOG — but that's
   absence-of-record, not a positive health check, so confirm live with `scripts/vmstatus.sh` before
-  treating it as the green light for the Render deletion above.
+  treating it as fully settled. (The Render service itself is long since deleted — see
+  `docs/archive/resolved-list.md`; this item is purely about whether the GCP replacement keeps holding.)
 - `[P2 · S · admin-only impact, not urgent]` **Live-test the `/manage` loadout UX overhaul (v2.23.0) +
   `/settings` passive idle-timeout (v2.22.0) in real Discord.** Both deployed live to the GCP VM
   2026-07-19 (confirmed via `scripts/vmstatus.sh`), neither behaviorally click-tested by Harkirat yet.
@@ -1201,7 +1184,7 @@ well-specified execution/polish, not novel design.*
   ⇄ Also on `docs/ROADMAP.md`'s **v3** list (version horizon).
 - `[P3 · XS · Sonnet5-L · 🔗bundle-with next VM/ops touch]` **Guest disk-usage peaks in `scripts/vmpeaks.sh`**
   — small add mirroring the new `rampeak()` now that the Ops Agent (2026-07-17) provides the metric.
-  🔗 Natural bundle with the Render-deletion reminder above, which is also a VM/ops touch.
+  🔗 Natural bundle with the "Watch that GCP holds long-term" reminder above, which is also a VM/ops touch.
 
 ### 🧮 `scripts/docs-audit.mjs` — the limits it does NOT cover (filed 2026-07-29 02:10 EDT, v2.42.0)
 *These are the honest edges of the documentation audit, filed so a future session improves the program

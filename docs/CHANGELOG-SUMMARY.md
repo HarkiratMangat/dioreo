@@ -26,6 +26,12 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.51.2 — August 3, 2026
+- **Nothing changed in the bot.** Internal housekeeping: tidied up the project's own working notes
+  and to-do list, and fixed a bug in one of the automated checks that made sure open items in those
+  lists don't get forgotten.
+
+
 ## v2.51.1 — August 3, 2026
 - **Nothing changed in the bot.** Fixed a MarkEdit note-taking editor bug where pressing Return once
   could add two blank lines instead of one, and added a standalone timestamp shortcut to the same

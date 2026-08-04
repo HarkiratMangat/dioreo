@@ -59,6 +59,21 @@ OPEN_TOUCHED=$(mkrepo n2 yes "docs/diors-builds notes.md" fresh)
 a "open notes + touched -> silent"   "(7) NOTES FILE" no  "$OPEN_TOUCHED"
 NO_OPEN=$(mkrepo n3 no docs/other.md fresh)
 a "no open notes -> silent"          "(7) NOTES FILE" no  "$NO_OPEN"
+# The file's own convention (added 2026-08-03 19:37 EDT) is that a still-open filed-but-unbuilt item is
+# `- [ ]`, never a bare `-`. The SessionStart open-item counter had this exact regex gap — `- [ ]`
+# read as closed because `[^<[]` excludes any line starting with `[` right after `- ` — and this
+# script carried the identical unfixed regex. Pin it here so it can't silently regress again.
+mkdir -p "$TMP/n4/docs"; git -C "$TMP/n4" init --quiet -b main 2>/dev/null
+printf '## Questions\n- [ ] a checkbox open item\n## 📍 pointer\n' > "$TMP/n4/docs/diors-builds notes.md"
+mkdir -p "$TMP/n4/.claude/hooks"; echo seed > "$TMP/n4/docs/other.md"; echo seed > "$TMP/n4/.claude/hooks/thing.sh"
+git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m init
+git -C "$TMP/n4" checkout --quiet -b feat; sleep 1
+echo changed >> "$TMP/n4/docs/other.md"
+git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m change
+mkdir -p "$TMP/n4-home/$MEMREL"; echo m > "$TMP/n4-home/$MEMREL/a_memory.md"
+CHECKBOX_OPEN=$(printf '%s\t%s' "$TMP/n4" "$TMP/n4-home")
+a "checkbox item -> [ ] counts as open" "(7) NOTES FILE" yes "$CHECKBOX_OPEN"
+a "checkbox item is previewed"          "a checkbox open item" yes "$CHECKBOX_OPEN"
 
 # ---- (6) memory vs rule changes ----
 RULE_NOMEM=$(mkrepo m1 no .claude/hooks/thing.sh none)

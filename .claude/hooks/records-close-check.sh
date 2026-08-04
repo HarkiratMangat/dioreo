@@ -31,6 +31,9 @@ set -uo pipefail
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
 NOTES="$REPO/docs/diors-builds notes.md"
 MEM="$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory"
+# notes-open-items.sh lives beside this script, not necessarily inside $REPO (a test fixture's fake
+# $REPO has no .claude/hooks/ copy of it) — resolve relative to this script's own real location.
+HOOKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
@@ -42,12 +45,13 @@ changed=$(git diff --name-only "$BASE...HEAD" 2>/dev/null)
 msg=""
 
 # ---- (7) notes file -------------------------------------------------------
-# Same scoping as the SessionStart counter: the working sections only. The 🔑 Legend above them
-# documents the markers using identical syntax and must not be counted as intake.
+# Shared with the SessionStart counter via notes-open-items.sh — see that script's header for why
+# this used to be two copies of the same regex, one of which silently went unfixed.
 if [ -f "$NOTES" ]; then
-  open=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' "$NOTES" | grep -cE '^- [^<[]' || true)
+  items=$("$HOOKDIR/notes-open-items.sh" "$NOTES")
+  open=$(printf '%s' "$items" | grep -c . || true)
   if [ "${open:-0}" -gt 0 ] && ! printf '%s' "$changed" | grep -qx 'docs/diors-builds notes.md'; then
-    preview=$(awk '/^## Questions/{f=1} /^## 📍/{exit} f{print}' "$NOTES" | grep -E '^- [^<[]' | cut -c1-100 | head -3)
+    preview=$(printf '%s' "$items" | cut -c1-100 | head -3)
     msg="$msg(7) NOTES FILE: it carries $open open item(s) and this branch never touched it. Items are marked and filed IN-FILE the same session -- a note that stays open across sessions is how the DMZ /autobuild item sat only in the scratchpad for days. Open items:
 $preview
 "
