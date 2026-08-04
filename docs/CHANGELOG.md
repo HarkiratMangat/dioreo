@@ -181,7 +181,24 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.51.2 — 2026-08-03 21:12 EDT (#75) — One regex, two copies, one left unfixed
+## v2.51.3 — 2026-08-04 00:04 EDT (#76) — Closing the loop on a CLI that shouldn't be the worse variant
+
+A small, repo-side follow-up to the `dior` CLI consolidation work filed in
+`meta-deferred-list.md` on 2026-08-01: `dior legal build`/`deploy` (in the separate `dior-cli`
+repo) now run the same `node --check` pre-pass `npm run site` already did, so the two build
+entry points are finally equally safe — the CLI path, the one that actually publishes, is no
+longer the unprotected one. `CLAUDE.md`'s "known wart" note is rewritten to say so.
+
+Also adds `cliff.toml`, config for a new `dior changelog` command (git-cliff) that drafts release
+notes grouped by this repo's exact 11 Conventional Commits types. Deliberately a draft generator,
+not a replacement for this file's own hand-curated system — the lagged hash backfill above, the
+sync across three files, `docs-audit.mjs`'s structural checks — none of which a generator can
+reproduce; the config's own header comment says so explicitly. Verified live against real tagged
+releases and an unreleased commit range before landing.
+
+---
+
+## v2.51.2 — 2026-08-03 21:12 EDT (#75 · `accd881`) — One regex, two copies, one left unfixed
 
 A housekeeping pass on `docs/diors-builds notes.md` and `docs/db-deferred-list.md`, then an audit
 of the hooks and gates that actually enforce them.

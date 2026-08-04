@@ -356,15 +356,15 @@ whole site for a page nobody can reach is waste. The workflow rebuilds and refus
 cache. `dior legal deploy` still exists for a manual push, and `workflow_dispatch` does the same from
 CI. This was added because the live site was found serving the previous headline **after v2.47.0 had
 merged and been tagged**: `public/` was correct in `main` and nothing ever pushed it anywhere.
-- ⚠️ **THERE ARE TWO BUILD ENTRY POINTS AND THAT IS A KNOWN WART, not a design.** `npm run site` was
-  added 2026-08-01 22:20 EDT without checking that `dior legal build` already existed and ran the same builder,
-  and this section was rewritten to name the new one — demoting a working CLI command. Both call
-  `scripts/buildLegalPages.js`, so their **output cannot differ**. The one real difference:
-  `npm run site` runs `node --check` on both build scripts first; **`dior legal build`/`deploy` do
-  not.** That protection is therefore on the path that does *not* publish. Until consolidated, use
-  `dior legal *` as the normal path and `npm run site` when the CLI isn't available (CI, a fresh
-  clone, a worktree) or when you specifically want the syntax pre-check. Filed as `[P2 · M]` in
-  `/Applications/Claude Code/meta-deferred-list.md` → Cross-project / meta.
+- ⚠️ **TWO BUILD ENTRY POINTS EXIST, CONSOLIDATED 2026-08-03 22:10 EDT** (was a known wart: `npm run
+  site` got added 2026-08-01 22:20 EDT without checking `dior legal build` already existed, and had
+  the only `node --check` pre-pass, making the CLI path — the one that actually publishes — the LESS
+  safe of the two). `dior legal build`/`deploy` (in `~/.config/dior/legal.zsh`) now run the same
+  `node --check` against both `scripts/buildLegalPages.js` and `scripts/lib/chronicle.js` before
+  touching anything, so the two paths are equally safe. Both still call `scripts/buildLegalPages.js`,
+  so their **output cannot differ**. `dior legal *` is the normal path; `npm run site` remains the
+  fallback for when the CLI isn't available (CI, a fresh clone, a worktree) — it was deliberately kept
+  rather than deleted, for exactly that case.
 - ⚠️ **Before adding any project-local script or npm command, check whether the `dior` CLI already
   does it** (`dior help`, or `~/.config/dior/*.zsh`). The CLI wraps this project's dev/deploy/
   observability workflow and is easy to forget because it lives outside the repo — see memory

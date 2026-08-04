@@ -118,7 +118,7 @@ echo "  -- placeholder time: a date paired with a fake HH:MM (2026-08-03 mishap)
 a "'HH:xx' placeholder denied"      pre "deny:"        yes "root-caused live $TODAY 18:xx EDT the glitch"
 a "'XX:XX' placeholder denied"      pre "deny:"        yes "filed $TODAY XX:XX EDT for review"
 a "'??:??' placeholder denied"      pre "deny:"        yes "queued $TODAY ??:?? EDT pending confirmation"
-a "a REAL timestamp is not caught"  pre "deny:"        no  "filed $TODAY 18:13 EDT for review"
+a "a REAL timestamp is not caught"  pre "deny:"        no  "filed $PASTSTAMP $LOCALTZ for review"
 # The project's own literal format spec must never be flagged as a fake instance -- h/H is
 # deliberately excluded from the placeholder character set for exactly this reason.
 a "'HH:MM' format spec not caught" pre "deny:"        no  "dated content carries YYYY-MM-DD HH:MM TZ"
