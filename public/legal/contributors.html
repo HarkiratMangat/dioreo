@@ -1666,7 +1666,7 @@ body{min-height:100vh;background:
   box-shadow:0 30px 70px -34px rgba(0,0,0,.7);backdrop-filter:blur(6px)}
 
 .card h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.022em;
-  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:76px}
+  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:var(--anchor-off,76px)}
 .card h2:first-child{margin-top:0}
 .card h3{font-family:var(--display);font-size:1.02rem;font-weight:700;
   letter-spacing:-.01em;color:var(--ink);margin:1.9rem 0 .6rem}
@@ -1709,14 +1709,32 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    order and the base won silently. That left min-height:44px and 1.05rem of
    horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
    the padding squeezed the drawn mark to ZERO width inside it. Measured, not
-   guessed. An icon-only control has to beat the labelled pill it derives from. */
+   guessed. An icon-only control has to beat the labelled pill it derives from. *//* ⚠️ AND IT HAS TO BE OPAQUE. The base .cpy is 13% accent over TRANSPARENT, which
+   is right for a pill sitting in its own row on a known surface and wrong for one
+   parked on top of code: at 87% transparent the line ran straight through the
+   control, so neither the code nor the mark was readable — the reported "copy
+   buttons are bugged". Mixed into --raised, the block's own background, it is the
+   same colour it always was and now actually covers what is behind it. The hover
+   state has to be re-mixed the same way or it goes transparent again on the way
+   past. */
+
 
 
 .cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
-  padding:0;gap:0;min-height:0;width:34px;height:34px}/* The 44px target returns where it actually matters — a coarse pointer, where
+  padding:0;gap:0;min-height:0;width:34px;height:34px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--raised))}@media (hover:hover) and (pointer:fine){
+.cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}}/* The 44px target returns where it actually matters — a coarse pointer, where
    this control is always visible rather than revealed on hover. */
 
-@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
+@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
+   and the button occupies 34px plus its offset — 44px on a coarse pointer, where
+   it is always visible — so a line only a little longer than the box tucked itself
+   underneath and looked truncated rather than scrollable. Padding cannot help a
+   line that genuinely overflows, which is what the opaque background above is for;
+   it stops the far more common case of a line that would otherwise have fitted. */
+
+.cw pre.code{padding-right:3.2rem}
+@media (hover:none){.cw pre.code{padding-right:4rem}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
    clipboard. Drawn, not typed — see the note in withCopyButtons(). */
 
 .cpy-g{position:relative;display:block;width:12.5px;height:13px}
@@ -2124,7 +2142,7 @@ html{scroll-behavior:smooth}
     <p class="lede">Everyone who has made this better, credited under the name they chose.</p>
   </header>
   <main class="card" id="main" tabindex="-1"><div class="lead"><p>The people who have worked on Dior's Builds. Each one is listed under the name or handle they asked for.</p>
-<p>Ship something and you are added here, and to the changelog entry for the release it goes out in. That is an obligation rather than a courtesy, and it cannot be withdrawn later: §5.6 of the <a href="../LICENSE">LICENSE</a> requires it.</p></div>
+<p>Ship something and you are added here, and to the changelog entry for the release it goes out in. That is an obligation rather than a courtesy, and it cannot be withdrawn later: §5.6 of the <a href="license.html">LICENSE</a> requires it.</p></div>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Name</th><th role="columnheader" scope="col">Role</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Name"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</td><td role="cell" data-label="Role">Creator and maintainer</td></tr></tbody></table></div></div></section>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><a class="plate ghost" href="./contributing.html"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></a></div>
 <p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p></div></section>
@@ -3069,6 +3087,25 @@ html{scroll-behavior:smooth}
         mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    var h=n?n.getBoundingClientRect().height:0;
+    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 (function(){
   /* EVERY copy control, not just the first. This was a single querySelector, so

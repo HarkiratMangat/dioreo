@@ -680,9 +680,9 @@ Kept here as well as in git, because the repository's visibility can change
 
 ## 20. Contact
 
-**Harkirat Mangat ("dior", "diorswrld")**
-Ontario, Canada
-📧 **harkirat117@gmail.com**
+**Harkirat Mangat ("dior", "diorswrld")**\
+Ontario, Canada\
+📧 **harkirat117@gmail.com**\
 💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
 Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under §17 — goes to the email address. We deliberately don't list a

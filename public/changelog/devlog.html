@@ -4408,6 +4408,25 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    var h=n?n.getBoundingClientRect().height:0;
+    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 
 (function(){

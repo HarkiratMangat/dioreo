@@ -1698,7 +1698,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .mast .meta b{color:var(--ink2);font-weight:500}/* ── headings: number lives in the margin ────────────────────────── */
 
 
-.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:76px}
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:var(--anchor-off,76px)}
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
@@ -2205,7 +2205,7 @@ html{scroll-behavior:smooth}
 <h3 id="s-2.4" class="numbered"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Electronic agreement</span><a class="anchor" href="#s-2.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>You consent to contract electronically. These Terms satisfy any requirement that an agreement be in writing, and your acceptance under <a class="xref" href="#s-2.1">§2.1</a> has the same legal effect as a handwritten signature under Ontario's <em>Electronic Commerce Act, 2000</em> and equivalent legislation elsewhere.</p>
 <h3 id="s-2.5" class="numbered"><span class="idx" aria-hidden="true">2.5</span><span class="ht">Incorporated documents</span><a class="anchor" href="#s-2.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p>The <a href="privacy.html">Privacy Policy</a> forms part of these Terms. The <a href="../LICENSE">LICENSE</a> governs the Bot's <strong>source code</strong> and is a separate agreement — using the Bot does not license you its code.</p>
+<p>The <a href="privacy.html">Privacy Policy</a> forms part of these Terms. The <a href="license.html">LICENSE</a> governs the Bot's <strong>source code</strong> and is a separate agreement — using the Bot does not license you its code.</p>
 <h3 id="s-2.6" class="numbered"><span class="idx" aria-hidden="true">2.6</span><span class="ht">If you don't agree</span><a class="anchor" href="#s-2.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Don't install or use the Bot.</strong> If you've already installed it, remove it via Discord's "Authorized Apps" settings and stop issuing commands. See <a class="xref" href="#s-13.1">§13.1</a>.</p>
 <hr>
@@ -2248,8 +2248,8 @@ html{scroll-behavior:smooth}
 <section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">Acceptable use</span><a class="anchor" href="#s-6" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>You must not:</p>
-<ol><li><strong>Abuse or overload it</strong> — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.</li><li><strong>Attack it</strong> — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.</li><li><strong>Circumvent controls</strong> — no bypassing cooldowns, permission checks, or admin-only gates.</li><li><strong>Impersonate</strong> — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.</li><li><strong>Break the law or Discord's rules</strong> — no use in connection with harassment, fraud, hate speech, or illegal activity, and no use violating <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Discord's Terms</a> or <a href="https://discord.com/guidelines" target="_blank" rel="noopener noreferrer">Community Guidelines</a>.</li><li><strong>Extract the data</strong> — no bulk collection, mirroring, re-hosting, or republishing of the Bot's curated datasets or output.</li><li><strong>Train models on it</strong> — no using the Bot's output or data as training, fine-tuning, evaluation, or retrieval input for any AI or machine-learning system.</li><li><strong>Redistribute the software</strong> — the source code is governed by the <a href="../LICENSE">LICENSE</a>, separate from these Terms. Reading it is allowed; deploying or redistributing it is not.</li></ol>
-<p><strong>Security researchers:</strong> good-faith research is welcome, but test against your own local instance, not the live Bot. See §4.11 of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
+<ol><li><strong>Abuse or overload it</strong> — no spamming commands, no automated or scripted invocation, no scraping, no deliberately exhausting rate limits or resources.</li><li><strong>Attack it</strong> — no attempting unauthorised access to the Bot, its database, its media storage, or its infrastructure; no exploiting a vulnerability beyond the minimum needed to demonstrate it; no denial-of-service.</li><li><strong>Circumvent controls</strong> — no bypassing cooldowns, permission checks, or admin-only gates.</li><li><strong>Impersonate</strong> — no presenting the Bot's output as your own or someone else's, and no claiming affiliation with or authorisation from us.</li><li><strong>Break the law or Discord's rules</strong> — no use in connection with harassment, fraud, hate speech, or illegal activity, and no use violating <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">Discord's Terms</a> or <a href="https://discord.com/guidelines" target="_blank" rel="noopener noreferrer">Community Guidelines</a>.</li><li><strong>Extract the data</strong> — no bulk collection, mirroring, re-hosting, or republishing of the Bot's curated datasets or output.</li><li><strong>Train models on it</strong> — no using the Bot's output or data as training, fine-tuning, evaluation, or retrieval input for any AI or machine-learning system.</li><li><strong>Redistribute the software</strong> — the source code is governed by the <a href="license.html">LICENSE</a>, separate from these Terms. Reading it is allowed; deploying or redistributing it is not.</li></ol>
+<p><strong>Security researchers:</strong> good-faith research is welcome, but test against your own local instance, not the live Bot. See §4.11 of the <a href="license.html">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
 <h3 id="s-6.1" class="numbered"><span class="idx" aria-hidden="true">6.1</span><span class="ht">Reporting abuse</span><a class="anchor" href="#s-6.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>To report misuse of the Bot, a security issue, or content that shouldn't be there, email <strong>harkirat117@gmail.com</strong>. Security issues should never go in a public GitHub issue.</p>
 <hr>
@@ -2258,7 +2258,7 @@ html{scroll-behavior:smooth}
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dior's Builds" name and visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
-<p>Source code licensing is governed separately by the <a href="../LICENSE">LICENSE</a>.</p>
+<p>Source code licensing is governed separately by the <a href="license.html">LICENSE</a>.</p>
 <p><strong>The source repository's visibility may change at any time, without notice</strong> — it may be public or private at any given moment, at our sole discretion, and we are under no obligation to publish the source at all or to keep publishing it. <strong>These Terms, the Privacy Policy, and the Bot itself are unaffected either way</strong>, and these documents stay published at their permanent public URLs regardless. Nothing in these Terms grants you any right of access to the source code.</p>
 <h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Call of Duty®</strong> and <strong>Call of Duty®: Mobile</strong> are trademarks of <strong>Activision Publishing, Inc.</strong> Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
@@ -2271,22 +2271,22 @@ html{scroll-behavior:smooth}
 <p>Where the Bot names, describes, dates, or lists such content, the following applies in full:</p>
 <ul><li>The characters, titles, logos, likenesses, designs, and other elements of that content are the property of <strong>their own respective rights holders</strong>, who are typically not Activision, TiMi Studio Group, Tencent, or any of the publishers named in <a class="xref" href="#s-7.2">§7.2</a>.</li><li><strong>We are not affiliated with, licensed by, endorsed by, or sponsored by any of those rights holders either</strong>, and nothing in the Bot's output should be read as suggesting otherwise. The disclaimer in <a class="xref" href="#s-7.2">§7.2</a> extends to every one of them.</li><li>We claim no ownership of and grant you no rights in any of it. It is named and described for identification, commentary, and reference on the same fair dealing / fair use basis set out in <a class="xref" href="#s-7.2">§7.2</a>.</li><li>The takedown process in <a class="xref" href="#s-7.5">§7.5</a> is open to <strong>any</strong> rights holder, not only the game's publishers, and we action valid requests the same way.</li></ul>
 <blockquote class="callout"><p><strong>We deliberately do not list individual collaborations here.</strong> Any list would be out of date within a season, and a stale list of third-party marks is worse than none: it implies we track and vet each one, and it goes wrong silently. This clause is written to cover every collaboration — past, current, and future — without needing to be revised each time one launches.</p></blockquote>
-<p>We also deliberately <strong>do not reproduce other companies' own copyright notices</strong> (the "© / ™ / ® [YEAR] [COMPANY]. All Rights Reserved." blocks you see in the game itself and in officially licensed products). Those notices are published by the rights holders and their licensees to assert <em>their</em> rights under <em>their</em> licence agreements. We hold no such licence, so reproducing them here would misrepresent our relationship with those companies — the opposite of what a disclaimer is for. We acknowledge their rights instead, which is the accurate thing for an unofficial project to do. A consolidated acknowledgement list is kept in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
+<p>We also deliberately <strong>do not reproduce other companies' own copyright notices</strong> (the "© / ™ / ® [YEAR] [COMPANY]. All Rights Reserved." blocks you see in the game itself and in officially licensed products). Those notices are published by the rights holders and their licensees to assert <em>their</em> rights under <em>their</em> licence agreements. We hold no such licence, so reproducing them here would misrepresent our relationship with those companies — the opposite of what a disclaimer is for. We acknowledge their rights instead, which is the accurate thing for an unofficial project to do. A consolidated acknowledgement list is kept in <a href="notice.html">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
 <h3 id="s-7.4" class="numbered"><span class="idx" aria-hidden="true">7.4</span><span class="ht">Other trademarks</span><a class="anchor" href="#s-7.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p>Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
+<p>Discord®, GitHub®, MongoDB®, Cloudinary®, Google Cloud™, Microsoft®, Azure®, and all other marks are the property of their respective owners. A full acknowledgement list is in <a href="notice.html">NOTICE</a> <a class="xref" href="#s-5">§5</a>.</p>
 <h3 id="s-7.5" class="numbered"><span class="idx" aria-hidden="true">7.5</span><span class="ht">Copyright complaints and takedowns</span><a class="anchor" href="#s-7.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>If you own rights in material displayed by the Bot and want it removed, email <strong>harkirat117@gmail.com</strong> with:</p>
 <ul><li>identification of the work;</li><li>where it appears in the Bot;</li><li>your contact details;</li><li>a statement that you believe the use is unauthorised; and</li><li>a statement that your notice is accurate and that you are the rights holder or authorised to act for them.</li></ul>
 <p><strong>We action valid requests promptly</strong> — usually within a few days — and we don't require a formal legal process to do so. We will also consider counter-notices.</p>
 <h3 id="s-7.6" class="numbered"><span class="idx" aria-hidden="true">7.6</span><span class="ht">Yours</span><a class="anchor" href="#s-7.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p>You retain ownership of anything you send us. By sending feedback, ideas, bug reports, or suggestions, you grant us a perpetual, worldwide, royalty-free, irrevocable licence to use them without restriction, obligation, or compensation, and you agree we owe you nothing for them. Code contributions are governed instead by <a class="xref" href="#s-5">§5</a> of the <a href="../LICENSE">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
+<p>You retain ownership of anything you send us. By sending feedback, ideas, bug reports, or suggestions, you grant us a perpetual, worldwide, royalty-free, irrevocable licence to use them without restriction, obligation, or compensation, and you agree we owe you nothing for them. Code contributions are governed instead by <a class="xref" href="#s-5">§5</a> of the <a href="license.html">LICENSE</a> and the <span class="ref">contributing guide</span>.</p>
 <h3 id="s-7.7" class="numbered"><span class="idx" aria-hidden="true">7.7</span><span class="ht">Independent development</span><a class="anchor" href="#s-7.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We may develop, acquire, or operate features, products, or services similar to anything you suggest. Nothing in these Terms restricts that, and submitting an idea gives you no rights in what we later build.</p>
 <hr>
 </section>
 <section class="dsec">
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">AI disclosure</span><a class="anchor" href="#s-8" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Portions of this project — its source code, documentation, and these legal documents — were <strong>written with the assistance of AI tools</strong>, principally Claude (Anthropic PBC), under human direction. Full disclosure: <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-6">§6</a>.</p>
+<p>Portions of this project — its source code, documentation, and these legal documents — were <strong>written with the assistance of AI tools</strong>, principally Claude (Anthropic PBC), under human direction. Full disclosure: <a href="notice.html">NOTICE</a> <a class="xref" href="#s-6">§6</a>.</p>
 <p><strong>No AI system processes your data.</strong> The only AI in the running Bot is an administrator-only image-extraction command that never receives end-user data. See <a class="xref" href="#s-5.1">§5.1</a> of the <a href="privacy.html">Privacy Policy</a>.</p>
 <hr>
 </section>
@@ -2399,9 +2399,9 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-20" class="numbered"><span class="idx" aria-hidden="true">20</span><span class="ht">Contact</span><a class="anchor" href="#s-20" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong> 💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
+<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong><br>Ontario, Canada<br>📧 <strong>harkirat117@gmail.com</strong><br>💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
 <p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. Anything that has to be on the record — a notice, a rights request, a takedown, or anything under <a class="xref" href="#s-17">§17</a> — goes to the email address. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a contact point in binding terms must not be able to go dead.</p>
-<p>For security reports, email — don't open a public issue. See §4.11 of the <a href="../LICENSE">LICENSE</a>.</p>
+<p>For security reports, email — don't open a public issue. See §4.11 of the <a href="license.html">LICENSE</a>.</p>
 <hr>
 </section>
 <section class="dsec">
@@ -3535,6 +3535,25 @@ html{scroll-behavior:smooth}
         mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    var h=n?n.getBoundingClientRect().height:0;
+    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 
 (function(){

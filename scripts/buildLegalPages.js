@@ -389,7 +389,22 @@ function inline(s) {
         // Only root files published verbatim beside legal/ (LICENSE, NOTICE) need the
         // extra level. Asking the allowlist which of the two a target actually is
         // settles it without special-casing filenames.
-        const pub = resolvePublished(href)
+        // ⚠️ IN-PROSE "LICENSE" MEANS THE RENDERED PAGE, NOT THE RAW FILE, AND
+        // LINKING THE RAW FILE MADE THE BROWSER DOWNLOAD IT. LICENSE and NOTICE are
+        // deployed verbatim beside legal/ as EXTENSION-LESS files, and both are on
+        // the allowlist, so `../LICENSE` resolved to a live URL and every "see §4.11
+        // of the LICENSE" in the documents became a download prompt in the middle of
+        // a legal page. A file with no extension carries no HTML content type, so
+        // there is nothing for a browser to do with it but save it.
+        // Both source depths collapse to the bare page name because license.html
+        // sits IN legal/ — `../` is right for the raw file one level up and wrong
+        // for the page, which is why this cannot be a tweak to the depth fold above.
+        // The raw files stay deployed; they are simply no longer what prose points at.
+        const asPage = href.replace(/^(?:\.\.\/)*(LICENSE|NOTICE)(#.*)?$/,
+            (_, name, hash) => name.toLowerCase() + '.html' + (hash || ''));
+        const pub = resolvePublished(asPage)
+            || (LINK_BASE ? resolvePublished(LINK_BASE + asPage) : null)
+            || resolvePublished(href)
             || (LINK_BASE ? resolvePublished(LINK_BASE + href) : null);
         return pub
             ? `<a href="${pub}">${t}</a>`
@@ -584,12 +599,34 @@ function parseBlocks(md) {
         }
 
         // paragraph — join soft-wrapped lines
+        //
+        // ⚠️ HARD BREAKS ARE DETECTED BEFORE THE TRIM, because the trim is what
+        // destroys the evidence. Every source here wraps its prose at about 80
+        // columns, so a single newline MUST keep meaning "same paragraph" — the
+        // contact blocks were the case that proved the gap: four lines of name,
+        // place, email and Discord collapsed into one flowing paragraph and then
+        // re-wrapped wherever the viewport happened to fall, which on a phone put
+        // the email envelope at the end of one line and the address at the start of
+        // the next.
+        //
+        // Both CommonMark hard-break spellings are accepted, and the SOURCES use
+        // the backslash on purpose: two trailing spaces are invisible, and any
+        // editor, formatter or pre-commit hook that trims trailing whitespace would
+        // silently turn a deliberately broken address block back into a paragraph
+        // with nothing reporting it. A backslash survives that.
+        //
+        // \x01 as the marker follows the code-span sentinel above: a control
+        // character the sources cannot contain and esc() leaves alone.
         const buf = [];
         while (i < lines.length && lines[i].trim() && !/^#{1,6}\s/.test(lines[i]) && !/^\s*>/.test(lines[i]) &&
                !isListStart(lines[i]) && !/^\s*\|/.test(lines[i]) && !/^\s*(-{3,}|={3,})\s*$/.test(lines[i])) {
-            buf.push(lines[i].trim()); i++;
+            const hard = /(?:\s\s|\\)$/.test(lines[i]);
+            buf.push(lines[i].trim().replace(/\\$/, '') + (hard ? '\x01' : ''));
+            i++;
         }
-        if (buf.length) out.push(`<p>${inline(buf.join(' '))}</p>`);
+        if (buf.length) {
+            out.push(`<p>${inline(buf.join(' ')).replace(/\x01\s*/g, '<br>')}</p>`);
+        }
     }
 
     // `blocks` is the same content as `html`, un-joined. warmCompose() needs the
@@ -3369,6 +3406,25 @@ const NAV_JS = `
         mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    var h=n?n.getBoundingClientRect().height:0;
+    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();`;
 
 const SWITCHER_CSS = `
@@ -4251,7 +4307,7 @@ ${SWITCHER_CSS}
 .mast .meta b{color:var(--ink2);font-weight:500}
 
 /* ── headings: number lives in the margin ────────────────────────── */
-.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:76px}
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:var(--anchor-off,76px)}
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
@@ -6500,7 +6556,7 @@ body{min-height:100vh;background:
   box-shadow:0 30px 70px -34px rgba(0,0,0,.7);backdrop-filter:blur(6px)}
 
 .card h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.022em;
-  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:76px}
+  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:var(--anchor-off,76px)}
 .card h2:first-child{margin-top:0}
 .card h3{font-family:var(--display);font-size:1.02rem;font-weight:700;
   letter-spacing:-.01em;color:var(--ink);margin:1.9rem 0 .6rem}
@@ -6546,11 +6602,29 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
    the padding squeezed the drawn mark to ZERO width inside it. Measured, not
    guessed. An icon-only control has to beat the labelled pill it derives from. */
+/* ⚠️ AND IT HAS TO BE OPAQUE. The base .cpy is 13% accent over TRANSPARENT, which
+   is right for a pill sitting in its own row on a known surface and wrong for one
+   parked on top of code: at 87% transparent the line ran straight through the
+   control, so neither the code nor the mark was readable — the reported "copy
+   buttons are bugged". Mixed into --raised, the block's own background, it is the
+   same colour it always was and now actually covers what is behind it. The hover
+   state has to be re-mixed the same way or it goes transparent again on the way
+   past. */
 .cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
-  padding:0;gap:0;min-height:0;width:34px;height:34px}
+  padding:0;gap:0;min-height:0;width:34px;height:34px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--raised))}
+.cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}
 /* The 44px target returns where it actually matters — a coarse pointer, where
    this control is always visible rather than revealed on hover. */
 @media (hover:none){.cpy.cpy-f{width:44px;height:44px}}
+/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
+   and the button occupies 34px plus its offset — 44px on a coarse pointer, where
+   it is always visible — so a line only a little longer than the box tucked itself
+   underneath and looked truncated rather than scrollable. Padding cannot help a
+   line that genuinely overflows, which is what the opaque background above is for;
+   it stops the far more common case of a line that would otherwise have fitted. */
+.cw pre.code{padding-right:3.2rem}
+@media (hover:none){.cw pre.code{padding-right:4rem}}
 /* The copy mark: two offset sheets, becoming a tick once the text is on the
    clipboard. Drawn, not typed — see the note in withCopyButtons(). */
 .cpy-g{position:relative;display:block;width:12.5px;height:13px}
@@ -6990,6 +7064,11 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
 .foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
   align-items:flex-start;text-align:left;padding:0}
 .foot .disc{max-width:66ch}
+/* The shared .sig carries grid placement for the document footer's two-column
+   layout; here it is a plain block in the page flow, so only the spacing needs
+   restating. Its own margin is set for sitting under a link row, not under the
+   trademark notice. */
+.sig.lsig{margin:clamp(1.5rem,4.5vh,2.2rem) 0 0}
 .disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
@@ -7280,6 +7359,12 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
   <p class="disc fine">${TRADEMARK_NOTE}</p>
+  <!-- The sign-off closes the landing page as it closes every other one. It was
+       the only page without it, which made the site look like it ended twice:
+       every document signed off and the front door did not. Last, and after the
+       trademark notice, because that notice is an obligation and this is the
+       author — the same order the document pages use. -->
+  <p class="sig lsig">${DIOR_SIG}</p>
 </main>
 <script>${THEME_JS}${MORPH_JS}</script>
 </body></html>`;
@@ -7874,7 +7959,19 @@ function crossRefAudit(built) {
         }
 
         examined += want.size;
-        const missing = [...want].filter(t => !html.includes(`href="${t}`));
+        // ⚠️ A DEPLOYED RAW FILE MAY LEGITIMATELY BE LINKED THROUGH ITS RENDERED
+        // PAGE. LICENSE and NOTICE ship TWICE: verbatim beside legal/, which is what
+        // the deploy-tree scan above finds, and as license.html / notice.html. Prose
+        // points at the page, because a browser handed an extension-less file with
+        // no HTML content type downloads it rather than showing it — which is the
+        // defect this pairing was introduced to fix. Either anchor means the
+        // reference is live; what this gate must keep catching is a mention that
+        // resolves to NEITHER, which is the inert-text case it was built for.
+        const anchorsFor = t => {
+            const b = path.basename(t);
+            return /^(LICENSE|NOTICE)$/i.test(b) ? [t, b.toLowerCase() + '.html'] : [t];
+        };
+        const missing = [...want].filter(t => !anchorsFor(t).some(a => html.includes(`href="${a}`)));
         if (missing.length) {
             bad++;
             console.log(`  ✗ ${page.out}: ${missing.length} reference(s) to a DEPLOYED file rendered as inert text:`);

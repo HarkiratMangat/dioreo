@@ -1666,7 +1666,7 @@ body{min-height:100vh;background:
   box-shadow:0 30px 70px -34px rgba(0,0,0,.7);backdrop-filter:blur(6px)}
 
 .card h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.022em;
-  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:76px}
+  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:var(--anchor-off,76px)}
 .card h2:first-child{margin-top:0}
 .card h3{font-family:var(--display);font-size:1.02rem;font-weight:700;
   letter-spacing:-.01em;color:var(--ink);margin:1.9rem 0 .6rem}
@@ -1709,14 +1709,32 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    order and the base won silently. That left min-height:44px and 1.05rem of
    horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
    the padding squeezed the drawn mark to ZERO width inside it. Measured, not
-   guessed. An icon-only control has to beat the labelled pill it derives from. */
+   guessed. An icon-only control has to beat the labelled pill it derives from. *//* ⚠️ AND IT HAS TO BE OPAQUE. The base .cpy is 13% accent over TRANSPARENT, which
+   is right for a pill sitting in its own row on a known surface and wrong for one
+   parked on top of code: at 87% transparent the line ran straight through the
+   control, so neither the code nor the mark was readable — the reported "copy
+   buttons are bugged". Mixed into --raised, the block's own background, it is the
+   same colour it always was and now actually covers what is behind it. The hover
+   state has to be re-mixed the same way or it goes transparent again on the way
+   past. */
+
 
 
 .cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
-  padding:0;gap:0;min-height:0;width:34px;height:34px}/* The 44px target returns where it actually matters — a coarse pointer, where
+  padding:0;gap:0;min-height:0;width:34px;height:34px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--raised))}@media (hover:hover) and (pointer:fine){
+.cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}}/* The 44px target returns where it actually matters — a coarse pointer, where
    this control is always visible rather than revealed on hover. */
 
-@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
+@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
+   and the button occupies 34px plus its offset — 44px on a coarse pointer, where
+   it is always visible — so a line only a little longer than the box tucked itself
+   underneath and looked truncated rather than scrollable. Padding cannot help a
+   line that genuinely overflows, which is what the opaque background above is for;
+   it stops the far more common case of a line that would otherwise have fitted. */
+
+.cw pre.code{padding-right:3.2rem}
+@media (hover:none){.cw pre.code{padding-right:4rem}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
    clipboard. Drawn, not typed — see the note in withCopyButtons(). */
 
 .cpy-g{position:relative;display:block;width:12.5px;height:13px}
@@ -2123,9 +2141,9 @@ html{scroll-behavior:smooth}
     <h1>Contributing</h1>
     <p class="lede">Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.</p>
   </header>
-  <main class="card spine" id="main" tabindex="-1"><div class="lead"><p>Contributions are genuinely welcome — bug reports, security findings, fixes, and features. If your contribution ships, <strong>you get credited by name in the <a href="contributors.html">contributors list</a> and in the changelog entry for the release it lands in.</strong> That's a binding commitment, written into §5.6 of the <a href="../LICENSE">LICENSE</a>, not just a nice intention.</p>
+  <main class="card spine" id="main" tabindex="-1"><div class="lead"><p>Contributions are genuinely welcome — bug reports, security findings, fixes, and features. If your contribution ships, <strong>you get credited by name in the <a href="contributors.html">contributors list</a> and in the changelog entry for the release it lands in.</strong> That's a binding commitment, written into §5.6 of the <a href="license.html">LICENSE</a>, not just a nice intention.</p>
 <p>Before you start, please read this whole file. It's short, and the legal part at the end matters.</p></div>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="the-one-line-version-of-the-licence" class="plain"><span class="ht">The one-line version of the licence</span><a class="anchor" href="#the-one-line-version-of-the-licence" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Dior's Builds is <strong>source-available, not open source</strong>. You can read it, study it, audit it, and run it locally by yourself. You <strong>cannot</strong> deploy it anywhere other people can use it, redistribute it, or build a competing bot from it. Full terms: <a href="../LICENSE">LICENSE</a>.</p>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="the-one-line-version-of-the-licence" class="plain"><span class="ht">The one-line version of the licence</span><a class="anchor" href="#the-one-line-version-of-the-licence" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Dior's Builds is <strong>source-available, not open source</strong>. You can read it, study it, audit it, and run it locally by yourself. You <strong>cannot</strong> deploy it anywhere other people can use it, redistribute it, or build a competing bot from it. Full terms: <a href="license.html">LICENSE</a>.</p>
 <p>This means contributing here is a bit different from contributing to an MIT project: your contribution becomes part of software that only the maintainer operates and distributes. The Contributor Licence Agreement below is what makes that work legally. Please make sure you're comfortable with it.</p></div></section>
 <section class="sec" data-t="options"><span class="node" aria-hidden="true"></span><h2 id="ways-to-contribute" class="plain"><span class="ht">Ways to contribute</span><a class="anchor" href="#ways-to-contribute" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="opts"><article class="opt"><span class="opt-m" aria-hidden="true">🐞</span><h3 id="bug-reports" class="plain"><span class="ht">Bug reports</span><a class="anchor" href="#bug-reports" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Open a <a href="https://github.com/HarkiratMangat/diors-builds/issues" target="_blank" rel="noopener noreferrer">GitHub issue</a>. Useful reports include:</p>
 <ul><li>What you did (the exact slash command and options)</li><li>What you expected</li><li>What actually happened, with a screenshot if it's a rendering issue</li><li>Roughly when it happened, and your timezone — it helps correlate against logs</li></ul></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔒</span><h3 id="security-vulnerabilities" class="plain"><span class="ht">Security vulnerabilities</span><a class="anchor" href="#security-vulnerabilities" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p><strong>Do not open a public issue for a security problem.</strong></p>
@@ -2147,7 +2165,7 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
 <ul><li><strong>Commit messages follow <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank" rel="noopener noreferrer">Conventional Commits v1.0.0</a></strong> — <code>&lt;type&gt;(&lt;scope&gt;): &lt;description&gt;</code>, colon and one space, imperative, lowercase, no trailing period. Only the 11 standard types.</li><li><strong>Branch names</strong> are <code>&lt;type&gt;/&lt;kebab-description&gt;</code>.</li><li><strong>Keep the "why" comments.</strong> This codebase explains <em>why</em> code is written a certain way — especially around fixed bugs and Discord platform quirks. If your change makes a comment stale, update it. If you fix a bug or work around a platform limitation, add one in the same style.</li><li><strong>New schema fields must be added to the Mongoose schema in <code>models/</code> in the same change.</strong> Mongoose silently drops undeclared fields — they work in memory and vanish on the next fetch. This has caused real bugs more than once.</li><li><strong>Test on a dev bot before opening the PR.</strong> Boot it, run the affected command, confirm it actually works.</li></ul></div></section>
 <section class="sec"><span class="node" aria-hidden="true"></span><h2 id="pull-requests" class="plain"><span class="ht">Pull requests</span><a class="anchor" href="#pull-requests" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><ol><li>Branch off <code>main</code> (or off <code>v3-pre-release</code> for v3 work).</li><li>Keep the PR focused on one thing.</li><li>Describe what you changed and how you tested it.</li><li>Confirm the CLA (see below).</li></ol>
 <p>Review is by the maintainer. There's no SLA — this is a hobby project.</p></div></section>
-<section class="sec" data-t="ledger"><span class="node" aria-hidden="true"></span><h2 id="contributor-licence-agreement-cla" class="plain"><span class="ht">Contributor Licence Agreement (CLA)</span><a class="anchor" href="#contributor-licence-agreement-cla" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p><strong>By submitting a contribution, you agree to the terms in <a href="../LICENSE">§5 of the LICENSE</a>.</strong> That section is the operative legal text; this is a plain-English explanation of it, not a replacement.</p><div class="ldg"><div class="ldg-r" data-d="out"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-granting" class="plain"><span class="ht">What you're granting</span><a class="anchor" href="#what-youre-granting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>You give the maintainer a <strong>perpetual, worldwide, irrevocable, royalty-free licence</strong> to use your contribution — to modify it, ship it, deploy it, commercialise it, and to license or relicense it under any terms, including proprietary ones.</p>
+<section class="sec" data-t="ledger"><span class="node" aria-hidden="true"></span><h2 id="contributor-licence-agreement-cla" class="plain"><span class="ht">Contributor Licence Agreement (CLA)</span><a class="anchor" href="#contributor-licence-agreement-cla" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p><strong>By submitting a contribution, you agree to the terms in <a href="license.html">§5 of the LICENSE</a>.</strong> That section is the operative legal text; this is a plain-English explanation of it, not a replacement.</p><div class="ldg"><div class="ldg-r" data-d="out"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-granting" class="plain"><span class="ht">What you're granting</span><a class="anchor" href="#what-youre-granting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>You give the maintainer a <strong>perpetual, worldwide, irrevocable, royalty-free licence</strong> to use your contribution — to modify it, ship it, deploy it, commercialise it, and to license or relicense it under any terms, including proprietary ones.</p>
 <p>This is necessary because the project is source-available and may change licensing later. Without it, every contributor would effectively hold a veto over the project's future.</p></div></div><div class="ldg-r" data-d="hold"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-you-keep" class="plain"><span class="ht">What you keep</span><a class="anchor" href="#what-you-keep" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><ul><li><strong>You keep your copyright.</strong> This is a licence, not an assignment.</li><li><strong>The licence is non-exclusive</strong> — you can still use your own code elsewhere.</li><li><strong>You keep your credit.</strong> §5.6 obliges the maintainer to credit you and not to pass your work off as his own.</li></ul></div></div><div class="ldg-r" data-d="check"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-confirming" class="plain"><span class="ht">What you're confirming</span><a class="anchor" href="#what-youre-confirming" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>That you actually have the right to give this — specifically:</p>
 <ul><li>The contribution is <strong>your own work</strong>, or you have the rights to submit it</li><li>Any third-party code in it is <strong>clearly identified with its licence</strong> when you submit it</li><li>It doesn't knowingly infringe anyone's copyright, patent, trademark, or trade secret</li><li><strong>If your employer has rights to what you create</strong>, you've either got their permission or they've waived those rights — please check this properly if you write code professionally</li><li>It contains <strong>no malicious code, backdoors, or hidden functionality</strong></li></ul></div></div><div class="ldg-r" data-d="none"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-not-getting" class="plain"><span class="ht">What you're not getting</span><a class="anchor" href="#what-youre-not-getting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>No payment, no co-ownership of the project, no approval right over how your contribution is later modified or used, and no ownership stake in Dior's Builds as a whole.</p></div></div></div><h3 id="how-to-confirm-it" class="plain"><span class="ht">How to confirm it</span><a class="anchor" href="#how-to-confirm-it" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Include this line in your pull request description:</p>
 <div class="slip"><p class="slip-t" id="cla-line">I have read and agree to the Contributor Licence Agreement in §5 of the LICENSE.</p><button class="cpy" type="button" data-copy="cla-line"><span class="cpy-g" aria-hidden="true"></span><span class="cpy-t">Copy</span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
@@ -3093,6 +3111,25 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
         mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    var h=n?n.getBoundingClientRect().height:0;
+    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 (function(){
   /* EVERY copy control, not just the first. This was a single querySelector, so

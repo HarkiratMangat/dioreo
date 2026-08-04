@@ -1698,7 +1698,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .mast .meta b{color:var(--ink2);font-weight:500}/* ── headings: number lives in the margin ────────────────────────── */
 
 
-.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:76px}
+.doc h2,.doc h3{font-family:var(--display);color:var(--ink);position:relative;scroll-margin-top:var(--anchor-off,76px)}
 .doc h2{font-size:1.42rem;font-weight:750;letter-spacing:-.022em;line-height:1.22;
   margin:3.6rem 0 1.15rem;padding-bottom:.7rem;border-bottom:1px solid var(--rule)}
 .doc h3{font-size:1.04rem;font-weight:700;letter-spacing:-.012em;margin:2.4rem 0 .75rem}
@@ -2245,7 +2245,7 @@ html{scroll-behavior:smooth}
 <p><strong>Cloudinary holds no personal data.</strong> The images there are game screenshots and weapon artwork supplied by the administrator. Your avatar is never uploaded.</p>
 <p><strong>No AI system processes your data.</strong> The <code>/autobuild</code> command sends screenshots to a Gemini model for text extraction, but it is <strong>restricted to the administrator's own Discord account</strong>. No end-user data, image, or message is ever sent to any AI service.</p>
 <p>Two details that matter here:</p>
-<ul><li>We call <strong>Google Cloud Vertex AI</strong> (<code>aiplatform.googleapis.com</code>, project-scoped, service-account authenticated) — <strong>not</strong> the consumer Gemini API (<code>generativelanguage.googleapis.com</code>). The distinction is important: under the Google Cloud terms that govern Vertex AI, <strong>Google does not use customer data submitted to Vertex AI to train its models.</strong> The consumer Gemini API's free tier has materially weaker terms in this respect. We use the enterprise path.</li><li>Separately, AI tools were used to help <em>write</em> this project's code and documentation — see <a href="../NOTICE">NOTICE</a> <a class="xref" href="#s-6">§6</a>. That is development-time assistance, not runtime processing of your data.</li></ul>
+<ul><li>We call <strong>Google Cloud Vertex AI</strong> (<code>aiplatform.googleapis.com</code>, project-scoped, service-account authenticated) — <strong>not</strong> the consumer Gemini API (<code>generativelanguage.googleapis.com</code>). The distinction is important: under the Google Cloud terms that govern Vertex AI, <strong>Google does not use customer data submitted to Vertex AI to train its models.</strong> The consumer Gemini API's free tier has materially weaker terms in this respect. We use the enterprise path.</li><li>Separately, AI tools were used to help <em>write</em> this project's code and documentation — see <a href="notice.html">NOTICE</a> <a class="xref" href="#s-6">§6</a>. That is development-time assistance, not runtime processing of your data.</li></ul>
 <h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">If a provider mishandles your data</span><a class="anchor" href="#s-5.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We choose our providers carefully and rely on their published privacy terms and data processing agreements. But we are one person, and <strong>we have no ability to audit, inspect, or control what Discord, Google, MongoDB, or Cloudinary actually do inside their own systems.</strong></p>
 <p>So, plainly:</p>
@@ -2336,7 +2336,7 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Contact</span><a class="anchor" href="#s-13" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> — Data Controller Ontario, Canada 📧 <strong>harkirat117@gmail.com</strong> 💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
+<p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> — Data Controller<br>Ontario, Canada<br>📧 <strong>harkirat117@gmail.com</strong><br>💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
 <p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. A <strong>Privacy Request</strong> under <a class="xref" href="#s-9">§9</a> must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-2.5">§2.5</a>) and a contact point in a privacy policy must not be able to go dead.</p>
 <p>For privacy requests, use the subject line <strong>"Privacy Request"</strong> and include your Discord user ID.</p>
 <hr>
@@ -3493,6 +3493,25 @@ html{scroll-behavior:smooth}
         mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    var h=n?n.getBoundingClientRect().height:0;
+    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 
 (function(){

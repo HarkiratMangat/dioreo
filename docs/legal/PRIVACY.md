@@ -579,9 +579,9 @@ change record you can't reach isn't a change record.
 
 ## 13. Contact
 
-**Harkirat Mangat ("dior", "diorswrld")** — Data Controller
-Ontario, Canada
-📧 **harkirat117@gmail.com**
+**Harkirat Mangat ("dior", "diorswrld")** — Data Controller\
+Ontario, Canada\
+📧 **harkirat117@gmail.com**\
 💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
 Email is the canonical contact and always reaches us; Discord is usually faster for a question. A **Privacy Request** under §9 must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a

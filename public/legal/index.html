@@ -1054,7 +1054,12 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
 
 .foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
   align-items:flex-start;text-align:left;padding:0}
-.foot .disc{max-width:66ch}
+.foot .disc{max-width:66ch}/* The shared .sig carries grid placement for the document footer's two-column
+   layout; here it is a plain block in the page flow, so only the spacing needs
+   restating. Its own margin is set for sitting under a link row, not under the
+   trademark notice. */
+
+.sig.lsig{margin:clamp(1.5rem,4.5vh,2.2rem) 0 0}
 .disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
@@ -1526,6 +1531,12 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
   <p class="disc fine">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+  <!-- The sign-off closes the landing page as it closes every other one. It was
+       the only page without it, which made the site look like it ended twice:
+       every document signed off and the front door did not. Last, and after the
+       trademark notice, because that notice is an obligation and this is the
+       author — the same order the document pages use. -->
+  <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
 </main>
 <script>
 (function(){
