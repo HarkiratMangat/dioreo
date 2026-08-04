@@ -1325,10 +1325,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   
   .mbar{position:relative;isolation:isolate;overflow:hidden;
     background:var(--paper);
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
+     a no-op for momentum since iOS 13 made smooth scrolling the default; the only
+     effect it still has is forcing this scroller onto its own composited layer,
+     which is the other half of the blend failure described above. Removing an
+     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
     overflow-x:auto;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
     padding:.5rem .75rem;
     scrollbar-width:none}
   .mstrip::-webkit-scrollbar{display:none}
@@ -1373,7 +1378,26 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten}
+    pointer-events:none;mix-blend-mode:lighten;
+    transition:opacity .24s ease}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
+     FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
+     did nothing. This layer exists to play ONE animation on arrival: particles
+     converge and fuse into a pill. What you look at for the rest of the page is
+     .mtab.on::after, a crisp unfiltered pill painted by the tab itself, and the
+     alpha crush ERODES the goo pill's caps, so the filtered shape sits strictly
+     inside the crisp one and removing it changes nothing you can see.
+     Leaving it alive meant a filtered, blended, per-frame-transformed layer lived
+     inside a position:sticky header for the life of the page. A blend needs its
+     backdrop rasterised in the same layer, and iOS re-layers exactly this kind of
+     element during a scroll gesture — at which point the bed has nothing to be
+     erased against and paints raw: a black rectangle in dark mode, and in light
+     mode the inverted white bed plus the accent plate, which is why it came out
+     yellow behind Contributors. A layer that is not on screen cannot be
+     mis-composited, so the artifact has no surface to appear on.
+     ⚠️ visibility, not just opacity: an opacity-0 blended layer is still
+     composited every frame, which is the thing being removed. */
+  
+  .mgw.spent{opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s .24s}
   .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
      something opaque behind them or there is nothing to threshold. Black,
      and large: the plate below has to sit entirely within the bed's OPAQUE
@@ -1475,15 +1499,47 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     border-bottom:1.5px solid var(--ink2);transform:translateY(-2px) rotate(45deg);
     transition:transform .3s cubic-bezier(.22,.9,.24,1)}
   .msecd[open]>summary::after{transform:translateY(1px) rotate(225deg)}
-  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
-    color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    max-width:52%}
-  .mp-list{max-height:min(58vh,460px);overflow-y:auto;padding-bottom:.3rem}
+  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}/* ⚠️ THE SECTION IS THE CONTENT HERE; -On this page- IS THE CHROME, and the
+     original weighting had that backwards. The static label was mono, tracked and
+     the same ink as everything else in the bar, while the one piece of live
+     information — which section you are actually in — sat smaller, greyer and
+     truncated at 52% beside it. On a long document that line is the only
+     positional cue on screen, so it now carries the document's own voice and the
+     label shrinks to a prefix. The accent dot only exists once there IS a tracked
+     section: at the top of the page the scrollspy leaves this empty, and a lone
+     bullet floating against nothing reads as a rendering fault. */
+  
+  .msd-l{flex:0 0 auto;font-size:.55rem;color:var(--ink3)}
+  .mt-at{display:flex;align-items:center;gap:.42rem;margin-left:auto;
+    font-family:var(--display);font-size:.74rem;font-weight:600;letter-spacing:0;
+    text-transform:none;color:var(--ink);
+    overflow:hidden;white-space:nowrap;max-width:64%}/* The ellipsis has to live on the TITLE, not on the flex parent: a flex item's
+     default min-width is auto, so without this the title refuses to shrink and
+     pushes the number out of the bar instead of truncating itself. */
+  
+  .mt-at>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}/* The section NUMBER rather than a bullet: it is the same token the heading
+     and the margin index already use, so the bar names the section the way the
+     document does. Tabular figures because the badge sits at a fixed left edge
+     and 1.1 must not be narrower than 2.6.
+     ⚠️ Not every index entry HAS a number — the parser writes an em dash for
+     those, and the chronicle pages have none at all. A dash in a numeric badge
+     reads as a missing value, so the script falls back to .mt-dot there and the
+     marker degrades to the bullet instead of showing a placeholder. */
+  
+  .mt-n{flex:0 0 auto;font-family:var(--mono);font-style:normal;font-size:.62rem;
+    font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;
+    color:var(--accent-t)}
+  .mt-n.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain;
+    padding-bottom:.3rem}
   .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
-    padding:0 .9rem;border-left:2px solid transparent}
+    padding:0 .9rem;border-left:3px solid transparent}/* Stronger than the desktop rail's marker on purpose. The rail is always on
+     screen beside the prose, so a hairline is enough to say -you are here-; this
+     list is opened, scanned once and dismissed, and it has to answer that question
+     in the moment it appears. */
+  
   .msec .slot.on{border-left-color:var(--accent);
-    background:color-mix(in srgb,var(--accent) 10%,transparent)}
+    background:color-mix(in srgb,var(--accent) 16%,transparent)}
   .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
 }/* ── layout ──────────────────────────────────────────────────────── *//* .page centres and bounds; .cols is the grid. The footer sits in .page and OUTSIDE
    .cols on purpose — see the markup comment: it is what stops the sticky rail from
@@ -2314,10 +2370,27 @@ Claude(TM), Anthropic(R)
        and a <= test would have left the shadow on all the way up the page.
        Below 981 the sticky rule is off entirely, so nothing may latch there. */
     var wide=matchMedia('(min-width:981px)').matches;
+    /* ⚠️ THE TRACKING LINE IS MEASURED FROM THE NAV, NOT HARDCODED. It was a flat
+       130px, which on a phone sits ABOVE the mobile nav's own bottom edge (54px
+       masthead + the tab strip + the section bar, about 150px): a heading only
+       became current once it had already slid up BEHIND the bar, so you could be
+       a full paragraph into a section while the bar still named the previous one.
+       Reported from a phone with the next heading plainly on screen.
+       Measured live rather than assumed, because the bar has two heights — the
+       section disclosure is absent on pages with no index. The 72px is the margin
+       that makes a heading count once it is comfortably clear of the bar rather
+       than at the instant its first pixel escapes.
+       .mnav is display:none above 980, so height 0 keeps the desktop value, where
+       130 is correct against a 54px masthead and nothing else. */
+    var navEl=document.getElementById('mnav'), line=130;
+    if(navEl){
+      var nr=navEl.getBoundingClientRect();
+      if(nr.height>0) line=nr.bottom+72;
+    }
     for(var i=0;i<heads.length;i++){
       if(!heads[i]) continue;
       var ht=heads[i].getBoundingClientRect().top;
-      if(ht<=130) cur=i;
+      if(ht<=line) cur=i;
       heads[i].classList.toggle('stuck', wide && ht>52.5 && ht<55.5);
     }
     /* At the bottom of the document the last headings can never cross the 130px
@@ -2357,10 +2430,29 @@ Claude(TM), Anthropic(R)
     // Mirror the tracked section into the mobile opener. On desktop the rail
     // shows position by itself; on mobile the list is collapsed, so without this
     // there is no positional cue anywhere on a 22-section document.
+    /* Built as nodes rather than assigned as markup: this is document text going
+       into the chrome, and textContent on each piece is what keeps a section title
+       containing a bracket or an ampersand from ever being parsed as HTML. */
     var curEl=document.getElementById('railcur');
     if(curEl){
-      var t=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
-      curEl.textContent=t?t.textContent:'';
+      var src=curId?document.querySelector('.slot[href="#'+curId+'"]'):null;
+      curEl.textContent='';
+      if(src){
+        var sn=src.querySelector('i'), st=src.querySelector('span');
+        var num=sn?sn.textContent.trim():'';
+        var badge=document.createElement('i');
+        /* The index writes an em dash where a section has no number, and the
+           chronicle pages have no numbers at all. Built from a char code because
+           NAV_JS is emitted from inside a template literal and the generator eats
+           a lone backslash, so an escape sequence would not survive to the page. */
+        var dash=String.fromCharCode(8212);
+        badge.className=(num&&num!==dash)?'mt-n':'mt-n mt-dot';
+        if(num&&num!==dash) badge.textContent=num;
+        curEl.appendChild(badge);
+        var lab=document.createElement('span');
+        lab.textContent=st?st.textContent:'';
+        curEl.appendChild(lab);
+      }
     }
     queued=false;
   }
@@ -3171,20 +3263,37 @@ Claude(TM), Anthropic(R)
        scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
        cached scrollLeft was stale before the first paint. A rect difference is
        whatever is true right now and cannot go stale. */
+    /* ⚠️ ONCE SPENT, STOP TRACKING. The whole reason this element has to be
+       hand-positioned is that it lives outside the scroller so its blend keeps a
+       backdrop — but a retired layer is invisible, so writing a transform to it on
+       every frame of every scroll buys nothing and is precisely the per-frame work
+       that exposed it to iOS's compositor. See the .mgw.spent note in the CSS. */
+    var spentT=null;
     function follow(){
+      if(gw.classList.contains('spent')) return;
       var t=mtabs[cur]; if(!t) return;
       gw.style.transform='translateX('
         +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
     }
 
+    /* Long enough to outlast the whole birth: the pill runs 2s on a .2s delay and
+       the particles 1200±300ms started 350ms in, so everything has landed well
+       before this. Retiring it early would cut the animation off mid-flight. */
+    function retire(){
+      if(spentT) clearTimeout(spentT);
+      spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
+    }
+
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
+      if(spentT) clearTimeout(spentT);
+      gw.classList.remove('spent');
       cur=i; follow();
       gw.style.width=t.offsetWidth+'px';
       gw.style.top=t.offsetTop+'px';
       gw.style.height=t.offsetHeight+'px';
       gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); return; }
+      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
       /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
          pill first and re-animating it a moment later is what made the old
          version look glitchy: you saw the pill, saw it vanish, saw it grow. */
@@ -3198,6 +3307,7 @@ Claude(TM), Anthropic(R)
       void goo.offsetWidth;
       spray();
       goo.classList.add('on');
+      retire();
     }
 
     function spray(){
@@ -3244,6 +3354,42 @@ Claude(TM), Anthropic(R)
        replaced: on a slow connection that is the only feedback the tap landed. */
     mtabs.forEach(function(a,i){
       a.addEventListener('click',function(){ cur=i; place(i,true); });
+    });
+  }
+
+  /* ── the section disclosure ───────────────────────────────────────────
+     Two gaps that only appear on a long document, both reported from a phone.
+
+     A tab is a real link to another document, so a tap tears the whole page down
+     and the panel goes with it. A SECTION is a same-page jump: nothing is torn
+     down, so the panel stayed open on top of the very content it had just been
+     asked to reveal. Closing it is the navigation completing.
+
+     And the panel is its own scroll box. The scrollspy above already keeps .on
+     correct on both copies of the index, but only the DESKTOP rail was ever
+     scrolled to the tracked slot — so on a 22-section document you opened the
+     list at section 1 with the highlight nineteen rows below the fold, which is
+     indistinguishable from no highlight at all.
+     ⚠️ scrollTop is set directly, never scrollIntoView: that call walks every
+     scrollable ancestor and moves the PAGE when the element is not fully in
+     view, which here means the document scrolling itself because you opened a
+     menu. Same reason the rail does it this way. */
+  var msecd=document.querySelector('.msecd');
+  if(msecd){
+    var mlist=msecd.querySelector('.mp-list');
+    msecd.addEventListener('click',function(e){
+      var t=e.target;
+      if(t&&t.closest&&t.closest('.slot')) msecd.open=false;
+    });
+    /* On open, not on every scroll frame: the highlight cannot move while the
+       panel covers the document, so once placed it stays right. */
+    msecd.addEventListener('toggle',function(){
+      if(!msecd.open||!mlist) return;
+      var on=mlist.querySelector('.slot.on'); if(!on) return;
+      var pad=56, et=on.offsetTop, eh=on.offsetHeight;
+      if(et<mlist.scrollTop+pad) mlist.scrollTop=Math.max(0,et-pad);
+      else if(et+eh>mlist.scrollTop+mlist.clientHeight-pad)
+        mlist.scrollTop=et+eh-mlist.clientHeight+pad;
     });
   }
 })();
