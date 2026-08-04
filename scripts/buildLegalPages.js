@@ -938,8 +938,8 @@ function renderIndented(head, region) {
  * copy to exist. Add a token here and both selectors get it.
  */
 const LIGHT_TOKENS = `
-  --desk:#E7E9EE; --paper:#F8F9FB; --raised:#EDEFF3;
-  --rule:#B9C0CC; --rule2:#8D94A4;
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);`;
@@ -1015,10 +1015,10 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    Specificity is deliberately above body's own shorthand so it survives it; the
    warm pages restate the whole background later and keep their accent wash. */
 :root[data-theme=light] body{background-image:
-  radial-gradient(140% 90% at 50% -10%,#F1F3F7,transparent 66%)}
+  radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]) body{background-image:
-    radial-gradient(140% 90% at 50% -10%,#F1F3F7,transparent 66%)}
+    radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
 }
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
