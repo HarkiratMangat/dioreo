@@ -2186,7 +2186,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    in the DOM and must stay LAST on screen — see the note above on why the markup
    order may not be "tidied" to match. */
 @media (max-width:760px){
-  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem}
+  /* ⚠️ The 3.4rem bottom padding is for a WIDE layout, where the footer is the last
+     thing on the page. On a phone it stacks on top of the page wrapper's own 4rem,
+     which put about 118px of dead space under the sign-off — measured on
+     Contributors, where the two are adjacent. The wrapper already provides the
+     breathing room at this width; the footer only needs to not crowd its own last
+     line. Top padding is untouched: the back-to-top parks against it. */
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
+    padding-bottom:1.1rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
@@ -4454,6 +4461,22 @@ ${SWITCHER_CSS}
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;
   line-height:1;margin-bottom:.32rem}
 .doc h3 .idx{color:var(--ink3);margin-bottom:.26rem}
+/* ⚠️ BESIDE THE HEADING, NOT ABOVE IT. Below 1120px there is no gutter to hang the
+   number in, and it was simply stacked on its own line — which reads as a stray
+   figure floating over the heading rather than as that heading's number, and puts
+   a line break between two things that are one label.
+   This is the treatment h3.clause has always used at these widths (flex row,
+   baseline-aligned, .55rem gap); the section headings just never got it. Baseline
+   alignment is the part that matters: a heading wraps to two or three lines on a
+   phone, and the number belongs on the first line's baseline, not centred against
+   the block.
+   Bounded at 1119 so it cannot collide with the >=1120 rule that lifts the number
+   into the margin as a true hanging index — that is a different layout, not a
+   wider version of this one. */
+@media (max-width:1119px){
+  .doc .dsec>h2,.doc h3{display:flex;align-items:baseline;gap:.55rem}
+  .doc .dsec>h2 .idx,.doc h3 .idx{flex:0 0 auto;margin-bottom:0}
+}
 @media (min-width:1120px){
   /* The fallback keeps any .idx rendered outside .doc — where --num is not declared —
      at exactly the offset it had before this became fluid. Without it an undeclared
@@ -5085,9 +5108,21 @@ function asPlates(body) {
         if (b.startsWith('<div class="tw"')) {
             // Our own table markup, so the shape is fixed: one <tr> per row, one
             // <td> per cell, and inline() never emits a nested </td>.
-            const tb = (b.match(/<tbody>([\s\S]*?)<\/tbody>/) || [, ''])[1];
-            const plates = [...tb.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(m => {
-                const c = [...m[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map(x => x[1]);
+            //
+            // ⚠️ MATCH THE TAG NAME AND TOLERATE ATTRIBUTES — never the bare tag.
+            // These read `<tr>` and `<td>` literally until 2026-08-04, when the
+            // table emitter gained role="row" / role="cell" / data-label for the
+            // narrow-screen stacked layout. Every match then failed, `plates` came
+            // out empty, and the `if (!plates) return b` fallback silently handed
+            // back the raw table — so the Maintainer section rendered as a cramped
+            // two-column table instead of a plate, on a page whose whole point is
+            // that the maintainer and the contributors share one visual language.
+            // Nothing reported it: warmStructAudit asserts a declared treatment
+            // fired at least once per PAGE, and `plates` is also used by the
+            // Contributors section below, which still fired.
+            const tb = (b.match(/<tbody\b[^>]*>([\s\S]*?)<\/tbody>/) || [, ''])[1];
+            const plates = [...tb.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)].map(m => {
+                const c = [...m[1].matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)].map(x => x[1]);
                 return `<div class="plate"><span class="plate-n">${c[0] || ''}</span>`
                     + `<span class="plate-r">${c.slice(1).join(' · ')}</span></div>`;
             }).join('');
@@ -5100,7 +5135,7 @@ function asPlates(body) {
             // the documented format for future entries adds Contribution and First
             // shipped in, which are NOT self-describing once three values sit on
             // one plate. A legend covers both cases with one line.
-            const th = [...b.matchAll(/<th>([\s\S]*?)<\/th>/g)].map(x => stripTags(x[1]));
+            const th = [...b.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/g)].map(x => stripTags(x[1]));
             const legend = th.length
                 ? `<p class="wall-l">${th.join(' &middot; ')}</p>` : '';
             return `${legend}<div class="wall">${plates}</div>`;
@@ -6681,8 +6716,24 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   background:color-mix(in srgb,var(--accent) 13%,var(--raised))}
 .cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}
 /* The 44px target returns where it actually matters — a coarse pointer, where
-   this control is always visible rather than revealed on hover. */
-@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}
+   this control is always visible rather than revealed on hover.
+   ⚠️ AND THE CODE HAS TO CLEAR IT VERTICALLY, WHICH RESERVING WIDTH DOES NOT DO.
+   The first attempt gave the block right-padding so a line would stop before the
+   button. That only helps a line SHORT enough to stop — pre.code scrolls, so any
+   longer line runs straight under the control regardless of padding, which is the
+   case actually reported (a git clone URL disappearing beneath it).
+   On a coarse pointer the button is permanently visible and 44px tall, so it
+   occupies the top ~52px of the block while the code begins at 28px. Pushing the
+   code below it removes the collision for every line at every scroll position
+   instead of for the short ones.
+   Both selectors are restated because .cw pre.code[data-lang] is (0,3,1) and would
+   otherwise beat a plain .cw pre.code here.
+   Fine pointers keep the tighter block on purpose: there the control is smaller and
+   revealed on hover, so it is a transient overlap rather than a permanent one. */
+@media (hover:none){
+  .cpy.cpy-f{width:44px;height:44px}
+  .cw pre.code,.cw pre.code[data-lang]{padding-top:3.6rem;padding-right:1.15rem}
+}
 /* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
    and the button occupies 34px plus its offset — 44px on a coarse pointer, where
    it is always visible — so a line only a little longer than the box tucked itself

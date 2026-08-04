@@ -747,8 +747,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    order may not be "tidied" to match. */
 
 
-@media (max-width:760px){
-  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem}
+@media (max-width:760px){/* ⚠️ The 3.4rem bottom padding is for a WIDE layout, where the footer is the last
+     thing on the page. On a phone it stacks on top of the page wrapper's own 4rem,
+     which put about 118px of dead space under the sign-off — measured on
+     Contributors, where the two are adjacent. The wrapper already provides the
+     breathing room at this width; the footer only needs to not crowd its own last
+     line. Top padding is untouched: the back-to-top parks against it. */
+  
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
+    padding-bottom:1.1rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
@@ -1808,7 +1815,23 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;
   line-height:1;margin-bottom:.32rem}
-.doc h3 .idx{color:var(--ink3);margin-bottom:.26rem}
+.doc h3 .idx{color:var(--ink3);margin-bottom:.26rem}/* ⚠️ BESIDE THE HEADING, NOT ABOVE IT. Below 1120px there is no gutter to hang the
+   number in, and it was simply stacked on its own line — which reads as a stray
+   figure floating over the heading rather than as that heading's number, and puts
+   a line break between two things that are one label.
+   This is the treatment h3.clause has always used at these widths (flex row,
+   baseline-aligned, .55rem gap); the section headings just never got it. Baseline
+   alignment is the part that matters: a heading wraps to two or three lines on a
+   phone, and the number belongs on the first line's baseline, not centred against
+   the block.
+   Bounded at 1119 so it cannot collide with the >=1120 rule that lifts the number
+   into the margin as a true hanging index — that is a different layout, not a
+   wider version of this one. */
+
+@media (max-width:1119px){
+  .doc .dsec>h2,.doc h3{display:flex;align-items:baseline;gap:.55rem}
+  .doc .dsec>h2 .idx,.doc h3 .idx{flex:0 0 auto;margin-bottom:0}
+}
 @media (min-width:1120px){/* The fallback keeps any .idx rendered outside .doc — where --num is not declared —
      at exactly the offset it had before this became fluid. Without it an undeclared
      custom property makes the whole declaration invalid and left falls back to auto,

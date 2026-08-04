@@ -747,8 +747,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    order may not be "tidied" to match. */
 
 
-@media (max-width:760px){
-  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem}
+@media (max-width:760px){/* ⚠️ The 3.4rem bottom padding is for a WIDE layout, where the footer is the last
+     thing on the page. On a phone it stacks on top of the page wrapper's own 4rem,
+     which put about 118px of dead space under the sign-off — measured on
+     Contributors, where the two are adjacent. The wrapper already provides the
+     breathing room at this width; the footer only needs to not crowd its own last
+     line. Top padding is untouched: the back-to-top parks against it. */
+  
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
+    padding-bottom:1.1rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
@@ -1754,9 +1761,25 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   padding:0;gap:0;min-height:0;width:34px;height:34px;
   background:color-mix(in srgb,var(--accent) 13%,var(--raised))}@media (hover:hover) and (pointer:fine){
 .cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}}/* The 44px target returns where it actually matters — a coarse pointer, where
-   this control is always visible rather than revealed on hover. */
+   this control is always visible rather than revealed on hover.
+   ⚠️ AND THE CODE HAS TO CLEAR IT VERTICALLY, WHICH RESERVING WIDTH DOES NOT DO.
+   The first attempt gave the block right-padding so a line would stop before the
+   button. That only helps a line SHORT enough to stop — pre.code scrolls, so any
+   longer line runs straight under the control regardless of padding, which is the
+   case actually reported (a git clone URL disappearing beneath it).
+   On a coarse pointer the button is permanently visible and 44px tall, so it
+   occupies the top ~52px of the block while the code begins at 28px. Pushing the
+   code below it removes the collision for every line at every scroll position
+   instead of for the short ones.
+   Both selectors are restated because .cw pre.code[data-lang] is (0,3,1) and would
+   otherwise beat a plain .cw pre.code here.
+   Fine pointers keep the tighter block on purpose: there the control is smaller and
+   revealed on hover, so it is a transient overlap rather than a permanent one. */
 
-@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
+@media (hover:none){
+  .cpy.cpy-f{width:44px;height:44px}
+  .cw pre.code,.cw pre.code[data-lang]{padding-top:3.6rem;padding-right:1.15rem}
+}/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
    and the button occupies 34px plus its offset — 44px on a coarse pointer, where
    it is always visible — so a line only a little longer than the box tucked itself
    underneath and looked truncated rather than scrollable. Padding cannot help a
@@ -2173,7 +2196,7 @@ html{scroll-behavior:smooth}
   </header>
   <main class="card" id="main" tabindex="-1"><div class="lead"><p>The people who have worked on Dior's Builds. Each one is listed under the name or handle they asked for.</p>
 <p>Ship something and you are added here, and to the changelog entry for the release it goes out in. That is an obligation rather than a courtesy, and it cannot be withdrawn later: §5.6 of the <a href="license.html">LICENSE</a> requires it.</p></div>
-<section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Name</th><th role="columnheader" scope="col">Role</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Name"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</td><td role="cell" data-label="Role">Creator and maintainer</td></tr></tbody></table></div></div></section>
+<section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p class="wall-l">Name &middot; Role</p><div class="wall"><div class="plate"><span class="plate-n"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</span><span class="plate-r">Creator and maintainer</span></div></div></div></section>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><a class="plate ghost" href="./contributing.html"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></a></div>
 <p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p></div></section>
 <section class="sec" data-t="promises"><span class="node" aria-hidden="true"></span><h2 id="how-credit-works" class="plain"><span class="ht">How credit works</span><a class="anchor" href="#how-credit-works" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="proms"><article class="prom"><h4>You choose the name.</h4><p>GitHub handle, display name, or anything reasonable — tell us in the pull request.</p></article><article class="prom"><h4>Credit appears in two places:</h4><p>this file, and the <code>docs/CHANGELOG.md</code> entry for the release your work ships in.</p></article><article class="prom"><h4>Credit survives.</h4><p>It stays even if the code is later refactored or replaced.</p></article><article class="prom"><h4>Removal is your call.</h4><p>If a contribution is removed entirely, we'll remove the credit on request — or leave it, if you'd rather keep it.</p></article></div>
