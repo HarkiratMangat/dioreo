@@ -42,8 +42,8 @@ Format for new entries — keep newest at the bottom:
 - **Credit appears in two places:** this file, and the `docs/CHANGELOG.md` entry
   for the release your work ships in.
 - **Credit survives.** It stays even if the code is later refactored or replaced.
-- **If a contribution is removed entirely**, we'll remove the credit on request —
-  or leave it, if you'd rather keep it.
+- **Removal is your call.** If a contribution is removed entirely, we'll remove
+  the credit on request — or leave it, if you'd rather keep it.
 
 Thanks to everyone who has taken the time to make this better.
 

@@ -44,7 +44,7 @@
    table headers read as distinct surfaces rather than the same cream. */
 
 :root[data-theme=light]{
-  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+  --desk:#DBD3C6; --paper:#FDFCFA; --raised:#EFEBE3;
   --rule:#CBC3B4; --rule2:#A39A8B;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
@@ -52,7 +52,7 @@
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+    --desk:#DBD3C6; --paper:#FDFCFA; --raised:#EFEBE3;
     --rule:#CBC3B4; --rule2:#A39A8B;
     --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
     --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
@@ -62,7 +62,23 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}/* ⚠️ DEPTH IN LIGHT MODE, WHICH A FLAT FILL CANNOT GIVE. The ground was one flat
+   warm grey: fine on a desktop panel, dull on a phone. A large uniform mid-tone
+   is exactly what a bright mobile screen flattens, and it gives the eye no edge
+   to place the document card against. A wide soft lift behind the top of the page
+   gives the card something to sit ON. The dark theme gets this for free — its
+   card is LIGHTER than its ground, so the separation already exists. The token
+   itself also gained chroma (#D6D1CA to #DBD3C6): the old value sat close to
+   neutral, which is what made it read as grey rather than as paper stock.
+   Specificity is deliberately above body's own shorthand so it survives it; the
+   warm pages restate the whole background later and keep their accent wash. */
+
+:root[data-theme=light] body{background-image:
+  radial-gradient(140% 90% at 50% -10%,#EFEAE1,transparent 66%)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background-image:
+    radial-gradient(140% 90% at 50% -10%,#EFEAE1,transparent 66%)}
+}
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;

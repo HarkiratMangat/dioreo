@@ -44,7 +44,7 @@
    table headers read as distinct surfaces rather than the same cream. */
 
 :root[data-theme=light]{
-  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+  --desk:#DBD3C6; --paper:#FDFCFA; --raised:#EFEBE3;
   --rule:#CBC3B4; --rule2:#A39A8B;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
@@ -52,7 +52,7 @@
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
+    --desk:#DBD3C6; --paper:#FDFCFA; --raised:#EFEBE3;
     --rule:#CBC3B4; --rule2:#A39A8B;
     --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
     --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
@@ -62,7 +62,23 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}/* ⚠️ DEPTH IN LIGHT MODE, WHICH A FLAT FILL CANNOT GIVE. The ground was one flat
+   warm grey: fine on a desktop panel, dull on a phone. A large uniform mid-tone
+   is exactly what a bright mobile screen flattens, and it gives the eye no edge
+   to place the document card against. A wide soft lift behind the top of the page
+   gives the card something to sit ON. The dark theme gets this for free — its
+   card is LIGHTER than its ground, so the separation already exists. The token
+   itself also gained chroma (#D6D1CA to #DBD3C6): the old value sat close to
+   neutral, which is what made it read as grey rather than as paper stock.
+   Specificity is deliberately above body's own shorthand so it survives it; the
+   warm pages restate the whole background later and keep their accent wash. */
+
+:root[data-theme=light] body{background-image:
+  radial-gradient(140% 90% at 50% -10%,#EFEAE1,transparent 66%)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background-image:
+    radial-gradient(140% 90% at 50% -10%,#EFEAE1,transparent 66%)}
+}
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
@@ -1547,7 +1563,33 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 body{min-height:100vh;background:
   radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 62%),
   radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 12%,transparent),transparent 55%),
-  var(--desk)}/* 760px wasted most of a desktop window, and it was also what forced the footer
+  var(--desk)}/* ⚠️ LIGHT MODE NEEDS ROUGHLY TWICE THE TINT FOR THE SAME EFFECT, and that is a
+   property of the ground, not a matter of taste. A wash works by displacing the
+   surface it sits on. On dark graphite a 15% accent is a large displacement —
+   the ground has almost no luminance to begin with, so any colour laid over it
+   dominates. On #DBD3C6 paper the same 15% moves the surface a fraction of what
+   the eye needs, and the second layer is worse: --glow is a PALE tint (#C3CBFF
+   periwinkle, #FBFFB0 citron), so at 12% it is light-on-light and disappears
+   outright. Reported as not being able to see the tinting at all on a phone,
+   where auto-brightness flattens the little that was left.
+   ⚠️ contrastAudit CANNOT see this. It reads --name:#hex declarations against
+   --desk and --card; a rule painting its own surface out of color-mix is
+   invisible to it, so the hero text sitting directly on this wash had to be
+   checked by hand. It is safe in the direction taken: mixing a mid accent into a
+   light ground DARKENS it, and the ink on top is near-black, so every step here
+   increases contrast rather than eroding it. Re-check by hand if these ever go
+   the other way. */
+
+:root[data-theme=light] body{background:
+  radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 64%),
+  radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 30%,transparent),transparent 58%),
+  var(--desk)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background:
+    radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 64%),
+    radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 30%,transparent),transparent 58%),
+    var(--desk)}
+}/* 760px wasted most of a desktop window, and it was also what forced the footer
    nav to wrap "Contributors" onto a line of its own with half the row empty. The
    structured blocks (tiles, ledger, plates, promise cards) all want the extra
    width — they are auto-fit grids and simply gain a column. Running PROSE does
@@ -1731,7 +1773,22 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .ldg-r>h3{grid-column:2;grid-row:1;margin:0 0 .45rem;font-size:1rem}
 .ldg-r>div{grid-column:2;grid-row:2}
 .ldg-r>div>:last-child{margin-bottom:0}
-.card .ldg-r p,.card .ldg-r li{font-size:.97rem;line-height:1.68}/* ── the consent slip. The one thing on this page a reader has to physically
+.card .ldg-r p,.card .ldg-r li{font-size:.97rem;line-height:1.68}/* ⚠️ ON A PHONE THE MARK KEEPS ITS COLUMN AND THE PROSE STOPS PAYING FOR IT.
+   The row reserves a 26px gutter plus an .85rem gap for the direction mark, and
+   spans it down the WHOLE row so the body is indented past it too. On a desktop
+   card that is a hanging indent and reads well. At 375px it costs about 40px of a
+   ~250px measure — roughly four characters a line on an already narrow column —
+   and leaves a tall empty channel beside every paragraph, which is the "so much
+   odd spacing" in the report: the space is not between things, it is beside them.
+   The mark stays on the heading's line, where it is a label for the row; only the
+   body is released to the full width. */
+
+@media (max-width:620px){
+  .ldg-r{grid-template-columns:auto 1fr;column-gap:.5rem;padding:1rem 1.05rem .95rem}
+  .ldg-m{grid-row:1;width:auto;height:auto;margin-top:.12rem}
+  .card .ldg-r>h3{grid-column:2;grid-row:1}
+  .ldg-r>div{grid-column:1/-1;grid-row:2;margin-top:.4rem}
+}/* ── the consent slip. The one thing on this page a reader has to physically
       take away, so it looks detachable: a dashed tear edge down the left and a
       real copy control. The line stays selectable text if JS never runs. */
 
@@ -1828,10 +1885,23 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 
 .proms{display:grid;grid-template-columns:repeat(auto-fit,minmax(218px,1fr));gap:.85rem;
   margin:1.3rem 0}
-.prom{position:relative;border:1px solid var(--rule);border-radius:13px;
-  padding:1.05rem 1.15rem 1.1rem;background:color-mix(in srgb,var(--accent) 5%,var(--raised))}
-.prom::after{content:"";position:absolute;left:1.15rem;right:1.15rem;bottom:0;height:1px;
-  background:linear-gradient(90deg,var(--accent),transparent);opacity:.55}
+.prom{position:relative;overflow:hidden;border:1px solid var(--rule);border-radius:13px;
+  padding:1.2rem 1.15rem 1.1rem;background:color-mix(in srgb,var(--accent) 5%,var(--raised))}/* ⚠️ THE ACCENT MOVED FROM THE FOOT TO THE HEAD, and the old placement is worth
+   describing so it does not come back. It was a 1px hairline at bottom:0, inset
+   1.15rem from each side, at .55 opacity — which put a faint detached line under
+   the last line of prose. Three things were wrong at once: a rule at the BOTTOM
+   of a card reads as a separator between cards rather than as a mark belonging to
+   one, insetting it from the edges detached it from the card's own geometry so it
+   floated, and .55 opacity on an already-pale accent left it looking like a
+   rendering artifact rather than a decision.
+   A full-bleed cap at the top is the same idea made structural, and it echoes the
+   accent rule across the top of the legal document card — so the two page families
+   share a gesture without sharing a template. overflow:hidden is what curves the
+   cap into the card's own radius; without it the bar runs straight past the
+   rounded corners. */
+
+.prom::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 18%,transparent))}
 .card .prom h4{font-family:var(--display);font-size:.95rem;font-weight:750;
   letter-spacing:-.012em;color:var(--ink);margin:0 0 .4rem}
 .card .prom p{font-family:var(--serif);font-size:.93rem;line-height:1.62;
