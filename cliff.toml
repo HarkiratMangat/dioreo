@@ -1,0 +1,70 @@
+# git-cliff config for Diors-Builds -- powers `dior changelog` (dior-cli), a DRAFT
+# generator only. It does NOT feed the real docs/CHANGELOG.md, which is hand-curated
+# with a strict per-release format (hash backfilled one release later, 3-file sync
+# with CHANGELOG-SUMMARY.md/DEVLOG.md, docs-audit.mjs's conservation-rule checks).
+# `dior changelog` is meant to save the "list everything that happened" typing, not
+# replace the judgement `docs-audit`/the changelog system already enforces.
+#
+# Commit-type groups mirror the exact 11 Conventional Commits types this repo uses
+# (docs/reference/commit-and-branch-naming.md) -- deliberately NOT git-cliff's
+# default parser set, which lumps build/ci into one bucket with chore and has no
+# `docs`-vs-everything-else split tuned for a solo-maintainer bot project.
+
+[changelog]
+header = ""
+body = """
+{% if version %}\
+    ## {{ version | trim_start_matches(pat="v") }} — {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+    ## Unreleased
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}\
+            {% if commit.breaking %}⚠️ BREAKING: {% endif %}\
+            {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+    {% endfor %}
+{% endfor %}
+"""
+trim = true
+render_always = false
+footer = """
+---
+DRAFT ONLY -- adapt this into docs/CHANGELOG.md by hand (backfill the previous \
+entry's hash, sync CHANGELOG-SUMMARY.md + DEVLOG.md, run `dior docs audit`). \
+This file is never committed as-is.
+"""
+
+[git]
+conventional_commits = true
+# Keep everything, even a stray non-conventional commit -- a draft that silently
+# drops a commit is worse than one with an "Other" bucket calling it out; the human
+# reviewing the draft should see it and decide, not have it disappear.
+filter_unconventional = false
+require_conventional = false
+split_commits = false
+protect_breaking_commits = true
+filter_commits = false
+topo_order = false
+topo_order_commits = true
+sort_commits = "oldest"
+tag_pattern = "v[0-9]*"
+
+commit_parsers = [
+    { message = "^feat", group = "<!-- 0 -->✨ Features" },
+    { message = "^fix", group = "<!-- 1 -->🐛 Fixes" },
+    { message = "^docs", group = "<!-- 2 -->📝 Documentation" },
+    { message = "^refactor", group = "<!-- 3 -->🚜 Refactoring" },
+    { message = "^perf", group = "<!-- 4 -->⚡ Performance" },
+    { message = "^style", group = "<!-- 5 -->🎨 Styling" },
+    { message = "^test", group = "<!-- 6 -->🧪 Tests" },
+    { message = "^build", group = "<!-- 7 -->📦 Build" },
+    { message = "^ci", group = "<!-- 8 -->⚙️ CI" },
+    { message = "^chore", group = "<!-- 9 -->🧹 Chores" },
+    { message = "^revert", group = "<!-- 10 -->◀️ Reverts" },
+    { message = ".*", group = "<!-- 11 -->💼 Other" },
+]
+link_parsers = []
+use_branch_tags = false
+recurse_submodules = false
