@@ -1468,7 +1468,42 @@ const navGroups = (cur, i0 = 0) => navSetFor(cur).map((grp, gi) => {
  * apart was the complaint that started this. `slots` is the section index, which
  * only the legal template has; the warm pages simply omit that group.
  */
-const mobileNav = (cur, slots) => {
+/**
+ * The download control for the two plain-text instruments (added 2026-08-04 14:54 EDT).
+ *
+ * LICENSE and NOTICE are the only pages that have a raw original to offer:
+ * buildCompanions() copies both to public/ verbatim precisely because rendering
+ * them through this parser would put a lossy transformation between the reader and
+ * the operative wording. The rendered page is the convenient copy; this is the
+ * authoritative one, and until now the only way to reach it was a link buried in
+ * the prose. It goes in the SECTION INDEX — the mobile disclosure and the desktop
+ * rail, which are the same panel in two templates — because that panel is the one
+ * thing on screen no matter how far down the reader has scrolled.
+ *
+ * ⚠️ The size is measured from the REPO file, not the published copy, because
+ * buildCompanions() may not have run yet when a page is rendered. copyFileSync
+ * makes them byte-identical, so the number is honest — but if that copy ever grows
+ * a transformation, this has to move or it starts lying about a download.
+ *
+ * ⚠️ `download` renames to .txt on purpose. The instrument's canonical filename has
+ * no extension, which is right in a repository and a support problem in a Downloads
+ * folder. The bytes are untouched; only the saved name differs.
+ */
+const rawDownload = page => {
+    if (page.kind !== 'text' || !page.file) return '';
+    let kb = '';
+    try {
+        kb = (fs.statSync(path.join(ROOT, page.file)).size / 1024).toFixed(0) + ' KB';
+    } catch { /* a missing source is buildCompanions()'s error to raise, not ours */ }
+    return `<a class="dlr" href="../${page.file}" download="${page.file}.txt"`
+        + ` data-tip="Download the plain-text original">`
+        + `<span class="dlr-i" aria-hidden="true"></span>`
+        + `<span class="dlr-t">Download <b>${page.file}</b></span>`
+        + (kb ? `<span class="dlr-s">${kb}</span>` : '')
+        + `</a>`;
+};
+
+const mobileNav = (cur, slots, dl = '') => {
     /* One scrollable row, no disclosure. Nothing to open means the current page
        and its neighbours are always on screen, which is the whole point — the
        previous three attempts all hid the answer behind a tap. The hairline
@@ -1489,7 +1524,7 @@ const mobileNav = (cur, slots) => {
   </div>
   ${slots ? `<details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec">${slots}</div>
+    <div class="mp-list msec">${slots}${dl}</div>
   </details>` : ''}
 </aside>`;
 };
@@ -3497,7 +3532,10 @@ const NAV_JS = `
     var mlist=msecd.querySelector('.mp-list');
     msecd.addEventListener('click',function(e){
       var t=e.target;
-      if(t&&t.closest&&t.closest('.slot')) msecd.open=false;
+      /* .dlr as well as .slot: the download is a row in this panel too, and a
+         disclosure left standing open over the page after you have acted on it is
+         the same complaint the auto-close was added for. */
+      if(t&&t.closest&&(t.closest('.slot')||t.closest('.dlr'))) msecd.open=false;
     });
     /* On open, not on every scroll frame: the highlight cannot move while the
        panel covers the document, so once placed it stays right. */
@@ -4321,7 +4359,11 @@ function sectionise(html) {
     return [head, ...parts.map(p => `<section class="dsec">\n${p}\n</section>`)].join('\n');
 }
 
-function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir }) {
+/* `file` and `kind` come in with the rest of the page record — build() spreads the
+   whole thing — and are used only to offer the plain-text original on the two
+   instruments that have one. See rawDownload(). */
+function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir, file, kind }) {
+    const dl = rawDownload({ file, kind });
     // The nav helpers identify a page by directory AND filename now — two pages on
     // the site are called index.html, so a bare name no longer picks one out.
     const cur = { out, dir };
@@ -4424,6 +4466,45 @@ ${SWITCHER_CSS}
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}
+/* ── the plain-text download ──────────────────────────────────────────
+   One rule set for both hosts, because it is one control: the section index's
+   last row on the desktop rail, and the same row inside the mobile disclosure.
+   It reads as an ACTION, not as another section — a filled chip rather than a
+   ruled row — because a reader scanning for "where am I" must not mistake it for
+   a place to go. Its touch target is the 44px the mobile list already uses. */
+.dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
+  padding:.6rem .7rem;border-radius:9px;text-decoration:none;
+  background:color-mix(in srgb,var(--accent) 9%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule));
+  transition:background .2s,border-color .2s}
+.dlr:hover{background:color-mix(in srgb,var(--accent) 17%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--rule))}
+.dlr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dlr-t{flex:1 1 auto;font-family:var(--display);font-size:.76rem;line-height:1.3;
+  color:var(--ink2);font-weight:500;letter-spacing:-.005em}
+.dlr-t b{color:var(--ink);font-weight:650}
+/* Tabular so the two pages' sizes line up if they are ever seen together. */
+.dlr-s{flex:0 0 auto;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;
+  color:var(--ink3);font-variant-numeric:tabular-nums}
+/* Drawn, not typed: a glyph would render at whatever weight the mono face has and
+   would also join the page text, which is the trap documented on the copy button.
+   A tray with an arrow coming down into it — the shape a download actually is. */
+/* ⚠️ The tray's floor is a BORDER on the element itself, not a third child. An
+   element has two pseudo-elements and the arrow needs both — a stem and a head —
+   so the base had to come from somewhere that is not a box. A stray <span> for it
+   would have been markup existing only to be painted. */
+.dlr-i{position:relative;flex:0 0 auto;display:block;box-sizing:border-box;
+  width:13px;height:13px;color:var(--accent-t);
+  border-bottom:1.6px solid currentColor}
+.dlr-i::before{content:"";position:absolute;left:5.7px;top:0;width:1.6px;height:6.4px;
+  background:currentColor;border-radius:1px}
+/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE — same trap as the landing page's
+   .arw. The head is a 5.6px box turned 45deg, so its tip reaches 5.6/sqrt(2)=3.96px
+   from its own centre, not 2.8. Centred at x=6.5 that puts the point at 10.46 and
+   2.54, both inside the 13px box. */
+.dlr-i::after{content:"";position:absolute;left:3.7px;top:1.9px;width:5.6px;height:5.6px;
+  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  border-radius:0 0 2px 0;transform:rotate(45deg)}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 @media (max-width:980px){ .rail{display:none} }
@@ -4782,7 +4863,7 @@ html{scroll-behavior:smooth}
   </nav>
 </div>
 <div id="prog"></div>
-${mobileNav(cur, slots)}
+${mobileNav(cur, slots, dl)}
 
 <div class="page">
   <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
@@ -4804,9 +4885,15 @@ ${mobileNav(cur, slots)}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
+    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
+         so the download sits in both or in neither. It is OUTSIDE .slots because
+         that box is the scroller the scrollspy drives — a non-section row inside
+         it would travel with the tracked section and could scroll out of reach,
+         which is the one thing this control exists not to do. -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots">${slots}</div>
+      ${dl}
     </aside>
 
     <main class="doc" id="main" tabindex="-1">
@@ -7042,6 +7129,26 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    across the entire card — a name floating in a wide grey band, which is most of
    why this page read as lifeless. Capping the track keeps a plate plate-sized and
    lets the wall grow into an actual wall as names arrive. */
+/* ⚠️ THIS HAD NO RULE AT ALL and rendered as a body-size serif paragraph — so
+   "Name · Role" sat under the Maintainer heading looking like a sentence that had
+   lost its verb, which is what "not a fan of the maintainer card design" was
+   pointing at (2026-08-04 14:01 EDT). It is a COLUMN KEY, and it has to look like one.
+   ⚠️ It cannot simply be deleted, and that is the trap: asPlates() keeps this text
+   because dropping the source table's header row is real content loss and verify()
+   catches it by name ("name role harkirat mangat"). It also stops being redundant
+   the moment a plate carries three values — the documented format for new entries
+   adds Contribution and First shipped, which are not self-describing. So the fix
+   is to make it read as a legend, never to remove it. */
+/* ⚠️ Scoped to .card, not a bare .wall-l. It is a paragraph inside .card, and the
+   .card p rule is (0,2,0) — a single class loses to it on specificity, so the first
+   attempt applied the uppercase and the colour (which .card p does not set) and
+   silently kept the 16.6px serif for everything else. Measured off the rendered
+   page, not assumed; it looked entirely correct in the source. Same class of bug as
+   the .doc margin earlier today.
+   No backticks in this comment: it lives inside a template literal, where one ends
+   the string and fails the build with a SyntaxError pointing at prose. */
+.card .wall-l{margin:0 0 .5rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
 .wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,268px));
   gap:.9rem;margin:1.4rem 0;justify-content:start}
 @media (max-width:560px){.wall{grid-template-columns:1fr}}
@@ -7255,10 +7362,16 @@ function indexPage(built) {
        than as the whole of it. The derived `${count} documents` line above moves
        into that section as its sub-line, so it still cannot claim "four" after a
        fifth document lands. */
-    const intro = 'Dioreo is an unofficial Call of Duty: Mobile bot for the things you keep '
-        + 'looking up — lucky-draw odds and CP costs, loadouts worth building, what is live '
-        + 'this season and when it ends. Install it once and it answers anywhere you can '
-        + 'type: any server, any DM, no invite needed.';
+    /* The headline names the bot and the description says where it lives — Harkirat's
+       call, 2026-08-04 14:52 EDT, after a capability-first headline ("CODM, without the
+       second tab") was rejected. The reasoning it settles: nobody knows this name yet,
+       so a headline that spends itself on a benefit leaves the reader with no idea what
+       the thing is called, while one that spends itself on the name alone says nothing
+       about what it does. Doing both is what the two rejected options each did half of. */
+    const intro = 'It lives in Discord — lucky-draw odds and CP costs, loadouts worth '
+        + 'building, what is live this season and when it ends, all without leaving the '
+        + 'chat. Install it once and it answers anywhere you can type: any server, any '
+        + 'DM, no invite needed.';
 
     return `<!doctype html>
 <html lang="en"><head>
@@ -7292,6 +7405,16 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6re
    TRACKING, which pulls unrelated pairs into contact, not the ligature. */
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
+/* The name, picked out of the headline. An <em> because the emphasis is real —
+   this is the one word on the page a reader has to come away with — and the italic
+   is dropped because the colour is doing the work; a 6.5rem italic in this face
+   would fight the tracking note above.
+   ⚠️ --accent-t, NOT --accent. The raw accent is a coral tuned for dark graphite
+   and it fails on light paper; --accent-t is the site's accent-as-TEXT token and
+   is already re-mixed to 38% over near-black in the light palette. contrastAudit
+   cannot see this pairing — it reads --name:#hex declarations, and this resolves
+   through a color-mix — so it was checked by hand against both grounds. */
+h1 em{font-style:normal;color:var(--accent-t)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
   max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}
 .list{border-top:1px solid var(--rule)}
@@ -7624,7 +7747,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
        this is about not letting the first three words a reader sees imply a
        relationship with Activision that the last three deny. -->
   <span class="lab">Unofficial &middot; Call of Duty: Mobile</span>
-  <h1>CODM, without<br>the second tab.</h1>
+  <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
   <p class="lede">${esc(intro)}</p>
   <span class="lab lab-sec">The fine print</span>
   <p class="lede sub">${esc(lede)}</p>

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dior's Builds — historical CPU-utilization PEAKS over rolling windows, from GCP Cloud Monitoring.
+# Dioreo — historical CPU-utilization PEAKS over rolling windows, from GCP Cloud Monitoring.
 # Run from the Mac (needs gcloud). Added 2026-07-17 (Render→GCP migration observability).
 #
 #   scripts/vmpeaks.sh   → peak CPU over 12h / 24h / 72h / 7d / 30d

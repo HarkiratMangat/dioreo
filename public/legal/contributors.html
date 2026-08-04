@@ -1975,10 +1975,30 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    contributor, auto-fit collapses the empty tracks and stretches that one plate
    across the entire card — a name floating in a wide grey band, which is most of
    why this page read as lifeless. Capping the track keeps a plate plate-sized and
-   lets the wall grow into an actual wall as names arrive. */
+   lets the wall grow into an actual wall as names arrive. *//* ⚠️ THIS HAD NO RULE AT ALL and rendered as a body-size serif paragraph — so
+   "Name · Role" sat under the Maintainer heading looking like a sentence that had
+   lost its verb, which is what "not a fan of the maintainer card design" was
+   pointing at (2026-08-04 14:01 EDT). It is a COLUMN KEY, and it has to look like one.
+   ⚠️ It cannot simply be deleted, and that is the trap: asPlates() keeps this text
+   because dropping the source table's header row is real content loss and verify()
+   catches it by name ("name role harkirat mangat"). It also stops being redundant
+   the moment a plate carries three values — the documented format for new entries
+   adds Contribution and First shipped, which are not self-describing. So the fix
+   is to make it read as a legend, never to remove it. *//* ⚠️ Scoped to .card, not a bare .wall-l. It is a paragraph inside .card, and the
+   .card p rule is (0,2,0) — a single class loses to it on specificity, so the first
+   attempt applied the uppercase and the colour (which .card p does not set) and
+   silently kept the 16.6px serif for everything else. Measured off the rendered
+   page, not assumed; it looked entirely correct in the source. Same class of bug as
+   the .doc margin earlier today.
+   No backticks in this comment: it lives inside a template literal, where one ends
+   the string and fails the build with a SyntaxError pointing at prose. */
 
 
 
+
+
+.card .wall-l{margin:0 0 .5rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
 .wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,268px));
   gap:.9rem;margin:1.4rem 0;justify-content:start}
 @media (max-width:560px){.wall{grid-template-columns:1fr}}
@@ -3186,7 +3206,10 @@ html{scroll-behavior:smooth}
     var mlist=msecd.querySelector('.mp-list');
     msecd.addEventListener('click',function(e){
       var t=e.target;
-      if(t&&t.closest&&t.closest('.slot')) msecd.open=false;
+      /* .dlr as well as .slot: the download is a row in this panel too, and a
+         disclosure left standing open over the page after you have acted on it is
+         the same complaint the auto-close was added for. */
+      if(t&&t.closest&&(t.closest('.slot')||t.closest('.dlr'))) msecd.open=false;
     });
     /* On open, not on every scroll frame: the highlight cannot move while the
        panel covers the document, so once placed it stays right. */

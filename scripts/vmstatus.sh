@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dior's Builds — GCP VM + bot health at a glance. Run from the Mac (needs gcloud).
+# Dioreo — GCP VM + bot health at a glance. Run from the Mac (needs gcloud).
 #
 #   scripts/vmstatus.sh                  → full instrument panel (VM · service · deploy · health · errors · alerts · activity)
 #   scripts/vmstatus.sh logs             → panel, then the last 40 log lines

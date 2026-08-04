@@ -5043,7 +5043,10 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var mlist=msecd.querySelector('.mp-list');
     msecd.addEventListener('click',function(e){
       var t=e.target;
-      if(t&&t.closest&&t.closest('.slot')) msecd.open=false;
+      /* .dlr as well as .slot: the download is a row in this panel too, and a
+         disclosure left standing open over the page after you have acted on it is
+         the same complaint the auto-close was added for. */
+      if(t&&t.closest&&(t.closest('.slot')||t.closest('.dlr'))) msecd.open=false;
     });
     /* On open, not on every scroll frame: the highlight cannot move while the
        panel covers the document, so once placed it stays right. */

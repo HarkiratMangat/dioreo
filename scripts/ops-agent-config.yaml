@@ -1,4 +1,4 @@
-# Google Cloud Ops Agent — Dior's Builds logging config
+# Google Cloud Ops Agent — Dioreo logging config
 # Install on the VM at /etc/google-cloud-ops-agent/config.yaml, then:
 #     sudo systemctl restart google-cloud-ops-agent
 #

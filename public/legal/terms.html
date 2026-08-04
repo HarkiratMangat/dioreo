@@ -1712,7 +1712,46 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .slot:hover span{color:var(--ink)}}
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent-t)}
-.slot.on span{color:var(--ink);font-weight:650}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
+.slot.on span{color:var(--ink);font-weight:650}/* ── the plain-text download ──────────────────────────────────────────
+   One rule set for both hosts, because it is one control: the section index's
+   last row on the desktop rail, and the same row inside the mobile disclosure.
+   It reads as an ACTION, not as another section — a filled chip rather than a
+   ruled row — because a reader scanning for "where am I" must not mistake it for
+   a place to go. Its touch target is the 44px the mobile list already uses. */
+
+.dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
+  padding:.6rem .7rem;border-radius:9px;text-decoration:none;
+  background:color-mix(in srgb,var(--accent) 9%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule));
+  transition:background .2s,border-color .2s}@media (hover:hover) and (pointer:fine){
+.dlr:hover{background:color-mix(in srgb,var(--accent) 17%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--rule))}}
+.dlr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dlr-t{flex:1 1 auto;font-family:var(--display);font-size:.76rem;line-height:1.3;
+  color:var(--ink2);font-weight:500;letter-spacing:-.005em}
+.dlr-t b{color:var(--ink);font-weight:650}/* Tabular so the two pages' sizes line up if they are ever seen together. */
+
+.dlr-s{flex:0 0 auto;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;
+  color:var(--ink3);font-variant-numeric:tabular-nums}/* Drawn, not typed: a glyph would render at whatever weight the mono face has and
+   would also join the page text, which is the trap documented on the copy button.
+   A tray with an arrow coming down into it — the shape a download actually is. *//* ⚠️ The tray's floor is a BORDER on the element itself, not a third child. An
+   element has two pseudo-elements and the arrow needs both — a stem and a head —
+   so the base had to come from somewhere that is not a box. A stray <span> for it
+   would have been markup existing only to be painted. */
+
+
+.dlr-i{position:relative;flex:0 0 auto;display:block;box-sizing:border-box;
+  width:13px;height:13px;color:var(--accent-t);
+  border-bottom:1.6px solid currentColor}
+.dlr-i::before{content:"";position:absolute;left:5.7px;top:0;width:1.6px;height:6.4px;
+  background:currentColor;border-radius:1px}/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE — same trap as the landing page's
+   .arw. The head is a 5.6px box turned 45deg, so its tip reaches 5.6/sqrt(2)=3.96px
+   from its own centre, not 2.8. Centred at x=6.5 that puts the point at 10.46 and
+   2.54, both inside the 13px box. */
+
+.dlr-i::after{content:"";position:absolute;left:3.7px;top:1.9px;width:5.6px;height:5.6px;
+  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  border-radius:0 0 2px 0;transform:rotate(45deg)}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 
 @media (max-width:980px){ .rail{display:none} }
@@ -2223,9 +2262,15 @@ html{scroll-behavior:smooth}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
+    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
+         so the download sits in both or in neither. It is OUTSIDE .slots because
+         that box is the scroller the scrollspy drives — a non-section row inside
+         it would travel with the tracked section and could scroll out of reach,
+         which is the one thing this control exists not to do. -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who you're dealing with</span></a><a href="#s-2" class="slot"><i>2</i><span>Agreement to these Terms</span></a><a href="#s-3" class="slot"><i>3</i><span>Eligibility</span></a><a href="#s-4" class="slot"><i>4</i><span>What the Bot does</span></a><a href="#s-5" class="slot"><i>5</i><span>Accuracy — please read this one</span></a><a href="#s-6" class="slot"><i>6</i><span>Acceptable use</span></a><a href="#s-7" class="slot"><i>7</i><span>Intellectual property</span></a><a href="#s-8" class="slot"><i>8</i><span>AI disclosure</span></a><a href="#s-9" class="slot"><i>9</i><span>Third-party services</span></a><a href="#s-10" class="slot"><i>10</i><span>Availability and changes</span></a><a href="#s-11" class="slot"><i>11</i><span>Force majeure</span></a><a href="#s-12" class="slot"><i>12</i><span>Export control and sanctions</span></a><a href="#s-13" class="slot"><i>13</i><span>Suspension and termination</span></a><a href="#s-14" class="slot"><i>14</i><span>Disclaimer of warranties</span></a><a href="#s-15" class="slot"><i>15</i><span>Limitation of liability</span></a><a href="#s-16" class="slot"><i>16</i><span>Indemnity</span></a><a href="#s-17" class="slot"><i>17</i><span>Governing law and disputes</span></a><a href="#s-18" class="slot"><i>18</i><span>General</span></a><a href="#s-19" class="slot"><i>19</i><span>Changes to these Terms</span></a><a href="#s-20" class="slot"><i>20</i><span>Contact</span></a><a href="#appendix-change-history" class="slot"><i>—</i><span>Appendix — Change history</span></a></div>
+      
     </aside>
 
     <main class="doc" id="main" tabindex="-1">
@@ -3615,7 +3660,10 @@ html{scroll-behavior:smooth}
     var mlist=msecd.querySelector('.mp-list');
     msecd.addEventListener('click',function(e){
       var t=e.target;
-      if(t&&t.closest&&t.closest('.slot')) msecd.open=false;
+      /* .dlr as well as .slot: the download is a row in this panel too, and a
+         disclosure left standing open over the page after you have acted on it is
+         the same complaint the auto-close was added for. */
+      if(t&&t.closest&&(t.closest('.slot')||t.closest('.dlr'))) msecd.open=false;
     });
     /* On open, not on every scroll frame: the highlight cannot move while the
        panel covers the document, so once placed it stays right. */
