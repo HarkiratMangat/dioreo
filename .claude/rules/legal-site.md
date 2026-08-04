@@ -46,6 +46,33 @@ it directly with an empty build command, so nothing has to run on their side.
 
 ---
 
+- 🏠 **`indexPage()` IS THE SITE'S FRONT DOOR, NOT A LEGAL INDEX** (changed 2026-08-04 14:36 EDT). It
+  opened on the kicker "Legal" and the headline "The fine print, in plain sight", which was correct
+  while four documents were the only thing on the site. The record pages have shipped since and a
+  help/docs section is planned, so a reader arriving at `/` met a page that introduced the paperwork
+  and never said what the bot was. The hero now introduces **Dioreo** and the legal set keeps the
+  numbered list in the same place under its own `.lab-sec` label.
+  - ⚠️ **The `${count} documents` line is DERIVED and must stay derived** — it moved into the legal
+    section as its sub-line rather than being replaced by prose, so it still cannot claim "four"
+    after a fifth document lands. Same reason it was written that way originally.
+  - ⚠️ **"Unofficial" leads the kicker.** The trademark notice at the foot is an obligation and stays;
+    this is about the first three words on the page not implying a relationship the last three deny.
+- 🧱 **A fenced code block is `.cw` = a header strip (`.cw-h`) plus the `<pre>`, and the control lives
+  in the strip** (rebuilt 2026-08-04 14:28 EDT). The copy button used to float ON the code, which cost
+  three separate workarounds — an opaque background (or the line ran through it), reserved right
+  padding, and a 3.6rem top pad on coarse pointers so a long line could not slide under a
+  permanently-visible 44px target — and still read on a phone as a big disc in an empty band.
+  A header removes the collision structurally. **If you ever move the control back over the code, all
+  three workarounds have to come back with it.** Also:
+  - The language label moved to `.cw-h[data-lang]::before`; `pre.code[data-lang]::before` is
+    suppressed inside `.cw` so there is exactly one label. A bare `pre.code` still gets the corner one.
+  - `--cpy-bed` carries whatever surface the copy glyph's opaque top sheet is drawn on. There are
+    three of them now (the slip's accent pill, plain `--raised`, the strip's tint); hard-coding it is
+    what produced the visibly darker notch the slip rule had to patch by hand.
+  - The hover-reveal is **gone on purpose** — a control that is part of the block's furniture should
+    not be conditional on a hover a touch device never has.
+  - `.cpy-p` is the confirmation bubble. It is **empty in the markup** and its word is CSS `content`
+    — see the run-alignment note further down for what a literal label costs.
 - **THREE page classes, and the distinctions are deliberate** (third added 2026-08-01 16:40 EDT). `PAGES` is the
   numbered legal set (terms · privacy · license · notice) rendered by `shell()`: squared corners,
   hairline rules, cold graphite, a numbered margin index, and the `01/02/03` series on the landing page.
@@ -233,6 +260,15 @@ it directly with an empty build command, so nothing has to run on their side.
     progress and the `--lift` that parks the button above the footer; state, click, and the
     reduced-motion `fire` fallback all live in the module. **A new template that grows a `.totop`
     inherits the behaviour by having the button — do not re-add a toggle.**
+    ✅ **`warmShell()` grew one on 2026-08-04 14:35 EDT and this held exactly as written.** The CSS was
+    already in `COMPONENT_CSS` and the behaviour already in `MORPH_JS`; both had been loading on
+    Contributing and Contributors for weeks and doing nothing, because the only missing piece was the
+    button. It now comes from the shared `TOTOP_HTML` — **emit that constant, never a copy of the
+    markup**, and put it OUTSIDE the page wrapper (a fixed element is trapped by any ancestor
+    carrying a filter, transform or `backdrop-filter`). The host's half — the ring's dash offset and
+    `--lift` — is `TOTOP_TRACK_JS` for a template with no scroll loop of its own; `shell()` keeps
+    doing it inside the loop it already runs for the scrollspy and the progress bar, so it does
+    **not** include that constant. Two hosts, one writer per property, still.
   - ⚠️ **`prefers-reduced-motion` builds NOTHING liquid.** No cursor layer, no `html.liq`, no
     `.tt-ink` — a reduced-motion reader gets the site exactly as it shipped. That matters more than
     usual here because the cursor sets `cursor:none !important` site-wide; a hidden pointer with
@@ -408,6 +444,19 @@ it directly with an empty build command, so nothing has to run on their side.
   It now decodes numeric/hex/named entities; that is safe because an entity resolves to exactly one
   character, so decoding can only *remove* a fabricated word, never supply a source word the page
   doesn't render.
+  - 🚨 **ITS RUNS ARE SLICED FROM WORD ONE AT A FIXED STRIDE, SO ITS COVERAGE IS AN ALIGNMENT, NOT A
+    GUARANTEE — and a real defect can hide behind that for as long as the word count holds.** Proven
+    2026-08-04 14:34 EDT: the CLA slip's copy button carried a literal `>Copy<`, which is a text node
+    sitting between the CLA line and the paragraph after it, so the rendered text read "…in §5 of the
+    LICENSE **copy** If you'd rather…". Four days of 100% passes. Renaming the project removed one
+    word far upstream, every boundary shifted by one, and the very next build reported the run
+    missing. **The defect was always there; only the arithmetic changed.** So: (a) never write a
+    visible word into the markup between two pieces of document text — `withCopyButtons()` already
+    had that rule and `asSlip()` predated it, which is exactly how it was missed; draw such labels
+    with CSS `content` keyed off a data attribute, and never write them from script either; and
+    (b) when a run failure appears after an unrelated edit, **check whether it is a newly-exposed
+    defect before assuming your edit caused it** — the region here was byte-identical across both
+    builds and a diff of the output said so immediately.
 - **The build prints its gate roster on every run — read that output, don't trust a count written here.**
   A number in prose is a copy of state nothing updates: this line said "THREE", then "FIVE", and was
   wrong within a day both times (`classCollisionAudit()` made it six on 2026-07-30). Each gate tests a

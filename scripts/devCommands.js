@@ -86,7 +86,7 @@ async function main() {
     const rest = new REST({ version: '10' }).setToken(devToken);
 
     // Identify the app from the token rather than hardcoding an id, and print it before doing
-    // anything destructive -- if this ever says "Dior's Builds" instead of "Dioreo (Dev)", stop.
+    // anything destructive -- if this ever says "Dioreo" instead of "Dioreo (Dev)", stop.
     const app = await rest.get(Routes.currentApplication());
     console.log(`🤖 Application: ${app.name} (${app.id})`);
 

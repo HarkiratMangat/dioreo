@@ -1,4 +1,4 @@
-# Session-start prompt — Dior's Builds
+# Session-start prompt — Dioreo
 
 > ## ⚡ FIRST ACTION THIS SESSION — HARD GATE, before ANY other content in your opening message
 > **Do not write task content, exploration, tool calls, or a greeting before this.** Your literal first
@@ -33,14 +33,14 @@ warning below, check that path first.
 The block below is pointers + only the recurring-miss items — the rest lives in the docs it tells
 Claude to read.
 
-Shortcut: even *"New session on Dior's Builds — follow my standing start prompt (working agreement
+Shortcut: even *"New session on Dioreo — follow my standing start prompt (working agreement
 first; push/document/versioning/chapters/single-instance/model-rec non-negotiables apply)"* works;
 paste the full block after any session where something slipped.
 
 ---
 
 ```
-New session on Dior's Builds. Before anything else:
+New session on Dioreo. Before anything else:
 
 1. Read ~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/user_working_agreement.md
    in full (it links every other memory). CLAUDE.md (root) holds the invariants + a 🗺️

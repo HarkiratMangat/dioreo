@@ -92,7 +92,7 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
                 title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${title}`.slice(0, 256),
                 description: description || undefined,
                 color: LEVEL_COLOR[level] ?? LEVEL_COLOR.error,
-                footer: { text: `Dior's Builds · ${host} · RSS ${rss}MB · up ${formatUptime(uptimeSec)}` },
+                footer: { text: `Dioreo · ${host} · RSS ${rss}MB · up ${formatUptime(uptimeSec)}` },
                 timestamp: new Date().toISOString(),
             }],
         };

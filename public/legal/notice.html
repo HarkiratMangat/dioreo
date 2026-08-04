@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Notices &amp; Attributions — Dior's Builds</title>
-<meta name="description" content="Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>Notices &amp; Attributions — Dioreo</title>
+<meta name="description" content="Notices &amp; Attributions for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<meta property="og:title" content="Notices &amp; Attributions — Dior's Builds">
-<meta property="og:description" content="Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:title" content="Notices &amp; Attributions — Dioreo">
+<meta property="og:description" content="Notices &amp; Attributions for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF5264'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
@@ -1650,7 +1650,18 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
+   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
+   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap (4rem), false
+   here, where .page ends at 0. Measured on an iPhone against Contributing, which
+   is the rhythm Harkirat asked these pages to match: 96px above the link row and
+   28px below it, against 54 and 80. So this restores the missing floor and trims
+   the card's own 3rem gap, which is a desktop value that reads as a hole once the
+   footer is a single narrow column. Both numbers are the warm page's, not new
+   ones — the point is that the two templates agree. */
+
+@media (max-width:760px){ .page{padding-bottom:4rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1724,7 +1735,16 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
   padding:var(--pad);margin-bottom:3rem;position:relative;min-width:0}
 .doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
-  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}/* ⚠️ THIS HAS TO SIT AFTER .doc, NOT BESIDE .page's OWN NARROW BLOCK. Both
+   selectors are (0,1,0), a media query adds no specificity, and the 3rem above is
+   declared LATER in the source — so the first attempt lost silently and measured
+   48px when it should have measured 19.2. Caught by reading the computed value; it
+   looked completely correct in the source.
+   The number is the warm template's, not a new one: 3rem is a desktop gap, and at
+   phone width, where the footer is one narrow column, it reads as a hole. See the
+   companion note on .page. */
+
+@media (max-width:760px){ .doc{margin-bottom:1.2rem} }
 
 .mast{margin-bottom:3.2rem}
 .mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
@@ -2094,7 +2114,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       <span class="mk-ctx"><i aria-hidden="true"></i>Notices &amp; Attributions</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2109,7 +2129,7 @@ html{scroll-behavior:smooth}
       <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -2117,7 +2137,7 @@ html{scroll-behavior:smooth}
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
@@ -2216,7 +2236,8 @@ html{scroll-behavior:smooth}
         <div class="meta"><span>Ontario, Canada</span></div>
       </header>
       <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../NOTICE">plain-text NOTICE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain text"><span class="dl-i" aria-hidden="true"></span>Download NOTICE</a></div><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
-<p>This file records (1) the third-party software Dior's Builds depends on and the licenses that govern it, (2) third-party trademarks referenced by the project, and (3) a disclosure of AI assistance in authoring the project.</p>
+<p>This project was published under the name "Dior's Builds" until 4 August 2026. The change of name did not change the author, the copyright holder, the licensed work, or the third-party attributions recorded below. LICENSE §18 states the position in full; both names are Brand Assets under LICENSE §1.5.</p>
+<p>This file records (1) the third-party software Dioreo depends on and the licenses that govern it, (2) third-party trademarks referenced by the project, and (3) a disclosure of AI assistance in authoring the project.</p>
 <p>This file is required reading alongside LICENSE. Nothing in LICENSE restricts, enlarges, or otherwise varies your rights in any third-party component listed below — those components are licensed to you by their own licensors, on their own terms.</p>
 <section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DIRECT DEPENDENCIES</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2280,7 +2301,7 @@ html{scroll-behavior:smooth}
 <p>The full Apache License 2.0 text is available at:</p>
 <pre class="block"><a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">http://www.apache.org/licenses/LICENSE-2.0</a></pre>
 <p>The authoritative license text and any NOTICE file for each component ship inside that package's own directory under node_modules/.</p>
-<p>Note that LICENSE §4.2 prohibits you from redistributing Dior's Builds in any event. This section exists because the obligation attaches to the upstream components independently of what the Licensor permits, and because a GitHub fork places a copy in your hands.</p>
+<p>Note that LICENSE §4.2 prohibits you from redistributing Dioreo in any event. This section exists because the obligation attaches to the upstream components independently of what the Licensor permits, and because a GitHub fork places a copy in your hands.</p>
 </section>
 <section class="dsec">
 <h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">TRANSITIVE DEPENDENCIES</span><a class="anchor" href="#s-3" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2300,7 +2321,7 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PLATFORM AND SERVICE PROVIDERS</span><a class="anchor" href="#s-4" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Dior's Builds interoperates with, and depends on, services operated by third parties. Their terms govern their services, not this LICENSE.</p>
+<p>Dioreo interoperates with, and depends on, services operated by third parties. Their terms govern their services, not this LICENSE.</p>
 <pre class="aligned">Discord                Discord Inc.            <a href="https://discord.com/terms" target="_blank" rel="noopener noreferrer">https://discord.com/terms</a>
 GitHub                 GitHub, Inc.            <a href="https://docs.github.com/site-policy" target="_blank" rel="noopener noreferrer">https://docs.github.com/site-policy</a>
                        (a Microsoft company)
@@ -2365,7 +2386,7 @@ Claude(TM), Anthropic(R)
 </section>
 <section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">AI ASSISTANCE DISCLOSURE</span><a class="anchor" href="#s-6" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Portions of Dior's Builds — including source code, documentation, and these legal documents — were authored with the assistance of AI coding assistants, principally Claude (Anthropic PBC), used as a drafting and implementation tool under the continuous direction of the human author.</p>
+<p>Portions of Dioreo — including source code, documentation, and these legal documents — were authored with the assistance of AI coding assistants, principally Claude (Anthropic PBC), used as a drafting and implementation tool under the continuous direction of the human author.</p>
 <p>This disclosure is made deliberately, for three reasons.</p>
 <h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">HONESTY.</span><a class="anchor" href="#s-6.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Anyone reading, auditing, or contributing to this project is entitled to know how it was built.</p>
@@ -2386,9 +2407,9 @@ Claude(TM), Anthropic(R)
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">CONTACT</span><a class="anchor" href="#s-8" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <pre class="block">Harkirat Mangat ("dior", "diorswrld")
 <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
-<a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a></pre>
+<a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/dioreo</a></pre>
 <p>Attribution errors, omissions, licensing questions, and takedown requests are all welcome at that address and will be corrected promptly.</p>
-<p>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+<p>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
 </section>
     </main>
   </div>
@@ -2404,9 +2425,6 @@ Claude(TM), Anthropic(R)
   </footer>
 </div>
 
-<!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
-     transform or backdrop-filter, which is exactly what once anchored a fixed
-     control to the 54px bar instead of the viewport, so this sits outside .page. -->
 <button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>

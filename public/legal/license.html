@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Source-Available License — Dior's Builds</title>
-<meta name="description" content="Source-Available License for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>Source-Available License — Dioreo</title>
+<meta name="description" content="Source-Available License for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<meta property="og:title" content="Source-Available License — Dior's Builds">
-<meta property="og:description" content="Source-Available License for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:title" content="Source-Available License — Dioreo">
+<meta property="og:description" content="Source-Available License for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%239B6BE3'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
@@ -1650,7 +1650,18 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
+   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
+   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap (4rem), false
+   here, where .page ends at 0. Measured on an iPhone against Contributing, which
+   is the rhythm Harkirat asked these pages to match: 96px above the link row and
+   28px below it, against 54 and 80. So this restores the missing floor and trims
+   the card's own 3rem gap, which is a desktop value that reads as a hole once the
+   footer is a single narrow column. Both numbers are the warm page's, not new
+   ones — the point is that the two templates agree. */
+
+@media (max-width:760px){ .page{padding-bottom:4rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1724,7 +1735,16 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
   padding:var(--pad);margin-bottom:3rem;position:relative;min-width:0}
 .doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
-  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}/* ⚠️ THIS HAS TO SIT AFTER .doc, NOT BESIDE .page's OWN NARROW BLOCK. Both
+   selectors are (0,1,0), a media query adds no specificity, and the 3rem above is
+   declared LATER in the source — so the first attempt lost silently and measured
+   48px when it should have measured 19.2. Caught by reading the computed value; it
+   looked completely correct in the source.
+   The number is the warm template's, not a new one: 3rem is a desktop gap, and at
+   phone width, where the footer is one narrow column, it reads as a hole. See the
+   companion note on .page. */
+
+@media (max-width:760px){ .doc{margin-bottom:1.2rem} }
 
 .mast{margin-bottom:3.2rem}
 .mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
@@ -2094,7 +2114,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       <span class="mk-ctx"><i aria-hidden="true"></i>Source-Available License</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2109,7 +2129,7 @@ html{scroll-behavior:smooth}
       <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -2117,7 +2137,7 @@ html{scroll-behavior:smooth}
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
@@ -2179,7 +2199,7 @@ html{scroll-behavior:smooth}
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a></div>
+    <div class="mp-list msec"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a></div>
   </details>
 </aside>
 
@@ -2205,7 +2225,7 @@ html{scroll-behavior:smooth}
   <div class="cols">
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
-      <div class="slots" id="slots"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a></div>
+      <div class="slots" id="slots"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a></div>
     </aside>
 
     <main class="doc" id="main" tabindex="-1">
@@ -2213,17 +2233,18 @@ html{scroll-behavior:smooth}
         <span class="lab">Licence</span>
         <h1>Source-Available License</h1>
         <div class="rule"></div>
-        <div class="meta"><span>Effective <b>28 July 2026</b></span><span>Revision <b>1.0</b></span><span>Ontario, Canada</span></div>
+        <div class="meta"><span>Effective <b>4 August 2026</b></span><span>Revision <b>1.1</b></span><span>Ontario, Canada</span></div>
       </header>
-      <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain text"><span class="dl-i" aria-hidden="true"></span>Download LICENSE</a></div><p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
-<p>This is a source-available license, not an open-source license. It is not approved by the Open Source Initiative and does not meet the Open Source Definition. The source code of Dior's Builds is published so that it can be read, studied, audited, and improved -- not so that it can be copied, deployed, redistributed, or turned into a competing bot.</p>
+      <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain text"><span class="dl-i" aria-hidden="true"></span>Download LICENSE</a></div><p>(formerly the Dior's Builds Source-Available License, Version 1.0, 28 July 2026)</p>
+<p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
+<p>This is a source-available license, not an open-source license. It is not approved by the Open Source Initiative and does not meet the Open Source Definition. The source code of Dioreo is published so that it can be read, studied, audited, and improved -- not so that it can be copied, deployed, redistributed, or turned into a competing bot.</p>
 <section class="dsec">
 <h2 id="plain-english-summary-not-part-of-the-license" class="plain"><span class="ht">PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span><a class="anchor" href="#plain-english-summary-not-part-of-the-license" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>This summary is here to make the License easier to read. It is not part of the License and has no legal effect; where the two differ, the License governs.</p>
 <p class="sub">YOU MAY:</p>
 <ul class="lettered"><li>Read, study, and learn from the source code.</li><li>Look for security vulnerabilities and report them.</li><li>Run the Software on a computer you control, by yourself, to test it or to prepare an improvement you intend to send back.</li><li>Send improvements, and be publicly credited for them.</li></ul>
 <p class="sub">YOU MAY NOT:</p>
-<ul class="lettered"><li>Run the Software, or anything derived from it, anywhere that another person can use it -- including a Discord server with other members in it.</li><li>Publish, share, redistribute, sell, or sublicense the Software or any modified version of it.</li><li>Use the Software, its curated data, or its output to build, train, or operate a competing bot or service.</li><li>Use the "Dior's Builds" name, branding, or visual identity.</li></ul>
+<ul class="lettered"><li>Run the Software, or anything derived from it, anywhere that another person can use it -- including a Discord server with other members in it.</li><li>Publish, share, redistribute, sell, or sublicense the Software or any modified version of it.</li><li>Use the Software, its curated data, or its output to build, train, or operate a competing bot or service.</li><li>Use the "Dioreo" name, branding, or visual identity.</li></ul>
 <p class="sub">If you want to do something this license does not allow, ask. Permission is freely given in writing where it makes sense; see <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
 </section>
 <section class="dsec">
@@ -2233,11 +2254,11 @@ html{scroll-behavior:smooth}
 <h3 id="s-1.2" class="clause"><span class="idx" aria-hidden="true">1.2</span><span class="ht"></span><a class="anchor" href="#s-1.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">"You" or "Your" means the individual or legal entity exercising rights under this License, together with any entity that controls, is controlled by, or is under common control with that entity. "Control" means direct or indirect ownership of more than fifty percent (50%) of the voting interests, or the power to direct the management of the entity.</p>
 <h3 id="s-1.3" class="clause"><span class="idx" aria-hidden="true">1.3</span><span class="ht"></span><a class="anchor" href="#s-1.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">"Software" means the Dior's Builds source code, configuration, scripts, documentation, and all other material contained in the repository at <a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a>, in whole or in part, in source or object form, including all past and future versions, and including any portion, fragment, module, function, or file of it.</p>
+<p class="sub">"Software" means the Dioreo source code, configuration, scripts, documentation, and all other material contained in the repository at <a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/dioreo</a>, in whole or in part, in source or object form, including all past and future versions, and including any portion, fragment, module, function, or file of it.</p>
 <h3 id="s-1.4" class="clause"><span class="idx" aria-hidden="true">1.4</span><span class="ht"></span><a class="anchor" href="#s-1.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">"Curated Data" means the compilations of factual information assembled, selected, arranged, verified, and maintained by or for the Licensor, including without limitation the weapon loadout and attachment database, the build rankings and badges, the lucky-draw and pricing datasets, the seasonal calendar and patch-note records, and the associated descriptive text. Curated Data is protected as a compilation and as a database independently of any protection attaching to the code that reads it.</p>
 <h3 id="s-1.5" class="clause"><span class="idx" aria-hidden="true">1.5</span><span class="ht"></span><a class="anchor" href="#s-1.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">"Brand Assets" means the name "Dior's Builds", the name "dior" as used in connection with the Software, any logo, avatar, banner, emoji set, color palette, accent-color scheme, message layout, or other element of the visual or textual identity of the Software or the Official Service, together with any name or mark confusingly similar to any of them.</p>
+<p class="sub">"Brand Assets" means the name "Dioreo", the former name "Dior's Builds", the name "dior" as used in connection with the Software, any logo, avatar, banner, emoji set, color palette, accent-color scheme, message layout, or other element of the visual or textual identity of the Software or the Official Service, together with any name or mark confusingly similar to any of them.</p>
 <h3 id="s-1.6" class="clause"><span class="idx" aria-hidden="true">1.6</span><span class="ht"></span><a class="anchor" href="#s-1.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">"Official Service" means the instance or instances of the Software operated by or on behalf of the Licensor and made available to the public through Discord, together with any successor, replacement, or additional public service operated by the Licensor.</p>
 <h3 id="s-1.7" class="clause"><span class="idx" aria-hidden="true">1.7</span><span class="ht"></span><a class="anchor" href="#s-1.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2472,22 +2493,37 @@ html{scroll-behavior:smooth}
 <section class="dsec">
 <h2 id="s-15" class="numbered"><span class="idx" aria-hidden="true">15</span><span class="ht">FILE-LEVEL NOTICE</span><a class="anchor" href="#s-15" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The following notice may be applied to individual source files:</p>
-<p class="sub">Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved. Licensed under the Dior's Builds Source-Available License v1.0. Source-available, not open source. No deployment, no redistribution. See the LICENSE file at the repository root for full terms.</p>
+<p class="sub">Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved. Licensed under the Dioreo Source-Available License v1.1. Source-available, not open source. No deployment, no redistribution. See the LICENSE file at the repository root for full terms.</p>
 </section>
 <section class="dsec">
 <h2 id="s-16" class="numbered"><span class="idx" aria-hidden="true">16</span><span class="ht">SPDX IDENTIFIER</span><a class="anchor" href="#s-16" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>This is a custom license with no OSI-approved SPDX short identifier. Refer to it in machine-readable metadata as:</p>
-<pre class="block">LicenseRef-Diors-Builds-Source-Available-1.0</pre>
+<pre class="block">LicenseRef-Dioreo-Source-Available-1.1</pre>
 </section>
 <section class="dsec">
 <h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">CONTACT AND PERMISSIONS</span><a class="anchor" href="#s-17" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>Requests for permission beyond the scope of this License, security reports under <a class="xref" href="#s-4.11">Section&nbsp;4.11</a>, licensing enquiries, and notices under <a class="xref" href="#s-14.7">Section&nbsp;14.7</a> should be sent to:</p>
 <pre class="block">Harkirat Mangat ("dior", "diorswrld")
 <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
-<a href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/diors-builds</a></pre>
+<a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/dioreo</a></pre>
 <p>Permission outside this License is effective only if granted by the Licensor in writing and signed or sent from the address above. Silence, inaction, or a response from any other channel is not permission.</p>
 <p>The Licensor is generally willing to grant additional permission for genuine research, education, accessibility, and archival purposes. Ask.</p>
-<p>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+</section>
+<section class="dsec">
+<h2 id="s-18" class="numbered"><span class="idx" aria-hidden="true">18</span><span class="ht">NAME CHANGE AND PRIOR VERSIONS</span><a class="anchor" href="#s-18" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
+<h3 id="s-18.1" class="clause"><span class="idx" aria-hidden="true">18.1</span><span class="ht">Name change.</span><a class="anchor" href="#s-18.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Software and the Official Service were published under the name "Dior's Builds" until 4 August 2026 and are published under the name "Dioreo" from that date. This is a change of name only. The Licensor, the Software, the Official Service, the Curated Data, and the scope of every permission and restriction in this License are unchanged by it. No assignment, transfer, novation, or change of ownership has occurred, and none is to be inferred from the change of name.</p>
+<h3 id="s-18.2" class="clause"><span class="idx" aria-hidden="true">18.2</span><span class="ht">References to the former name.</span><a class="anchor" href="#s-18.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub">A reference to "Dior's Builds" in this License, in any document incorporated into it, in any prior grant of permission, in any Contribution or Contributor Licence Agreement under <a class="xref" href="#s-5">Section&nbsp;5</a>, or in any notice given under <a class="xref" href="#s-14.7">Section&nbsp;14.7</a>, is a reference to Dioreo, and is as effective as if it named Dioreo. The converse also holds: a reference to Dioreo reaches conduct that occurred while the Software was called Dior's Builds.</p>
+<h3 id="s-18.3" class="clause"><span class="idx" aria-hidden="true">18.3</span><span class="ht">Both names are Brand Assets.</span><a class="anchor" href="#s-18.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub"><a class="xref" href="#s-1.5">Section&nbsp;1.5</a> covers the former name as well as the current one, and <a class="xref" href="#s-6">Section&nbsp;6</a> applies to both. Retiring a name does not release it: passing your copy or your service off as "Dior's Builds" is prohibited on exactly the terms that prohibit passing it off as "Dioreo".</p>
+<h3 id="s-18.4" class="clause"><span class="idx" aria-hidden="true">18.4</span><span class="ht"></span><a class="anchor" href="#s-18.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Relationship to Version 1.0. This Version 1.1 supersedes Version 1.0 of 28 July 2026 and governs the Software from 4 August 2026. It differs from Version 1.0 only in the name it carries, the machine-readable identifier in <a class="xref" href="#s-16">Section&nbsp;16</a>, the extension of <a class="xref" href="#s-1.5">Section&nbsp;1.5</a> to the former name, and this <a class="xref" href="#s-18">Section&nbsp;18</a>. No permission granted by Version 1.0 is narrowed and no restriction is enlarged.</p>
+<h3 id="s-18.5" class="clause"><span class="idx" aria-hidden="true">18.5</span><span class="ht">Copies already in your hands.</span><a class="anchor" href="#s-18.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub">If you received the Software under Version 1.0, you may continue to rely on Version 1.0 for that copy, or you may treat it as governed by this Version 1.1. Either is permitted, and the two grant the same rights.</p>
+<h3 id="s-18.6" class="clause"><span class="idx" aria-hidden="true">18.6</span><span class="ht">Machine-readable identifier.</span><a class="anchor" href="#s-18.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub">Metadata written before 4 August 2026 may carry "LicenseRef-Diors-Builds-Source-Available-1.0". That identifier denotes Version 1.0 of this License and remains valid for the copies it was applied to. <a class="xref" href="#s-16">Section&nbsp;16</a> gives the identifier to use going forward.</p>
+<p>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
 </section>
     </main>
   </div>
@@ -2503,9 +2539,6 @@ html{scroll-behavior:smooth}
   </footer>
 </div>
 
-<!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
-     transform or backdrop-filter, which is exactly what once anchored a fixed
-     control to the 54px bar instead of the viewport, so this sits outside .page. -->
 <button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>

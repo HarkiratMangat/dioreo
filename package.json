@@ -1,5 +1,5 @@
 {
-  "name": "diors-builds",
+  "name": "dioreo",
   "version": "2.51.3",
   "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
@@ -17,15 +17,15 @@
   },
   "keywords": [],
   "author": "Harkirat Mangat (dior)",
-  "license": "LicenseRef-Diors-Builds-Source-Available-1.0",
+  "license": "LicenseRef-Dioreo-Source-Available-1.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HarkiratMangat/diors-builds.git"
+    "url": "git+https://github.com/HarkiratMangat/dioreo.git"
   },
   "bugs": {
-    "url": "https://github.com/HarkiratMangat/diors-builds/issues"
+    "url": "https://github.com/HarkiratMangat/dioreo/issues"
   },
-  "homepage": "https://github.com/HarkiratMangat/diors-builds#readme",
+  "homepage": "https://github.com/HarkiratMangat/dioreo#readme",
   "dependencies": {
     "chrono-node": "^2.9.1",
     "cloudinary": "^2.10.0",

@@ -374,8 +374,8 @@ token via the backfill behavior described above), and it aborts if `.env.dev`'s 
 > change involved. It happened to be 20 on 2026-07-26; treat any figure written down as a snapshot and
 > re-derive from the running app. (This is why "20 commands" used to appear as a standing fact here.)
 
-`Dior's Builds` instead of `Dioreo (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
-`Dioreo (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
+`Dioreo` instead of `Dioreo (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
+`Dioreo (Dev)` (`1529636846248919263`) while prod (`Dioreo`, `1491474871778021550`) kept all 20.
 
 **Secrets hygiene:** `.env.dev` is covered by `.gitignore`'s `.env.*` glob, by a `.git/info/exclude`
 entry (so it stays ignored even on branches that predate that glob), and by the `block-env-staging`

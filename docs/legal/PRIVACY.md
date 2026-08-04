@@ -1,8 +1,8 @@
-# Privacy Policy — Dior's Builds
+# Privacy Policy — Dioreo
 
 **Effective date:** 4 August 2026
-**Version:** 1.7
-**Applies to:** the Dior's Builds Discord application (the "Bot") and this
+**Version:** 1.8
+**Applies to:** the Dioreo Discord application (the "Bot") and this
 documentation website (the "Site")
 
 ---
@@ -40,6 +40,15 @@ based in Ontario, Canada.
 This is a hobby project run by one person. There is no company, no data
 protection officer (none is required — we do not carry out large-scale or
 systematic monitoring), and no privacy team. Email reaches a real person.
+
+**The Bot was called Dior's Builds until 4 August 2026.** That was a change of
+name, nothing more. **The controller did not change** — it is the same individual
+named above, at the same address, and no data was sold, transferred, shared, or
+disclosed to anyone as a result. Nothing about what is stored, why it is stored,
+who receives it, or how long it is kept was affected. Under GDPR terms: there is
+no new controller, no new processor, no new recipient, and no new purpose. A
+request you sent to Dior's Builds is a request to Dioreo and is handled the same
+way.
 
 ### 1.1 EU representative
 
@@ -570,6 +579,7 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.8 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** §1 now records the former name and states plainly that the controller did not change. **Nothing else changed at all** — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one. |
 | 1.7 | 4 August 2026 | Corrected §2.6, which still described the Site as storing **one** item and stated that nothing is written unless you press the light/dark switch. Both had been untrue since `db-booted` was added in version 1.6: that item is written when you open What's New, the Changelog or the Devlog, without being asked for. The consent-banner reasoning was affected too — it argued the strictly-necessary exemption only for a preference you set by pressing a switch, which does not reach `db-booted` at all. Every statement in §2.6 now names which item it applies to, and the exemption is argued for `db-booted` explicitly. **No change to what is stored, why, who receives it, or how long it is kept** — the two items, their values and their lifetimes are exactly as listed in version 1.6. |
 | 1.6 | 3 August 2026 | §2.6 and Appendix A began listing the Site's **second** browser-storage item, `db-booted` — a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It had been written since those pages launched while the policy described `db-theme` as the only key: the verification note had searched the generator, and the flag is written by a separate file, so it was never in scope. The note searches the built pages now. **No change to what is collected, why, who receives it, or how long it is kept** — the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
 | 1.5 | 1 August 2026 | Appendix A gained `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and began naming the four palette-source fields individually rather than abbreviating them. **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already stored and already described by §2; the appendix was an incomplete transcription. A build check now compares the appendix against the live schema so it cannot drift again. |
@@ -640,6 +650,7 @@ and both are described in full in §2.6.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.8** | 4 August 2026 | Renamed from Dior's Builds to Dioreo. §1 records the former name and confirms the controller is unchanged. **No change to what is stored, why, who receives it, or how long it is kept** — no new controller, processor, recipient or purpose, and Appendix A is identical to 1.7. |
 | **1.7** | 4 August 2026 | §2.6 corrected: it still said the Site stored **one** item and that nothing is written unless you press the light/dark switch, neither of which had been true since `db-booted` arrived in 1.6, and the no-consent-banner argument reached only the switch. Each statement now names the item it applies to and the strictly-necessary basis is argued for both. **No change to what is stored, why, who receives it, or how long it is kept.** |
 | **1.6** | 3 August 2026 | §2.6 and Appendix A now list the Site's **second** browser-storage item, `db-booted`, a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It has been written since those pages launched, while the policy said `db-theme` was the only key — the verification note had searched the GENERATOR and the flag is written by `scripts/lib/chronicle.js`, so it was never in scope. The note now searches the BUILT pages. **No change to what is collected, why, who receives it, or how long it is kept:** the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
 | **1.5** | 1 August 2026 | Appendix A now names `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and names the four `*PaletteSource` fields individually rather than as "(+ source hashes)". **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already being stored and are already described by §2; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again. |
@@ -685,6 +696,6 @@ relevant code.
 
 ---
 
-*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+*Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.*

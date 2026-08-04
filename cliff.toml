@@ -1,4 +1,4 @@
-# git-cliff config for Diors-Builds -- powers `dior changelog` (dior-cli), a DRAFT
+# git-cliff config for Dioreo -- powers `dior changelog` (dior-cli), a DRAFT
 # generator only. It does NOT feed the real docs/CHANGELOG.md, which is hand-curated
 # with a strict per-release format (hash backfilled one release later, 3-file sync
 # with CHANGELOG-SUMMARY.md/DEVLOG.md, docs-audit.mjs's conservation-rule checks).

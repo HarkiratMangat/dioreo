@@ -36,7 +36,7 @@
  * DESIGN DIRECTION — "spec sheet", not "docs site":
  * The first version of this page was a gradient header over rounded cards in a
  * system sans: the shape you get for any product, which is why it read as a parked
- * domain. This one is built from the product's own world. Dior's Builds is a
+ * domain. This one is built from the product's own world. Dioreo is a
  * Gunsmith bot — weapon spec sheets, attachment slots, numbered builds — so the
  * page borrows that typographic system rather than a generic dark-SaaS one:
  *
@@ -235,7 +235,7 @@ const CHRONICLE_PAGES = [
         accent: BRAND.tracer, glow: '#FFD9A8',
         lede: 'Every update to the bot, in plain language — what changed and when.',
         railLabel: 'Releases',
-        blurb: 'What changed in each release of Dior’s Builds, in plain language.'
+        blurb: 'What changed in each release of Dioreo, in plain language.'
     },
     {
         file: 'CHANGELOG.md', kind: 'md', docs: true, dir: 'changelog',
@@ -1213,7 +1213,7 @@ const writePage = (dest, html) => {
 
 /* ─────────────── shared components: wordmark, repo, theme switch ───────── */
 
-const REPO_URL = 'https://github.com/HarkiratMangat/diors-builds';
+const REPO_URL = 'https://github.com/HarkiratMangat/dioreo';
 /* The controller's Discord profile. Deliberately a bare user link rather than an
    invite: it is a contact route for a person, not a server to join, and the
    documents name it that way. */
@@ -1246,7 +1246,7 @@ const DISCORD_MARK = `<svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path f
 const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${INSTALL_URL}"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true">${DISCORD_MARK}</span>
   <span class="ins-t">${big ? 'Add to Discord' : 'Install'}</span>
@@ -1271,7 +1271,7 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 const wordmark = (href, cur) => {
     const here = cur ? ALL_PAGES.find(p => p.out === cur.out && dirOf(p) === dirOf(cur)) : null;
     const body = `<span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       ${here ? `<span class="mk-ctx"><i aria-hidden="true"></i>${esc(here.title)}</span>` : ''}
     </span>`;
     return href
@@ -1514,7 +1514,7 @@ const mobileNav = (cur, slots) => {
    the two and a trademark notice has no business being shorter on the pages that
    ARE the legal instruments. Never re-inline this: a notice duplicated in prose is
    a notice that will disagree with itself again. */
-const TRADEMARK_NOTE = 'Dior&#8217;s Builds is an unofficial fan project and is not '
+const TRADEMARK_NOTE = 'Dioreo is an unofficial fan project and is not '
     + 'affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, '
     + 'Discord Inc., or with the rights holders of any content the game features '
     + 'under licence.';
@@ -2450,6 +2450,72 @@ html.liq,html.liq *{cursor:none !important}
 }
 @media print{.tipx{display:none!important}}
 `;
+
+/* Back to top. A fixed element is trapped by any ancestor carrying a filter,
+   transform or backdrop-filter, which is exactly what once anchored a fixed
+   control to the 54px bar instead of the viewport, so this must be emitted
+   OUTSIDE the page wrapper on every template that uses it.
+   ⚠️ SHARED, because it was shell()-only and Contributing/Contributors are long
+   enough to need it just as much (reported 2026-08-04 14:01 EDT). Its CSS was
+   already in COMPONENT_CSS and its behaviour already in MORPH_JS — both loaded on
+   the warm pages the whole time and did nothing, because the one thing missing
+   was the button itself. Copying the markup instead of sharing it is how the two
+   would drift; MORPH_JS bails cleanly when #totop is absent, so a template that
+   omits this constant still works. */
+const TOTOP_HTML = `<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+  <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
+    <circle class="tt-trk" cx="23" cy="23" r="20"/>
+    <circle class="tt-bar" cx="23" cy="23" r="20"/>
+  </svg>
+  <span class="tt-ar" aria-hidden="true"><i></i><i></i></span>
+</button>`;
+
+/* The two things MORPH_JS's back-to-top module does NOT do: fill the progress
+   ring, and park the button above the footer. On the legal pages both are done
+   inside shell()'s own scroll loop, which already reads the same rects for the
+   scrollspy and the reading-progress bar — there is no second loop there and this
+   constant is deliberately not used by it.
+   ⚠️ ONE WRITER PER PROPERTY. This touches only --lift and the ring's dash offset,
+   the same two shell() writes; `.on` belongs to MORPH_JS on every template. A
+   second handler toggling that class would fight the birth animation every frame,
+   which is a bug already paid for once. */
+const TOTOP_TRACK_JS = `
+(function(){
+  var tt=document.getElementById('totop');
+  if(!tt)return;
+  var bar=tt.querySelector('.tt-bar'), foot=document.querySelector('.foot');
+  /* Cached: getComputedStyle forces a style resolve, and both values change only
+     with the viewport. Re-measured on resize for the same reason. */
+  var base=0, pad=0;
+  function measure(){
+    base=parseFloat(getComputedStyle(tt).bottom)||0;
+    pad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+  }
+  measure();
+  var queued=false;
+  function paint(){
+    queued=false;
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    /* Clamped: iOS rubber-banding reports scrollTop below 0 and past max, and the
+       URL bar showing or hiding moves clientHeight mid-scroll. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
+    if(bar)bar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
+    if(foot){
+      /* Park on the footer's first line of CONTENT, not on its box: the box
+         carries 2.2rem of top padding, and stopping at its edge leaves the button
+         hovering in a gap where nothing needed covering. Read the FOOTER's rect,
+         never the button's — the button's already includes the lift, which would
+         feed back on itself. */
+      var ft=foot.getBoundingClientRect().top+pad;
+      var over=(h.clientHeight-base)-ft+12;
+      tt.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
+    }
+  }
+  function onScroll(){ if(!queued){queued=true;requestAnimationFrame(paint);} }
+  addEventListener('scroll',onScroll,{passive:true});
+  addEventListener('resize',function(){measure();onScroll();},{passive:true});
+  paint();
+})();`;
 
 // One implementation, used by both templates. `aria-checked` is kept in step with
 // the resolved theme rather than assumed — the initial state can come from the OS
@@ -4268,12 +4334,12 @@ function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} — Dior's Builds</title>
-<meta name="description" content="${esc(title)} for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>${esc(title)} — Dioreo</title>
+<meta name="description" content="${esc(title)} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
-<meta property="og:title" content="${esc(title)} — Dior's Builds">
-<meta property="og:description" content="${esc(title)} for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:title" content="${esc(title)} — Dioreo">
+<meta property="og:description" content="${esc(title)} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='${encodeURIComponent(accent)}'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
@@ -4296,6 +4362,17 @@ ${SWITCHER_CSS}
    travelling into the footer, and keeping it in .page is what stops it stretching to
    the full viewport width. Do not fold these two back together. */
 .page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
+   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
+   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap (4rem), false
+   here, where .page ends at 0. Measured on an iPhone against Contributing, which
+   is the rhythm Harkirat asked these pages to match: 96px above the link row and
+   28px below it, against 54 and 80. So this restores the missing floor and trims
+   the card's own 3rem gap, which is a desktop value that reads as a hole once the
+   footer is a single narrow column. Both numbers are the warm page's, not new
+   ones — the point is that the two templates agree. */
+@media (max-width:760px){ .page{padding-bottom:4rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
@@ -4370,6 +4447,15 @@ ${SWITCHER_CSS}
   padding:var(--pad);margin-bottom:3rem;position:relative;min-width:0}
 .doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
   background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+/* ⚠️ THIS HAS TO SIT AFTER .doc, NOT BESIDE .page's OWN NARROW BLOCK. Both
+   selectors are (0,1,0), a media query adds no specificity, and the 3rem above is
+   declared LATER in the source — so the first attempt lost silently and measured
+   48px when it should have measured 19.2. Caught by reading the computed value; it
+   looked completely correct in the source.
+   The number is the warm template's, not a new one: 3rem is a desktop gap, and at
+   phone width, where the footer is one narrow column, it reads as a hole. See the
+   companion note on .page. */
+@media (max-width:760px){ .doc{margin-bottom:1.2rem} }
 
 .mast{margin-bottom:3.2rem}
 .mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
@@ -4741,16 +4827,7 @@ ${mobileNav(cur, slots)}
   ${pageFoot(cur, null, false)}
 </div>
 
-<!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
-     transform or backdrop-filter, which is exactly what once anchored a fixed
-     control to the 54px bar instead of the viewport, so this sits outside .page. -->
-<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
-  <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
-    <circle class="tt-trk" cx="23" cy="23" r="20"/>
-    <circle class="tt-bar" cx="23" cy="23" r="20"/>
-  </svg>
-  <span class="tt-ar" aria-hidden="true"><i></i><i></i></span>
-</button>
+${TOTOP_HTML}
 
 <script>
 (function(){
@@ -5069,7 +5146,19 @@ function asSlip(block, mark) {
         // whatever each platform has for it, looked like nothing in particular, and
         // meant nothing at all. Two overlapping sheets is what "copy" looks like.
         + '<span class="cpy-g" aria-hidden="true"></span>'
-        + '<span class="cpy-t">Copy</span></button>'
+        /* ⚠️ EMPTY, AND ITS WORD IS DRAWN BY CSS — this used to read `>Copy<` and
+           that was a live landmine for four days. The label is a text node sitting
+           between the CLA line and the paragraph after it, so the verifier reads
+           "...in §5 of the LICENSE **copy** If you'd rather...". It passed only
+           because verify() slices the source into fixed-length runs from word one,
+           and no run boundary happened to straddle that point. Renaming the project
+           removed a word upstream, every boundary shifted, and the very next build
+           reported the run missing — a real defect in the page text that had been
+           there the whole time and was invisible for arithmetic reasons.
+           withCopyButtons() already had this rule; the slip predates it and never
+           got it. The state is driven off data-done, which the script already sets,
+           so nothing has to write into the document to change the word. */
+        + '<span class="cpy-t" aria-hidden="true"></span></button>'
         + '<span class="cpy-s" role="status" aria-live="polite"></span></div>';
 }
 
@@ -5198,17 +5287,39 @@ function withCopyButtons(html) {
     return html.replace(/<pre class="code"([^>]*)>([\s\S]*?)<\/pre>/g, (m, attrs, inner) => {
         const id = 'code-' + (++CPY_N);
         warmHit('copy');
-        return '<div class="cw"><pre class="code"' + attrs + ' id="' + id + '">' + inner + '</pre>'
+        /* ⚠️ THE CONTROL SITS IN A HEADER STRIP NOW, NOT ON TOP OF THE CODE.
+           Parking it over the block meant it had to be opaque, it had to reserve
+           right padding, and on a coarse pointer the code had to be pushed down
+           3.6rem to clear a permanently-visible 44px target — a stack of three
+           workarounds for one collision, and it still read on a phone as a large
+           disc floating in an empty band (reported 2026-08-04 14:01 EDT). Giving the block a
+           header solves the collision structurally: the label and the button are in
+           normal flow, the code owns its own box again, and the layout is the one
+           every reader already recognises from a code block.
+           The language moves here with it — pre.code[data-lang]::before is
+           suppressed inside .cw, so there is exactly one label. */
+        const lang = (attrs.match(/data-lang="([^"]*)"/) || [, ''])[1];
+        return '<div class="cw">'
+            + '<div class="cw-h"' + (lang ? ' data-lang="' + lang + '"' : '') + '>'
             /* ⚠️ NO TEXT in this button, and the icon is drawn in CSS rather than
                typed as a glyph. Both the word "Copy" and a character icon join the
                page text between the code block and the prose after it, which split
                three verify() runs that span that boundary — caught by gate 1 on the
                first build. An icon-only control is the convention for a code block
                anyway; the accessible name comes from aria-label and the result is
-               announced through the live region beside it. */
+               announced through the live region beside it.
+               ⚠️ THE SAME RULE BINDS THE CONFIRMATION BUBBLE. .cpy-p is empty and
+               its word is drawn by CSS content for exactly this reason — a literal
+               "Copied" in the markup is a text node sitting between the code and
+               the prose after it, which is the failure the button itself was
+               shaped around. Do not "simplify" it by typing the word in. */
             + '<button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="' + id + '">'
             + '<span class="cpy-g" aria-hidden="true"></span></button>'
-            + '<span class="cpy-s" role="status" aria-live="polite"></span></div>';
+            + '<span class="cpy-p" aria-hidden="true"></span>'
+            + '<span class="cpy-s" role="status" aria-live="polite"></span>'
+            + '</div>'
+            + '<pre class="code"' + attrs + ' id="' + id + '">' + inner + '</pre>'
+            + '</div>';
     });
 }
 
@@ -5369,15 +5480,20 @@ const WARM_JS = `
      a control that looks live and silently does nothing. */
   Array.prototype.forEach.call(document.querySelectorAll('.cpy'),function(b){
     if(!navigator.clipboard){ b.parentNode.removeChild(b); return; }
-    var t=b.querySelector('.cpy-t');
+    /* ⚠️ THE VISIBLE LABEL IS NOT WRITTEN FROM HERE ANY MORE. Both wordings are CSS
+       content keyed off data-done, so this script never puts a word into the
+       document — see the note in asSlip(). Writing textContent worked, and it also
+       meant the page's own text changed under verify()'s feet for 2.4 seconds. The
+       live region below is different: it is clipped out of the flow by .cpy-s and
+       exists precisely to be spoken. */
     var s=b.parentNode.querySelector('.cpy-s');
     b.addEventListener('click',function(){
       var el=document.getElementById(b.getAttribute('data-copy'));
       if(!el)return;
       navigator.clipboard.writeText(el.textContent.trim()).then(function(){
-        b.setAttribute('data-done','');if(t)t.textContent='Copied';
+        b.setAttribute('data-done','');
         if(s)s.textContent='Copied to clipboard';
-        setTimeout(function(){b.removeAttribute('data-done');if(t)t.textContent='Copy';
+        setTimeout(function(){b.removeAttribute('data-done');
           if(s)s.textContent='';},2400);
       });
     });
@@ -6570,11 +6686,11 @@ function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, s
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} — Dior's Builds</title>
+<title>${esc(title)} — Dioreo</title>
 <meta name="description" content="${esc(lede)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
-<meta property="og:title" content="${esc(title)} — Dior's Builds">
+<meta property="og:title" content="${esc(title)} — Dioreo">
 <meta property="og:description" content="${esc(lede)}">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Ccircle cx='16' cy='16' r='9' fill='${encodeURIComponent(accent)}'/%3E%3C/svg%3E">
@@ -6681,74 +6797,96 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   border-bottom:1px dotted var(--rule)}
 /* The code block and its copy control. The control sits OUTSIDE the pre so it
    cannot scroll away with a long line, and so its own label never becomes part of
-   what gets copied. */
-.cw{position:relative}
-.cw pre.code[data-lang]{padding-top:1.75rem}
+   what gets copied — and since 2026-08-04 14:28 EDT it sits outside the pre's BOX
+   too, in a header strip above the code. See the note in withCopyButtons() for why
+   the overlay version was retired. The wrapper now carries the frame, so the pre
+   inside it is stripped back to type on a transparent ground. */
+.cw{position:relative;margin:1.3rem 0;border-radius:10px;overflow:hidden;
+  background:var(--raised);border:1px solid var(--rule)}
+/* ⚠️ --cpy-bed, not a hard-coded --raised. The top sheet of the copy glyph is an
+   opaque cut-out that has to match whatever it is drawn on, and there are three
+   different surfaces now: the pill's accent wash on the CLA slip, plain --raised
+   for the old floating variant, and this strip's own tint. A variable is what
+   stops the next surface from silently reintroducing the darker notch that the
+   slip rule below already had to patch by hand. */
+.cw-h{position:relative;display:flex;align-items:center;justify-content:flex-end;
+  gap:.4rem;min-height:36px;padding:.28rem .4rem .28rem 1.15rem;
+  --cpy-bed:color-mix(in srgb,var(--accent) 6%,var(--raised));
+  background:var(--cpy-bed);border-bottom:1px solid var(--rule)}
+/* margin-right:auto pushes the control to the far end without needing a spacer. */
+.cw-h[data-lang]::before{content:attr(data-lang);margin-right:auto;
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3)}
+/* The pre keeps its scrolling and its type and gives up its chrome to .cw. */
+.cw pre.code,.cw pre.code[data-lang]{margin:0;border:0;border-radius:0;
+  background:none;padding:1rem 1.15rem}
+/* One label, in the header. The corner label is for a bare pre.code, which still
+   exists wherever a block is not wrapped. */
+.cw pre.code[data-lang]::before{content:none}
 /* ⚠️ min-height:0 is required. The base .cpy is a labelled pill with
    min-height:44px for its touch target, and that MIN wins over a plain height —
    so this came out 30px wide by 44px tall: a vertical oval with the mark riding
    high in it. An icon-only control has to reset the floor before it can be
-   square. The 44px target returns on coarse pointers, where it is the thing that
-   actually matters and the button is always visible rather than hover-revealed. */
+   square. */
 /* ⚠️ .cpy.cpy-f, not .cpy-f — these two selectors carry the SAME specificity and
    this block is defined ABOVE the base .cpy, so a single class lost on source
    order and the base won silently. That left min-height:44px and 1.05rem of
    horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
    the padding squeezed the drawn mark to ZERO width inside it. Measured, not
    guessed. An icon-only control has to beat the labelled pill it derives from. */
-/* ⚠️ AND IT HAS TO BE OPAQUE. The base .cpy is 13% accent over TRANSPARENT, which
-   is right for a pill sitting in its own row on a known surface and wrong for one
-   parked on top of code: at 87% transparent the line ran straight through the
-   control, so neither the code nor the mark was readable — the reported "copy
-   buttons are bugged". Mixed into --raised, the block's own background, it is the
-   same colour it always was and now actually covers what is behind it. The hover
-   state has to be re-mixed the same way or it goes transparent again on the way
-   past. */
-.cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
-  padding:0;gap:0;min-height:0;width:34px;height:34px;
-  background:color-mix(in srgb,var(--accent) 13%,var(--raised))}
-.cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}
-/* The 44px target returns where it actually matters — a coarse pointer, where
-   this control is always visible rather than revealed on hover.
-   ⚠️ AND THE CODE HAS TO CLEAR IT VERTICALLY, WHICH RESERVING WIDTH DOES NOT DO.
-   The first attempt gave the block right-padding so a line would stop before the
-   button. That only helps a line SHORT enough to stop — pre.code scrolls, so any
-   longer line runs straight under the control regardless of padding, which is the
-   case actually reported (a git clone URL disappearing beneath it).
-   On a coarse pointer the button is permanently visible and 44px tall, so it
-   occupies the top ~52px of the block while the code begins at 28px. Pushing the
-   code below it removes the collision for every line at every scroll position
-   instead of for the short ones.
-   Both selectors are restated because .cw pre.code[data-lang] is (0,3,1) and would
-   otherwise beat a plain .cw pre.code here.
-   Fine pointers keep the tighter block on purpose: there the control is smaller and
-   revealed on hover, so it is a transient overlap rather than a permanent one. */
+/* ⚠️ THE OPACITY FIGHT IS OVER, AND THIS IS WHY THE RULES BELOW LOOK SIMPLER THAN
+   THEY DID. While the control floated on the code it had to be opaque (a 13%
+   accent over TRANSPARENT let the line run straight through it), it had to reserve
+   the block's right padding, and on a coarse pointer it had to push the code down
+   3.6rem to stop a long line sliding underneath it. In a header strip it overlaps
+   nothing, so all three go: it can be a quiet ghost button that only fills in on
+   hover, which is what a control the reader is not looking for should be.
+   Do not reintroduce the overlay without bringing all three workarounds back. */
+.cpy.cpy-f{position:static;padding:0;gap:0;min-height:0;width:30px;height:30px;
+  color:var(--ink3);background:transparent;border-color:transparent}
+.cpy.cpy-f:hover{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent)}
+/* The 44px target returns where it actually matters — a coarse pointer. It costs
+   nothing now: the strip sizes to it instead of the code having to dodge it. */
 @media (hover:none){
-  .cpy.cpy-f{width:44px;height:44px}
-  .cw pre.code,.cw pre.code[data-lang]{padding-top:3.6rem;padding-right:1.15rem}
+  .cpy.cpy-f{width:40px;height:40px}
+  .cw-h{min-height:46px;padding-top:.2rem;padding-bottom:.2rem}
 }
-/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
-   and the button occupies 34px plus its offset — 44px on a coarse pointer, where
-   it is always visible — so a line only a little longer than the box tucked itself
-   underneath and looked truncated rather than scrollable. Padding cannot help a
-   line that genuinely overflows, which is what the opaque background above is for;
-   it stops the far more common case of a line that would otherwise have fitted. */
-.cw pre.code{padding-right:3.2rem}
-@media (hover:none){.cw pre.code{padding-right:4rem}}
+/* The confirmation bubble. The live region already announces the result, and the
+   floating variant had no visible counterpart to it at all — the icon flipping to
+   a tick is easy to miss on a phone, where your thumb is on top of it.
+   ⚠️ Its word is drawn with CSS content, never typed into the markup — see the
+   note in withCopyButtons(). It hangs BELOW the strip rather than beside the
+   button: beside means measuring against the button's width, which changes with
+   the pointer type, and below is also where the thumb is not. */
+.cpy-p{position:absolute;top:calc(100% + .3rem);right:.4rem;z-index:2;
+  pointer-events:none;opacity:0;transform:translateY(-4px);
+  font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;
+  white-space:nowrap;padding:.32rem .55rem;border-radius:7px;
+  color:var(--ink);background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--rule2));
+  box-shadow:0 10px 24px -14px rgba(0,0,0,.65);
+  transition:opacity .16s ease,transform .3s cubic-bezier(.22,.9,.24,1)}
+.cpy-p::after{content:"Copied"}
+.cpy-f[data-done] ~ .cpy-p{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion:reduce){.cpy-p{transition:opacity .16s ease}}
 /* The copy mark: two offset sheets, becoming a tick once the text is on the
    clipboard. Drawn, not typed — see the note in withCopyButtons(). */
 .cpy-g{position:relative;display:block;width:12.5px;height:13px}
 .cpy-g::before,.cpy-g::after{content:"";position:absolute;box-sizing:border-box;
   border:1.4px solid currentColor;border-radius:2px;transition:opacity .18s ease}
 .cpy-g::before{left:0;top:0;width:8.5px;height:9.5px}
-.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--raised)}
+.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--cpy-bed,var(--raised))}
 .cpy-f[data-done] .cpy-g::before{opacity:0}
 .cpy-f[data-done] .cpy-g::after{left:1px;top:2px;width:10px;height:5.5px;
   border-width:0 0 1.7px 1.7px;border-radius:0;background:none;transform:rotate(-45deg)}
-@media (hover:hover) and (pointer:fine){
-  .cw .cpy-f{opacity:0;transition:opacity .22s ease}
-  .cw:hover .cpy-f,.cw .cpy-f:focus-visible{opacity:1}
-}
+/* ⚠️ THE HOVER-REVEAL IS GONE ON PURPOSE, and it should not come back. It existed
+   because a control sitting ON the code was clutter at rest; a control in the
+   header strip is part of the block's furniture, and hiding it there means a
+   reader on a trackpad has to discover it by accident. "More intuitive" was the
+   actual request. The quiet resting state above does the same job without making
+   the control conditional on hover — which a touch device never has. */
 .card blockquote.callout{margin:1.5rem 0;padding:1.05rem 1.25rem;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 8%,var(--raised));
   border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule))}
@@ -6881,11 +7019,15 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   transition:background .2s,color .2s,border-color .2s}
 .cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
 .cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}
+/* The labelled pill's word, drawn rather than typed — see asSlip(). Both states
+   live here so the script never has to touch the document's text. */
+.cpy-t::after{content:"Copy"}
+.cpy[data-done] .cpy-t::after{content:"Copied"}
 /* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
    surface it sits on. In the floating variant that is --raised; inside the labelled
    pill it is the pill's own accent-washed fill, and --raised there left a visibly
    darker notch through the drawing. */
-.slip .cpy .cpy-g::after{background:color-mix(in srgb,var(--accent) 13%,var(--raised))}
+.slip .cpy{--cpy-bed:color-mix(in srgb,var(--accent) 13%,var(--raised))}
 /* Visually hidden, still announced. The button label also changes, so a sighted
    user gets the same confirmation without the live region. */
 .cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
@@ -7023,7 +7165,10 @@ ${mobileNav(cur, '')}
        exception — it has no fixed header, so its switch lives at the foot.) -->
   ${pageFoot(cur, sig, false)}
 </div>
-<script>${THEME_JS}${NAV_JS}${WARM_JS}${MORPH_JS}</script>
+<!-- Outside .wrap, for the reason given on TOTOP_HTML: a fixed element is trapped
+     by any ancestor carrying a filter, transform or backdrop-filter. -->
+${TOTOP_HTML}
+<script>${THEME_JS}${NAV_JS}${WARM_JS}${MORPH_JS}${TOTOP_TRACK_JS}</script>
 </body>
 </html>`;
 }
@@ -7099,11 +7244,27 @@ function indexPage(built) {
     const lede = `${count} document${n === 1 ? '' : 's'}: what you agree to, what the bot `
         + 'stores about you, what you may do with the code, and who owns what it shows you.';
 
+    /* ⚠️ THIS PAGE IS THE SITE'S FRONT DOOR NOW, NOT A LEGAL INDEX (2026-08-04
+       14:01 EDT). It opened on the kicker "Legal" and the headline "The fine print,
+       in plain sight", which was right when four documents were the only thing
+       here. The changelog and devlog have since shipped and a help/docs section is
+       planned, so a reader arriving at the root met a page that introduced the
+       paperwork and never said what the bot was.
+       The legal set is not demoted — it keeps the numbered list, in the same place,
+       and gains a section label of its own so it reads as a part of the page rather
+       than as the whole of it. The derived `${count} documents` line above moves
+       into that section as its sub-line, so it still cannot claim "four" after a
+       fifth document lands. */
+    const intro = 'Dioreo is an unofficial Call of Duty: Mobile bot for the things you keep '
+        + 'looking up — lucky-draw odds and CP costs, loadouts worth building, what is live '
+        + 'this season and when it ends. Install it once and it answers anywhere you can '
+        + 'type: any server, any DM, no invite needed.';
+
     return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Legal — Dior's Builds</title>
-<meta name="description" content="${esc(built.map(p => p.title).join(', '))} for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>Dioreo — Call of Duty: Mobile, in Discord</title>
+<meta name="description" content="Dioreo is an unofficial Call of Duty: Mobile Discord bot for lucky-draw odds, CP costs, loadouts, and the seasonal calendar. Install it once and it works in any server or DM.">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
@@ -7115,17 +7276,20 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6re
 .wrap{width:100%;max-width:780px;margin:0 auto}
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
 .top .ghb{margin-left:auto}
-/* ⚠️ -.038em, not -.05em. The face DOES have ligatures — the fi in "fine" is a
-   real one and is correct typography — but at -.05em on a ~66px display size the
-   tracking was pulling unrelated pairs into contact too: the comma sat on the t of
-   "print", and the n of "plain" touched the s of "sight". That collision is what
-   made the ligature look like a rendering fault rather than a ligature. Easing the
-   tracking separates the pairs and leaves the ligature alone.
+/* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
+   The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
+   at -.05em on a ~66px display size the tracking pulled unrelated pairs into
+   contact: the comma sat on the t of "print", and the n of "plain" touched the s of
+   "sight". The face also has real ligatures — the fi in "fine" was one — and the
+   collision was making that ligature look like a rendering fault. Easing the
+   tracking separated the pairs and left the ligature alone.
+   The current headline has neither of those pairs, so nothing looks wrong at the
+   moment. That is not a reason to tighten it back: the next headline change would
+   reintroduce the collision with no note left to explain it.
    ⚠️ LIGATURES STAY ON — Harkirat's decision, 2026-08-02 00:40 EDT. They are the browser
-   default and nothing here disables them; the fi ligature in "fine" is meant to be there.
-   Do NOT "fix" this later by adding font-variant-ligatures:none. If the type ever
-   looks wrong again the suspect is the TRACKING, which pulls unrelated pairs into
-   contact, not the ligature. */
+   default and nothing here disables them. Do NOT "fix" this later by adding
+   font-variant-ligatures:none. If the type ever looks wrong again the suspect is the
+   TRACKING, which pulls unrelated pairs into contact, not the ligature. */
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
@@ -7425,11 +7589,16 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
 /* A section label between the two invite rows. Without it the six cards read as
    one undifferentiated grid, which is exactly the collapse the three page families
    exist to avoid. */
-/* ⚠️ KEPT ON PURPOSE THOUGH NOTHING CURRENTLY USES IT. Its only element was the
-   -The record- label above the changelog row, which is withdrawn from the landing
-   page rather than deleted. Removing this would make the -uncomment to restore-
-   note above a lie: the row would come back unstyled. */
+/* ⚠️ IN USE AGAIN as of 2026-08-04 14:36 EDT — it labels the legal set now that the
+   hero above it introduces the bot instead. It had been kept unused on purpose,
+   for the -The record- label above the withdrawn changelog row; that reason still
+   stands, so removing it would still make the -uncomment to restore- note above a
+   lie. Two callers now, one of them commented out. */
 .lab-sec{display:block;margin:1.9rem 0 .7rem}
+/* The legal set's own sub-line. Smaller than the hero lede and tighter to the
+   list it belongs to — it is a caption for one section, not the page's opening
+   sentence, and at the hero's size it competed with it. */
+.lede.sub{font-size:.97rem;max-width:54ch;margin-bottom:1.1rem}
 
 /* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
@@ -7450,9 +7619,15 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
     ${repoBtn}
     ${installBtn()}
   </div>
-  <span class="lab">Legal</span>
-  <h1>The fine print,<br>in plain sight.</h1>
-  <p class="lede">${esc(lede)}</p>
+  <!-- "Unofficial" leads the kicker rather than waiting for the trademark notice
+       at the foot of the page. The notice is an obligation and stays where it is;
+       this is about not letting the first three words a reader sees imply a
+       relationship with Activision that the last three deny. -->
+  <span class="lab">Unofficial &middot; Call of Duty: Mobile</span>
+  <h1>CODM, without<br>the second tab.</h1>
+  <p class="lede">${esc(intro)}</p>
+  <span class="lab lab-sec">The fine print</span>
+  <p class="lede sub">${esc(lede)}</p>
   <div class="list">${rows}</div>
   <div class="invite">${invites}</div>
   <div class="foot">
@@ -7714,7 +7889,7 @@ function buildCompanions() {
     // The landing page lives at legal/index.html, so the site ROOT would otherwise
     // 404 — confirmed live on the first deploy. A redirect is used rather than a
     // second copy of the index at the root, because two landing pages drift and
-    // the pages' own nav ("Dior's Builds" → "./") already resolves to legal/.
+    // the pages' own nav ("Dioreo" → "./") already resolves to legal/.
     // /security is a memorable route that has to keep working even if the source
     // repository goes private (TERMS §7.1 reserves exactly that). SECURITY.md is
     // deliberately repo-only — it serves GitHub's "Report a vulnerability" flow,

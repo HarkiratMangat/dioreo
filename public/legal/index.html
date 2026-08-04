@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Legal — Dior's Builds</title>
-<meta name="description" content="Terms of Service, Privacy Policy, Source-Available License, Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>Dioreo — Call of Duty: Mobile, in Discord</title>
+<meta name="description" content="Dioreo is an unofficial Call of Duty: Mobile Discord bot for lucky-draw odds, CP costs, loadouts, and the seasonal calendar. Install it once and it works in any server or DM.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
@@ -1010,17 +1010,20 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
-.top .ghb{margin-left:auto}/* ⚠️ -.038em, not -.05em. The face DOES have ligatures — the fi in "fine" is a
-   real one and is correct typography — but at -.05em on a ~66px display size the
-   tracking was pulling unrelated pairs into contact too: the comma sat on the t of
-   "print", and the n of "plain" touched the s of "sight". That collision is what
-   made the ligature look like a rendering fault rather than a ligature. Easing the
-   tracking separates the pairs and leaves the ligature alone.
+.top .ghb{margin-left:auto}/* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
+   The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
+   at -.05em on a ~66px display size the tracking pulled unrelated pairs into
+   contact: the comma sat on the t of "print", and the n of "plain" touched the s of
+   "sight". The face also has real ligatures — the fi in "fine" was one — and the
+   collision was making that ligature look like a rendering fault. Easing the
+   tracking separated the pairs and left the ligature alone.
+   The current headline has neither of those pairs, so nothing looks wrong at the
+   moment. That is not a reason to tighten it back: the next headline change would
+   reintroduce the collision with no note left to explain it.
    ⚠️ LIGATURES STAY ON — Harkirat's decision, 2026-08-02 00:40 EDT. They are the browser
-   default and nothing here disables them; the fi ligature in "fine" is meant to be there.
-   Do NOT "fix" this later by adding font-variant-ligatures:none. If the type ever
-   looks wrong again the suspect is the TRACKING, which pulls unrelated pairs into
-   contact, not the ligature. */
+   default and nothing here disables them. Do NOT "fix" this later by adding
+   font-variant-ligatures:none. If the type ever looks wrong again the suspect is the
+   TRACKING, which pulls unrelated pairs into contact, not the ligature. */
 
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
   font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
@@ -1322,14 +1325,19 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
   .inv:hover .inv-m .ln{transform:none;opacity:1}}
 }/* A section label between the two invite rows. Without it the six cards read as
    one undifferentiated grid, which is exactly the collapse the three page families
-   exist to avoid. *//* ⚠️ KEPT ON PURPOSE THOUGH NOTHING CURRENTLY USES IT. Its only element was the
-   -The record- label above the changelog row, which is withdrawn from the landing
-   page rather than deleted. Removing this would make the -uncomment to restore-
-   note above a lie: the row would come back unstyled. */
+   exist to avoid. *//* ⚠️ IN USE AGAIN as of 2026-08-04 14:36 EDT — it labels the legal set now that the
+   hero above it introduces the bot instead. It had been kept unused on purpose,
+   for the -The record- label above the withdrawn changelog row; that reason still
+   stands, so removing it would still make the -uncomment to restore- note above a
+   lie. Two callers now, one of them commented out. */
 
 
 
-.lab-sec{display:block;margin:1.9rem 0 .7rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+.lab-sec{display:block;margin:1.9rem 0 .7rem}/* The legal set's own sub-line. Smaller than the hero lede and tighter to the
+   list it belongs to — it is a caption for one section, not the page's opening
+   sentence, and at the hero's size it competed with it. */
+
+.lede.sub{font-size:.97rem;max-width:54ch;margin-bottom:1.1rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
    the top of the screen. */
 
@@ -1398,11 +1406,11 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
   <div class="top">
     <div class="mark">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       
     </span>
   </div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -1410,16 +1418,22 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
   </div>
-  <span class="lab">Legal</span>
-  <h1>The fine print,<br>in plain sight.</h1>
-  <p class="lede">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
+  <!-- "Unofficial" leads the kicker rather than waiting for the trademark notice
+       at the foot of the page. The notice is an obligation and stays where it is;
+       this is about not letting the first three words a reader sees imply a
+       relationship with Activision that the last three deny. -->
+  <span class="lab">Unofficial &middot; Call of Duty: Mobile</span>
+  <h1>CODM, without<br>the second tab.</h1>
+  <p class="lede">Dioreo is an unofficial Call of Duty: Mobile bot for the things you keep looking up — lucky-draw odds and CP costs, loadouts worth building, what is live this season and when it ends. Install it once and it answers anywhere you can type: any server, any DM, no invite needed.</p>
+  <span class="lab lab-sec">The fine print</span>
+  <p class="lede sub">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
   <div class="list">
       <a class="entry" href="terms.html" style="--accent:#F2994A;--glow:#6B4E7D">
         <i>01</i>
@@ -1443,7 +1457,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
           <h2>Source-Available License</h2>
           <p>Read it, study it, run it on your own machine. Source-available, not open source.</p>
         </div>
-        <em>19 sections</em>
+        <em>20 sections</em>
       </a>
       <a class="entry" href="notice.html" style="--accent:#FF5264;--glow:#6B4E7D">
         <i>04</i>
@@ -1545,7 +1559,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
-  <p class="disc fine">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+  <p class="disc fine">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
   <!-- The sign-off closes the landing page as it closes every other one. It was
        the only page without it, which made the site look like it ended twice:
        every document signed off and the front door did not. Last, and after the

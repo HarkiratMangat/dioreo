@@ -1,9 +1,32 @@
-# Dior's Builds — CODM Discord Bot
+# Dioreo — CODM Discord Bot
 
 ## What this is
 A Discord bot for Call of Duty Mobile (CODM) content: lucky draw info, patch notes, seasonal
 calendars, CP pricing, weapon loadouts, and countdown timers. Built and maintained by Harkirat
 (Discord ID `1139845545754632283`), the sole admin.
+
+### 🏷️ RENAMED **Dior's Builds → Dioreo**, 2026-08-04 14:24 EDT
+The dev application had carried the new name since 2026-07-26; the rename went project-wide before v3
+launches, while the site is live but not yet shared. **Use "Dioreo" everywhere in new writing.** What
+did and did NOT move, because the boundary is deliberate and re-deriving it wrongly costs real work:
+- ✅ **Renamed:** every product mention in code, docs, rules files and the legal instruments · the
+  licence itself (**Dioreo Source-Available License v1.1**, SPDX `LicenseRef-Dioreo-Source-Available-1.1`,
+  superseding v1.0 — see LICENSE §18) · `package.json`'s `name` · the GitHub repo URL
+  (`HarkiratMangat/dioreo`).
+- 🚫 **Deliberately NOT renamed, and none of these is an oversight:**
+  - **The three record files** (`docs/CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`) and
+    `docs/archive/**` — past entries say "Dior's Builds" because that is what it was called when they
+    were written. The rename is recorded as a milestone entry, not backdated into history. Same for
+    the dated `docs/superpowers/specs/**`.
+  - **Infrastructure identifiers** — the GCP VM `diors-builds-bot`, the systemd unit `diors-bot`, the
+    dev database `diors-builds-dev`, `scripts/logrotate-diors-bot`. Live production names with no
+    user-visible surface; renaming means downtime and a data migration for nothing.
+  - **The repo folder** `/Applications/Claude Code/Diors-Builds` — ⚠️ **the memory-store slug is
+    derived from this path.** Renaming the folder strands the whole store again, exactly as the
+    2026-07-28 migration fixed. Do not "finish the job" by moving it.
+  - `docs/diors-builds notes.md` — a filename two `SessionStart` hooks parse by path.
+- ⚠️ **The former name is still a Brand Asset** (LICENSE §1.5, §18.3) and TERMS §7.1 still protects it.
+  Retiring a name does not release it.
 
 **Before doing anything else this session, read `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/user_working_agreement.md`**
 (start of `MEMORY.md`'s index) — it's the living summary of how Harkirat works and what this project
@@ -93,7 +116,7 @@ via the module's own `safeErrorMessage()`/`errorHttpCode()`. Full detail:
 `.claude/rules/loadout-images-and-metadata.md`.
 
 ### This bot is user-installed only — it is NEVER a guild member with roles/permissions
-`Dior's Builds` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every public-facing
+`Dioreo` runs entirely as a user-installed app (`setIntegrationTypes([1])` on every public-facing
 command). It is never added to any server as a bot with a role, so it has **zero standing guild
 permissions**. The only reason it can respond in a guild is Discord's interaction-response webhook system
 (`deferReply`/`deferUpdate` + editing `@original` via the interaction token), authorized per-interaction
@@ -385,7 +408,7 @@ file, and this section all reference it; renaming it is a separate change that h
   is loaded in full on every session, most of which never touch the site.
 
 ### ⚖️ Licensing — source-available, NOT open source (added 2026-07-28 21:36 EDT)
-`LICENSE` is the custom **Dior's Builds Source-Available License v1.0**: read/study/audit and
+`LICENSE` is the custom **Dioreo Source-Available License v1.1**: read/study/audit and
 **local single-user** running are permitted; deploying anywhere another person can use it,
 redistributing, commercial use, competing services, Curated-Data extraction, and AI/ML training are
 all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Available-1.0` and

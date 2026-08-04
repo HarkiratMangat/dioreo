@@ -1,8 +1,8 @@
-# Terms of Service — Dior's Builds
+# Terms of Service — Dioreo
 
-**Effective date:** 1 August 2026
-**Version:** 1.4
-**Applies to:** the Dior's Builds Discord application (the "Bot") and the website
+**Effective date:** 4 August 2026
+**Version:** 1.5
+**Applies to:** the Dioreo Discord application (the "Bot") and the website
 these documents are published on (the "Site")
 
 ---
@@ -33,8 +33,15 @@ can't be signed away.
 
 ## 1. Who you're dealing with
 
-Dior's Builds is operated by **Harkirat Mangat**, also known as **"dior"** or
+Dioreo — until 4 August 2026 called **Dior's Builds** — is operated by
+**Harkirat Mangat**, also known as **"dior"** or
 **"diorswrld"**, an individual based in Ontario, Canada ("we", "us", "our").
+
+The change of name is a change of name only. It is the same Bot, run by the same
+person, storing the same things and governed by these same Terms; nothing about it
+was sold, transferred, or handed to anyone else. Wherever an older document, an
+older message, or an older version of these Terms says "Dior's Builds", it means
+Dioreo. §19.2 says this in full.
 
 **Contact:** harkirat117@gmail.com, or [diorswrld on Discord](https://discord.com/users/1139845545754632283)
 
@@ -268,7 +275,7 @@ GitHub issue.
 ### 7.1 Ours
 
 The Bot's source code, curated datasets, descriptive text, layouts, and the
-"Dior's Builds" name and visual identity are owned by us and protected by
+"Dioreo" name, the former "Dior's Builds" name, and the visual identity are owned by us and protected by
 copyright and other laws. Using the Bot grants you **no ownership or licence** in
 any of it, beyond viewing its output for personal, non-commercial use.
 
@@ -288,7 +295,7 @@ Publishing, Inc.** Call of Duty: Mobile is developed by TiMi Studio Group (a
 Tencent subsidiary) and published by Activision, with regional publishing by
 Garena and VNG Games in some territories.
 
-> **Dior's Builds is an unofficial, non-commercial fan project. It is not
+> **Dioreo is an unofficial, non-commercial fan project. It is not
 > developed, published, licensed, endorsed, sponsored by, or affiliated with
 > Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games,
 > Discord Inc., or any of their affiliates.**
@@ -672,9 +679,31 @@ Kept here as well as in git, because the repository's visibility can change
 
 | Version | Effective | What changed |
 |---|---|---|
-| 1.2 | 31 July 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. |
+| 1.5 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** A change of name only: same operator, same Bot, same data, same terms — see §1 and §19.2. §7.1 keeps the former name protected alongside the new one. **Nothing you agreed to has changed**, no new data is collected, and no right of yours is reduced. |
+| 1.4 | 1 August 2026 | Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (§14) and the limitation of liability (§15) did not reach the pages these documents are published on. Adds §1.1 defining the Site and saying exactly which Terms cover it and which do not. **No new obligation on you and no reduction of your rights** — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone. |
+| 1.3 | — | Never published. The header moved from 1.1 straight to 1.4 on 1 August 2026 while the row describing that change was written as "1.2", so 1.2 and 1.3 were skipped. Recorded rather than quietly renumbered: the document you were shown on 1 August said **1.4**, and a revision history that renumbers a published version to tidy itself up is worth less than one with a gap in it. |
+| 1.2 | — | Never published. See the note on 1.3. |
 | 1.1 | 29 July 2026 | Added §7.3 (crossover and collaboration content — third-party IP featured in the game); noted the operator's `diorswrld` alias in §1 and §20; renumbered the former §7.3–§7.6 to §7.4–§7.7 to make room. **Clarifying additions only** — no reduction of your rights, no new data collected, no new obligation on you. |
 | 1.0 | 28 July 2026 | First published version. |
+
+### 19.2 The name change
+
+On **4 August 2026** the Bot's name changed from **Dior's Builds** to **Dioreo**.
+
+**What that means for you: nothing.** It is the same Bot and the same operator. No
+part of it was sold, transferred, merged, or assigned; there is no new company and
+no new party to your agreement. The data described in the Privacy Policy is the
+same data, held by the same person, for the same purposes — the rename is not a
+change of controller and is not a new purpose for anything already stored.
+
+Every reference to "Dior's Builds" — in an older copy of these Terms, in the
+Privacy Policy, in the LICENSE, in a message the Bot sent you, or anywhere else —
+is a reference to Dioreo, and binds exactly as it did when it was written. The
+reverse holds too: these Terms cover the period when the Bot was called Dior's
+Builds.
+
+The former name is still ours. §7.1 covers it, and retiring a name does not put it
+in the public domain.
 
 ---
 
@@ -709,6 +738,6 @@ the repository's git log.
 
 ---
 
-*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+*Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.*

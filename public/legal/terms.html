@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Terms of Service — Dior's Builds</title>
-<meta name="description" content="Terms of Service for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>Terms of Service — Dioreo</title>
+<meta name="description" content="Terms of Service for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<meta property="og:title" content="Terms of Service — Dior's Builds">
-<meta property="og:description" content="Terms of Service for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:title" content="Terms of Service — Dioreo">
+<meta property="og:description" content="Terms of Service for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23F2994A'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
@@ -1650,7 +1650,18 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
+   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
+   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap (4rem), false
+   here, where .page ends at 0. Measured on an iPhone against Contributing, which
+   is the rhythm Harkirat asked these pages to match: 96px above the link row and
+   28px below it, against 54 and 80. So this restores the missing floor and trims
+   the card's own 3rem gap, which is a desktop value that reads as a hole once the
+   footer is a single narrow column. Both numbers are the warm page's, not new
+   ones — the point is that the two templates agree. */
+
+@media (max-width:760px){ .page{padding-bottom:4rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1724,7 +1735,16 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   background:var(--paper);border:1px solid var(--rule);box-shadow:var(--shadow);
   padding:var(--pad);margin-bottom:3rem;position:relative;min-width:0}
 .doc::before{content:"";position:absolute;inset:0 0 auto;height:3px;
-  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}
+  background:linear-gradient(90deg,var(--accent),var(--glow) 70%,transparent)}/* ⚠️ THIS HAS TO SIT AFTER .doc, NOT BESIDE .page's OWN NARROW BLOCK. Both
+   selectors are (0,1,0), a media query adds no specificity, and the 3rem above is
+   declared LATER in the source — so the first attempt lost silently and measured
+   48px when it should have measured 19.2. Caught by reading the computed value; it
+   looked completely correct in the source.
+   The number is the warm template's, not a new one: 3rem is a desktop gap, and at
+   phone width, where the footer is one narrow column, it reads as a hole. See the
+   companion note on .page. */
+
+@media (max-width:760px){ .doc{margin-bottom:1.2rem} }
 
 .mast{margin-bottom:3.2rem}
 .mast h1{font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.93;
@@ -2094,7 +2114,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       <span class="mk-ctx"><i aria-hidden="true"></i>Terms of Service</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2109,7 +2129,7 @@ html{scroll-behavior:smooth}
       <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -2117,7 +2137,7 @@ html{scroll-behavior:smooth}
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
@@ -2213,7 +2233,7 @@ html{scroll-behavior:smooth}
         <span class="lab">Agreement</span>
         <h1>Terms of Service</h1>
         <div class="rule"></div>
-        <div class="meta"><span>Effective <b>1 August 2026</b></span><span>Revision <b>1.4</b></span><span>Ontario, Canada</span></div>
+        <div class="meta"><span>Effective <b>4 August 2026</b></span><span>Revision <b>1.5</b></span><span>Ontario, Canada</span></div>
       </header>
       <blockquote class="callout warn"><h2 id="please-read-before-using-the-bot" class="plain"><span class="ht">⚠️ PLEASE READ BEFORE USING THE BOT</span><a class="anchor" href="#please-read-before-using-the-bot" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>By installing the Bot or issuing any command to it, you agree to these Terms.</strong> They include an <strong>age requirement (<a class="xref" href="#s-3">§3</a>)</strong>, <strong>disclaimers of warranty (<a class="xref" href="#s-14">§14</a>)</strong>, a <strong>limitation of our liability (<a class="xref" href="#s-15">§15</a>)</strong>, an <strong>indemnity you give us (<a class="xref" href="#s-16">§16</a>)</strong>, a <strong>class-action waiver (<a class="xref" href="#s-17.3">§17.3</a>)</strong>, and <strong>Ontario, Canada governing law and venue (<a class="xref" href="#s-17">§17</a>)</strong>.</p>
@@ -2227,7 +2247,8 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who you're dealing with</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Dior's Builds is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
+<p>Dioreo — until 4 August 2026 called <strong>Dior's Builds</strong> — is operated by <strong>Harkirat Mangat</strong>, also known as <strong>"dior"</strong> or <strong>"diorswrld"</strong>, an individual based in Ontario, Canada ("we", "us", "our").</p>
+<p>The change of name is a change of name only. It is the same Bot, run by the same person, storing the same things and governed by these same Terms; nothing about it was sold, transferred, or handed to anyone else. Wherever an older document, an older message, or an older version of these Terms says "Dior's Builds", it means Dioreo. <a class="xref" href="#s-19.2">§19.2</a> says this in full.</p>
 <p><strong>Contact:</strong> harkirat117@gmail.com, or <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a></p>
 <p>There is no company behind this. It's one person, and support is best-effort.</p>
 <h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">The Site</span><a class="anchor" href="#s-1.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2303,12 +2324,12 @@ html{scroll-behavior:smooth}
 <section class="dsec">
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">Intellectual property</span><a class="anchor" href="#s-7" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Ours</span><a class="anchor" href="#s-7.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dior's Builds" name and visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
+<p>The Bot's source code, curated datasets, descriptive text, layouts, and the "Dioreo" name, the former "Dior's Builds" name, and the visual identity are owned by us and protected by copyright and other laws. Using the Bot grants you <strong>no ownership or licence</strong> in any of it, beyond viewing its output for personal, non-commercial use.</p>
 <p>Source code licensing is governed separately by the <a href="license.html">LICENSE</a>.</p>
 <p><strong>The source repository's visibility may change at any time, without notice</strong> — it may be public or private at any given moment, at our sole discretion, and we are under no obligation to publish the source at all or to keep publishing it. <strong>These Terms, the Privacy Policy, and the Bot itself are unaffected either way</strong>, and these documents stay published at their permanent public URLs regardless. Nothing in these Terms grants you any right of access to the source code.</p>
 <h3 id="s-7.2" class="numbered"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Not ours — game content</span><a class="anchor" href="#s-7.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>Call of Duty®</strong> and <strong>Call of Duty®: Mobile</strong> are trademarks of <strong>Activision Publishing, Inc.</strong> Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
-<blockquote class="callout"><p><strong>Dior's Builds is an unofficial, non-commercial fan project. It is not developed, published, licensed, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, Discord Inc., or any of their affiliates.</strong></p></blockquote>
+<blockquote class="callout"><p><strong>Dioreo is an unofficial, non-commercial fan project. It is not developed, published, licensed, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, Discord Inc., or any of their affiliates.</strong></p></blockquote>
 <p>Weapon names, item names, in-game imagery, and other game content shown by the Bot remain the property of their respective owners. We claim no ownership and grant you no rights in them. They are displayed for identification, commentary, and reference in a manner we believe constitutes fair dealing under the <em>Copyright Act</em> (Canada) and fair use under 17 U.S.C. § 107.</p>
 <p>We take that position seriously rather than assuming it: the Bot is <strong>free and non-commercial</strong>, its purpose is <strong>informational and referential</strong> rather than a substitute for the game, it uses <strong>no official logos or branding</strong>, it does not reproduce game code, assets in bulk, or anything playable, it makes clear on its face that it is unofficial, and it operates a <strong>prompt takedown process</strong> (<a class="xref" href="#s-7.5">§7.5</a>). Those are the factors that matter, and they are deliberate choices.</p>
 <p>We nonetheless acknowledge plainly that fan projects operate at the rights holder's sufferance. <strong>If Activision or any other rights holder asks us to change or remove something, we will comply promptly</strong> rather than argue.</p>
@@ -2440,7 +2461,12 @@ html{scroll-behavior:smooth}
 <p>Continued use after a change takes effect means you accept the updated Terms. If you don't accept them, remove the Bot.</p>
 <h3 id="s-19.1" class="numbered"><span class="idx" aria-hidden="true">19.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-19.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Kept here as well as in git, because the repository's visibility can change (<a class="xref" href="#s-7.1">§7.1</a>) and a change record you can't reach isn't a change record.</p>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Effective</th><th role="columnheader" scope="col">What changed</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version">1.2</td><td role="cell" data-label="Effective">31 July 2026</td><td role="cell" data-label="What changed">Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (<a class="xref" href="#s-14">§14</a>) and the limitation of liability (<a class="xref" href="#s-15">§15</a>) did not reach the pages these documents are published on. Adds <a class="xref" href="#s-1.1">§1.1</a> defining the Site and saying exactly which Terms cover it and which do not. <strong>No new obligation on you and no reduction of your rights</strong> — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone.</td></tr><tr role="row"><td role="cell" data-label="Version">1.1</td><td role="cell" data-label="Effective">29 July 2026</td><td role="cell" data-label="What changed">Added <a class="xref" href="#s-7.3">§7.3</a> (crossover and collaboration content — third-party IP featured in the game); noted the operator's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>; renumbered the former <a class="xref" href="#s-7.3">§7.3</a>–<a class="xref" href="#s-7.6">§7.6</a> to <a class="xref" href="#s-7.4">§7.4</a>–<a class="xref" href="#s-7.7">§7.7</a> to make room. <strong>Clarifying additions only</strong> — no reduction of your rights, no new data collected, no new obligation on you.</td></tr><tr role="row"><td role="cell" data-label="Version">1.0</td><td role="cell" data-label="Effective">28 July 2026</td><td role="cell" data-label="What changed">First published version.</td></tr></tbody></table></div>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Effective</th><th role="columnheader" scope="col">What changed</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version">1.5</td><td role="cell" data-label="Effective">4 August 2026</td><td role="cell" data-label="What changed"><strong>The Bot was renamed from Dior's Builds to Dioreo.</strong> A change of name only: same operator, same Bot, same data, same terms — see <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-19.2">§19.2</a>. <a class="xref" href="#s-7.1">§7.1</a> keeps the former name protected alongside the new one. <strong>Nothing you agreed to has changed</strong>, no new data is collected, and no right of yours is reduced.</td></tr><tr role="row"><td role="cell" data-label="Version">1.4</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Brought the Site into scope. Version 1.1 applied only to the Bot, while the Privacy Policy had begun describing the website — so the warranty disclaimer (<a class="xref" href="#s-14">§14</a>) and the limitation of liability (<a class="xref" href="#s-15">§15</a>) did not reach the pages these documents are published on. Adds <a class="xref" href="#s-1.1">§1.1</a> defining the Site and saying exactly which Terms cover it and which do not. <strong>No new obligation on you and no reduction of your rights</strong> — the Site has nothing to sign up for, and the conduct, eligibility and suspension provisions still apply to the Bot alone.</td></tr><tr role="row"><td role="cell" data-label="Version">1.3</td><td role="cell" data-label="Effective">—</td><td role="cell" data-label="What changed">Never published. The header moved from 1.1 straight to 1.4 on 1 August 2026 while the row describing that change was written as "1.2", so 1.2 and 1.3 were skipped. Recorded rather than quietly renumbered: the document you were shown on 1 August said <strong>1.4</strong>, and a revision history that renumbers a published version to tidy itself up is worth less than one with a gap in it.</td></tr><tr role="row"><td role="cell" data-label="Version">1.2</td><td role="cell" data-label="Effective">—</td><td role="cell" data-label="What changed">Never published. See the note on 1.3.</td></tr><tr role="row"><td role="cell" data-label="Version">1.1</td><td role="cell" data-label="Effective">29 July 2026</td><td role="cell" data-label="What changed">Added <a class="xref" href="#s-7.3">§7.3</a> (crossover and collaboration content — third-party IP featured in the game); noted the operator's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>; renumbered the former <a class="xref" href="#s-7.3">§7.3</a>–<a class="xref" href="#s-7.6">§7.6</a> to <a class="xref" href="#s-7.4">§7.4</a>–<a class="xref" href="#s-7.7">§7.7</a> to make room. <strong>Clarifying additions only</strong> — no reduction of your rights, no new data collected, no new obligation on you.</td></tr><tr role="row"><td role="cell" data-label="Version">1.0</td><td role="cell" data-label="Effective">28 July 2026</td><td role="cell" data-label="What changed">First published version.</td></tr></tbody></table></div>
+<h3 id="s-19.2" class="numbered"><span class="idx" aria-hidden="true">19.2</span><span class="ht">The name change</span><a class="anchor" href="#s-19.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p>On <strong>4 August 2026</strong> the Bot's name changed from <strong>Dior's Builds</strong> to <strong>Dioreo</strong>.</p>
+<p><strong>What that means for you: nothing.</strong> It is the same Bot and the same operator. No part of it was sold, transferred, merged, or assigned; there is no new company and no new party to your agreement. The data described in the Privacy Policy is the same data, held by the same person, for the same purposes — the rename is not a change of controller and is not a new purpose for anything already stored.</p>
+<p>Every reference to "Dior's Builds" — in an older copy of these Terms, in the Privacy Policy, in the LICENSE, in a message the Bot sent you, or anywhere else — is a reference to Dioreo, and binds exactly as it did when it was written. The reverse holds too: these Terms cover the period when the Bot was called Dior's Builds.</p>
+<p>The former name is still ours. <a class="xref" href="#s-7.1">§7.1</a> covers it, and retiring a name does not put it in the public domain.</p>
 <hr>
 </section>
 <section class="dsec">
@@ -2455,7 +2481,7 @@ html{scroll-behavior:smooth}
 <div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Date</th><th role="columnheader" scope="col">Change</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version"><strong>1.4</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Added Discord (diorswrld) as a second contact route in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-20">§20</a>, alongside the canonical email. Anything that has to be on the record still goes by email.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.3</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.2</strong></td><td role="cell" data-label="Date">31 July 2026</td><td role="cell" data-label="Change">Brought the Site — the website these documents are published on — into scope alongside the Bot.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.1</strong></td><td role="cell" data-label="Date">29 July 2026</td><td role="cell" data-label="Change">Added the controller's "diorswrld" alias; added <a class="xref" href="#s-7.3">§7.3</a> covering third-party crossover and collaboration content, renumbering the takedown process to <a class="xref" href="#s-7.5">§7.5</a>.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.0</strong></td><td role="cell" data-label="Date">28 July 2026</td><td role="cell" data-label="Change">Initial terms.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is public in the repository's git log.</p>
 <hr>
-<p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
+<p><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
 </section>
     </main>
   </div>
@@ -2471,9 +2497,6 @@ html{scroll-behavior:smooth}
   </footer>
 </div>
 
-<!-- Back to top. A fixed element is trapped by any ancestor carrying a filter,
-     transform or backdrop-filter, which is exactly what once anchored a fixed
-     control to the 54px bar instead of the viewport, so this sits outside .page. -->
 <button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>

@@ -755,11 +755,11 @@ function chronicleShell({ page, parsed, C, stats }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(page.title)} — Dior's Builds</title>
+<title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.blurb)}">
 <meta name="color-scheme" content="dark light">
 ${C.THEME_BOOT}
-<meta property="og:title" content="${esc(page.title)} — Dior's Builds">
+<meta property="og:title" content="${esc(page.title)} — Dioreo">
 <meta property="og:description" content="${esc(page.blurb)}">
 <meta property="og:type" content="website">
 <link rel="preload" as="font" type="font/woff2" href="../assets/martian-mono-700.woff2" crossorigin>

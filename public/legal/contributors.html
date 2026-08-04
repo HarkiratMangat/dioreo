@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Contributors — Dior's Builds</title>
+<title>Contributors — Dioreo</title>
 <meta name="description" content="Everyone who has made this better, credited under the name they chose.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<meta property="og:title" content="Contributors — Dior's Builds">
+<meta property="og:title" content="Contributors — Dioreo">
 <meta property="og:description" content="Everyone who has made this better, credited under the name they chose.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%23F8FF4A'/%3E%3C/svg%3E">
@@ -1733,75 +1733,97 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
   border-bottom:1px dotted var(--rule)}/* The code block and its copy control. The control sits OUTSIDE the pre so it
    cannot scroll away with a long line, and so its own label never becomes part of
-   what gets copied. */
+   what gets copied — and since 2026-08-04 14:28 EDT it sits outside the pre's BOX
+   too, in a header strip above the code. See the note in withCopyButtons() for why
+   the overlay version was retired. The wrapper now carries the frame, so the pre
+   inside it is stripped back to type on a transparent ground. */
 
-.cw{position:relative}
-.cw pre.code[data-lang]{padding-top:1.75rem}/* ⚠️ min-height:0 is required. The base .cpy is a labelled pill with
+.cw{position:relative;margin:1.3rem 0;border-radius:10px;overflow:hidden;
+  background:var(--raised);border:1px solid var(--rule)}/* ⚠️ --cpy-bed, not a hard-coded --raised. The top sheet of the copy glyph is an
+   opaque cut-out that has to match whatever it is drawn on, and there are three
+   different surfaces now: the pill's accent wash on the CLA slip, plain --raised
+   for the old floating variant, and this strip's own tint. A variable is what
+   stops the next surface from silently reintroducing the darker notch that the
+   slip rule below already had to patch by hand. */
+
+.cw-h{position:relative;display:flex;align-items:center;justify-content:flex-end;
+  gap:.4rem;min-height:36px;padding:.28rem .4rem .28rem 1.15rem;
+  --cpy-bed:color-mix(in srgb,var(--accent) 6%,var(--raised));
+  background:var(--cpy-bed);border-bottom:1px solid var(--rule)}/* margin-right:auto pushes the control to the far end without needing a spacer. */
+
+.cw-h[data-lang]::before{content:attr(data-lang);margin-right:auto;
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3)}/* The pre keeps its scrolling and its type and gives up its chrome to .cw. */
+
+.cw pre.code,.cw pre.code[data-lang]{margin:0;border:0;border-radius:0;
+  background:none;padding:1rem 1.15rem}/* One label, in the header. The corner label is for a bare pre.code, which still
+   exists wherever a block is not wrapped. */
+
+.cw pre.code[data-lang]::before{content:none}/* ⚠️ min-height:0 is required. The base .cpy is a labelled pill with
    min-height:44px for its touch target, and that MIN wins over a plain height —
    so this came out 30px wide by 44px tall: a vertical oval with the mark riding
    high in it. An icon-only control has to reset the floor before it can be
-   square. The 44px target returns on coarse pointers, where it is the thing that
-   actually matters and the button is always visible rather than hover-revealed. *//* ⚠️ .cpy.cpy-f, not .cpy-f — these two selectors carry the SAME specificity and
+   square. *//* ⚠️ .cpy.cpy-f, not .cpy-f — these two selectors carry the SAME specificity and
    this block is defined ABOVE the base .cpy, so a single class lost on source
    order and the base won silently. That left min-height:44px and 1.05rem of
    horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
    the padding squeezed the drawn mark to ZERO width inside it. Measured, not
-   guessed. An icon-only control has to beat the labelled pill it derives from. *//* ⚠️ AND IT HAS TO BE OPAQUE. The base .cpy is 13% accent over TRANSPARENT, which
-   is right for a pill sitting in its own row on a known surface and wrong for one
-   parked on top of code: at 87% transparent the line ran straight through the
-   control, so neither the code nor the mark was readable — the reported "copy
-   buttons are bugged". Mixed into --raised, the block's own background, it is the
-   same colour it always was and now actually covers what is behind it. The hover
-   state has to be re-mixed the same way or it goes transparent again on the way
-   past. */
+   guessed. An icon-only control has to beat the labelled pill it derives from. *//* ⚠️ THE OPACITY FIGHT IS OVER, AND THIS IS WHY THE RULES BELOW LOOK SIMPLER THAN
+   THEY DID. While the control floated on the code it had to be opaque (a 13%
+   accent over TRANSPARENT let the line run straight through it), it had to reserve
+   the block's right padding, and on a coarse pointer it had to push the code down
+   3.6rem to stop a long line sliding underneath it. In a header strip it overlaps
+   nothing, so all three go: it can be a quiet ghost button that only fills in on
+   hover, which is what a control the reader is not looking for should be.
+   Do not reintroduce the overlay without bringing all three workarounds back. */
 
 
 
-.cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
-  padding:0;gap:0;min-height:0;width:34px;height:34px;
-  background:color-mix(in srgb,var(--accent) 13%,var(--raised))}@media (hover:hover) and (pointer:fine){
-.cpy.cpy-f:hover{background:color-mix(in srgb,var(--accent) 24%,var(--raised))}}/* The 44px target returns where it actually matters — a coarse pointer, where
-   this control is always visible rather than revealed on hover.
-   ⚠️ AND THE CODE HAS TO CLEAR IT VERTICALLY, WHICH RESERVING WIDTH DOES NOT DO.
-   The first attempt gave the block right-padding so a line would stop before the
-   button. That only helps a line SHORT enough to stop — pre.code scrolls, so any
-   longer line runs straight under the control regardless of padding, which is the
-   case actually reported (a git clone URL disappearing beneath it).
-   On a coarse pointer the button is permanently visible and 44px tall, so it
-   occupies the top ~52px of the block while the code begins at 28px. Pushing the
-   code below it removes the collision for every line at every scroll position
-   instead of for the short ones.
-   Both selectors are restated because .cw pre.code[data-lang] is (0,3,1) and would
-   otherwise beat a plain .cw pre.code here.
-   Fine pointers keep the tighter block on purpose: there the control is smaller and
-   revealed on hover, so it is a transient overlap rather than a permanent one. */
+.cpy.cpy-f{position:static;padding:0;gap:0;min-height:0;width:30px;height:30px;
+  color:var(--ink3);background:transparent;border-color:transparent}@media (hover:hover) and (pointer:fine){
+.cpy.cpy-f:hover{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent)}}/* The 44px target returns where it actually matters — a coarse pointer. It costs
+   nothing now: the strip sizes to it instead of the code having to dodge it. */
 
 @media (hover:none){
-  .cpy.cpy-f{width:44px;height:44px}
-  .cw pre.code,.cw pre.code[data-lang]{padding-top:3.6rem;padding-right:1.15rem}
-}/* ⚠️ RESERVE THE CONTROL'S OWN WIDTH. pre.code carries 1.15rem of right padding
-   and the button occupies 34px plus its offset — 44px on a coarse pointer, where
-   it is always visible — so a line only a little longer than the box tucked itself
-   underneath and looked truncated rather than scrollable. Padding cannot help a
-   line that genuinely overflows, which is what the opaque background above is for;
-   it stops the far more common case of a line that would otherwise have fitted. */
+  .cpy.cpy-f{width:40px;height:40px}
+  .cw-h{min-height:46px;padding-top:.2rem;padding-bottom:.2rem}
+}/* The confirmation bubble. The live region already announces the result, and the
+   floating variant had no visible counterpart to it at all — the icon flipping to
+   a tick is easy to miss on a phone, where your thumb is on top of it.
+   ⚠️ Its word is drawn with CSS content, never typed into the markup — see the
+   note in withCopyButtons(). It hangs BELOW the strip rather than beside the
+   button: beside means measuring against the button's width, which changes with
+   the pointer type, and below is also where the thumb is not. */
 
-.cw pre.code{padding-right:3.2rem}
-@media (hover:none){.cw pre.code{padding-right:4rem}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
+.cpy-p{position:absolute;top:calc(100% + .3rem);right:.4rem;z-index:2;
+  pointer-events:none;opacity:0;transform:translateY(-4px);
+  font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;
+  white-space:nowrap;padding:.32rem .55rem;border-radius:7px;
+  color:var(--ink);background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--rule2));
+  box-shadow:0 10px 24px -14px rgba(0,0,0,.65);
+  transition:opacity .16s ease,transform .3s cubic-bezier(.22,.9,.24,1)}
+.cpy-p::after{content:"Copied"}
+.cpy-f[data-done] ~ .cpy-p{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion:reduce){.cpy-p{transition:opacity .16s ease}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
    clipboard. Drawn, not typed — see the note in withCopyButtons(). */
 
 .cpy-g{position:relative;display:block;width:12.5px;height:13px}
 .cpy-g::before,.cpy-g::after{content:"";position:absolute;box-sizing:border-box;
   border:1.4px solid currentColor;border-radius:2px;transition:opacity .18s ease}
 .cpy-g::before{left:0;top:0;width:8.5px;height:9.5px}
-.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--raised)}
+.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--cpy-bed,var(--raised))}
 .cpy-f[data-done] .cpy-g::before{opacity:0}
 .cpy-f[data-done] .cpy-g::after{left:1px;top:2px;width:10px;height:5.5px;
-  border-width:0 0 1.7px 1.7px;border-radius:0;background:none;transform:rotate(-45deg)}
-@media (hover:hover) and (pointer:fine){
-  .cw .cpy-f{opacity:0;transition:opacity .22s ease}
-  .cw:hover .cpy-f,.cw .cpy-f:focus-visible{opacity:1}
-}
+  border-width:0 0 1.7px 1.7px;border-radius:0;background:none;transform:rotate(-45deg)}/* ⚠️ THE HOVER-REVEAL IS GONE ON PURPOSE, and it should not come back. It existed
+   because a control sitting ON the code was clutter at rest; a control in the
+   header strip is part of the block's furniture, and hiding it there means a
+   reader on a trackpad has to discover it by accident. "More intuitive" was the
+   actual request. The quiet resting state above does the same job without making
+   the control conditional on hover — which a touch device never has. */
+
 .card blockquote.callout{margin:1.5rem 0;padding:1.05rem 1.25rem;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 8%,var(--raised));
   border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule))}
@@ -1933,12 +1955,16 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);
   transition:background .2s,color .2s,border-color .2s}@media (hover:hover) and (pointer:fine){
 .cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}}
-.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}/* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
+.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}/* The labelled pill's word, drawn rather than typed — see asSlip(). Both states
+   live here so the script never has to touch the document's text. */
+
+.cpy-t::after{content:"Copy"}
+.cpy[data-done] .cpy-t::after{content:"Copied"}/* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
    surface it sits on. In the floating variant that is --raised; inside the labelled
    pill it is the pill's own accent-washed fill, and --raised there left a visibly
    darker notch through the drawing. */
 
-.slip .cpy .cpy-g::after{background:color-mix(in srgb,var(--accent) 13%,var(--raised))}/* Visually hidden, still announced. The button label also changes, so a sighted
+.slip .cpy{--cpy-bed:color-mix(in srgb,var(--accent) 13%,var(--raised))}/* Visually hidden, still announced. The button label also changes, so a sighted
    user gets the same confirmation without the live region. */
 
 .cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
@@ -2100,7 +2126,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       <span class="mk-ctx"><i aria-hidden="true"></i>Contributors</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2118,7 +2144,7 @@ html{scroll-behavior:smooth}
       <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab" href="./contributing.html" data-accent="#8B9BFF">Contributing</a><a class="tab on" href="./contributors.html" data-accent="#F8FF4A" aria-current="page">Contributors</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -2126,7 +2152,7 @@ html{scroll-behavior:smooth}
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
@@ -2194,14 +2220,14 @@ html{scroll-behavior:smooth}
     <h1>Contributors</h1>
     <p class="lede">Everyone who has made this better, credited under the name they chose.</p>
   </header>
-  <main class="card" id="main" tabindex="-1"><div class="lead"><p>The people who have worked on Dior's Builds. Each one is listed under the name or handle they asked for.</p>
+  <main class="card" id="main" tabindex="-1"><div class="lead"><p>The people who have worked on Dioreo. Each one is listed under the name or handle they asked for.</p>
 <p>Ship something and you are added here, and to the changelog entry for the release it goes out in. That is an obligation rather than a courtesy, and it cannot be withdrawn later: §5.6 of the <a href="license.html">LICENSE</a> requires it.</p></div>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="maintainer" class="plain"><span class="ht">Maintainer</span><a class="anchor" href="#maintainer" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p class="wall-l">Name &middot; Role</p><div class="wall"><div class="plate"><span class="plate-n"><strong>Harkirat Mangat</strong> (<strong>dior</strong>, <strong>diorswrld</strong>)</span><span class="plate-r">Creator and maintainer</span></div></div></div></section>
 <section class="sec" data-t="plates"><span class="node" aria-hidden="true"></span><h2 id="contributors" class="plain"><span class="ht">Contributors</span><a class="anchor" href="#contributors" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="wall"><a class="plate ghost" href="./contributing.html"><span class="plate-n" aria-hidden="true"></span><span class="plate-r">No external contributions yet — this is where your name goes.</span></a></div>
 <p>See the <a href="contributing.html">contributing guide</a> to get started. Bug reports and security findings count, and they don't require agreeing to the CLA.</p></div></section>
 <section class="sec" data-t="promises"><span class="node" aria-hidden="true"></span><h2 id="how-credit-works" class="plain"><span class="ht">How credit works</span><a class="anchor" href="#how-credit-works" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="proms"><article class="prom"><h4>You choose the name.</h4><p>GitHub handle, display name, or anything reasonable — tell us in the pull request.</p></article><article class="prom"><h4>Credit appears in two places:</h4><p>this file, and the <code>docs/CHANGELOG.md</code> entry for the release your work ships in.</p></article><article class="prom"><h4>Credit survives.</h4><p>It stays even if the code is later refactored or replaced.</p></article><article class="prom"><h4>Removal is your call.</h4><p>If a contribution is removed entirely, we'll remove the credit on request — or leave it, if you'd rather keep it.</p></article></div>
 <p>Thanks to everyone who has taken the time to make this better.</p>
-<p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
+<p><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
   <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
        the SOURCE file ends with, lifted out of the body by warmCompose so it
        shows once; DIOR_SIG is the fallback when a source carries no closing line.
@@ -2214,6 +2240,15 @@ html{scroll-behavior:smooth}
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a></nav>
   </footer>
 </div>
+<!-- Outside .wrap, for the reason given on TOTOP_HTML: a fixed element is trapped
+     by any ancestor carrying a filter, transform or backdrop-filter. -->
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+  <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
+    <circle class="tt-trk" cx="23" cy="23" r="20"/>
+    <circle class="tt-bar" cx="23" cy="23" r="20"/>
+  </svg>
+  <span class="tt-ar" aria-hidden="true"><i></i><i></i></span>
+</button>
 <script>
 (function(){
   var d=document.documentElement, btn=document.getElementById('th');
@@ -3203,15 +3238,20 @@ html{scroll-behavior:smooth}
      a control that looks live and silently does nothing. */
   Array.prototype.forEach.call(document.querySelectorAll('.cpy'),function(b){
     if(!navigator.clipboard){ b.parentNode.removeChild(b); return; }
-    var t=b.querySelector('.cpy-t');
+    /* ⚠️ THE VISIBLE LABEL IS NOT WRITTEN FROM HERE ANY MORE. Both wordings are CSS
+       content keyed off data-done, so this script never puts a word into the
+       document — see the note in asSlip(). Writing textContent worked, and it also
+       meant the page's own text changed under verify()'s feet for 2.4 seconds. The
+       live region below is different: it is clipped out of the flow by .cpy-s and
+       exists precisely to be spoken. */
     var s=b.parentNode.querySelector('.cpy-s');
     b.addEventListener('click',function(){
       var el=document.getElementById(b.getAttribute('data-copy'));
       if(!el)return;
       navigator.clipboard.writeText(el.textContent.trim()).then(function(){
-        b.setAttribute('data-done','');if(t)t.textContent='Copied';
+        b.setAttribute('data-done','');
         if(s)s.textContent='Copied to clipboard';
-        setTimeout(function(){b.removeAttribute('data-done');if(t)t.textContent='Copy';
+        setTimeout(function(){b.removeAttribute('data-done');
           if(s)s.textContent='';},2400);
       });
     });
@@ -4363,6 +4403,42 @@ html{scroll-behavior:smooth}
     addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
+})();
+(function(){
+  var tt=document.getElementById('totop');
+  if(!tt)return;
+  var bar=tt.querySelector('.tt-bar'), foot=document.querySelector('.foot');
+  /* Cached: getComputedStyle forces a style resolve, and both values change only
+     with the viewport. Re-measured on resize for the same reason. */
+  var base=0, pad=0;
+  function measure(){
+    base=parseFloat(getComputedStyle(tt).bottom)||0;
+    pad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+  }
+  measure();
+  var queued=false;
+  function paint(){
+    queued=false;
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    /* Clamped: iOS rubber-banding reports scrollTop below 0 and past max, and the
+       URL bar showing or hiding moves clientHeight mid-scroll. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
+    if(bar)bar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
+    if(foot){
+      /* Park on the footer's first line of CONTENT, not on its box: the box
+         carries 2.2rem of top padding, and stopping at its edge leaves the button
+         hovering in a gap where nothing needed covering. Read the FOOTER's rect,
+         never the button's — the button's already includes the lift, which would
+         feed back on itself. */
+      var ft=foot.getBoundingClientRect().top+pad;
+      var over=(h.clientHeight-base)-ft+12;
+      tt.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
+    }
+  }
+  function onScroll(){ if(!queued){queued=true;requestAnimationFrame(paint);} }
+  addEventListener('scroll',onScroll,{passive:true});
+  addEventListener('resize',function(){measure();onScroll();},{passive:true});
+  paint();
 })();</script>
 </body>
 </html>

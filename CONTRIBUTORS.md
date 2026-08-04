@@ -1,6 +1,6 @@
 # Contributors
 
-The people who have worked on Dior's Builds. Each one is listed under the name
+The people who have worked on Dioreo. Each one is listed under the name
 or handle they asked for.
 
 Ship something and you are added here, and to the changelog entry for the release
@@ -49,7 +49,7 @@ Thanks to everyone who has taken the time to make this better.
 
 ---
 
-*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+*Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.*
 

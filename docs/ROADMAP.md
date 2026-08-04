@@ -1,4 +1,4 @@
-# 🔮 Dior's Builds — Roadmap (Next Planned Work)
+# 🔮 Dioreo — Roadmap (Next Planned Work)
 
 *The authoritative roadmap for the project — moved here from CLAUDE.md's "Next planned work" section on
 2026-07-22 13:27 EDT as part of the CLAUDE.md modularization (see
