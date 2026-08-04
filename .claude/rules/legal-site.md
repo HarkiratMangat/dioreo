@@ -194,6 +194,31 @@ it directly with an empty build command, so nothing has to run on their side.
   is NOT a scroller (a scroll container composites its contents and drops the blend, leaving a black
   rectangle). Making the desktop header opaque to match would destroy the frosted bar; that trade was
   considered and refused.
+  - ⛔ **LIGHT MODE INVERTS THE SOURCE COLOURS, NEVER THE RESULT — `invert(1)` MUST NOT COME BACK**
+    (fixed 2026-08-04 12:54 EDT). Light needs the mirror of the dark trick: a white bed (multiply's
+    identity), black blobs, plate on `screen`. The obvious route is a fourth filter function, and that
+    is what shipped first. On iOS it painted the **accent plate** inverted — a lime rectangle across
+    the bar on the violet License page (`invert(#9B6BE3)` = `#64941C`), yellow on citron Contributors.
+    The plate is a **sibling** of the filtered element, so a filter reaching it means the light chain
+    **composites** wrongly, not merely blends wrongly — consistent with this file's older note that
+    iOS silently drops colour functions after blur+contrast on this same element.
+    The fix is `--goo-bed` / `--goo-ink`, theme tokens carrying the bed, the pill plate and the disc
+    colours. Both themes now run the **identical three-function chain**, so there is no light-only
+    filter left to render differently, and the effect is intact on both.
+    ⚠️ **Four attempts each moved WHEN it appeared without removing it, and the progression is the
+    evidence** — do not restart at the top of it. (1) Removing `-webkit-overflow-scrolling` and
+    promoting `.mbar`: no effect; the promotion was reverted. (2) Retiring the layer after its birth:
+    correct in itself, and defeated by `place()` clearing `.spent` on every call while the **resize**
+    handler calls `place()` — iOS fires resize on almost every scroll as the URL bar moves. Fixed by
+    only un-retiring on an *animated* placement and ignoring resizes where the width is unchanged.
+    (3) It then appeared only during the birth — the one moment the layer is *meant* to be visible —
+    so hiding it better could not help. (4) Suppressing the effect on touch in light mode did remove
+    the artefact and **also removed the animation**, which was rejected: the droplets fusing are the
+    effect, not decoration. Only then was the filter chain itself the obvious suspect.
+    ⚠️ `.mgw.spent` is `display:none`, never `visibility:hidden`/`opacity:0` — an invisible element
+    stays in the layer tree and iOS keeps compositing a blended one. That is a **hardening**, not the
+    artefact fix; keep the two straight, because while the chain was still wrong the visibility
+    version read as clean in dark and broken in light, which invites the wrong conclusion.
 - ⚠️ **THE MORPH IS NO LONGER ONLY THE NAV — `MORPH_JS` carries four more surfaces** (shipped
   2026-08-03 13:09 EDT, v2.51.0, out of the PoC in `local/morph-poc/`). One constant, emitted on **every**
   template, containing four modules that **select themselves out of the DOM** rather than being

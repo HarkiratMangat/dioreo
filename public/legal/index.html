@@ -15,6 +15,12 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
+  /* ⚠️ THE MOBILE METABALL'S SOURCE COLOURS ARE TOKENS, AND THAT IS WHAT LETS THE
+     LIGHT THEME DROP invert(1). The CSS crush thresholds COLOUR, so the swarm needs
+     a bed to threshold against: discs in --goo-ink over a bed of --goo-bed. Which
+     one is black and which is white is the only thing that differs between themes —
+     see the note beside the light-mode blend rules. */
+  --goo-bed:#000; --goo-ink:#FFF;
   --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
   /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
      paper the same values measured 1.0-2.0:1 — the active tab label, the status
@@ -56,6 +62,7 @@
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
@@ -64,6 +71,7 @@
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
   }
 }
 *{box-sizing:border-box}

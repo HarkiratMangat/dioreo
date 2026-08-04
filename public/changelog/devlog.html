@@ -21,6 +21,12 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
+  /* ⚠️ THE MOBILE METABALL'S SOURCE COLOURS ARE TOKENS, AND THAT IS WHAT LETS THE
+     LIGHT THEME DROP invert(1). The CSS crush thresholds COLOUR, so the swarm needs
+     a bed to threshold against: discs in --goo-ink over a bed of --goo-bed. Which
+     one is black and which is white is the only thing that differs between themes —
+     see the note beside the light-mode blend rules. */
+  --goo-bed:#000; --goo-ink:#FFF;
   --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
   /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
      paper the same values measured 1.0-2.0:1 — the active tab label, the status
@@ -62,6 +68,7 @@
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
@@ -70,6 +77,7 @@
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
   }
 }
 *{box-sizing:border-box}
@@ -1524,12 +1532,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      mis-composited, so the artifact has no surface to appear on.
      ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
      the element in the layer tree, and iOS keeps compositing a mix-blend-mode
-     element that is merely invisible — measured across two rounds of this bug:
-     with visibility:hidden the artifact was gone in DARK mode and still present in
-     LIGHT, which is the multiply + invert(1) path. A hidden-but-composited blended
-     layer is exactly the asymmetry you would expect from that. display:none removes
-     the box from rendering altogether, so there is nothing left to composite,
-     blend, or mis-blend, on any engine.
+     element that is merely invisible. This is a hardening, NOT the fix for the
+     light-mode artefact — that one was the filter chain and is fixed at source by
+     the --goo-bed/--goo-ink swap below. Keeping the two straight matters: while
+     the light chain was still wrong, the visibility version read as clean in dark
+     and broken in light, which is easy to misread as "hiding it works in one theme
+     and not the other" when the layer being hidden was never the problem.
      No transition either: fading a blended layer means 240ms of it compositing at
      partial opacity, which is the state being eliminated. The snap is invisible
      regardless — .mtab.on::after is the same pill in the same place, unfiltered,
@@ -1541,8 +1549,8 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      and large: the plate below has to sit entirely within the bed's OPAQUE
      core, and blur(7px) softens the bed's own edge over about 21px. */
   
-  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:#000}
-  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:#fff;
+  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:var(--goo-bed)}
+  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:var(--goo-ink);
     border-radius:100vw;scale:0;opacity:0}
   .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
   @keyframes mgPill{to{scale:1;opacity:1}}/* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
@@ -1566,22 +1574,35 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
-    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS NOT THE SAME TRICK, and it cannot be.
+    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS THE SAME TRICK READ UPSIDE DOWN, AND IT INVERTS THE SOURCE,
+     NEVER THE RESULT.
      lighten erases the black bed only because the backdrop is darker than the
-     blobs. On near-white paper it erases the BLOBS instead and the bar stays
-     empty. So light mode inverts the crushed image — the bed comes out white,
-     which is the identity for multiply — and the plate switches to screen,
-     whose identities are the mirror image: screen(white, accent) is white and
-     screen(black, accent) is accent. Same two exact rules, read the other way
-     up. */
+     blobs. On near-white paper it would erase the BLOBS instead and the bar would
+     stay empty, so light needs the mirror image: a WHITE bed, which is the identity
+     for multiply, blobs in black, and the plate on screen — screen(white, accent)
+     is white and screen(black, accent) is accent, exactly as multiply's identities
+     run the other way.
+     ⛔ THE OBVIOUS WAY TO GET THERE IS invert(1) ON THE FILTER, AND IT MUST NOT
+     COME BACK. That is what shipped first, and on iOS it painted the ACCENT PLATE
+     inverted — a lime rectangle across the bar on the violet License page
+     (invert(#9B6BE3) is #64941C), yellow on citron Contributors. The plate is a
+     SIBLING of the filtered element, so a filter reaching it at all means the light
+     chain composites wrongly, not merely blends wrongly; the same file already
+     records iOS silently dropping colour functions after blur+contrast on this very
+     element. Three attempts to fix it downstream — removing the scroller's
+     compositing hint, promoting the bar, retiring the layer — each moved WHEN the
+     artefact appeared without removing it, and suppressing the effect outright
+     removed the animation Harkirat actually wanted.
+     Swapping the SOURCE colours needs no fourth filter function: the discs, the
+     bed and the pill plate come from --goo-ink and --goo-bed, which the theme
+     already flips. Both themes now run the identical three-function chain, so there
+     is no light-only filter left to render differently. */
 
   
   :root[data-theme=light] .mgw{mix-blend-mode:multiply}
-  :root[data-theme=light] .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
   :root[data-theme=light] .mtint{mix-blend-mode:screen}
   @media (prefers-color-scheme:light){
     :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
-    :root:not([data-theme=dark]) .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
     :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
   }/* Particle geometry is the reference implementation's, unchanged: fifteen
      20px discs spawning on a radius of 90 and converging INWARD to 10, each
@@ -1599,7 +1620,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     display:block;width:20px;height:20px;border-radius:100%;opacity:0;
     transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
   .mpd{display:block;width:20px;height:20px;border-radius:100%;
-    background:#fff;opacity:1;transform-origin:center;
+    background:var(--goo-ink);opacity:1;transform-origin:center;
     animation:mptPop var(--t) ease 1 -350ms}
   @keyframes mptFly{
     0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
@@ -4320,50 +4341,18 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        A resize only needs the geometry to follow the tab; it is not an arrival and
        has nothing to animate, so it must not resurrect a layer whose animation is
        long over. */
-    /* ⚠️ THE LIQUID DOES NOT RUN ON A TOUCH DEVICE IN LIGHT MODE, AND THAT IS THE
-       LAST PIECE OF THIS BUG. Dark mode renders correctly on iOS and keeps the
-       effect. Light mode does not, and the COLOUR is what identifies it: the light
-       path is the only one carrying invert(1), and the rectangle comes out
-       invert(accent) — green on the violet License page, yellow on citron
-       Contributors. That is the accent plate being inverted, which can only happen
-       if the filter is reaching a sibling it does not own, so the light chain is
-       composited wrongly rather than merely blended wrongly. Nothing at the CSS
-       level fixes that: it was attacked as a compositing problem twice and as a
-       hidden-layer problem once, and each fix moved WHEN it appeared without
-       removing it — first on every scroll, then only during the birth, because the
-       birth is the one moment the layer is legitimately visible.
-       Suppressing it here costs nothing a reader sees. .mtab.on::after animates the
-       same pill into the same place on the same spring; the liquid only ever added
-       the droplets fusing into it. Dark mode is untouched, and so is every pointer
-       with hover, which is where this renders as designed.
-       ⛔ Do not "restore" this for consistency without testing light mode on a real
-       iOS device — matching the two themes is exactly the instinct that would put
-       the artifact back. */
-    var mcoarse=matchMedia('(hover:none)').matches;
-    function lightNow(){
-      var t=document.documentElement.getAttribute('data-theme');
-      if(t) return t==='light';
-      return matchMedia('(prefers-color-scheme:light)').matches;
-    }
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
-      var suppress=mcoarse&&lightNow();
-      if(animate&&!suppress){
+      if(animate){
         if(spentT) clearTimeout(spentT);
         gw.classList.remove('spent');
       }
       cur=i; follow();
-      if(suppress){
-        if(spentT) clearTimeout(spentT);
-        gw.classList.add('spent');
-      }
       gw.style.width=t.offsetWidth+'px';
       gw.style.top=t.offsetTop+'px';
       gw.style.height=t.offsetHeight+'px';
       gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      /* suppress is in here so the droplets are never even built: spraying fifteen
-         nodes into a layer that is display:none is pure work for nothing. */
-      if(!animate||mstill||suppress){ goo.classList.add('on'); retire(); return; }
+      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
       /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
          pill first and re-animating it a moment later is what made the old
          version look glitchy: you saw the pill, saw it vanish, saw it grow. */
