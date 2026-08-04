@@ -755,11 +755,11 @@ function chronicleShell({ page, parsed, C, stats }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(page.title)} — Dior's Builds</title>
+<title>${esc(page.title)} — Dioreo</title>
 <meta name="description" content="${esc(page.blurb)}">
 <meta name="color-scheme" content="dark light">
 ${C.THEME_BOOT}
-<meta property="og:title" content="${esc(page.title)} — Dior's Builds">
+<meta property="og:title" content="${esc(page.title)} — Dioreo">
 <meta property="og:description" content="${esc(page.blurb)}">
 <meta property="og:type" content="website">
 <link rel="preload" as="font" type="font/woff2" href="../assets/martian-mono-700.woff2" crossorigin>
@@ -1077,8 +1077,19 @@ ${C.mobileNav(cur, railSlots)}
       if(ttBar) ttBar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
     }
     var cur=-1;
+    /* ⚠️ MEASURED FROM THE NAV, NOT HARDCODED — same fix as the legal shell's
+       scrollspy, and it has to be made in both because chronicle keeps its own
+       copy of this loop by design. A flat 130px sits above the mobile nav's own
+       bottom edge, so an entry only became current after it had scrolled up behind
+       the bar and the bar named the previous one while you were reading this one.
+       Height 0 means .mnav is display:none, which is the desktop case. */
+    var navEl=document.getElementById('mnav'), line=130;
+    if(navEl){
+      var nr=navEl.getBoundingClientRect();
+      if(nr.height>0) line=nr.bottom+72;
+    }
     for(var i=0;i<heads.length;i++){
-      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+      if(heads[i]&&heads[i].getBoundingClientRect().top<=line) cur=i;
     }
     if(max>0&&h.scrollTop>=max-2) cur=heads.length-1;
     var curId=cur>=0?ids[cur]:null;
@@ -1112,10 +1123,25 @@ ${C.mobileNav(cur, railSlots)}
         }
       }
     }
+    /* Mirrors the legal shell's badge. These pages carry no section numbers, so
+       the marker degrades to the bullet here in practice — the number branch is
+       kept anyway so the two copies stay one behaviour rather than two. */
     var curEl=document.getElementById('railcur');
     if(curEl){
-      var t2=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
-      curEl.textContent=t2?t2.textContent:'';
+      var src2=curId?document.querySelector('.slot[href="#'+curId+'"]'):null;
+      curEl.textContent='';
+      if(src2){
+        var sn2=src2.querySelector('i'), st2=src2.querySelector('span');
+        var num2=sn2?sn2.textContent.trim():'';
+        var dash2=String.fromCharCode(8212);
+        var badge2=document.createElement('i');
+        badge2.className=(num2&&num2!==dash2)?'mt-n':'mt-n mt-dot';
+        if(num2&&num2!==dash2) badge2.textContent=num2;
+        curEl.appendChild(badge2);
+        var lab2=document.createElement('span');
+        lab2.textContent=st2?st2.textContent:'';
+        curEl.appendChild(lab2);
+      }
     }
     queued=false;
   }

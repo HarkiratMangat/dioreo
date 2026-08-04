@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dior's Builds — VM-side deploy. Run ON the GCP VM (from anywhere; it cd's to the repo root itself) to
+# Dioreo — VM-side deploy. Run ON the GCP VM (from anywhere; it cd's to the repo root itself) to
 # pull the latest code and restart the bot under systemd. Added 2026-07-20.
 #
 # Why this exists: the bot can't natively tell WHY systemd started it (deliberate deploy vs an unattended

@@ -996,7 +996,7 @@ module.exports = {
         if (interaction.user.id !== ALLOWED_ADMIN_ID) {
             // Reworded 2026-07-18 (v2 quick-wins batch) -- matches the identical reword of index.js's
             // centralized button/select/modal guard for this same panel (see interactionCreate).
-            return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dior's Builds' database directly — try any of the bot's public commands instead!", ephemeral: true });
+            return interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
         }
 
         const section = interaction.options.getString('data_for') || 'draws';

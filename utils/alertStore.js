@@ -148,7 +148,7 @@ function fmtUtc(d) {
 async function buildAlertExport() {
     const rows = await AlertLog.find().sort({ createdAt: -1 }).lean();
     const lines = [
-        `Dior's Builds — alert log export`,
+        `Dioreo — alert log export`,
         `Generated: ${fmtUtc(new Date())}`,
         `Total alerts: ${rows.length}`,
         `Severity legend: info=🟢 caution=🟡 warn=🟠 error=🔴  (details in /alerts → "What alerts mean?")`,

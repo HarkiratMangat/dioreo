@@ -232,7 +232,7 @@ if (fs.existsSync(commandsPath)) {
  * queries by default until the connection is ready, it doesn't throw or return early.
  */
 async function handleBotReady() {
-    console.log(`✅ Dior's Builds instance fully authenticated!`);
+    console.log(`✅ Dioreo instance fully authenticated!`);
 
     // Re-point emojiMap's mention strings at the ids owned by whichever app this token belongs to.
     // Application emojis only render for their owning app, so the dev bot (a separate application
@@ -724,7 +724,7 @@ client.on('interactionCreate', async interaction => {
                 // below, there's no "someone else's panel" concept here to admin-override; only
                 // ALLOWED_ADMIN_ID was ever meant to pass this one.
                 try {
-                    await interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dior's Builds' database directly — try any of the bot's public commands instead!", ephemeral: true });
+                    await interaction.reply({ content: "🔒 **This one's admin-only.** These buttons run Dioreo's database directly — try any of the bot's public commands instead!", ephemeral: true });
                 } catch (notifyError) {
                     console.error('Failed to notify user of blocked manage-panel action (interaction likely expired):', notifyError);
                 }
@@ -2550,7 +2550,7 @@ client.on('interactionCreate', async interaction => {
         // CRITICAL PLACEMENT NOTE: this MUST live in the isButton() block, NOT next to its sibling
         // `mng_search_` modal-submit handler further down -- `mng_editbtn_` is a BUTTON custom_id, and
         // a button click never enters the isModalSubmit block, so a copy placed there is dead code and
-        // the click silently times out ("Dior's Builds didn't respond in time"). That is exactly the
+        // the click silently times out ("Dioreo didn't respond in time"). That is exactly the
         // bug this handler HAD from 2026-07-12 (added but never live-clicked until 2026-07-17) -- same
         // wrong-isX()-branch class of bug as the loadout browse dropdown before it (see
         // feedback_verify_fix_actually_works). Why the extra button exists at all: a single Edit

@@ -1,4 +1,4 @@
-# Contributing to Dior's Builds
+# Contributing to Dioreo
 
 Contributions are genuinely welcome — bug reports, security findings, fixes, and
 features. If your contribution ships, **you get credited by name in
@@ -13,7 +13,7 @@ the end matters.
 
 ## The one-line version of the licence
 
-Dior's Builds is **source-available, not open source**. You can read it, study
+Dioreo is **source-available, not open source**. You can read it, study
 it, audit it, and run it locally by yourself. You **cannot** deploy it anywhere
 other people can use it, redistribute it, or build a competing bot from it. Full
 terms: [LICENSE](LICENSE).
@@ -29,7 +29,7 @@ that work legally. Please make sure you're comfortable with it.
 
 ### 🐞 Bug reports
 
-Open a [GitHub issue](https://github.com/HarkiratMangat/diors-builds/issues).
+Open a [GitHub issue](https://github.com/HarkiratMangat/dioreo/issues).
 Useful reports include:
 
 - What you did (the exact slash command and options)
@@ -73,7 +73,7 @@ You'll need Node.js 24+, a MongoDB instance, and **your own Discord
 application** — never the production bot's token.
 
 ```bash
-git clone https://github.com/HarkiratMangat/diors-builds.git
+git clone https://github.com/HarkiratMangat/dioreo.git
 ```
 
 ```bash
@@ -176,7 +176,7 @@ That you actually have the right to give this — specifically:
 ### What you're not getting
 
 No payment, no co-ownership of the project, no approval right over how your
-contribution is later modified or used, and no ownership stake in Dior's Builds
+contribution is later modified or used, and no ownership stake in Dioreo
 as a whole.
 
 ### How to confirm it
@@ -201,7 +201,7 @@ Thanks for being here — genuinely.
 
 ---
 
-*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+*Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.*
 

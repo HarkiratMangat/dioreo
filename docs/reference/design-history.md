@@ -244,7 +244,7 @@ throwing) plus a long follow-up list. All addressed same session:
   - **⚠️ SEQUEL BUG (found live 2026-07-17, fixed same day): the `mng_editbtn_` fix above was itself
     broken from the day it shipped — the intermediate Edit button never worked at all.** Repro:
     `/manage` → Edit → search "FSS" → the ephemeral Edit/Search-Again prompt appears → click **Edit**
-    → "Dior's Builds didn't respond in time." Root cause: the `mng_editbtn_` HANDLER was written into
+    → "Dioreo didn't respond in time." Root cause: the `mng_editbtn_` HANDLER was written into
     the `if (interaction.isModalSubmit())` block (right next to its `mng_search_` sibling, since they're
     conceptually adjacent) — but `mng_editbtn_` is a **BUTTON** custom_id. A button click has
     `isButton() === true` / `isModalSubmit() === false`, so it never entered that block; the handler was

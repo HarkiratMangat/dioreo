@@ -1,8 +1,8 @@
-# Privacy Policy — Dior's Builds
+# Privacy Policy — Dioreo
 
-**Effective date:** 3 August 2026
-**Version:** 1.6
-**Applies to:** the Dior's Builds Discord application (the "Bot") and this
+**Effective date:** 4 August 2026
+**Version:** 1.8
+**Applies to:** the Dioreo Discord application (the "Bot") and this
 documentation website (the "Site")
 
 ---
@@ -40,6 +40,15 @@ based in Ontario, Canada.
 This is a hobby project run by one person. There is no company, no data
 protection officer (none is required — we do not carry out large-scale or
 systematic monitoring), and no privacy team. Email reaches a real person.
+
+**The Bot was called Dior's Builds until 4 August 2026.** That was a change of
+name, nothing more. **The controller did not change** — it is the same individual
+named above, at the same address, and no data was sold, transferred, shared, or
+disclosed to anyone as a result. Nothing about what is stored, why it is stored,
+who receives it, or how long it is kept was affected. Under GDPR terms: there is
+no new controller, no new processor, no new recipient, and no new purpose. A
+request you sent to Dior's Builds is a request to Dioreo and is handled the same
+way.
 
 ### 1.1 EU representative
 
@@ -144,13 +153,14 @@ Service, and the Bot's behaviour do not depend on that setting** — they apply
 identically either way, and these documents remain published at their permanent
 public URLs regardless.
 
-### 2.6 This website, and the one thing it stores on your device
+### 2.6 This website, and the two things it stores on your device
 
 These documents are served as a static website. It has no accounts, no forms, no
 analytics, no third-party scripts, and no server-side session of any kind — the
 hosting provider serves files and nothing else.
 
-It stores **two** items in your browser's own storage, both of which stay there:
+It stores **two** items in your browser's own storage, and neither one ever
+leaves it:
 
 | Name | Where | Value | Purpose | Expires |
 |---|---|---|---|---|
@@ -159,29 +169,39 @@ It stores **two** items in your browser's own storage, both of which stay there:
 
 Three things follow from that, and they are the whole of it:
 
-- **It is not a cookie.** Cookies are transmitted to the server with every
-  request; local storage never leaves your browser. The provider serving this
-  site never receives it, and neither do we.
-- **It identifies nobody.** The value is one of two words. It contains no
-  identifier, is not combined with anything else, and cannot distinguish you from
-  any other reader who prefers the same appearance.
-- **It is only written if you ask for it.** Nothing is stored until you press the
-  light/dark switch. If you never touch it, nothing is written at all.
+- **Neither is a cookie.** Cookies are transmitted to the server with every
+  request; local and session storage never leave your browser. The provider
+  serving this site never receives either one, and neither do we.
+- **Neither identifies anybody.** One holds one of two words, the other holds the
+  digit `1`. They contain no identifier, are not combined with anything else, and
+  cannot distinguish you from any other reader.
+- **Only one of them is written because you asked.** `db-theme` is written when
+  you press the light/dark switch and at no other time — never touch the switch
+  and it is never written. `db-booted` is different, and we would rather say so
+  plainly: it is written when you open What's New, the Changelog or the Devlog,
+  without your asking, and its only purpose is to stop those pages replaying their
+  opening animation each time you move between them. It holds no information about
+  you and it is gone when you close the tab.
 
 **Why there is no consent banner.** Consent rules for storing things on your
-device are technology-neutral — they cover local storage, not only cookies, so
-"it isn't a cookie" would not on its own be a defence. The reason no banner is
-required is that storage which is strictly necessary to provide something you
-explicitly asked for is exempt from consent, and a display preference you set by
-pressing a switch is precisely that. It is not used for analytics, advertising,
+device are technology-neutral — they cover local and session storage, not only
+cookies, so "it isn't a cookie" would not on its own be a defence. The exemption
+that applies is for storage strictly necessary to provide a service you have
+explicitly asked for. A display preference you set by pressing a switch is
+plainly that. `db-booted` rests on the same exemption for a different reason: it
+carries nothing about you, it exists only so that the pages you asked for behave
+sensibly on the second and third visit within one session, and it is discarded
+when that session ends. Neither item is used for analytics, advertising,
 measurement, or tracking of any kind, so no other basis is needed.
 
-**To remove it:** clear site data for this domain in your browser settings, or
-use private browsing. Removing it costs you nothing but the appearance setting.
+**To remove them:** clear site data for this domain in your browser settings, or
+use private browsing. `db-booted` also clears itself when you close the tab.
+Removing them costs you nothing but the appearance setting and one replayed
+animation.
 
-**Before you press the switch, nothing is stored at all** — the Site simply
-follows whatever light or dark setting your operating system or browser is
-already using. That happens through an ordinary CSS media query: your browser
+**Until you press the switch, no appearance preference is stored at all** — the
+Site simply follows whatever light or dark setting your operating system or
+browser is already using. That happens through an ordinary CSS media query: your browser
 applies one set of colours or the other while drawing the page. We are not told
 which it chose. There is no server-side component that could be told — these are
 static files.
@@ -559,6 +579,12 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.8 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** §1 now records the former name and states plainly that the controller did not change. **Nothing else changed at all** — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one. |
+| 1.7 | 4 August 2026 | Corrected §2.6, which still described the Site as storing **one** item and stated that nothing is written unless you press the light/dark switch. Both had been untrue since `db-booted` was added in version 1.6: that item is written when you open What's New, the Changelog or the Devlog, without being asked for. The consent-banner reasoning was affected too — it argued the strictly-necessary exemption only for a preference you set by pressing a switch, which does not reach `db-booted` at all. Every statement in §2.6 now names which item it applies to, and the exemption is argued for `db-booted` explicitly. **No change to what is stored, why, who receives it, or how long it is kept** — the two items, their values and their lifetimes are exactly as listed in version 1.6. |
+| 1.6 | 3 August 2026 | §2.6 and Appendix A began listing the Site's **second** browser-storage item, `db-booted` — a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It had been written since those pages launched while the policy described `db-theme` as the only key: the verification note had searched the generator, and the flag is written by a separate file, so it was never in scope. The note searches the built pages now. **No change to what is collected, why, who receives it, or how long it is kept** — the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
+| 1.5 | 1 August 2026 | Appendix A gained `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and began naming the four palette-source fields individually rather than abbreviating them. **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already stored and already described by §2; the appendix was an incomplete transcription. A build check now compares the appendix against the live schema so it cannot drift again. |
+| 1.4 | 1 August 2026 | Added Discord (`diorswrld`) as a second contact route in §1 and §13, alongside the canonical email. A Privacy Request under §9 must still come by email, so that it is on the record. |
+| 1.3 | 1 August 2026 | Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation. |
 | 1.2 | 31 July 2026 | Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds §2.6 describing that item in full — including how the Site behaves *before* you touch the switch, when it simply follows your operating system's light/dark setting and stores nothing at all — extends the scope line to cover the Site, and corrects the §3 and Appendix C entries. **No change to what the Bot collects, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to versions 1.0 and 1.1. |
 | 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
 | 1.0 | 28 July 2026 | First published version. |
@@ -567,9 +593,9 @@ change record you can't reach isn't a change record.
 
 ## 13. Contact
 
-**Harkirat Mangat ("dior", "diorswrld")** — Data Controller
-Ontario, Canada
-📧 **harkirat117@gmail.com**
+**Harkirat Mangat ("dior", "diorswrld")** — Data Controller\
+Ontario, Canada\
+📧 **harkirat117@gmail.com**\
 💬 **Discord:** [diorswrld](https://discord.com/users/1139845545754632283)
 
 Email is the canonical contact and always reaches us; Discord is usually faster for a question. A **Privacy Request** under §9 must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a
@@ -624,6 +650,8 @@ and both are described in full in §2.6.
 
 | Version | Date | Change |
 |---|---|---|
+| **1.8** | 4 August 2026 | Renamed from Dior's Builds to Dioreo. §1 records the former name and confirms the controller is unchanged. **No change to what is stored, why, who receives it, or how long it is kept** — no new controller, processor, recipient or purpose, and Appendix A is identical to 1.7. |
+| **1.7** | 4 August 2026 | §2.6 corrected: it still said the Site stored **one** item and that nothing is written unless you press the light/dark switch, neither of which had been true since `db-booted` arrived in 1.6, and the no-consent-banner argument reached only the switch. Each statement now names the item it applies to and the strictly-necessary basis is argued for both. **No change to what is stored, why, who receives it, or how long it is kept.** |
 | **1.6** | 3 August 2026 | §2.6 and Appendix A now list the Site's **second** browser-storage item, `db-booted`, a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It has been written since those pages launched, while the policy said `db-theme` was the only key — the verification note had searched the GENERATOR and the flag is written by `scripts/lib/chronicle.js`, so it was never in scope. The note now searches the BUILT pages. **No change to what is collected, why, who receives it, or how long it is kept:** the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
 | **1.5** | 1 August 2026 | Appendix A now names `decorationColorHex` and `nameplateColorHex`, which were stored but not listed, and names the four `*PaletteSource` fields individually rather than as "(+ source hashes)". **No change to what is collected, why, who receives it, or how long it is kept** — these fields were already being stored and are already described by §2; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again. |
 | **1.4** | 1 August 2026 | Added Discord (diorswrld) as a second contact route in §1 and §13, alongside the canonical email. A Privacy Request under §9 must still come by email. |
@@ -668,6 +696,6 @@ relevant code.
 
 ---
 
-*Dior's Builds is an unofficial fan project and is not affiliated with Activision
+*Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.*

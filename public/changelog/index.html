@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What's New — Dior's Builds</title>
-<meta name="description" content="What changed in each release of Dior’s Builds, in plain language.">
+<title>What's New — Dioreo</title>
+<meta name="description" content="What changed in each release of Dioreo, in plain language.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<meta property="og:title" content="What's New — Dior's Builds">
-<meta property="og:description" content="What changed in each release of Dior’s Builds, in plain language.">
+<meta property="og:title" content="What's New — Dioreo">
+<meta property="og:description" content="What changed in each release of Dioreo, in plain language.">
 <meta property="og:type" content="website">
 <link rel="preload" as="font" type="font/woff2" href="../assets/martian-mono-700.woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230C100E'/%3E%3Crect x='5' y='14' width='22' height='3' fill='%23FF9E3D'/%3E%3Ccircle cx='16' cy='8' r='3' fill='%23FF9E3D'/%3E%3C/svg%3E">
@@ -21,6 +21,12 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
+  /* ⚠️ THE MOBILE METABALL'S SOURCE COLOURS ARE TOKENS, AND THAT IS WHAT LETS THE
+     LIGHT THEME DROP invert(1). The CSS crush thresholds COLOUR, so the swarm needs
+     a bed to threshold against: discs in --goo-ink over a bed of --goo-bed. Which
+     one is black and which is white is the only thing that differs between themes —
+     see the note beside the light-mode blend rules. */
+  --goo-bed:#000; --goo-ink:#FFF;
   --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
   /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
      paper the same values measured 1.0-2.0:1 — the active tab label, the status
@@ -40,30 +46,67 @@
    which is to say invisible: every divider, table border and callout edge that
    structures these documents simply vanished in light mode while looking fine in
    dark. Light is not dark with the values flipped; the same separation needs more
-   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
-   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
-   table headers read as distinct surfaces rather than the same cream. */
+   contrast on a bright ground, and --raised is pulled further from --paper so
+   callouts and table headers read as distinct surfaces rather than one flat tone.
+   ⚠️ TWO CONSTRAINTS ON THIS PALETTE, both learned the expensive way, neither
+   visible in the values themselves.
+   NOT WHITE, AND NOT WARM. --paper was #FDFCFA, which is white in all but name and
+   read as an unstyled page. A cream/manila family was then tried and rejected on
+   sight for looking yellow; the direction asked for is clean and neutral, so the
+   family is a cool off-white on a soft cool ground. Do not "warm it up" and do not
+   flatten it back to #FFF.
+   THE RULE TOKENS ARE DERIVED FROM --paper, NOT CHOSEN BESIDE IT. A hairline only
+   does its job at its ratio, so moving --paper without re-deriving --rule/--rule2
+   leaves dividers either invisible or heavy — and they went brown once by being
+   carried across a palette change unexamined. contrastAudit will not catch it: it
+   reads ink against surfaces and never looks at a rule. Recompute by hand when any
+   surface here moves. */
 
 :root[data-theme=light]{
-  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
-  --rule:#CBC3B4; --rule2:#A39A8B;
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
-    --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
-    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
-    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
   }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}/* ⚠️ DEPTH IN LIGHT MODE, WHICH A FLAT FILL CANNOT GIVE. The ground was one flat
+   warm grey: fine on a desktop panel, dull on a phone. A large uniform mid-tone
+   is exactly what a bright mobile screen flattens, and it gives the eye no edge
+   to place the document card against. A wide soft lift behind the top of the page
+   gives the card something to sit ON. The dark theme gets this for free — its
+   card is LIGHTER than its ground, so the separation already exists.
+   ⚠️ THE GROUND IS COOL AND IT IS NOT COMING BACK TO BEIGE. Two warm near-neutrals
+   were tried and both read as muddy on a phone: a low-chroma yellow-brown at high
+   lightness has too little chroma to name a colour and just enough to dull the
+   grey, which is the exact recipe for dirty. The tint here is a lighter relative of
+   the ground, so it lifts the surface without introducing a second hue.
+   ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
+   three times the headroom and will happily pass while --ink3 fails. Darkening the
+   ground eats that margin fastest; a plum tried during this work measured 4.29
+   against the 4.5 floor and would have failed the build. Measure before darkening. */
+
+   Specificity is deliberately above body's own shorthand so it survives it; the
+   warm pages restate the whole background later and keep their accent wash. */
+:root[data-theme=light] body{background-image:
+  radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background-image:
+    radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
+}
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
@@ -77,13 +120,13 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400;font-display:swap;
   src:url(../assets/instrument-sans-400.woff2) format('woff2')}
 @font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;
-  src:url(../assets/instrument-sans-600.woff2) format('woff2')}/* ⚠️ --ink3 was #6B7A6D dark / #63705F light, and BOTH failed WCAG AA for small
+  src:url(../assets/instrument-sans-600.woff2) format('woff2')}
+
+/* ⚠️ --ink3 was #6B7A6D dark / #63705F light, and BOTH failed WCAG AA for small
    text (4.22:1 and 3.82:1 measured against their own backgrounds). It carries the
    dates, the version stamps and the operator line — all small monospace, i.e. the
    text that needs contrast MOST. Nudged to the nearest value that clears 4.5:1
    keeping hue and saturation. Do not darken them back for looks. */
-
-
 :root{
   --desk:#0C100E; --card:#121A15; --ink:#E9E7DE; --ink2:#A3B0A4; --ink3:#778779;
   --rule:#1E2A22;
@@ -103,11 +146,11 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
 }
 body{font-family:var(--sans);background:var(--desk);color:var(--ink)}
 h1,h2,h3,h4{font-family:var(--sans)}
-code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default and shown by script, so a reader with
+code,pre{font-family:var(--mono)}
+
+/* The boot overlay. display:none by default and shown by script, so a reader with
    JavaScript off gets the page immediately instead of a black rectangle — the
    sequence is decoration and must never be load-bearing. */
-
-
 .boot{display:none;position:fixed;inset:0;z-index:200;background:var(--desk);
   align-items:center;justify-content:center}
 .boot.go{display:flex}
@@ -117,8 +160,12 @@ code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default an
 .boot-cur{display:inline-block;width:.55em;height:1em;vertical-align:-.12em;
   background:var(--sig);animation:bl 1s steps(2) infinite}
 @keyframes bl{50%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.boot{display:none!important}}/* Every page in this world gets the signal colour as its accent, so the shared
-   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. *//* ⚠️ TWO signal values per voice, and the light one is NOT optional.
+@media (prefers-reduced-motion:reduce){.boot{display:none!important}}
+
+/* Every page in this world gets the signal colour as its accent, so the shared
+   chrome (indicator, buttons, focus rings) picks it up with no extra wiring. */
+
+/* ⚠️ TWO signal values per voice, and the light one is NOT optional.
    The three signals are tuned for a near-black terminal and are close to
    invisible on the daylight variant — measured against #DCDDD4 they scored
    1.50, 1.16 and 1.47 to 1, against a 4.5 minimum. That is not "a bit low", it
@@ -126,15 +173,13 @@ code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default an
    the dates and the operator line. The light values keep each hue and its
    saturation and only drop lightness until they clear 4.5:1. contrastAudit()
    re-measures both themes from the built CSS on every run. */
-
-
-
-
 :root{--accent:#FF9E3D;--glow:#FF9E3D;--sig:#FF9E3D}
 :root[data-theme="light"]{--accent:#994C00;--glow:#994C00;--sig:#994C00}
 @media (prefers-color-scheme:light){
   :root:not([data-theme="dark"]){--accent:#994C00;--glow:#994C00;--sig:#994C00}
-}/* ── skip link ────────────────────────────────────────────────────────
+}
+
+/* ── skip link ────────────────────────────────────────────────────────
    WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
    the bar carries nine nav tabs plus the source, install and theme controls, so
    a keyboard or switch user tabbed through about thirteen widgets before
@@ -143,20 +188,18 @@ code,pre{font-family:var(--mono)}/* The boot overlay. display:none by default an
    Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
    which remove an element from the focus order entirely and would make this a
    link nobody can ever reach. It is the first focusable thing in the body. */
-
-
 .skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
   padding:.55rem .9rem;border-radius:6px;
   background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
   clip-path:inset(50%);white-space:nowrap}
-.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}
+
+/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
    desktop path got the element change with none of the styling. */
-
-
 button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}/* ── wordmark ─────────────────────────────────────────────────────────
    Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
@@ -753,13 +796,35 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .foot.nodisc .sig{grid-row:1;margin-top:0}
 .foot.nodisc .endnav{grid-row:1}/* One column once the two would fight for width; the notice leads, as it does
-   on every other narrow layout here. */
+   on every other narrow layout here. *//* ⚠️ NARROW GOES TO FLEX, NOT TO A ONE-COLUMN GRID, AND THAT IS THE FIX FOR THE
+   SIGN-OFF PRINTING ON TOP OF THE LINK ROW.
+   The old block collapsed the columns and reset grid-COLUMN on both children —
+   and left grid-ROW alone. On a legal page .foot.nodisc deliberately puts the
+   sign-off and the link row both in row 1, which is correct with two columns:
+   they sit side by side. Collapse to one column without touching the rows and
+   "both in row 1" becomes both in the SAME CELL, so they render stacked on each
+   other. That is the overlap in the report, and the empty row 1 left by the
+   absent notice is the odd whitespace beside it.
+   Flex makes the whole class of bug impossible: grid-row and grid-column are
+   inert on a flex item, so neither the base rules nor the .nodisc pair can place
+   anything, and gap cannot open a gap around a child that does not exist the way
+   an empty grid row does. Order is set explicitly because the sign-off is FIRST
+   in the DOM and must stay LAST on screen — see the note above on why the markup
+   order may not be "tidied" to match. */
 
-@media (max-width:760px){
-  .foot{grid-template-columns:minmax(0,1fr);row-gap:1.3rem}
-  .disc{grid-row:auto;max-width:none}
-  .endnav{grid-column:1;justify-content:flex-start}
-  .sig{grid-column:1;text-align:left;margin:0}
+
+@media (max-width:760px){/* ⚠️ The 3.4rem bottom padding is for a WIDE layout, where the footer is the last
+     thing on the page. On a phone it stacks on top of the page wrapper's own 4rem,
+     which put about 118px of dead space under the sign-off — measured on
+     Contributors, where the two are adjacent. The wrapper already provides the
+     breathing room at this width; the footer only needs to not crowd its own last
+     line. Top padding is untouched: the back-to-top parks against it. */
+  
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
+    padding-bottom:1.1rem}
+  .disc{order:1;max-width:none}
+  .endnav{order:2;justify-content:flex-start}
+  .sig{order:3;margin:0}
 }
 .sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
@@ -874,9 +939,23 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
    to .totop's own transition is what made the button appear to come back after a
-   tap, because .birth is also what hides the ring and the arrow. */
+   tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
+   "gradient circle behind the button". Clearing background and border-color takes
+   away the button's own paint, but a backdrop-filter is not paint — it is a
+   FILTER ON WHAT IS BEHIND, clipped to the border box, and it keeps rendering a
+   blurred saturated disc long after the surface it belonged to is invisible. With
+   the background gone there is nothing left to read that disc as part of a
+   control, so it reads as a stray circle hanging behind the launching droplets.
+   Exactly the button's own 46px, which is how it was finally identified.
+   ⚠️ This is a DIFFERENT bug from the filter-region disc documented on GOO_SVG,
+   which is why that fix did not cover it: that one is #dbgoo-c allocating a
+   ~114px region while idle, and it is handled by .tt-ink's visibility:hidden
+   BETWEEN births. This one only appears DURING a birth, when .birth strips the
+   background. Two circles, two causes; the first fix made the second visible. */
 
-.totop.birth{background:transparent;border-color:transparent;transition:none}
+
+.totop.birth{background:transparent;border-color:transparent;
+  backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
 .totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
@@ -1390,10 +1469,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   
   .mbar{position:relative;isolation:isolate;overflow:hidden;
     background:var(--paper);
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
+     a no-op for momentum since iOS 13 made smooth scrolling the default; the only
+     effect it still has is forcing this scroller onto its own composited layer,
+     which is the other half of the blend failure described above. Removing an
+     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
     overflow-x:auto;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
     padding:.5rem .75rem;
     scrollbar-width:none}
   .mstrip::-webkit-scrollbar{display:none}
@@ -1438,14 +1522,42 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten}
+    pointer-events:none;mix-blend-mode:lighten}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
+     FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
+     did nothing. This layer exists to play ONE animation on arrival: particles
+     converge and fuse into a pill. What you look at for the rest of the page is
+     .mtab.on::after, a crisp unfiltered pill painted by the tab itself, and the
+     alpha crush ERODES the goo pill's caps, so the filtered shape sits strictly
+     inside the crisp one and removing it changes nothing you can see.
+     Leaving it alive meant a filtered, blended, per-frame-transformed layer lived
+     inside a position:sticky header for the life of the page. A blend needs its
+     backdrop rasterised in the same layer, and iOS re-layers exactly this kind of
+     element during a scroll gesture — at which point the bed has nothing to be
+     erased against and paints raw: a black rectangle in dark mode, and in light
+     mode the inverted white bed plus the accent plate, which is why it came out
+     yellow behind Contributors. A layer that is not on screen cannot be
+     mis-composited, so the artifact has no surface to appear on.
+     ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
+     the element in the layer tree, and iOS keeps compositing a mix-blend-mode
+     element that is merely invisible. This is a hardening, NOT the fix for the
+     light-mode artefact — that one was the filter chain and is fixed at source by
+     the --goo-bed/--goo-ink swap below. Keeping the two straight matters: while
+     the light chain was still wrong, the visibility version read as clean in dark
+     and broken in light, which is easy to misread as "hiding it works in one theme
+     and not the other" when the layer being hidden was never the problem.
+     No transition either: fading a blended layer means 240ms of it compositing at
+     partial opacity, which is the state being eliminated. The snap is invisible
+     regardless — .mtab.on::after is the same pill in the same place, unfiltered,
+     and the alpha crush erodes the goo pill strictly inside it. */
+  
+  .mgw.spent{display:none}
   .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
      something opaque behind them or there is nothing to threshold. Black,
      and large: the plate below has to sit entirely within the bed's OPAQUE
      core, and blur(7px) softens the bed's own edge over about 21px. */
   
-  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:#000}
-  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:#fff;
+  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:var(--goo-bed)}
+  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:var(--goo-ink);
     border-radius:100vw;scale:0;opacity:0}
   .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
   @keyframes mgPill{to{scale:1;opacity:1}}/* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
@@ -1469,22 +1581,35 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
-    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS NOT THE SAME TRICK, and it cannot be.
+    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS THE SAME TRICK READ UPSIDE DOWN, AND IT INVERTS THE SOURCE,
+     NEVER THE RESULT.
      lighten erases the black bed only because the backdrop is darker than the
-     blobs. On near-white paper it erases the BLOBS instead and the bar stays
-     empty. So light mode inverts the crushed image — the bed comes out white,
-     which is the identity for multiply — and the plate switches to screen,
-     whose identities are the mirror image: screen(white, accent) is white and
-     screen(black, accent) is accent. Same two exact rules, read the other way
-     up. */
+     blobs. On near-white paper it would erase the BLOBS instead and the bar would
+     stay empty, so light needs the mirror image: a WHITE bed, which is the identity
+     for multiply, blobs in black, and the plate on screen — screen(white, accent)
+     is white and screen(black, accent) is accent, exactly as multiply's identities
+     run the other way.
+     ⛔ THE OBVIOUS WAY TO GET THERE IS invert(1) ON THE FILTER, AND IT MUST NOT
+     COME BACK. That is what shipped first, and on iOS it painted the ACCENT PLATE
+     inverted — a lime rectangle across the bar on the violet License page
+     (invert(#9B6BE3) is #64941C), yellow on citron Contributors. The plate is a
+     SIBLING of the filtered element, so a filter reaching it at all means the light
+     chain composites wrongly, not merely blends wrongly; the same file already
+     records iOS silently dropping colour functions after blur+contrast on this very
+     element. Three attempts to fix it downstream — removing the scroller's
+     compositing hint, promoting the bar, retiring the layer — each moved WHEN the
+     artefact appeared without removing it, and suppressing the effect outright
+     removed the animation Harkirat actually wanted.
+     Swapping the SOURCE colours needs no fourth filter function: the discs, the
+     bed and the pill plate come from --goo-ink and --goo-bed, which the theme
+     already flips. Both themes now run the identical three-function chain, so there
+     is no light-only filter left to render differently. */
 
   
   :root[data-theme=light] .mgw{mix-blend-mode:multiply}
-  :root[data-theme=light] .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
   :root[data-theme=light] .mtint{mix-blend-mode:screen}
   @media (prefers-color-scheme:light){
     :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
-    :root:not([data-theme=dark]) .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
     :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
   }/* Particle geometry is the reference implementation's, unchanged: fifteen
      20px discs spawning on a radius of 90 and converging INWARD to 10, each
@@ -1502,7 +1627,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     display:block;width:20px;height:20px;border-radius:100%;opacity:0;
     transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
   .mpd{display:block;width:20px;height:20px;border-radius:100%;
-    background:#fff;opacity:1;transform-origin:center;
+    background:var(--goo-ink);opacity:1;transform-origin:center;
     animation:mptPop var(--t) ease 1 -350ms}
   @keyframes mptFly{
     0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
@@ -1540,15 +1665,47 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     border-bottom:1.5px solid var(--ink2);transform:translateY(-2px) rotate(45deg);
     transition:transform .3s cubic-bezier(.22,.9,.24,1)}
   .msecd[open]>summary::after{transform:translateY(1px) rotate(225deg)}
-  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
-    color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    max-width:52%}
-  .mp-list{max-height:min(58vh,460px);overflow-y:auto;padding-bottom:.3rem}
+  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}/* ⚠️ THE SECTION IS THE CONTENT HERE; -On this page- IS THE CHROME, and the
+     original weighting had that backwards. The static label was mono, tracked and
+     the same ink as everything else in the bar, while the one piece of live
+     information — which section you are actually in — sat smaller, greyer and
+     truncated at 52% beside it. On a long document that line is the only
+     positional cue on screen, so it now carries the document's own voice and the
+     label shrinks to a prefix. The accent dot only exists once there IS a tracked
+     section: at the top of the page the scrollspy leaves this empty, and a lone
+     bullet floating against nothing reads as a rendering fault. */
+  
+  .msd-l{flex:0 0 auto;font-size:.55rem;color:var(--ink3)}
+  .mt-at{display:flex;align-items:center;gap:.42rem;margin-left:auto;
+    font-family:var(--display);font-size:.74rem;font-weight:600;letter-spacing:0;
+    text-transform:none;color:var(--ink);
+    overflow:hidden;white-space:nowrap;max-width:64%}/* The ellipsis has to live on the TITLE, not on the flex parent: a flex item's
+     default min-width is auto, so without this the title refuses to shrink and
+     pushes the number out of the bar instead of truncating itself. */
+  
+  .mt-at>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}/* The section NUMBER rather than a bullet: it is the same token the heading
+     and the margin index already use, so the bar names the section the way the
+     document does. Tabular figures because the badge sits at a fixed left edge
+     and 1.1 must not be narrower than 2.6.
+     ⚠️ Not every index entry HAS a number — the parser writes an em dash for
+     those, and the chronicle pages have none at all. A dash in a numeric badge
+     reads as a missing value, so the script falls back to .mt-dot there and the
+     marker degrades to the bullet instead of showing a placeholder. */
+  
+  .mt-n{flex:0 0 auto;font-family:var(--mono);font-style:normal;font-size:.62rem;
+    font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;
+    color:var(--accent-t)}
+  .mt-n.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain;
+    padding-bottom:.3rem}
   .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
-    padding:0 .9rem;border-left:2px solid transparent}
+    padding:0 .9rem;border-left:3px solid transparent}/* Stronger than the desktop rail's marker on purpose. The rail is always on
+     screen beside the prose, so a hairline is enough to say -you are here-; this
+     list is opened, scanned once and dismissed, and it has to answer that question
+     in the moment it appears. */
+  
   .msec .slot.on{border-left-color:var(--accent);
-    background:color-mix(in srgb,var(--accent) 10%,transparent)}
+    background:color-mix(in srgb,var(--accent) 16%,transparent)}
   .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
 }/* ── print ────────────────────────────────────────────────────────────────
    COMPONENT_CSS already hides the bar, rail, mobile nav and back-to-top. These
@@ -1775,7 +1932,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <div class="bar">
   <a class="mark live" href="../legal/">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       <span class="mk-ctx"><i aria-hidden="true"></i>What's New</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -1794,7 +1951,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       <a class="segchip" href="./">Releases</a>
       <a class="tab on" href="./" data-accent="#FF9E3D" aria-current="page">What's New</a><a class="tab" href="./detailed.html" data-accent="#7CE38B">Changelog</a><a class="tab" href="./devlog.html" data-accent="#8FB8FF">Devlog</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -1802,7 +1959,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
@@ -1864,7 +2021,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#coming-soon" class="slot"><i>—</i><span>🔜 Coming soon</span></a><a href="#v2-51-0" class="slot"><i>v2.51.0</i><span>August 3, 2026</span></a><a href="#v2-50-4" class="slot"><i>v2.50.4</i><span>August 2, 2026</span></a><a href="#v2-50-3" class="slot"><i>v2.50.3</i><span>August 2, 2026</span></a><a href="#v2-50-2" class="slot"><i>v2.50.2</i><span>August 2, 2026</span></a><a href="#v2-50-1" class="slot"><i>v2.50.1</i><span>August 2, 2026</span></a><a href="#v2-50-0" class="slot"><i>v2.50.0</i><span>August 2, 2026</span></a><a href="#v2-49-2" class="slot"><i>v2.49.2</i><span>August 2, 2026</span></a><a href="#v2-49-1" class="slot"><i>v2.49.1</i><span>August 2, 2026</span></a><a href="#v2-49-0" class="slot"><i>v2.49.0</i><span>August 2, 2026</span></a><a href="#v2-48-0" class="slot"><i>v2.48.0</i><span>August 2, 2026</span></a><a href="#v2-47-1" class="slot"><i>v2.47.1</i><span>August 2, 2026</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>August 2, 2026</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>July 31, 2026</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>July 30, 2026</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>July 30, 2026</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>July 29, 2026</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>July 29, 2026</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>July 29, 2026</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>July 29, 2026</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>July 29, 2026</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>July 28, 2026</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>July 28, 2026</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>July 28, 2026</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>July 28, 2026</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>July 28, 2026</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>July 28, 2026</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>July 28, 2026</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>July 28, 2026</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>July 28, 2026</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>July 28, 2026</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>July 28, 2026</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>July 28, 2026</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>July 28, 2026</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>July 28, 2026</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>July 27, 2026</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>July 27, 2026</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>July 27, 2026</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>July 27, 2026</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>July 27, 2026</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>July 27, 2026</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>July 27, 2026</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>July 27, 2026</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>July 27, 2026</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>July 27, 2026</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>July 27, 2026</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>July 27, 2026</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>July 27, 2026</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>July 27, 2026</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>July 27, 2026</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>July 27, 2026</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>July 27, 2026</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>July 26, 2026</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>July 26, 2026</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>July 26, 2026</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>July 26, 2026</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>July 26, 2026</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>July 26, 2026</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>July 26, 2026</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>July 26, 2026</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>July 26, 2026</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>July 26, 2026</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>July 25, 2026</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>July 25, 2026</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>July 24, 2026</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>July 24, 2026</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>July 22, 2026</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>July 21, 2026</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>July 21, 2026</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>July 21, 2026</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>July 21, 2026</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>July 21, 2026</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>July 21, 2026</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>July 20, 2026</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>July 20, 2026</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>July 20, 2026</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>July 18, 2026</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>July 18, 2026</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>July 18, 2026</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>July 17, 2026</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>July 17, 2026</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>July 14–16, 2026</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>July 13, 2026</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>July 13, 2026</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>July 13, 2026</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>July 13, 2026</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>July 12, 2026</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>July 12, 2026</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>July 9, 2026</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>July 9, 2026</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>July 9, 2026</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>July 8, 2026</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>July 8, 2026</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>July 8, 2026</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>July 8, 2026</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>July 7, 2026</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>July 7, 2026</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>July 7, 2026</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>July 7, 2026</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>July 7, 2026</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>July 6, 2026</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>July 4, 2026</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>May 17, 2026</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>April 8, 2026</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>April 8, 2026</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>April 8, 2026</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>April 8, 2026</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>April 8, 2026</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>April 8, 2026</span></a></div>
+    <div class="mp-list msec"><a href="#coming-soon" class="slot"><i>—</i><span>🔜 Coming soon</span></a><a href="#v2-52-0" class="slot"><i>v2.52.0</i><span>August 4, 2026</span></a><a href="#v2-51-3" class="slot"><i>v2.51.3</i><span>August 4, 2026</span></a><a href="#v2-51-2" class="slot"><i>v2.51.2</i><span>August 3, 2026</span></a><a href="#v2-51-1" class="slot"><i>v2.51.1</i><span>August 3, 2026</span></a><a href="#v2-51-0" class="slot"><i>v2.51.0</i><span>August 3, 2026</span></a><a href="#v2-50-4" class="slot"><i>v2.50.4</i><span>August 2, 2026</span></a><a href="#v2-50-3" class="slot"><i>v2.50.3</i><span>August 2, 2026</span></a><a href="#v2-50-2" class="slot"><i>v2.50.2</i><span>August 2, 2026</span></a><a href="#v2-50-1" class="slot"><i>v2.50.1</i><span>August 2, 2026</span></a><a href="#v2-50-0" class="slot"><i>v2.50.0</i><span>August 2, 2026</span></a><a href="#v2-49-2" class="slot"><i>v2.49.2</i><span>August 2, 2026</span></a><a href="#v2-49-1" class="slot"><i>v2.49.1</i><span>August 2, 2026</span></a><a href="#v2-49-0" class="slot"><i>v2.49.0</i><span>August 2, 2026</span></a><a href="#v2-48-0" class="slot"><i>v2.48.0</i><span>August 2, 2026</span></a><a href="#v2-47-1" class="slot"><i>v2.47.1</i><span>August 2, 2026</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>August 2, 2026</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>July 31, 2026</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>July 30, 2026</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>July 30, 2026</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>July 29, 2026</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>July 29, 2026</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>July 29, 2026</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>July 29, 2026</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>July 29, 2026</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>July 28, 2026</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>July 28, 2026</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>July 28, 2026</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>July 28, 2026</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>July 28, 2026</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>July 28, 2026</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>July 28, 2026</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>July 28, 2026</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>July 28, 2026</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>July 28, 2026</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>July 28, 2026</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>July 28, 2026</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>July 28, 2026</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>July 28, 2026</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>July 27, 2026</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>July 27, 2026</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>July 27, 2026</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>July 27, 2026</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>July 27, 2026</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>July 27, 2026</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>July 27, 2026</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>July 27, 2026</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>July 27, 2026</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>July 27, 2026</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>July 27, 2026</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>July 27, 2026</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>July 27, 2026</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>July 27, 2026</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>July 27, 2026</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>July 27, 2026</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>July 27, 2026</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>July 26, 2026</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>July 26, 2026</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>July 26, 2026</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>July 26, 2026</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>July 26, 2026</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>July 26, 2026</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>July 26, 2026</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>July 26, 2026</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>July 26, 2026</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>July 26, 2026</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>July 25, 2026</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>July 25, 2026</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>July 24, 2026</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>July 24, 2026</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>July 22, 2026</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>July 21, 2026</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>July 21, 2026</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>July 21, 2026</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>July 21, 2026</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>July 21, 2026</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>July 21, 2026</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>July 20, 2026</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>July 20, 2026</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>July 20, 2026</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>July 18, 2026</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>July 18, 2026</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>July 18, 2026</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>July 17, 2026</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>July 17, 2026</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>July 14–16, 2026</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>July 13, 2026</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>July 13, 2026</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>July 13, 2026</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>July 13, 2026</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>July 12, 2026</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>July 12, 2026</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>July 9, 2026</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>July 9, 2026</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>July 9, 2026</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>July 8, 2026</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>July 8, 2026</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>July 8, 2026</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>July 8, 2026</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>July 7, 2026</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>July 7, 2026</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>July 7, 2026</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>July 7, 2026</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>July 7, 2026</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>July 6, 2026</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>July 4, 2026</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>May 17, 2026</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>April 8, 2026</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>April 8, 2026</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>April 8, 2026</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>April 8, 2026</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>April 8, 2026</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>April 8, 2026</span></a></div>
   </details>
 </aside>
 
@@ -1877,7 +2034,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <div class="pn-op"><span class="pn-dot" aria-hidden="true"></span>OPERATOR // PATCH NOTES</div>
         <h1>What's New</h1>
         <p class="pn-lede">Every update to the bot, in plain language — what changed and when.</p>
-        <div class="pn-tick"><span>109 entries</span><span class="pn-clk" id="clk"></span></div>
+        <div class="pn-tick"><span>113 entries</span><span class="pn-clk" id="clk"></span></div>
       </header>
       <div class="clede"><p>The short version. For the full technical write-up, see <a href="detailed.html">CHANGELOG.md</a>.</p></div>
       
@@ -1892,11 +2049,31 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       </section>
       <section class="pn-hero" data-entry data-rv>
         <div class="pn-hero-t">LATEST</div>
-        <h2 id="v2-51-0" class="pn-v">v2.51.0</h2>
+        <h2 id="v2-52-0" class="pn-v">v2.52.0</h2>
         
-        <div class="pn-hero-b"><p>The site's nav indicator now stirs two colours together. Point at a tab and the pill picks up your cursor's colour — the page's own accent — and mixes it into that tab's, in a slow field that keeps moving while you hover.</p>
-<ul><li>The landing page has its own coral accent instead of borrowing the Terms page's.</li><li>The pointer becomes a proper text cursor over writing, and only over writing — it used to go thin anywhere inside a paragraph's box, including the empty space past the end of a line.</li><li>Hovering a control now shows a small label saying what it does, on 57 of them.</li><li>The dark blob the pointer makes over the Install button now happens in dark mode too, not just light.</li></ul></div>
+        <div class="pn-hero-b"><ul><li><strong>The bot is now called Dioreo.</strong> Same bot, same person running it, same everything it remembers about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored. The Terms and Privacy Policy both spell this out, and every mention of the old name still counts as a mention of the new one.</li><li><strong>The website has a proper front page.</strong> It used to open by introducing the legal documents; now it introduces the bot, with the legal documents still one tap away underneath.</li><li><strong>Easier to read on a phone.</strong> Code examples got a cleaner layout with a copy button that actually sits where you'd expect and tells you when it's copied, the footer spacing was evened out, and the Contributing and Contributors pages got a back-to-top button.</li><li><strong>You can download the licence and notice files directly</strong> from the menu on those pages, wherever you happen to be scrolled to.</li></ul></div>
       </section><div class="pn-deck">
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-51-3" class="pn-cv">v2.51.3</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Nothing changed in the bot.</strong> Made the project's own release tooling a bit safer and smarter.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-51-2" class="pn-cv">v2.51.2</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Nothing changed in the bot.</strong> Internal housekeeping: tidied up the project's own working notes and to-do list, and fixed a bug in one of the automated checks that made sure open items in those lists don't get forgotten.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-51-1" class="pn-cv">v2.51.1</h2>
+          
+          <div class="pn-cb"><ul><li><strong>Nothing changed in the bot.</strong> Fixed a MarkEdit note-taking editor bug where pressing Return once could add two blank lines instead of one, and added a standalone timestamp shortcut to the same editor. Also tightened one of the project's own internal writing checks so a placeholder time (like typing "xx" meaning to fill in the real minute later) gets caught immediately instead of slipping through.</li></ul></div>
+        </article>
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-51-0" class="pn-cv">v2.51.0</h2>
+          
+          <div class="pn-cb"><p>The site's nav indicator now stirs two colours together. Point at a tab and the pill picks up your cursor's colour — the page's own accent — and mixes it into that tab's, in a slow field that keeps moving while you hover.</p>
+<ul><li>The landing page has its own coral accent instead of borrowing the Terms page's.</li><li>The pointer becomes a proper text cursor over writing, and only over writing — it used to go thin anywhere inside a paragraph's box, including the empty space past the end of a line.</li><li>Hovering a control now shows a small label saying what it does, on 57 of them.</li><li>The dark blob the pointer makes over the Install button now happens in dark mode too, not just light.</li></ul></div>
+        </article>
         <article class="pn-card" data-entry data-rv>
           <h2 id="v2-50-4" class="pn-cv">v2.50.4</h2>
           
@@ -2458,7 +2635,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   </div>
   <footer class="foot">
     <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
-    <p class="disc">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+    <p class="disc">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="../legal/terms.html">Terms</a><span>&middot;</span><a href="../legal/privacy.html">Privacy</a><span>&middot;</span><a href="../legal/license.html">License</a><span>&middot;</span><a href="../legal/notice.html">Notice</a><span>&middot;</span><a href="../legal/contributing.html">Contributing</a><span>&middot;</span><a href="../legal/contributors.html">Contributors</a><span>&middot;</span><a href="./detailed.html">Changelog</a><span>&middot;</span><a href="./devlog.html">Devlog</a></nav>
   </footer>
 </div>
@@ -2601,8 +2778,19 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       if(ttBar) ttBar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
     }
     var cur=-1;
+    /* ⚠️ MEASURED FROM THE NAV, NOT HARDCODED — same fix as the legal shell's
+       scrollspy, and it has to be made in both because chronicle keeps its own
+       copy of this loop by design. A flat 130px sits above the mobile nav's own
+       bottom edge, so an entry only became current after it had scrolled up behind
+       the bar and the bar named the previous one while you were reading this one.
+       Height 0 means .mnav is display:none, which is the desktop case. */
+    var navEl=document.getElementById('mnav'), line=130;
+    if(navEl){
+      var nr=navEl.getBoundingClientRect();
+      if(nr.height>0) line=nr.bottom+72;
+    }
     for(var i=0;i<heads.length;i++){
-      if(heads[i]&&heads[i].getBoundingClientRect().top<=130) cur=i;
+      if(heads[i]&&heads[i].getBoundingClientRect().top<=line) cur=i;
     }
     if(max>0&&h.scrollTop>=max-2) cur=heads.length-1;
     var curId=cur>=0?ids[cur]:null;
@@ -2636,10 +2824,25 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         }
       }
     }
+    /* Mirrors the legal shell's badge. These pages carry no section numbers, so
+       the marker degrades to the bullet here in practice — the number branch is
+       kept anyway so the two copies stay one behaviour rather than two. */
     var curEl=document.getElementById('railcur');
     if(curEl){
-      var t2=curId?document.querySelector('.slot[href="#'+curId+'"] span'):null;
-      curEl.textContent=t2?t2.textContent:'';
+      var src2=curId?document.querySelector('.slot[href="#'+curId+'"]'):null;
+      curEl.textContent='';
+      if(src2){
+        var sn2=src2.querySelector('i'), st2=src2.querySelector('span');
+        var num2=sn2?sn2.textContent.trim():'';
+        var dash2=String.fromCharCode(8212);
+        var badge2=document.createElement('i');
+        badge2.className=(num2&&num2!==dash2)?'mt-n':'mt-n mt-dot';
+        if(num2&&num2!==dash2) badge2.textContent=num2;
+        curEl.appendChild(badge2);
+        var lab2=document.createElement('span');
+        lab2.textContent=st2?st2.textContent:'';
+        curEl.appendChild(lab2);
+      }
     }
     queued=false;
   }
@@ -3447,20 +3650,50 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
        scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
        cached scrollLeft was stale before the first paint. A rect difference is
        whatever is true right now and cannot go stale. */
+    /* ⚠️ ONCE SPENT, STOP TRACKING. The whole reason this element has to be
+       hand-positioned is that it lives outside the scroller so its blend keeps a
+       backdrop — but a retired layer is invisible, so writing a transform to it on
+       every frame of every scroll buys nothing and is precisely the per-frame work
+       that exposed it to iOS's compositor. See the .mgw.spent note in the CSS. */
+    var spentT=null;
     function follow(){
+      if(gw.classList.contains('spent')) return;
       var t=mtabs[cur]; if(!t) return;
       gw.style.transform='translateX('
         +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
     }
 
+    /* Long enough to outlast the whole birth: the pill runs 2s on a .2s delay and
+       the particles 1200±300ms started 350ms in, so everything has landed well
+       before this. Retiring it early would cut the animation off mid-flight. */
+    function retire(){
+      if(spentT) clearTimeout(spentT);
+      spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
+    }
+
+    /* ⚠️ ONLY AN ANIMATED PLACEMENT MAY BRING THE LAYER BACK, AND THIS IS THE
+       WHOLE BUG. Retiring it after the birth was correct and did nothing, because
+       place() un-retired it on every call and the RESIZE handler calls place() —
+       and iOS fires resize every time the URL bar shows or hides, which is on
+       every scroll. So the layer was resurrected continuously while scrolling and
+       hid itself again about 2.6s after the last gesture: reported exactly as
+       "it disappears once I stop touching the screen, then reappears as I begin
+       scrolling again".
+       A resize only needs the geometry to follow the tab; it is not an arrival and
+       has nothing to animate, so it must not resurrect a layer whose animation is
+       long over. */
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
+      if(animate){
+        if(spentT) clearTimeout(spentT);
+        gw.classList.remove('spent');
+      }
       cur=i; follow();
       gw.style.width=t.offsetWidth+'px';
       gw.style.top=t.offsetTop+'px';
       gw.style.height=t.offsetHeight+'px';
       gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); return; }
+      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
       /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
          pill first and re-animating it a moment later is what made the old
          version look glitchy: you saw the pill, saw it vanish, saw it grow. */
@@ -3474,6 +3707,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       void goo.offsetWidth;
       spray();
       goo.classList.add('on');
+      retire();
     }
 
     function spray(){
@@ -3515,13 +3749,95 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       reveal(); place(cur,true);
       setTimeout(follow,0); setTimeout(follow,160);
     }
-    addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
+    /* ⚠️ WIDTH, NOT "resize". On iOS the URL bar collapsing and expanding fires
+       resize on almost every scroll, with the width unchanged — nothing about this
+       strip's layout depends on viewport HEIGHT, so those events are pure noise
+       that was re-running reveal() and place() continuously mid-gesture. Comparing
+       the width ignores them and leaves a real orientation change or window resize
+       handled exactly as before. */
+    var lastW=innerWidth;
+    addEventListener('resize',function(){
+      if(innerWidth===lastW) return;
+      lastW=innerWidth;
+      if(live()){ reveal(); place(cur,false); }
+    });
     /* A tap moves the indicator immediately even though the page is about to be
        replaced: on a slow connection that is the only feedback the tap landed. */
     mtabs.forEach(function(a,i){
       a.addEventListener('click',function(){ cur=i; place(i,true); });
     });
   }
+
+  /* ── the section disclosure ───────────────────────────────────────────
+     Two gaps that only appear on a long document, both reported from a phone.
+
+     A tab is a real link to another document, so a tap tears the whole page down
+     and the panel goes with it. A SECTION is a same-page jump: nothing is torn
+     down, so the panel stayed open on top of the very content it had just been
+     asked to reveal. Closing it is the navigation completing.
+
+     And the panel is its own scroll box. The scrollspy above already keeps .on
+     correct on both copies of the index, but only the DESKTOP rail was ever
+     scrolled to the tracked slot — so on a 22-section document you opened the
+     list at section 1 with the highlight nineteen rows below the fold, which is
+     indistinguishable from no highlight at all.
+     ⚠️ scrollTop is set directly, never scrollIntoView: that call walks every
+     scrollable ancestor and moves the PAGE when the element is not fully in
+     view, which here means the document scrolling itself because you opened a
+     menu. Same reason the rail does it this way. */
+  var msecd=document.querySelector('.msecd');
+  if(msecd){
+    var mlist=msecd.querySelector('.mp-list');
+    msecd.addEventListener('click',function(e){
+      var t=e.target;
+      /* .dlr as well as .slot: the download is a row in this panel too, and a
+         disclosure left standing open over the page after you have acted on it is
+         the same complaint the auto-close was added for. */
+      if(t&&t.closest&&(t.closest('.slot')||t.closest('.dlr'))) msecd.open=false;
+    });
+    /* On open, not on every scroll frame: the highlight cannot move while the
+       panel covers the document, so once placed it stays right. */
+    msecd.addEventListener('toggle',function(){
+      if(!msecd.open||!mlist) return;
+      var on=mlist.querySelector('.slot.on'); if(!on) return;
+      var pad=56, et=on.offsetTop, eh=on.offsetHeight;
+      if(et<mlist.scrollTop+pad) mlist.scrollTop=Math.max(0,et-pad);
+      else if(et+eh>mlist.scrollTop+mlist.clientHeight-pad)
+        mlist.scrollTop=et+eh-mlist.clientHeight+pad;
+    });
+  }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  /* ⚠️ THE STICKY OFFSET IS PART OF THE ANSWER — height alone is not.
+     .mnav is sticky at top:54px, under the masthead, so a 107px bar occupies 54 to
+     161. Sizing the margin from the height gave 129 and still landed the heading
+     32px BEHIND the bar, which looks exactly like the original bug and is why this
+     is measured rather than reasoned about. Read the element's own sticky top
+     offset and add its height; both come from the renderer, so neither the
+     masthead's height nor the bar's has to be written down anywhere.
+     No backticks in this comment on purpose: it lives inside a template literal,
+     where one ends the string and fails the build with a SyntaxError pointing at
+     prose. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    if(!n){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var h=n.getBoundingClientRect().height;
+    if(!h){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var t=parseFloat(getComputedStyle(n).top)||0;
+    document.documentElement.style.setProperty('--anchor-off',(t+h+22)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 
 (function(){

@@ -181,7 +181,81 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.51.3 — 2026-08-04 00:04 EDT (#76) — Closing the loop on a CLI that shouldn't be the worse variant
+## v2.52.0 — 2026-08-04 16:24 EDT (#77) — The bot has a name, and the front door finally says what it is
+
+**Dior's Builds is now Dioreo.** The dev application has carried the name since 2026-07-26; this
+takes it project-wide, ahead of the v3 launch and while the site is live but not yet shared — so
+there is no audience holding the old name to preserve.
+
+The rename is documented the way a product rename has to be, rather than being done by
+find-and-replace alone. `LICENSE` becomes the **Dioreo Source-Available License v1.1**
+(`LicenseRef-Dioreo-Source-Available-1.1`) with a new **§18**: change of name only, no assignment or
+change of ownership, references to the former name still bind, copies held under v1.0 remain valid,
+and the old SPDX identifier still denotes v1.0. **§1.5 now covers BOTH names** — retiring a name does
+not release it. Terms goes to **1.5** and Privacy to **1.8**, each with a name-change clause and a
+revision-history row; the privacy one states explicitly that **the controller did not change** — no
+new controller, processor, recipient or purpose, and Appendix A is untouched. `NOTICE` carries the
+former name in its banner.
+
+**What was deliberately NOT renamed**, because the boundary matters more than the consistency: the
+three record files and `docs/archive/` (past entries say what the project was called when they were
+written), the dated design specs, the VM / systemd / dev-database identifiers, and **the repo folder**
+— the memory-store slug derives from that path, and renaming it would strand the store exactly as the
+2026-07-28 migration fixed. `CLAUDE.md` records the whole boundary; so does a new memory file.
+
+Terms' revision history also picks up an old discrepancy: **1.2 and 1.3 were never published.** The
+header jumped 1.1 → 1.4 on 1 August while the row describing that change was written as "1.2". Both
+are now recorded as skipped rather than quietly renumbered — the document a reader was shown on 1
+August said 1.4, and a revision history that renumbers a published version to tidy itself up is worth
+less than one with an honest gap in it.
+
+Alongside it, the mobile round the rename interrupted:
+
+- **The landing page introduces the bot instead of the paperwork.** It opened on "Legal / The fine
+  print, in plain sight", which was right when four documents were the only thing on the site. The
+  record pages have shipped since and a help/docs section is planned, so a reader arriving at the root
+  met a page that introduced the fine print and never said what the bot was. The legal set keeps its
+  numbered list under its own section label, and its "*N* documents" line stays **derived**, so it
+  still cannot claim "four" after a fifth lands.
+- **Code blocks are rebuilt as a header strip plus the code.** The copy control used to float *on* the
+  code, which cost three separate workarounds — an opaque background, reserved right padding, and a
+  3.6rem top pad on touch so a long line could not slide underneath — and still read on a phone as a
+  large disc in an empty band. A header removes the collision structurally, so all three came out.
+  Copying now shows a **Copied** bubble under the button as well as announcing it.
+- **The legal pages' footer rhythm matches Contributing**, which is the one it was asked to match:
+  54px above the link row and 82px below the sign-off, against 96 and 28. `.page` had no bottom
+  padding at all while the shared CSS was trimming the footer's own on the reasoning that the wrapper
+  provides it — true of the warm template, false here.
+- **Contributing and Contributors get the back-to-top button.** Its CSS and its behaviour had been
+  loading on those pages for weeks and doing nothing; the only missing piece was the button.
+- **LICENSE and NOTICE offer their plain-text originals** from the section index — the mobile
+  disclosure and the desktop rail — so the authoritative file is reachable from anywhere on the page,
+  not only from the callout at the top that scrolls away.
+- **Contributor plates fill the row.** A 268px ceiling meant the single maintainer plate hugged the
+  left edge with two empty columns beside it, which read as a grid that had failed to load.
+
+**A real defect fell out of the rename.** The CLA slip's copy button carried a literal `Copy` text
+node between the CLA line and the paragraph after it, so the page text read *"…in §5 of the LICENSE
+**copy** If you'd rather…"*. `verify()` had reported 100% for four days purely because it slices runs
+at a fixed stride from word one and no boundary happened to land on that seam; removing one word far
+upstream shifted every boundary and the next build caught it. **The defect never changed — only the
+arithmetic did.** Both copy labels are CSS content now and nothing writes a word into the document
+from script. The same sweep found `LICENSE` §6's nominative-use example still naming the old product,
+which had survived only because that file is hard-wrapped and the name broke across a line.
+
+Two CSS specificity bugs were caught the same way, by reading computed values off the rendered page
+rather than trusting the source: a narrow-width `.doc` margin losing to the later `.doc` rule, and the
+contributor wall's column key losing to `.card p` — the latter had **no rule at all** and was
+rendering as body-size serif, which is what "not a fan of the maintainer card design" was pointing at.
+
+⚠️ **Ships with one known break, on purpose.** Every GitHub URL now reads
+`github.com/HarkiratMangat/dioreo` and the repository is still called `Diors-Builds`, so the Source
+button and the clone snippet 404 until `gh repo rename` is run. Filed `[P1 · XS]`; the alternative was
+landing the release with the old URLs and re-editing seven files afterwards.
+
+---
+
+## v2.51.3 — 2026-08-04 00:04 EDT (#76 · `eb0b82d`) — Closing the loop on a CLI that shouldn't be the worse variant
 
 A small, repo-side follow-up to the `dior` CLI consolidation work filed in
 `meta-deferred-list.md` on 2026-08-01: `dior legal build`/`deploy` (in the separate `dior-cli`

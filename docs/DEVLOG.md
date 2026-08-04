@@ -113,6 +113,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)
 - 2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)
 - 2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)
+- 2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4277,6 +4278,56 @@ file's own hand-curated system — the lagged hash backfill, the sync across thr
 `docs-audit.mjs`'s structural checks are all things a generator has no way to reproduce, and the
 config's own header comment says so. Verified against real tagged releases and a real unreleased
 commit range before landing, rather than trusting the template unread.
+
+## 2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)
+
+The session was meant to be four mobile fixes. It became a project rename halfway through, and the
+rename found a defect that had been shipping, in public, on a page whose whole value is being
+verifiable — while every gate reported green.
+
+**The bug.** `buildLegalPages.js` verifies its own output: it slices the source into fixed-length
+word runs and asserts each one survived into the HTML. The CLA slip's copy button carried a literal
+`Copy` in its markup, a text node sitting between the CLA line and the paragraph after it, so the
+rendered page genuinely read *"…in §5 of the LICENSE **copy** If you'd rather…"*. It had reported
+**100% for four days**. Then the rename removed one word far upstream, every run boundary shifted by
+one, a boundary landed on that seam, and the next build failed.
+
+**The reflex to resist was "my edit broke it."** It hadn't. Diffing the old and new output showed the
+region was byte-identical, which settled in one command what several turns of staring at the source
+had not. *A sampling check reports the health of its samples, not of the document* — so when one
+starts failing after an unrelated change, ask whether the change **exposed** a defect before assuming
+it caused one.
+
+**The deeper miss is more useful.** `withCopyButtons()` already carried the rule, in a warning
+comment: never put a visible word between two pieces of document text, because it joins the page's own
+text. `asSlip()` predated that rule and never received it. **A lesson written as a comment on the code
+that learned it does not reach the code that needs it.** Both labels are CSS `content` now, keyed off
+a data attribute, and nothing writes a word into the document from script.
+
+**Two CSS specificity bugs, caught the same way and worth naming together.** A narrow-width `.doc`
+margin lost to the later plain `.doc` rule; the contributor wall's column key lost to `.card p` — and
+that one had *no rule at all*, so it had been rendering as body-size serif under the Maintainer
+heading, which is what a vague "not a fan of the maintainer card design" was actually pointing at.
+Both looked completely correct in the source. Both were found by reading the computed value off the
+rendered page. A media query adds no specificity, and source order decides ties — knowing that is not
+the same as noticing it.
+
+**On renaming a product properly.** The instinct is find-and-replace; the work is deciding what
+*doesn't* move. History stays as written, because a record that backdates a name is no longer a
+record. Infrastructure identifiers stay, because they have no reader. The repo folder stays, because
+the memory store's path derives from it. And the licence — a dated, published instrument — cannot
+quietly change its own name: it went to v1.1 with a clause saying the change is a name only, that
+copies held under v1.0 remain valid, and that the old identifier still denotes v1.0. Two of the
+survivors were then found by a **multiline** re-sweep: the files are hard-wrapped, and a single-line
+pattern cannot see a name broken across a line.
+
+**The version number, and a rule that already existed.** The release had been blocked for hours on
+one question — which version — asked earlier and *denied*. Misreading that denial as licence to
+choose is what had pushed the branch to the remote prematurely, so the temptation to "just decide"
+was exactly the thing to resist a second time. It never needed a second question: CLAUDE.md already
+says **"the merge-yes IS the version-number-yes; MAJOR always asked separately."** An instruction to
+merge carries the version with it. *When a decision looks blocked, check whether the project has
+already written down who owns it.*
 
 # Part B — Lessons Ledger (thematic)
 

@@ -295,10 +295,35 @@ node --watch --env-file=.env.dev index.js
 | Thing | Dev | Note |
 |---|---|---|
 | Discord application | `Dioreo (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
-| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). Seeded by `mongodump` (read-only on prod) → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'` |
+| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). **Seed user preferences with `node --env-file=.env.dev scripts/seedDevData.js --yes`** — see the warning below |
 | Alert webhook | its own `LOG_WEBHOOK_URL`, own channel | must NOT be prod's — see the dotenv trap below |
 | Emojis | its own 72 application-emoji copies | same names, different ids — see below |
 | Cloudinary / Vertex AI (`GCP_*`) | **shared with prod** | deliberate. Vertex needs no new credentials: it uses the local `gcloud` ADC already on Harkirat's Mac |
+
+**⚠️ NEVER SEED THE DEV DATABASE FROM A PROD DUMP** (changed 2026-08-04 12:07 EDT). This table
+used to instruct exactly that — `mongodump` from prod into `diors-builds-dev` — and the result was
+**17 real users' Discord IDs and preferences sitting on a development machine**, personal data in a
+second location that the Privacy Policy neither disclosed nor had any reason to. It was found
+2026-08-04 11:55 EDT by counting snowflake-shaped ids in the local database.
+
+Use **`scripts/seedDevData.js`** instead. It refuses to run unless the target is both a loopback
+host and a dev-named database — either alone is defeatable by one wrong environment variable — and
+it refuses to delete anything without `--yes`. Run it without the flag first: that is a dry run
+that reports what is there and changes nothing.
+
+**Verify a clean database** with the same check that found the problem — it must return `0`:
+
+```
+mongosh mongodb://localhost:27017/diors-builds-dev --quiet --eval \
+  'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'
+```
+
+⚠️ **The other collections were checked and are NOT the same question**: `alertlogs` hold no user
+ids (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec`), and `loadouts`,
+`seasonaldatas`, `botinstances` and `alertcounters` are the project's own content, not anybody's
+personal data. `userpreferences` is the only collection this applies to — do not widen the purge
+on the assumption that the others are equally suspect, and do not narrow the check on the
+assumption that they were never looked at.
 
 **⚠️ The dotenv backfill trap (cost a real leak on the first boot).** `index.js:38` calls
 `dotenv.config()` **after** `--env-file` has loaded. dotenv does not override already-set vars, but it
@@ -349,8 +374,8 @@ token via the backfill behavior described above), and it aborts if `.env.dev`'s 
 > change involved. It happened to be 20 on 2026-07-26; treat any figure written down as a snapshot and
 > re-derive from the running app. (This is why "20 commands" used to appear as a standing fact here.)
 
-`Dior's Builds` instead of `Dioreo (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
-`Dioreo (Dev)` (`1529636846248919263`) while prod (`Dior's Builds`, `1491474871778021550`) kept all 20.
+`Dioreo` instead of `Dioreo (Dev)`, stop. Verified 2026-07-26 21:47 EDT: cleared 20 commands from
+`Dioreo (Dev)` (`1529636846248919263`) while prod (`Dioreo`, `1491474871778021550`) kept all 20.
 
 **Secrets hygiene:** `.env.dev` is covered by `.gitignore`'s `.env.*` glob, by a `.git/info/exclude`
 entry (so it stays ignored even on branches that predate that glob), and by the `block-env-staging`

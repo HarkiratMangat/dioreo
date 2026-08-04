@@ -1,11 +1,13 @@
-DIOR'S BUILDS SOURCE-AVAILABLE LICENSE
-Version 1.0, 28 July 2026
+DIOREO SOURCE-AVAILABLE LICENSE
+Version 1.1, 4 August 2026
+
+(formerly the Dior's Builds Source-Available License, Version 1.0, 28 July 2026)
 
 Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
 
 This is a source-available license, not an open-source license. It is not
 approved by the Open Source Initiative and does not meet the Open Source
-Definition. The source code of Dior's Builds is published so that it can be
+Definition. The source code of Dioreo is published so that it can be
 read, studied, audited, and improved -- not so that it can be copied, deployed,
 redistributed, or turned into a competing bot.
 
@@ -14,8 +16,8 @@ redistributed, or turned into a competing bot.
 PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)
 ===============================================================================
 
-This summary is provided for convenience only. It has no legal effect, and if
-it conflicts with the terms below, the terms below govern.
+This summary is here to make the License easier to read. It is not part of the
+License and has no legal effect; where the two differ, the License governs.
 
   YOU MAY:
     - Read, study, and learn from the source code.
@@ -31,7 +33,7 @@ it conflicts with the terms below, the terms below govern.
       modified version of it.
     - Use the Software, its curated data, or its output to build, train, or
       operate a competing bot or service.
-    - Use the "Dior's Builds" name, branding, or visual identity.
+    - Use the "Dioreo" name, branding, or visual identity.
 
   If you want to do something this license does not allow, ask. Permission is
   freely given in writing where it makes sense; see Section 17.
@@ -50,9 +52,9 @@ it conflicts with the terms below, the terms below govern.
      indirect ownership of more than fifty percent (50%) of the voting
      interests, or the power to direct the management of the entity.
 
-1.3  "Software" means the Dior's Builds source code, configuration, scripts,
+1.3  "Software" means the Dioreo source code, configuration, scripts,
      documentation, and all other material contained in the repository at
-     https://github.com/HarkiratMangat/diors-builds, in whole or in part, in
+     https://github.com/HarkiratMangat/dioreo, in whole or in part, in
      source or object form, including all past and future versions, and
      including any portion, fragment, module, function, or file of it.
 
@@ -64,7 +66,8 @@ it conflicts with the terms below, the terms below govern.
      text. Curated Data is protected as a compilation and as a database
      independently of any protection attaching to the code that reads it.
 
-1.5  "Brand Assets" means the name "Dior's Builds", the name "dior" as used in
+1.5  "Brand Assets" means the name "Dioreo", the former name "Dior's Builds",
+     the name "dior" as used in
      connection with the Software, any logo, avatar, banner, emoji set, color
      palette, accent-color scheme, message layout, or other element of the
      visual or textual identity of the Software or the Official Service,
@@ -375,8 +378,8 @@ free of charge, and whether or not You attribute the Licensor:
      applies in full.
 
 6.2  Nominative fair use is not restricted. You may truthfully refer to the
-     Software by name -- for example, to say that You reported a bug in Dior's
-     Builds, to cite it in an article, or to describe a Contribution You made
+     Software by name -- for example, to say that You reported a bug in Dioreo,
+     to cite it in an article, or to describe a Contribution You made
      -- provided You do not thereby suggest endorsement, affiliation, or
      sponsorship.
 
@@ -749,7 +752,7 @@ any claim that it infringes a third party's rights.
 The following notice may be applied to individual source files:
 
     Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
-    Licensed under the Dior's Builds Source-Available License v1.0.
+    Licensed under the Dioreo Source-Available License v1.1.
     Source-available, not open source. No deployment, no redistribution.
     See the LICENSE file at the repository root for full terms.
 
@@ -761,7 +764,7 @@ The following notice may be applied to individual source files:
 This is a custom license with no OSI-approved SPDX short identifier. Refer to
 it in machine-readable metadata as:
 
-    LicenseRef-Diors-Builds-Source-Available-1.0
+    LicenseRef-Dioreo-Source-Available-1.1
 
 
 ===============================================================================
@@ -774,7 +777,7 @@ be sent to:
 
     Harkirat Mangat ("dior", "diorswrld")
     harkirat117@gmail.com
-    https://github.com/HarkiratMangat/diors-builds
+    https://github.com/HarkiratMangat/dioreo
 
 Permission outside this License is effective only if granted by the Licensor in
 writing and signed or sent from the address above. Silence, inaction, or a
@@ -783,8 +786,52 @@ response from any other channel is not permission.
 The Licensor is generally willing to grant additional permission for genuine
 research, education, accessibility, and archival purposes. Ask.
 
+
+===============================================================================
+18. NAME CHANGE AND PRIOR VERSIONS
+===============================================================================
+
+18.1 Name change. The Software and the Official Service were published under
+     the name "Dior's Builds" until 4 August 2026 and are published under the
+     name "Dioreo" from that date. This is a change of name only. The Licensor,
+     the Software, the Official Service, the Curated Data, and the scope of
+     every permission and restriction in this License are unchanged by it. No
+     assignment, transfer, novation, or change of ownership has occurred, and
+     none is to be inferred from the change of name.
+
+18.2 References to the former name. A reference to "Dior's Builds" in this
+     License, in any document incorporated into it, in any prior grant of
+     permission, in any Contribution or Contributor Licence Agreement under
+     Section 5, or in any notice given under Section 14.7, is a reference to
+     Dioreo, and is as effective as if it named Dioreo. The converse also
+     holds: a reference to Dioreo reaches conduct that occurred while the
+     Software was called Dior's Builds.
+
+18.3 Both names are Brand Assets. Section 1.5 covers the former name as well as
+     the current one, and Section 6 applies to both. Retiring a name does not
+     release it: passing your copy or your service off as "Dior's Builds" is
+     prohibited on exactly the terms that prohibit passing it off as "Dioreo".
+
+18.4 Relationship to Version 1.0. This Version 1.1 supersedes Version 1.0 of
+     28 July 2026 and governs the Software from 4 August 2026. It differs from
+     Version 1.0 only in the name it carries, the machine-readable identifier
+     in Section 16, the extension of Section 1.5 to the former name, and this
+     Section 18. No permission granted by Version 1.0 is narrowed and no
+     restriction is enlarged.
+
+18.5 Copies already in your hands. If you received the Software under Version
+     1.0, you may continue to rely on Version 1.0 for that copy, or you may
+     treat it as governed by this Version 1.1. Either is permitted, and the
+     two grant the same rights.
+
+18.6 Machine-readable identifier. Metadata written before 4 August 2026 may
+     carry "LicenseRef-Diors-Builds-Source-Available-1.0". That identifier
+     denotes Version 1.0 of this License and remains valid for the copies it
+     was applied to. Section 16 gives the identifier to use going forward.
+
+
 ================================================================================
 
-Dior's Builds is an unofficial fan project and is not affiliated with Activision
+Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.

@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Contributing — Dior's Builds</title>
+<title>Contributing — Dioreo</title>
 <meta name="description" content="Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<meta property="og:title" content="Contributing — Dior's Builds">
+<meta property="og:title" content="Contributing — Dioreo">
 <meta property="og:description" content="Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%238B9BFF'/%3E%3C/svg%3E">
@@ -20,6 +20,12 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
+  /* ⚠️ THE MOBILE METABALL'S SOURCE COLOURS ARE TOKENS, AND THAT IS WHAT LETS THE
+     LIGHT THEME DROP invert(1). The CSS crush thresholds COLOUR, so the swarm needs
+     a bed to threshold against: discs in --goo-ink over a bed of --goo-bed. Which
+     one is black and which is white is the only thing that differs between themes —
+     see the note beside the light-mode blend rules. */
+  --goo-bed:#000; --goo-ink:#FFF;
   --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
   /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
      paper the same values measured 1.0-2.0:1 — the active tab label, the status
@@ -39,36 +45,75 @@
    which is to say invisible: every divider, table border and callout edge that
    structures these documents simply vanished in light mode while looking fine in
    dark. Light is not dark with the values flipped; the same separation needs more
-   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
-   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
-   table headers read as distinct surfaces rather than the same cream. */
+   contrast on a bright ground, and --raised is pulled further from --paper so
+   callouts and table headers read as distinct surfaces rather than one flat tone.
+   ⚠️ TWO CONSTRAINTS ON THIS PALETTE, both learned the expensive way, neither
+   visible in the values themselves.
+   NOT WHITE, AND NOT WARM. --paper was #FDFCFA, which is white in all but name and
+   read as an unstyled page. A cream/manila family was then tried and rejected on
+   sight for looking yellow; the direction asked for is clean and neutral, so the
+   family is a cool off-white on a soft cool ground. Do not "warm it up" and do not
+   flatten it back to #FFF.
+   THE RULE TOKENS ARE DERIVED FROM --paper, NOT CHOSEN BESIDE IT. A hairline only
+   does its job at its ratio, so moving --paper without re-deriving --rule/--rule2
+   leaves dividers either invisible or heavy — and they went brown once by being
+   carried across a palette change unexamined. contrastAudit will not catch it: it
+   reads ink against surfaces and never looks at a rule. Recompute by hand when any
+   surface here moves. */
 
 :root[data-theme=light]{
-  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
-  --rule:#CBC3B4; --rule2:#A39A8B;
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
-    --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
-    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
-    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
   }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}/* ⚠️ DEPTH IN LIGHT MODE, WHICH A FLAT FILL CANNOT GIVE. The ground was one flat
+   warm grey: fine on a desktop panel, dull on a phone. A large uniform mid-tone
+   is exactly what a bright mobile screen flattens, and it gives the eye no edge
+   to place the document card against. A wide soft lift behind the top of the page
+   gives the card something to sit ON. The dark theme gets this for free — its
+   card is LIGHTER than its ground, so the separation already exists.
+   ⚠️ THE GROUND IS COOL AND IT IS NOT COMING BACK TO BEIGE. Two warm near-neutrals
+   were tried and both read as muddy on a phone: a low-chroma yellow-brown at high
+   lightness has too little chroma to name a colour and just enough to dull the
+   grey, which is the exact recipe for dirty. The tint here is a lighter relative of
+   the ground, so it lifts the surface without introducing a second hue.
+   ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
+   three times the headroom and will happily pass while --ink3 fails. Darkening the
+   ground eats that margin fastest; a plum tried during this work measured 4.29
+   against the 4.5 floor and would have failed the build. Measure before darkening. */
+
+   Specificity is deliberately above body's own shorthand so it survives it; the
+   warm pages restate the whole background later and keep their accent wash. */
+:root[data-theme=light] body{background-image:
+  radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background-image:
+    radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
+}
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#8B9BFF;--glow:#C3CBFF}/* ── skip link ────────────────────────────────────────────────────────
+:root{--accent:#8B9BFF;--glow:#C3CBFF}
+
+/* ── skip link ────────────────────────────────────────────────────────
    WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
    the bar carries nine nav tabs plus the source, install and theme controls, so
    a keyboard or switch user tabbed through about thirteen widgets before
@@ -77,20 +122,18 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
    which remove an element from the focus order entirely and would make this a
    link nobody can ever reach. It is the first focusable thing in the body. */
-
-
 .skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
   padding:.55rem .9rem;border-radius:6px;
   background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
   clip-path:inset(50%);white-space:nowrap}
-.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}
+
+/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
    desktop path got the element change with none of the styling. */
-
-
 button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}/* ── wordmark ─────────────────────────────────────────────────────────
    Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
@@ -687,13 +730,35 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .foot.nodisc .sig{grid-row:1;margin-top:0}
 .foot.nodisc .endnav{grid-row:1}/* One column once the two would fight for width; the notice leads, as it does
-   on every other narrow layout here. */
+   on every other narrow layout here. *//* ⚠️ NARROW GOES TO FLEX, NOT TO A ONE-COLUMN GRID, AND THAT IS THE FIX FOR THE
+   SIGN-OFF PRINTING ON TOP OF THE LINK ROW.
+   The old block collapsed the columns and reset grid-COLUMN on both children —
+   and left grid-ROW alone. On a legal page .foot.nodisc deliberately puts the
+   sign-off and the link row both in row 1, which is correct with two columns:
+   they sit side by side. Collapse to one column without touching the rows and
+   "both in row 1" becomes both in the SAME CELL, so they render stacked on each
+   other. That is the overlap in the report, and the empty row 1 left by the
+   absent notice is the odd whitespace beside it.
+   Flex makes the whole class of bug impossible: grid-row and grid-column are
+   inert on a flex item, so neither the base rules nor the .nodisc pair can place
+   anything, and gap cannot open a gap around a child that does not exist the way
+   an empty grid row does. Order is set explicitly because the sign-off is FIRST
+   in the DOM and must stay LAST on screen — see the note above on why the markup
+   order may not be "tidied" to match. */
 
-@media (max-width:760px){
-  .foot{grid-template-columns:minmax(0,1fr);row-gap:1.3rem}
-  .disc{grid-row:auto;max-width:none}
-  .endnav{grid-column:1;justify-content:flex-start}
-  .sig{grid-column:1;text-align:left;margin:0}
+
+@media (max-width:760px){/* ⚠️ The 3.4rem bottom padding is for a WIDE layout, where the footer is the last
+     thing on the page. On a phone it stacks on top of the page wrapper's own 4rem,
+     which put about 118px of dead space under the sign-off — measured on
+     Contributors, where the two are adjacent. The wrapper already provides the
+     breathing room at this width; the footer only needs to not crowd its own last
+     line. Top padding is untouched: the back-to-top parks against it. */
+  
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
+    padding-bottom:1.1rem}
+  .disc{order:1;max-width:none}
+  .endnav{order:2;justify-content:flex-start}
+  .sig{order:3;margin:0}
 }
 .sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
@@ -808,9 +873,23 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
    to .totop's own transition is what made the button appear to come back after a
-   tap, because .birth is also what hides the ring and the arrow. */
+   tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
+   "gradient circle behind the button". Clearing background and border-color takes
+   away the button's own paint, but a backdrop-filter is not paint — it is a
+   FILTER ON WHAT IS BEHIND, clipped to the border box, and it keeps rendering a
+   blurred saturated disc long after the surface it belonged to is invisible. With
+   the background gone there is nothing left to read that disc as part of a
+   control, so it reads as a stray circle hanging behind the launching droplets.
+   Exactly the button's own 46px, which is how it was finally identified.
+   ⚠️ This is a DIFFERENT bug from the filter-region disc documented on GOO_SVG,
+   which is why that fix did not cover it: that one is #dbgoo-c allocating a
+   ~114px region while idle, and it is handled by .tt-ink's visibility:hidden
+   BETWEEN births. This one only appears DURING a birth, when .birth strips the
+   background. Two circles, two causes; the first fix made the second visible. */
 
-.totop.birth{background:transparent;border-color:transparent;transition:none}
+
+.totop.birth{background:transparent;border-color:transparent;
+  backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
 .totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
@@ -1323,10 +1402,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   
   .mbar{position:relative;isolation:isolate;overflow:hidden;
     background:var(--paper);
-    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
+     a no-op for momentum since iOS 13 made smooth scrolling the default; the only
+     effect it still has is forcing this scroller onto its own composited layer,
+     which is the other half of the blend failure described above. Removing an
+     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
     overflow-x:auto;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
     padding:.5rem .75rem;
     scrollbar-width:none}
   .mstrip::-webkit-scrollbar{display:none}
@@ -1371,14 +1455,42 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten}
+    pointer-events:none;mix-blend-mode:lighten}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
+     FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
+     did nothing. This layer exists to play ONE animation on arrival: particles
+     converge and fuse into a pill. What you look at for the rest of the page is
+     .mtab.on::after, a crisp unfiltered pill painted by the tab itself, and the
+     alpha crush ERODES the goo pill's caps, so the filtered shape sits strictly
+     inside the crisp one and removing it changes nothing you can see.
+     Leaving it alive meant a filtered, blended, per-frame-transformed layer lived
+     inside a position:sticky header for the life of the page. A blend needs its
+     backdrop rasterised in the same layer, and iOS re-layers exactly this kind of
+     element during a scroll gesture — at which point the bed has nothing to be
+     erased against and paints raw: a black rectangle in dark mode, and in light
+     mode the inverted white bed plus the accent plate, which is why it came out
+     yellow behind Contributors. A layer that is not on screen cannot be
+     mis-composited, so the artifact has no surface to appear on.
+     ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
+     the element in the layer tree, and iOS keeps compositing a mix-blend-mode
+     element that is merely invisible. This is a hardening, NOT the fix for the
+     light-mode artefact — that one was the filter chain and is fixed at source by
+     the --goo-bed/--goo-ink swap below. Keeping the two straight matters: while
+     the light chain was still wrong, the visibility version read as clean in dark
+     and broken in light, which is easy to misread as "hiding it works in one theme
+     and not the other" when the layer being hidden was never the problem.
+     No transition either: fading a blended layer means 240ms of it compositing at
+     partial opacity, which is the state being eliminated. The snap is invisible
+     regardless — .mtab.on::after is the same pill in the same place, unfiltered,
+     and the alpha crush erodes the goo pill strictly inside it. */
+  
+  .mgw.spent{display:none}
   .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
      something opaque behind them or there is nothing to threshold. Black,
      and large: the plate below has to sit entirely within the bed's OPAQUE
      core, and blur(7px) softens the bed's own edge over about 21px. */
   
-  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:#000}
-  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:#fff;
+  .mgo::before{content:"";position:absolute;inset:-110px;z-index:-2;background:var(--goo-bed)}
+  .mgo::after{content:"";position:absolute;inset:4px 0;z-index:-1;background:var(--goo-ink);
     border-radius:100vw;scale:0;opacity:0}
   .mgo.on::after{animation:mgPill 2s var(--spring) .2s both}
   @keyframes mgPill{to{scale:1;opacity:1}}/* ⚠️ THE COLOUR IS A BLEND, NOT A FILTER — and that is the second attempt.
@@ -1402,22 +1514,35 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mtint{position:absolute;inset:-80px;z-index:1;background:var(--row);
-    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS NOT THE SAME TRICK, and it cannot be.
+    mix-blend-mode:multiply;pointer-events:none}/* ⚠️ LIGHT MODE IS THE SAME TRICK READ UPSIDE DOWN, AND IT INVERTS THE SOURCE,
+     NEVER THE RESULT.
      lighten erases the black bed only because the backdrop is darker than the
-     blobs. On near-white paper it erases the BLOBS instead and the bar stays
-     empty. So light mode inverts the crushed image — the bed comes out white,
-     which is the identity for multiply — and the plate switches to screen,
-     whose identities are the mirror image: screen(white, accent) is white and
-     screen(black, accent) is accent. Same two exact rules, read the other way
-     up. */
+     blobs. On near-white paper it would erase the BLOBS instead and the bar would
+     stay empty, so light needs the mirror image: a WHITE bed, which is the identity
+     for multiply, blobs in black, and the plate on screen — screen(white, accent)
+     is white and screen(black, accent) is accent, exactly as multiply's identities
+     run the other way.
+     ⛔ THE OBVIOUS WAY TO GET THERE IS invert(1) ON THE FILTER, AND IT MUST NOT
+     COME BACK. That is what shipped first, and on iOS it painted the ACCENT PLATE
+     inverted — a lime rectangle across the bar on the violet License page
+     (invert(#9B6BE3) is #64941C), yellow on citron Contributors. The plate is a
+     SIBLING of the filtered element, so a filter reaching it at all means the light
+     chain composites wrongly, not merely blends wrongly; the same file already
+     records iOS silently dropping colour functions after blur+contrast on this very
+     element. Three attempts to fix it downstream — removing the scroller's
+     compositing hint, promoting the bar, retiring the layer — each moved WHEN the
+     artefact appeared without removing it, and suppressing the effect outright
+     removed the animation Harkirat actually wanted.
+     Swapping the SOURCE colours needs no fourth filter function: the discs, the
+     bed and the pill plate come from --goo-ink and --goo-bed, which the theme
+     already flips. Both themes now run the identical three-function chain, so there
+     is no light-only filter left to render differently. */
 
   
   :root[data-theme=light] .mgw{mix-blend-mode:multiply}
-  :root[data-theme=light] .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
   :root[data-theme=light] .mtint{mix-blend-mode:screen}
   @media (prefers-color-scheme:light){
     :root:not([data-theme=dark]) .mgw{mix-blend-mode:multiply}
-    :root:not([data-theme=dark]) .mgo{filter:blur(7px) contrast(20) blur(0) invert(1)}
     :root:not([data-theme=dark]) .mtint{mix-blend-mode:screen}
   }/* Particle geometry is the reference implementation's, unchanged: fifteen
      20px discs spawning on a radius of 90 and converging INWARD to 10, each
@@ -1435,7 +1560,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     display:block;width:20px;height:20px;border-radius:100%;opacity:0;
     transform-origin:center;animation:mptFly var(--t) ease 1 -350ms}
   .mpd{display:block;width:20px;height:20px;border-radius:100%;
-    background:#fff;opacity:1;transform-origin:center;
+    background:var(--goo-ink);opacity:1;transform-origin:center;
     animation:mptPop var(--t) ease 1 -350ms}
   @keyframes mptFly{
     0%{transform:rotate(0deg) translate(var(--sx),var(--sy));opacity:1;
@@ -1473,15 +1598,47 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     border-bottom:1.5px solid var(--ink2);transform:translateY(-2px) rotate(45deg);
     transition:transform .3s cubic-bezier(.22,.9,.24,1)}
   .msecd[open]>summary::after{transform:translateY(1px) rotate(225deg)}
-  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
-  .mt-at{margin-left:auto;font-size:.62rem;letter-spacing:.02em;text-transform:none;
-    color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    max-width:52%}
-  .mp-list{max-height:min(58vh,460px);overflow-y:auto;padding-bottom:.3rem}
+  .msecd>summary:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}/* ⚠️ THE SECTION IS THE CONTENT HERE; -On this page- IS THE CHROME, and the
+     original weighting had that backwards. The static label was mono, tracked and
+     the same ink as everything else in the bar, while the one piece of live
+     information — which section you are actually in — sat smaller, greyer and
+     truncated at 52% beside it. On a long document that line is the only
+     positional cue on screen, so it now carries the document's own voice and the
+     label shrinks to a prefix. The accent dot only exists once there IS a tracked
+     section: at the top of the page the scrollspy leaves this empty, and a lone
+     bullet floating against nothing reads as a rendering fault. */
+  
+  .msd-l{flex:0 0 auto;font-size:.55rem;color:var(--ink3)}
+  .mt-at{display:flex;align-items:center;gap:.42rem;margin-left:auto;
+    font-family:var(--display);font-size:.74rem;font-weight:600;letter-spacing:0;
+    text-transform:none;color:var(--ink);
+    overflow:hidden;white-space:nowrap;max-width:64%}/* The ellipsis has to live on the TITLE, not on the flex parent: a flex item's
+     default min-width is auto, so without this the title refuses to shrink and
+     pushes the number out of the bar instead of truncating itself. */
+  
+  .mt-at>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}/* The section NUMBER rather than a bullet: it is the same token the heading
+     and the margin index already use, so the bar names the section the way the
+     document does. Tabular figures because the badge sits at a fixed left edge
+     and 1.1 must not be narrower than 2.6.
+     ⚠️ Not every index entry HAS a number — the parser writes an em dash for
+     those, and the chronicle pages have none at all. A dash in a numeric badge
+     reads as a missing value, so the script falls back to .mt-dot there and the
+     marker degrades to the bullet instead of showing a placeholder. */
+  
+  .mt-n{flex:0 0 auto;font-family:var(--mono);font-style:normal;font-size:.62rem;
+    font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;
+    color:var(--accent-t)}
+  .mt-n.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain;
+    padding-bottom:.3rem}
   .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
-    padding:0 .9rem;border-left:2px solid transparent}
+    padding:0 .9rem;border-left:3px solid transparent}/* Stronger than the desktop rail's marker on purpose. The rail is always on
+     screen beside the prose, so a hairline is enough to say -you are here-; this
+     list is opened, scanned once and dismissed, and it has to answer that question
+     in the moment it appears. */
+  
   .msec .slot.on{border-left-color:var(--accent);
-    background:color-mix(in srgb,var(--accent) 10%,transparent)}
+    background:color-mix(in srgb,var(--accent) 16%,transparent)}
   .msec .slot:active{background:color-mix(in srgb,var(--ink) 9%,transparent)}
 }/* The warm wash. This is the single strongest signal that you have left the
    legal set — those pages sit on flat graphite with no colour behind them. */
@@ -1491,7 +1648,33 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 body{min-height:100vh;background:
   radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 62%),
   radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 12%,transparent),transparent 55%),
-  var(--desk)}/* 760px wasted most of a desktop window, and it was also what forced the footer
+  var(--desk)}/* ⚠️ LIGHT MODE NEEDS ROUGHLY TWICE THE TINT FOR THE SAME EFFECT, and that is a
+   property of the ground, not a matter of taste. A wash works by displacing the
+   surface it sits on. On dark graphite a 15% accent is a large displacement —
+   the ground has almost no luminance to begin with, so any colour laid over it
+   dominates. On #DBD3C6 paper the same 15% moves the surface a fraction of what
+   the eye needs, and the second layer is worse: --glow is a PALE tint (#C3CBFF
+   periwinkle, #FBFFB0 citron), so at 12% it is light-on-light and disappears
+   outright. Reported as not being able to see the tinting at all on a phone,
+   where auto-brightness flattens the little that was left.
+   ⚠️ contrastAudit CANNOT see this. It reads --name:#hex declarations against
+   --desk and --card; a rule painting its own surface out of color-mix is
+   invisible to it, so the hero text sitting directly on this wash had to be
+   checked by hand. It is safe in the direction taken: mixing a mid accent into a
+   light ground DARKENS it, and the ink on top is near-black, so every step here
+   increases contrast rather than eroding it. Re-check by hand if these ever go
+   the other way. */
+
+:root[data-theme=light] body{background:
+  radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 64%),
+  radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 30%,transparent),transparent 58%),
+  var(--desk)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background:
+    radial-gradient(120% 80% at 50% -12%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 64%),
+    radial-gradient(90% 60% at 88% 8%,color-mix(in srgb,var(--glow) 30%,transparent),transparent 58%),
+    var(--desk)}
+}/* 760px wasted most of a desktop window, and it was also what forced the footer
    nav to wrap "Contributors" onto a line of its own with half the row empty. The
    structured blocks (tiles, ledger, plates, promise cards) all want the extra
    width — they are auto-fit grids and simply gain a column. Running PROSE does
@@ -1520,7 +1703,7 @@ body{min-height:100vh;background:
   box-shadow:0 30px 70px -34px rgba(0,0,0,.7);backdrop-filter:blur(6px)}
 
 .card h2{font-family:var(--display);font-size:1.3rem;font-weight:750;letter-spacing:-.022em;
-  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:76px}
+  color:var(--ink);margin:2.6rem 0 .9rem;scroll-margin-top:var(--anchor-off,76px)}
 .card h2:first-child{margin-top:0}
 .card h3{font-family:var(--display);font-size:1.02rem;font-weight:700;
   letter-spacing:-.01em;color:var(--ink);margin:1.9rem 0 .6rem}
@@ -1550,41 +1733,97 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .ref{font-family:var(--mono);font-size:.86em;color:var(--ink2);
   border-bottom:1px dotted var(--rule)}/* The code block and its copy control. The control sits OUTSIDE the pre so it
    cannot scroll away with a long line, and so its own label never becomes part of
-   what gets copied. */
+   what gets copied — and since 2026-08-04 14:28 EDT it sits outside the pre's BOX
+   too, in a header strip above the code. See the note in withCopyButtons() for why
+   the overlay version was retired. The wrapper now carries the frame, so the pre
+   inside it is stripped back to type on a transparent ground. */
 
-.cw{position:relative}
-.cw pre.code[data-lang]{padding-top:1.75rem}/* ⚠️ min-height:0 is required. The base .cpy is a labelled pill with
+.cw{position:relative;margin:1.3rem 0;border-radius:10px;overflow:hidden;
+  background:var(--raised);border:1px solid var(--rule)}/* ⚠️ --cpy-bed, not a hard-coded --raised. The top sheet of the copy glyph is an
+   opaque cut-out that has to match whatever it is drawn on, and there are three
+   different surfaces now: the pill's accent wash on the CLA slip, plain --raised
+   for the old floating variant, and this strip's own tint. A variable is what
+   stops the next surface from silently reintroducing the darker notch that the
+   slip rule below already had to patch by hand. */
+
+.cw-h{position:relative;display:flex;align-items:center;justify-content:flex-end;
+  gap:.4rem;min-height:36px;padding:.28rem .4rem .28rem 1.15rem;
+  --cpy-bed:color-mix(in srgb,var(--accent) 6%,var(--raised));
+  background:var(--cpy-bed);border-bottom:1px solid var(--rule)}/* margin-right:auto pushes the control to the far end without needing a spacer. */
+
+.cw-h[data-lang]::before{content:attr(data-lang);margin-right:auto;
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3)}/* The pre keeps its scrolling and its type and gives up its chrome to .cw. */
+
+.cw pre.code,.cw pre.code[data-lang]{margin:0;border:0;border-radius:0;
+  background:none;padding:1rem 1.15rem}/* One label, in the header. The corner label is for a bare pre.code, which still
+   exists wherever a block is not wrapped. */
+
+.cw pre.code[data-lang]::before{content:none}/* ⚠️ min-height:0 is required. The base .cpy is a labelled pill with
    min-height:44px for its touch target, and that MIN wins over a plain height —
    so this came out 30px wide by 44px tall: a vertical oval with the mark riding
    high in it. An icon-only control has to reset the floor before it can be
-   square. The 44px target returns on coarse pointers, where it is the thing that
-   actually matters and the button is always visible rather than hover-revealed. *//* ⚠️ .cpy.cpy-f, not .cpy-f — these two selectors carry the SAME specificity and
+   square. *//* ⚠️ .cpy.cpy-f, not .cpy-f — these two selectors carry the SAME specificity and
    this block is defined ABOVE the base .cpy, so a single class lost on source
    order and the base won silently. That left min-height:44px and 1.05rem of
    horizontal padding in force: the button rendered 35.6x44 (a vertical oval) and
    the padding squeezed the drawn mark to ZERO width inside it. Measured, not
-   guessed. An icon-only control has to beat the labelled pill it derives from. */
+   guessed. An icon-only control has to beat the labelled pill it derives from. *//* ⚠️ THE OPACITY FIGHT IS OVER, AND THIS IS WHY THE RULES BELOW LOOK SIMPLER THAN
+   THEY DID. While the control floated on the code it had to be opaque (a 13%
+   accent over TRANSPARENT let the line run straight through it), it had to reserve
+   the block's right padding, and on a coarse pointer it had to push the code down
+   3.6rem to stop a long line sliding underneath it. In a header strip it overlaps
+   nothing, so all three go: it can be a quiet ghost button that only fills in on
+   hover, which is what a control the reader is not looking for should be.
+   Do not reintroduce the overlay without bringing all three workarounds back. */
 
 
-.cpy.cpy-f{position:absolute;top:.5rem;right:.55rem;z-index:1;
-  padding:0;gap:0;min-height:0;width:34px;height:34px}/* The 44px target returns where it actually matters — a coarse pointer, where
-   this control is always visible rather than revealed on hover. */
 
-@media (hover:none){.cpy.cpy-f{width:44px;height:44px}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
+.cpy.cpy-f{position:static;padding:0;gap:0;min-height:0;width:30px;height:30px;
+  color:var(--ink3);background:transparent;border-color:transparent}@media (hover:hover) and (pointer:fine){
+.cpy.cpy-f:hover{color:var(--accent-t);
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent)}}/* The 44px target returns where it actually matters — a coarse pointer. It costs
+   nothing now: the strip sizes to it instead of the code having to dodge it. */
+
+@media (hover:none){
+  .cpy.cpy-f{width:40px;height:40px}
+  .cw-h{min-height:46px;padding-top:.2rem;padding-bottom:.2rem}
+}/* The confirmation bubble. The live region already announces the result, and the
+   floating variant had no visible counterpart to it at all — the icon flipping to
+   a tick is easy to miss on a phone, where your thumb is on top of it.
+   ⚠️ Its word is drawn with CSS content, never typed into the markup — see the
+   note in withCopyButtons(). It hangs BELOW the strip rather than beside the
+   button: beside means measuring against the button's width, which changes with
+   the pointer type, and below is also where the thumb is not. */
+
+.cpy-p{position:absolute;top:calc(100% + .3rem);right:.4rem;z-index:2;
+  pointer-events:none;opacity:0;transform:translateY(-4px);
+  font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;
+  white-space:nowrap;padding:.32rem .55rem;border-radius:7px;
+  color:var(--ink);background:var(--paper);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--rule2));
+  box-shadow:0 10px 24px -14px rgba(0,0,0,.65);
+  transition:opacity .16s ease,transform .3s cubic-bezier(.22,.9,.24,1)}
+.cpy-p::after{content:"Copied"}
+.cpy-f[data-done] ~ .cpy-p{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion:reduce){.cpy-p{transition:opacity .16s ease}}/* The copy mark: two offset sheets, becoming a tick once the text is on the
    clipboard. Drawn, not typed — see the note in withCopyButtons(). */
 
 .cpy-g{position:relative;display:block;width:12.5px;height:13px}
 .cpy-g::before,.cpy-g::after{content:"";position:absolute;box-sizing:border-box;
   border:1.4px solid currentColor;border-radius:2px;transition:opacity .18s ease}
 .cpy-g::before{left:0;top:0;width:8.5px;height:9.5px}
-.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--raised)}
+.cpy-g::after{left:4px;top:3.5px;width:8.5px;height:9.5px;background:var(--cpy-bed,var(--raised))}
 .cpy-f[data-done] .cpy-g::before{opacity:0}
 .cpy-f[data-done] .cpy-g::after{left:1px;top:2px;width:10px;height:5.5px;
-  border-width:0 0 1.7px 1.7px;border-radius:0;background:none;transform:rotate(-45deg)}
-@media (hover:hover) and (pointer:fine){
-  .cw .cpy-f{opacity:0;transition:opacity .22s ease}
-  .cw:hover .cpy-f,.cw .cpy-f:focus-visible{opacity:1}
-}
+  border-width:0 0 1.7px 1.7px;border-radius:0;background:none;transform:rotate(-45deg)}/* ⚠️ THE HOVER-REVEAL IS GONE ON PURPOSE, and it should not come back. It existed
+   because a control sitting ON the code was clutter at rest; a control in the
+   header strip is part of the block's furniture, and hiding it there means a
+   reader on a trackpad has to discover it by accident. "More intuitive" was the
+   actual request. The quiet resting state above does the same job without making
+   the control conditional on hover — which a touch device never has. */
+
 .card blockquote.callout{margin:1.5rem 0;padding:1.05rem 1.25rem;border-radius:12px;
   background:color-mix(in srgb,var(--accent) 8%,var(--raised));
   border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule))}
@@ -1675,7 +1914,22 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .ldg-r>h3{grid-column:2;grid-row:1;margin:0 0 .45rem;font-size:1rem}
 .ldg-r>div{grid-column:2;grid-row:2}
 .ldg-r>div>:last-child{margin-bottom:0}
-.card .ldg-r p,.card .ldg-r li{font-size:.97rem;line-height:1.68}/* ── the consent slip. The one thing on this page a reader has to physically
+.card .ldg-r p,.card .ldg-r li{font-size:.97rem;line-height:1.68}/* ⚠️ ON A PHONE THE MARK KEEPS ITS COLUMN AND THE PROSE STOPS PAYING FOR IT.
+   The row reserves a 26px gutter plus an .85rem gap for the direction mark, and
+   spans it down the WHOLE row so the body is indented past it too. On a desktop
+   card that is a hanging indent and reads well. At 375px it costs about 40px of a
+   ~250px measure — roughly four characters a line on an already narrow column —
+   and leaves a tall empty channel beside every paragraph, which is the "so much
+   odd spacing" in the report: the space is not between things, it is beside them.
+   The mark stays on the heading's line, where it is a label for the row; only the
+   body is released to the full width. */
+
+@media (max-width:620px){
+  .ldg-r{grid-template-columns:auto 1fr;column-gap:.5rem;padding:1rem 1.05rem .95rem}
+  .ldg-m{grid-row:1;width:auto;height:auto;margin-top:.12rem}
+  .card .ldg-r>h3{grid-column:2;grid-row:1}
+  .ldg-r>div{grid-column:1/-1;grid-row:2;margin-top:.4rem}
+}/* ── the consent slip. The one thing on this page a reader has to physically
       take away, so it looks detachable: a dashed tear edge down the left and a
       real copy control. The line stays selectable text if JS never runs. */
 
@@ -1701,12 +1955,16 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
   border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);
   transition:background .2s,color .2s,border-color .2s}@media (hover:hover) and (pointer:fine){
 .cpy:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}}
-.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}/* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
+.cpy[data-done]{color:var(--ink);border-color:var(--rule2);background:var(--raised)}/* The labelled pill's word, drawn rather than typed — see asSlip(). Both states
+   live here so the script never has to touch the document's text. */
+
+.cpy-t::after{content:"Copy"}
+.cpy[data-done] .cpy-t::after{content:"Copied"}/* The top sheet of the copy glyph is an opaque cut-out, so it has to match the
    surface it sits on. In the floating variant that is --raised; inside the labelled
    pill it is the pill's own accent-washed fill, and --raised there left a visibly
    darker notch through the drawing. */
 
-.slip .cpy .cpy-g::after{background:color-mix(in srgb,var(--accent) 13%,var(--raised))}/* Visually hidden, still announced. The button label also changes, so a sighted
+.slip .cpy{--cpy-bed:color-mix(in srgb,var(--accent) 13%,var(--raised))}/* Visually hidden, still announced. The button label also changes, so a sighted
    user gets the same confirmation without the live region. */
 
 .cpy-s{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
@@ -1717,12 +1975,44 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    contributor, auto-fit collapses the empty tracks and stretches that one plate
    across the entire card — a name floating in a wide grey band, which is most of
    why this page read as lifeless. Capping the track keeps a plate plate-sized and
-   lets the wall grow into an actual wall as names arrive. */
+   lets the wall grow into an actual wall as names arrive. *//* ⚠️ THIS HAD NO RULE AT ALL and rendered as a body-size serif paragraph — so
+   "Name · Role" sat under the Maintainer heading looking like a sentence that had
+   lost its verb, which is what "not a fan of the maintainer card design" was
+   pointing at (2026-08-04 14:01 EDT). It is a COLUMN KEY, and it has to look like one.
+   ⚠️ It cannot simply be deleted, and that is the trap: asPlates() keeps this text
+   because dropping the source table's header row is real content loss and verify()
+   catches it by name ("name role harkirat mangat"). It also stops being redundant
+   the moment a plate carries three values — the documented format for new entries
+   adds Contribution and First shipped, which are not self-describing. So the fix
+   is to make it read as a legend, never to remove it. *//* ⚠️ Scoped to .card, not a bare .wall-l. It is a paragraph inside .card, and the
+   .card p rule is (0,2,0) — a single class loses to it on specificity, so the first
+   attempt applied the uppercase and the colour (which .card p does not set) and
+   silently kept the 16.6px serif for everything else. Measured off the rendered
+   page, not assumed; it looked entirely correct in the source. Same class of bug as
+   the .doc margin earlier today.
+   No backticks in this comment: it lives inside a template literal, where one ends
+   the string and fails the build with a SyntaxError pointing at prose. */
 
 
 
-.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,268px));
-  gap:.9rem;margin:1.4rem 0;justify-content:start}
+
+
+.card .wall-l{margin:0 0 .5rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}/* ⚠️ auto-FIT with a 1fr ceiling, not auto-FILL capped at 268px. The cap was
+   protecting against a single plate stretching the full width of a 950px card, and
+   the cure was worse: with one maintainer and no contributors yet — which is the
+   state this page is actually in, and will be in for a while — every section showed
+   one narrow plate hugging the left edge with two empty columns beside it. It read
+   as a grid that had failed to load rather than as a deliberate object.
+   auto-fit collapses the empty tracks; 1fr then lets the surviving plates share the
+   row. One plate spans the card, two split it, three or more fall back to the 232px
+   minimum and wrap. Harkirat's call, 2026-08-04 15:05 EDT.
+   The 560px override is now redundant (auto-fit reaches 1fr on its own below the
+   minimum) and is kept only as an explicit floor — if the minimum ever rises above
+   the narrowest phone, this is what stops a horizontal scrollbar appearing. */
+
+.wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
+  gap:.9rem;margin:1.4rem 0}
 @media (max-width:560px){.wall{grid-template-columns:1fr}}
 @media (hover:hover) and (pointer:fine){
   .plate:not(.ghost){transition:transform .3s cubic-bezier(.22,.9,.24,1),
@@ -1772,10 +2062,23 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 
 .proms{display:grid;grid-template-columns:repeat(auto-fit,minmax(218px,1fr));gap:.85rem;
   margin:1.3rem 0}
-.prom{position:relative;border:1px solid var(--rule);border-radius:13px;
-  padding:1.05rem 1.15rem 1.1rem;background:color-mix(in srgb,var(--accent) 5%,var(--raised))}
-.prom::after{content:"";position:absolute;left:1.15rem;right:1.15rem;bottom:0;height:1px;
-  background:linear-gradient(90deg,var(--accent),transparent);opacity:.55}
+.prom{position:relative;overflow:hidden;border:1px solid var(--rule);border-radius:13px;
+  padding:1.2rem 1.15rem 1.1rem;background:color-mix(in srgb,var(--accent) 5%,var(--raised))}/* ⚠️ THE ACCENT MOVED FROM THE FOOT TO THE HEAD, and the old placement is worth
+   describing so it does not come back. It was a 1px hairline at bottom:0, inset
+   1.15rem from each side, at .55 opacity — which put a faint detached line under
+   the last line of prose. Three things were wrong at once: a rule at the BOTTOM
+   of a card reads as a separator between cards rather than as a mark belonging to
+   one, insetting it from the edges detached it from the card's own geometry so it
+   floated, and .55 opacity on an already-pale accent left it looking like a
+   rendering artifact rather than a decision.
+   A full-bleed cap at the top is the same idea made structural, and it echoes the
+   accent rule across the top of the legal document card — so the two page families
+   share a gesture without sharing a template. overflow:hidden is what curves the
+   cap into the card's own radius; without it the bar runs straight past the
+   rounded corners. */
+
+.prom::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 18%,transparent))}
 .card .prom h4{font-family:var(--display);font-size:.95rem;font-weight:750;
   letter-spacing:-.012em;color:var(--ink);margin:0 0 .4rem}
 .card .prom p{font-family:var(--serif);font-size:.93rem;line-height:1.62;
@@ -1855,7 +2158,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       <span class="mk-ctx"><i aria-hidden="true"></i>Contributing</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -1873,7 +2176,7 @@ html{scroll-behavior:smooth}
       <a class="segchip" href="./contributing.html">Community</a>
       <a class="tab on" href="./contributing.html" data-accent="#8B9BFF" aria-current="page">Contributing</a><a class="tab" href="./contributors.html" data-accent="#F8FF4A">Contributors</a>
     </div></div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -1881,7 +2184,7 @@ html{scroll-behavior:smooth}
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
@@ -1949,38 +2252,38 @@ html{scroll-behavior:smooth}
     <h1>Contributing</h1>
     <p class="lede">Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.</p>
   </header>
-  <main class="card spine" id="main" tabindex="-1"><div class="lead"><p>Contributions are genuinely welcome — bug reports, security findings, fixes, and features. If your contribution ships, <strong>you get credited by name in the <a href="contributors.html">contributors list</a> and in the changelog entry for the release it lands in.</strong> That's a binding commitment, written into §5.6 of the <a href="../LICENSE">LICENSE</a>, not just a nice intention.</p>
+  <main class="card spine" id="main" tabindex="-1"><div class="lead"><p>Contributions are genuinely welcome — bug reports, security findings, fixes, and features. If your contribution ships, <strong>you get credited by name in the <a href="contributors.html">contributors list</a> and in the changelog entry for the release it lands in.</strong> That's a binding commitment, written into §5.6 of the <a href="license.html">LICENSE</a>, not just a nice intention.</p>
 <p>Before you start, please read this whole file. It's short, and the legal part at the end matters.</p></div>
-<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="the-one-line-version-of-the-licence" class="plain"><span class="ht">The one-line version of the licence</span><a class="anchor" href="#the-one-line-version-of-the-licence" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Dior's Builds is <strong>source-available, not open source</strong>. You can read it, study it, audit it, and run it locally by yourself. You <strong>cannot</strong> deploy it anywhere other people can use it, redistribute it, or build a competing bot from it. Full terms: <a href="../LICENSE">LICENSE</a>.</p>
+<section class="sec"><span class="node" aria-hidden="true"></span><h2 id="the-one-line-version-of-the-licence" class="plain"><span class="ht">The one-line version of the licence</span><a class="anchor" href="#the-one-line-version-of-the-licence" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Dioreo is <strong>source-available, not open source</strong>. You can read it, study it, audit it, and run it locally by yourself. You <strong>cannot</strong> deploy it anywhere other people can use it, redistribute it, or build a competing bot from it. Full terms: <a href="license.html">LICENSE</a>.</p>
 <p>This means contributing here is a bit different from contributing to an MIT project: your contribution becomes part of software that only the maintainer operates and distributes. The Contributor Licence Agreement below is what makes that work legally. Please make sure you're comfortable with it.</p></div></section>
-<section class="sec" data-t="options"><span class="node" aria-hidden="true"></span><h2 id="ways-to-contribute" class="plain"><span class="ht">Ways to contribute</span><a class="anchor" href="#ways-to-contribute" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="opts"><article class="opt"><span class="opt-m" aria-hidden="true">🐞</span><h3 id="bug-reports" class="plain"><span class="ht">Bug reports</span><a class="anchor" href="#bug-reports" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Open a <a href="https://github.com/HarkiratMangat/diors-builds/issues" target="_blank" rel="noopener noreferrer">GitHub issue</a>. Useful reports include:</p>
+<section class="sec" data-t="options"><span class="node" aria-hidden="true"></span><h2 id="ways-to-contribute" class="plain"><span class="ht">Ways to contribute</span><a class="anchor" href="#ways-to-contribute" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><div class="opts"><article class="opt"><span class="opt-m" aria-hidden="true">🐞</span><h3 id="bug-reports" class="plain"><span class="ht">Bug reports</span><a class="anchor" href="#bug-reports" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Open a <a href="https://github.com/HarkiratMangat/dioreo/issues" target="_blank" rel="noopener noreferrer">GitHub issue</a>. Useful reports include:</p>
 <ul><li>What you did (the exact slash command and options)</li><li>What you expected</li><li>What actually happened, with a screenshot if it's a rendering issue</li><li>Roughly when it happened, and your timezone — it helps correlate against logs</li></ul></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔒</span><h3 id="security-vulnerabilities" class="plain"><span class="ht">Security vulnerabilities</span><a class="anchor" href="#security-vulnerabilities" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p><strong>Do not open a public issue for a security problem.</strong></p>
 <p>Email <strong>harkirat117@gmail.com</strong> with the details. Please read §4.11 of the LICENSE first — the short version:</p>
 <ul><li>✅ Test against <strong>your own local instance</strong></li><li>❌ Do <strong>not</strong> test against the live bot or its infrastructure</li><li>❌ Do <strong>not</strong> access or exfiltrate anyone's data</li><li>❌ Do <strong>not</strong> disclose publicly until it's been fixed, or a reasonable time has passed</li></ul>
 <p>Good-faith research within those limits is explicitly permitted by the licence and is welcome.</p></div></article><article class="opt"><span class="opt-m" aria-hidden="true">💡</span><h3 id="feature-ideas" class="plain"><span class="ht">Feature ideas</span><a class="anchor" href="#feature-ideas" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Open an issue and describe the problem you want solved rather than the implementation you have in mind. The <span class="ref">roadmap</span> shows what's already planned — worth a look first, so you don't duplicate something in flight.</p></div></article><article class="opt"><span class="opt-m" aria-hidden="true">🔧</span><h3 id="code" class="plain"><span class="ht">Code</span><a class="anchor" href="#code" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Open an issue before writing anything substantial. It saves you from building something that doesn't fit the architecture or is already half-done on a branch.</p></div></article></div></div></section>
 <section class="sec"><span class="node" aria-hidden="true"></span><h2 id="setting-up-locally" class="plain"><span class="ht">Setting up locally</span><a class="anchor" href="#setting-up-locally" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>You'll need Node.js 24+, a MongoDB instance, and <strong>your own Discord application</strong> — never the production bot's token.</p>
-<div class="cw"><pre class="code" data-lang="bash" id="code-1"><code>git clone https://github.com/HarkiratMangat/diors-builds.git</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-1"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
-<div class="cw"><pre class="code" data-lang="bash" id="code-2"><code>npm install</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-2"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+<div class="cw"><div class="cw-h" data-lang="bash"><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-1"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-p" aria-hidden="true"></span><span class="cpy-s" role="status" aria-live="polite"></span></div><pre class="code" data-lang="bash" id="code-1"><code>git clone https://github.com/HarkiratMangat/dioreo.git</code></pre></div>
+<div class="cw"><div class="cw-h" data-lang="bash"><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-2"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-p" aria-hidden="true"></span><span class="cpy-s" role="status" aria-live="polite"></span></div><pre class="code" data-lang="bash" id="code-2"><code>npm install</code></pre></div>
 <p>Create a <code>.env.dev</code> file with your own credentials (it's gitignored):</p>
-<div class="cw"><pre class="code" data-lang="bash" id="code-3"><code>BOT_TOKEN=your_own_dev_bot_token
+<div class="cw"><div class="cw-h" data-lang="bash"><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-3"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-p" aria-hidden="true"></span><span class="cpy-s" role="status" aria-live="polite"></span></div><pre class="code" data-lang="bash" id="code-3"><code>BOT_TOKEN=your_own_dev_bot_token
 MONGODB_URI=mongodb://localhost:27017/diors-builds-dev
-NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-3"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+NODE_ENV=development</code></pre></div>
 <p>Run it with auto-reload:</p>
-<div class="cw"><pre class="code" data-lang="bash" id="code-4"><code>node --watch --env-file=.env.dev index.js</code></pre><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-4"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+<div class="cw"><div class="cw-h" data-lang="bash"><button class="cpy cpy-f" type="button" data-tip="Copy" aria-label="Copy code" data-copy="code-4"><span class="cpy-g" aria-hidden="true"></span></button><span class="cpy-p" aria-hidden="true"></span><span class="cpy-s" role="status" aria-live="polite"></span></div><pre class="code" data-lang="bash" id="code-4"><code>node --watch --env-file=.env.dev index.js</code></pre></div>
 <blockquote class="callout warn"><p>⚠️ <strong><code>dotenv.config()</code> runs after <code>--env-file</code> and backfills anything you omit.</strong> Leaving a key out of <code>.env.dev</code> doesn't unset it — it silently inherits whatever is in <code>.env</code>. To disable something in dev, set it <strong>explicitly blank</strong>.</p></blockquote>
 <p>Deployment notes and the fuller dev-bot setup: <span class="ref"><code>docs/reference/deployment-and-ops.md</code></span>.</p></div></section>
 <section class="sec"><span class="node" aria-hidden="true"></span><h2 id="code-conventions" class="plain"><span class="ht">Code conventions</span><a class="anchor" href="#code-conventions" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>The repo has detailed, path-scoped conventions in <code>.claude/rules/*.md</code> and architectural invariants in <span class="ref"><code>CLAUDE.md</code></span>. The essentials:</p>
 <ul><li><strong>Commit messages follow <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank" rel="noopener noreferrer">Conventional Commits v1.0.0</a></strong> — <code>&lt;type&gt;(&lt;scope&gt;): &lt;description&gt;</code>, colon and one space, imperative, lowercase, no trailing period. Only the 11 standard types.</li><li><strong>Branch names</strong> are <code>&lt;type&gt;/&lt;kebab-description&gt;</code>.</li><li><strong>Keep the "why" comments.</strong> This codebase explains <em>why</em> code is written a certain way — especially around fixed bugs and Discord platform quirks. If your change makes a comment stale, update it. If you fix a bug or work around a platform limitation, add one in the same style.</li><li><strong>New schema fields must be added to the Mongoose schema in <code>models/</code> in the same change.</strong> Mongoose silently drops undeclared fields — they work in memory and vanish on the next fetch. This has caused real bugs more than once.</li><li><strong>Test on a dev bot before opening the PR.</strong> Boot it, run the affected command, confirm it actually works.</li></ul></div></section>
 <section class="sec"><span class="node" aria-hidden="true"></span><h2 id="pull-requests" class="plain"><span class="ht">Pull requests</span><a class="anchor" href="#pull-requests" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><ol><li>Branch off <code>main</code> (or off <code>v3-pre-release</code> for v3 work).</li><li>Keep the PR focused on one thing.</li><li>Describe what you changed and how you tested it.</li><li>Confirm the CLA (see below).</li></ol>
 <p>Review is by the maintainer. There's no SLA — this is a hobby project.</p></div></section>
-<section class="sec" data-t="ledger"><span class="node" aria-hidden="true"></span><h2 id="contributor-licence-agreement-cla" class="plain"><span class="ht">Contributor Licence Agreement (CLA)</span><a class="anchor" href="#contributor-licence-agreement-cla" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p><strong>By submitting a contribution, you agree to the terms in <a href="../LICENSE">§5 of the LICENSE</a>.</strong> That section is the operative legal text; this is a plain-English explanation of it, not a replacement.</p><div class="ldg"><div class="ldg-r" data-d="out"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-granting" class="plain"><span class="ht">What you're granting</span><a class="anchor" href="#what-youre-granting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>You give the maintainer a <strong>perpetual, worldwide, irrevocable, royalty-free licence</strong> to use your contribution — to modify it, ship it, deploy it, commercialise it, and to license or relicense it under any terms, including proprietary ones.</p>
+<section class="sec" data-t="ledger"><span class="node" aria-hidden="true"></span><h2 id="contributor-licence-agreement-cla" class="plain"><span class="ht">Contributor Licence Agreement (CLA)</span><a class="anchor" href="#contributor-licence-agreement-cla" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p><strong>By submitting a contribution, you agree to the terms in <a href="license.html">§5 of the LICENSE</a>.</strong> That section is the operative legal text; this is a plain-English explanation of it, not a replacement.</p><div class="ldg"><div class="ldg-r" data-d="out"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-granting" class="plain"><span class="ht">What you're granting</span><a class="anchor" href="#what-youre-granting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>You give the maintainer a <strong>perpetual, worldwide, irrevocable, royalty-free licence</strong> to use your contribution — to modify it, ship it, deploy it, commercialise it, and to license or relicense it under any terms, including proprietary ones.</p>
 <p>This is necessary because the project is source-available and may change licensing later. Without it, every contributor would effectively hold a veto over the project's future.</p></div></div><div class="ldg-r" data-d="hold"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-you-keep" class="plain"><span class="ht">What you keep</span><a class="anchor" href="#what-you-keep" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><ul><li><strong>You keep your copyright.</strong> This is a licence, not an assignment.</li><li><strong>The licence is non-exclusive</strong> — you can still use your own code elsewhere.</li><li><strong>You keep your credit.</strong> §5.6 obliges the maintainer to credit you and not to pass your work off as his own.</li></ul></div></div><div class="ldg-r" data-d="check"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-confirming" class="plain"><span class="ht">What you're confirming</span><a class="anchor" href="#what-youre-confirming" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>That you actually have the right to give this — specifically:</p>
-<ul><li>The contribution is <strong>your own work</strong>, or you have the rights to submit it</li><li>Any third-party code in it is <strong>clearly identified with its licence</strong> when you submit it</li><li>It doesn't knowingly infringe anyone's copyright, patent, trademark, or trade secret</li><li><strong>If your employer has rights to what you create</strong>, you've either got their permission or they've waived those rights — please check this properly if you write code professionally</li><li>It contains <strong>no malicious code, backdoors, or hidden functionality</strong></li></ul></div></div><div class="ldg-r" data-d="none"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-not-getting" class="plain"><span class="ht">What you're not getting</span><a class="anchor" href="#what-youre-not-getting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>No payment, no co-ownership of the project, no approval right over how your contribution is later modified or used, and no ownership stake in Dior's Builds as a whole.</p></div></div></div><h3 id="how-to-confirm-it" class="plain"><span class="ht">How to confirm it</span><a class="anchor" href="#how-to-confirm-it" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Include this line in your pull request description:</p>
-<div class="slip"><p class="slip-t" id="cla-line">I have read and agree to the Contributor Licence Agreement in §5 of the LICENSE.</p><button class="cpy" type="button" data-copy="cla-line"><span class="cpy-g" aria-hidden="true"></span><span class="cpy-t">Copy</span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
+<ul><li>The contribution is <strong>your own work</strong>, or you have the rights to submit it</li><li>Any third-party code in it is <strong>clearly identified with its licence</strong> when you submit it</li><li>It doesn't knowingly infringe anyone's copyright, patent, trademark, or trade secret</li><li><strong>If your employer has rights to what you create</strong>, you've either got their permission or they've waived those rights — please check this properly if you write code professionally</li><li>It contains <strong>no malicious code, backdoors, or hidden functionality</strong></li></ul></div></div><div class="ldg-r" data-d="none"><span class="ldg-m" aria-hidden="true"></span><h3 id="what-youre-not-getting" class="plain"><span class="ht">What you're not getting</span><a class="anchor" href="#what-youre-not-getting" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>No payment, no co-ownership of the project, no approval right over how your contribution is later modified or used, and no ownership stake in Dioreo as a whole.</p></div></div></div><h3 id="how-to-confirm-it" class="plain"><span class="ht">How to confirm it</span><a class="anchor" href="#how-to-confirm-it" data-tip="Link to section" aria-label="Link to this section">¶</a></h3><div><p>Include this line in your pull request description:</p>
+<div class="slip"><p class="slip-t" id="cla-line">I have read and agree to the Contributor Licence Agreement in §5 of the LICENSE.</p><button class="cpy" type="button" data-copy="cla-line"><span class="cpy-g" aria-hidden="true"></span><span class="cpy-t" aria-hidden="true"></span></button><span class="cpy-s" role="status" aria-live="polite"></span></div>
 <p>If you'd rather not agree to the CLA, you can still help enormously — file issues, report bugs, report security findings, and suggest ideas. Those don't require it.</p></div></div></section>
 <section class="sec"><span class="node" aria-hidden="true"></span><h2 id="questions" class="plain"><span class="ht">Questions</span><a class="anchor" href="#questions" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Open an issue, email <strong>harkirat117@gmail.com</strong>, or message <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a>.</p>
 <p>Thanks for being here — genuinely.</p>
-<p><em>Dior's Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
+<p><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
   <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
        the SOURCE file ends with, lifted out of the body by warmCompose so it
        shows once; DIOR_SIG is the fallback when a source carries no closing line.
@@ -1993,6 +2296,15 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
 </div>
+<!-- Outside .wrap, for the reason given on TOTOP_HTML: a fixed element is trapped
+     by any ancestor carrying a filter, transform or backdrop-filter. -->
+<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+  <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
+    <circle class="tt-trk" cx="23" cy="23" r="20"/>
+    <circle class="tt-bar" cx="23" cy="23" r="20"/>
+  </svg>
+  <span class="tt-ar" aria-hidden="true"><i></i><i></i></span>
+</button>
 <script>
 (function(){
   var d=document.documentElement, btn=document.getElementById('th');
@@ -2790,20 +3102,50 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
        scroll-snap re-settles the strip after reveal() sets scrollLeft, so the
        cached scrollLeft was stale before the first paint. A rect difference is
        whatever is true right now and cannot go stale. */
+    /* ⚠️ ONCE SPENT, STOP TRACKING. The whole reason this element has to be
+       hand-positioned is that it lives outside the scroller so its blend keeps a
+       backdrop — but a retired layer is invisible, so writing a transform to it on
+       every frame of every scroll buys nothing and is precisely the per-frame work
+       that exposed it to iOS's compositor. See the .mgw.spent note in the CSS. */
+    var spentT=null;
     function follow(){
+      if(gw.classList.contains('spent')) return;
       var t=mtabs[cur]; if(!t) return;
       gw.style.transform='translateX('
         +(t.getBoundingClientRect().left-bar.getBoundingClientRect().left)+'px)';
     }
 
+    /* Long enough to outlast the whole birth: the pill runs 2s on a .2s delay and
+       the particles 1200±300ms started 350ms in, so everything has landed well
+       before this. Retiring it early would cut the animation off mid-flight. */
+    function retire(){
+      if(spentT) clearTimeout(spentT);
+      spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
+    }
+
+    /* ⚠️ ONLY AN ANIMATED PLACEMENT MAY BRING THE LAYER BACK, AND THIS IS THE
+       WHOLE BUG. Retiring it after the birth was correct and did nothing, because
+       place() un-retired it on every call and the RESIZE handler calls place() —
+       and iOS fires resize every time the URL bar shows or hides, which is on
+       every scroll. So the layer was resurrected continuously while scrolling and
+       hid itself again about 2.6s after the last gesture: reported exactly as
+       "it disappears once I stop touching the screen, then reappears as I begin
+       scrolling again".
+       A resize only needs the geometry to follow the tab; it is not an arrival and
+       has nothing to animate, so it must not resurrect a layer whose animation is
+       long over. */
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
+      if(animate){
+        if(spentT) clearTimeout(spentT);
+        gw.classList.remove('spent');
+      }
       cur=i; follow();
       gw.style.width=t.offsetWidth+'px';
       gw.style.top=t.offsetTop+'px';
       gw.style.height=t.offsetHeight+'px';
       gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); return; }
+      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
       /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
          pill first and re-animating it a moment later is what made the old
          version look glitchy: you saw the pill, saw it vanish, saw it grow. */
@@ -2817,6 +3159,7 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
       void goo.offsetWidth;
       spray();
       goo.classList.add('on');
+      retire();
     }
 
     function spray(){
@@ -2858,13 +3201,95 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
       reveal(); place(cur,true);
       setTimeout(follow,0); setTimeout(follow,160);
     }
-    addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
+    /* ⚠️ WIDTH, NOT "resize". On iOS the URL bar collapsing and expanding fires
+       resize on almost every scroll, with the width unchanged — nothing about this
+       strip's layout depends on viewport HEIGHT, so those events are pure noise
+       that was re-running reveal() and place() continuously mid-gesture. Comparing
+       the width ignores them and leaves a real orientation change or window resize
+       handled exactly as before. */
+    var lastW=innerWidth;
+    addEventListener('resize',function(){
+      if(innerWidth===lastW) return;
+      lastW=innerWidth;
+      if(live()){ reveal(); place(cur,false); }
+    });
     /* A tap moves the indicator immediately even though the page is about to be
        replaced: on a slow connection that is the only feedback the tap landed. */
     mtabs.forEach(function(a,i){
       a.addEventListener('click',function(){ cur=i; place(i,true); });
     });
   }
+
+  /* ── the section disclosure ───────────────────────────────────────────
+     Two gaps that only appear on a long document, both reported from a phone.
+
+     A tab is a real link to another document, so a tap tears the whole page down
+     and the panel goes with it. A SECTION is a same-page jump: nothing is torn
+     down, so the panel stayed open on top of the very content it had just been
+     asked to reveal. Closing it is the navigation completing.
+
+     And the panel is its own scroll box. The scrollspy above already keeps .on
+     correct on both copies of the index, but only the DESKTOP rail was ever
+     scrolled to the tracked slot — so on a 22-section document you opened the
+     list at section 1 with the highlight nineteen rows below the fold, which is
+     indistinguishable from no highlight at all.
+     ⚠️ scrollTop is set directly, never scrollIntoView: that call walks every
+     scrollable ancestor and moves the PAGE when the element is not fully in
+     view, which here means the document scrolling itself because you opened a
+     menu. Same reason the rail does it this way. */
+  var msecd=document.querySelector('.msecd');
+  if(msecd){
+    var mlist=msecd.querySelector('.mp-list');
+    msecd.addEventListener('click',function(e){
+      var t=e.target;
+      /* .dlr as well as .slot: the download is a row in this panel too, and a
+         disclosure left standing open over the page after you have acted on it is
+         the same complaint the auto-close was added for. */
+      if(t&&t.closest&&(t.closest('.slot')||t.closest('.dlr'))) msecd.open=false;
+    });
+    /* On open, not on every scroll frame: the highlight cannot move while the
+       panel covers the document, so once placed it stays right. */
+    msecd.addEventListener('toggle',function(){
+      if(!msecd.open||!mlist) return;
+      var on=mlist.querySelector('.slot.on'); if(!on) return;
+      var pad=56, et=on.offsetTop, eh=on.offsetHeight;
+      if(et<mlist.scrollTop+pad) mlist.scrollTop=Math.max(0,et-pad);
+      else if(et+eh>mlist.scrollTop+mlist.clientHeight-pad)
+        mlist.scrollTop=et+eh-mlist.clientHeight+pad;
+    });
+  }
+
+  /* ── how far an anchor jump has to clear the sticky chrome ─────────────
+     scroll-margin-top was a flat 76px, which is the DESKTOP masthead plus a gap.
+     On a phone the sticky stack is the masthead, the tab strip and the section
+     bar — about 150px — so every jump to a section stopped roughly 80px short and
+     left the heading above the viewport, landing the reader a few lines into the
+     section they had just asked for. Reported against section 18, where the bar
+     read "18 General" over prose that started at the third clause.
+     Measured rather than tabulated: the stack has more than one height (the
+     section bar is absent on pages with no index) and a second hardcoded number
+     would be wrong on one of them. The CSS keeps 76px as its fallback, so the
+     jump is still correct if this never runs. */
+  /* ⚠️ THE STICKY OFFSET IS PART OF THE ANSWER — height alone is not.
+     .mnav is sticky at top:54px, under the masthead, so a 107px bar occupies 54 to
+     161. Sizing the margin from the height gave 129 and still landed the heading
+     32px BEHIND the bar, which looks exactly like the original bug and is why this
+     is measured rather than reasoned about. Read the element's own sticky top
+     offset and add its height; both come from the renderer, so neither the
+     masthead's height nor the bar's has to be written down anywhere.
+     No backticks in this comment on purpose: it lives inside a template literal,
+     where one ends the string and fails the build with a SyntaxError pointing at
+     prose. */
+  function anchorOffset(){
+    var n=document.getElementById('mnav');
+    if(!n){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var h=n.getBoundingClientRect().height;
+    if(!h){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var t=parseFloat(getComputedStyle(n).top)||0;
+    document.documentElement.style.setProperty('--anchor-off',(t+h+22)+'px');
+  }
+  anchorOffset();
+  addEventListener('resize',anchorOffset);
 })();
 (function(){
   /* EVERY copy control, not just the first. This was a single querySelector, so
@@ -2872,15 +3297,20 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
      a control that looks live and silently does nothing. */
   Array.prototype.forEach.call(document.querySelectorAll('.cpy'),function(b){
     if(!navigator.clipboard){ b.parentNode.removeChild(b); return; }
-    var t=b.querySelector('.cpy-t');
+    /* ⚠️ THE VISIBLE LABEL IS NOT WRITTEN FROM HERE ANY MORE. Both wordings are CSS
+       content keyed off data-done, so this script never puts a word into the
+       document — see the note in asSlip(). Writing textContent worked, and it also
+       meant the page's own text changed under verify()'s feet for 2.4 seconds. The
+       live region below is different: it is clipped out of the flow by .cpy-s and
+       exists precisely to be spoken. */
     var s=b.parentNode.querySelector('.cpy-s');
     b.addEventListener('click',function(){
       var el=document.getElementById(b.getAttribute('data-copy'));
       if(!el)return;
       navigator.clipboard.writeText(el.textContent.trim()).then(function(){
-        b.setAttribute('data-done','');if(t)t.textContent='Copied';
+        b.setAttribute('data-done','');
         if(s)s.textContent='Copied to clipboard';
-        setTimeout(function(){b.removeAttribute('data-done');if(t)t.textContent='Copy';
+        setTimeout(function(){b.removeAttribute('data-done');
           if(s)s.textContent='';},2400);
       });
     });
@@ -4032,6 +4462,42 @@ NODE_ENV=development</code></pre><button class="cpy cpy-f" type="button" data-ti
     addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
+})();
+(function(){
+  var tt=document.getElementById('totop');
+  if(!tt)return;
+  var bar=tt.querySelector('.tt-bar'), foot=document.querySelector('.foot');
+  /* Cached: getComputedStyle forces a style resolve, and both values change only
+     with the viewport. Re-measured on resize for the same reason. */
+  var base=0, pad=0;
+  function measure(){
+    base=parseFloat(getComputedStyle(tt).bottom)||0;
+    pad=foot?parseFloat(getComputedStyle(foot).paddingTop)||0:0;
+  }
+  measure();
+  var queued=false;
+  function paint(){
+    queued=false;
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    /* Clamped: iOS rubber-banding reports scrollTop below 0 and past max, and the
+       URL bar showing or hiding moves clientHeight mid-scroll. */
+    var frac=max>0?Math.min(1,Math.max(0,h.scrollTop/max)):0;
+    if(bar)bar.style.strokeDashoffset=(125.66*(1-frac)).toFixed(2);
+    if(foot){
+      /* Park on the footer's first line of CONTENT, not on its box: the box
+         carries 2.2rem of top padding, and stopping at its edge leaves the button
+         hovering in a gap where nothing needed covering. Read the FOOTER's rect,
+         never the button's — the button's already includes the lift, which would
+         feed back on itself. */
+      var ft=foot.getBoundingClientRect().top+pad;
+      var over=(h.clientHeight-base)-ft+12;
+      tt.style.setProperty('--lift',(over>0?over:0).toFixed(1)+'px');
+    }
+  }
+  function onScroll(){ if(!queued){queued=true;requestAnimationFrame(paint);} }
+  addEventListener('scroll',onScroll,{passive:true});
+  addEventListener('resize',function(){measure();onScroll();},{passive:true});
+  paint();
 })();</script>
 </body>
 </html>

@@ -1,11 +1,16 @@
 ================================================================================
 NOTICE — Third-Party Software, Trademarks, and Authorship
-Dior's Builds
+Dioreo (formerly Dior's Builds)
 ================================================================================
 
 Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.
 
-This file records (1) the third-party software Dior's Builds depends on and the
+This project was published under the name "Dior's Builds" until 4 August 2026.
+The change of name did not change the author, the copyright holder, the licensed
+work, or the third-party attributions recorded below. LICENSE §18 states the
+position in full; both names are Brand Assets under LICENSE §1.5.
+
+This file records (1) the third-party software Dioreo depends on and the
 licenses that govern it, (2) third-party trademarks referenced by the project,
 and (3) a disclosure of AI assistance in authoring the project.
 
@@ -116,7 +121,7 @@ The full Apache License 2.0 text is available at:
 The authoritative license text and any NOTICE file for each component ship
 inside that package's own directory under node_modules/.
 
-Note that LICENSE §4.2 prohibits you from redistributing Dior's Builds in any
+Note that LICENSE §4.2 prohibits you from redistributing Dioreo in any
 event. This section exists because the obligation attaches to the upstream
 components independently of what the Licensor permits, and because a GitHub
 fork places a copy in your hands.
@@ -157,7 +162,7 @@ any dependency.
 4. PLATFORM AND SERVICE PROVIDERS
 ================================================================================
 
-Dior's Builds interoperates with, and depends on, services operated by third
+Dioreo interoperates with, and depends on, services operated by third
 parties. Their terms govern their services, not this LICENSE.
 
   Discord                Discord Inc.            https://discord.com/terms
@@ -299,7 +304,7 @@ harkirat117@gmail.com. Requests are actioned promptly.
 6. AI ASSISTANCE DISCLOSURE
 ================================================================================
 
-Portions of Dior's Builds — including source code, documentation, and these
+Portions of Dioreo — including source code, documentation, and these
 legal documents — were authored with the assistance of AI coding assistants,
 principally Claude (Anthropic PBC), used as a drafting and implementation tool
 under the continuous direction of the human author.
@@ -362,13 +367,13 @@ of the Licensor under LICENSE §5.6, not a courtesy.
 
   Harkirat Mangat ("dior", "diorswrld")
   harkirat117@gmail.com
-  https://github.com/HarkiratMangat/diors-builds
+  https://github.com/HarkiratMangat/dioreo
 
 Attribution errors, omissions, licensing questions, and takedown requests are
 all welcome at that address and will be corrected promptly.
 
 ================================================================================
 
-Dior's Builds is an unofficial fan project and is not affiliated with Activision
+Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
 holders of any content the game features under licence.

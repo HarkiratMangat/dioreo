@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Legal — Dior's Builds</title>
-<meta name="description" content="Terms of Service, Privacy Policy, Source-Available License, Notices &amp; Attributions for Dior's Builds, an unofficial Call of Duty: Mobile Discord bot.">
+<title>Dioreo — Call of Duty: Mobile, in Discord</title>
+<meta name="description" content="Dioreo is an unofficial Call of Duty: Mobile Discord bot for lucky-draw odds, CP costs, loadouts, and the seasonal calendar. Install it once and it works in any server or DM.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
@@ -15,6 +15,12 @@
      a generic near-black is the thing that made the first version anonymous. */
   --desk:#16131B; --paper:#1D1926; --raised:#241F30;
   --rule:#302A3E; --rule2:#3D3550;
+  /* ⚠️ THE MOBILE METABALL'S SOURCE COLOURS ARE TOKENS, AND THAT IS WHAT LETS THE
+     LIGHT THEME DROP invert(1). The CSS crush thresholds COLOUR, so the swarm needs
+     a bed to threshold against: discs in --goo-ink over a bed of --goo-bed. Which
+     one is black and which is white is the only thing that differs between themes —
+     see the note beside the light-mode blend rules. */
+  --goo-bed:#000; --goo-ink:#FFF;
   --ink:#EDE9F3; --ink2:#A9A1B9; --ink3:#8C84A3;
   /* Accent used as TEXT. The six accents are tuned for a dark ground; on light
      paper the same values measured 1.0-2.0:1 — the active tab label, the status
@@ -34,36 +40,75 @@
    which is to say invisible: every divider, table border and callout edge that
    structures these documents simply vanished in light mode while looking fine in
    dark. Light is not dark with the values flipped; the same separation needs more
-   contrast on a bright ground. --rule now sits near 1.9:1 against paper and
-   --rule2 near 2.9:1, and --raised is pulled further from --paper so callouts and
-   table headers read as distinct surfaces rather than the same cream. */
+   contrast on a bright ground, and --raised is pulled further from --paper so
+   callouts and table headers read as distinct surfaces rather than one flat tone.
+   ⚠️ TWO CONSTRAINTS ON THIS PALETTE, both learned the expensive way, neither
+   visible in the values themselves.
+   NOT WHITE, AND NOT WARM. --paper was #FDFCFA, which is white in all but name and
+   read as an unstyled page. A cream/manila family was then tried and rejected on
+   sight for looking yellow; the direction asked for is clean and neutral, so the
+   family is a cool off-white on a soft cool ground. Do not "warm it up" and do not
+   flatten it back to #FFF.
+   THE RULE TOKENS ARE DERIVED FROM --paper, NOT CHOSEN BESIDE IT. A hairline only
+   does its job at its ratio, so moving --paper without re-deriving --rule/--rule2
+   leaves dividers either invisible or heavy — and they went brown once by being
+   carried across a palette change unexamined. contrastAudit will not catch it: it
+   reads ink against surfaces and never looks at a rule. Recompute by hand when any
+   surface here moves. */
 
 :root[data-theme=light]{
-  --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
-  --rule:#CBC3B4; --rule2:#A39A8B;
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
   --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
   --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
   --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme=dark]){
-    --desk:#D6D1CA; --paper:#FDFCFA; --raised:#EFEBE3;
-    --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
-    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
-    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --desk:#E7E4EC; --paper:#F7F5FA; --raised:#EEECF2;
+  --rule:#BFB9CA; --rule2:#948CA6;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  --goo-bed:#FFF; --goo-ink:#000;
   }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}/* ⚠️ DEPTH IN LIGHT MODE, WHICH A FLAT FILL CANNOT GIVE. The ground was one flat
+   warm grey: fine on a desktop panel, dull on a phone. A large uniform mid-tone
+   is exactly what a bright mobile screen flattens, and it gives the eye no edge
+   to place the document card against. A wide soft lift behind the top of the page
+   gives the card something to sit ON. The dark theme gets this for free — its
+   card is LIGHTER than its ground, so the separation already exists.
+   ⚠️ THE GROUND IS COOL AND IT IS NOT COMING BACK TO BEIGE. Two warm near-neutrals
+   were tried and both read as muddy on a phone: a low-chroma yellow-brown at high
+   lightness has too little chroma to name a colour and just enough to dull the
+   grey, which is the exact recipe for dirty. The tint here is a lighter relative of
+   the ground, so it lifts the surface without introducing a second hue.
+   ⚠️ --ink3 AGAINST THE GROUND IS THE BINDING CONSTRAINT — not --ink, which has
+   three times the headroom and will happily pass while --ink3 fails. Darkening the
+   ground eats that margin fastest; a plum tried during this work measured 4.29
+   against the 4.5 floor and would have failed the build. Measure before darkening. */
+
+   Specificity is deliberately above body's own shorthand so it survives it; the
+   warm pages restate the whole background later and keep their accent wash. */
+:root[data-theme=light] body{background-image:
+  radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme=dark]) body{background-image:
+    radial-gradient(140% 90% at 50% -10%,#F3F0F8,transparent 66%)}
+}
 ::selection{background:color-mix(in srgb,var(--accent) 32%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:1px}
 .lab{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;
   color:var(--ink3);font-weight:500}
 
-:root{--accent:#FF7D5C}/* ── skip link ────────────────────────────────────────────────────────
+:root{--accent:#FF7D5C}
+
+/* ── skip link ────────────────────────────────────────────────────────
    WCAG 2.4.1 Bypass Blocks is Level A, and this site failed it on every page:
    the bar carries nine nav tabs plus the source, install and theme controls, so
    a keyboard or switch user tabbed through about thirteen widgets before
@@ -72,20 +117,18 @@ body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif);
    Hidden by CLIPPING rather than by display:none or visibility:hidden, both of
    which remove an element from the focus order entirely and would make this a
    link nobody can ever reach. It is the first focusable thing in the body. */
-
-
 .skip{position:absolute;left:.5rem;top:.5rem;z-index:200;
   padding:.55rem .9rem;border-radius:6px;
   background:var(--accent);color:#0F0C16;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.14em;text-transform:uppercase;text-decoration:none;font-weight:700;
   clip-path:inset(50%);white-space:nowrap}
-.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}/* ── shared reset for the label buttons ───────────────────────────────
+.skip:focus{clip-path:none;outline:2px solid var(--ink);outline-offset:2px}
+
+/* ── shared reset for the label buttons ───────────────────────────────
    .lab is a <button> in the section rail. Without this reset it inherits the
    platform's default button chrome, which rendered as a grey box floating above
    the rail on DESKTOP — the mobile rules were scoped to a media query, so the
    desktop path got the element change with none of the styling. */
-
-
 button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   padding:0;margin:0;font:inherit;text-align:left;cursor:default;color:var(--ink3)}/* ── wordmark ─────────────────────────────────────────────────────────
    Three bars = attachment slots on a Gunsmith spec sheet, the same motif as the
@@ -682,13 +725,35 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .foot.nodisc .sig{grid-row:1;margin-top:0}
 .foot.nodisc .endnav{grid-row:1}/* One column once the two would fight for width; the notice leads, as it does
-   on every other narrow layout here. */
+   on every other narrow layout here. *//* ⚠️ NARROW GOES TO FLEX, NOT TO A ONE-COLUMN GRID, AND THAT IS THE FIX FOR THE
+   SIGN-OFF PRINTING ON TOP OF THE LINK ROW.
+   The old block collapsed the columns and reset grid-COLUMN on both children —
+   and left grid-ROW alone. On a legal page .foot.nodisc deliberately puts the
+   sign-off and the link row both in row 1, which is correct with two columns:
+   they sit side by side. Collapse to one column without touching the rows and
+   "both in row 1" becomes both in the SAME CELL, so they render stacked on each
+   other. That is the overlap in the report, and the empty row 1 left by the
+   absent notice is the odd whitespace beside it.
+   Flex makes the whole class of bug impossible: grid-row and grid-column are
+   inert on a flex item, so neither the base rules nor the .nodisc pair can place
+   anything, and gap cannot open a gap around a child that does not exist the way
+   an empty grid row does. Order is set explicitly because the sign-off is FIRST
+   in the DOM and must stay LAST on screen — see the note above on why the markup
+   order may not be "tidied" to match. */
 
-@media (max-width:760px){
-  .foot{grid-template-columns:minmax(0,1fr);row-gap:1.3rem}
-  .disc{grid-row:auto;max-width:none}
-  .endnav{grid-column:1;justify-content:flex-start}
-  .sig{grid-column:1;text-align:left;margin:0}
+
+@media (max-width:760px){/* ⚠️ The 3.4rem bottom padding is for a WIDE layout, where the footer is the last
+     thing on the page. On a phone it stacks on top of the page wrapper's own 4rem,
+     which put about 118px of dead space under the sign-off — measured on
+     Contributors, where the two are adjacent. The wrapper already provides the
+     breathing room at this width; the footer only needs to not crowd its own last
+     line. Top padding is untouched: the back-to-top parks against it. */
+  
+  .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
+    padding-bottom:1.1rem}
+  .disc{order:1;max-width:none}
+  .endnav{order:2;justify-content:flex-start}
+  .sig{order:3;margin:0}
 }
 .sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
@@ -803,9 +868,23 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
    to .totop's own transition is what made the button appear to come back after a
-   tap, because .birth is also what hides the ring and the arrow. */
+   tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
+   "gradient circle behind the button". Clearing background and border-color takes
+   away the button's own paint, but a backdrop-filter is not paint — it is a
+   FILTER ON WHAT IS BEHIND, clipped to the border box, and it keeps rendering a
+   blurred saturated disc long after the surface it belonged to is invisible. With
+   the background gone there is nothing left to read that disc as part of a
+   control, so it reads as a stray circle hanging behind the launching droplets.
+   Exactly the button's own 46px, which is how it was finally identified.
+   ⚠️ This is a DIFFERENT bug from the filter-region disc documented on GOO_SVG,
+   which is why that fix did not cover it: that one is #dbgoo-c allocating a
+   ~114px region while idle, and it is handled by .tt-ink's visibility:hidden
+   BETWEEN births. This one only appears DURING a birth, when .birth strips the
+   background. Two circles, two causes; the first fix made the second visible. */
 
-.totop.birth{background:transparent;border-color:transparent;transition:none}
+
+.totop.birth{background:transparent;border-color:transparent;
+  backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
 .totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
@@ -931,20 +1010,33 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
 .top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
-.top .ghb{margin-left:auto}/* ⚠️ -.038em, not -.05em. The face DOES have ligatures — the fi in "fine" is a
-   real one and is correct typography — but at -.05em on a ~66px display size the
-   tracking was pulling unrelated pairs into contact too: the comma sat on the t of
-   "print", and the n of "plain" touched the s of "sight". That collision is what
-   made the ligature look like a rendering fault rather than a ligature. Easing the
-   tracking separates the pairs and leaves the ligature alone.
+.top .ghb{margin-left:auto}/* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
+   The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
+   at -.05em on a ~66px display size the tracking pulled unrelated pairs into
+   contact: the comma sat on the t of "print", and the n of "plain" touched the s of
+   "sight". The face also has real ligatures — the fi in "fine" was one — and the
+   collision was making that ligature look like a rendering fault. Easing the
+   tracking separated the pairs and left the ligature alone.
+   The current headline has neither of those pairs, so nothing looks wrong at the
+   moment. That is not a reason to tighten it back: the next headline change would
+   reintroduce the collision with no note left to explain it.
    ⚠️ LIGATURES STAY ON — Harkirat's decision, 2026-08-02 00:40 EDT. They are the browser
-   default and nothing here disables them; the fi ligature in "fine" is meant to be there.
-   Do NOT "fix" this later by adding font-variant-ligatures:none. If the type ever
-   looks wrong again the suspect is the TRACKING, which pulls unrelated pairs into
-   contact, not the ligature. */
+   default and nothing here disables them. Do NOT "fix" this later by adding
+   font-variant-ligatures:none. If the type ever looks wrong again the suspect is the
+   TRACKING, which pulls unrelated pairs into contact, not the ligature. */
 
 h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height:.9;
-  font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}
+  font-size:clamp(3rem,13vw,6.5rem);margin:.8rem 0 1.4rem;color:var(--ink)}/* The name, picked out of the headline. An <em> because the emphasis is real —
+   this is the one word on the page a reader has to come away with — and the italic
+   is dropped because the colour is doing the work; a 6.5rem italic in this face
+   would fight the tracking note above.
+   ⚠️ --accent-t, NOT --accent. The raw accent is a coral tuned for dark graphite
+   and it fails on light paper; --accent-t is the site's accent-as-TEXT token and
+   is already re-mixed to 38% over near-black in the light palette. contrastAudit
+   cannot see this pairing — it reads --name:#hex declarations, and this resolves
+   through a color-mix — so it was checked by hand against both grounds. */
+
+h1 em{font-style:normal;color:var(--accent-t)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
   max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}
 .list{border-top:1px solid var(--rule)}/* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
@@ -990,7 +1082,12 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
 
 .foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
   align-items:flex-start;text-align:left;padding:0}
-.foot .disc{max-width:66ch}
+.foot .disc{max-width:66ch}/* The shared .sig carries grid placement for the document footer's two-column
+   layout; here it is a plain block in the page flow, so only the spacing needs
+   restating. Its own margin is set for sitting under a link row, not under the
+   trademark notice. */
+
+.sig.lsig{margin:clamp(1.5rem,4.5vh,2.2rem) 0 0}
 .disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
@@ -1238,14 +1335,19 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
   .inv:hover .inv-m .ln{transform:none;opacity:1}}
 }/* A section label between the two invite rows. Without it the six cards read as
    one undifferentiated grid, which is exactly the collapse the three page families
-   exist to avoid. *//* ⚠️ KEPT ON PURPOSE THOUGH NOTHING CURRENTLY USES IT. Its only element was the
-   -The record- label above the changelog row, which is withdrawn from the landing
-   page rather than deleted. Removing this would make the -uncomment to restore-
-   note above a lie: the row would come back unstyled. */
+   exist to avoid. *//* ⚠️ IN USE AGAIN as of 2026-08-04 14:36 EDT — it labels the legal set now that the
+   hero above it introduces the bot instead. It had been kept unused on purpose,
+   for the -The record- label above the withdrawn changelog row; that reason still
+   stands, so removing it would still make the -uncomment to restore- note above a
+   lie. Two callers now, one of them commented out. */
 
 
 
-.lab-sec{display:block;margin:1.9rem 0 .7rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
+.lab-sec{display:block;margin:1.9rem 0 .7rem}/* The legal set's own sub-line. Smaller than the hero lede and tighter to the
+   list it belongs to — it is a caption for one section, not the page's opening
+   sentence, and at the hero's size it competed with it. */
+
+.lede.sub{font-size:.97rem;max-width:54ch;margin-bottom:1.1rem}/* The switch sits at the BOTTOM here rather than in the top-right, at Harkirat's
    request: on a landing page the masthead should be the only thing competing for
    the top of the screen. */
 
@@ -1314,11 +1416,11 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
   <div class="top">
     <div class="mark">
     <span class="mk-s">
-      <span class="wm">Dior&#8217;s Builds</span>
+      <span class="wm">Dioreo</span>
       
     </span>
   </div>
-    <a class="ghb" href="https://github.com/HarkiratMangat/diors-builds" target="_blank" rel="noopener noreferrer"
+    <a class="ghb" href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer"
   data-spot data-tip="Source on GitHub">
   <span class="ghb-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.98-.88-2.98-2.9 0-.83.3-1.51.79-2.04-.08-.2-.35-1 .08-2.08 0 0 .66-.21 2.16.79a7.3 7.3 0 0 1 1.97-.27c.67 0 1.34.09 1.97.27 1.5-1.01 2.16-.79 2.16-.79.43 1.08.16 1.88.08 2.08.49.53.79 1.21.79 2.04 0 2.03-1.21 2.7-2.99 2.9.31.27.58.79.58 1.6 0 1.15-.01 2.09-.01 2.38 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></span>
   <span class="ghb-t"><b>Source</b></span>
@@ -1326,16 +1428,22 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
     <a class="ins" href="https://discord.com/oauth2/authorize?client_id=1491474871778021550"
   target="_blank" rel="noopener noreferrer" data-spot
   data-tip="Add to Discord"
-  aria-label="Install Dior&#8217;s Builds on Discord">
+  aria-label="Install Dioreo on Discord">
   <span class="ins-gl" aria-hidden="true"></span>
   <span class="ins-ic" aria-hidden="true"><svg viewBox="0 0 127.14 96.36" aria-hidden="true"><path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z"/></svg></span>
   <span class="ins-t">Install</span>
   <span class="ins-ar" aria-hidden="true"><svg viewBox="0 0 10 10"><path d="M2.5 7.5 7.5 2.5M4.1 2.5h3.4v3.4"/></svg></span>
 </a>
   </div>
-  <span class="lab">Legal</span>
-  <h1>The fine print,<br>in plain sight.</h1>
-  <p class="lede">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
+  <!-- "Unofficial" leads the kicker rather than waiting for the trademark notice
+       at the foot of the page. The notice is an obligation and stays where it is;
+       this is about not letting the first three words a reader sees imply a
+       relationship with Activision that the last three deny. -->
+  <span class="lab">Unofficial &middot; Call of Duty: Mobile</span>
+  <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
+  <p class="lede">It lives in Discord — lucky-draw odds and CP costs, loadouts worth building, what is live this season and when it ends, all without leaving the chat. Install it once and it answers anywhere you can type: any server, any DM, no invite needed.</p>
+  <span class="lab lab-sec">The fine print</span>
+  <p class="lede sub">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
   <div class="list">
       <a class="entry" href="terms.html" style="--accent:#F2994A;--glow:#6B4E7D">
         <i>01</i>
@@ -1359,7 +1467,7 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
           <h2>Source-Available License</h2>
           <p>Read it, study it, run it on your own machine. Source-available, not open source.</p>
         </div>
-        <em>19 sections</em>
+        <em>20 sections</em>
       </a>
       <a class="entry" href="notice.html" style="--accent:#FF5264;--glow:#6B4E7D">
         <i>04</i>
@@ -1461,7 +1569,13 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
        placement, never of contrast. -->
-  <p class="disc fine">Dior&#8217;s Builds is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+  <p class="disc fine">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+  <!-- The sign-off closes the landing page as it closes every other one. It was
+       the only page without it, which made the site look like it ended twice:
+       every document signed off and the front door did not. Last, and after the
+       trademark notice, because that notice is an obligation and this is the
+       author — the same order the document pages use. -->
+  <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
 </main>
 <script>
 (function(){

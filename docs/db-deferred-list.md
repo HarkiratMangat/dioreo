@@ -1,6 +1,6 @@
-# Deferred list — Dior's Builds (`db-deferred-list.md`)
+# Deferred list — Dioreo (`db-deferred-list.md`)
 
-**Dior's Builds' own deferred work**: confirmed bugs, time/condition reminders, the maintenance /
+**Dioreo's own deferred work**: confirmed bugs, time/condition reminders, the maintenance /
 tech-debt long-tail, and the handful of features big enough to warrant their own dedicated session.
 If a session working *only* in this repo would need to know it, it belongs here.
 
@@ -61,6 +61,124 @@ is reported or found, it lands here with a repro + a `[Priority · Effort]` tag 
 leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
+
+- `[P1 · XS · Harkirat action, not a build]` **Every GitHub link on the live site is a 404 until the
+  repo is renamed to `dioreo`.** *Filed 2026-08-04 16:23 EDT, shipped-broken in v2.52.0 with Harkirat's
+  prior go-ahead for the rename itself.*
+
+  The v2.52.0 rename changed the repo URL everywhere it appears — `package.json`'s three URL fields,
+  `LICENSE` §17, `NOTICE` §8, `CONTRIBUTING.md`'s issue link and its `git clone` snippet, and
+  `REPO_URL` in the generator, which is what the **Source** button in every page header points at.
+  They all now read `github.com/HarkiratMangat/dioreo`, and **the repository is still called
+  `Diors-Builds`**, so each one 404s.
+
+  ⚠️ **This was a deliberate ordering choice, not an oversight.** Harkirat selected the GitHub rename
+  when asked which identifiers should move, and the alternative — landing the release with the OLD
+  URLs and re-editing seven files afterwards — is strictly worse. GitHub 301-redirects the old path
+  after a rename, so doing it in either order ends up correct; only this order has a window.
+
+  **Fix — one command, Harkirat's to run** (it is outward-facing, so it was not run unasked):
+  ```
+  gh repo rename dioreo --repo HarkiratMangat/Diors-Builds
+  ```
+  Then `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local clone.
+  ⚠️ **Do NOT rename the local folder** — the memory-store slug derives from that path. See
+  `project_rename_to_dioreo` in the memory store for the full did/didn't-move boundary.
+
+- `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
+  animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
+  and chased across the mobile-polish session.*
+
+  **Symptom:** a saturated rectangle fills the tab strip for the ~2.4s the birth runs, then goes.
+  Dark mode is clean. Reproduced repeatedly on Harkirat's iPhone; **not reproducible in Chrome or in
+  the preview pane**, so this needs a real device or CDP against a WebKit build.
+
+  **The colour is the diagnostic and should be the first thing checked after any change.** It paints
+  `invert(accent)` — lime on the violet License page (`invert(#9B6BE3)` = `#64941C`), yellow on
+  citron Contributors, black on Terms. That is the **accent plate** (`.mtint`) coming out inverted,
+  and the plate is a *sibling* of the filtered element (`.mgo`), not a child. A filter reaching a
+  sibling it does not own means the light chain is **composited** wrongly, not merely blended wrongly.
+
+  ⚠️ **Four fixes are already spent. Do not restart at the top of this list** — each moved *when* the
+  artefact appeared without removing it, and that progression is the useful evidence:
+  1. Removed `-webkit-overflow-scrolling` from `.mstrip`, promoted `.mbar` with `translateZ(0)` — no
+     effect. The promotion was reverted; the prefix removal was kept on its own merits.
+  2. Retired the layer after its birth (`.mgw.spent`, `display:none`). Correct, and defeated by
+     `place()` clearing `.spent` on every call while the **resize** handler calls `place()` — iOS
+     fires resize on nearly every scroll as the URL bar moves. Fixed separately and **kept**: it is
+     why the artefact no longer follows scrolling.
+  3. Suppressed the effect on touch in light mode. Removed the artefact and **also removed the
+     animation** — rejected by Harkirat, correctly: the droplets fusing are the effect.
+  4. Swapped the source colours so light needs no `invert(1)` (`--goo-bed`/`--goo-ink`, both themes
+     now on the identical three-function chain). **This did NOT fix it** — confirmed on device after
+     shipping. Kept anyway: it is strictly simpler than the fourth filter function and removes one
+     variable from whatever comes next.
+
+  **Where to look next**, given (4) ruled out the filter chain as the sole cause: the interaction
+  between `.mgw`'s own `mix-blend-mode` group and `.mtint`'s `screen` inside it, under iOS's
+  compositor, during an animation. Worth testing whether `.mtint` blending *outside* `.mgw`'s
+  isolation group, or the tint applied as a `background-blend-mode` on a single element rather than
+  as a blended sibling, behaves differently. **Verify on a real iPhone in light mode**, on a page
+  whose accent makes an inverted plate obvious (License is ideal — lime is unmistakable).
+
+- `[P3 · S]` 🧩 **The mobile nav morph's droplet travel reads as too short.** *Filed 2026-08-04
+  13:02 EDT, deferred with the item above.*
+
+  Harkirat's read: the swarm does not travel far enough to feel like it is being assembled. Note the
+  constants have **never changed** — `git log -L` on `spray()` returns a single commit, the original
+  `9b9b4ce` — so this is a tuning judgement, not a regression. `local/morph-poc/` is a *different*
+  and much richer per-frame system (back-to-top, cursor, reveal mark); the nav strip has always been
+  the simpler 15-droplet CSS-keyframe spray, which is worth knowing before comparing the two.
+
+  ⚠️ **Two constants are coupled to the radius and both must move with it.** A change was drafted
+  and reverted unshipped so it would not land half-tuned:
+  - **The y squash.** The bar is ~60px tall and `.mbar` clips, so extra radius spent vertically is
+    invisible. `90 × 0.34` and `124 × 0.24` both put the furthest droplet ~30px off the centre line.
+  - **The rotation.** The keyframes `rotate()` then `translate()`, so vertical flight is
+    `sin(rot) × distance` — the angle *steers*. This already caused a fling 100px below a 54px bar
+    once. Going 90 → 124 needs the angles scaled by the inverse ratio: 50–100° reached 69–88px
+    vertically, and 34–54° at 124px reaches 69–100px.
+
+  **Verify** on a phone in **dark** mode until the item above is fixed, or the artefact will mask
+  whatever the droplets are doing.
+
+- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
+  no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
+  that session; this entry is the unfinished half.*
+
+  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with
+  `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production
+  personal data is copied onto a development machine. Confirmed present, not assumed —
+  `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'`
+  returned **17**, all real snowflake ids.
+
+  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data
+  (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`,
+  `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences`
+  is the only collection at issue.**
+
+  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
+  processing instead of documenting it, and is the standard answer to production personal data in a
+  development environment. Three parts, and **only the first is still open:**
+  1. ⏳ **Purge what is already there — STILL OPEN, and it is the part that actually matters.**
+     Writing the seeder did not delete anything: the 17 real records are still in
+     `diors-builds-dev` as of 2026-08-04 12:31 EDT, confirmed by the script's own dry run. The
+     deletion is destructive and irreversible, so it waits for Harkirat's explicit go-ahead:
+     `node --env-file=.env.dev scripts/seedDevData.js --yes`.
+  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and
+     inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to
+     re-run. Its guard is the real content: it requires a loopback host **and** a dev-named
+     database, because either alone is defeatable by one wrong environment variable, and it
+     refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
+     prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
+  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT.** The row that instructed
+     `mongodump` from prod is gone; it now points at the seeder and carries the verification
+     query plus the note that `userpreferences` is the only affected collection.
+
+  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
+  (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
+  against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 /
+  §7 / §8 change plus an Appendix A row — not a one-line note.
 
 - `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
   denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
@@ -146,6 +264,19 @@ though the Return-key one only reproduces in this repo's notes file.*
 *Time- or condition-based — not "do this now," but things not to forget when the trigger hits. Tagged
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
+
+- **🚀 v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3** `[P1 · XS]`
+  *(filed 2026-08-04 16:23 EDT, replacing the branch reminder this supersedes)*. Trigger: the next
+  session that touches this repo, or any report that a site/bot change "did not land".
+
+  Deploy is a separate, optional step and is deliberately NOT implied by a merge — Harkirat asked for
+  "commit, push, pr, and merge" and said nothing about deploying, so it was held. On the VM:
+  `./scripts/deploy.sh` (git pull → restart), then verify with `scripts/vmstatus.sh`. **Ask first.**
+
+  ⚠️ **The SITE half is already live regardless.** `.github/workflows/deploy-site.yml` publishes
+  `public/` to Cloudflare Pages on any merge to `main` that touches it, so the renamed site went out
+  with the merge while the bot on the VM is still the old build. That split is normal here and is
+  exactly why "merged" must never be reported as "live" — say which of the two actually happened.
 
 - **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE)
   (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
@@ -1139,6 +1270,14 @@ well-specified execution/polish, not novel design.*
   into v3 2026-07-27 23:23 EDT (Harkirat's call) — downgraded from a standalone P1 since the description
   rewrite depends on `/help` shipping first. Pure Discord Dev Portal task, not something Claude has UI
   access to do.
+  ⚠️ **The NAME half is no longer blocked and no longer P3** *(updated 2026-08-04 16:21 EDT)*. The
+  project was renamed to **Dioreo** in v2.52.0 and the live site, the licence, the Terms and the
+  Privacy Policy now all say Dioreo — while the production Discord application is still called
+  *Dior's Builds*, so the bot introduces itself in Discord under a name none of its own documents
+  use. That is a real inconsistency a user can see, and it does not depend on `/help`. **Rename the
+  production application in the Developer Portal — `[P1 · XS]`, Harkirat only.** The description and
+  banner stay blocked on `/help` as before. *(The DEV application `Dioreo (Dev)` has carried the new
+  name since 2026-07-26 and needs nothing.)*
   ⇄ Also on `docs/ROADMAP.md`'s v3 list (canonical scope/dependency detail).
 - `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable**
   *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries
