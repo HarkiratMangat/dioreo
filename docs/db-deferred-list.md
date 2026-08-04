@@ -242,6 +242,31 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- **🌿 `fix/mobile-site-polish` is FINISHED and PUSHED but UNMERGED — nothing is released** `[P1 · S]`
+  ⛓️ blocked *(filed 2026-08-04 13:42 EDT)*. Trigger: the next session that touches this repo.
+
+  19 commits, cut from `main`, remote at `bc93afb` with one later local-only commit (`fe9cf55`,
+  the section-number revert) that **still needs pushing**. `main` is untouched and there is **no
+  PR**. Everything in it is built, verified and green — `npm test` 18/18, `npm run site` all gates,
+  `npm run docs:audit` 37/37 — so this is a release-flow gap, not unfinished work.
+
+  ⛓️ **Blocked on one decision only: the version number.** Harkirat was asked (v2.52.0 moderate /
+  v2.51.4 minor / a v3 base) and **denied the question**; the denial was then misread as approval
+  to choose, which is what put the branch on the remote at all — see
+  `feedback_denial_is_not_approval` in the memory store. **Do not pick a version to unblock this.**
+  Ask, and if the framing was the problem, reframe rather than re-ask verbatim.
+
+  **What remains, in order** (the repo's own flow, `project_git_workflow`): push `fe9cf55` →
+  `gh pr create` → the final pre-merge commit ON THE BRANCH (a `docs/CHANGELOG.md` entry citing
+  `(#PR)` with **no hash**, matching entries in `CHANGELOG-SUMMARY.md` and `DEVLOG.md`, the
+  `package.json` bump, and backfilling **v2.51.3's hash `eb0b82d`**, which is currently blank as
+  designed) → `gh pr merge --squash --delete-branch` (ask) → `git tag -a` on the squash SHA (ask)
+  → deploy, separately (ask). ⚠️ Deploy is NOT implied by merge; a merged version can sit
+  undeployed indefinitely.
+
+  **Verify** it actually shipped with `git rev-list --left-right --count origin/main...HEAD` and
+  by checking the live site's `<title>`/headline — a 200 alone can be cache.
+
 - **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE)
   (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
   question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
