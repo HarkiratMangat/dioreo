@@ -7149,8 +7149,20 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
    the string and fails the build with a SyntaxError pointing at prose. */
 .card .wall-l{margin:0 0 .5rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;
   text-transform:uppercase;color:var(--ink3)}
-.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,268px));
-  gap:.9rem;margin:1.4rem 0;justify-content:start}
+/* ⚠️ auto-FIT with a 1fr ceiling, not auto-FILL capped at 268px. The cap was
+   protecting against a single plate stretching the full width of a 950px card, and
+   the cure was worse: with one maintainer and no contributors yet — which is the
+   state this page is actually in, and will be in for a while — every section showed
+   one narrow plate hugging the left edge with two empty columns beside it. It read
+   as a grid that had failed to load rather than as a deliberate object.
+   auto-fit collapses the empty tracks; 1fr then lets the surviving plates share the
+   row. One plate spans the card, two split it, three or more fall back to the 232px
+   minimum and wrap. Harkirat's call, 2026-08-04 15:05 EDT.
+   The 560px override is now redundant (auto-fit reaches 1fr on its own below the
+   minimum) and is kept only as an explicit floor — if the minimum ever rises above
+   the narrowest phone, this is what stops a horizontal scrollbar appearing. */
+.wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
+  gap:.9rem;margin:1.4rem 0}
 @media (max-width:560px){.wall{grid-template-columns:1fr}}
 @media (hover:hover) and (pointer:fine){
   .plate:not(.ghost){transition:transform .3s cubic-bezier(.22,.9,.24,1),
