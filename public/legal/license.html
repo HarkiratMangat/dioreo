@@ -3459,10 +3459,23 @@ html{scroll-behavior:smooth}
       spentT=setTimeout(function(){ gw.classList.add('spent'); },2600);
     }
 
+    /* ⚠️ ONLY AN ANIMATED PLACEMENT MAY BRING THE LAYER BACK, AND THIS IS THE
+       WHOLE BUG. Retiring it after the birth was correct and did nothing, because
+       place() un-retired it on every call and the RESIZE handler calls place() —
+       and iOS fires resize every time the URL bar shows or hides, which is on
+       every scroll. So the layer was resurrected continuously while scrolling and
+       hid itself again about 2.6s after the last gesture: reported exactly as
+       "it disappears once I stop touching the screen, then reappears as I begin
+       scrolling again".
+       A resize only needs the geometry to follow the tab; it is not an arrival and
+       has nothing to animate, so it must not resurrect a layer whose animation is
+       long over. */
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
-      if(spentT) clearTimeout(spentT);
-      gw.classList.remove('spent');
+      if(animate){
+        if(spentT) clearTimeout(spentT);
+        gw.classList.remove('spent');
+      }
       cur=i; follow();
       gw.style.width=t.offsetWidth+'px';
       gw.style.top=t.offsetTop+'px';
@@ -3524,7 +3537,18 @@ html{scroll-behavior:smooth}
       reveal(); place(cur,true);
       setTimeout(follow,0); setTimeout(follow,160);
     }
-    addEventListener('resize',function(){ if(live()){ reveal(); place(cur,false); } });
+    /* ⚠️ WIDTH, NOT "resize". On iOS the URL bar collapsing and expanding fires
+       resize on almost every scroll, with the width unchanged — nothing about this
+       strip's layout depends on viewport HEIGHT, so those events are pure noise
+       that was re-running reveal() and place() continuously mid-gesture. Comparing
+       the width ignores them and leaves a real orientation change or window resize
+       handled exactly as before. */
+    var lastW=innerWidth;
+    addEventListener('resize',function(){
+      if(innerWidth===lastW) return;
+      lastW=innerWidth;
+      if(live()){ reveal(); place(cur,false); }
+    });
     /* A tap moves the indicator immediately even though the page is about to be
        replaced: on a slow connection that is the only feedback the tap landed. */
     mtabs.forEach(function(a,i){
