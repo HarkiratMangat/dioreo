@@ -1815,23 +1815,16 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .idx{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--accent-t);
   letter-spacing:.02em;font-variant-numeric:tabular-nums;display:block;
   line-height:1;margin-bottom:.32rem}
-.doc h3 .idx{color:var(--ink3);margin-bottom:.26rem}/* ⚠️ BESIDE THE HEADING, NOT ABOVE IT. Below 1120px there is no gutter to hang the
-   number in, and it was simply stacked on its own line — which reads as a stray
-   figure floating over the heading rather than as that heading's number, and puts
-   a line break between two things that are one label.
-   This is the treatment h3.clause has always used at these widths (flex row,
-   baseline-aligned, .55rem gap); the section headings just never got it. Baseline
-   alignment is the part that matters: a heading wraps to two or three lines on a
-   phone, and the number belongs on the first line's baseline, not centred against
-   the block.
-   Bounded at 1119 so it cannot collide with the >=1120 rule that lifts the number
-   into the margin as a true hanging index — that is a different layout, not a
-   wider version of this one. */
+.doc h3 .idx{color:var(--ink3);margin-bottom:.26rem}/* ⚠️ THE NUMBER STAYS STACKED ABOVE THE HEADING BELOW 1120px — this was tried the
+   other way on 2026-08-04 13:15 EDT and reverted on sight. Putting it beside the
+   heading in a baseline-aligned flex row (the treatment h3.clause uses) is the
+   obvious move and reads worse on a phone: the number competes with the heading
+   for the first line, and a heading that wraps to three lines then hangs off a
+   figure rather than starting cleanly at the margin. Stacked, it reads as a label
+   ABOVE its heading, which is what it is.
+   The >=1120px rule that lifts it into the margin is a different layout again — a
+   true hanging index, which only works once there is a gutter to hang it in. */
 
-@media (max-width:1119px){
-  .doc .dsec>h2,.doc h3{display:flex;align-items:baseline;gap:.55rem}
-  .doc .dsec>h2 .idx,.doc h3 .idx{flex:0 0 auto;margin-bottom:0}
-}
 @media (min-width:1120px){/* The fallback keeps any .idx rendered outside .doc — where --num is not declared —
      at exactly the offset it had before this became fluid. Without it an undeclared
      custom property makes the whole declaration invalid and left falls back to auto,
