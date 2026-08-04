@@ -181,7 +181,41 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.51.1 — 2026-08-03 18:22 EDT (#74) — A placeholder time is not a bare date
+## v2.51.2 — 2026-08-03 21:12 EDT (#75) — One regex, two copies, one left unfixed
+
+A housekeeping pass on `docs/diors-builds notes.md` and `docs/db-deferred-list.md`, then an audit
+of the hooks and gates that actually enforce them.
+
+**The notes file.** Swept ~33 ℋ-confirmed items and 7 historical `SESSION STATUS` blocks into
+`docs/archive/graveyard.md` (overdue since the 2026-07-25 tidy) — one of them a calendar-banner
+feature that had shipped 3 days earlier and sat unmarked through several sessions despite the
+shipping commit's own code comment citing the line it answered. Added two standing Legend
+conventions: a still-open filed-but-unbuilt item is always `- [ ]`, never a bare `-`; and Claude's
+own resolution comments use a standardized lead verb (FIXED/IMPLEMENTED/SHIPPED/ANSWERED/etc.). A
+second pass then trimmed the Legend's own accumulated meta-discussion — a dead empty follow-up-mark
+pair, a resolved multi-message exchange condensed to three sentences, and several dangling
+references to content that no longer existed after the sweep (including one the sweep itself had
+just created).
+
+**The deferred list.** Removed a week-old cross-session notice that had verifiably already
+reconciled (properly logged to `docs/archive/resolved-list.md` per the file's own never-delete
+rule, after `docs-audit.mjs`'s `archive-conservation` check caught the first attempt at silently
+deleting it), and fixed two references pointing at a "Render deletion" reminder that had itself
+shipped and archived weeks earlier.
+
+**The gates themselves.** `records-close-check.sh` (the `gh pr create` gate for unclosed notes
+items) turned out to carry the exact same dead regex — `^- [^<[]`, which silently excludes a
+`- [ ]` checkbox line — that the SessionStart hook had already been fixed for earlier the same
+session. It existed in two places because the logic was copy-pasted, not shared, which is how one
+copy got fixed and the other didn't. Extracted both into `.claude/hooks/notes-open-items.sh` with
+its own 7-case test suite, so this can't drift apart silently again.
+
+Also, outside this repo: MarkEdit's follow-up-mark extension now sentence-cases correctly
+regardless of where it's placed (two root causes — its own sentence-start detection never
+recognized a follow-up's prefix, and the heading auto-formatter was blindly title-casing follow-up
+text living inside a heading). Full history in `reference_markedit_extension_api` memory.
+
+## v2.51.1 — 2026-08-03 18:22 EDT (#74 · `a239a17`) — A placeholder time is not a bare date
 
 Closed out two resolved MarkEdit-extension notes-file items — the Return-key
 double-blank-line bug (root-caused live: not any of Dior's Builds' own

@@ -111,6 +111,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)
 - 2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)
 - 2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)
+- 2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4211,6 +4212,49 @@ testing, not further code reading. The same session that fixed a hook meant
 to catch fabricated timestamps needed that exact hook to catch itself doing
 it, twice, live, while writing the fix.
 
+## 2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)
+
+A housekeeping sweep on `docs/diors-builds notes.md` and
+`docs/db-deferred-list.md`, done because Harkirat noticed both had grown
+into walls of text future sessions would skim past rather than read. A
+second pass on the notes file, done just to check whether a first pass had
+actually caught everything, found real bugs rather than more style nits: a
+Legend caution referencing "this exact bullet did above" that pointed at
+content the first pass had already condensed away, a section heading with a
+whole resolved conversation appended to its own text, and two comments
+citing archived `SESSION STATUS` blocks a future reader has no way to find.
+The lesson repeats one already in this file: a cleanup pass that only reads
+for length, not for whether every cross-reference still resolves, leaves
+exactly this kind of rot behind.
+
+**The more useful bug was in the enforcement layer, not the docs.** Asked to
+check whether the hooks and gates governing these two files actually still
+worked, `records-close-check.sh` — the `gh pr create` gate for unclosed
+notes items — turned out to carry the identical dead regex
+(`^- [^<[]`, which silently excludes a `- [ ]` checkbox line) that the
+SessionStart hook had already been fixed for, earlier the *same* session.
+It existed in two places because the logic was copy-pasted rather than
+shared, which is exactly how one copy got fixed while the other quietly
+kept passing its own tests — the existing test suite had only ever
+exercised bare `-` bullets, never the checkbox convention the file adopted
+that same day. Extracted into `.claude/hooks/notes-open-items.sh`, one
+implementation, both callers, with a test suite that pins the checkbox
+case explicitly so it can't happen a third time.
+
+`docs-audit.mjs`'s `archive-conservation` check earned its keep in the same
+pass: it caught an attempt to delete a stale, verified-resolved
+cross-session notice from `db-deferred-list.md` without a matching entry in
+`resolved-list.md`, which is precisely the silent-deletion-wearing-a-tidy's-
+clothes failure the check exists to catch.
+
+### Lesson
+
+**A rule fixed in one place and not its duplicate is not fixed.** Prose
+rules get missed because nobody reads carefully enough; enforcement code
+gets missed because it was never one thing to begin with — two copies of
+the same regex will drift the instant only one of them is looked at. The
+question worth asking before calling a fix done isn't just "does the bug
+still reproduce here," it's "does anything else contain the same logic."
 
 # Part B — Lessons Ledger (thematic)
 
