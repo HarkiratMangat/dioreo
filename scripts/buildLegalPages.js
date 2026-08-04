@@ -918,6 +918,32 @@ function renderIndented(head, region) {
 
 /* ──────────────────────── shared design tokens (CSS) ───────────────────── */
 
+/**
+ * ⚠️ THE LIGHT PALETTE IS DECLARED ONCE AND EMITTED TWICE, BECAUSE KEEPING TWO
+ * COPIES IN SYNC BY HAND ALREADY FAILED.
+ *
+ * Light mode needs two selectors: `:root[data-theme=light]` for a reader who has
+ * pressed the switch, and `:root:not([data-theme=dark])` inside a
+ * prefers-color-scheme query for everyone who has not. CSS has no way to share a
+ * declaration list between them, so the list was simply written out twice.
+ *
+ * On 2026-08-04 a palette change landed in the first block and not the second.
+ * Every reader on system-default light — which is most of them, and was both the
+ * preview and the phone it was being judged on — kept seeing the OLD palette,
+ * while the source, the build and all thirteen gates reported success. Nothing
+ * could have caught it: both blocks were valid CSS, both declared every token,
+ * and contrastAudit merges the blocks it finds rather than comparing them.
+ *
+ * This is a generator. It can interpolate, so there is no reason for a second
+ * copy to exist. Add a token here and both selectors get it.
+ */
+const LIGHT_TOKENS = `
+  --desk:#D8CFDC; --paper:#F8F2E4; --raised:#EDE5D3;
+  --rule:#C3B8A0; --rule2:#978C78;
+  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
+  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
+  --shadow:0 20px 50px -30px rgba(40,32,50,.3);`;
+
 const TOKENS = `
 :root{
   --gold:${BRAND.gold};
@@ -955,20 +981,10 @@ const TOKENS = `
    in the same pass — they were tuned against the old one, and a hairline keeps
    its job only if it keeps its ratio. Every figure here was computed, not
    eyeballed; recompute them if any of these four move. */
-:root[data-theme=light]{
-  --desk:#D8CFDC; --paper:#F8F2E4; --raised:#EDE5D3;
-  --rule:#C3B8A0; --rule2:#978C78;
-  --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
-  --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
-  --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+:root[data-theme=light]{${LIGHT_TOKENS}
 }
 @media (prefers-color-scheme:light){
-  :root:not([data-theme=dark]){
-    --desk:#DBD3C6; --paper:#FDFCFA; --raised:#EFEBE3;
-    --rule:#CBC3B4; --rule2:#A39A8B;
-    --ink:#171320; --ink2:#4A4454; --ink3:#5C5568;
-    --accent-t:color-mix(in srgb,var(--accent) 38%,#120E1C);
-    --shadow:0 20px 50px -30px rgba(40,32,50,.3);
+  :root:not([data-theme=dark]){${LIGHT_TOKENS}
   }
 }
 *{box-sizing:border-box}
