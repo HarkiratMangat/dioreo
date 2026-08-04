@@ -62,6 +62,70 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P1 · S]` **PRIVACY §2.6 states, in a published policy, that nothing is stored unless you press
+  the theme switch — and that is false.** *Filed 2026-08-04 11:06 EDT, from the mobile-polish session.*
+
+  Verified against the code, not inferred: the site writes **two** client-side items, and they behave
+  differently. `db-theme` (localStorage, `THEME_JS` in `scripts/buildLegalPages.js`) is written only
+  when the switch is pressed — the policy is correct about that one. `db-booted` (sessionStorage,
+  `scripts/lib/chronicle.js:977`) is written **on load** of What's New / Changelog / Devlog, with no
+  interaction at all. Reproduce with
+  `rg -no "(localStorage|sessionStorage)[^;]{0,60}" scripts/buildLegalPages.js scripts/lib/chronicle.js`.
+
+  Four separate statements in §2.6 are wrong or under-scoped because they were written when there was
+  only one item, and were not revisited when the second arrived:
+  - the heading still reads "**the one thing** it stores on your device" while the sentence directly
+    under it already says "It stores **two** items";
+  - "**It is only written if you ask for it.** Nothing is stored until you press the light/dark
+    switch. If you never touch it, nothing is written at all." — false on the three record pages;
+  - "**Before you press the switch, nothing is stored at all**" — same;
+  - "It identifies nobody. The value is one of two words" describes `db-theme` only.
+
+  ⚠️ **The consent-banner paragraph is the part that actually matters**, and it is the least obviously
+  broken. It argues no banner is needed because "storage which is strictly necessary to provide
+  something you explicitly asked for is exempt... a display preference you set by pressing a switch is
+  precisely that." That reasoning reaches `db-theme` and **does not reach `db-booted` at all**, which
+  nobody asks for. The exemption may well still apply — an animation-suppression flag is arguably
+  strictly necessary to the page you requested — but the document does not make that argument, so as
+  written the policy justifies a banner-free site on grounds that only cover half of what it stores.
+
+  **Fix:** rewrite the heading, the three bullets and the consent paragraph so each either covers both
+  items or says which one it is about, and make the strictly-necessary argument for `db-booted`
+  explicitly. **Verify:** `npm run site` (the build re-reads its own output), then re-run the storage
+  grep above and check every key it finds is described accurately in both §2.6 **and** Appendix A.
+  Appendix A, §12.1's v1.6 entry and Appendix C are already correct and list both keys — it is §2.6's
+  prose alone that is stale, so do not "fix" the appendices to match it.
+
+- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
+  no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
+  that session; this entry is the unfinished half.*
+
+  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with
+  `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production
+  personal data is copied onto a development machine. Confirmed present, not assumed —
+  `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'`
+  returned **17**, all real snowflake ids.
+
+  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data
+  (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`,
+  `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences`
+  is the only collection at issue.**
+
+  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
+  processing instead of documenting it, and is the standard answer to production personal data in a
+  development environment. **Three things this needs, and the first is the one that is easy to skip:**
+  1. **Purge what is already there.** Switching to synthetic seeding does not delete the 17 existing
+     records. This is destructive, so it needs Harkirat's explicit go-ahead at the time.
+  2. **Write `scripts/seedDevData.js`** — clear `userpreferences` and insert synthetic records
+     (non-snowflake ids, e.g. `dev-000001`), safe to re-run, per the repo's clear/upsert rule for
+     seed scripts.
+  3. **Change `deployment-and-ops.md:298`**, or the instruction stands and future-you re-copies prod.
+
+  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
+  (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
+  against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 /
+  §7 / §8 change plus an Appendix A row — not a one-line note.
+
 - `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
   denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
 
