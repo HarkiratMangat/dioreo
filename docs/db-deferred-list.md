@@ -62,6 +62,63 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
+  animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
+  and chased across the mobile-polish session.*
+
+  **Symptom:** a saturated rectangle fills the tab strip for the ~2.4s the birth runs, then goes.
+  Dark mode is clean. Reproduced repeatedly on Harkirat's iPhone; **not reproducible in Chrome or in
+  the preview pane**, so this needs a real device or CDP against a WebKit build.
+
+  **The colour is the diagnostic and should be the first thing checked after any change.** It paints
+  `invert(accent)` — lime on the violet License page (`invert(#9B6BE3)` = `#64941C`), yellow on
+  citron Contributors, black on Terms. That is the **accent plate** (`.mtint`) coming out inverted,
+  and the plate is a *sibling* of the filtered element (`.mgo`), not a child. A filter reaching a
+  sibling it does not own means the light chain is **composited** wrongly, not merely blended wrongly.
+
+  ⚠️ **Four fixes are already spent. Do not restart at the top of this list** — each moved *when* the
+  artefact appeared without removing it, and that progression is the useful evidence:
+  1. Removed `-webkit-overflow-scrolling` from `.mstrip`, promoted `.mbar` with `translateZ(0)` — no
+     effect. The promotion was reverted; the prefix removal was kept on its own merits.
+  2. Retired the layer after its birth (`.mgw.spent`, `display:none`). Correct, and defeated by
+     `place()` clearing `.spent` on every call while the **resize** handler calls `place()` — iOS
+     fires resize on nearly every scroll as the URL bar moves. Fixed separately and **kept**: it is
+     why the artefact no longer follows scrolling.
+  3. Suppressed the effect on touch in light mode. Removed the artefact and **also removed the
+     animation** — rejected by Harkirat, correctly: the droplets fusing are the effect.
+  4. Swapped the source colours so light needs no `invert(1)` (`--goo-bed`/`--goo-ink`, both themes
+     now on the identical three-function chain). **This did NOT fix it** — confirmed on device after
+     shipping. Kept anyway: it is strictly simpler than the fourth filter function and removes one
+     variable from whatever comes next.
+
+  **Where to look next**, given (4) ruled out the filter chain as the sole cause: the interaction
+  between `.mgw`'s own `mix-blend-mode` group and `.mtint`'s `screen` inside it, under iOS's
+  compositor, during an animation. Worth testing whether `.mtint` blending *outside* `.mgw`'s
+  isolation group, or the tint applied as a `background-blend-mode` on a single element rather than
+  as a blended sibling, behaves differently. **Verify on a real iPhone in light mode**, on a page
+  whose accent makes an inverted plate obvious (License is ideal — lime is unmistakable).
+
+- `[P3 · S]` 🧩 **The mobile nav morph's droplet travel reads as too short.** *Filed 2026-08-04
+  13:02 EDT, deferred with the item above.*
+
+  Harkirat's read: the swarm does not travel far enough to feel like it is being assembled. Note the
+  constants have **never changed** — `git log -L` on `spray()` returns a single commit, the original
+  `9b9b4ce` — so this is a tuning judgement, not a regression. `local/morph-poc/` is a *different*
+  and much richer per-frame system (back-to-top, cursor, reveal mark); the nav strip has always been
+  the simpler 15-droplet CSS-keyframe spray, which is worth knowing before comparing the two.
+
+  ⚠️ **Two constants are coupled to the radius and both must move with it.** A change was drafted
+  and reverted unshipped so it would not land half-tuned:
+  - **The y squash.** The bar is ~60px tall and `.mbar` clips, so extra radius spent vertically is
+    invisible. `90 × 0.34` and `124 × 0.24` both put the furthest droplet ~30px off the centre line.
+  - **The rotation.** The keyframes `rotate()` then `translate()`, so vertical flight is
+    `sin(rot) × distance` — the angle *steers*. This already caused a fling 100px below a 54px bar
+    once. Going 90 → 124 needs the angles scaled by the inverse ratio: 50–100° reached 69–88px
+    vertically, and 34–54° at 124px reaches 69–100px.
+
+  **Verify** on a phone in **dark** mode until the item above is fixed, or the artefact will mask
+  whatever the droplets are doing.
+
 - `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
   no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
   that session; this entry is the unfinished half.*

@@ -202,19 +202,18 @@ it directly with an empty build command, so nothing has to run on their side.
     The plate is a **sibling** of the filtered element, so a filter reaching it means the light chain
     **composites** wrongly, not merely blends wrongly — consistent with this file's older note that
     iOS silently drops colour functions after blur+contrast on this same element.
-    The fix is `--goo-bed` / `--goo-ink`, theme tokens carrying the bed, the pill plate and the disc
-    colours. Both themes now run the **identical three-function chain**, so there is no light-only
-    filter left to render differently, and the effect is intact on both.
-    ⚠️ **Four attempts each moved WHEN it appeared without removing it, and the progression is the
-    evidence** — do not restart at the top of it. (1) Removing `-webkit-overflow-scrolling` and
-    promoting `.mbar`: no effect; the promotion was reverted. (2) Retiring the layer after its birth:
-    correct in itself, and defeated by `place()` clearing `.spent` on every call while the **resize**
-    handler calls `place()` — iOS fires resize on almost every scroll as the URL bar moves. Fixed by
-    only un-retiring on an *animated* placement and ignoring resizes where the width is unchanged.
-    (3) It then appeared only during the birth — the one moment the layer is *meant* to be visible —
-    so hiding it better could not help. (4) Suppressing the effect on touch in light mode did remove
-    the artefact and **also removed the animation**, which was rejected: the droplets fusing are the
-    effect, not decoration. Only then was the filter chain itself the obvious suspect.
+    `--goo-bed` / `--goo-ink` are theme tokens carrying the bed, the pill plate and the disc colours,
+    so both themes now run the **identical three-function chain** and no light-only filter remains.
+    ⚠️ **THAT DID NOT FIX THE ARTEFACT — confirmed on device, 2026-08-04 13:02 EDT.** It is kept
+    because it is strictly simpler than a fourth filter function and removes one variable, but the
+    light-mode artefact **is still open** and still visible while the birth animation plays. Do not
+    read the tokens as a fix. Full history, the four spent attempts and where to look next:
+    `docs/db-deferred-list.md` → 🐞 Active Bugs → `[P2 · M]` mobile nav liquid indicator.
+    ⚠️ **Four attempts are spent and each moved WHEN it appeared without removing it** — the
+    progression is the evidence, so do not restart at the top of it. The list, what was kept and
+    where to look next are in `docs/db-deferred-list.md`; the one thing to carry in your head is that
+    **the retire-on-birth fix IS kept and IS why the artefact no longer follows scrolling** — that
+    part was real, and only the light-mode birth window remains.
     ⚠️ `.mgw.spent` is `display:none`, never `visibility:hidden`/`opacity:0` — an invisible element
     stays in the layer tree and iOS keeps compositing a blended one. That is a **hardening**, not the
     artefact fix; keep the two straight, because while the chain was still wrong the visibility
