@@ -25,6 +25,33 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **📄 PRIVACY §2.6 stated something false about what the Site stores — FIXED 2026-08-04 12:12 EDT,
+  shipped as policy revision 1.7.** Filed in `db-deferred-list.md` as `[P1 · S]` earlier the same
+  session and closed in it, so it never went stale — recorded here because the *reasoning* is worth
+  keeping.
+
+  §2.6 was written when the Site stored one item and was not revisited when a second arrived. It
+  still carried "the **one thing** it stores" as its heading directly above a sentence saying "It
+  stores **two** items", plus "Nothing is stored until you press the light/dark switch" and "Before
+  you press the switch, nothing is stored at all" — both untrue since `db-booted`, which
+  `scripts/lib/chronicle.js` writes **on load** of What's New / Changelog / Devlog with no
+  interaction.
+
+  ⚠️ **The part that actually mattered was the consent-banner paragraph, and it was the least
+  obviously broken.** It argued the strictly-necessary exemption purely from "a display preference
+  you set by pressing a switch" — reasoning that reaches `db-theme` and does not reach `db-booted` at
+  all. So the policy justified a banner-free site on grounds covering half of what it stored. The
+  exemption does still apply, but the document now argues it for both rather than leaving the gap.
+
+  **The lesson, which is the reusable part:** the appendices were right the whole time. Appendix A,
+  Appendix C and the Appendix B revision table all listed both keys correctly — only §2.6's *prose*
+  was stale. A table gets updated when data changes because it visibly has a row per item; a
+  paragraph asserting "the one thing" has no such affordance and rots silently. **When a countable
+  fact enters prose in a legal document, it acquires a maintenance obligation nothing enforces** —
+  the same failure `feedback_no_duplicated_state_in_prose` records for architecture docs, here with
+  a compliance consequence rather than a confusing one. Nothing in the build could catch it:
+  `verify()` checks that source words reached the page, not that they are true.
+
 - **📋 Cross-session notice — REMOVED 2026-08-03 21:00 EDT, verified reconciled, not just aged
   out.** Was carried in `db-deferred-list.md` as: *"⚠️ CROSS-SESSION NOTICE — a parallel session
   was mid-flight on hooks + the DEVLOG backfill when v2.41.0 landed."* Written 2026-07-28 16:45 EDT;
