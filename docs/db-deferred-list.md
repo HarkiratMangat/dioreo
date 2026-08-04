@@ -79,13 +79,21 @@ scratchpad for 2 days.*
 
   **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
   processing instead of documenting it, and is the standard answer to production personal data in a
-  development environment. **Three things this needs, and the first is the one that is easy to skip:**
-  1. **Purge what is already there.** Switching to synthetic seeding does not delete the 17 existing
-     records. This is destructive, so it needs Harkirat's explicit go-ahead at the time.
-  2. **Write `scripts/seedDevData.js`** — clear `userpreferences` and insert synthetic records
-     (non-snowflake ids, e.g. `dev-000001`), safe to re-run, per the repo's clear/upsert rule for
-     seed scripts.
-  3. **Change `deployment-and-ops.md:298`**, or the instruction stands and future-you re-copies prod.
+  development environment. Three parts, and **only the first is still open:**
+  1. ⏳ **Purge what is already there — STILL OPEN, and it is the part that actually matters.**
+     Writing the seeder did not delete anything: the 17 real records are still in
+     `diors-builds-dev` as of 2026-08-04 12:31 EDT, confirmed by the script's own dry run. The
+     deletion is destructive and irreversible, so it waits for Harkirat's explicit go-ahead:
+     `node --env-file=.env.dev scripts/seedDevData.js --yes`.
+  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and
+     inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to
+     re-run. Its guard is the real content: it requires a loopback host **and** a dev-named
+     database, because either alone is defeatable by one wrong environment variable, and it
+     refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
+     prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
+  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT.** The row that instructed
+     `mongodump` from prod is gone; it now points at the seeder and carries the verification
+     query plus the note that `userpreferences` is the only affected collection.
 
   **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
   (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
