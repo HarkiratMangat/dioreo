@@ -4420,10 +4420,23 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
      section bar is absent on pages with no index) and a second hardcoded number
      would be wrong on one of them. The CSS keeps 76px as its fallback, so the
      jump is still correct if this never runs. */
+  /* ⚠️ THE STICKY OFFSET IS PART OF THE ANSWER — height alone is not.
+     .mnav is sticky at top:54px, under the masthead, so a 107px bar occupies 54 to
+     161. Sizing the margin from the height gave 129 and still landed the heading
+     32px BEHIND the bar, which looks exactly like the original bug and is why this
+     is measured rather than reasoned about. Read the element's own sticky top
+     offset and add its height; both come from the renderer, so neither the
+     masthead's height nor the bar's has to be written down anywhere.
+     No backticks in this comment on purpose: it lives inside a template literal,
+     where one ends the string and fails the build with a SyntaxError pointing at
+     prose. */
   function anchorOffset(){
     var n=document.getElementById('mnav');
-    var h=n?n.getBoundingClientRect().height:0;
-    document.documentElement.style.setProperty('--anchor-off',(h>0?h+22:76)+'px');
+    if(!n){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var h=n.getBoundingClientRect().height;
+    if(!h){ document.documentElement.style.setProperty('--anchor-off','76px'); return; }
+    var t=parseFloat(getComputedStyle(n).top)||0;
+    document.documentElement.style.setProperty('--anchor-off',(t+h+22)+'px');
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
