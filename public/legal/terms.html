@@ -1442,8 +1442,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
   
   .mgw{position:absolute;left:0;top:0;width:0;height:0;z-index:0;
-    pointer-events:none;mix-blend-mode:lighten;
-    transition:opacity .24s ease}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
+    pointer-events:none;mix-blend-mode:lighten}/* ⚠️ THE LIQUID LAYER IS RETIRED ONCE ITS BIRTH IS OVER, AND THAT IS THE FIX
      FOR THE SCROLL ARTIFACT — not a compositing hint, which was tried first and
      did nothing. This layer exists to play ONE animation on arrival: particles
      converge and fuse into a pill. What you look at for the rest of the page is
@@ -1458,10 +1457,20 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      mode the inverted white bed plus the accent plate, which is why it came out
      yellow behind Contributors. A layer that is not on screen cannot be
      mis-composited, so the artifact has no surface to appear on.
-     ⚠️ visibility, not just opacity: an opacity-0 blended layer is still
-     composited every frame, which is the thing being removed. */
+     ⚠️ display:none, NOT opacity:0 AND NOT visibility:hidden. Both of those leave
+     the element in the layer tree, and iOS keeps compositing a mix-blend-mode
+     element that is merely invisible — measured across two rounds of this bug:
+     with visibility:hidden the artifact was gone in DARK mode and still present in
+     LIGHT, which is the multiply + invert(1) path. A hidden-but-composited blended
+     layer is exactly the asymmetry you would expect from that. display:none removes
+     the box from rendering altogether, so there is nothing left to composite,
+     blend, or mis-blend, on any engine.
+     No transition either: fading a blended layer means 240ms of it compositing at
+     partial opacity, which is the state being eliminated. The snap is invisible
+     regardless — .mtab.on::after is the same pill in the same place, unfiltered,
+     and the alpha crush erodes the goo pill strictly inside it. */
   
-  .mgw.spent{opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s .24s}
+  .mgw.spent{display:none}
   .mgo{position:absolute;inset:0;filter:blur(7px) contrast(20) blur(0)}/* The bed. contrast() thresholds colour, not alpha, so the discs need
      something opaque behind them or there is nothing to threshold. Black,
      and large: the plate below has to sit entirely within the bed's OPAQUE
@@ -3438,18 +3447,50 @@ html{scroll-behavior:smooth}
        A resize only needs the geometry to follow the tab; it is not an arrival and
        has nothing to animate, so it must not resurrect a layer whose animation is
        long over. */
+    /* ⚠️ THE LIQUID DOES NOT RUN ON A TOUCH DEVICE IN LIGHT MODE, AND THAT IS THE
+       LAST PIECE OF THIS BUG. Dark mode renders correctly on iOS and keeps the
+       effect. Light mode does not, and the COLOUR is what identifies it: the light
+       path is the only one carrying invert(1), and the rectangle comes out
+       invert(accent) — green on the violet License page, yellow on citron
+       Contributors. That is the accent plate being inverted, which can only happen
+       if the filter is reaching a sibling it does not own, so the light chain is
+       composited wrongly rather than merely blended wrongly. Nothing at the CSS
+       level fixes that: it was attacked as a compositing problem twice and as a
+       hidden-layer problem once, and each fix moved WHEN it appeared without
+       removing it — first on every scroll, then only during the birth, because the
+       birth is the one moment the layer is legitimately visible.
+       Suppressing it here costs nothing a reader sees. .mtab.on::after animates the
+       same pill into the same place on the same spring; the liquid only ever added
+       the droplets fusing into it. Dark mode is untouched, and so is every pointer
+       with hover, which is where this renders as designed.
+       ⛔ Do not "restore" this for consistency without testing light mode on a real
+       iOS device — matching the two themes is exactly the instinct that would put
+       the artifact back. */
+    var mcoarse=matchMedia('(hover:none)').matches;
+    function lightNow(){
+      var t=document.documentElement.getAttribute('data-theme');
+      if(t) return t==='light';
+      return matchMedia('(prefers-color-scheme:light)').matches;
+    }
     function place(i,animate){
       var t=mtabs[i]; if(!t) return;
-      if(animate){
+      var suppress=mcoarse&&lightNow();
+      if(animate&&!suppress){
         if(spentT) clearTimeout(spentT);
         gw.classList.remove('spent');
       }
       cur=i; follow();
+      if(suppress){
+        if(spentT) clearTimeout(spentT);
+        gw.classList.add('spent');
+      }
       gw.style.width=t.offsetWidth+'px';
       gw.style.top=t.offsetTop+'px';
       gw.style.height=t.offsetHeight+'px';
       gw.style.setProperty('--row',t.style.getPropertyValue('--row'));
-      if(!animate||mstill){ goo.classList.add('on'); retire(); return; }
+      /* suppress is in here so the droplets are never even built: spraying fifteen
+         nodes into a layer that is display:none is pure work for nothing. */
+      if(!animate||mstill||suppress){ goo.classList.add('on'); retire(); return; }
       /* Clear, reflow, spray, THEN arm the pill on the next frame. Painting the
          pill first and re-animating it a moment later is what made the old
          version look glitchy: you saw the pill, saw it vanish, saw it grow. */
