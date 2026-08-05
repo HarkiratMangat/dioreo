@@ -114,6 +114,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)
 - 2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)
 - 2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)
+- 2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4279,49 +4280,6 @@ file's own hand-curated system — the lagged hash backfill, the sync across thr
 config's own header comment says so. Verified against real tagged releases and a real unreleased
 commit range before landing, rather than trusting the template unread.
 
-## 2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)
-
-Three bugs this session shared one shape: something that looked correct in isolation broke because
-of what ELSE happens at the same moment, and the fix in each case was to stop assuming the
-isolated view was the whole picture.
-
-**The clearest one.** The anchor-copy "Copied" confirmation was written to fire from inside
-`navigator.clipboard.writeText()`'s `.then()`. That reads as correct — copy the link, then confirm
-it copied. But `.anchor` is a real `<a href="#id">`, and a browser processes a link's default
-action (the hash jump) as its OWN step immediately after the click finishes dispatching, while the
-clipboard promise resolves later, on a microtask. The confirmation was racing the jump and losing
-every time. Live testing with a stubbed clipboard write proved the DISPLAY logic was correct —
-`place()`, the shared hint bubble, all fine — which made it easy to conclude the feature worked.
-It took testing with the REAL clipboard call, unstubbed, to see the actual failure: the tip stayed
-hidden through the whole 1400ms window. *A test that removes the race to make the assertion easier
-also removes the thing that was going to fail.*
-
-**Fixing that surfaced a second one immediately.** With the confirmation now synchronous, it showed
-— and then vanished within the same frame, because the module's own "hide the hint on scroll"
-listener was catching the SAME native scroll-to-hash that had caused the first bug. Two different
-failure modes, one shared cause: code written against "the click happens, then things settle" that
-never accounted for a browser doing real work of its own between those two points. The fix for both
-was the same shape — stop assuming you own the timeline, and make the confirmation track the thing
-racing it instead of losing to it.
-
-**The privacy gap was a scope bug, not a logic bug.** `privacy-inventory` has verified
-`UserPreference`'s fields against the policy's Appendix A for weeks, correctly, every time it ran.
-It was never wrong about what it checked — it just only ever checked one of six models. The
-alert-log disclosure gap wasn't caught by that gate being broken; it was caught by not trusting
-that a check with a narrow, hardcoded scope had told the whole story, and looking at the other five
-schemas by hand instead. The new check that generalizes this (`privacy-model-coverage`) then
-repeated the session's own lesson back immediately: its first version was vacuous on the real repo,
-examining zero items, because excluding `UserPreference.js` (correctly — that's the other check's
-job) left nothing else in scope YET. A pass that verifies nothing is not evidence the check works;
-the shared test fixture needed a second, genuinely-disclosed model before the baseline PASS meant
-anything.
-
-**One user report, taken at face value instead of half-believed.** "It's copying it but no
-notification, and it still jumps to the section" read, on a first pass, like it might be describing
-intended behavior (the jump was always supposed to happen) plus a vague complaint. It wasn't vague —
-it was a precise, correct bug report, and the fix followed directly from trusting it rather than
-reading the more comfortable interpretation into it first.
-
 ## 2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)
 
 The session was meant to be four mobile fixes. It became a project rename halfway through, and the
@@ -4371,6 +4329,49 @@ was exactly the thing to resist a second time. It never needed a second question
 says **"the merge-yes IS the version-number-yes; MAJOR always asked separately."** An instruction to
 merge carries the version with it. *When a decision looks blocked, check whether the project has
 already written down who owns it.*
+
+## 2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)
+
+Three bugs this session shared one shape: something that looked correct in isolation broke because
+of what ELSE happens at the same moment, and the fix in each case was to stop assuming the
+isolated view was the whole picture.
+
+**The clearest one.** The anchor-copy "Copied" confirmation was written to fire from inside
+`navigator.clipboard.writeText()`'s `.then()`. That reads as correct — copy the link, then confirm
+it copied. But `.anchor` is a real `<a href="#id">`, and a browser processes a link's default
+action (the hash jump) as its OWN step immediately after the click finishes dispatching, while the
+clipboard promise resolves later, on a microtask. The confirmation was racing the jump and losing
+every time. Live testing with a stubbed clipboard write proved the DISPLAY logic was correct —
+`place()`, the shared hint bubble, all fine — which made it easy to conclude the feature worked.
+It took testing with the REAL clipboard call, unstubbed, to see the actual failure: the tip stayed
+hidden through the whole 1400ms window. *A test that removes the race to make the assertion easier
+also removes the thing that was going to fail.*
+
+**Fixing that surfaced a second one immediately.** With the confirmation now synchronous, it showed
+— and then vanished within the same frame, because the module's own "hide the hint on scroll"
+listener was catching the SAME native scroll-to-hash that had caused the first bug. Two different
+failure modes, one shared cause: code written against "the click happens, then things settle" that
+never accounted for a browser doing real work of its own between those two points. The fix for both
+was the same shape — stop assuming you own the timeline, and make the confirmation track the thing
+racing it instead of losing to it.
+
+**The privacy gap was a scope bug, not a logic bug.** `privacy-inventory` has verified
+`UserPreference`'s fields against the policy's Appendix A for weeks, correctly, every time it ran.
+It was never wrong about what it checked — it just only ever checked one of six models. The
+alert-log disclosure gap wasn't caught by that gate being broken; it was caught by not trusting
+that a check with a narrow, hardcoded scope had told the whole story, and looking at the other five
+schemas by hand instead. The new check that generalizes this (`privacy-model-coverage`) then
+repeated the session's own lesson back immediately: its first version was vacuous on the real repo,
+examining zero items, because excluding `UserPreference.js` (correctly — that's the other check's
+job) left nothing else in scope YET. A pass that verifies nothing is not evidence the check works;
+the shared test fixture needed a second, genuinely-disclosed model before the baseline PASS meant
+anything.
+
+**One user report, taken at face value instead of half-believed.** "It's copying it but no
+notification, and it still jumps to the section" read, on a first pass, like it might be describing
+intended behavior (the jump was always supposed to happen) plus a vague complaint. It wasn't vague —
+it was a precise, correct bug report, and the fix followed directly from trusting it rather than
+reading the more comfortable interpretation into it first.
 
 # Part B — Lessons Ledger (thematic)
 
