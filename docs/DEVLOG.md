@@ -115,6 +115,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)
 - 2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)
 - 2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)
+- 2026-08-05 14:53 EDT — The asymmetry a symmetric-looking refactor was hiding (v2.54.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4372,6 +4373,33 @@ notification, and it still jumps to the section" read, on a first pass, like it 
 intended behavior (the jump was always supposed to happen) plus a vague complaint. It wasn't vague —
 it was a precise, correct bug report, and the fix followed directly from trusting it rather than
 reading the more comfortable interpretation into it first.
+
+## 2026-08-05 14:53 EDT — The asymmetry a symmetric-looking refactor was hiding (v2.54.0)
+
+A new domain (`dioreo.app`) forced a question the site had been quietly avoiding since it first
+went live: why does everything sit one folder down from itself? The honest answer was "because the
+landing page had nowhere else to go the first time this deployed," which is not a reason that
+survives a reader actually typing the domain and expecting `dioreo.app/terms` to work.
+
+**The refactor LOOKED symmetric going in — two directories, swap which one is the default — and
+wasn't.** Before: `legal/` and `changelog/` sat at the SAME depth, so `hrefTo()`'s one cross-
+directory branch ("up one, into the other") covered both directions by construction — crossing
+either way was the same shape. Flattening `legal/` into the root breaks that symmetry on purpose:
+root is depth 0, `changelog/` stays at depth 1, so "cross into changelog" and "cross out of it" are
+now genuinely different operations (down-only vs. up-only), and a single formula that used to
+handle both by accident needed to become two branches that handle each correctly. The lesson isn't
+new, but it landed cleanly here: a change that reads as "just move a constant" can still hide a
+real asymmetry underneath, and the way to find it is to work out the actual relative-path math for
+both directions rather than pattern-match against the old formula.
+
+**The most valuable thing this session did was NOT write new verification.** Every existing gate —
+`linkAudit` walking the real deploy tree, `structureAudit`, `crossRefAudit`, the warm-structure and
+column-alignment checks — passed on the first build after the whole refactor, and every one of them
+was checking something that would have genuinely broken if the routing math above had been wrong.
+The gate suite was built for a different kind of change and covered this one completely anyway,
+because it verifies OUTCOMES (does every link resolve against the real tree) rather than the
+specific shape of today's directories. That is what a good verification suite buys: the next
+structural change doesn't need its own bespoke checks, it just needs to pass the ones already there.
 
 # Part B — Lessons Ledger (thematic)
 

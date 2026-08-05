@@ -23,8 +23,10 @@ the subsystem rule it belongs to:*
   loads automatically alongside this file when you open either of them. *(It used to point at a
   286-line section of the root `CLAUDE.md`; that was moved into its own path-scoped rule on
   2026-08-01 23:40 EDT, because subsystem craft loaded on every session is exactly what the rules
-  system exists to avoid.)* Renders `docs/legal/*.md` and four root documents → `public/legal/*.html`, **and the three
-  records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` → `public/changelog/*.html`**, for
+  system exists to avoid.)* Renders `docs/legal/*.md` and four root documents → flat `public/*.html` at
+  the site root (dioreo.app went live 2026-08-05 14:43 EDT; the site used to open at `/legal/` and now
+  opens at `/`), **and the three records `docs/CHANGELOG-SUMMARY.md` / `CHANGELOG.md` / `DEVLOG.md` →
+  `public/changelog/*.html`**, for
   Cloudflare Pages. Not a migration: a **generator**, and the only script here whose output is committed.
   Run it with **`npm run site`** (syntax-checks both files first, then builds).
   ⚠️ **The name is now narrower than the job** — it builds the whole site, not just the legal pages.
@@ -75,10 +77,15 @@ the subsystem rule it belongs to:*
     are answered: `CONTRIBUTORS.md` being published makes that link resolve, the rest degrade to inert
     text, and every page's header now carries a repo link. `linkAudit()` enforces this per build rather
     than trusting the note.
-  - `public/_redirects` maps `/` → `/legal/` because the landing page lives in `legal/` and the site root
-    would otherwise 404. Cloudflare Pages also serves **extensionless** canonical URLs and 308-redirects
-    the `.html` form — so any script checking the live site needs `curl -L`, or it reads zero bytes and
-    reports total drift. `dior legal check` in the CLI repo does this correctly; copy from it.
+  - **The site root IS the homepage now, not a redirect to one** (flattened 2026-08-05 14:43 EDT when
+    dioreo.app went live — `build()` writes `index.html` straight to `public/`, the site root, instead
+    of to `public/legal/`). `public/_redirects` keeps a set of 301s from the old `/legal/*` shape to the
+    new flat one (`/legal/terms.html` → `/terms`, etc.) purely for compatibility — bookmarks, the
+    Discord Developer Portal's ToS/Privacy links if they still point at the old URLs — not because
+    anything still lives there. Cloudflare Pages also serves **extensionless** canonical URLs and
+    308-redirects the `.html` form — so any script checking the live site needs `curl -L`, or it reads
+    zero bytes and reports total drift. `dior legal check` in the CLI repo does this correctly; copy
+    from it.
 
 ⚠️ **`vmstatus.sh` had a lost `#` for an unknown number of days** (fixed 2026-07-29 18:55 EDT, v2.43.1).
 Line 180 was a fragment of its own multi-line comment with the leading `#` missing, so the shell executed

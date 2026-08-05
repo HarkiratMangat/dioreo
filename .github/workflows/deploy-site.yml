@@ -109,9 +109,12 @@ jobs:
       - name: Verify the live site is the build we just published
         if: steps.publish.outputs.published == 'true'
         run: |
-          want=$(grep -o '<title>[^<]*</title>' public/legal/index.html | head -1)
+          # dioreo.app since 2026-08-05 14:43 EDT — the site's real domain now, not
+          # just the underlying pages.dev URL; checking it also catches a custom-
+          # domain routing break, which checking pages.dev alone could not.
+          want=$(grep -o '<title>[^<]*</title>' public/index.html | head -1)
           for i in 1 2 3 4 5 6; do
-            got=$(curl -fsSL --max-time 20 "https://diors-builds-legal.pages.dev/legal/" \
+            got=$(curl -fsSL --max-time 20 "https://dioreo.app/" \
                   | grep -o '<title>[^<]*</title>' | head -1 || true)
             if [ "$got" = "$want" ]; then echo "Live site matches the published build."; exit 0; fi
             echo "Attempt $i: live title is '$got', expected '$want' — waiting."

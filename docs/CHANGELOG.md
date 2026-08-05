@@ -181,7 +181,52 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.53.0 — 2026-08-05 13:11 EDT (#78) — Confirmations that only worked when nothing else was happening
+## v2.54.0 — 2026-08-05 14:53 EDT (#79) — dioreo.app, and a site that no longer lives one folder down from itself
+
+Harkirat bought `dioreo.app` and linked it to the site's existing Cloudflare Pages project — the
+first time the domain named in the branding actually matches the URL. That exposed a structural
+choice made back when the site first went live: everything rendered into `public/legal/`, with the
+site root 302-redirecting there because the landing page had nowhere else to live. A domain a
+reader is expected to actually type deserves `dioreo.app/terms`, not `dioreo.app/legal/terms` —
+so this flattens the whole document family (Terms, Privacy, License, Notice, Contributing,
+Contributors, and the homepage itself) to the site root, leaving `/changelog/` as the one
+remaining subdirectory.
+
+**The routing math had one real asymmetry to get right.** Before this, the two output directories
+(`legal/` and `changelog/`) sat at the SAME depth, so crossing between them was always "up one,
+then down into the other" — `hrefTo()` had exactly one cross-directory case. Flattening `legal/`
+into the root makes that asymmetric: root is depth 0, `changelog/` is depth 1, so crossing FROM
+root only ever goes DOWN, and crossing FROM `changelog/` only ever goes UP — two distinct cases
+where there used to be one. Getting this wrong silently produces a working-in-one-direction site
+(links from the homepage fine, links from a changelog page double-slashed or missing a level) that
+`linkAudit()`'s resolve-against-the-real-tree check would have caught, but a mid-refactor visual
+check would not have.
+
+**Fixed by that structural cascade, not by tracking down each symptom.** `OUT` moved from
+`public/legal` to `public` and `dirOf()`'s default from `'legal'` to `''` (root); everything else —
+`outDirFor()`, the LICENSE/NOTICE raw-download links (`../LICENSE` → `LICENSE`, now same-directory
+siblings instead of one level up), the wordmark's asset path (root pages get bare `assets/...`;
+`chronicle.js`'s changelog pages still need `../assets/...`, since they're still one level deep) —
+followed from those two definitions rather than needing independent fixes. The `LINK_BASE`/`../../`-
+fold mechanism that used to compensate for root-authored sources (LICENSE, NOTICE, CONTRIBUTING.md,
+CONTRIBUTORS.md) rendering one level below where they're authored is now permanently inert, since
+every source renders at the exact depth its own links already assume — kept rather than deleted,
+since a future page family at a real depth would need the same correction again.
+
+**`_redirects` gained six 301s** from the old `/legal/*.html` shape to the new flat paths, purely
+for continuity — a bookmark, or the Discord Developer Portal's ToS/Privacy links if they still
+point at the old shape when this ships. `/install` (already pointing at the Discord OAuth URL) and
+`/changelog` were untouched; `/security`'s target lost its now-nonexistent `/legal/` prefix.
+
+**All fifteen build gates and the full docs-audit passed on the first post-refactor build** — the
+existing verification suite (`linkAudit`, `structureAudit`, `crossRefAudit`, the warm-structure and
+column-alignment checks) turned out to already cover this class of change completely; nothing
+needed extending to catch it. Verified independently anyway: fetched `LICENSE` from a rendered
+`license.html` (200), confirmed the changelog family's asset paths still resolve one level up
+(`naturalWidth: 600`, not a broken image), and confirmed the local preview server now shows the
+homepage directly at `/` instead of the directory listing it used to.
+
+## v2.53.0 — 2026-08-05 13:11 EDT (#78 · `5af0734`) — Confirmations that only worked when nothing else was happening
 
 A mobile-polish round that kept turning up bugs whose actual cause was event ORDERING, not the
 feature itself — plus a privacy-policy gap found by directly auditing the schemas against the

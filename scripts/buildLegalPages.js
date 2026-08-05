@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * buildLegalPages.js — renders docs/legal/*.md into styled, self-contained HTML
- * in public/legal/, for hosting on Cloudflare Pages.
+ * at the site root (public/, flat — see the note on OUT), for hosting on
+ * Cloudflare Pages.
  *
  * WHY A BUILD SCRIPT AND NOT HAND-WRITTEN HTML:
  * The Markdown files are the legally operative source of truth (PRIVACY.md's own
@@ -64,7 +65,12 @@ const { parseChronicle, chronicleShell } = require('./lib/chronicle');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'docs', 'legal');
-const OUT = path.join(ROOT, 'public', 'legal');
+// ⚠️ ROOT, NOT public/legal/ — flattened 2026-08-05 14:36 EDT when dioreo.app went
+// live. The site used to open at /legal/ with the site root redirecting there
+// (see the retired _redirects note this replaced); now the homepage IS the site
+// root and the six document pages are flat siblings of it (dioreo.app/terms, not
+// dioreo.app/legal/terms). See dirOf()/hrefTo() for the routing this drives.
+const OUT = path.join(ROOT, 'public');
 
 // Brand palette, mirrored from the commands' PRESET_ACCENT values so the legal
 // pages read as part of the product. Values copied deliberately rather than
@@ -220,9 +226,9 @@ const EXTRA_PAGES = [
  * neither an instrument (PAGES) nor an invitation (EXTRA_PAGES), and the three
  * sources differ in register rather than in structure.
  *
- * These render into public/changelog/ rather than public/legal/, which is what the
- * `dir` field carries. Everything else on the site is one flat directory, so `dir`
- * defaults to 'legal' and only these three set it — see hrefTo().
+ * These render into public/changelog/ rather than the site root, which is what the
+ * `dir` field carries. Everything else on the site is the one flat root directory,
+ * so `dir` defaults to '' and only these three set it — see hrefTo().
  *
  * `docs: true` means the source sits in docs/ rather than docs/legal/ or the repo
  * root, which is the third and last source location sourcePath() has to know about.
@@ -262,13 +268,21 @@ const CHRONICLE_PAGES = [
    ends up wired into four of five places. */
 const ALL_PAGES = [...PAGES, ...EXTRA_PAGES, ...CHRONICLE_PAGES];
 
-const dirOf = p => p.dir || 'legal';
+// '' means the site ROOT (the flat document pages + the homepage); 'changelog'
+// is the one remaining subdirectory. Was 'legal' by default until the 2026-08-05
+// flattening — see the note on OUT.
+const dirOf = p => p.dir || '';
 
 /**
  * A relative href from one page to another.
  *
  * Every link on the site used to be `./name.html`, which was correct while there
- * was exactly one output directory. There are two now. Relative rather than
+ * was exactly one output directory. There are two now: the site root (depth 0)
+ * and changelog/ (depth 1) — asymmetric since the flattening, where before both
+ * legal/ and changelog/ sat at depth 1 and crossing between them was always
+ * "up one, then down into the other." Crossing FROM root only ever needs to go
+ * DOWN into changelog/; crossing FROM changelog/ only ever needs to go UP to
+ * root — neither direction needs both steps any more. Relative rather than
  * root-absolute on purpose: the local preview (`python3 -m http.server --directory
  * public`) and any `file://` spot-check both keep working, and Cloudflare Pages
  * serves the tree as-is either way. linkAudit() resolves every one of these against
@@ -280,24 +294,31 @@ const hrefTo = (target, from) => {
     // published URL is /changelog/ rather than /changelog/index.html.
     const leaf = target.out === 'index.html' && b !== a ? '' : target.out;
     if (a === b) return './' + (target.out === 'index.html' ? '' : target.out);
-    return '../' + b + '/' + leaf;
+    // Only two directories exist (root and changelog/), so a !== b means exactly
+    // one of them is root: crossing FROM root goes down into b; crossing from
+    // changelog/ (the only other case) goes up, and b is root so leaf alone is
+    // the whole path — 'b + / + leaf' would double a slash here since b is ''.
+    return a === '' ? b + '/' + leaf : '../' + leaf;
 };
 
 /* ─────────────────────────── inline formatting ─────────────────────────── */
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-// Exactly what the deployed site contains, relative to a page inside legal/.
+// Exactly what the deployed site contains, relative to a page at the site root.
 // Keep this in step with build()/buildCompanions() — if a new file starts being
 // published, add it here or its cross-references stay inert text.
 const PUBLISHED_TARGETS = new Set([
     'terms.html', 'privacy.html', 'license.html', 'notice.html', 'index.html', '',
     'contributing.html', 'contributors.html',
-    '../LICENSE', '../NOTICE',
+    // LICENSE/NOTICE are bare now, not '../LICENSE' — they publish verbatim
+    // beside the document pages at the site root since the 2026-08-05 flattening,
+    // no longer a level below them.
+    'LICENSE', 'NOTICE',
     // The chronicle family, as addressed from a page inside changelog/ …
     'detailed.html', 'devlog.html',
-    // … and from a page inside legal/.
-    '../changelog/', '../changelog/detailed.html', '../changelog/devlog.html',
+    // … and from a page at the site root.
+    'changelog/', 'changelog/detailed.html', 'changelog/devlog.html',
 ]);
 
 /**
@@ -344,13 +365,20 @@ const resolvePublished = href => {
 /**
  * Prefix applied to relative links for the page currently being rendered.
  *
- * The Markdown sources sit at two different depths but all render into
- * public/legal/. docs/legal/*.md links out with `../../LICENSE`, which the rewrite
- * below folds to `../LICENSE`. The two ROOT sources (CONTRIBUTING.md,
- * CONTRIBUTORS.md) link out with a bare `LICENSE` — correct from the repo root and
- * wrong by exactly one level once rendered a directory down. Every such link was
- * silently degrading to inert text, which is why the Contributing page discussed
- * the licence in four places and linked it in none.
+ * ⚠️ HISTORICAL CONTEXT, KEPT FOR THE LESSON — the mechanism below changed on
+ * 2026-08-05 14:51 EDT when the site flattened to the domain root, but the shape
+ * of the bug this exists to prevent is worth keeping. The Markdown sources sit at
+ * two different depths (docs/legal/*.md two levels from the repo root;
+ * CONTRIBUTING.md/CONTRIBUTORS.md one level) but used to all render into ONE
+ * output directory (public/legal/) at a THIRD depth — so neither source's own
+ * relative links were correct for where they'd actually land, and both needed a
+ * per-source correction (LINK_BASE, and the ../../ fold two lines below) to reach
+ * it. Every such link was silently degrading to inert text before this existed,
+ * which is why the Contributing page discussed the licence in four places and
+ * linked it in none. Now that every page (root-authored or not) renders at the
+ * SAME depth as the sources that link out of it, both corrections are inert
+ * (LINK_BASE is always '', the fold always empties out) — kept rather than
+ * deleted because a future page family at a real depth would need the same fix.
  *
  * Module-level rather than threaded through parseBlocks → inline, which would mean
  * a parameter on every block type for one value. build() sets it per page.
@@ -372,8 +400,12 @@ function inline(s) {
     s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, h) => {
         const ext = /^https?:|^mailto:/.test(h);
         if (ext) return `<a href="${h}" target="_blank" rel="noopener noreferrer">${t}</a>`;
-        // .md cross-links become .html so they resolve in the built site
-        const href = h.replace(/\.md(#.*)?$/i, '.html$1').replace(/^\.\.\/\.\.\//, '../');
+        // .md cross-links become .html so they resolve in the built site. The
+        // leading ../../ a docs/legal/*.md source writes to reach a repo-root file
+        // (LICENSE, NOTICE) used to fold to one ../, matching public/legal/'s own
+        // depth of 1; now every page renders at the site root (depth 0, since the
+        // 2026-08-05 14:41 EDT flattening), so it folds away entirely instead.
+        const href = h.replace(/\.md(#.*)?$/i, '.html$1').replace(/^\.\.\/\.\.\//, '');
         // Only a handful of targets are actually deployed. Everything else the
         // source markdown points at — CLAUDE.md, ROADMAP.md, the model files, the
         // rules files — exists only in the repo, which a reader may not be able to
@@ -1387,9 +1419,17 @@ const wordmark = (href, cur) => {
     // but noise at 44px tall, so it gets the typographic-only mark; the
     // landing hero has the room and gets the mascot alone instead of the
     // combo lockup, per Harkirat's own asset choice.
+    // ⚠️ THE ASSET PREFIX DEPENDS ON WHERE THIS RENDERS, NOT JUST ON href. Every
+    // root-level page is now a sibling of assets/ (bare 'assets/...') since the
+    // 2026-08-05 14:38 EDT flattening — but chronicle.js also calls this from inside
+    // changelog/, which is still one level down and needs '../assets/...'. cur
+    // carries the caller's own {out,dir}, so dirOf(cur) is the one source of
+    // truth for which prefix is correct; hero (href===null) is only ever the
+    // root homepage, so it always takes the bare form.
+    const assetPfx = cur && dirOf(cur) === 'changelog' ? '../assets/' : 'assets/';
     const [src, w, h] = href
-        ? ['../assets/dioreo-wordmark.webp', 600, 279]
-        : ['../assets/dioreo-mascot.webp', 600, 525];
+        ? [assetPfx + 'dioreo-wordmark.webp', 600, 279]
+        : [assetPfx + 'dioreo-mascot.webp', 600, 525];
     const body = `<span class="mk-s">
       <img class="wm${href ? '' : ' wm-hero'}" src="${src}" width="${w}" height="${h}" alt="Dioreo">
       ${here ? `<span class="mk-ctx"><i aria-hidden="true"></i>${esc(here.title)}</span>` : ''}
@@ -1632,7 +1672,7 @@ const rawDownload = page => {
     try {
         kb = (fs.statSync(path.join(ROOT, page.file)).size / 1024).toFixed(0) + ' KB';
     } catch { /* a missing source is buildCompanions()'s error to raise, not ours */ }
-    return `<a class="dlr" href="../${page.file}" download="${page.file}.txt"`
+    return `<a class="dlr" href="${page.file}" download="${page.file}.txt"`
         + ` data-tip="Download the plain-text original">`
         + dlIcon('dlr-i')
         + `<span class="dlr-t">Download <b>${page.file}</b></span>`
@@ -7789,7 +7829,7 @@ function indexPage(built) {
     // A bare href would have pointed the site's biggest new section at the page the
     // reader is already on, and linkAudit() could not have caught it: the target
     // resolves perfectly, it is simply the wrong file.
-    const here = { out: 'index.html', dir: 'legal' };
+    const here = { out: 'index.html', dir: '' };
     const invRow = list => list.map(p => `
       <a class="inv" href="${hrefTo(p, here)}" style="--ia:${p.accent}">
         <span class="inv-b">
@@ -8315,12 +8355,11 @@ const sourcePath = page => page.root
         ? path.join(ROOT, 'docs', page.file)
         : path.join(SRC, page.file);
 
-// Two output directories now: public/legal/ and public/changelog/. Everything that
-// reads a built page goes through this rather than joining OUT, so a page in the
-// new directory cannot be silently skipped by a gate that only knows the old one.
-const outDirFor = page => dirOf(page) === 'legal'
-    ? OUT
-    : path.join(ROOT, 'public', dirOf(page));
+// Two output locations now: the site root (public/) and public/changelog/.
+// Everything that reads a built page goes through this rather than joining OUT
+// directly, so a page in the changelog directory cannot be silently skipped by
+// a gate that only knows the root.
+const outDirFor = page => path.join(ROOT, 'public', dirOf(page));
 const outPath = page => path.join(outDirFor(page), page.out);
 
 // Both strips are shared with verify() for the same reason: whatever build()
@@ -8388,8 +8427,12 @@ function build() {
 
     for (const page of PAGES) {
         const raw = fs.readFileSync(sourcePath(page), 'utf8');
-        // Root sources render into legal/, one level below where they were authored.
-        LINK_BASE = page.root ? '../' : '';
+        // Always '' now: every page renders at the site root since the 2026-08-05
+        // 14:42 EDT flattening, the same depth every root-authored source (LICENSE,
+        // NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md) already links from. LINK_BASE
+        // stays as a variable rather than being deleted because a future page
+        // family at a real depth would need it again — see hrefTo()'s own note.
+        LINK_BASE = '';
         const meta = [];
         let parsed;
         let note = '';
@@ -8417,9 +8460,9 @@ function build() {
             // needs to keep or quote the governing text wants it at that moment.
             note = `<div class="authoritative">` +
                 `<p>This page is a formatted reading copy. ` +
-                `The <a href="../${page.file}">plain-text ${esc(page.file)}</a> is the ` +
+                `The <a href="${page.file}">plain-text ${esc(page.file)}</a> is the ` +
                 `authoritative instrument, and governs if the two ever differ.</p>` +
-                `<a class="dl" href="../${page.file}" download="${esc(page.file)}.txt" data-tip="Download the plain text">` +
+                `<a class="dl" href="${page.file}" download="${esc(page.file)}.txt" data-tip="Download the plain text">` +
                 dlIcon('dl-i') +
                 `Download ${esc(page.file)}</a></div>`;
         } else {
@@ -8456,7 +8499,7 @@ function build() {
     // An unverified page is the one that quietly rots.
     for (const page of EXTRA_PAGES) {
         const md = fs.readFileSync(sourcePath(page), 'utf8');
-        LINK_BASE = page.root ? '../' : '';
+        LINK_BASE = ''; // see the note on the same line in the PAGES loop above
         const parsed = parseBlocks(stripMdHead(md));
         const ids = new Set(parsed.toc.map(t => t.id));
         // Compose BEFORE linkifying: warmCompose matches on our own block markup,
@@ -8511,13 +8554,13 @@ function build() {
 }
 
 /**
- * TERMS.md and PRIVACY.md link to ../LICENSE, ../NOTICE, and
- * ../CONTRIBUTING.html — the licence and CLA a reader is entitled to reach from
- * the documents that cite them. Those resolve one level ABOVE the legal/
- * directory, so the deployed site root has to carry them or every one of those
- * links 404s in a published legal document. Caught exactly that way: the first
- * deploy plan uploaded public/legal alone, which would have shipped three dead
- * links out of documents whose whole value is being verifiable.
+ * TERMS.md and PRIVACY.md link to LICENSE, NOTICE, and CONTRIBUTING.html — the
+ * licence and CLA a reader is entitled to reach from the documents that cite
+ * them. (Before the 2026-08-05 14:51 EDT flattening these were ../LICENSE etc,
+ * resolving one level ABOVE the legal/ directory the pages then rendered into —
+ * kept here as the reason the deploy tree has to carry LICENSE/NOTICE at all:
+ * the first deploy plan uploaded public/legal alone, which would have shipped
+ * three dead links out of documents whose whole value is being verifiable.)
  *
  * LICENSE and NOTICE are served as plain text on purpose — they are the
  * authoritative instruments, and rendering them through this parser would put a
@@ -8532,10 +8575,14 @@ function buildCompanions() {
         console.log(`  ✓ ${f} (verbatim)`);
     }
 
-    // The landing page lives at legal/index.html, so the site ROOT would otherwise
-    // 404 — confirmed live on the first deploy. A redirect is used rather than a
-    // second copy of the index at the root, because two landing pages drift and
-    // the pages' own nav ("Dioreo" → "./") already resolves to legal/.
+    // ⚠️ THE SITE ROOT IS THE HOMEPAGE NOW, NOT A REDIRECT TO ONE (flattened
+    // 2026-08-05 14:43 EDT when dioreo.app went live). It used to redirect to
+    // /legal/, where the landing page actually lived — confirmed live on the
+    // first deploy, when the bare root 404'd without it. Now build() writes
+    // index.html directly at the site root, so root just serves it; the six
+    // /legal/* redirects below exist ONLY so a bookmark or an external link
+    // still pointed at the old shape (the Discord Developer Portal's ToS/
+    // Privacy links, in particular) keeps working rather than 404ing outright.
     // /security is a memorable route that has to keep working even if the source
     // repository goes private (TERMS §7.1 reserves exactly that). SECURITY.md is
     // deliberately repo-only — it serves GitHub's "Report a vulnerability" flow,
@@ -8550,17 +8597,26 @@ function buildCompanions() {
     // again, so the redirect and every install button on the site can never
     // disagree about the client id.
     //
-    // 302, not 301: a permanent redirect gets cached hard by browsers, and this
-    // one points at a third party whose URL shape is not ours to fix forever.
+    // The /legal/* compatibility rules are 301 (permanent, cacheable) — that
+    // shape is OURS to retire whenever we like, unlike /install's third-party
+    // target. Everything else stays 302 for the same reason it always was.
     fs.writeFileSync(path.join(root, '_redirects'),
-        '/ /legal/ 302\n'
-        + '/security /legal/contributing#security-vulnerabilities 302\n'
+        '/legal / 301\n'
+        + '/legal/ / 301\n'
+        + '/legal/index.html / 301\n'
+        + '/legal/terms.html /terms 301\n'
+        + '/legal/privacy.html /privacy 301\n'
+        + '/legal/license.html /license 301\n'
+        + '/legal/notice.html /notice 301\n'
+        + '/legal/contributing.html /contributing 301\n'
+        + '/legal/contributors.html /contributors 301\n'
+        + '/security /contributing#security-vulnerabilities 302\n'
         // The chronicle family's landing page. Pages already serves the directory
         // index, so this exists for the bare, no-slash form a person types or a
         // Discord message carries — /changelog, not /changelog/.
         + '/changelog /changelog/ 302\n'
         + `/install ${INSTALL_URL} 302\n`);
-    console.log('  ✓ _redirects (/ → /legal/, /security → contributing#security, '
+    console.log('  ✓ _redirects (/legal/* → flat paths, /security → contributing#security, '
         + '/changelog → /changelog/, /install → Discord)');
 
     // CONTRIBUTING.md and CONTRIBUTORS.md ARE published now (2026-07-29 22:17 EDT), via
@@ -8883,7 +8939,7 @@ function crossRefAudit(built) {
             for (const cand of [rel, '../' + rel]) {
                 // Resolved against the page's OWN output directory, not a hardcoded
                 // OUT — the chronicle pages render into public/changelog/, and
-                // resolving their links from public/legal/ would ask the wrong
+                // resolving their links from the site root would ask the wrong
                 // directory whether the target exists.
                 const dir = path.resolve(pageOut, path.dirname(cand));
                 // MUST stay inside the deploy tree. Without this guard the lifted

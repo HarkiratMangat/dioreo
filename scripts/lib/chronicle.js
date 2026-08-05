@@ -907,7 +907,7 @@ ${voice.name === 'record' ? '<div class="lg-scan" aria-hidden="true"></div>' : '
 <div class="boot" id="boot" aria-hidden="true"><div class="boot-in" id="bootin"></div></div>
 
 <div class="bar">
-  ${C.wordmark('../legal/', cur)}
+  ${C.wordmark('../', cur)}
   <nav>
     ${C.navSwitcher(cur)}
     ${C.repoBtn}

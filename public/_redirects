@@ -1,4 +1,12 @@
-/ /legal/ 302
-/security /legal/contributing#security-vulnerabilities 302
+/legal / 301
+/legal/ / 301
+/legal/index.html / 301
+/legal/terms.html /terms 301
+/legal/privacy.html /privacy 301
+/legal/license.html /license 301
+/legal/notice.html /notice 301
+/legal/contributing.html /contributing 301
+/legal/contributors.html /contributors 301
+/security /contributing#security-vulnerabilities 302
 /changelog /changelog/ 302
 /install https://discord.com/oauth2/authorize?client_id=1491474871778021550 302
