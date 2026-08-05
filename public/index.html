@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dioreo — Call of Duty: Mobile, in Discord</title>
-<meta name="description" content="Dioreo is an unofficial Call of Duty: Mobile Discord bot for lucky-draw odds, CP costs, loadouts, and the seasonal calendar. Install it once and it works in any server or DM.">
+<meta name="description" content="Dioreo is a COD:M companion Discord bot for lucky draws, CP costs, loadouts, the seasonal calendar, and so much more. Install it once and it works in any server or DM.">
 <meta name="color-scheme" content="dark light">
 <script>try{var t=localStorage.getItem('db-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
@@ -1104,7 +1104,21 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
 
 h1 em{font-style:normal;color:var(--accent-t)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
-  max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}
+  max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}/* ⚠️ STATIC ON PURPOSE — the animated slash-command slideshow is deliberately
+   deferred to its own session (see the intro comment above and the session
+   handoff). This is just the resting look: a terminal-style glyph with a
+   blinking block cursor, so the line reads as "about to type" rather than
+   broken while it waits for that build. Pulled up to sit close under the
+   lede (negative margin-top eating most of .lede's own bottom margin) so it
+   reads as one continuous invitation, not a stray line. */
+
+.cmd-line{font-family:var(--mono);font-size:1.05rem;font-weight:600;
+  color:var(--accent-t);letter-spacing:.02em;
+  margin:calc(-1 * clamp(2.2rem,7vh,3.6rem) + .5rem) 0 clamp(1.6rem,5vh,2.4rem)}
+.cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
+  margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
+  animation:cmd-blink 1.1s steps(1) infinite}
+@keyframes cmd-blink{50%{opacity:0}}
 .list{border-top:1px solid var(--rule)}/* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
    linear the row snapped rather than moved — the whole page read as abrupt for
    this reason, not because anything was missing. The rule wipes in from the top
@@ -1528,7 +1542,11 @@ h1 em{font-style:normal;color:var(--accent-t)}
        lives, just the first. -->
   <span class="lab">Discord bot</span>
   <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
-  <p class="lede">New &amp; returning draw releases, CP costs, MP &amp; DMZ loadouts, what’s live this season, when it ends, and so much more — all without leaving the chat! Install it once and it answers anywhere, in any server or any DM. Type / and go.</p>
+  <p class="lede">New &amp; returning draw releases, CP costs, MP &amp; DMZ loadouts, what’s live this season, when it ends, and so much more — all without leaving the chat! Install it once and it answers anywhere, in any server or any DM.</p>
+  <!-- Static placeholder for the future animated command line — a separate
+       session builds the JS that cycles this through real slash commands
+       (/ar, /draws, /patchnotes, ...). id is the hook for that work. -->
+  <p class="cmd-line" id="cmd-line" aria-hidden="true">/</p>
   <span class="lab lab-sec">The fine print</span>
   <p class="lede sub">Four documents: what you agree to, what the bot stores about you, what you may do with the code, and who owns what it shows you.</p>
   <div class="list">

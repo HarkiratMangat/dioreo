@@ -1685,9 +1685,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
   .mt-n{flex:0 0 auto;font-family:var(--mono);font-style:normal;font-size:.62rem;
     font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;
     color:var(--accent-t)}
-  .mt-n.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
-  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain;
-    padding-bottom:.3rem}
+  .mt-n.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}/* ⚠️ NO padding-bottom (removed 2026-08-05 15:52 EDT) — .mp-dl sticks flush
+     to bottom:0 of THIS box, so any bottom padding here becomes a gap between
+     .mp-dl's own bottom edge and the real clip boundary. Whatever row sits
+     right there peeks through unmasked in that gap — confirmed by measuring
+     .mp-dl's rect against .slot rects on the license page: a residual ~5px
+     band was enough to show the next row's top sliver, full opacity, past
+     the card. Flush to 0 closes it. */
+  
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain}
   .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
     padding:0 .9rem;border-left:3px solid transparent}/* Stronger than the desktop rail's marker on purpose. The rail is always on
      screen beside the prose, so a hairline is enough to say -you are here-; this
@@ -1798,26 +1804,44 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    note on .msecd for why it's a different kind of question than "which
    section" and belongs apart from the list rather than styled as one more
    row in it.
-   ⚠️ NOT STICKY, ON PURPOSE (reversed 2026-08-05 12:28 EDT). A sticky-to-the-
-   list version shipped first, edge-to-edge with square corners, so it could
-   sit flush against the scroll boundary — but that same edge-to-edge opaque
-   bar is what made it PIN OVER whatever section row happened to be scrolled
-   underneath it, mid-word, with no transition. Reported as "such a poor
-   implementation... looks slapped on." The desktop rail's identical .dlr row
-   has never drawn that complaint sitting as a plain trailing row with normal
-   margin — so rather than polish the overlap (a fade mask, a shadow) this
-   drops the mechanism that caused it. Inset margin matching the slot rows'
-   own horizontal padding, and a hairline drawn in the gap above it via
-   ::before rather than a real border — a border on the card itself would
-   have doubled up against .msecd's own bottom border when the list is short
-   enough not to scroll. */
+   ⚠️ STICKY AGAIN, WITH A FADE MASK (reversed back 2026-08-05 15:39 EDT —
+   history below is why the fix, not just the sticking, mattered). The FIRST
+   sticky version (pre-12:28 EDT) was edge-to-edge with square corners and
+   PINNED OVER whatever section row was scrolled underneath it, mid-word,
+   with no transition — "such a poor implementation... looks slapped on."
+   That version was reverted to a plain trailing row (12:28 EDT), which
+   fixed the overlap but brought back the original complaint: the button
+   gets buried at the bottom of a long list and you have to scroll to find
+   it. Both are real constraints, so this version keeps the row sticky but
+   wraps it in .mp-dl, a full-width opaque backing that (a) is wide enough
+   nothing peeks out past the card's own inset margin, and (b) carries a
+   gradient ::before above it so section text fades into the panel
+   background before it reaches the card, instead of hard-cutting mid-word.
+   ⚠️ FADE HEIGHT MUST EXCEED ONE ROW (2026-08-05 15:47 EDT) — the first cut
+   of this used 1.3rem (~21px) against .msec .slot's 44px min-height, so a
+   row's text crossed from fully-opaque to fully-hidden within its OWN line
+   height: reported as "literally a hard cut", because a gradient that
+   completes mid-glyph doesn't read as fading, it reads as clipping. 2.5rem
+   still spans slightly more than one row, so a row is visibly receding
+   while still fully legible above it, before it ever reaches the solid card.
+   ⚠️ BOTTOM BREATHING ROOM LIVES HERE, NOT ON .dlr (2026-08-05 15:56 EDT) —
+   .dlr used to carry its own bottom margin for this, which meant the space
+   below the button was OUTSIDE the piece: once .mp-list's own padding-bottom
+   was removed (the fix just above, so the piece would reach the true clip
+   edge instead of leaving a gap other rows peeked through), the button ended
+   up flush against that edge with nothing solid below it — "dropped to the
+   edge... doesn't look good." The fix is the same shape as the top: padding
+   INSIDE .mp-dl's own opaque box, so it's part of the solid backing (never
+   shows raw list content) while the piece's outer edge still sits flush. */
 
-.mp-list .dlr{position:relative;margin:1.1rem .9rem .3rem;padding:.75rem .9rem;
+.mp-dl{position:sticky;bottom:0;z-index:2;background:var(--paper);padding:2.5rem 0 .9rem}
+.mp-dl::before{content:"";position:absolute;left:0;right:0;top:0;height:2.5rem;
+  background:linear-gradient(to bottom,transparent,var(--paper));
+  pointer-events:none}
+.mp-list .dlr{position:relative;margin:0 .9rem;padding:.75rem .9rem;
   border-radius:12px;
   background:color-mix(in srgb,var(--accent) 9%,var(--paper));
-  border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}
-.mp-list .dlr::before{content:"";position:absolute;left:0;right:0;top:-.65rem;
-  height:1px;background:var(--rule)}@media (hover:hover) and (pointer:fine){
+  border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}@media (hover:hover) and (pointer:fine){
 .mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 
@@ -2349,7 +2373,7 @@ html{scroll-behavior:smooth}
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a><a class="dlr" href="LICENSE" download="LICENSE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>LICENSE</b></span><span class="dlr-s">45 KB</span></a></div>
+    <div class="mp-list msec"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a><div class="mp-dl"><a class="dlr" href="LICENSE" download="LICENSE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>LICENSE</b></span><span class="dlr-s">45 KB</span></a></div></div>
   </details>
 </aside>
 

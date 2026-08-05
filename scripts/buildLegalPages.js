@@ -1698,9 +1698,9 @@ const mobileNav = (cur, slots, dl = '') => {
        room to say what it does. It is the same .dlr row the desktop rail uses
        (see rawDownload()), not a separate compact control any more — dropped
        DRY-ly rather than kept as a second markup shape to maintain. It renders
-       as the LAST child of .mp-list, set apart from the sections above it by a
-       card treatment and a hairline — see ".mp-list .dlr" in COMPONENT_CSS for
-       why that is no longer a sticky footer. */
+       as the LAST child of .mp-list, wrapped in .mp-dl — see ".mp-dl" in
+       COMPONENT_CSS for why the wrapper exists as a separate element from the
+       card it sticks. */
     return `<aside class="mnav" id="mnav">
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
@@ -1710,7 +1710,7 @@ const mobileNav = (cur, slots, dl = '') => {
   </div>
   ${(slots || dl) ? `<details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec">${slots}${dl}</div>
+    <div class="mp-list msec">${slots}${dl ? `<div class="mp-dl">${dl}</div>` : ''}</div>
   </details>` : ''}
 </aside>`;
 };
@@ -4493,8 +4493,14 @@ const SWITCHER_CSS = `
     font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;
     color:var(--accent-t)}
   .mt-n.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
-  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain;
-    padding-bottom:.3rem}
+  /* ⚠️ NO padding-bottom (removed 2026-08-05 15:52 EDT) — .mp-dl sticks flush
+     to bottom:0 of THIS box, so any bottom padding here becomes a gap between
+     .mp-dl's own bottom edge and the real clip boundary. Whatever row sits
+     right there peeks through unmasked in that gap — confirmed by measuring
+     .mp-dl's rect against .slot rects on the license page: a residual ~5px
+     band was enough to show the next row's top sliver, full opacity, past
+     the card. Flush to 0 closes it. */
+  .mp-list{max-height:min(58vh,460px);overflow-y:auto;overscroll-behavior-y:contain}
   .msec .slot{display:flex;align-items:center;gap:.6rem;min-height:44px;
     padding:0 .9rem;border-left:3px solid transparent}
   /* Stronger than the desktop rail's marker on purpose. The rail is always on
@@ -4797,25 +4803,43 @@ ${SWITCHER_CSS}
    note on .msecd for why it's a different kind of question than "which
    section" and belongs apart from the list rather than styled as one more
    row in it.
-   ⚠️ NOT STICKY, ON PURPOSE (reversed 2026-08-05 12:28 EDT). A sticky-to-the-
-   list version shipped first, edge-to-edge with square corners, so it could
-   sit flush against the scroll boundary — but that same edge-to-edge opaque
-   bar is what made it PIN OVER whatever section row happened to be scrolled
-   underneath it, mid-word, with no transition. Reported as "such a poor
-   implementation... looks slapped on." The desktop rail's identical .dlr row
-   has never drawn that complaint sitting as a plain trailing row with normal
-   margin — so rather than polish the overlap (a fade mask, a shadow) this
-   drops the mechanism that caused it. Inset margin matching the slot rows'
-   own horizontal padding, and a hairline drawn in the gap above it via
-   ::before rather than a real border — a border on the card itself would
-   have doubled up against .msecd's own bottom border when the list is short
-   enough not to scroll. */
-.mp-list .dlr{position:relative;margin:1.1rem .9rem .3rem;padding:.75rem .9rem;
+   ⚠️ STICKY AGAIN, WITH A FADE MASK (reversed back 2026-08-05 15:39 EDT —
+   history below is why the fix, not just the sticking, mattered). The FIRST
+   sticky version (pre-12:28 EDT) was edge-to-edge with square corners and
+   PINNED OVER whatever section row was scrolled underneath it, mid-word,
+   with no transition — "such a poor implementation... looks slapped on."
+   That version was reverted to a plain trailing row (12:28 EDT), which
+   fixed the overlap but brought back the original complaint: the button
+   gets buried at the bottom of a long list and you have to scroll to find
+   it. Both are real constraints, so this version keeps the row sticky but
+   wraps it in .mp-dl, a full-width opaque backing that (a) is wide enough
+   nothing peeks out past the card's own inset margin, and (b) carries a
+   gradient ::before above it so section text fades into the panel
+   background before it reaches the card, instead of hard-cutting mid-word.
+   ⚠️ FADE HEIGHT MUST EXCEED ONE ROW (2026-08-05 15:47 EDT) — the first cut
+   of this used 1.3rem (~21px) against .msec .slot's 44px min-height, so a
+   row's text crossed from fully-opaque to fully-hidden within its OWN line
+   height: reported as "literally a hard cut", because a gradient that
+   completes mid-glyph doesn't read as fading, it reads as clipping. 2.5rem
+   still spans slightly more than one row, so a row is visibly receding
+   while still fully legible above it, before it ever reaches the solid card.
+   ⚠️ BOTTOM BREATHING ROOM LIVES HERE, NOT ON .dlr (2026-08-05 15:56 EDT) —
+   .dlr used to carry its own bottom margin for this, which meant the space
+   below the button was OUTSIDE the piece: once .mp-list's own padding-bottom
+   was removed (the fix just above, so the piece would reach the true clip
+   edge instead of leaving a gap other rows peeked through), the button ended
+   up flush against that edge with nothing solid below it — "dropped to the
+   edge... doesn't look good." The fix is the same shape as the top: padding
+   INSIDE .mp-dl's own opaque box, so it's part of the solid backing (never
+   shows raw list content) while the piece's outer edge still sits flush. */
+.mp-dl{position:sticky;bottom:0;z-index:2;background:var(--paper);padding:2.5rem 0 .9rem}
+.mp-dl::before{content:"";position:absolute;left:0;right:0;top:0;height:2.5rem;
+  background:linear-gradient(to bottom,transparent,var(--paper));
+  pointer-events:none}
+.mp-list .dlr{position:relative;margin:0 .9rem;padding:.75rem .9rem;
   border-radius:12px;
   background:color-mix(in srgb,var(--accent) 9%,var(--paper));
   border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}
-.mp-list .dlr::before{content:"";position:absolute;left:0;right:0;top:-.65rem;
-  height:1px;background:var(--rule)}
 .mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
@@ -7889,18 +7913,22 @@ function indexPage(built) {
     // (joining a clause on either side of a list), a parenthetical aside
     // tacked on rather than integrated, and near-uniform clause length. Zero
     // em dashes now; the aside is a plain list item; sentence length varies
-    // (one longer list sentence, a fragment, a medium sentence, a short
-    // closer) instead of two similar-length dash-halves.
+    // (one longer list sentence, a fragment, a medium sentence) instead of
+    // two similar-length dash-halves.
+    // ⚠️ "Type / and go." MOVED OUT, 2026-08-05 15:40 EDT — it's now .cmd-line
+    // below, its own line under the lede, reserved for a future animated
+    // slideshow through real slash commands (/ar, /draws, /patchnotes, ...).
+    // Static "/" for now; see the session handoff for the animation spec.
     const intro = 'New & returning draw releases, CP costs, MP & DMZ loadouts, '
         + 'what’s live this season, when it ends, and so much more — all without '
         + 'leaving the chat! Install it once and it answers anywhere, in any server '
-        + 'or any DM. Type / and go.';
+        + 'or any DM.';
 
     return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dioreo — Call of Duty: Mobile, in Discord</title>
-<meta name="description" content="Dioreo is an unofficial Call of Duty: Mobile Discord bot for lucky-draw odds, CP costs, loadouts, and the seasonal calendar. Install it once and it works in any server or DM.">
+<meta name="description" content="Dioreo is a COD:M companion Discord bot for lucky draws, CP costs, loadouts, the seasonal calendar, and so much more. Install it once and it works in any server or DM.">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
@@ -7952,6 +7980,20 @@ h1{font-family:var(--display);font-weight:800;letter-spacing:-.038em;line-height
 h1 em{font-style:normal;color:var(--accent-t)}
 .lede{font-family:var(--serif);font-size:1.1rem;line-height:1.7;color:var(--ink2);
   max-width:46ch;margin:0 0 clamp(2.2rem,7vh,3.6rem)}
+/* ⚠️ STATIC ON PURPOSE — the animated slash-command slideshow is deliberately
+   deferred to its own session (see the intro comment above and the session
+   handoff). This is just the resting look: a terminal-style glyph with a
+   blinking block cursor, so the line reads as "about to type" rather than
+   broken while it waits for that build. Pulled up to sit close under the
+   lede (negative margin-top eating most of .lede's own bottom margin) so it
+   reads as one continuous invitation, not a stray line. */
+.cmd-line{font-family:var(--mono);font-size:1.05rem;font-weight:600;
+  color:var(--accent-t);letter-spacing:.02em;
+  margin:calc(-1 * clamp(2.2rem,7vh,3.6rem) + .5rem) 0 clamp(1.6rem,5vh,2.4rem)}
+.cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
+  margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
+  animation:cmd-blink 1.1s steps(1) infinite}
+@keyframes cmd-blink{50%{opacity:0}}
 .list{border-top:1px solid var(--rule)}
 /* ⚠️ Durations here are long enough to be SEEN and eased to decelerate. At .22s
    linear the row snapped rather than moved — the whole page read as abrupt for
@@ -8305,6 +8347,10 @@ h1 em{font-style:normal;color:var(--accent-t)}
   <span class="lab">Discord bot</span>
   <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
   <p class="lede">${esc(intro)}</p>
+  <!-- Static placeholder for the future animated command line — a separate
+       session builds the JS that cycles this through real slash commands
+       (/ar, /draws, /patchnotes, ...). id is the hook for that work. -->
+  <p class="cmd-line" id="cmd-line" aria-hidden="true">/</p>
   <span class="lab lab-sec">The fine print</span>
   <p class="lede sub">${esc(lede)}</p>
   <div class="list">${rows}</div>
