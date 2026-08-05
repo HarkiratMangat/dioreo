@@ -729,12 +729,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
    copyright line, not a second mark. Inherits .sig's own colour/size and just
    dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
    ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
    ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
 
-.sig-cr{opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+.sig-cr{display:block;margin-top:.2rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -1110,12 +1115,18 @@ h1 em{font-style:normal;color:var(--accent-t)}
 .foot{margin-top:clamp(2.5rem,8vh,4rem);display:flex;flex-direction:column;gap:.5rem;
   align-items:flex-start;text-align:left;padding:0}
 .foot .disc{max-width:66ch}/* The shared .sig carries grid placement for the document footer's two-column
-   layout; here it is a plain block in the page flow, so only the spacing needs
-   restating. Its own margin is set for sitting under a link row, not under the
-   trademark notice. */
+   layout; here it is a flex child of .lfoot instead, so only the spacing needs
+   restating. *//* .lfoot puts the disclaimer and the sign-off side by side instead of each
+   taking a full-width line with nothing beside it. space-between is enough on
+   its own with exactly two children — .disc's own max-width already stops it
+   growing to meet the sig, so no flex-grow is needed on either child. Both
+   children's own top margins move up to this wrapper. */
 
-.sig.lsig{margin:clamp(1.5rem,4.5vh,2.2rem) 0 0}
-.disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
+
+.lfoot{display:flex;justify-content:space-between;align-items:flex-end;
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}
+.sig.lsig{margin:0;flex:0 0 auto}
+.disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
@@ -1595,14 +1606,21 @@ h1 em{font-style:normal;color:var(--accent-t)}
        an invitation, and it was competing with the contact block for the end of
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
-       placement, never of contrast. -->
-  <p class="disc fine">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
-  <!-- The sign-off closes the landing page as it closes every other one. It was
-       the only page without it, which made the site look like it ended twice:
-       every document signed off and the front door did not. Last, and after the
-       trademark notice, because that notice is an obligation and this is the
-       author — the same order the document pages use. -->
-  <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
+       placement, never of contrast.
+       ⚠️ SIDE BY SIDE WITH THE SIGN-OFF, NOT STACKED ABOVE IT (changed
+       2026-08-05 08:40 EDT). Both used to be full-width lines, each with
+       nothing beside it — Harkirat's call: on a wide viewport that reads as
+       wasted width, not as two important closing lines. .lfoot puts them in
+       one flex row instead; .disc's own 52ch cap keeps it from stretching
+       into the sig's space, and flex-wrap folds it back to the original
+       stacked order the moment the row can't fit both. -->
+  <div class="lfoot">
+    <p class="disc fine">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+    <!-- The sign-off closes the landing page as it closes every other one. It was
+         the only page without it, which made the site look like it ended twice:
+         every document signed off and the front door did not. -->
+    <p class="sig lsig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
+  </div>
 </main>
 <script>
 (function(){

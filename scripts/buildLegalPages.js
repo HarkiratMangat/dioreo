@@ -1238,6 +1238,13 @@ const DISCORD_URL = 'https://discord.com/users/1139845545754632283';
 // the same words rather than inventing a second voice for the same person.
 const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with love by '
     + `<a class="sig-a" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a>`;
+/* ⚠️ ONE CONSTANT, EVERY FOOTER — the same lesson TRADEMARK_NOTE's own comment
+   already states for a different string. Appended directly after whichever sig
+   text is in play (DIOR_SIG or a warm page's own closing line), never assembled
+   separately, so the copyright can't end up detached from the signature it
+   belongs to on some future page. .sig-cr is display:block in CSS, which is
+   what puts it on its own line under the sig rather than trailing it inline. */
+const SIG_COPYRIGHT = '<span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span>';
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 
 /**
@@ -1627,7 +1634,7 @@ const styleDisclaimer = html => html.replace(DISCLAIMER_RE,
    screen — which is what Harkirat was looking at. The warm and chronicle pages
    carry no such closing line, so they keep the footer's copy. */
 const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
-    <p class="sig">${sig || DIOR_SIG} <span class="sig-cr">&middot; &copy; 2026 Harkirat Mangat</span></p>
+    <p class="sig">${sig || DIOR_SIG}${SIG_COPYRIGHT}</p>
     ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
     <nav class="endnav">${navSetFor(cur).flat()
         .filter(p => !isHere(p, cur))
@@ -2275,11 +2282,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 /* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
    copyright line, not a second mark. Inherits .sig's own colour/size and just
    dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
    ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
    ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
-.sig-cr{opacity:.6}
+.sig-cr{display:block;margin-top:.2rem;opacity:.6}
 /* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
@@ -7676,11 +7688,17 @@ h1 em{font-style:normal;color:var(--accent-t)}
   align-items:flex-start;text-align:left;padding:0}
 .foot .disc{max-width:66ch}
 /* The shared .sig carries grid placement for the document footer's two-column
-   layout; here it is a plain block in the page flow, so only the spacing needs
-   restating. Its own margin is set for sitting under a link row, not under the
-   trademark notice. */
-.sig.lsig{margin:clamp(1.5rem,4.5vh,2.2rem) 0 0}
-.disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
+   layout; here it is a flex child of .lfoot instead, so only the spacing needs
+   restating. */
+/* .lfoot puts the disclaimer and the sign-off side by side instead of each
+   taking a full-width line with nothing beside it. space-between is enough on
+   its own with exactly two children — .disc's own max-width already stops it
+   growing to meet the sig, so no flex-grow is needed on either child. Both
+   children's own top margins move up to this wrapper. */
+.lfoot{display:flex;justify-content:space-between;align-items:flex-end;
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}
+.sig.lsig{margin:0;flex:0 0 auto}
+.disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
@@ -7979,14 +7997,21 @@ h1 em{font-style:normal;color:var(--accent-t)}
        an invitation, and it was competing with the contact block for the end of
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
-       placement, never of contrast. -->
-  <p class="disc fine">${TRADEMARK_NOTE}</p>
-  <!-- The sign-off closes the landing page as it closes every other one. It was
-       the only page without it, which made the site look like it ended twice:
-       every document signed off and the front door did not. Last, and after the
-       trademark notice, because that notice is an obligation and this is the
-       author — the same order the document pages use. -->
-  <p class="sig lsig">${DIOR_SIG}</p>
+       placement, never of contrast.
+       ⚠️ SIDE BY SIDE WITH THE SIGN-OFF, NOT STACKED ABOVE IT (changed
+       2026-08-05 08:40 EDT). Both used to be full-width lines, each with
+       nothing beside it — Harkirat's call: on a wide viewport that reads as
+       wasted width, not as two important closing lines. .lfoot puts them in
+       one flex row instead; .disc's own 52ch cap keeps it from stretching
+       into the sig's space, and flex-wrap folds it back to the original
+       stacked order the moment the row can't fit both. -->
+  <div class="lfoot">
+    <p class="disc fine">${TRADEMARK_NOTE}</p>
+    <!-- The sign-off closes the landing page as it closes every other one. It was
+         the only page without it, which made the site look like it ended twice:
+         every document signed off and the front door did not. -->
+    <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}</p>
+  </div>
 </main>
 <script>${THEME_JS}${MORPH_JS}</script>
 </body></html>`;
