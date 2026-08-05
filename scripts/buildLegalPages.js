@@ -7648,15 +7648,18 @@ function indexPage(built) {
        so a headline that spends itself on a benefit leaves the reader with no idea what
        the thing is called, while one that spends itself on the name alone says nothing
        about what it does. Doing both is what the two rejected options each did half of. */
-    // ⚠️ REWORDED 2026-08-05 09:03 EDT for parallelism — the three items in the
-    // dash clause used to mix grammatical forms (a noun phrase, a verb phrase,
-    // then a full clause), which read as a run-on even though nothing was
-    // technically wrong. Now three matched noun phrases joined by "and" before
-    // the last, same content, same length.
-    const intro = 'It lives in Discord — lucky-draw odds and CP costs, loadouts worth '
-        + 'building, and what’s live this season (and when it ends) — all without '
-        + 'leaving the chat. Install it once and it answers anywhere you can type: any '
-        + 'server, any DM, no invite needed.';
+    // ⚠️ REWORDED AGAIN 2026-08-05 09:41 EDT — the parallelism fix (2026-08-05
+    // 09:03 EDT, kept below in git history) was still "too AI-written" per
+    // feedback. The tell was structural: two em dashes doing the same job
+    // (joining a clause on either side of a list), a parenthetical aside
+    // tacked on rather than integrated, and near-uniform clause length. Zero
+    // em dashes now; the aside is a plain list item; sentence length varies
+    // (one longer list sentence, a fragment, a medium sentence, a short
+    // closer) instead of two similar-length dash-halves.
+    const intro = 'It lives in Discord: lucky-draw odds, CP costs, loadouts worth '
+        + 'building, what’s live this season, and when it ends. All without leaving '
+        + 'the chat. Install it once and it answers anywhere you can type, in any '
+        + 'server or any DM. No invite needed.';
 
     return `<!doctype html>
 <html lang="en"><head>
