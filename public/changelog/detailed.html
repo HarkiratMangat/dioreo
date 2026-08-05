@@ -5878,72 +5878,79 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1,lineY=-1;
+    var cur=-1,queued=0;
+    /* ⚠️ THIRD DESIGN FOR THIS FUNCTION, 2026-08-05 10:10 EDT — and the reason
+       is worth keeping straight, because the first two both failed for
+       different reasons and it would be easy to wander back into either.
+       (1) Nearest-row-centre to a DIRECTION-BIASED line, with a 24px
+       hysteresis margin: reported as "Terms lingers, the rest rush by" —
+       diagnosed as the algorithm, not the (perfectly uniform) layout, and
+       replaced with —
+       (2) boundary containment: a row active exactly while its own box
+       contains that same biased line. Proven live to give EQUAL dwell
+       distance per row (confirmed: ~130px each, Terms through Notice) — but
+       then rejected anyway: "linear isn't the solution." Equal-by-the-numbers
+       still read as mechanical, because a fixed offset percentage down the
+       screen is not what a reader's eye is actually doing.
+       (3) THIS version: whichever row's centre is nearest the VIEWPORT'S OWN
+       centre — "whichever row is most prominently in view," Harkirat's own
+       framing. This is not just a different number, it drops the whole
+       direction-bias/easing apparatus (dir, lastY, the 8px threshold, lineY's
+       spring) outright, because the reference point is innerHeight*0.5 —
+       fixed, not direction-dependent — so there is nothing left for a
+       direction change to destabilise. Simpler code as a direct consequence
+       of the simpler mental model, not a separate cleanup. */
+    /* ⚠️ A ROW CAN BE SKIPPED ENTIRELY ON A FAST SWIPE, and no per-frame
+       distance rule fixes that — added 2026-08-05 10:13 EDT, proven with a
+       frame-by-frame recording. pick() only samples state once per
+       requestAnimationFrame; a fast flick can move the scroll far enough
+       between two consecutive frames that a row's whole "nearest the centre"
+       window falls entirely in the gap between samples — the recording
+       showed Privacy active, then License's entire on-screen span passing
+       with nothing lit, then Notices taking over, License never once
+       flagged. No amount of tuning the DISTANCE test closes that: the
+       problem is temporal (a row got no sampled moment), not spatial.
+       stepQueue turns a jump of more than one row into a walk, one row per
+       stepTimer tick, so a skipped row still gets a real, visible moment —
+       capped at 3 steps so an extreme jump (dragging the scrollbar from top
+       to bottom) snaps straight to the end instead of animating through
+       every row it technically passed. */
+    var stepTimer=0;
+    function advance(target){
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=target;
+      rows[cur].classList.add('act');
+    }
+    function stepToward(target){
+      clearTimeout(stepTimer);
+      if(cur<0||Math.abs(target-cur)>3){advance(target);return;}
+      if(cur===target)return;
+      var next=cur+(target>cur?1:-1);
+      advance(next);
+      if(next!==target)stepTimer=setTimeout(function(){stepToward(target);},70);
+    }
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
-      var y=scrollY_();
-      /* ⚠️ THIS THRESHOLD WAS 1px, AND THAT WAS THE ROUGHNESS. Ordinary touch-
-         scroll delivers position in small, noisy steps — a dead-slow scroll or
-         the rubber-band edge can easily read as a 1-2px move the "wrong" way for
-         a single frame. At threshold 1 that flipped dir on noise, which swung
-         line by a fifth of the viewport height every time, which is what made
-         the highlight jump around even during smooth, one-direction scrolling.
-         8px is real intent, not jitter. */
-      if(Math.abs(y-lastY)>8){dir=y>lastY?1:-1;lastY=y;}
-      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
-         A fixed line only marks a row once the row has reached it, so on the way
-         down the highlight always trails what you are looking at. Offsetting the
-         line by a tenth of the viewport in the direction of travel moves it DOWN
-         while scrolling down, which is the direction rows arrive from, so a row is
-         claimed on approach instead of on arrival — and symmetrically on the way
-         back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it.
-         ⚠️ EASED TOWARD THE TARGET, NOT SNAPPED TO IT — added 2026-08-05 09:37 EDT,
-         on top of the 8px threshold and the hysteresis below. The threshold stops
-         dir flipping on noise, but once it DOES flip (a real direction change),
-         the old code moved the line by a fifth of the viewport height in a single
-         frame — a real jump, not jitter, and with two rows sitting near that
-         boundary it could still flip the highlight abruptly on an ordinary
-         back-and-forth scroll. Springing lineY toward the target over several
-         frames turns that step into a slide, so a direction change reads as a
-         smooth retarget instead of a jump — same fix shape as the liquid
-         cursor's own cen.x spring in tick(), just applied to this line instead
-         of a cursor position. */
-      var target=innerHeight*(0.46+dir*0.10);
-      lineY=(lineY<0)?target:lineY+(target-lineY)*0.12;
-      var line=lineY;
-      /* ⚠️ REPLACED NEAREST-CENTRE-WITH-HYSTERESIS, 2026-08-05 10:03 EDT.
-         Reported: "Terms" stayed highlighted through a long stretch of scroll
-         while Privacy/License/Notice each only triggered for a small portion
-         before switching among themselves too fast. The rows measure
-         perfectly uniform (138px each, contiguous, no gaps), which rules out
-         layout as the cause — this was the ALGORITHM. Nearest-centre picks
-         whichever row's MIDPOINT is closest to the line, which is not the
-         same thing as "which row currently owns the line," and the 24px
-         hysteresis margin on top of that made each handoff's exact timing
-         depend on the two rows' relative distances rather than on a clean,
-         predictable boundary — nothing about that guarantees equal dwell
-         time per row even when the rows themselves are equal height.
-         Testing which row's own BOUNDING BOX contains the line is symmetric
-         BY CONSTRUCTION: a row is active for exactly the scroll distance
-         equal to its own height, no more and no less, because the line can
-         only be inside one row's box at a time. This also makes the
-         hysteresis margin unnecessary — a boundary crossing is a single,
-         unambiguous event, not a fuzzy nearest-of-two-candidates race. */
-      var best=-1,i,r;
+      var mid=innerHeight*0.5;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
-        if(line>=r.top&&line<r.bottom){best=i;break;}
+        if(r.bottom<8||r.top>innerHeight-8)continue;
+        d=Math.abs(r.top+r.height/2-mid);
+        if(i===cur)curD=d;
+        if(d<bestD){bestD=d;best=i;}
       }
-      /* best<0 means the line is sitting in a gap between rows (the two
-         .inv cards trail the four document rows with real space between
-         them) rather than that nothing is being read — keep the last row
-         highlighted through that gap instead of blanking it. */
       if(best<0||best===cur)return;
-      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=best;
-      rows[cur].classList.add('act');
+      /* A light margin, not the old 24px — with a STABLE reference point the
+         flicker case (two rows trading the highlight every frame near a
+         shared boundary) is far less likely to begin with; this only damps
+         genuine near-ties rather than doing the main stabilising work the
+         way it had to before. Only applied to single-row moves — a jump big
+         enough to trigger stepToward's walk already means best is decisively
+         ahead, not a near-tie. */
+      if(cur>=0&&Math.abs(best-cur)<=1&&bestD>curD-10)return;
+      stepToward(best);
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
     /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
@@ -5957,8 +5964,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
+      clearTimeout(stepTimer);
       if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=-1;lineY=-1;
+      cur=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
