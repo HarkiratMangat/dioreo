@@ -6532,25 +6532,34 @@ const MORPH_JS = `
       var target=innerHeight*(0.46+dir*0.10);
       lineY=(lineY<0)?target:lineY+(target-lineY)*0.12;
       var line=lineY;
-      var best=-1,bestD=1e9,curD=1e9,i,r,d;
+      /* ⚠️ REPLACED NEAREST-CENTRE-WITH-HYSTERESIS, 2026-08-05 10:03 EDT.
+         Reported: "Terms" stayed highlighted through a long stretch of scroll
+         while Privacy/License/Notice each only triggered for a small portion
+         before switching among themselves too fast. The rows measure
+         perfectly uniform (138px each, contiguous, no gaps), which rules out
+         layout as the cause — this was the ALGORITHM. Nearest-centre picks
+         whichever row's MIDPOINT is closest to the line, which is not the
+         same thing as "which row currently owns the line," and the 24px
+         hysteresis margin on top of that made each handoff's exact timing
+         depend on the two rows' relative distances rather than on a clean,
+         predictable boundary — nothing about that guarantees equal dwell
+         time per row even when the rows themselves are equal height.
+         Testing which row's own BOUNDING BOX contains the line is symmetric
+         BY CONSTRUCTION: a row is active for exactly the scroll distance
+         equal to its own height, no more and no less, because the line can
+         only be inside one row's box at a time. This also makes the
+         hysteresis margin unnecessary — a boundary crossing is a single,
+         unambiguous event, not a fuzzy nearest-of-two-candidates race. */
+      var best=-1,i,r;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
-        if(r.bottom<8||r.top>innerHeight-8)continue;
-        d=Math.abs(r.top+r.height/2-line);
-        if(i===cur)curD=d;
-        if(d<bestD){bestD=d;best=i;}
+        if(line>=r.top&&line<r.bottom){best=i;break;}
       }
+      /* best<0 means the line is sitting in a gap between rows (the two
+         .inv cards trail the four document rows with real space between
+         them) rather than that nothing is being read — keep the last row
+         highlighted through that gap instead of blanking it. */
       if(best<0||best===cur)return;
-      /* Hysteresis. Without it, two rows sitting near-equidistant from the line
-         — which happens constantly, not as an edge case — traded the highlight
-         every single frame as the line drifted a pixel past their shared
-         midpoint, reading as a flicker rather than a scroll. A candidate now has
-         to beat the CURRENT row by a real margin, not merely be nearest, before
-         it takes over. curD starts at 1e9 whenever the current row has scrolled
-         out of view (the loop above never visits it), so leaving the screen
-         still hands off immediately — this only damps swaps between two rows
-         that are both still on screen. */
-      if(cur>=0&&bestD>curD-24)return;
       if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
       cur=best;
       rows[cur].classList.add('act');
@@ -7687,7 +7696,7 @@ body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh
    the body padding trim above it — with the whole hero block sitting higher
    on the page now, some of that reclaimed space goes back in here rather
    than leaving it all at the very top. */
-.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.3rem,8.5vh,4.4rem)}
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.6rem,9.5vh,4.8rem)}
 .top .ghb{margin-left:auto}
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
