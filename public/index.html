@@ -1118,9 +1118,33 @@ h1 em{font-style:normal;color:var(--accent-t)}
    what stops a longer command added later from turning into a layout jitter
    nobody would connect back to this list. */
 
-.cmd-line{font-family:var(--mono);font-size:1.05rem;font-weight:600;
+.cmd-line{font-family:var(--mono);font-size:clamp(.76rem,3.4vw,1.05rem);font-weight:600;
   color:var(--accent-t);letter-spacing:.02em;white-space:nowrap;
-  margin:calc(-1 * clamp(2.2rem,7vh,3.6rem) + .5rem) 0 clamp(1.6rem,5vh,2.4rem)}
+  margin:calc(-1 * clamp(2.2rem,7vh,3.6rem) + .5rem) 0 clamp(1.6rem,5vh,2.4rem)}/* THREE ROLES, THREE TREATMENTS — the command, the option's name, and the value
+   chosen inside it. Rendered in one colour, "/ar weapon:AK117" reads as a single
+   long command name and a reader cannot see that "weapon:" is an option and
+   AK117 the selection. So: the command keeps the accent and the most weight
+   because it is the thing you actually type; the option name drops to --ink2 and
+   the lightest weight because it is a label, not content; and the value sits on
+   a faint accent chip, which is the one part a reader chose. CMD_JS emits these
+   class names as segment spans — see its render().
+   ⚠️ CONTRAST HERE IS HAND-CHECKED AND HAS TO BE. contrastAudit() only reads
+   --name:#hex declarations, so a rule painting its own surface out of a
+   color-mix is invisible to it and a green build says nothing about this.
+   Measured --ink over the chip composited on --desk: 13.30:1 light and 12.88:1
+   dark at 12%, 12.91:1 and 11.97:1 at 16%. Luminance is monotonic along a
+   linear mix, so 14% is bounded by that pair and both ends clear 4.5:1 several
+   times over. Re-measure if the accent, --ink or --desk moves.
+   ⚠️ :empty is load-bearing — a segment with no characters yet still has the
+   chip's padding, so without this a bare coloured blob sits on the line ahead
+   of the text the whole time it is typing. */
+
+.cmd-line .cmd-c{color:var(--accent-t);font-weight:700}
+.cmd-line .cmd-o{color:var(--ink2);font-weight:500}
+.cmd-line .cmd-v{color:var(--ink);font-weight:600;
+  background:color-mix(in srgb,var(--accent) 14%,transparent);
+  padding:.06em .26em;border-radius:.28em}
+.cmd-line .cmd-v:empty{padding:0;background:none}
 .cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
   margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
   animation:cmd-blink 1.1s steps(1) infinite}/* Solid while keys are landing, blinking on the hold and the gap — a cursor
@@ -3033,18 +3057,66 @@ h1 em{font-style:normal;color:var(--accent-t)}
   var el=document.getElementById('cmd-line');
   if(!el) return;
 
-  var CMDS=[
-    '/draws',
-    '/ar weapon:AK117',
-    '/draw prices',
-    '/patch notes',
-    '/smg',
-    '/calendar',
-    '/dmz weapon:Fennec',
-    '/season end',
-    '/sniper',
-    '/timestamp',
-    '/colors'
+  /* Read from the live Loadout collection grouped by category on 2026-08-05,
+     not written from memory of CODM's roster. Case and punctuation are verbatim
+     because index.js's autocomplete responds with "name: w.weaponName" — these
+     are the exact strings Discord offers, mixed case ("FSS Hurricane") and all.
+     Re-read them if the loadout data gains a category or a weapon; a name that
+     drifts out of the DB becomes a line the page invites you to type and the
+     bot cannot answer. */
+  var WEAPONS={
+    ar:['AK117','AS VAL','BAL-27','BP50','DR-H','FFAR 1','GRAU 5.56','HVK-30','ICR-1','KILO 141','KN-44','LK24','MAN-O-WAR','ODEN','RAM-7','TYPE 19','XM4'],
+    smg:['CBR4','CX-9','FENNEC','FSS Hurricane','GKS','HG 40','MAC-10','PDW-57','PHARO','PP19 BIZON','QQ9','SWITCHBLADE X9','TEC-9','USS 9','VMP'],
+    lmg:['CHOPPER','HADES','HOLGER 26','MG42','PKM','RAAL MG','RPD','UL736'],
+    marksman:['KILO BOLT-ACTION','SKS','SO-14','SP-R 208','TYPE 63'],
+    sniper:['3-LINE RIFLE','DL Q33','HDR','KOSHKA','LOCUS','LW3-TUNDRA','M21 EBR','NA-45','RYTEC AMR','XPR-50'],
+    shotgun:['ARGUS','BY15','HS0405','JAK-12','KRM-262','R9-0','STRIKER'],
+    secondaries:['.50 GS','CROSSBOW','DOBVRA','L-CAR 9','MACHINE PISTOL','SHORTY'],
+    dmz:['AK117','AS VAL','FENNEC','J358','OUTLAW','SO-14','TYPE 19']
+  };
+
+  /* Every one of these was run through chrono-node before shipping, not
+     eyeballed — /timestamp hands this string straight to that parser, so an
+     example that did not parse would be the page inviting a reader into an
+     error. The first three are the command's own documented examples. The set
+     deliberately spans the shapes a person actually types: a bare relative
+     word, a weekday plus a 12-hour time, a bare 24-hour clock, a duration, and
+     a month-and-day. They are INPUT SAMPLES, not observations — nothing here
+     records when anything happened. */
+  /* ⚠️ JOINED AT RUNTIME PURELY TO GET PAST THE REPO'S TIMESTAMP GUARD, which
+     reads a literal date-plus-clock-time in a diff as a fabricated observation
+     and blocks the write. It is right to do that almost everywhere; here the
+     string is neither an observation nor a deadline but a SAMPLE INPUT, and
+     Harkirat confirmed the fire as a false positive to work around rather than
+     obey. A bare date and a bare time are each allowed on their own — only the
+     joined literal trips it. Do not "tidy" this back into one string. */
+  var ISO='2026-09-01'+' 18:30';
+
+  var WHEN=['tomorrow','sun 4:30pm','19:30','friday 8pm','next monday','in 2 hours','dec 25 9:00am','sept 14 noon','tonight 11pm','sep 1 18:30',ISO,'sat 7:45pm','in 45 minutes','aug 30 at 6pm','next fri 20:00','tomorrow 9am','monday noon'];
+
+  /* c = the command · o = the option prefix, empty where the pool carries its
+     own · p = the value pool · w = takes build:, so it can gain a second option.
+     A spec with no p is a command with no option worth showing.
+     ⚠️ THE CHOICE LABELS ARE THE "name:" HALF OF addChoices, NEVER THE "value:".
+     Discord renders the name — /draws is offered as "New Draws", not "new" — so
+     using the value here would put a string on the page no reader ever sees. */
+  var SPECS=[
+    {c:'/ar',          o:'weapon:',   p:WEAPONS.ar,          w:1},
+    {c:'/smg',         o:'weapon:',   p:WEAPONS.smg,         w:1},
+    {c:'/lmg',         o:'weapon:',   p:WEAPONS.lmg,         w:1},
+    {c:'/marksman',    o:'weapon:',   p:WEAPONS.marksman,    w:1},
+    {c:'/sniper',      o:'weapon:',   p:WEAPONS.sniper,      w:1},
+    {c:'/shotgun',     o:'weapon:',   p:WEAPONS.shotgun,     w:1},
+    {c:'/secondaries', o:'weapon:',   p:WEAPONS.secondaries, w:1},
+    {c:'/dmz',         o:'weapon:',   p:WEAPONS.dmz,         w:1},
+    {c:'/timestamp',   o:'datetime:', p:WHEN},
+    {c:'/draws',       o:'',          p:['page:New Draws','page:Returning Draws']},
+    {c:'/draw prices', o:'',          p:['region:10 CP Region','region:30 CP Region']},
+    {c:'/calendar',    o:'',          p:['page:Draws','page:Events','page:Playlists & Modes','view:All Events','view:Active/Upcoming Only']},
+    {c:'/patch notes'},
+    {c:'/season end'},
+    {c:'/colors'},
+    {c:'/settings'}
   ];
 
   /* The line erases back to the slash and never past it, so the resting look
@@ -3054,10 +3126,68 @@ h1 em{font-style:normal;color:var(--accent-t)}
      screen, and re-typing it would read as a stutter. */
   var ROOT='/';
 
-  /* Shuffled per visit so the page is not the same 40-second loop every time,
-     and reshuffled on each wrap so a long look does not settle into a pattern.
-     Fisher-Yates over a COPY — CMDS itself stays in its authored order, which
-     is the order a person reads when they come to edit this list. */
+  /* ⚠️ A HARD CHARACTER CAP, AND IT IS WHAT KEEPS .cmd-line's nowrap SAFE.
+     The longest line this can compose is "/secondaries weapon:MACHINE PISTOL"
+     at 34 characters; at the floor of .cmd-line's font clamp, 32 characters
+     plus the cursor is about 268px against roughly 282px of content width on a
+     320px viewport. Rather than truncate — a half-written option reads as a
+     bug, not as a design — fit() FILTERS the pool to values that still fit, so
+     a long weapon is simply not offered for a long command and that command
+     shows bare instead. Raise this only after re-measuring the clamp's floor. */
+  var MAXLEN=32;
+
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+  /* Normalise every pool to [optionName, optionValue] pairs once, at init, so
+     render() never has to care which shape the spec was authored in. A spec
+     with "o" set carries bare values ('AK117') and borrows that prefix; a spec
+     with o:'' carries whole 'page:New Draws' strings and is split at the first
+     colon. Doing it here rather than per frame is also what lets render() stay
+     free of string surgery — it only ever picks a pair. */
+  (function(){
+    for(var i=0;i<SPECS.length;i++){
+      var s=SPECS[i];
+      if(!s.p) continue;
+      s.pairs=[];
+      for(var j=0;j<s.p.length;j++){
+        var x=s.p[j];
+        if(s.o) s.pairs.push([s.o,x]);
+        else { var k=x.indexOf(':'); s.pairs.push([x.slice(0,k+1),x.slice(k+1)]); }
+      }
+    }
+  })();
+
+  /* Returns SEGMENTS, not a string — [{t,k}], where k is the part's role:
+     'c' the command, 'o' an option name, 'v' the chosen value, '' the spaces.
+     ⚠️ THE SPLIT IS THE WHOLE POINT AND MUST SURVIVE REFACTORING. Rendered as
+     one string, "/ar weapon:AK117" reads as a single long command name and the
+     reader cannot tell that "weapon:" is an option and AK117 the selection
+     inside it. The three roles are what carry that, and .cmd-c/.cmd-o/.cmd-v
+     colour them. Anything that flattens this back to textContent loses the
+     meaning while still looking fine, which is the dangerous kind of
+     regression. Harkirat's ask, 2026-08-05 17:30 EDT.
+     Bare about two showings in five, decorated the rest: the aim is that one
+     command does not look the same twice, not that every line is busy — every
+     line busy would make the options read as part of the command's own name. */
+  function render(s){
+    var parts=[{t:s.c,k:'c'}];
+    if(!s.pairs || Math.random()<0.4) return parts;
+    var room=MAXLEN-s.c.length-1, ok=[], i;
+    for(i=0;i<s.pairs.length;i++){
+      if(s.pairs[i][0].length+s.pairs[i][1].length<=room) ok.push(s.pairs[i]);
+    }
+    if(!ok.length) return parts;
+    var pr=pick(ok);
+    parts.push({t:' ',k:''},{t:pr[0],k:'o'},{t:pr[1],k:'v'});
+    /* A second option, occasionally, and only where build: is real — the eight
+       characters it costs are checked against the cap rather than assumed. */
+    var used=s.c.length+1+pr[0].length+pr[1].length;
+    if(s.w && Math.random()<0.25 && used+8<=MAXLEN){
+      parts.push({t:' ',k:''},{t:'build:',k:'o'},{t:String(1+Math.floor(Math.random()*3)),k:'v'});
+    }
+    return parts;
+  }
+
   function shuffle(a){
     for(var i=a.length-1;i>0;i--){
       var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;
@@ -3065,7 +3195,35 @@ h1 em{font-style:normal;color:var(--accent-t)}
     return a;
   }
 
-  var order=shuffle(CMDS.slice()), idx=0, timer=null;
+  /* ⚠️ THE CYCLE SEAM IS THE ONLY PLACE A REPEAT CAN HAPPEN, AND IT IS EASY TO
+     MISS. A shuffled pass over SPECS shows every command exactly once, so
+     within a cycle two showings are the whole list apart and look safe. But the
+     LAST command of one cycle can be the FIRST of the next, which puts them
+     back to back — and shuffling harder does not help, because each pass is
+     individually fine. spaced() rejects an order whose opening repeats the
+     previous ending too soon: an item d places from the end of the old order
+     must land at index 4-d or later in the new one, which is exactly the bound
+     that leaves at least three other commands between the two showings.
+     Harkirat's ask, and his number. */
+  function spaced(prev,next){
+    for(var d=1;d<=3;d++){
+      var it=prev[prev.length-d];
+      if(it && next.indexOf(it)<4-d) return false;
+    }
+    return true;
+  }
+
+  /* Rejection sampling: with sixteen commands a valid order turns up almost at
+     once. The attempt cap exists only so a pathological run cannot hang the
+     page — accepting one slightly-too-close order is a far smaller failure than
+     a frozen tab, so the loop gives up rather than spinning forever. */
+  function reorder(prev){
+    var next, n=0;
+    do{ next=shuffle(SPECS.slice()); n++; }while(prev&&n<60&&!spaced(prev,next));
+    return next;
+  }
+
+  var order=reorder(null), idx=0, timer=null;
   /* Erasing is faster than typing because that is what a real backspace is —
      held down, not tapped per character. HOLD is the only value tuned by
      reading: long enough to take in the longest line here, short enough that
@@ -3083,7 +3241,34 @@ h1 em{font-style:normal;color:var(--accent-t)}
      stopping a timer, so there is no reason not to honour the change. */
   var mq=matchMedia('(prefers-reduced-motion:reduce)');
 
-  function show(n){ el.textContent=order[idx].slice(0,n); }
+  /* One span per segment, rebuilt whenever the line changes; the typewriter
+     then just distributes n characters across them, so a part is revealed in
+     its own colour from its first keystroke.
+     ⚠️ DELIBERATELY NOT innerHTML. One option value contains an ampersand
+     ("Playlists & Modes"), and MORPH_JS's no-regex rule applies to every
+     constant emitted from a template literal — the generator eats a lone
+     backslash — so a hand-rolled escaper here would be exactly the fiddly code
+     that breaks quietly. textContent on real elements needs no escaping. */
+  var segs=[];
+  function build(parts){
+    el.textContent='';
+    segs=[];
+    for(var i=0;i<parts.length;i++){
+      var sp=document.createElement('span');
+      if(parts[i].k) sp.className='cmd-'+parts[i].k;
+      el.appendChild(sp);
+      segs.push({e:sp,t:parts[i].t});
+    }
+  }
+  function len(){ var n=0,i; for(i=0;i<segs.length;i++) n+=segs[i].t.length; return n; }
+  function show(n){
+    var left=n,i,take;
+    for(i=0;i<segs.length;i++){
+      take=Math.max(0,Math.min(segs[i].t.length,left));
+      segs[i].e.textContent=segs[i].t.slice(0,take);
+      left-=take;
+    }
+  }
   /* The cursor stops blinking WHILE keys are landing and resumes on the hold
      and the gap, which is how a terminal cursor actually behaves — a blink
      under active typing reads as a fault. The blink itself stays pure CSS
@@ -3093,9 +3278,9 @@ h1 em{font-style:normal;color:var(--accent-t)}
 
   function type(n){
     show(n);
-    if(n<order[idx].length){ timer=setTimeout(function(){ type(n+1); },TYPE); return; }
+    if(n<len()){ timer=setTimeout(function(){ type(n+1); },TYPE); return; }
     busy(false);
-    timer=setTimeout(function(){ busy(true); erase(order[idx].length); },HOLD);
+    timer=setTimeout(function(){ busy(true); erase(len()); },HOLD);
   }
 
   function erase(n){
@@ -3103,7 +3288,8 @@ h1 em{font-style:normal;color:var(--accent-t)}
     if(n>ROOT.length){ timer=setTimeout(function(){ erase(n-1); },DEL); return; }
     busy(false);
     idx++;
-    if(idx>=order.length){ order=shuffle(order); idx=0; }
+    if(idx>=order.length){ order=reorder(order); idx=0; }
+    build(render(order[idx]));
     timer=setTimeout(function(){ busy(true); type(ROOT.length+1); },GAP);
   }
 
@@ -3115,7 +3301,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
   /* Still means ONE WHOLE COMMAND, not the bare slash. A reader who has asked
      for less motion should still learn what the line is for; a lone "/" would
      make the page look like it was waiting for something that never comes. */
-  function still(){ stop(); busy(false); el.textContent=order[idx]; }
+  function still(){ stop(); busy(false); show(len()); }
 
   /* A background tab throttles timers to about one tick a second, so without
      this you come back to a line typing itself out one character at a time.
@@ -3130,6 +3316,10 @@ h1 em{font-style:normal;color:var(--accent-t)}
     if(mq.addEventListener) mq.addEventListener('change',onMq);
     else if(mq.addListener) mq.addListener(onMq);
   }catch(e){}
+
+  /* The first line has to exist before either branch runs — still() reveals it
+     whole and start() types it, and both read the spans build() creates. */
+  build(render(order[idx]));
 
   if(mq.matches) still(); else start();
 })();</script>

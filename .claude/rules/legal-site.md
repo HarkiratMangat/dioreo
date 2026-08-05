@@ -130,10 +130,40 @@ it directly with an empty build command, so nothing has to run on their side.
     `hoverGuardAudit` because a comment here spelled out the global reduced-motion rule in full
     syntax. Describe such rules in prose. The gate is right and the same class of mistake once
     destroyed eight rules via a comma in a comment.
-  - The order is Fisher-Yates shuffled per visit and re-shuffled on each wrap, so the page is not
-    the same loop every time — Harkirat's ask. Verified in-browser: five loads, five different
-    opening commands. Option strings use real data (`AK117` is live MP loadout data, `Fennec` is the
-    repo's own DMZ example); a line inviting you to type something owes you a string that works.
+  - ⚠️ **It COMPOSES lines, it does not hold a list.** `SPECS` carries the sixteen commands and each
+    renders freshly every time it comes up: bare about two showings in five, otherwise with a
+    randomly picked option and sometimes a second. Option VALUES are real and each was checked
+    against its own source — the weapon pools are the live `loadouts` collection grouped by
+    category, the choice labels are the **`name:` half of the real `addChoices(...)`** (Discord
+    renders the name, never the value, so `page:New Draws` is right and `page:new` would be a
+    string no reader ever sees), and every `datetime:` sample was run through **chrono-node**,
+    which is the parser `/timestamp` actually feeds them to.
+  - ⚠️ **The order is a shuffled full pass, and the SEAM is the only place a repeat can happen.**
+    Every command appears once per cycle, so within a cycle they are the whole list apart — but the
+    last of one cycle can be the first of the next. `spaced()` rejects such an order: an item `d`
+    places from the end of the old one must land at index `4-d` or later in the new one, which
+    leaves **at least three** other commands between showings. Harkirat's ask and his number.
+    Shuffling harder does not fix this, because each pass is individually fine.
+  - ⚠️ **`MAXLEN` (32) is what keeps `white-space:nowrap` safe**, and the pool is FILTERED to values
+    that still fit rather than truncated — a half-written option reads as a bug. Measured at 320px:
+    worst case paints 271px into a 281px box, zero document overflow, at the `.76rem` floor of the
+    font clamp. Re-measure if the clamp, the cap or the chip padding moves.
+  - ⚠️ **Three roles, three treatments** — `.cmd-c` the command (accent, 700), `.cmd-o` the option
+    name (`--ink2`, 500), `.cmd-v` the chosen value (`--ink`, 600, on a 14% accent chip). Rendered
+    flat, `/ar weapon:AK117` reads as one long command name and the reader cannot see the
+    structure. The typewriter therefore reveals **per-segment spans**, not a string — anything that
+    flattens it back to `textContent` keeps working and silently loses the meaning.
+    **`.cmd-v:empty` is load-bearing**: an empty span still carries the chip's padding, so without
+    it a bare coloured blob sits on the line the whole time it types. And the chip's contrast is
+    **hand-checked, because `contrastAudit()` cannot see a `color-mix()` surface** — measured
+    13.30:1 light / 12.88:1 dark at 12% and 12.91 / 11.97 at 16%, so 14% is bounded by the pair.
+  - ⚠️ **Two backtick failures in two builds.** Comments inside the `CMD_JS` template literal, and
+    inside `indexPage()`'s CSS, quoted option names with backticks — each terminated the string and
+    failed `node --check` with a SyntaxError pointing at prose. Quote with `"` inside any template
+    literal. Same family as the no-regex rule: what reads as documentation is program text.
+  - Verified in-browser: five loads gave five different opening commands, and a 260-sample run of
+    the emitted script covered all sixteen commands with a minimum same-command gap of exactly 3
+    and nothing over the cap.
 - **Web assets are VENDORED into `public/assets/`, never CDN-linked** (fonts + Motion One). This is a
   privacy obligation, not a preference: the Privacy Policy is served from this same origin, and a
   third-party CDN would disclose every visitor's IP to a party the policy does not name. All three are
