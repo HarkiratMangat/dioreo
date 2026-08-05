@@ -5069,12 +5069,27 @@ html{scroll-behavior:smooth}
        plain click anywhere hides the tip (below) and a second listener racing
        against that would either lose to it or need its own ordering games.
        Folding the copy into the same dispatch means "this click is the one
-       exception" is decided in one place. */
+       exception" is decided in one place.
+       ⚠️ flashCopied() FIRES SYNCHRONOUSLY, NOT INSIDE THE CLIPBOARD PROMISE'S
+       .then(). This used to wait for navigator.clipboard.writeText() to
+       resolve before showing anything — and a real .anchor is a genuine
+       <a href="#id">, so the browser's default action (the hash jump) runs
+       right after this listener finishes, as its own step in event dispatch.
+       That ran BEFORE the microtask the clipboard promise resolves on, so by
+       the time flashCopied() finally fired the page had already jumped once
+       — reported 2026-08-05 12:03 EDT as no visible confirmation at all, only the jump.
+       Calling it here, in the same synchronous tick as the click and before
+       the browser's default action, guarantees the capsule is placed against
+       the anchor's PRE-jump position; the scroll listener above (see
+       "flashing" note) is what then keeps it riding along as the jump
+       happens. The write to the clipboard itself doesn't need to finish
+       first — it either succeeds silently or doesn't, but the user should
+       never be kept waiting on it to see that the click registered. */
     document.addEventListener('click',function(e){
       var a=e.target.closest&&e.target.closest('.anchor');
       if(a&&navigator.clipboard){
-        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href'))
-          .then(function(){flashCopied(a);}).catch(function(){});
+        flashCopied(a);
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href')).catch(function(){});
         return;
       }
       hide();
