@@ -2766,7 +2766,24 @@ html.liq,html.liq *{cursor:none !important}
    was the button itself. Copying the markup instead of sharing it is how the two
    would drift; MORPH_JS bails cleanly when #gotop is absent, so a template that
    omits this constant still works. */
-const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Back to top">
+/* ⚠️ THE aria-label MUST NOT BE THE EXACT STRING "Back to top" — uBlock Origin
+   HIDES THE BUTTON IF IT IS. Fanboy's Annoyance list, which uBlock enables by
+   default, carries the GENERIC cosmetic rule ##[aria-label="Back to top"] — no
+   domain prefix, so it applies to every site including this one. Harkirat hit
+   this on his own browser, 2026-08-05 18:35 EDT.
+   Verified against the live lists rather than guessed, and the guess would have
+   been wrong: the obvious suspect is the class name, and the class is FINE. The
+   list filters .gotop-btn and .gotop-wrapper but not a bare "gotop", and its
+   only ##.totop rule is domain-scoped to a handful of unrelated sites. The
+   attribute is the whole of it.
+   Checked before choosing the replacement: that is the ONLY generic aria-label
+   rule mentioning "top", there are NO substring ([aria-label*=]) aria-label
+   rules in the list at all, and nothing filters data-tip. So any other wording
+   escapes, and the visible tooltip can keep saying "Back to top".
+   ⚠️ Do not "tidy" this back to the shorter label, and give any NEW icon-only
+   control the same consideration — a filter list is a thing your markup can
+   collide with, and the failure is silent: the control simply is not there. */
+const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Scroll back to top of page">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -7376,18 +7393,19 @@ const CMD_JS = `
      Discord renders the name — /draws is offered as "New Draws", not "new" — so
      using the value here would put a string on the page no reader ever sees. */
   var SPECS=[
-    {c:'/ar',          o:'weapon:',   p:WEAPONS.ar,          w:1},
-    {c:'/smg',         o:'weapon:',   p:WEAPONS.smg,         w:1},
-    {c:'/lmg',         o:'weapon:',   p:WEAPONS.lmg,         w:1},
-    {c:'/marksman',    o:'weapon:',   p:WEAPONS.marksman,    w:1},
-    {c:'/sniper',      o:'weapon:',   p:WEAPONS.sniper,      w:1},
-    {c:'/shotgun',     o:'weapon:',   p:WEAPONS.shotgun,     w:1},
-    {c:'/secondaries', o:'weapon:',   p:WEAPONS.secondaries, w:1},
-    {c:'/dmz',         o:'weapon:',   p:WEAPONS.dmz,         w:1},
-    {c:'/timestamp',   o:'datetime:', p:WHEN},
-    {c:'/draws',       o:'',          p:['page:New Draws','page:Returning Draws']},
-    {c:'/draw prices', o:'',          p:['region:10 CP Region','region:30 CP Region']},
-    {c:'/calendar',    o:'',          p:['page:Draws','page:Events','page:Playlists & Modes','view:All Events','view:Active/Upcoming Only']},
+    {c:'/ar',          o:'weapon',   p:WEAPONS.ar,          w:1},
+    {c:'/smg',         o:'weapon',   p:WEAPONS.smg,         w:1},
+    {c:'/lmg',         o:'weapon',   p:WEAPONS.lmg,         w:1},
+    {c:'/marksman',    o:'weapon',   p:WEAPONS.marksman,    w:1},
+    {c:'/sniper',      o:'weapon',   p:WEAPONS.sniper,      w:1},
+    {c:'/shotgun',     o:'weapon',   p:WEAPONS.shotgun,     w:1},
+    {c:'/secondaries', o:'weapon',   p:WEAPONS.secondaries, w:1},
+    {c:'/dmz',         o:'weapon',   p:WEAPONS.dmz,         w:1},
+    {c:'/timestamp',   o:'datetime', p:WHEN},
+    {c:'/draws',       pairs:[['page','New Draws'],['page','Returning Draws']]},
+    {c:'/draw prices', pairs:[['region','10 CP Region'],['region','30 CP Region']]},
+    {c:'/calendar',    pairs:[['page','Draws'],['page','Events'],['page','Playlists & Modes'],
+                              ['view','All Events'],['view','Active/Upcoming Only']]},
     {c:'/patch notes'},
     {c:'/season end'},
     {c:'/colors'},
@@ -7402,33 +7420,50 @@ const CMD_JS = `
   var ROOT='/';
 
   /* ⚠️ A HARD CHARACTER CAP, AND IT IS WHAT KEEPS .cmd-line's nowrap SAFE.
-     The longest line this can compose is "/secondaries weapon:MACHINE PISTOL"
-     at 34 characters; at the floor of .cmd-line's font clamp, 32 characters
-     plus the cursor is about 268px against roughly 282px of content width on a
-     320px viewport. Rather than truncate — a half-written option reads as a
-     bug, not as a design — fit() FILTERS the pool to values that still fit, so
-     a long weapon is simply not offered for a long command and that command
-     shows bare instead. Raise this only after re-measuring the clamp's floor. */
-  var MAXLEN=32;
+     Rather than truncate — a half-written option reads as a bug, not as a
+     design — fit() FILTERS the pool to values that still fit, so a long weapon
+     is simply not offered for a long command and that command shows bare.
+     ⚠️ TWO CAPS, BECAUSE CHARACTERS ARE NOT THE WHOLE WIDTH. Each chip carries
+     its own horizontal padding and each pair a gap, so a TWO-option line spends
+     four lots of padding and two gaps on top of its glyphs — roughly 1.6em more
+     than a one-option line of the same length. A single flat cap therefore has
+     to be set for the widest shape and then starves the narrow one: at a flat
+     30 the measurements showed "/calendar page Playlists & Modes" and EVERY
+     "/draw prices region ..." silently filtered out, even though both paint
+     260px into a 281px box with 21px to spare. That is the failure mode worth
+     remembering — the cap does not error, it just quietly stops offering things.
+     ⚠️ THESE TWO NUMBERS TRACK THE PADDING AND HAVE MOVED WITH IT TWICE. When
+     the horizontal padding was opened to .5em all round, two pairs at 30 chars
+     went to 284px against a 281px box — three pixels over, with not one
+     character changed — and MAXLEN2 had to drop to 28. Tightening the OUTER
+     edges back to .3em returned it to 274px, so 30 is correct again. Measured
+     at 320px at the floor of the font clamp, box 281px: two pairs at 30 = 274px
+     (7px spare), two pairs at 31 = 282px (over), one pair at 31 = 262px (19px
+     spare). Treat ANY padding change as a change to these numbers, and measure
+     rather than predicting — the arithmetic has been wrong here before. */
+  var MAXLEN=32, MAXLEN2=30;
 
   function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 
-  /* Normalise every pool to [optionName, optionValue] pairs once, at init, so
-     render() never has to care which shape the spec was authored in. A spec
-     with "o" set carries bare values ('AK117') and borrows that prefix; a spec
-     with o:'' carries whole 'page:New Draws' strings and is split at the first
-     colon. Doing it here rather than per frame is also what lets render() stay
-     free of string surgery — it only ever picks a pair. */
+  /* Every spec ends up with the same shape — pairs of [optionName, value] — so
+     render() only ever picks a pair and never does string surgery.
+     A spec declares that in one of two ways, and BOTH are literal: a choice-based
+     command writes its pairs out directly, while a weapon or datetime command
+     writes "o" once and lets its long value list stay a flat array, which the
+     loop below fans out. Nothing is encoded inside a string.
+     ⚠️ THE OLD SHAPE PACKED THEM AS 'page:New Draws' AND SPLIT ON THE COLON.
+     That was already awkward and became wrong the moment the colon left the
+     rendered output: the separator survived only as a parsing convention in the
+     data, so at the source the two halves read as run together even though the
+     page drew them as two boxes. Harkirat caught it, 2026-08-05 18:13 EDT.
+     Declaring the pairs is both plainer to read and one less thing to get wrong
+     when a label happens to contain a colon of its own. */
   (function(){
     for(var i=0;i<SPECS.length;i++){
       var s=SPECS[i];
-      if(!s.p) continue;
+      if(s.pairs || !s.p) continue;
       s.pairs=[];
-      for(var j=0;j<s.p.length;j++){
-        var x=s.p[j];
-        if(s.o) s.pairs.push([s.o,x]);
-        else { var k=x.indexOf(':'); s.pairs.push([x.slice(0,k+1),x.slice(k+1)]); }
-      }
+      for(var j=0;j<s.p.length;j++) s.pairs.push([s.o,s.p[j]]);
     }
   })();
 
@@ -7457,8 +7492,8 @@ const CMD_JS = `
     /* A second option, occasionally, and only where build: is real — the eight
        characters it costs are checked against the cap rather than assumed. */
     var used=s.c.length+1+pr[0].length+pr[1].length;
-    if(s.w && Math.random()<0.25 && used+8<=MAXLEN){
-      parts.push({t:' ',k:''},{t:'build:',k:'o'},{t:String(1+Math.floor(Math.random()*3)),k:'v'});
+    if(s.w && Math.random()<0.25 && used+7<=MAXLEN2){
+      parts.push({t:' ',k:''},{t:'build',k:'o'},{t:String(1+Math.floor(Math.random()*3)),k:'v'});
     }
     return parts;
   }
@@ -7498,103 +7533,136 @@ const CMD_JS = `
     return next;
   }
 
-  var order=reorder(null), idx=0, timer=null;
+  var order=reorder(null), idx=0;
   /* Erasing is faster than typing because that is what a real backspace is —
      held down, not tapped per character. HOLD is the only value tuned by
      reading: long enough to take in the longest line here, short enough that
      the line never looks like it has stopped. */
-  var TYPE=58, DEL=26, HOLD=1600, GAP=380;
+  var TYPE=58, DEL=26, HOLD=1500, GAP=340;
 
   /* ⚠️ CHECKED IN JS ON PURPOSE — the site's global
      @media (prefers-reduced-motion:reduce){*{animation:none!important}} rule in
      COMPONENT_CSS kills CSS transitions and keyframes, and this effect is
-     NEITHER. It is a setTimeout-driven text swap, so that rule does not reach
-     it and a reduced-motion reader would get the full typewriter unless this
+     NEITHER. It is a script-driven text swap, so that rule does not reach it
+     and a reduced-motion reader would get the full typewriter unless this
      module opts out itself. Live-bound rather than read once: the OS setting
      can change while the page is open, and unlike MORPH_JS — which builds no
      liquid layer at all and cannot undo that later — going still here is just
-     stopping a timer, so there is no reason not to honour the change. */
+     stopping a loop, so there is no reason not to honour the change. */
   var mq=matchMedia('(prefers-reduced-motion:reduce)');
 
   /* One span per segment, rebuilt whenever the line changes; the typewriter
      then just distributes n characters across them, so a part is revealed in
-     its own colour from its first keystroke.
+     its own colour from its first keystroke. Each segment remembers how many
+     characters it is currently showing (n) so paint() can skip it.
      ⚠️ DELIBERATELY NOT innerHTML. One option value contains an ampersand
      ("Playlists & Modes"), and MORPH_JS's no-regex rule applies to every
      constant emitted from a template literal — the generator eats a lone
      backslash — so a hand-rolled escaper here would be exactly the fiddly code
      that breaks quietly. textContent on real elements needs no escaping. */
-  var segs=[];
+  var segs=[], shown=0, total=0;
   function build(parts){
     el.textContent='';
-    segs=[];
+    segs=[]; shown=0; total=0;
     for(var i=0;i<parts.length;i++){
       var sp=document.createElement('span');
       if(parts[i].k) sp.className='cmd-'+parts[i].k;
       el.appendChild(sp);
-      segs.push({e:sp,t:parts[i].t});
+      segs.push({e:sp,t:parts[i].t,n:0});
+      total+=parts[i].t.length;
     }
   }
-  function len(){ var n=0,i; for(i=0;i<segs.length;i++) n+=segs[i].t.length; return n; }
-  function show(n){
-    var left=n,i,take;
+
+  /* ⚠️ WRITES ONLY WHAT CHANGED. The obvious version reassigns textContent on
+     every segment every frame, which is up to seven DOM writes and seven style
+     invalidations to reveal ONE character; all but one of them set a string
+     identical to what was already there. Typing a line is a few hundred frames,
+     so that is the difference between a few hundred writes and a couple of
+     thousand. The early return also makes a repeated frame free, which matters
+     now that the clock is time-based and two frames can land on the same
+     character. total is computed once in build() for the same reason — the old
+     code recomputed the line's length twice per character. */
+  function paint(n){
+    if(n===shown) return;
+    shown=n;
+    var left=n,i,s,take;
     for(i=0;i<segs.length;i++){
-      take=Math.max(0,Math.min(segs[i].t.length,left));
-      segs[i].e.textContent=segs[i].t.slice(0,take);
+      s=segs[i];
+      take=left<=0?0:(left<s.t.length?left:s.t.length);
+      if(take!==s.n){ s.n=take; s.e.textContent=take?s.t.slice(0,take):''; }
       left-=take;
     }
   }
+
   /* The cursor stops blinking WHILE keys are landing and resumes on the hold
      and the gap, which is how a terminal cursor actually behaves — a blink
      under active typing reads as a fault. The blink itself stays pure CSS
      (cmd-blink), so this only ever toggles a class. */
   function busy(on){ el.classList[on?'add':'remove']('cmd-busy'); }
-  function stop(){ if(timer){ clearTimeout(timer); timer=null; } }
 
-  function type(n){
-    show(n);
-    if(n<len()){ timer=setTimeout(function(){ type(n+1); },TYPE); return; }
-    busy(false);
-    timer=setTimeout(function(){ busy(true); erase(len()); },HOLD);
-  }
+  var phase='gap', mark=0, prev=0, raf=0;
+  function halt(){ if(raf){ cancelAnimationFrame(raf); raf=0; } prev=0; mark=0; }
 
-  function erase(n){
-    show(n);
-    if(n>ROOT.length){ timer=setTimeout(function(){ erase(n-1); },DEL); return; }
-    busy(false);
+  function advance(){
     idx++;
     if(idx>=order.length){ order=reorder(order); idx=0; }
     build(render(order[idx]));
-    timer=setTimeout(function(){ busy(true); type(ROOT.length+1); },GAP);
+    paint(ROOT.length);
+  }
+
+  /* ⚠️ ONE rAF LOOP ON A TIME-BASED CLOCK, NOT A CHAIN OF setTimeouts. Each
+     frame asks the clock how many characters SHOULD be visible by now rather
+     than assuming the previous timer fired on schedule, so the cadence holds
+     under load instead of drifting a little later on every character, and every
+     change lands aligned to a real frame instead of somewhere inside one.
+     ⚠️ THIS ALSO REPLACED THE visibilitychange HANDLER, and that is a fix, not
+     just a tidy-up. setTimeout keeps firing in a hidden tab, throttled to about
+     one tick a second, which is why the old code had to detect the return and
+     restart the whole command. rAF does not run at all there — so the animation
+     simply stops and resumes exactly where it was. The one thing that needs
+     handling is the delta on the first frame back, which can be minutes: without
+     the guard below the loop would fast-forward hundreds of characters into a
+     single frame. Re-anchoring the phase clock is what makes it read as a resume
+     rather than a glitch. The same guard covers a slept display. */
+  function step(now){
+    raf=requestAnimationFrame(step);
+    if(!prev){ prev=now; mark=now; }
+    var d=now-prev; prev=now;
+    if(d>250){ mark=now; return; }
+    var e=now-mark;
+    if(phase==='type'){
+      var n=ROOT.length+1+((e/TYPE)|0);
+      if(n>=total){ paint(total); phase='hold'; mark=now; busy(false); }
+      else paint(n);
+    }else if(phase==='hold'){
+      if(e>=HOLD){ phase='erase'; mark=now; busy(true); }
+    }else if(phase==='erase'){
+      var m=total-((e/DEL)|0);
+      if(m<=ROOT.length){ paint(ROOT.length); advance(); phase='gap'; mark=now; busy(false); }
+      else paint(m);
+    }else{
+      if(e>=GAP){ phase='type'; mark=now; busy(true); }
+    }
   }
 
   function start(){
-    stop(); show(ROOT.length); busy(true);
-    timer=setTimeout(function(){ type(ROOT.length+1); },GAP);
+    halt();
+    build(render(order[idx]));
+    paint(ROOT.length);
+    phase='gap'; busy(false);
+    raf=requestAnimationFrame(step);
   }
 
   /* Still means ONE WHOLE COMMAND, not the bare slash. A reader who has asked
      for less motion should still learn what the line is for; a lone "/" would
      make the page look like it was waiting for something that never comes. */
-  function still(){ stop(); busy(false); show(len()); }
-
-  /* A background tab throttles timers to about one tick a second, so without
-     this you come back to a line typing itself out one character at a time.
-     Restarting the current command is cheaper than resuming into that. */
-  document.addEventListener('visibilitychange',function(){
-    if(mq.matches) return;
-    if(document.hidden){ stop(); busy(false); } else start();
-  });
+  function still(){ halt(); busy(false); build(render(order[idx])); paint(total); }
 
   try{
     var onMq=function(){ if(mq.matches) still(); else start(); };
     if(mq.addEventListener) mq.addEventListener('change',onMq);
     else if(mq.addListener) mq.addListener(onMq);
   }catch(e){}
-
-  /* The first line has to exist before either branch runs — still() reveals it
-     whole and start() types it, and both read the spans build() creates. */
-  build(render(order[idx]));
 
   if(mq.matches) still(); else start();
 })();`;
@@ -8317,19 +8385,72 @@ h1 em{font-style:normal;color:var(--accent-t)}
    ~282px available on a 320px viewport, so it does not wrap today; nowrap is
    what stops a longer command added later from turning into a layout jitter
    nobody would connect back to this list. */
+/* ⚠️ line-height 1.67 IS RESERVED HEIGHT, NOT TASTE. The chips are inline-BLOCKS
+   and therefore taller than a bare run of text, so without this the paragraph's
+   line box GREW the moment the first option appeared and the whole line jumped
+   down mid-animation, once per command. Setting the parent's strut to the chip's
+   full height makes the bare frame and the decorated frame identical, so nothing
+   moves. Any change to the chips' line-height or vertical padding has to be
+   added back here or the jump returns.
+   ⚠️ 1.67 IS MEASURED, AND THE DERIVATION UNDERSHOOTS IT. The chip's own box is
+   1.5 line-height + .08em padding top and bottom = 1.66em, and 1.66 still left a
+   0.16px step because an inline-block's baseline alignment adds a hair below.
+   Swept it instead: 1.66 -> 0.16px, 1.67 -> 0.00px, and 1.67 is the smallest
+   value that reaches zero. Re-sweep rather than re-deriving if the chips change.
+   ⚠️ REDUCING THE CHIPS' VERTICAL PADDING DID NOT FIX THIS, though it looked as
+   though it had. Measured with the padding already reduced and this rule
+   removed: bare line 19.5px against 27.88px decorated — an 8.38px jump, still
+   the whole bug. The padding change only shrank the chips slightly; what removes
+   the shift is reserving the height. Do not drop this rule on the strength of
+   the page looking settled. */
 .cmd-line{font-family:var(--mono);font-size:clamp(.76rem,3.4vw,1.05rem);font-weight:600;
-  color:var(--accent-t);letter-spacing:.02em;white-space:nowrap;
+  color:var(--accent-t);letter-spacing:.02em;white-space:nowrap;line-height:1.67;
   margin:calc(-1 * clamp(2.2rem,7vh,3.6rem) + .5rem) 0 clamp(1.6rem,5vh,2.4rem)}
 /* THREE ROLES, THREE TREATMENTS — the command, the option's name, and the value
    chosen inside it. Rendered in one colour, "/ar weapon:AK117" reads as a single
    long command name and a reader cannot see that "weapon:" is an option and
    AK117 the selection. CMD_JS emits these class names as segment spans — see its
    render().
-   ⚠️ WEIGHT CARRIES THE HIERARCHY, NOT HUE, AND THAT IS DISCORD'S OWN MODEL —
-   Harkirat's call, 2026-08-05 18:04 EDT, after two hue-based attempts were
-   rejected by eye. The command is the ONLY emphasised token; the option name and
-   the value are both regular weight, exactly as Discord renders a used slash
-   command. So the whole line stays one coral and only the value's chip breaks it.
+   ⚠️ THIS MIRRORS WHAT DISCORD ACTUALLY RENDERS, checked against a screenshot of
+   a real used command rather than from memory (Harkirat supplied it,
+   2026-08-05 18:10 EDT, after an earlier guess at Discord's model was wrong).
+   Discord draws the command as bold plain text and then puts the option name AND
+   the value each in their OWN rounded box, distinguished by the shade of the box
+   rather than by the colour of the text — the value's is the lighter, because it
+   is the part you chose. There is NO COLON: two adjacent boxes already separate
+   the pair, so a colon would be a second separator doing the same job. That is
+   why SPECS carries bare option names and the pool split drops the colon.
+   ⚠️ ONE CONTINUOUS PILL, NO GAP — the two halves butt together and only the
+   OUTER corners are rounded. An earlier version left a .16em gap between them
+   and Harkirat rejected it: two detached chips read as two unrelated things,
+   where the option and the value it holds are one unit. There is no whitespace
+   text node between the spans (build() appends them adjacently), so removing
+   the margin is genuinely all it takes.
+   ⚠️ THE :has() RULE IS WHAT MAKES THAT SAFE DURING TYPING. Splitting a pill
+   means each half must know whether the other is there, and mid-typing the
+   value IS absent — without it the option name sits as a square-edged stub for
+   the whole time it types. So the option name takes back its full radius while
+   the value is still empty. If :has() is ever unavailable the effect degrades
+   to that square edge for a few hundred ms and nothing breaks.
+   ⚠️ THE TWO BEDS ARE DIFFERENT MATERIALS ON PURPOSE — the option NAME is a
+   neutral grey mixed from --ink, the VALUE is a coral tint mixed from --accent.
+   Harkirat's call, in two steps: first the accent tint came off the option name
+   because it read as more coral rather than as a chip, then the value got that
+   same tint back so the pair is not two identical greys. So the grey says
+   "label" and the tint says "your selection".
+   The grey mixes --ink into the ground, which inverts sensibly per theme with
+   no second declaration: --ink is near-white on the dark page so the bed comes
+   out lighter than it, and near-black on the light page so it comes out darker.
+   Measured text-on-bed: grey 10% = 12.04 dark / 11.88 light, accent 26% = 9.75
+   dark / 12.00 light. All far above the 4.5 line. contrastAudit() cannot see
+   either bed — both are color-mix values — so if the percentages change,
+   re-measure by hand rather than reading a green build as cover.
+   ⚠️ 26%, NOT 11%. A faint 11% tint was tried and read DARKER than the grey
+   beside it, which inverted the point: the value is the part you chose, so its
+   bed has to be the more present of the two, not the more recessive.
+   ⚠️ WEIGHT: the command is the ONLY emphasised token (700); the option name and
+   the value are both regular 400 — Harkirat's call, and it is what the reference
+   shows. Do not bold either box's text.
    ⚠️ TWO REJECTED ATTEMPTS, BOTH RECORDED SO THEY ARE NOT RETRIED. First the
    option name was --ink2 at weight 500: a neutral grey read thin and washed out
    on an otherwise warm line. Then it was --accent-t mixed 85% toward --desk,
@@ -8356,11 +8477,36 @@ h1 em{font-style:normal;color:var(--accent-t)}
    chip's padding, so without this a bare coloured blob sits on the line ahead
    of the text the whole time it is typing. */
 .cmd-line .cmd-c{color:var(--accent-t);font-weight:700}
-.cmd-line .cmd-o{color:var(--accent-t);font-weight:400}
-.cmd-line .cmd-v{color:var(--ink);font-weight:400;
-  background:color-mix(in srgb,var(--accent) 14%,transparent);
-  padding:.06em .26em;border-radius:.28em}
-.cmd-line .cmd-v:empty{padding:0;background:none}
+/* ⚠️ inline-BLOCK, AND THAT IS THE FIX FOR CLIPPED DESCENDERS, NOT THE PADDING.
+   An inline box paints its background over the font's CONTENT AREA, which is
+   derived from the face's ascent/descent metrics and is shorter than the glyphs
+   actually drawn — so the legs of p, g and y hung below the chip however much
+   horizontal padding it had. An inline-block's background covers its content
+   box instead, whose height is the line-height, so the whole glyph range is
+   inside it by construction. vertical-align:baseline keeps the chips sitting on
+   the same baseline as the command beside them.
+   ⚠️ MEASURED BY LOOKING, AFTER ARITHMETIC GOT IT WRONG. A canvas TextMetrics
+   check reported 1.7px of clearance below the descender and therefore no
+   clipping at all; a screenshot showed the legs plainly outside the box. The
+   font the canvas measured was not the box the browser painted. When the two
+   disagree, the render wins — same lesson as the nav indicator's dilation. */
+/* ⚠️ THE PADDING IS ASYMMETRIC ON PURPOSE — .5em at the JUNCTION between the two
+   boxes, .3em at the pill's OUTER edges. The junction is where two words butt
+   together with only a change of bed between them, so it needs the air; the
+   outer edges only meet the page and looked slack carrying the same amount.
+   Harkirat's call, in two passes: open the junction up, then take the outside
+   and the vertical back down. Keep them independent — setting one shorthand for
+   all four sides is what produced both complaints. */
+.cmd-line .cmd-o,.cmd-line .cmd-v{display:inline-block;vertical-align:baseline;
+  line-height:1.5;color:var(--ink);font-weight:400}
+.cmd-line .cmd-o{padding:.08em .5em .08em .3em;
+  background:color-mix(in srgb,var(--ink) 10%,transparent);
+  border-radius:.34em 0 0 .34em}
+.cmd-line .cmd-v{padding:.08em .3em .08em .5em;
+  background:color-mix(in srgb,var(--accent) 26%,transparent);
+  border-radius:0 .34em .34em 0}
+.cmd-line .cmd-o:has(+ .cmd-v:empty){border-radius:.34em}
+.cmd-line .cmd-o:empty,.cmd-line .cmd-v:empty{padding:0;background:none}
 .cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
   margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
   animation:cmd-blink 1.1s steps(1) infinite}

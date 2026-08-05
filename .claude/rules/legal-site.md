@@ -144,16 +144,43 @@ it directly with an empty build command, so nothing has to run on their side.
     places from the end of the old one must land at index `4-d` or later in the new one, which
     leaves **at least three** other commands between showings. Harkirat's ask and his number.
     Shuffling harder does not fix this, because each pass is individually fine.
-  - ⚠️ **`MAXLEN` (32) is what keeps `white-space:nowrap` safe**, and the pool is FILTERED to values
-    that still fit rather than truncated — a half-written option reads as a bug. Measured at 320px:
-    worst case paints 271px into a 281px box, zero document overflow, at the `.76rem` floor of the
-    font clamp. Re-measure if the clamp, the cap or the chip padding moves.
-  - ⚠️ **WEIGHT carries the hierarchy, not hue — this is Discord's own model** (Harkirat's call,
-    2026-08-05 18:04 EDT, after two hue attempts were rejected by eye). `.cmd-c` the command is the
-    **only** emphasised token (`--accent-t`, 700); `.cmd-o` the option name and `.cmd-v` the value
-    are both **regular weight 400**, so the line stays one coral and only the value's chip breaks
-    it. Full `--accent-t` measures 7.30:1 dark / 7.40:1 light — the strongest either role has had,
-    and WCAG's 4.5:1 for regular-weight text clears easily.
+  - ⚠️ **TWO caps keep `white-space:nowrap` safe — `MAXLEN` 32 for a one-option line, `MAXLEN2` 30
+    once a second option lands.** The pool is FILTERED to values that still fit rather than
+    truncated, since a half-written option reads as a bug. **Two caps, not one, because characters
+    are not the whole width**: each chip carries its own padding, so a two-option line spends four
+    lots of it. A single flat cap has to be set for the widest shape and then starves the narrow
+    one — at a flat 30, `/calendar page Playlists & Modes` and **every** `/draw prices` option were
+    silently filtered out despite painting 260px into a 281px box. **That is the failure mode to
+    watch: the cap does not error, it just quietly stops offering things.** Measured at 320px at
+    the font clamp's floor — one pair at 31 chars = 260px, two pairs at 30 chars = 270px, box
+    281px, zero document overflow. Re-measure both shapes if the padding, the gap or the floor
+    moves.
+  - ⚠️ **THE LAYOUT MIRRORS DISCORD'S OWN, checked against a screenshot of a real used command**
+    rather than from memory — an earlier guess at it was wrong. Discord draws the command as bold
+    plain text, then puts the option NAME and the VALUE each in their own box, **one continuous
+    pill with only the outer corners rounded** and **no colon** (two adjacent boxes already
+    separate the pair). `.cmd-c` is the only emphasised token (`--accent-t`, 700); both boxes are
+    regular weight 400. **The beds are different materials on purpose**: the option name is a
+    neutral grey mixed from `--ink` (10%), the value a coral tint mixed from `--accent` (**26%**) —
+    the grey says "label", the tint says "your selection". The grey inverts correctly per theme with
+    no second declaration, since `--ink` is near-white on the dark page and near-black on the light
+    one. Measured text-on-bed: grey 12.04 dark / 11.88 light, accent 9.75 / 12.00. ⚠️ **26%, not
+    11%** — a faint 11% tint was tried and read *darker* than the grey beside it, inverting the
+    point, since the value should be the more present of the two.
+  - ⚠️ **The boxes are `inline-block`, and THAT is what contains descenders — not padding.** An
+    inline box paints its background over the font's **content area**, which comes from the face's
+    ascent/descent metrics and is shorter than the glyphs actually drawn, so the legs of p, g and y
+    hung below the chip at any horizontal padding. An inline-block's background covers its content
+    box, whose height is the line-height, so the whole glyph range is inside it by construction.
+    `vertical-align:baseline` keeps the chips on the command's baseline.
+    ⚠️ **Arithmetic got this wrong and the render got it right.** A canvas `TextMetrics` check
+    reported 1.7px of clearance and therefore no clipping; a screenshot showed the legs plainly
+    outside the box — the font the canvas measured was not the box the browser painted. Same lesson
+    as the nav indicator's dilation: when a model and a rasterisation disagree, believe the pixels.
+  - ⚠️ **`.cmd-o:has(+ .cmd-v:empty)` restores the full radius while the value is still empty.**
+    Splitting a pill means each half must know whether the other is there, and mid-typing the value
+    IS absent — without this the option name sits as a square-edged stub for the whole time it
+    types. Degrades to that square edge for a few hundred ms if `:has()` is unavailable.
     🚫 **Two rejected attempts, recorded so they are not retried.** (1) `--ink2` at 500 — a neutral
     grey read thin and washed out on an otherwise warm line. (2) `--accent-t` mixed 85% toward
     `--desk` — cleared AA at 5.56 / 5.20 but read **muddy**, and the reason is a property of the
@@ -345,6 +372,24 @@ it directly with an empty build command, so nothing has to run on their side.
     `--lift` — is `TOTOP_TRACK_JS` for a template with no scroll loop of its own; `shell()` keeps
     doing it inside the loop it already runs for the scrollspy and the progress bar, so it does
     **not** include that constant. Two hosts, one writer per property, still.
+  - 🚫 **ITS `aria-label` MUST NOT BE THE EXACT STRING "Back to top" — uBLOCK ORIGIN HIDES THE
+    BUTTON IF IT IS** (found 2026-08-05 18:35 EDT, on Harkirat's own browser, where the control
+    simply was not there). **Fanboy's Annoyance List** carries the *generic* cosmetic rule
+    `##[aria-label="Back to top"]` — no domain prefix, so it applies to this site like any other —
+    and uBlock's "Ignore generic cosmetic filters" is off by default. Both generators now say
+    `aria-label="Scroll back to top of page"`; the visible `data-tip` still reads "Back to top".
+    ⚠️ **The obvious suspect is the class name and the class name is INNOCENT.** Verified against
+    the live lists: Fanboy filters `.gotop-btn` and `.gotop-wrapper` but not a bare `gotop`, and
+    its only `##.totop` rule is domain-scoped to unrelated sites. Renaming the class would have
+    been pure wasted work. **The attribute was the whole of it.**
+    ⚠️ Checked before choosing the replacement, so the new wording is not another guess: that is
+    the *only* generic `aria-label` rule mentioning "top", the list contains **no** substring
+    (`[aria-label*=]`) aria-label rules at all, and nothing filters `data-tip`. Also swept
+    AdGuard Annoyances (65k lines), AdGuard Privacy (152k) and uBlock Annoyances — no
+    to-top cosmetic rules and no collision with the new label.
+    ⚠️ **Generalise the lesson, not the string:** an icon-only control's accessible name is markup
+    a filter list can collide with, and the failure is *silent* — no console error, no layout gap,
+    the element is simply `display:none`. Any new icon-only control deserves the same check.
   - ⚠️ **`prefers-reduced-motion` builds NOTHING liquid.** No cursor layer, no `html.liq`, no
     `.tt-ink` — a reduced-motion reader gets the site exactly as it shipped. That matters more than
     usual here because the cursor sets `cursor:none !important` site-wide; a hidden pointer with
