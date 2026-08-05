@@ -145,30 +145,24 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
-  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
-   slot has been emptied on purpose. It held three stacked bars first, which is
-   the universal glyph for a menu, so readers tried to tap it expecting one to
-   open. It then held a rounded square carrying a "D" — which was worse in a
-   quieter way: a single letter in a box is the most generic mark there is, it
-   said nothing the wordmark next to it does not already say in full, and it made
-   the site's identity a placeholder logo rather than the typography.
-
-   The wordmark alone is the mark. Do not "restore the logo" without an actual
-   drawn mark to put there; another letter-in-a-square is not one. */
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ SUPERSEDES the two prior "no logo mark" decisions (this slot had held a
+   3-bar menu glyph, then a letter-in-a-square, and was emptied back to plain
+   type both times because neither was an actual drawn mark — see git history
+   on this comment for the full reasoning). Harkirat supplied a real drawn
+   Dioreo mark 2026-08-04 21:18 EDT (the mascot + bubble wordmark lockup), which
+   is exactly what those two notes said was missing, so it now REPLACES the
+   typographic wordmark outright rather than sitting beside it — there is no
+   longer a second "Dioreo" in text form for it to compete with in the bar. */
 
 
-.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
-   this it kept its full 90px of text inside a 31px box and simply drew across
-   the buttons beside it — the "too tight" header was really this one missing
-   rule. Truncation is the honest failure mode for a flexible label. */
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* Fixed height so the mark lines up with the 32px control row beside it;
+   width is intrinsic (object-fit:contain) so the mascot and the bubble
+   letters scale together and never crop. The image is allowed to be
+   narrower than its box shrinks to — it has no truncation failure mode the
+   way the old text did, so nothing here needs an overflow rule. */
 
-.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
-  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
-  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
-  background-size:280% 100%;background-position:130% 0;
-  -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+.wm{display:block;height:32px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
    that states it twice is noise. Below 980 the switcher is gone. */
 
@@ -177,13 +171,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
    drop the keyboard focus styling on any device with a touchscreen, which is
-   most laptops now. Split, always. */
+   most laptops now. Split, always.
+   The old sweep animated a text-fill gradient, which has no equivalent on a
+   raster mark — replaced with the same scale nudge every other interactive
+   control in the bar uses on press/hover, so the mark still confirms it is
+   clickable without inventing a bespoke effect just for itself. */
 
 
-.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .wm{transform:scale(1.05)}
 .mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 @media (hover:hover) and (pointer:fine){
-  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .wm{transform:scale(1.05)}
   .mark.live:hover .go{opacity:1;transform:translateX(0)}
 }/* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -333,12 +331,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .bar.bar nav{gap:.5rem}/* The context line goes. It names the page you are on, and directly beneath it
      the strip names the page you are on with a filled pill — saying it twice in
      54px of header is what made the mark fight the buttons for width.
-     The wordmark also drops a step, because at 1.02rem it still truncated to
-     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
-     slightly smaller whole one. */
+     The mark also drops a step — same reasoning as the old text wordmark did
+     (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
+     smaller whole mark reads better than a squeezed one on a narrow header. */
   
   .mk-ctx.mk-ctx{display:none}
-  .wm{font-size:.85rem}/* 19px of the mark's width was its own padding — a hover affordance, on a
+  .wm{height:26px}/* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
      chasing. */
@@ -2153,7 +2151,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dioreo</span>
+      <img class="wm" src="../assets/dioreo-logo.webp" width="600" height="373" alt="Dioreo">
       <span class="mk-ctx"><i aria-hidden="true"></i>Notices &amp; Attributions</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2238,7 +2236,7 @@ html{scroll-behavior:smooth}
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a><a class="dlr" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">18 KB</span></a></div>
+    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a><a class="dlr" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">19 KB</span></a></div>
   </details>
 </aside>
 
@@ -2270,7 +2268,7 @@ html{scroll-behavior:smooth}
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
-      <a class="dlr" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">18 KB</span></a>
+      <a class="dlr" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">19 KB</span></a>
     </aside>
 
     <main class="doc" id="main" tabindex="-1">
@@ -2404,6 +2402,7 @@ any other platform where the user is not charged for access to the emoji."</pre>
 <section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">TRADEMARK ACKNOWLEDGEMENTS</span><a class="anchor" href="#s-5" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>All trademarks, service marks, and trade names referenced in this project or in its output are the property of their respective owners. Their use here is nominative — for identification and reference only — and does not imply endorsement, sponsorship, affiliation, or any commercial relationship.</p>
+<p>This section acknowledges THIRD-PARTY marks. The Dioreo name and the Dioreo logo are the Licensor's OWN marks, not third-party ones — they are Brand Assets under LICENSE §1.5, unregistered and asserted under common law rather than by registration. They are not listed below for that reason: this is a list of what belongs to others, not a claim about what belongs to the Licensor.</p>
 <p class="sub">Call of Duty(R), Call of Duty(R): Mobile, Activision(R) Trademarks of Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent subsidiary) and published by Activision, with regional publishing by Garena and VNG Games in some territories.</p>
 <pre class="aligned">Discord(R)             Discord Inc.
 GitHub(R)              GitHub, Inc. / Microsoft Corporation
@@ -2442,6 +2441,8 @@ Claude(TM), Anthropic(R)
 <p class="sub">Nothing in this disclosure is an admission that any part of the work lacks copyright protection, and no waiver of any right is intended or should be inferred.</p>
 <h3 id="s-6.3" class="clause"><span class="idx" aria-hidden="true">6.3</span><span class="ht">NO USER DATA IS SENT TO AI SYSTEMS.</span><a class="anchor" href="#s-6.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">AI assistance was used in *development*. It is not used to process end-user data at runtime. The only AI call in the running application is Google Vertex AI (Gemini) image-to-text extraction in the /autobuild command, which is restricted to the administrator's own Discord account and never receives end-user data, messages, or images. See PRIVACY.md §5.1.</p>
+<h3 id="s-6.4" class="clause"><span class="idx" aria-hidden="true">6.4</span><span class="ht">THE LOGO.</span><a class="anchor" href="#s-6.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
+<p class="sub">The Dioreo logo (the mascot-and-wordmark mark displayed in the site header and app icon, `public/assets/dioreo-logo.webp`) was produced the same way as the rest of this disclosure describes: AI image generation (Gemini) was directed and prompted by the human author, who then selected, cropped, composited, and finished the published result. The same <a class="xref" href="#s-6.2">§6.2</a> analysis applies to it — selecting among generated candidates, arranging the composition, and finishing the published file are the human author's creative contributions, and it is a Brand Asset under LICENSE §1.5 on the same footing as the Dioreo name itself.</p>
 <p>LICENSE §4.7 separately prohibits YOU from using this project, its data, or its output to train or otherwise feed any AI or machine-learning system. That prohibition is unaffected by the Licensor's own use of AI tooling in development.</p>
 </section>
 <section class="dsec">
