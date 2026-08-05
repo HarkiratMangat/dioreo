@@ -3338,6 +3338,49 @@ NODE_ENV=development</code></pre></div>
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
+})();
+
+/* ⚠️ COPY ON CLICK, WITHOUT REPLACING THE JUMP. .anchor links are real
+   <a href="#id"> elements — clicking one already updates the hash and scrolls
+   to the section, which is the whole point of "link to section". This adds a
+   side effect (copy the full shareable URL) rather than intercepting the
+   click, so the control still works exactly like a plain link anywhere
+   Clipboard API access is unavailable. Requested 2026-08-05 08:24 EDT. */
+(function(){
+  var toast=null,toastT=0;
+  function flash(a){
+    if(toast){clearTimeout(toastT);toast.remove();}
+    toast=document.createElement('span');
+    toast.className='ank-cpy';
+    toast.textContent='Copied';
+    toast.setAttribute('role','status');
+    a.appendChild(toast);
+    requestAnimationFrame(function(){toast.classList.add('on');});
+    toastT=setTimeout(function(){
+      var t=toast;toast=null;
+      if(t){t.classList.remove('on');setTimeout(function(){t.remove();},200);}
+    },1400);
+  }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('.anchor');
+    if(!a||!navigator.clipboard)return;
+    navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href'))
+      .then(function(){flash(a);}).catch(function(){});
+  });
 })();
 (function(){
   /* EVERY copy control, not just the first. This was a single querySelector, so

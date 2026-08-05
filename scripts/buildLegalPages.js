@@ -446,7 +446,7 @@ function linkifyRefs(html, ids) {
         if (inAnchor) return seg;
         seg = seg.replace(/§\s?(\d+[A-Za-z]?(?:\.\d+[a-z]?)?)/g, (whole, n) => {
             const id = 's-' + n.toLowerCase();
-            return ids.has(id) ? `<a class="xref" href="#${id}">§${n}</a>` : whole;
+            return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">§${n}</a>` : whole;
         });
         // The plain-text licence spells its cross-references out in full
         // ("under Section 4.11", "notices under Section 14.7") rather than with §.
@@ -454,7 +454,7 @@ function linkifyRefs(html, ids) {
         // rewriting the source — the source is the authoritative wording.
         return seg.replace(/\bSection\s(\d+[A-Za-z]?(?:\.\d+[a-z]?)?)/g, (whole, n) => {
             const id = 's-' + n.toLowerCase();
-            return ids.has(id) ? `<a class="xref" href="#${id}">Section&nbsp;${n}</a>` : whole;
+            return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">Section&nbsp;${n}</a>` : whole;
         });
     }).join('');
 }
@@ -867,13 +867,27 @@ function renderIndented(head, region) {
     let list = null;      // open lettered/bulleted list, as an array of item texts
     let pre = null;       // open verbatim block (address, identifier)
     const flushPara = () => {
-        const t = buf.join(' ').trim();
-        // "Exception:", "Carve-out:", "For clarity" — the document's own signal
-        // that what follows narrows or explains the clause above it. Marking them
-        // is styling of existing text, not added content.
+        // ⚠️ >>> — the same load-bearing-warning marker parseBlocks() recognises
+        // for the Markdown documents' callouts (see its own ⚠️|🔴|>>> test) —
+        // also marks NOTICE's plain-text trademark disclaimer, one per wrapped
+        // line ("  >>> DIOR'S BUILDS IS AN UNOFFICIAL...\n  >>> DEVELOPED,
+        // PUBLISHED..."). This parser never stripped it, so it rendered as
+        // literal ">>>" sprinkled through the paragraph at every line-wrap
+        // point instead of the highlighted box the marker is meant to produce.
+        // Reported 2026-08-05 08:27 EDT.
+        const isCallout = buf.length > 0 && buf.every(l => /^\s*>>>/.test(l));
+        const raw = isCallout ? buf.map(l => l.replace(/^\s*>>>\s*/, '')) : buf;
+        const t = raw.join(' ').trim();
         if (t) {
-            const aside = /^(Exception|Carve-out|Carve out|For clarity|Note|Example)\b/.test(t);
-            out.push(`<p class="sub${aside ? ' aside' : ''}">${inlineText(t)}</p>`);
+            if (isCallout) {
+                out.push(`<blockquote class="callout warn"><p>${inlineText(t)}</p></blockquote>`);
+            } else {
+                // "Exception:", "Carve-out:", "For clarity" — the document's own
+                // signal that what follows narrows or explains the clause above
+                // it. Marking them is styling of existing text, not added content.
+                const aside = /^(Exception|Carve-out|Carve out|For clarity|Note|Example)\b/.test(t);
+                out.push(`<p class="sub${aside ? ' aside' : ''}">${inlineText(t)}</p>`);
+            }
         }
         buf = [];
     };
@@ -3660,6 +3674,49 @@ const NAV_JS = `
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
+})();
+
+/* ⚠️ COPY ON CLICK, WITHOUT REPLACING THE JUMP. .anchor links are real
+   <a href="#id"> elements — clicking one already updates the hash and scrolls
+   to the section, which is the whole point of "link to section". This adds a
+   side effect (copy the full shareable URL) rather than intercepting the
+   click, so the control still works exactly like a plain link anywhere
+   Clipboard API access is unavailable. Requested 2026-08-05 08:24 EDT. */
+(function(){
+  var toast=null,toastT=0;
+  function flash(a){
+    if(toast){clearTimeout(toastT);toast.remove();}
+    toast=document.createElement('span');
+    toast.className='ank-cpy';
+    toast.textContent='Copied';
+    toast.setAttribute('role','status');
+    a.appendChild(toast);
+    requestAnimationFrame(function(){toast.classList.add('on');});
+    toastT=setTimeout(function(){
+      var t=toast;toast=null;
+      if(t){t.classList.remove('on');setTimeout(function(){t.remove();},200);}
+    },1400);
+  }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('.anchor');
+    if(!a||!navigator.clipboard)return;
+    navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href'))
+      .then(function(){flash(a);}).catch(function(){});
+  });
 })();`;
 
 const SWITCHER_CSS = `
