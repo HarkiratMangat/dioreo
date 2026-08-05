@@ -779,6 +779,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
 a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
 a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
+   ⚠️ NAMED .gotop, NOT .totop — renamed 2026-08-05 08:11 EDT. "totop" is the
+   exact class/id a real, widely-deployed "scroll back to top" WordPress plugin
+   (and several clones) use, and it collides with generic ad-blocker cosmetic
+   filter rules written against THAT library rather than against this site —
+   Harkirat confirmed this by reproducing it with the SAME blocklist enabled on
+   two different browsers. It genuinely worked before: this is not a code
+   regression, it is a third-party filter list matching a common name by
+   coincidence, and it can recur at any time a list adds a similarly generic
+   rule. Never rename this back to something in the totop/back-to-top/scrollup
+   family — those are exactly the names blocklists target.
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -795,11 +805,11 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    So --lift is written from the script each frame: zero until the footer's top
    edge reaches the button, then exactly the overlap, so it rides up ahead of the
    footer and never crosses it. It is a variable rather than a direct transform
-   write because .totop.on owns the transform — a script setting style.transform
+   write because .gotop.on owns the transform — a script setting style.transform
    would have fought the entry animation. */
 
 
-.totop{--lift:0px;
+.gotop{--lift:0px;
   position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
@@ -809,9 +819,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
 
-.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+.gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
   transition:opacity .34s ease,border-color .3s ease}
-.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+.gotop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
    the border it sits in. Covering the border box instead puts both circles on one
@@ -830,8 +840,8 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .tt-ar i:nth-child(1){top:0}
 .tt-ar i:nth-child(2){top:12px}
 @media (hover:hover) and (pointer:fine){
-  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-  .totop:hover .tt-ar i{transform:translateY(-12px)}
+  .gotop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .gotop:hover .tt-ar i{transform:translateY(-12px)}
 }
 @keyframes ttFire{
   0%{transform:translateY(0);opacity:1}
@@ -839,16 +849,16 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   37%{transform:translateY(15px);opacity:0}
   100%{transform:translateY(0);opacity:1}
 }
-.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+.gotop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .totop{transition:opacity .2s ease}
+  .gotop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
-  .totop.fire .tt-ar{animation:none}
+  .gotop.fire .tt-ar{animation:none}
 }/* ── back to top, coalescing ───────────────────────────────────────────
    The control assembles from droplets falling inward when it first arrives, and
-   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
-   and .totop.on: they are all (0,2,0), so source order is what decides, and
-   .totop.birth has to win over both while the liquid is on screen.
+   comes apart upward when pressed. Every rule below has to sit AFTER .gotop:hover
+   and .gotop.on: they are all (0,2,0), so source order is what decides, and
+   .gotop.birth has to win over both while the liquid is on screen.
 
    ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
    filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
@@ -864,7 +874,7 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
    measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
    black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
-   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   an opaque backdrop, and .gotop is position:fixed with z-index:55 — its own
    stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
    background .birth has just made transparent. Black against nothing stays black.
    Giving the button an opaque background does not help either: the bed is inset
@@ -874,12 +884,12 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 
 .tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
   opacity:0;visibility:hidden}
-.totop.birth .tt-ink{opacity:1;visibility:visible}
+.gotop.birth .tt-ink{opacity:1;visibility:visible}
 .tt-goo{position:absolute;inset:0}
-.totop.birth .tt-goo{filter:url(#dbgoo-c)}
-.totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
+.gotop.birth .tt-goo{filter:url(#dbgoo-c)}
+.gotop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
-   to .totop's own transition is what made the button appear to come back after a
+   to .gotop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
    "gradient circle behind the button". Clearing background and border-color takes
    away the button's own paint, but a backdrop-filter is not paint — it is a
@@ -895,9 +905,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    background. Two circles, two causes; the first fix made the second visible. */
 
 
-.totop.birth{background:transparent;border-color:transparent;
+.gotop.birth{background:transparent;border-color:transparent;
   backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
-.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.gotop.birth .tt-ring,.gotop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
   transform:scale(0);will-change:transform}
@@ -2106,7 +2116,7 @@ pre.aligned a{color:var(--ink)}/* ── callouts ──────────
 
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.totop,.ins{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.gotop,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -2574,7 +2584,7 @@ html{scroll-behavior:smooth}
   </footer>
 </div>
 
-<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -2585,7 +2595,7 @@ html{scroll-behavior:smooth}
 <script>
 (function(){
   var prog=document.getElementById('prog');
-  var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
+  var top=document.getElementById('gotop'), ttBar=top&&top.querySelector('.tt-bar');
   /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
      value only changes with the viewport (it is a clamp of vw). */
   var foot=document.querySelector('.foot'), ttBase=0, ttPad=0;
@@ -4442,7 +4452,7 @@ html{scroll-behavior:smooth}
 
   /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
   (function(){
-    var tt=document.getElementById('totop');
+    var tt=document.getElementById('gotop');
     if(!tt)return;
     function past(){return scrollY_()>innerHeight*0.6;}
 
@@ -4542,12 +4552,12 @@ html{scroll-behavior:smooth}
           /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
              BUG. Measured: on is never re-added after a launch, but the control's
              computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
-             Removing on and birth in one statement hands the fade to the .totop
+             Removing on and birth in one statement hands the fade to the .gotop
              transition, and birth is also what hides the ring and the arrow — so
              for ~300ms after the liquid has flown away the REAL button chrome pops
              back and fades out behind it. It never was a second birth, which is
              why two fixes aimed at the threshold missed it.
-             Drop on while birth still applies (.totop.birth carries
+             Drop on while birth still applies (.gotop.birth carries
              transition:none, so it goes to 0 instantly), flush that state, and
              only then drop birth. */
           tt.classList.remove('on');
