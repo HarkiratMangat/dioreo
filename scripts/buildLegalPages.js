@@ -1270,8 +1270,12 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 // share the name index.html, so a filename alone no longer identifies a page.
 const wordmark = (href, cur) => {
     const here = cur ? ALL_PAGES.find(p => p.out === cur.out && dirOf(p) === dirOf(cur)) : null;
+    // The landing page carries no nav bar beside it, so it can afford — and per
+    // Harkirat's own call, should carry — a much larger mark than the 54px bar
+    // on every other page has room for. href is null only on the landing page
+    // (see below), so that is also the flag that selects the hero size.
     const body = `<span class="mk-s">
-      <img class="wm" src="../assets/dioreo-logo.webp" width="600" height="373" alt="Dioreo">
+      <img class="wm${href ? '' : ' wm-hero'}" src="../assets/dioreo-logo.webp" width="600" height="373" alt="Dioreo">
       ${here ? `<span class="mk-ctx"><i aria-hidden="true"></i>${esc(here.title)}</span>` : ''}
     </span>`;
     return href
@@ -1560,7 +1564,7 @@ const TRADEMARK_NOTE = 'Dioreo is an unofficial fan project and is not '
    screen — which is what Harkirat was looking at. The warm and chronicle pages
    carry no such closing line, so they keep the footer's copy. */
 const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
-    <p class="sig">${sig || DIOR_SIG}</p>
+    <p class="sig">${sig || DIOR_SIG} <span class="cpy">&middot; &copy; 2026 Harkirat Mangat</span></p>
     ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
     <nav class="endnav">${navSetFor(cur).flat()
         .filter(p => !isHere(p, cur))
@@ -1640,8 +1644,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    letters scale together and never crop. The image is allowed to be
    narrower than its box shrinks to — it has no truncation failure mode the
    way the old text did, so nothing here needs an overflow rule. */
-.wm{display:block;height:32px;width:auto;object-fit:contain;flex:0 0 auto;
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
   transition:transform .26s cubic-bezier(.3,.7,.2,1)}
+/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+.wm.wm-hero{height:96px}
 
 /* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
@@ -1811,7 +1819,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
      smaller whole mark reads better than a squeezed one on a narrow header. */
   .mk-ctx.mk-ctx{display:none}
-  .wm{height:26px}
+  .wm{height:34px}
+  .wm.wm-hero{height:56px}
   /* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
@@ -2194,6 +2203,10 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    this is simply the bottom-left line. */
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
+/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size, so it
+   reads as one quiet line rather than a competing element. */
+.cpy{opacity:.75}
 /* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level

@@ -358,6 +358,44 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent** `[P2 · M]`
+  (filed 2026-08-04 22:07 EDT). **Recommended: Opus 5, High effort** — this is genuinely novel
+  creative+technical work (repurposing the existing goo/metaball engine in a new context, plus a font
+  decision with its own licensing check), not a quick CSS tweak.
+
+  Scope: the `<em>Dioreo</em>` inside the landing-page hero `<h1>` in `indexPage()`
+  (`scripts/buildLegalPages.js`, styled by the `h1 em{...}` rule in `COMPONENT_CSS`). Currently plain
+  `color:var(--accent-t)`, no animation.
+
+  **Three quick prototypes were built live and REJECTED** ("basic and boring") — don't re-propose any
+  of them from scratch: (A) a one-time gradient sweep reusing the exact hover-sweep technique freed up
+  when the nav wordmark became an image (see the nav-logo-swap commit, same session); (B) a continuous
+  shimmer plus a soft accent glow; (C) a spring/overshoot bounce-in on load.
+
+  **What Harkirat asked for instead, in his own words:** "use the fluid morph to birth the dioreo
+  text" — reuse the site's existing metaball/goo engine (`MORPH_JS`, documented at length in
+  `.claude/rules/legal-site.md`) rather than a generic fade/slide/bounce. The closest existing
+  precedent is the desktop nav pill's `birth()` — droplets converge from a wide ring into the final
+  shape on page load — so "Dioreo" should visually assemble/coalesce into place the same way, not just
+  transition in.
+
+  He also wants a **typography mix**: set "Dioreo" in a different, more expressive display/script face
+  against the otherwise plain sans-serif headline — the "one decorative accent word inside a sans
+  headline" pattern. The site currently vendors only `var(--display)`/`var(--serif)`/`var(--mono)` — no
+  script/decorative face exists yet, so this needs an actual font pick plus a licence check (OFL/MIT,
+  matching the NOTICE §1 vendoring rule) before anything lands in `public/assets/`.
+
+  **Constraints to carry in, all measured/documented already in `legal-site.md` — don't re-derive or
+  guess them:**
+  - The goo filter's dilation is **anisotropic** and was *measured*, not derived (see "THE DESKTOP
+    INDICATOR'S GEOMETRY IS MEASURED" in that file) — assume a filter chain that works at the nav
+    pill's size will NOT transfer to a full headline's size/shape unchanged.
+  - `prefers-reduced-motion` must yield the plain static heading, no exceptions — every other morph
+    module in `MORPH_JS` does this and builds nothing liquid at all in that mode.
+  - **iOS renders the SVG crush as hard circles where the CSS blur/contrast crush renders liquid** —
+    the nav goo already had to split into two different engines (desktop SVG vs. mobile CSS chain) for
+    exactly this reason; verify on-device before calling this done, not just in a desktop browser.
+
 - **🌐 Version-control `~/.claude`, then promote the point-of-use guards globally** `[P2 · M]` 🔗bundle
   (filed 2026-08-02 15:36 EDT). Two coupled pieces — **do them in this order**, because editing an
   unversioned global config with no backup is what makes the second half risky.

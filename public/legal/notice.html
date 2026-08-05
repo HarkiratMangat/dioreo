@@ -161,8 +161,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    narrower than its box shrinks to — it has no truncation failure mode the
    way the old text did, so nothing here needs an overflow rule. */
 
-.wm{display:block;height:32px;width:auto;object-fit:contain;flex:0 0 auto;
-  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+
+.wm.wm-hero{height:96px}/* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
    that states it twice is noise. Below 980 the switcher is gone. */
 
@@ -336,7 +340,8 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      smaller whole mark reads better than a squeezed one on a narrow header. */
   
   .mk-ctx.mk-ctx{display:none}
-  .wm{height:26px}/* 19px of the mark's width was its own padding — a hover affordance, on a
+  .wm{height:34px}
+  .wm.wm-hero{height:56px}/* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
      chasing. */
@@ -720,7 +725,11 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size, so it
+   reads as one quiet line rather than a competing element. */
+
+.cpy{opacity:.75}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -2465,7 +2474,7 @@ Claude(TM), Anthropic(R)
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
   <footer class="foot nodisc">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a> <span class="cpy">&middot; &copy; 2026 Harkirat Mangat</span></p>
     
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
