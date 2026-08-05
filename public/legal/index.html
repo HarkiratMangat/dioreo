@@ -769,10 +769,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
@@ -2808,9 +2812,9 @@ h1 em{font-style:normal;color:var(--accent-t)}
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -2829,9 +2833,30 @@ h1 em{font-style:normal;color:var(--accent-t)}
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -2900,14 +2925,42 @@ h1 em{font-style:normal;color:var(--accent-t)}
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href'))
+          .then(function(){flashCopied(a);}).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();</script>

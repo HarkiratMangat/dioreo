@@ -774,10 +774,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
@@ -1449,11 +1453,8 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      (1 - backdrop alpha), so a 4%-transparent backdrop is a 4% black wash
      across the whole bar. Deterministic beats pretty here.
      overflow:hidden clips the swarm to the bar, which is also deliberate — see
-     the y-squash note on the particles. *//* display:flex added so .dlm (the compact download button, only present on
-     LICENSE/NOTICE) sits beside the tab strip rather than under it. .mgw stays
-     unaffected — it is position:absolute, so flex never touches it. */
+     the y-squash note on the particles. */
 
-  
   
   .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
@@ -1461,10 +1462,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      a no-op for momentum since iOS 13 made smooth scrolling the default; the only
      effect it still has is forcing this scroller onto its own composited layer,
      which is the other half of the blend failure described above. Removing an
-     obsolete prefix is the fix, not a cleanup that happens to sit nearby. *//* min-width:0 is load-bearing now that this is a flex item: without it a flex
-     child won't shrink below its content's natural width, so instead of
-     scrolling internally the whole bar would widen and push .dlm off screen. */
-  
+     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
   
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
     flex:1 1 auto;min-width:0;
@@ -1472,20 +1470,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
     scrollbar-width:none}
-  .mstrip::-webkit-scrollbar{display:none}/* The compact download control (LICENSE/NOTICE only) — see
-     rawDownloadCompact(). Fixed-size so it never gets squeezed by the
-     scrollable strip beside it, and outside .mstrip entirely so it can't be
-     scrolled out of reach the way it was inside the old disclosure. */
-  
-  .dlm{position:relative;z-index:1;flex:0 0 auto;display:flex;
-    align-items:center;justify-content:center;
-    width:40px;height:40px;margin:.5rem .6rem .5rem 0;border-radius:10px;
-    color:var(--accent-t);text-decoration:none;
-    background:color-mix(in srgb,var(--accent) 9%,transparent);
-    border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule));
-    transition:background .2s,border-color .2s}
-  .dlm:active{background:color-mix(in srgb,var(--accent) 17%,transparent)}
-  .dlm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .mstrip::-webkit-scrollbar{display:none}
 
   .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
     display:flex;align-items:center;min-height:44px;padding:0 .8rem;
@@ -1720,18 +1705,18 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
-   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
-   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap (4rem), false
-   here, where .page ends at 0. Measured on an iPhone against Contributing, which
-   is the rhythm Harkirat asked these pages to match: 96px above the link row and
-   28px below it, against 54 and 80. So this restores the missing floor and trims
-   the card's own 3rem gap, which is a desktop value that reads as a hole once the
-   footer is a single narrow column. Both numbers are the warm page's, not new
-   ones — the point is that the two templates agree. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
+   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
+   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap, false here,
+   where .page ends at 0. This restores the missing floor, and the two numbers
+   have to move together — see .wrap below — or the templates drift apart again.
+   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
+   original 4rem) was reported as too much dead space below the sign-off on
+   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
+   with .wrap's own trim to the same value. */
 
-@media (max-width:760px){ .page{padding-bottom:4rem} }
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1786,11 +1771,12 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
    The desktop rail's last row. It reads as an ACTION, not as another section —
    a filled chip rather than a ruled row — because a reader scanning for "where
    am I" must not mistake it for a place to go.
-   ⚠️ Mobile does NOT reuse this row any more (changed 2026-08-04 22:32 EDT) —
-   it used to, crammed as the last item inside the "On this page" disclosure,
-   which meant reaching it required opening that panel and scrolling past every
-   section. Mobile now gets its own compact icon button, .dlm, living directly
-   in the always-visible sticky bar — see rawDownloadCompact() and mobileNav(). */
+   ⚠️ MOBILE REUSES THIS SAME ROW AGAIN (changed 2026-08-05 11:31 EDT) — it used
+   to get its own compact icon-only control, .dlm, living in the sticky tab bar.
+   That read as a stray icon inside what otherwise looks like page navigation,
+   with no room to say what it does. It moved into the section menu instead —
+   see mobileNav() and ".mp-list .dlr" below — as the SAME row this is, not a
+   second markup shape to keep in sync. */
 
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
@@ -1805,26 +1791,22 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .dlr-t b{color:var(--ink);font-weight:650}/* Tabular so the two pages' sizes line up if they are ever seen together. */
 
 .dlr-s{flex:0 0 auto;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;
-  color:var(--ink3);font-variant-numeric:tabular-nums}/* Drawn, not typed: a glyph would render at whatever weight the mono face has and
-   would also join the page text, which is the trap documented on the copy button.
-   A tray with an arrow coming down into it — the shape a download actually is. *//* ⚠️ The tray's floor is a BORDER on the element itself, not a third child. An
-   element has two pseudo-elements and the arrow needs both — a stem and a head —
-   so the base had to come from somewhere that is not a box. A stray <span> for it
-   would have been markup existing only to be painted. */
+  color:var(--ink3);font-variant-numeric:tabular-nums}/* See dlIcon() — inline SVG now, not a CSS border/pseudo-element tray. */
 
+.dlr-i{flex:0 0 auto;display:block;width:13px;height:13px;color:var(--accent-t)}/* ── the section menu's floating download footer ───────────────────────
+   The mobile home for the row above: a STICKY last child of .mp-list rather
+   than a row in the middle of it, because "download the file" is a different
+   kind of question than "which section" — see the note on .msecd. Sticky to
+   the list's own bottom (not the viewport's) so it stays reachable while the
+   sections above it scroll, reading as the panel's own floating action. Edge
+   to edge and opaque so a scrolled section row disappears behind it instead
+   of showing through; .dlr's own translucent tint is mixed into --paper
+   rather than transparent for exactly that reason. */
 
-.dlr-i{position:relative;flex:0 0 auto;display:block;box-sizing:border-box;
-  width:13px;height:13px;color:var(--accent-t);
-  border-bottom:1.6px solid currentColor}
-.dlr-i::before{content:"";position:absolute;left:5.7px;top:0;width:1.6px;height:6.4px;
-  background:currentColor;border-radius:1px}/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE — same trap as the landing page's
-   .arw. The head is a 5.6px box turned 45deg, so its tip reaches 5.6/sqrt(2)=3.96px
-   from its own centre, not 2.8. Centred at x=6.5 that puts the point at 10.46 and
-   2.54, both inside the 13px box. */
-
-.dlr-i::after{content:"";position:absolute;left:3.7px;top:1.9px;width:5.6px;height:5.6px;
-  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  border-radius:0 0 2px 0;transform:rotate(45deg)}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
+.mp-list .dlr{position:sticky;bottom:0;z-index:2;margin:.4rem 0 -.3rem;
+  border-radius:0;border-width:1px 0 0;border-color:var(--rule);
+  background:color-mix(in srgb,var(--accent) 9%,var(--paper))}@media (hover:hover) and (pointer:fine){
+.mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 
 @media (max-width:980px){ .rail{display:none} }
@@ -2018,20 +2000,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
   justify-content:space-between}
 .authoritative p{margin:0;flex:1 1 34ch}
-.authoritative a{color:var(--ink)}/* Download the instrument. The arrow is drawn rather than typed so it inherits
-   the button's colour in both themes and cannot fall back to a missing glyph. */
+.authoritative a{color:var(--ink)}/* Download the instrument. See dlIcon() — inline SVG, inherits the button's
+   colour in both themes and cannot fall back to a missing glyph. */
 
 .dl{display:inline-flex;align-items:center;gap:.55rem;flex:0 0 auto;min-height:38px;
   padding:.45rem .95rem;border-radius:999px;border:1px solid var(--rule2);
   background:color-mix(in srgb,var(--ink) 7%,transparent);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
   text-decoration:none;transition:border-color .25s,background .25s}
-.dl-i{position:relative;width:9px;height:11px;flex:0 0 auto}
-.dl-i::before{content:"";position:absolute;left:3.6px;top:0;width:1.6px;height:7px;
-  background:currentColor}
-.dl-i::after{content:"";position:absolute;left:.6px;top:3.6px;width:6px;height:6px;
-  border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  transform:rotate(-45deg)}
+.dl-i{flex:0 0 auto;display:block;width:11px;height:11px}
 .dl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){
   .dl:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent);
@@ -2327,7 +2304,6 @@ html{scroll-behavior:smooth}
     <nav class="mstrip" id="mstrip" aria-label="Pages">
       <a class="mtab on" href="./terms.html" aria-current="page" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab" href="./notice.html" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
     </nav>
-    
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
@@ -3795,35 +3771,6 @@ html{scroll-behavior:smooth}
   }
 })();
 
-/* ⚠️ COPY ON CLICK, WITHOUT REPLACING THE JUMP. .anchor links are real
-   <a href="#id"> elements — clicking one already updates the hash and scrolls
-   to the section, which is the whole point of "link to section". This adds a
-   side effect (copy the full shareable URL) rather than intercepting the
-   click, so the control still works exactly like a plain link anywhere
-   Clipboard API access is unavailable. Requested 2026-08-05 08:24 EDT. */
-(function(){
-  var toast=null,toastT=0;
-  function flash(a){
-    if(toast){clearTimeout(toastT);toast.remove();}
-    toast=document.createElement('span');
-    toast.className='ank-cpy';
-    toast.textContent='Copied';
-    toast.setAttribute('role','status');
-    a.appendChild(toast);
-    requestAnimationFrame(function(){toast.classList.add('on');});
-    toastT=setTimeout(function(){
-      var t=toast;toast=null;
-      if(t){t.classList.remove('on');setTimeout(function(){t.remove();},200);}
-    },1400);
-  }
-  document.addEventListener('click',function(e){
-    var a=e.target.closest&&e.target.closest('.anchor');
-    if(!a||!navigator.clipboard)return;
-    navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href'))
-      .then(function(){flash(a);}).catch(function(){});
-  });
-})();
-
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
@@ -4923,9 +4870,9 @@ html{scroll-behavior:smooth}
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -4944,9 +4891,30 @@ html{scroll-behavior:smooth}
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -5015,14 +4983,42 @@ html{scroll-behavior:smooth}
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href'))
+          .then(function(){flashCopied(a);}).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();
