@@ -384,9 +384,18 @@ it directly with an empty build command, so nothing has to run on their side.
     been pure wasted work. **The attribute was the whole of it.**
     ⚠️ Checked before choosing the replacement, so the new wording is not another guess: that is
     the *only* generic `aria-label` rule mentioning "top", the list contains **no** substring
-    (`[aria-label*=]`) aria-label rules at all, and nothing filters `data-tip`. Also swept
-    AdGuard Annoyances (65k lines), AdGuard Privacy (152k) and uBlock Annoyances — no
-    to-top cosmetic rules and no collision with the new label.
+    (`[aria-label*=]`) aria-label rules at all, and nothing filters `data-tip`.
+    ✅ **THE WHOLE SURFACE WAS AUDITED, not just the control that was reported** — fixing only the
+    reported one would have left the same class of bug sitting in six other places. All seven
+    `aria-label` strings the two generators emit (`Back to top` → now `Scroll back to top of
+    page`, `Copy code`, `Install Dioreo on Discord`, `Link to this section`, `Pages`, `Switch
+    between light and dark`) were checked against every annoyance list enabled on Harkirat's
+    uBlock: Fanboy's Annoyance, EasyList Notifications, EasyList Social Widgets, EasyList/uBO
+    Cookie Notices, third-party Notifications, AdGuard Annoyances (65k lines) and AdGuard Privacy
+    (152k). One collision total — the one above. Cookie Notices carries `##.cookieToTop`, which
+    touches nothing here. **Re-run this if a new icon-only control lands**: enumerate with
+    `rg -oI 'aria-label="[^"]+"'` over both generators (note `-I`, since `rg -h` is `--help` and
+    silently prints help text that reads like an empty result).
     ⚠️ **Generalise the lesson, not the string:** an icon-only control's accessible name is markup
     a filter list can collide with, and the failure is *silent* — no console error, no layout gap,
     the element is simply `display:none`. Any new icon-only control deserves the same check.
