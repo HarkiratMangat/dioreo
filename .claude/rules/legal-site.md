@@ -102,6 +102,38 @@ it directly with an empty build command, so nothing has to run on their side.
   ⚠️ **Horizontal ruled-paper lines were tried and REMOVED.** A repeating gradient has one interval;
   prose leading is ~1.74rem and headings/lists/code are each something else, so the rules drift out of
   phase within a screen and strike through the text. Unsound, not mistuned. Don't reintroduce them.
+- ⌨️ **`CMD_JS` is the landing page's animated command line** (shipped 2026-08-05 16:49 EDT). A
+  typewriter under the lede that types a real slash command, holds it, backspaces to `/` and moves on.
+  Emitted only by `indexPage()`; it returns after one `getElementById` if `#cmd-line` is absent, the
+  same self-selecting shape `MORPH_JS`'s modules use.
+  - 🚨 **`/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and `/secondaries` ARE REAL
+    COMMANDS, and `rg '\.setName\(' commands/*.js` WILL TELL YOU THEY ARE NOT.** They are registered
+    at boot in `index.js`'s `handleBotReady()` from `Loadout.distinct('category', { mode: 'MP' })`
+    with `SECONDARIES` merged in, so they exist in the live command list and in no source file's
+    registration block. A handoff wrote them off as invented on exactly that missing-grep-hit
+    evidence and Harkirat caught it. **Absence from `commands/` is not absence from Discord** —
+    check the dynamic registration too. Same trap, different shape, as
+    `feedback_not_checkable_is_usually_unexamined`: the search ran, it just could not see the thing.
+  - ⚠️ **Admin and PoC commands are deliberately excluded** — `/manage`, `/alerts`, `/autobuild`.
+    They are registered and would "work", but two are locked to Harkirat and one is unfinished.
+  - ⚠️ **The reduced-motion check is in JS because the global rule cannot reach this.**
+    `COMPONENT_CSS`'s reduced-motion override kills transitions and keyframes; a `setTimeout`-driven
+    `textContent` swap is neither, so it would have run at full speed for a reader who asked for
+    less. It goes still on one WHOLE command, not the bare `/` — a lone slash reads as a page
+    waiting for something that never arrives. Bound live, so toggling the OS setting takes effect.
+  - ⚠️ **`#cmd-line` KEEPS `aria-hidden="true"` now that it carries real content, and that is a
+    decision.** It duplicates nothing (the lede states what the bot does), its text is rewritten
+    every ~50ms so a reader landing on it gets a partial string, and `aria-live` would be worse
+    still — a region announcing every keystroke. Revisit only if this becomes the only place a
+    command is named.
+  - ⚠️ **Do not write a CSS comment containing braces.** The first build of this failed
+    `hoverGuardAudit` because a comment here spelled out the global reduced-motion rule in full
+    syntax. Describe such rules in prose. The gate is right and the same class of mistake once
+    destroyed eight rules via a comma in a comment.
+  - The order is Fisher-Yates shuffled per visit and re-shuffled on each wrap, so the page is not
+    the same loop every time — Harkirat's ask. Verified in-browser: five loads, five different
+    opening commands. Option strings use real data (`AK117` is live MP loadout data, `Fennec` is the
+    repo's own DMZ example); a line inviting you to type something owes you a string that works.
 - **Web assets are VENDORED into `public/assets/`, never CDN-linked** (fonts + Motion One). This is a
   privacy obligation, not a preference: the Privacy Policy is served from this same origin, and a
   third-party CDN would disclose every visitor's IP to a party the policy does not name. All three are
