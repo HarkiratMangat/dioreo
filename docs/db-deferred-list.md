@@ -358,12 +358,15 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
-- **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent** `[P2 · M]`
-  (filed 2026-08-04 22:07 EDT). **Recommended: Opus 5, High effort** — this is genuinely novel
-  creative+technical work (repurposing the existing goo/metaball engine in a new context, plus a font
-  decision with its own licensing check), not a quick CSS tweak.
+- **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent + mascot twinkle/float** `[P2 · M]`
+  (filed 2026-08-04 22:07 EDT; merged with the standalone mascot-animation item 2026-08-05 09:32 EDT
+  — Harkirat's call, one Opus-5 session covers the whole hero area rather than two separate ones).
+  **Recommended: Opus 5, High effort** — this is genuinely novel creative+technical work (repurposing
+  the existing goo/metaball engine in a new context, plus a font decision with its own licensing
+  check), not a quick CSS tweak. Two DISTINCT surfaces bundled here on purpose — do not conflate them
+  into one treatment, they have different scopes and different constraints:
 
-  Scope: the `<em>Dioreo</em>` inside the landing-page hero `<h1>` in `indexPage()`
+  **① The H1 text.** The `<em>Dioreo</em>` inside the landing-page hero `<h1>` in `indexPage()`
   (`scripts/buildLegalPages.js`, styled by the `h1 em{...}` rule in `COMPONENT_CSS`). Currently plain
   `color:var(--accent-t)`, no animation.
 
@@ -396,12 +399,9 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
     the nav goo already had to split into two different engines (desktop SVG vs. mobile CSS chain) for
     exactly this reason; verify on-device before calling this done, not just in a desktop browser.
 
-- **✨ Twinkle/float animation for the hero mascot logo** `[P3 · S]` 🔗bundle
-  (filed 2026-08-05 09:09 EDT). **Distinct from the hero-morph item directly above** — that one is
-  about the H1 *text* "Dioreo"; this is about the mascot *image* now sitting above it
-  (`public/assets/dioreo-mascot.webp`, rendered via `wordmark(null, ...)` → `.wm-hero` in
-  `scripts/buildLegalPages.js`, landing page only). Related enough to plausibly do in the same
-  session, distinct enough not to conflate.
+  **② The mascot image**, separately — `public/assets/dioreo-mascot.webp`, rendered via
+  `wordmark(null, ...)` → `.wm-hero` in the same file, landing page only. Filed as its own item
+  2026-08-05 09:09 EDT, folded in here 09:32 EDT.
 
   **What was asked, in Harkirat's own words:** "slightly animate it on the website so like the stars
   twinkle or it feels like the mascot is kind of floating/flying or something." Scope: a subtle,

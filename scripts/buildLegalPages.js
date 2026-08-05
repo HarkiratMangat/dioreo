@@ -1727,7 +1727,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 /* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
    wins over the base rule regardless of source order — the same doubled-class
    defence the mobile .bar.bar override above uses, for the same reason. */
-.wm.wm-hero{height:96px}
+.wm.wm-hero{height:112px}
 
 /* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
@@ -1898,7 +1898,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      smaller whole mark reads better than a squeezed one on a narrow header. */
   .mk-ctx.mk-ctx{display:none}
   .wm{height:34px}
-  .wm.wm-hero{height:56px}
+  .wm.wm-hero{height:64px}
   /* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
@@ -6497,7 +6497,7 @@ const MORPH_JS = `
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    var cur=-1,queued=0,lastY=scrollY_(),dir=1,lineY=-1;
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
@@ -6517,8 +6517,21 @@ const MORPH_JS = `
          while scrolling down, which is the direction rows arrive from, so a row is
          claimed on approach instead of on arrival — and symmetrically on the way
          back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it. */
-      var line=innerHeight*(0.46+dir*0.10);
+         above the middle of a phone screen, not on it.
+         ⚠️ EASED TOWARD THE TARGET, NOT SNAPPED TO IT — added 2026-08-05 09:37 EDT,
+         on top of the 8px threshold and the hysteresis below. The threshold stops
+         dir flipping on noise, but once it DOES flip (a real direction change),
+         the old code moved the line by a fifth of the viewport height in a single
+         frame — a real jump, not jitter, and with two rows sitting near that
+         boundary it could still flip the highlight abruptly on an ordinary
+         back-and-forth scroll. Springing lineY toward the target over several
+         frames turns that step into a slide, so a direction change reads as a
+         smooth retarget instead of a jump — same fix shape as the liquid
+         cursor's own cen.x spring in tick(), just applied to this line instead
+         of a cursor position. */
+      var target=innerHeight*(0.46+dir*0.10);
+      lineY=(lineY<0)?target:lineY+(target-lineY)*0.12;
+      var line=lineY;
       var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
@@ -6543,13 +6556,19 @@ const MORPH_JS = `
       rows[cur].classList.add('act');
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
+       pick() immediately whenever want was true, which measured the row
+       nearest the line AT THE TOP OF THE PAGE and highlighted it before the
+       reader had scrolled at all — row 0 ("Terms of Service") lighting up on
+       load with no interaction. Clearing to no highlight and letting the
+       first real scroll event call pick() (via onScroll below) means the
+       highlight only ever appears once the reader has actually started
+       scrolling, which is what "auto" should mean here. */
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
-      if(!want){
-        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
-        cur=-1;
-      }else{cur=-1;pick();}
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=-1;lineY=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
@@ -7653,7 +7672,10 @@ ${TOKENS}
 ${COMPONENT_CSS}
 body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
-.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
+/* ⚠️ MASCOT +16px, MARGIN TIGHTENED, 2026-08-05 09:37 EDT — Harkirat's call: the
+   mascot reads better slightly larger, and with it bigger the old 2.5-5rem gap
+   above the kicker/H1 looked even more oversized than it already did. */
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(1.6rem,6vh,3.4rem)}
 .top .ghb{margin-left:auto}
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
@@ -8024,17 +8046,16 @@ h1 em{font-style:normal;color:var(--accent-t)}
     ${repoBtn}
     ${installBtn()}
   </div>
-  <!-- "Unofficial" leads the kicker rather than waiting for the trademark notice
-       at the foot of the page. The notice is an obligation and stays where it is;
-       this is about not letting the first word a reader sees imply a
-       relationship with Activision that the footer denies several screens later.
-       ⚠️ TRIMMED TO THE ONE WORD, 2026-08-05 09:02 EDT — "· Call of Duty: Mobile"
-       read as filler ("cheesy" was the word used): the H1 two lines below
-       already says "your CODM companion" and the intro paragraph names the
-       game again, so the kicker repeating it a third time added nothing the
-       page wasn't already saying. The word doing the actual legal work here
-       is "Unofficial" alone; the game name was never what needed to lead. -->
-  <span class="lab">Unofficial</span>
+  <!-- ⚠️ CHANGED TO "Discord bot", 2026-08-05 09:35 EDT — supersedes the note this
+       comment used to carry about "Unofficial" leading the kicker specifically to
+       preempt Activision-affiliation confusion. That reasoning doesn't vanish —
+       it is still true that a reader's first impression matters — but Harkirat
+       made the call explicitly, after that exact concern had already been raised
+       in this session, so it is a deliberate trade rather than an oversight. The
+       trademark notice in the footer (TRADEMARK_NOTE) is unaffected and still
+       carries the disclaimer in full; this kicker was never the ONLY place it
+       lives, just the first. -->
+  <span class="lab">Discord bot</span>
   <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
   <p class="lede">${esc(intro)}</p>
   <span class="lab lab-sec">The fine print</span>
