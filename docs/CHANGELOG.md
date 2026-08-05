@@ -181,7 +181,62 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.52.0 — 2026-08-04 16:24 EDT (#77) — The bot has a name, and the front door finally says what it is
+## v2.53.0 — 2026-08-05 13:11 EDT (#78) — Confirmations that only worked when nothing else was happening
+
+A mobile-polish round that kept turning up bugs whose actual cause was event ORDERING, not the
+feature itself — plus a privacy-policy gap found by directly auditing the schemas against the
+policy rather than trusting the existing check.
+
+**The anchor-copy "Copied" confirmation never fired in real use, only in tests that stubbed the
+clipboard.** It waited for `navigator.clipboard.writeText()`'s promise to resolve before showing
+anything — but `.anchor` is a real `<a href="#id">`, and the browser's own scroll-to-hash runs as
+its OWN step right after the click finishes dispatching, before that promise's microtask gets a
+turn. By the time the confirmation would have fired, the page had already jumped and the moment
+was gone. Fixed by showing it synchronously in the click handler and firing the clipboard write
+fire-and-forget alongside it — verified live that a real click now flips the shared hint bubble to
+"Copied" in the same tick.
+
+**That fix immediately exposed a second race**, caught only because the row-highlight redesign
+earlier in the session had already established the pattern of catching a defect on-screen from a
+recording: the module's own "hide the hint on scroll" listener was firing on the SAME native
+scroll-to-hash, wiping the confirmation before it was visible even when shown synchronously. The
+flash now re-places itself on every scroll tick while active, riding along with the anchor instead
+of vanishing.
+
+**The tooltip firing on a touch swipe was the same class of bug wearing different clothes.** It was
+gated on any `focusin`, which a scroll gesture that merely grazes a link also produces. Gated on
+`:focus-visible` instead — the browser's own answer to "was this a keyboard request" — rather than
+guessing from device type.
+
+**NOTICE's dependency tables moved from a raw monospace `<pre>` to real cards** after a screenshot
+showed the old rendering crushing package name, license, and URL into two columns that ran off a
+phone screen. `structureAudit()` (the gate that verifies every column-aligned source line survives
+somewhere) gained a matching branch so the invariant holds against the new shape instead of
+regressing silently. The download button that used to sit as a bare icon in the mobile nav header,
+then as a sticky footer that pinned over whatever section was scrolled underneath it — "such a poor
+implementation... looks slapped on" — is now a plain card at the bottom of the section menu,
+matching the desktop rail's row that never drew a complaint.
+
+**The Privacy Policy gap wasn't found by the existing check — the existing check only ever looked
+at one model.** `privacy-inventory` verifies `UserPreference`'s fields against Appendix A by name;
+auditing the other five schemas by hand turned up that MongoDB Atlas's row in §5 said it stores
+only "your preference record," when the same cluster also backs the operational alert log §2.4
+already discloses in prose. Fixed (Privacy Policy v1.9), and generalized into a new check,
+`privacy-model-coverage`, that scans every `models/*.js` for a `discordId`/`userId`-shaped field and
+requires it be named somewhere in the policy — so the next new per-user collection can't repeat the
+same silent gap. Its own baseline was briefly vacuous (0 items to examine once `UserPreference.js`
+is correctly excluded, since that's the other check's job) until a second disclosed model was added
+to the shared test fixture to prove the check verifies something real.
+
+**Also this release:** plural "Sections N, N, and N" cross-reference lists (the classic
+survival-clause shape) now linkify each number individually — the singular-only regex silently
+never matched the plural word at all. NOTICE's `*** ... ***` inline emphasis renders as styled text
+instead of literal asterisks now that it lives inside a real card. The homepage intro paragraph was
+rewritten. The mascot and wordmark were swapped for Harkirat's coral recolor (standing pose, the
+standard black outline over the brownline variant), trimmed to their actual content bounds — the
+source canvases carried a large transparent margin around the artwork.
+
+## v2.52.0 — 2026-08-04 16:24 EDT (#77 · `d294128`) — The bot has a name, and the front door finally says what it is
 
 **Dior's Builds is now Dioreo.** The dev application has carried the name since 2026-07-26; this
 takes it project-wide, ahead of the v3 launch and while the site is live but not yet shared — so

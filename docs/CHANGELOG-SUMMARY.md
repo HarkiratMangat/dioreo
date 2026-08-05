@@ -26,6 +26,19 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.53.0 — August 5, 2026
+- **The "link to this section" button now actually shows "Copied."** It was copying the link the
+  whole time, just never telling you — fixed.
+- **The section download menu got a real redesign** instead of a button that covered up whatever you
+  were reading.
+- **The Notice page's dependency list is easier to read on a phone** — each entry is now its own
+  card instead of a squeezed table.
+- **The tooltip that pops up near buttons no longer fires from a scroll or swipe** — only from an
+  actual hover or keyboard focus.
+- **The Privacy Policy now mentions that the alert log lives in the same database as your
+  preferences**, not just a separate provider — no change to what's collected or for how long.
+- New logo colors: the mascot and wordmark switched to the coral palette.
+
 ## v2.52.0 — August 4, 2026
 - **The bot is now called Dioreo.** Same bot, same person running it, same everything it remembers
   about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored.
