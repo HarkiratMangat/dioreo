@@ -7621,10 +7621,15 @@ function indexPage(built) {
        so a headline that spends itself on a benefit leaves the reader with no idea what
        the thing is called, while one that spends itself on the name alone says nothing
        about what it does. Doing both is what the two rejected options each did half of. */
+    // ⚠️ REWORDED 2026-08-05 09:03 EDT for parallelism — the three items in the
+    // dash clause used to mix grammatical forms (a noun phrase, a verb phrase,
+    // then a full clause), which read as a run-on even though nothing was
+    // technically wrong. Now three matched noun phrases joined by "and" before
+    // the last, same content, same length.
     const intro = 'It lives in Discord — lucky-draw odds and CP costs, loadouts worth '
-        + 'building, what is live this season and when it ends, all without leaving the '
-        + 'chat. Install it once and it answers anywhere you can type: any server, any '
-        + 'DM, no invite needed.';
+        + 'building, and what’s live this season (and when it ends) — all without '
+        + 'leaving the chat. Install it once and it answers anywhere you can type: any '
+        + 'server, any DM, no invite needed.';
 
     return `<!doctype html>
 <html lang="en"><head>
@@ -8013,9 +8018,15 @@ h1 em{font-style:normal;color:var(--accent-t)}
   </div>
   <!-- "Unofficial" leads the kicker rather than waiting for the trademark notice
        at the foot of the page. The notice is an obligation and stays where it is;
-       this is about not letting the first three words a reader sees imply a
-       relationship with Activision that the last three deny. -->
-  <span class="lab">Unofficial &middot; Call of Duty: Mobile</span>
+       this is about not letting the first word a reader sees imply a
+       relationship with Activision that the footer denies several screens later.
+       ⚠️ TRIMMED TO THE ONE WORD, 2026-08-05 09:02 EDT — "· Call of Duty: Mobile"
+       read as filler ("cheesy" was the word used): the H1 two lines below
+       already says "your CODM companion" and the intro paragraph names the
+       game again, so the kicker repeating it a third time added nothing the
+       page wasn't already saying. The word doing the actual legal work here
+       is "Unofficial" alone; the game name was never what needed to lead. -->
+  <span class="lab">Unofficial</span>
   <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
   <p class="lede">${esc(intro)}</p>
   <span class="lab lab-sec">The fine print</span>
