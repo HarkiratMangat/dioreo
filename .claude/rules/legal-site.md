@@ -148,8 +148,16 @@ it directly with an empty build command, so nothing has to run on their side.
     that still fit rather than truncated — a half-written option reads as a bug. Measured at 320px:
     worst case paints 271px into a 281px box, zero document overflow, at the `.76rem` floor of the
     font clamp. Re-measure if the clamp, the cap or the chip padding moves.
-  - ⚠️ **Three roles, three treatments** — `.cmd-c` the command (accent, 700), `.cmd-o` the option
-    name (`--ink2`, 500), `.cmd-v` the chosen value (`--ink`, 600, on a 14% accent chip). Rendered
+  - ⚠️ **Three roles, three treatments, ALL IN ONE HUE** — `.cmd-c` the command (full `--accent-t`,
+    700), `.cmd-o` the option name (`--accent-t` mixed **85% toward `--desk`**, 600), `.cmd-v` the
+    chosen value (`--ink`, 600, on a 14% accent chip). **The option name was `--ink2`/500 and must
+    not go back** — a neutral grey read thin and washed out on an otherwise warm line and Harkirat
+    rejected it on sight (2026-08-05 17:50 EDT). Mixing toward `--desk` dims in *both* themes, so
+    one declaration covers both with no light override: dark's accent-t is the raw coral on a
+    near-black ground, light's is already a dark mix on pale paper, and moving toward the ground
+    steps away from the eye either way. **85% is the dimmest step that still clears AA** — measured
+    5.56:1 dark / 5.20:1 light, against 4.86 / **4.41** at 78% where light fails, and 7.30 / 7.40
+    at full accent. Rendered
     flat, `/ar weapon:AK117` reads as one long command name and the reader cannot see the
     structure. The typewriter therefore reveals **per-segment spans**, not a string — anything that
     flattens it back to `textContent` keeps working and silently loses the meaning.

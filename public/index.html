@@ -1123,11 +1123,27 @@ h1 em{font-style:normal;color:var(--accent-t)}
   margin:calc(-1 * clamp(2.2rem,7vh,3.6rem) + .5rem) 0 clamp(1.6rem,5vh,2.4rem)}/* THREE ROLES, THREE TREATMENTS — the command, the option's name, and the value
    chosen inside it. Rendered in one colour, "/ar weapon:AK117" reads as a single
    long command name and a reader cannot see that "weapon:" is an option and
-   AK117 the selection. So: the command keeps the accent and the most weight
-   because it is the thing you actually type; the option name drops to --ink2 and
-   the lightest weight because it is a label, not content; and the value sits on
-   a faint accent chip, which is the one part a reader chose. CMD_JS emits these
-   class names as segment spans — see its render().
+   AK117 the selection. So: the command keeps the accent at full strength and the
+   most weight because it is the thing you actually type; the option name is the
+   SAME HUE STEPPED DOWN, because it is a label rather than content; and the value
+   sits on a faint accent chip, which is the one part a reader chose. CMD_JS emits
+   these class names as segment spans — see its render().
+   ⚠️ THE OPTION NAME WAS --ink2 AND IS NOT ALLOWED TO GO BACK. A neutral grey at
+   weight 500 read as thin and washed-out against a line that is otherwise warm —
+   Harkirat rejected it on sight, 2026-08-05 17:50 EDT. Keeping the line inside one
+   hue is what makes it read as a single command with parts, rather than as an
+   accent word next to some unrelated grey text.
+   ⚠️ MIXED TOWARD --desk, WHICH DIMS IN BOTH THEMES — that is why one declaration
+   works for both and no light-mode override is needed. Dark's --accent-t is the
+   raw coral and the page is near-black, so moving toward the ground darkens it;
+   light's is already a 38%-accent/near-black mix on pale paper, so the same move
+   lightens it. Either way it steps AWAY from the ground and reads quieter.
+   ⚠️ 85% IS THE DIMMEST STEP THAT STILL CLEARS AA, and it was solved rather than
+   picked: measured against --desk, 85% gives 5.56:1 dark and 5.20:1 light, while
+   78% gives 4.86:1 and 4.41:1 — light fails there. Full accent is 7.30 / 7.40, so
+   this is a real step down and not a token one. Do not lower it without
+   re-measuring; contrastAudit() reads --name:#hex declarations and cannot see a
+   color-mix, so a green build says nothing about this rule.
    ⚠️ CONTRAST HERE IS HAND-CHECKED AND HAS TO BE. contrastAudit() only reads
    --name:#hex declarations, so a rule painting its own surface out of a
    color-mix is invisible to it and a green build says nothing about this.
@@ -1140,7 +1156,7 @@ h1 em{font-style:normal;color:var(--accent-t)}
    of the text the whole time it is typing. */
 
 .cmd-line .cmd-c{color:var(--accent-t);font-weight:700}
-.cmd-line .cmd-o{color:var(--ink2);font-weight:500}
+.cmd-line .cmd-o{color:color-mix(in srgb,var(--accent-t) 85%,var(--desk));font-weight:600}
 .cmd-line .cmd-v{color:var(--ink);font-weight:600;
   background:color-mix(in srgb,var(--accent) 14%,transparent);
   padding:.06em .26em;border-radius:.28em}
