@@ -1295,8 +1295,16 @@ const wordmark = (href, cur) => {
     // Harkirat's own call, should carry — a much larger mark than the 54px bar
     // on every other page has room for. href is null only on the landing page
     // (see below), so that is also the flag that selects the hero size.
+    // ⚠️ TWO DIFFERENT ASSETS, NOT ONE SCALED TWO WAYS — swapped 2026-08-05
+    // 09:05 EDT. The nav bar is too short for the mascot to read as anything
+    // but noise at 44px tall, so it gets the typographic-only mark; the
+    // landing hero has the room and gets the mascot alone instead of the
+    // combo lockup, per Harkirat's own asset choice.
+    const [src, w, h] = href
+        ? ['../assets/dioreo-wordmark.webp', 900, 421]
+        : ['../assets/dioreo-mascot.webp', 600, 525];
     const body = `<span class="mk-s">
-      <img class="wm${href ? '' : ' wm-hero'}" src="../assets/dioreo-logo.webp" width="600" height="373" alt="Dioreo">
+      <img class="wm${href ? '' : ' wm-hero'}" src="${src}" width="${w}" height="${h}" alt="Dioreo">
       ${here ? `<span class="mk-ctx"><i aria-hidden="true"></i>${esc(here.title)}</span>` : ''}
     </span>`;
     return href
