@@ -1406,23 +1406,43 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      (1 - backdrop alpha), so a 4%-transparent backdrop is a 4% black wash
      across the whole bar. Deterministic beats pretty here.
      overflow:hidden clips the swarm to the bar, which is also deliberate — see
-     the y-squash note on the particles. */
+     the y-squash note on the particles. *//* display:flex added so .dlm (the compact download button, only present on
+     LICENSE/NOTICE) sits beside the tab strip rather than under it. .mgw stays
+     unaffected — it is position:absolute, so flex never touches it. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
      a no-op for momentum since iOS 13 made smooth scrolling the default; the only
      effect it still has is forcing this scroller onto its own composited layer,
      which is the other half of the blend failure described above. Removing an
-     obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+     obsolete prefix is the fix, not a cleanup that happens to sit nearby. *//* min-width:0 is load-bearing now that this is a flex item: without it a flex
+     child won't shrink below its content's natural width, so instead of
+     scrolling internally the whole bar would widen and push .dlm off screen. */
+  
   
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
     scrollbar-width:none}
-  .mstrip::-webkit-scrollbar{display:none}
+  .mstrip::-webkit-scrollbar{display:none}/* The compact download control (LICENSE/NOTICE only) — see
+     rawDownloadCompact(). Fixed-size so it never gets squeezed by the
+     scrollable strip beside it, and outside .mstrip entirely so it can't be
+     scrolled out of reach the way it was inside the old disclosure. */
+  
+  .dlm{position:relative;z-index:1;flex:0 0 auto;display:flex;
+    align-items:center;justify-content:center;
+    width:40px;height:40px;margin:.5rem .6rem .5rem 0;border-radius:10px;
+    color:var(--accent-t);text-decoration:none;
+    background:color-mix(in srgb,var(--accent) 9%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule));
+    transition:background .2s,border-color .2s}
+  .dlm:active{background:color-mix(in srgb,var(--accent) 17%,transparent)}
+  .dlm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
     display:flex;align-items:center;min-height:44px;padding:0 .8rem;
@@ -1720,11 +1740,14 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}/* ── the plain-text download ──────────────────────────────────────────
-   One rule set for both hosts, because it is one control: the section index's
-   last row on the desktop rail, and the same row inside the mobile disclosure.
-   It reads as an ACTION, not as another section — a filled chip rather than a
-   ruled row — because a reader scanning for "where am I" must not mistake it for
-   a place to go. Its touch target is the 44px the mobile list already uses. */
+   The desktop rail's last row. It reads as an ACTION, not as another section —
+   a filled chip rather than a ruled row — because a reader scanning for "where
+   am I" must not mistake it for a place to go.
+   ⚠️ Mobile does NOT reuse this row any more (changed 2026-08-04 22:32 EDT) —
+   it used to, crammed as the last item inside the "On this page" disclosure,
+   which meant reaching it required opening that panel and scrolling past every
+   section. Mobile now gets its own compact icon button, .dlm, living directly
+   in the always-visible sticky bar — see rawDownloadCompact() and mobileNav(). */
 
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
@@ -2242,10 +2265,11 @@ html{scroll-behavior:smooth}
     <nav class="mstrip" id="mstrip" aria-label="Pages">
       <a class="mtab" href="./terms.html" style="--row:#F2994A">Terms</a><a class="mtab" href="./privacy.html" style="--row:#17A2A2">Privacy</a><a class="mtab" href="./license.html" style="--row:#9B6BE3">License</a><a class="mtab on" href="./notice.html" aria-current="page" style="--row:#FF5264">Notice</a><span class="ms-sep" aria-hidden="true"></span><a class="mtab" href="./contributing.html" style="--row:#8B9BFF">Contributing</a><a class="mtab" href="./contributors.html" style="--row:#F8FF4A">Contributors</a>
     </nav>
+    <a class="dlm" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original" aria-label="Download NOTICE (plain text)"><span class="dlr-i" aria-hidden="true"></span></a>
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a><a class="dlr" href="../NOTICE" download="NOTICE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>NOTICE</b></span><span class="dlr-s">19 KB</span></a></div>
+    <div class="mp-list msec"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
   </details>
 </aside>
 
@@ -2269,11 +2293,12 @@ html{scroll-behavior:smooth}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
-    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
-         so the download sits in both or in neither. It is OUTSIDE .slots because
-         that box is the scroller the scrollspy drives — a non-section row inside
-         it would travel with the tracked section and could scroll out of reach,
-         which is the one thing this control exists not to do. -->
+    <!-- The rail is the desktop half of the panel the mobile "On this page"
+         disclosure is, and both offer the download — but no longer via the same
+         markup. Desktop keeps the full row, OUTSIDE .slots because that box is
+         the scroller the scrollspy drives and a non-section row inside it would
+         travel with the tracked section. Mobile gets its own compact .dlm
+         instead of reusing this row — see mobileNav(). -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots"><a href="#s-1" class="slot"><i>1</i><span>DIRECT DEPENDENCIES</span></a><a href="#s-2" class="slot"><i>2</i><span>APACHE LICENSE 2.0 OBLIGATIONS</span></a><a href="#s-3" class="slot"><i>3</i><span>TRANSITIVE DEPENDENCIES</span></a><a href="#s-4" class="slot"><i>4</i><span>PLATFORM AND SERVICE PROVIDERS</span></a><a href="#s-4a" class="slot"><i>4A</i><span>THIRD-PARTY CREATIVE ASSETS</span></a><a href="#s-5" class="slot"><i>5</i><span>TRADEMARK ACKNOWLEDGEMENTS</span></a><a href="#s-6" class="slot"><i>6</i><span>AI ASSISTANCE DISCLOSURE</span></a><a href="#s-7" class="slot"><i>7</i><span>CONTRIBUTIONS</span></a><a href="#s-8" class="slot"><i>8</i><span>CONTACT</span></a></div>
@@ -4291,7 +4316,14 @@ Claude(TM), Anthropic(R)
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
       var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
+      /* ⚠️ THIS THRESHOLD WAS 1px, AND THAT WAS THE ROUGHNESS. Ordinary touch-
+         scroll delivers position in small, noisy steps — a dead-slow scroll or
+         the rubber-band edge can easily read as a 1-2px move the "wrong" way for
+         a single frame. At threshold 1 that flipped dir on noise, which swung
+         line by a fifth of the viewport height every time, which is what made
+         the highlight jump around even during smooth, one-direction scrolling.
+         8px is real intent, not jitter. */
+      if(Math.abs(y-lastY)>8){dir=y>lastY?1:-1;lastY=y;}
       /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
          A fixed line only marks a row once the row has reached it, so on the way
          down the highlight always trails what you are looking at. Offsetting the
@@ -4301,17 +4333,28 @@ Claude(TM), Anthropic(R)
          back up. 0.46 rather than dead centre because the row being read sits
          above the middle of a phone screen, not on it. */
       var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
         d=Math.abs(r.top+r.height/2-line);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
+      if(best<0||best===cur)return;
+      /* Hysteresis. Without it, two rows sitting near-equidistant from the line
+         — which happens constantly, not as an edge case — traded the highlight
+         every single frame as the line drifted a pixel past their shared
+         midpoint, reading as a flicker rather than a scroll. A candidate now has
+         to beat the CURRENT row by a real margin, not merely be nearest, before
+         it takes over. curD starts at 1e9 whenever the current row has scrolled
+         out of view (the loop above never visits it), so leaving the screen
+         still hands off immediately — this only damps swaps between two rows
+         that are both still on screen. */
+      if(cur>=0&&bestD>curD-24)return;
       if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
       cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      rows[cur].classList.add('act');
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
     function sync(){

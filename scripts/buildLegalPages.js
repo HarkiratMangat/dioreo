@@ -1507,6 +1507,25 @@ const rawDownload = page => {
         + `</a>`;
 };
 
+/**
+ * The same control, compacted to an icon for the mobile bar (added 2026-08-04
+ * 22:29 EDT). rawDownload()'s row reads fine as the last row of a list — which
+ * is what it is on the desktop rail — but it was ALSO being reused verbatim
+ * inside the mobile "On this page" disclosure, which meant reaching it on a
+ * phone required opening that panel and scrolling past every section to the
+ * bottom. `.mbar` is already `position:sticky`, so putting a compact version
+ * directly in it makes the control reachable in one tap from anywhere on the
+ * page, with no disclosure to open at all.
+ */
+const rawDownloadCompact = page => {
+    if (page.kind !== 'text' || !page.file) return '';
+    return `<a class="dlm" href="../${page.file}" download="${page.file}.txt"`
+        + ` data-tip="Download the plain-text original"`
+        + ` aria-label="Download ${page.file} (plain text)">`
+        + `<span class="dlr-i" aria-hidden="true"></span>`
+        + `</a>`;
+};
+
 const mobileNav = (cur, slots, dl = '') => {
     /* One scrollable row, no disclosure. Nothing to open means the current page
        and its neighbours are always on screen, which is the whole point — the
@@ -1525,10 +1544,11 @@ const mobileNav = (cur, slots, dl = '') => {
     <nav class="mstrip" id="mstrip" aria-label="Pages">
       ${navSetFor(cur).map(grp => grp.map(tab).join('')).join('<span class="ms-sep" aria-hidden="true"></span>')}
     </nav>
+    ${dl}
   </div>
   ${slots ? `<details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec">${slots}${dl}</div>
+    <div class="mp-list msec">${slots}</div>
   </details>` : ''}
 </aside>`;
 };
@@ -3975,7 +3995,10 @@ const SWITCHER_CSS = `
      across the whole bar. Deterministic beats pretty here.
      overflow:hidden clips the swarm to the bar, which is also deliberate — see
      the y-squash note on the particles. */
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  /* display:flex added so .dlm (the compact download button, only present on
+     LICENSE/NOTICE) sits beside the tab strip rather than under it. .mgw stays
+     unaffected — it is position:absolute, so flex never touches it. */
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
   /* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
@@ -3983,12 +4006,29 @@ const SWITCHER_CSS = `
      effect it still has is forcing this scroller onto its own composited layer,
      which is the other half of the blend failure described above. Removing an
      obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
+  /* min-width:0 is load-bearing now that this is a flex item: without it a flex
+     child won't shrink below its content's natural width, so instead of
+     scrolling internally the whole bar would widen and push .dlm off screen. */
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
     scrollbar-width:none}
   .mstrip::-webkit-scrollbar{display:none}
+  /* The compact download control (LICENSE/NOTICE only) — see
+     rawDownloadCompact(). Fixed-size so it never gets squeezed by the
+     scrollable strip beside it, and outside .mstrip entirely so it can't be
+     scrolled out of reach the way it was inside the old disclosure. */
+  .dlm{position:relative;z-index:1;flex:0 0 auto;display:flex;
+    align-items:center;justify-content:center;
+    width:40px;height:40px;margin:.5rem .6rem .5rem 0;border-radius:10px;
+    color:var(--accent-t);text-decoration:none;
+    background:color-mix(in srgb,var(--accent) 9%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 26%,var(--rule));
+    transition:background .2s,border-color .2s}
+  .dlm:active{background:color-mix(in srgb,var(--accent) 17%,transparent)}
+  .dlm:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   .mtab{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;
     display:flex;align-items:center;min-height:44px;padding:0 .8rem;
@@ -4375,6 +4415,7 @@ function sectionise(html) {
    instruments that have one. See rawDownload(). */
 function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir, file, kind }) {
     const dl = rawDownload({ file, kind });
+    const dlm = rawDownloadCompact({ file, kind });
     // The nav helpers identify a page by directory AND filename now — two pages on
     // the site are called index.html, so a bare name no longer picks one out.
     const cur = { out, dir };
@@ -4478,11 +4519,14 @@ ${SWITCHER_CSS}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}
 /* ── the plain-text download ──────────────────────────────────────────
-   One rule set for both hosts, because it is one control: the section index's
-   last row on the desktop rail, and the same row inside the mobile disclosure.
-   It reads as an ACTION, not as another section — a filled chip rather than a
-   ruled row — because a reader scanning for "where am I" must not mistake it for
-   a place to go. Its touch target is the 44px the mobile list already uses. */
+   The desktop rail's last row. It reads as an ACTION, not as another section —
+   a filled chip rather than a ruled row — because a reader scanning for "where
+   am I" must not mistake it for a place to go.
+   ⚠️ Mobile does NOT reuse this row any more (changed 2026-08-04 22:32 EDT) —
+   it used to, crammed as the last item inside the "On this page" disclosure,
+   which meant reaching it required opening that panel and scrolling past every
+   section. Mobile now gets its own compact icon button, .dlm, living directly
+   in the always-visible sticky bar — see rawDownloadCompact() and mobileNav(). */
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
   background:color-mix(in srgb,var(--accent) 9%,transparent);
@@ -4874,7 +4918,7 @@ html{scroll-behavior:smooth}
   </nav>
 </div>
 <div id="prog"></div>
-${mobileNav(cur, slots, dl)}
+${mobileNav(cur, slots, dlm)}
 
 <div class="page">
   <!-- .cols carries the two-column grid; .page is only the centred wrapper. The
@@ -4896,11 +4940,12 @@ ${mobileNav(cur, slots, dl)}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
-    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
-         so the download sits in both or in neither. It is OUTSIDE .slots because
-         that box is the scroller the scrollspy drives — a non-section row inside
-         it would travel with the tracked section and could scroll out of reach,
-         which is the one thing this control exists not to do. -->
+    <!-- The rail is the desktop half of the panel the mobile "On this page"
+         disclosure is, and both offer the download — but no longer via the same
+         markup. Desktop keeps the full row, OUTSIDE .slots because that box is
+         the scroller the scrollspy drives and a non-section row inside it would
+         travel with the tracked section. Mobile gets its own compact .dlm
+         instead of reusing this row — see mobileNav(). -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots">${slots}</div>
@@ -6282,7 +6327,14 @@ const MORPH_JS = `
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
       var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
+      /* ⚠️ THIS THRESHOLD WAS 1px, AND THAT WAS THE ROUGHNESS. Ordinary touch-
+         scroll delivers position in small, noisy steps — a dead-slow scroll or
+         the rubber-band edge can easily read as a 1-2px move the "wrong" way for
+         a single frame. At threshold 1 that flipped dir on noise, which swung
+         line by a fifth of the viewport height every time, which is what made
+         the highlight jump around even during smooth, one-direction scrolling.
+         8px is real intent, not jitter. */
+      if(Math.abs(y-lastY)>8){dir=y>lastY?1:-1;lastY=y;}
       /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
          A fixed line only marks a row once the row has reached it, so on the way
          down the highlight always trails what you are looking at. Offsetting the
@@ -6292,17 +6344,28 @@ const MORPH_JS = `
          back up. 0.46 rather than dead centre because the row being read sits
          above the middle of a phone screen, not on it. */
       var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
         d=Math.abs(r.top+r.height/2-line);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
+      if(best<0||best===cur)return;
+      /* Hysteresis. Without it, two rows sitting near-equidistant from the line
+         — which happens constantly, not as an edge case — traded the highlight
+         every single frame as the line drifted a pixel past their shared
+         midpoint, reading as a flicker rather than a scroll. A candidate now has
+         to beat the CURRENT row by a real margin, not merely be nearest, before
+         it takes over. curD starts at 1e9 whenever the current row has scrolled
+         out of view (the loop above never visits it), so leaving the screen
+         still hands off immediately — this only damps swaps between two rows
+         that are both still on screen. */
+      if(cur>=0&&bestD>curD-24)return;
       if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
       cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      rows[cur].classList.add('act');
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
     function sync(){

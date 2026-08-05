@@ -2269,7 +2269,14 @@ h1 em{font-style:normal;color:var(--accent-t)}
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
       var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
+      /* ⚠️ THIS THRESHOLD WAS 1px, AND THAT WAS THE ROUGHNESS. Ordinary touch-
+         scroll delivers position in small, noisy steps — a dead-slow scroll or
+         the rubber-band edge can easily read as a 1-2px move the "wrong" way for
+         a single frame. At threshold 1 that flipped dir on noise, which swung
+         line by a fifth of the viewport height every time, which is what made
+         the highlight jump around even during smooth, one-direction scrolling.
+         8px is real intent, not jitter. */
+      if(Math.abs(y-lastY)>8){dir=y>lastY?1:-1;lastY=y;}
       /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
          A fixed line only marks a row once the row has reached it, so on the way
          down the highlight always trails what you are looking at. Offsetting the
@@ -2279,17 +2286,28 @@ h1 em{font-style:normal;color:var(--accent-t)}
          back up. 0.46 rather than dead centre because the row being read sits
          above the middle of a phone screen, not on it. */
       var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
         d=Math.abs(r.top+r.height/2-line);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
+      if(best<0||best===cur)return;
+      /* Hysteresis. Without it, two rows sitting near-equidistant from the line
+         — which happens constantly, not as an edge case — traded the highlight
+         every single frame as the line drifted a pixel past their shared
+         midpoint, reading as a flicker rather than a scroll. A candidate now has
+         to beat the CURRENT row by a real margin, not merely be nearest, before
+         it takes over. curD starts at 1e9 whenever the current row has scrolled
+         out of view (the loop above never visits it), so leaving the screen
+         still hands off immediately — this only damps swaps between two rows
+         that are both still on screen. */
+      if(cur>=0&&bestD>curD-24)return;
       if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
       cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      rows[cur].classList.add('act');
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
     function sync(){
