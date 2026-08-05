@@ -396,6 +396,34 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
     the nav goo already had to split into two different engines (desktop SVG vs. mobile CSS chain) for
     exactly this reason; verify on-device before calling this done, not just in a desktop browser.
 
+- **✨ Twinkle/float animation for the hero mascot logo** `[P3 · S]` 🔗bundle
+  (filed 2026-08-05 09:09 EDT). **Distinct from the hero-morph item directly above** — that one is
+  about the H1 *text* "Dioreo"; this is about the mascot *image* now sitting above it
+  (`public/assets/dioreo-mascot.webp`, rendered via `wordmark(null, ...)` → `.wm-hero` in
+  `scripts/buildLegalPages.js`, landing page only). Related enough to plausibly do in the same
+  session, distinct enough not to conflate.
+
+  **What was asked, in Harkirat's own words:** "slightly animate it on the website so like the stars
+  twinkle or it feels like the mascot is kind of floating/flying or something." Scope: a subtle,
+  continuous idle treatment on the static hero image — not a one-shot entrance, not the goo/morph
+  engine. Two independent pieces, either or both:
+  - **Float/bob**: a slow, small-amplitude `translateY` loop (a few px, several-second period) on the
+    whole `.wm-hero` image — reads as "floating," cheap, no new assets needed.
+  - **Twinkle**: the sparkles/stars baked into the mascot artwork itself twinkling. Since they're part
+    of one flat raster image (not separate DOM elements), this needs either (a) a CSS
+    filter/opacity pulse on the whole image dosed subtly enough it doesn't wash out the mascot too,
+    or (b) — better fidelity — asking for a version of the asset with the star/sparkle elements
+    isolated on their own layer, so they can animate independently of the character. Don't attempt a
+    pixel-level star cutout via CSS masking against the flat PNG; that's the "measure the renderer"
+    trap this codebase has hit before with the goo filter (see `reference_goo_metaball_recipe` memory)
+    — ask for a layered source instead of reverse-engineering one.
+  - **Must respect `prefers-reduced-motion`**: snap to the static image, no exceptions — same rule
+    every other morph module in `MORPH_JS` already follows.
+  - **Verify**: load the landing page, confirm continuous subtle motion at rest (no interaction
+    needed), confirm it stops under reduced-motion, confirm it doesn't fight the existing `.wm-hero`
+    hover/focus scale nudge (`transform:scale(1.05)` on `.mark.live:hover .wm` — N/A here since the
+    landing mark isn't a link, but re-check if that changes).
+
 - **🌐 Version-control `~/.claude`, then promote the point-of-use guards globally** `[P2 · M]` 🔗bundle
   (filed 2026-08-02 15:36 EDT). Two coupled pieces — **do them in this order**, because editing an
   unversioned global config with no backup is what makes the second half risky.
