@@ -690,8 +690,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under

@@ -695,8 +695,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
@@ -2614,7 +2620,7 @@ html{scroll-behavior:smooth}
 <p class="sub">If you received the Software under Version 1.0, you may continue to rely on Version 1.0 for that copy, or you may treat it as governed by this Version 1.1. Either is permitted, and the two grant the same rights.</p>
 <h3 id="s-18.6" class="clause"><span class="idx" aria-hidden="true">18.6</span><span class="ht">Machine-readable identifier.</span><a class="anchor" href="#s-18.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Metadata written before 4 August 2026 may carry "LicenseRef-Diors-Builds-Source-Available-1.0". That identifier denotes Version 1.0 of this License and remains valid for the copies it was applied to. <a class="xref" href="#s-16">Section&nbsp;16</a> gives the identifier to use going forward.</p>
-<p>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+<hr class="disc-rule" aria-hidden="true"><p class="disc-p"><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
 </section>
     </main>
   </div>

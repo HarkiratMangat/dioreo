@@ -695,8 +695,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
@@ -2325,7 +2331,7 @@ NODE_ENV=development</code></pre></div>
 <p>If you'd rather not agree to the CLA, you can still help enormously — file issues, report bugs, report security findings, and suggest ideas. Those don't require it.</p></div></div></section>
 <section class="sec"><span class="node" aria-hidden="true"></span><h2 id="questions" class="plain"><span class="ht">Questions</span><a class="anchor" href="#questions" data-tip="Link to section" aria-label="Link to this section">¶</a></h2><div class="sec-b"><p>Open an issue, email <strong>harkirat117@gmail.com</strong>, or message <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld on Discord</a>.</p>
 <p>Thanks for being here — genuinely.</p>
-<p><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
+<hr class="disc-rule" aria-hidden="true"><p class="disc-p"><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p></div></section></main>
   <!-- The footer is pageFoot(), identical on every page. The sign-off is the one
        the SOURCE file ends with, lifted out of the body by warmCompose so it
        shows once; DIOR_SIG is the fallback when a source carries no closing line.

@@ -1578,6 +1578,35 @@ const TRADEMARK_NOTE = 'Dioreo is an unofficial fan project and is not '
     + 'Discord Inc., or with the rights holders of any content the game features '
     + 'under licence.';
 
+/**
+ * The SAME disclaimer sentence closes six different source documents
+ * (LICENSE, NOTICE, TERMS.md, PRIVACY.md, CONTRIBUTING.md, CONTRIBUTORS.md),
+ * typed into each one's own operative text rather than pulled from
+ * TRADEMARK_NOTE above — and each source formats it differently (CONTRIBUTING.md
+ * wraps it in markdown italics, the plain-text instruments don't, since plain
+ * text has no italics to wrap it in). Reported 2026-08-05 08:19 EDT: on the
+ * rendered pages that reads as inconsistent — italic on one page, plain on the
+ * next, no visual separation from the paragraph before it.
+ *
+ * This is a RENDER-ONLY normalisation, not a rewording, and it never touches
+ * the six source files — LICENSE and NOTICE are served verbatim as the
+ * authoritative instrument (see buildCompanions()), and italicising THAT
+ * text would misrepresent what the instrument actually says. This runs on
+ * the parsed HTML, after the source has already been rendered as an ordinary
+ * paragraph — matching the same "formatted reading copy, not the instrument"
+ * distinction the plain-text download note next to it already makes.
+ * Matches with or without existing <em>, so it is safe to run whether or not
+ * a given source already italicised it by hand.
+ */
+const DISCLAIMER_RE = new RegExp(
+    '<p>(?:<em>)?Dioreo is an unofficial fan project and is not affiliated '
+    + 'with Activision Publishing, Inc\\., TiMi Studio Group, Tencent, Discord '
+    + 'Inc\\., or with the rights holders of any content the game features '
+    + 'under licence\\.(?:</em>)?</p>'
+);
+const styleDisclaimer = html => html.replace(DISCLAIMER_RE,
+    '<hr class="disc-rule" aria-hidden="true"><p class="disc-p"><em>' + TRADEMARK_NOTE + '</em></p>');
+
 /* `disc` is false on the four legal instruments, and only there. Each of those
    documents now CLOSES with this same notice as part of its own text, so printing
    it again in the chrome a centimetre below said the same thing twice on one
@@ -2194,6 +2223,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   align-items:start;text-align:left}
 /* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
    applied, and it is a notice we are obliged to show. Same size, full opacity. */
+/* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}
@@ -8026,10 +8061,10 @@ function build() {
         // Stripping the metadata block leaves the rule that separated it from the
         // content as the first element, which renders as dead space under the
         // masthead. Drop a leading (or trailing) rule.
-        const html = note + linkifyRefs(
+        const html = styleDisclaimer(note + linkifyRefs(
             parsed.html.replace(/^\s*<hr>\s*/, '').replace(/\s*<hr>\s*$/, ''),
             ids
-        );
+        ));
 
         writePage(path.join(OUT, page.out), shell({
             ...page, body: html, toc: parsed.toc, meta
@@ -8052,7 +8087,7 @@ function build() {
         // and linkifyRefs only ever rewrites text nodes, so it is safe either way —
         // but composing first keeps the patterns it matches against simple.
         const comp = warmCompose(parsed.blocks, page.out);
-        const html = linkifyRefs(comp.body, ids);
+        const html = styleDisclaimer(linkifyRefs(comp.body, ids));
         warmResults[page.out] = comp.hits;
         writePage(path.join(OUT, page.out), warmShell({
             ...page, body: html, sig: comp.sig, spine: comp.spine
