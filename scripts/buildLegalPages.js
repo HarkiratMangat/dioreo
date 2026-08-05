@@ -671,6 +671,17 @@ function parseBlocks(md) {
  */
 function inlineText(s) {
     s = esc(s);
+    // NOTICE's own emphasis marker for an inline aside ("*** See Section 2 —
+    // Apache-2.0 obligations ***", "*** No copyleft ... is present ... ***")
+    // — the plain-text source has no markdown bold to reach for, so it wraps
+    // in asterisks instead. Inside a raw <pre> that read fine as literal
+    // punctuation; once the same text landed inside a real card (depCard())
+    // or a normal paragraph, the literal "***" on both sides looked like
+    // broken markdown rather than emphasis. Reported 2026-08-05 12:38 EDT
+    // against the discord.js dependency card specifically. Non-greedy and
+    // single-line by construction — every caller already joins its text to
+    // one line before this runs.
+    s = s.replace(/\*\*\*([^*]+)\*\*\*/g, (_, t) => `<strong class="hi">${t}</strong>`);
     // URLs first, so an address inside a URL isn't also matched as an email.
     // Trailing sentence punctuation is excluded from the href.
     s = s.replace(/(https?:\/\/[^\s<)]+?)([.,;:)]*)(?=\s|$)/g,
@@ -879,6 +890,64 @@ function renderIndented(head, region) {
         return `<pre class="aligned">${grp.map(l => inlineText(l.slice(cut))).join('\n')}</pre>`;
     };
 
+    /* ── dependency/asset entries: cards, not a monospace grid ──────────────
+       "chrono-node 2.9.1              MIT" + indented Copyright/URL/notes is
+       structurally a RECORD, not a table — a package name, a version, a
+       license, an owner, a link. colsBlock() rendered it as raw <pre> columns
+       because that is what the source's spacing literally is, but on a
+       narrow column those columns don't reflow: the license name crowds the
+       package name and the URL runs off the edge. Reported 2026-08-05 12:28
+       EDT ("such a poor implementation ... old style").
+       ⚠️ ONLY THIS SPECIFIC SHAPE QUALIFIES — a name/license header line
+       followed by lines that are each MORE indented than it. That is what
+       distinguishes a dependency record from the OTHER column-aligned tables
+       renderIndented() still owns (the Platform-and-Service-Providers table,
+       the transitive-dependency license counts): those repeat entries at the
+       SAME indent with no per-entry continuation, so the "every following
+       line is deeper" test rejects them and they keep the <pre> treatment —
+       see structureAudit()'s "or a dependency card" branch for how both
+       shapes stay verified. */
+    const isDepEntry = grp => {
+        if (grp.length < 2) return false;
+        const cut = Math.min(...grp.map(indentOf));
+        if (!/^\S.*?\s{2,}[A-Z0-9]/.test(grp[0].slice(cut))) return false;
+        const headInd = indentOf(grp[0]);
+        return grp.slice(1).every(l => indentOf(l) > headInd);
+    };
+    const depCard = grp => {
+        const cut = Math.min(...grp.map(indentOf));
+        const lines = grp.map(l => l.slice(cut).trimEnd());
+        const [, nameVer, license] = lines[0].match(/^(\S.*?)\s{2,}(\S.*)$/);
+        const vm = nameVer.match(/^(.*?)\s+(v?\d[\d.]*[A-Za-z]?)$/);
+        const name = vm ? vm[1] : nameVer;
+        const ver = vm ? vm[2] : '';
+
+        const rest = lines.slice(1).map(l => l.trim()).filter(Boolean);
+        let i = 0, copyright = '';
+        if (/^Copyright/i.test(rest[0] || '')) {
+            copyright = rest[i++];
+            // A wrapped continuation of the copyright line ("... Instrument Sans
+            // Project" / "Authors") — short, no terminal punctuation on the line
+            // before it, and not itself the URL. Same continuation heuristic the
+            // verbatim-block detector above uses.
+            while (rest[i] && !/^https?:\/\//.test(rest[i]) && !/[.:]$/.test(rest[i - 1])) {
+                copyright += ' ' + rest[i++];
+            }
+        }
+        let url = '';
+        if (/^https?:\/\//.test(rest[i] || '')) url = rest[i++];
+        const notes = rest.slice(i).join(' ');
+
+        return '<div class="dep">'
+            + `<div class="dep-h"><span class="dep-n">${inlineText(name)}</span> `
+            + (ver ? `<span class="dep-v">${inlineText(ver)}</span> ` : '')
+            + `<span class="dep-lic">${inlineText(license)}</span></div>`
+            + (copyright ? `<p class="dep-c">${inlineText(copyright)}</p>` : '')
+            + (url ? `<p class="dep-u">${inlineText(url)}</p>` : '')
+            + (notes ? `<p class="dep-note">${inlineText(notes)}</p>` : '')
+            + '</div>';
+    };
+
     const out = [];
     let buf = head.slice();
     let list = null;      // open lettered/bulleted list, as an array of item texts
@@ -947,6 +1016,7 @@ function renderIndented(head, region) {
     // regardless of what surrounds it, which is what lets NOTICE §5 carry prose
     // paragraphs and aligned trademark tables in the same region.
     groups.forEach((grp, gi) => {
+        if (isDepEntry(grp)) { flushAll(); out.push(depCard(grp)); return; }
         if (isCols(grp)) { flushAll(); out.push(colsBlock(grp)); return; }
 
         for (const raw of grp) {
@@ -1587,10 +1657,10 @@ const mobileNav = (cur, slots, dl = '') => {
        an action control inside what reads as a navigation strip and gave it no
        room to say what it does. It is the same .dlr row the desktop rail uses
        (see rawDownload()), not a separate compact control any more — dropped
-       DRY-ly rather than kept as a second markup shape to maintain. It renders as
-       the LAST child of .mp-list, sticky to the bottom of that scrollable list,
-       so it reads as the menu's own floating action rather than a row competing
-       with the sections above it — see ".mp-list .dlr" in COMPONENT_CSS. */
+       DRY-ly rather than kept as a second markup shape to maintain. It renders
+       as the LAST child of .mp-list, set apart from the sections above it by a
+       card treatment and a hairline — see ".mp-list .dlr" in COMPONENT_CSS for
+       why that is no longer a sticky footer. */
     return `<aside class="mnav" id="mnav">
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
@@ -4682,18 +4752,30 @@ ${SWITCHER_CSS}
   color:var(--ink3);font-variant-numeric:tabular-nums}
 /* See dlIcon() — inline SVG now, not a CSS border/pseudo-element tray. */
 .dlr-i{flex:0 0 auto;display:block;width:13px;height:13px;color:var(--accent-t)}
-/* ── the section menu's floating download footer ───────────────────────
-   The mobile home for the row above: a STICKY last child of .mp-list rather
-   than a row in the middle of it, because "download the file" is a different
-   kind of question than "which section" — see the note on .msecd. Sticky to
-   the list's own bottom (not the viewport's) so it stays reachable while the
-   sections above it scroll, reading as the panel's own floating action. Edge
-   to edge and opaque so a scrolled section row disappears behind it instead
-   of showing through; .dlr's own translucent tint is mixed into --paper
-   rather than transparent for exactly that reason. */
-.mp-list .dlr{position:sticky;bottom:0;z-index:2;margin:.4rem 0 -.3rem;
-  border-radius:0;border-width:1px 0 0;border-color:var(--rule);
-  background:color-mix(in srgb,var(--accent) 9%,var(--paper))}
+/* ── the section menu's download card ───────────────────────────────────
+   The mobile home for the row above, as the last child of .mp-list — see the
+   note on .msecd for why it's a different kind of question than "which
+   section" and belongs apart from the list rather than styled as one more
+   row in it.
+   ⚠️ NOT STICKY, ON PURPOSE (reversed 2026-08-05 12:28 EDT). A sticky-to-the-
+   list version shipped first, edge-to-edge with square corners, so it could
+   sit flush against the scroll boundary — but that same edge-to-edge opaque
+   bar is what made it PIN OVER whatever section row happened to be scrolled
+   underneath it, mid-word, with no transition. Reported as "such a poor
+   implementation... looks slapped on." The desktop rail's identical .dlr row
+   has never drawn that complaint sitting as a plain trailing row with normal
+   margin — so rather than polish the overlap (a fade mask, a shadow) this
+   drops the mechanism that caused it. Inset margin matching the slot rows'
+   own horizontal padding, and a hairline drawn in the gap above it via
+   ::before rather than a real border — a border on the card itself would
+   have doubled up against .msecd's own bottom border when the list is short
+   enough not to scroll. */
+.mp-list .dlr{position:relative;margin:1.1rem .9rem .3rem;padding:.75rem .9rem;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--accent) 9%,var(--paper));
+  border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}
+.mp-list .dlr::before{content:"";position:absolute;left:0;right:0;top:-.65rem;
+  height:1px;background:var(--rule)}
 .mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
@@ -4958,6 +5040,36 @@ pre.aligned{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(
   background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
   margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
 pre.aligned a{color:var(--ink)}
+/* ── dependency/asset cards — see isDepEntry()/depCard() ────────────────
+   Each record stacks vertically: name+version+license on one line, then
+   copyright, then the link, each free to wrap on its own rather than being
+   held to a fixed column that a phone-width viewport can't honour. Adjacent
+   cards are consecutive .dep divs, not one shared box, so the gap between
+   them is ordinary block margin rather than a divider drawn across a table. */
+.dep{border:1px solid var(--rule);border-radius:11px;padding:.85rem 1.05rem;
+  margin:0 0 .65rem;background:var(--raised);max-width:88ch}
+.dep:last-child{margin-bottom:0}
+.dep-h{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.55rem;row-gap:.3rem;
+  margin-bottom:.45rem}
+.dep-n{font-family:var(--display);font-weight:700;font-size:.94rem;color:var(--ink);
+  letter-spacing:-.005em}
+.dep-v{font-family:var(--mono);font-size:.66rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.dep-lic{flex:0 0 auto;margin-left:auto;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-t);
+  padding:.22rem .6rem;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+  background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.dep-c{margin:0 0 .3rem;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  color:var(--ink2)}
+.dep-u{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  word-break:break-all}
+.dep-u a{color:var(--accent-t)}
+.dep-note{margin:.4rem 0 0;font-family:var(--serif);font-size:.83rem;line-height:1.55;
+  color:var(--ink3)}
+.dep-note:first-child{margin-top:0}
+/* NOTICE's "*** ... ***" inline aside — see inlineText(). */
+.hi{color:var(--accent-t);font-weight:700}
 
 /* ── callouts ────────────────────────────────────────────────────── */
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
@@ -7739,10 +7851,10 @@ function indexPage(built) {
     // em dashes now; the aside is a plain list item; sentence length varies
     // (one longer list sentence, a fragment, a medium sentence, a short
     // closer) instead of two similar-length dash-halves.
-    const intro = 'It lives in Discord: lucky-draw odds, CP costs, loadouts worth '
-        + 'building, what’s live this season, and when it ends. All without leaving '
-        + 'the chat. Install it once and it answers anywhere you can type, in any '
-        + 'server or any DM. No invite needed.';
+    const intro = 'New & returning draw releases, CP costs, MP & DMZ loadouts, '
+        + 'what’s live this season, when it ends, and so much more — all without '
+        + 'leaving the chat! Install it once and it answers anywhere, in any server '
+        + 'or any DM. Type / and go.';
 
     return `<!doctype html>
 <html lang="en"><head>
@@ -8670,9 +8782,15 @@ function linkAudit() {
  * gates, a wrecked document. This checks the property they can't see.
  *
  * The invariant: every column-aligned source line must end up inside a <pre>, or
- * be a heading. Headings are the legitimate exception — a clause number followed
- * by two spaces ("4A.1  EMOJI") looks column-aligned to any simple test, and an
- * earlier version of this check reported five of them as defects.
+ * be a heading, or be inside a dependency card. Headings are the legitimate
+ * exception — a clause number followed by two spaces ("4A.1  EMOJI") looks
+ * column-aligned to any simple test, and an earlier version of this check
+ * reported five of them as defects. Dependency cards are the same idea one
+ * level up: depCard() (see renderIndented()) deliberately breaks a package's
+ * "name  version  license" line into separate spaced elements rather than one
+ * literal run, so the match has to be against the CARD's flattened text, not
+ * a single element's — a source line can legitimately land as a substring of
+ * that, the same way a heading's number and text land in two different spots.
  */
 function structureAudit(built) {
     const norm = s => s.replace(/\s+/g, ' ').trim();
@@ -8689,6 +8807,8 @@ function structureAudit(built) {
             [...html.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/g)]
                 .map(m => norm(m[1].replace(/<[^>]+>/g, ' ')))
         );
+        const inDep = [...html.matchAll(/<div class="dep">([\s\S]*?)<\/div>/g)]
+            .map(m => norm(m[1].replace(/<[^>]+>/g, ' ')));
 
         const aligned = fs.readFileSync(sourcePath(page), 'utf8')
             .split('\n').filter(l => /\S {2,}\S/.test(l));
@@ -8697,7 +8817,8 @@ function structureAudit(built) {
             if (inPre.has(n)) return false;
             // A heading line: its number and text both land in the heading, but
             // joined differently, so compare on the collapsed form.
-            return ![...inHead].some(h => h.includes(n) || n.includes(h.replace(/\s*¶$/, '')));
+            if ([...inHead].some(h => h.includes(n) || n.includes(h.replace(/\s*¶$/, '')))) return false;
+            return !inDep.some(d => d.includes(n));
         });
 
         if (lost.length) {
