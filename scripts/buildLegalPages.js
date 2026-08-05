@@ -1584,7 +1584,7 @@ const TRADEMARK_NOTE = 'Dioreo is an unofficial fan project and is not '
    screen — which is what Harkirat was looking at. The warm and chronicle pages
    carry no such closing line, so they keep the footer's copy. */
 const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
-    <p class="sig">${sig || DIOR_SIG} <span class="cpy">&middot; &copy; 2026 Harkirat Mangat</span></p>
+    <p class="sig">${sig || DIOR_SIG} <span class="sig-cr">&middot; &copy; 2026 Harkirat Mangat</span></p>
     ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
     <nav class="endnav">${navSetFor(cur).flat()
         .filter(p => !isHere(p, cur))
@@ -2224,9 +2224,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
 /* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
-   copyright line, not a second mark. Inherits .sig's own colour/size, so it
-   reads as one quiet line rather than a competing element. */
-.cpy{opacity:.75}
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
+.sig-cr{opacity:.6}
 /* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
@@ -6125,8 +6129,20 @@ const MORPH_JS = `
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){

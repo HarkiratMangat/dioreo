@@ -792,10 +792,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
-   copyright line, not a second mark. Inherits .sig's own colour/size, so it
-   reads as one quiet line rather than a competing element. */
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
 
-.cpy{opacity:.75}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+.sig-cr{opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -3352,7 +3356,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     </main>
   </div>
   <footer class="foot">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a> <span class="cpy">&middot; &copy; 2026 Harkirat Mangat</span></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a> <span class="sig-cr">&middot; &copy; 2026 Harkirat Mangat</span></p>
     <p class="disc">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="../legal/terms.html">Terms</a><span>&middot;</span><a href="../legal/privacy.html">Privacy</a><span>&middot;</span><a href="../legal/license.html">License</a><span>&middot;</span><a href="../legal/notice.html">Notice</a><span>&middot;</span><a href="../legal/contributing.html">Contributing</a><span>&middot;</span><a href="../legal/contributors.html">Contributors</a><span>&middot;</span><a href="./">What's New</a><span>&middot;</span><a href="./detailed.html">Changelog</a></nav>
   </footer>
@@ -4989,8 +4993,20 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
