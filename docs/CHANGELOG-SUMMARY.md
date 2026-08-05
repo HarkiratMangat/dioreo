@@ -26,6 +26,12 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.54.0 — August 5, 2026
+- **The website has a real domain now: dioreo.app.**
+- **Cleaner links.** The Terms, Privacy Policy, License, and Notice pages moved from
+  `dioreo.app/legal/terms` to just `dioreo.app/terms` (same for the other pages). Old links still
+  work — they redirect to the new address.
+
 ## v2.53.0 — August 5, 2026
 - **The "link to this section" button now actually shows "Copied."** It was copying the link the
   whole time, just never telling you — fixed.

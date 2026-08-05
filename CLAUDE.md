@@ -393,9 +393,11 @@ merged and been tagged**: `public/` was correct in `main` and nothing ever pushe
   observability workflow and is easy to forget because it lives outside the repo — see memory
   `project_dior_cli_repo`. This wart is exactly what skipping that check produces.
 Editing a source and re-running the build is the ENTIRE update path; no HTML is ever touched by hand.
-⚠️ The script is still called `buildLegalPages.js` but now builds the whole site, `public/legal/` **and**
-`public/changelog/`. The name is kept because `dior legal deploy`/`check` in the CLI repo, the rules
-file, and this section all reference it; renaming it is a separate change that has to move all four.
+⚠️ The script is still called `buildLegalPages.js` but now builds the whole site: the flat document
+pages at the site root (`public/*.html` — dioreo.app went live 2026-08-05 14:43 EDT and the site
+flattened from `/legal/*` to match) **and** `public/changelog/`. The name is kept because
+`dior legal deploy`/`check` in the CLI repo, the rules file, and this section all reference it;
+renaming it is a separate change that has to move all four.
 - ⚠️ **Never hand-edit a file in `public/`** — the next build overwrites it. Change the Markdown or
   the generator, re-run the build, commit both. `public/` is committed on purpose: Cloudflare Pages
   serves it directly with an empty build command, so nothing has to run on their side. **This one

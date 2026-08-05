@@ -10,7 +10,7 @@ paths:
   - "CONTRIBUTORS.md"
 ---
 
-# The published site — `public/legal/` and `public/changelog/`
+# The published site — flat `public/*.html` at the site root, and `public/changelog/`
 
 *Loads when you touch the generator, its output, or any of the nine sources it renders. Split out of
 the root `CLAUDE.md` on 2026-08-01 23:40 EDT, where it had grown to 286 lines — 43% of a file that is
@@ -502,10 +502,12 @@ Two deliberate choices in that file, both of which fail silently if undone:
   webhook or CORS origin bound to it. 8899 is frequently already held by an older preview, and
   yielding the port is correct; killing someone else's server is not.
 
-⚠️ **The site root serves a DIRECTORY LISTING, not the landing page, and that is correct.** `/` →
-`/legal/` lives in `public/_redirects`, which is a Cloudflare Pages feature that a plain static server
-does not implement. Locally, go to **`/legal/`**. A "the preview is broken" report that is really this
-has cost time before.
+✅ **The site root serves the landing page directly now** (flattened 2026-08-05 14:43 EDT when
+dioreo.app went live — `build()` writes `index.html` straight to `public/`). This used to require going
+to **`/legal/`** locally, because the real landing page lived there and only `public/_redirects` — a
+Cloudflare Pages feature a plain static server doesn't implement — pointed `/` at it. That caveat is
+retired: the local preview server now shows the same page at `/` a live deploy does, no redirect needed
+either place.
 
 ⚠️ **It binds localhost, so it cannot reach a phone.** For device testing run
 `python3 -m http.server 8899 --bind 0.0.0.0 --directory public` and browse the machine's LAN address.
