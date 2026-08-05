@@ -4905,9 +4905,19 @@ ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color
 p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
   color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
   padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+/* ⚠️ pre-wrap, NOT pre — reported 2026-08-05 08:34 EDT against NOTICE §4A.1's
+   quoted emoji.gg licence text: white-space:pre never wraps, so a QUOTED
+   PARAGRAPH landed here (renderIndented() sends anything indented deeper
+   than its paragraph baseline to this class, on purpose, for addresses and
+   the SPDX identifier) forced a horizontal scrollbar instead of wrapping like
+   the prose it actually is. pre-wrap keeps this block's real job — an
+   address or identifier's own line breaks stay literal — while also wrapping
+   at the box edge, which a short address never needed and a long quote
+   always did. */
 pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
   background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
-  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;
+  white-space:pre-wrap;overflow-wrap:break-word}
 /* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
    IS the structure, so it must not wrap — hence its own horizontal scroll rather
    than letting the page body scroll, which is the rule for every wide element. */
