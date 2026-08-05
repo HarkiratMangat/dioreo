@@ -448,6 +448,23 @@ function linkifyRefs(html, ids) {
             const id = 's-' + n.toLowerCase();
             return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">§${n}</a>` : whole;
         });
+        /* ⚠️ THE PLURAL FORM IS A LIST, NOT ONE MORE SINGLE REFERENCE — "Sections
+           5, 6, 7, 8, 11, 12, 13.3, 14, ... and 18 survive termination." is the
+           classic survival-clause shape, and every number in it used to render as
+           dead plain text: the singular regex below only ever matches "Section"
+           immediately followed by whitespace, and "Sections " fails that on the
+           trailing s alone, before it even gets to the list. Reported 2026-08-05
+           12:13 EDT against exactly this sentence. Matched as ONE span (the whole
+           comma/and list after "Sections "), then each number inside that span is
+           linked individually — so the commas and the "and" stay exactly as the
+           source wrote them, only the numbers become links. */
+        const NUM = '\\d+[A-Za-z]?(?:\\.\\d+[a-z]?)?';
+        const numRe = new RegExp(NUM, 'g');
+        const listRe = new RegExp(`\\bSections\\s+(${NUM}(?:\\s*,\\s*${NUM})*(?:\\s*,?\\s+and\\s+${NUM})?)`, 'g');
+        seg = seg.replace(listRe, (whole, list) => 'Sections ' + list.replace(numRe, n => {
+            const id = 's-' + n.toLowerCase();
+            return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">${n}</a>` : n;
+        }));
         // The plain-text licence spells its cross-references out in full
         // ("under Section 4.11", "notices under Section 14.7") rather than with §.
         // Same payoff, different spelling, so it is handled here rather than by
