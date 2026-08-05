@@ -211,30 +211,28 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
-  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
-   slot has been emptied on purpose. It held three stacked bars first, which is
-   the universal glyph for a menu, so readers tried to tap it expecting one to
-   open. It then held a rounded square carrying a "D" — which was worse in a
-   quieter way: a single letter in a box is the most generic mark there is, it
-   said nothing the wordmark next to it does not already say in full, and it made
-   the site's identity a placeholder logo rather than the typography.
-
-   The wordmark alone is the mark. Do not "restore the logo" without an actual
-   drawn mark to put there; another letter-in-a-square is not one. */
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ SUPERSEDES the two prior "no logo mark" decisions (this slot had held a
+   3-bar menu glyph, then a letter-in-a-square, and was emptied back to plain
+   type both times because neither was an actual drawn mark — see git history
+   on this comment for the full reasoning). Harkirat supplied a real drawn
+   Dioreo mark 2026-08-04 21:18 EDT (the mascot + bubble wordmark lockup), which
+   is exactly what those two notes said was missing, so it now REPLACES the
+   typographic wordmark outright rather than sitting beside it — there is no
+   longer a second "Dioreo" in text form for it to compete with in the bar. */
 
 
-.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
-   this it kept its full 90px of text inside a 31px box and simply drew across
-   the buttons beside it — the "too tight" header was really this one missing
-   rule. Truncation is the honest failure mode for a flexible label. */
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* Fixed height so the mark lines up with the 32px control row beside it;
+   width is intrinsic (object-fit:contain) so the mascot and the bubble
+   letters scale together and never crop. The image is allowed to be
+   narrower than its box shrinks to — it has no truncation failure mode the
+   way the old text did, so nothing here needs an overflow rule. */
 
-.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
-  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
-  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
-  background-size:280% 100%;background-position:130% 0;
-  -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+
+.wm.wm-hero{height:112px}/* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
    that states it twice is noise. Below 980 the switcher is gone. */
 
@@ -243,13 +241,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
    drop the keyboard focus styling on any device with a touchscreen, which is
-   most laptops now. Split, always. */
+   most laptops now. Split, always.
+   The old sweep animated a text-fill gradient, which has no equivalent on a
+   raster mark — replaced with the same scale nudge every other interactive
+   control in the bar uses on press/hover, so the mark still confirms it is
+   clickable without inventing a bespoke effect just for itself. */
 
 
-.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .wm{transform:scale(1.05)}
 .mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 @media (hover:hover) and (pointer:fine){
-  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .wm{transform:scale(1.05)}
   .mark.live:hover .go{opacity:1;transform:translateX(0)}
 }/* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -399,12 +401,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .bar.bar nav{gap:.5rem}/* The context line goes. It names the page you are on, and directly beneath it
      the strip names the page you are on with a filled pill — saying it twice in
      54px of header is what made the mark fight the buttons for width.
-     The wordmark also drops a step, because at 1.02rem it still truncated to
-     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
-     slightly smaller whole one. */
+     The mark also drops a step — same reasoning as the old text wordmark did
+     (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
+     smaller whole mark reads better than a squeezed one on a narrow header. */
   
   .mk-ctx.mk-ctx{display:none}
-  .wm{font-size:.85rem}/* 19px of the mark's width was its own padding — a hover affordance, on a
+  .wm{height:34px}
+  .wm.wm-hero{height:64px}/* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
      chasing. */
@@ -758,8 +761,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
@@ -788,7 +797,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
+
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -818,15 +840,25 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
 }
-.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+.sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
+   colour every other bold word in the sig line gets — Harkirat's call
+   2026-08-05 08:44 EDT. --accent-t is the site's text-safe accent token
+   (already re-mixed for contrast in both themes), so this follows whichever
+   accent the current page is on automatically. */
+
+.sig .sig-a{color:var(--accent-t);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
    the name is already the only emphasised word in it. */
 
@@ -838,6 +870,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
 a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
 a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
+   ⚠️ NAMED .gotop, NOT .totop — renamed 2026-08-05 08:11 EDT. "totop" is the
+   exact class/id a real, widely-deployed "scroll back to top" WordPress plugin
+   (and several clones) use, and it collides with generic ad-blocker cosmetic
+   filter rules written against THAT library rather than against this site —
+   Harkirat confirmed this by reproducing it with the SAME blocklist enabled on
+   two different browsers. It genuinely worked before: this is not a code
+   regression, it is a third-party filter list matching a common name by
+   coincidence, and it can recur at any time a list adds a similarly generic
+   rule. Never rename this back to something in the totop/back-to-top/scrollup
+   family — those are exactly the names blocklists target.
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -854,23 +896,35 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    So --lift is written from the script each frame: zero until the footer's top
    edge reaches the button, then exactly the overlap, so it rides up ahead of the
    footer and never crosses it. It is a variable rather than a direct transform
-   write because .totop.on owns the transform — a script setting style.transform
+   write because .gotop.on owns the transform — a script setting style.transform
    would have fought the entry animation. */
 
 
-.totop{--lift:0px;
+.gotop{--lift:0px;
   position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
   background:color-mix(in srgb,var(--paper) 90%,transparent);
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
-  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* ⚠️ --lift IS PINNED TO 0 BELOW 760px, ON PURPOSE — Harkirat's call
+   2026-08-05 09:01 EDT, after the footer redesign (side-by-side disclaimer +
+   sig, no more full-width stacked lines) freed up enough room that the
+   button riding up to clear the footer is no longer solving a real overlap;
+   it just makes the button drift on mobile instead of sitting still where a
+   thumb expects it. !important is required here: the script still WRITES
+   --lift as an inline style every frame (see the two writers this rule's own
+   comment above names), and a plain override loses to that inline value —
+   only an !important stylesheet rule beats it. The script itself is
+   untouched; it can keep computing a nonzero value; this simply stops it
+   from being read on a narrow viewport. */
+
+@media (max-width:760px){ .gotop{--lift:0px!important} }/* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
 
-.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+.gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
   transition:opacity .34s ease,border-color .3s ease}
-.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+.gotop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
    the border it sits in. Covering the border box instead puts both circles on one
@@ -889,8 +943,8 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .tt-ar i:nth-child(1){top:0}
 .tt-ar i:nth-child(2){top:12px}
 @media (hover:hover) and (pointer:fine){
-  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-  .totop:hover .tt-ar i{transform:translateY(-12px)}
+  .gotop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .gotop:hover .tt-ar i{transform:translateY(-12px)}
 }
 @keyframes ttFire{
   0%{transform:translateY(0);opacity:1}
@@ -898,16 +952,16 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   37%{transform:translateY(15px);opacity:0}
   100%{transform:translateY(0);opacity:1}
 }
-.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+.gotop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .totop{transition:opacity .2s ease}
+  .gotop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
-  .totop.fire .tt-ar{animation:none}
+  .gotop.fire .tt-ar{animation:none}
 }/* ── back to top, coalescing ───────────────────────────────────────────
    The control assembles from droplets falling inward when it first arrives, and
-   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
-   and .totop.on: they are all (0,2,0), so source order is what decides, and
-   .totop.birth has to win over both while the liquid is on screen.
+   comes apart upward when pressed. Every rule below has to sit AFTER .gotop:hover
+   and .gotop.on: they are all (0,2,0), so source order is what decides, and
+   .gotop.birth has to win over both while the liquid is on screen.
 
    ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
    filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
@@ -923,7 +977,7 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
    measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
    black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
-   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   an opaque backdrop, and .gotop is position:fixed with z-index:55 — its own
    stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
    background .birth has just made transparent. Black against nothing stays black.
    Giving the button an opaque background does not help either: the bed is inset
@@ -933,12 +987,12 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 
 .tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
   opacity:0;visibility:hidden}
-.totop.birth .tt-ink{opacity:1;visibility:visible}
+.gotop.birth .tt-ink{opacity:1;visibility:visible}
 .tt-goo{position:absolute;inset:0}
-.totop.birth .tt-goo{filter:url(#dbgoo-c)}
-.totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
+.gotop.birth .tt-goo{filter:url(#dbgoo-c)}
+.gotop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
-   to .totop's own transition is what made the button appear to come back after a
+   to .gotop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
    "gradient circle behind the button". Clearing background and border-color takes
    away the button's own paint, but a backdrop-filter is not paint — it is a
@@ -954,9 +1008,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    background. Two circles, two causes; the first fix made the second visible. */
 
 
-.totop.birth{background:transparent;border-color:transparent;
+.gotop.birth{background:transparent;border-color:transparent;
   backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
-.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.gotop.birth .tt-ring,.gotop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
   transform:scale(0);will-change:transform}
@@ -1467,7 +1521,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      the y-squash note on the particles. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
      a no-op for momentum since iOS 13 made smooth scrolling the default; the only
@@ -1476,6 +1530,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
   
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
@@ -1932,7 +1987,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <div class="bar">
   <a class="mark live" href="../legal/">
     <span class="mk-s">
-      <span class="wm">Dioreo</span>
+      <img class="wm" src="../assets/dioreo-wordmark.webp" width="600" height="279" alt="Dioreo">
       <span class="mk-ctx"><i aria-hidden="true"></i>What's New</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2021,7 +2076,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#coming-soon" class="slot"><i>—</i><span>🔜 Coming soon</span></a><a href="#v2-52-0" class="slot"><i>v2.52.0</i><span>August 4, 2026</span></a><a href="#v2-51-3" class="slot"><i>v2.51.3</i><span>August 4, 2026</span></a><a href="#v2-51-2" class="slot"><i>v2.51.2</i><span>August 3, 2026</span></a><a href="#v2-51-1" class="slot"><i>v2.51.1</i><span>August 3, 2026</span></a><a href="#v2-51-0" class="slot"><i>v2.51.0</i><span>August 3, 2026</span></a><a href="#v2-50-4" class="slot"><i>v2.50.4</i><span>August 2, 2026</span></a><a href="#v2-50-3" class="slot"><i>v2.50.3</i><span>August 2, 2026</span></a><a href="#v2-50-2" class="slot"><i>v2.50.2</i><span>August 2, 2026</span></a><a href="#v2-50-1" class="slot"><i>v2.50.1</i><span>August 2, 2026</span></a><a href="#v2-50-0" class="slot"><i>v2.50.0</i><span>August 2, 2026</span></a><a href="#v2-49-2" class="slot"><i>v2.49.2</i><span>August 2, 2026</span></a><a href="#v2-49-1" class="slot"><i>v2.49.1</i><span>August 2, 2026</span></a><a href="#v2-49-0" class="slot"><i>v2.49.0</i><span>August 2, 2026</span></a><a href="#v2-48-0" class="slot"><i>v2.48.0</i><span>August 2, 2026</span></a><a href="#v2-47-1" class="slot"><i>v2.47.1</i><span>August 2, 2026</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>August 2, 2026</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>July 31, 2026</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>July 30, 2026</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>July 30, 2026</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>July 29, 2026</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>July 29, 2026</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>July 29, 2026</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>July 29, 2026</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>July 29, 2026</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>July 28, 2026</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>July 28, 2026</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>July 28, 2026</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>July 28, 2026</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>July 28, 2026</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>July 28, 2026</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>July 28, 2026</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>July 28, 2026</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>July 28, 2026</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>July 28, 2026</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>July 28, 2026</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>July 28, 2026</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>July 28, 2026</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>July 28, 2026</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>July 27, 2026</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>July 27, 2026</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>July 27, 2026</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>July 27, 2026</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>July 27, 2026</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>July 27, 2026</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>July 27, 2026</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>July 27, 2026</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>July 27, 2026</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>July 27, 2026</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>July 27, 2026</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>July 27, 2026</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>July 27, 2026</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>July 27, 2026</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>July 27, 2026</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>July 27, 2026</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>July 27, 2026</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>July 26, 2026</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>July 26, 2026</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>July 26, 2026</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>July 26, 2026</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>July 26, 2026</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>July 26, 2026</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>July 26, 2026</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>July 26, 2026</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>July 26, 2026</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>July 26, 2026</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>July 25, 2026</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>July 25, 2026</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>July 24, 2026</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>July 24, 2026</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>July 22, 2026</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>July 21, 2026</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>July 21, 2026</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>July 21, 2026</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>July 21, 2026</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>July 21, 2026</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>July 21, 2026</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>July 20, 2026</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>July 20, 2026</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>July 20, 2026</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>July 18, 2026</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>July 18, 2026</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>July 18, 2026</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>July 17, 2026</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>July 17, 2026</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>July 14–16, 2026</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>July 13, 2026</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>July 13, 2026</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>July 13, 2026</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>July 13, 2026</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>July 12, 2026</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>July 12, 2026</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>July 9, 2026</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>July 9, 2026</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>July 9, 2026</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>July 8, 2026</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>July 8, 2026</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>July 8, 2026</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>July 8, 2026</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>July 7, 2026</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>July 7, 2026</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>July 7, 2026</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>July 7, 2026</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>July 7, 2026</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>July 6, 2026</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>July 4, 2026</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>May 17, 2026</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>April 8, 2026</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>April 8, 2026</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>April 8, 2026</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>April 8, 2026</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>April 8, 2026</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>April 8, 2026</span></a></div>
+    <div class="mp-list msec"><a href="#coming-soon" class="slot"><i>—</i><span>🔜 Coming soon</span></a><a href="#v2-53-0" class="slot"><i>v2.53.0</i><span>August 5, 2026</span></a><a href="#v2-52-0" class="slot"><i>v2.52.0</i><span>August 4, 2026</span></a><a href="#v2-51-3" class="slot"><i>v2.51.3</i><span>August 4, 2026</span></a><a href="#v2-51-2" class="slot"><i>v2.51.2</i><span>August 3, 2026</span></a><a href="#v2-51-1" class="slot"><i>v2.51.1</i><span>August 3, 2026</span></a><a href="#v2-51-0" class="slot"><i>v2.51.0</i><span>August 3, 2026</span></a><a href="#v2-50-4" class="slot"><i>v2.50.4</i><span>August 2, 2026</span></a><a href="#v2-50-3" class="slot"><i>v2.50.3</i><span>August 2, 2026</span></a><a href="#v2-50-2" class="slot"><i>v2.50.2</i><span>August 2, 2026</span></a><a href="#v2-50-1" class="slot"><i>v2.50.1</i><span>August 2, 2026</span></a><a href="#v2-50-0" class="slot"><i>v2.50.0</i><span>August 2, 2026</span></a><a href="#v2-49-2" class="slot"><i>v2.49.2</i><span>August 2, 2026</span></a><a href="#v2-49-1" class="slot"><i>v2.49.1</i><span>August 2, 2026</span></a><a href="#v2-49-0" class="slot"><i>v2.49.0</i><span>August 2, 2026</span></a><a href="#v2-48-0" class="slot"><i>v2.48.0</i><span>August 2, 2026</span></a><a href="#v2-47-1" class="slot"><i>v2.47.1</i><span>August 2, 2026</span></a><a href="#v2-47-0" class="slot"><i>v2.47.0</i><span>August 2, 2026</span></a><a href="#v2-46-0" class="slot"><i>v2.46.0</i><span>July 31, 2026</span></a><a href="#v2-45-0" class="slot"><i>v2.45.0</i><span>July 30, 2026</span></a><a href="#v2-44-0" class="slot"><i>v2.44.0</i><span>July 30, 2026</span></a><a href="#v2-43-2" class="slot"><i>v2.43.2</i><span>July 29, 2026</span></a><a href="#v2-43-1" class="slot"><i>v2.43.1</i><span>July 29, 2026</span></a><a href="#v2-43-0" class="slot"><i>v2.43.0</i><span>July 29, 2026</span></a><a href="#v2-42-2" class="slot"><i>v2.42.2</i><span>July 29, 2026</span></a><a href="#v2-42-1" class="slot"><i>v2.42.1</i><span>July 29, 2026</span></a><a href="#v2-42-0" class="slot"><i>v2.42.0</i><span>July 28, 2026</span></a><a href="#v2-41-4" class="slot"><i>v2.41.4</i><span>July 28, 2026</span></a><a href="#v2-41-3" class="slot"><i>v2.41.3</i><span>July 28, 2026</span></a><a href="#v2-41-2" class="slot"><i>v2.41.2</i><span>July 28, 2026</span></a><a href="#v2-41-1" class="slot"><i>v2.41.1</i><span>July 28, 2026</span></a><a href="#v2-41-0" class="slot"><i>v2.41.0</i><span>July 28, 2026</span></a><a href="#v2-40-0" class="slot"><i>v2.40.0</i><span>July 28, 2026</span></a><a href="#v2-39-2" class="slot"><i>v2.39.2</i><span>July 28, 2026</span></a><a href="#v2-39-1" class="slot"><i>v2.39.1</i><span>July 28, 2026</span></a><a href="#v2-39-0" class="slot"><i>v2.39.0</i><span>July 28, 2026</span></a><a href="#v2-38-3" class="slot"><i>v2.38.3</i><span>July 28, 2026</span></a><a href="#v2-38-2" class="slot"><i>v2.38.2</i><span>July 28, 2026</span></a><a href="#v2-38-1" class="slot"><i>v2.38.1</i><span>July 28, 2026</span></a><a href="#v2-38-0" class="slot"><i>v2.38.0</i><span>July 28, 2026</span></a><a href="#v2-37-0" class="slot"><i>v2.37.0</i><span>July 27, 2026</span></a><a href="#v2-36-3" class="slot"><i>v2.36.3</i><span>July 27, 2026</span></a><a href="#v2-36-2" class="slot"><i>v2.36.2</i><span>July 27, 2026</span></a><a href="#v2-36-1" class="slot"><i>v2.36.1</i><span>July 27, 2026</span></a><a href="#v2-36-0" class="slot"><i>v2.36.0</i><span>July 27, 2026</span></a><a href="#v2-35-15" class="slot"><i>v2.35.15</i><span>July 27, 2026</span></a><a href="#v2-35-14" class="slot"><i>v2.35.14</i><span>July 27, 2026</span></a><a href="#v2-35-13" class="slot"><i>v2.35.13</i><span>July 27, 2026</span></a><a href="#v2-35-12" class="slot"><i>v2.35.12</i><span>July 27, 2026</span></a><a href="#v2-35-11" class="slot"><i>v2.35.11</i><span>July 27, 2026</span></a><a href="#v2-35-10" class="slot"><i>v2.35.10</i><span>July 27, 2026</span></a><a href="#v2-35-9" class="slot"><i>v2.35.9</i><span>July 27, 2026</span></a><a href="#v2-35-8" class="slot"><i>v2.35.8</i><span>July 27, 2026</span></a><a href="#v2-35-7" class="slot"><i>v2.35.7</i><span>July 27, 2026</span></a><a href="#v2-35-6" class="slot"><i>v2.35.6</i><span>July 27, 2026</span></a><a href="#v2-35-5" class="slot"><i>v2.35.5</i><span>July 27, 2026</span></a><a href="#v2-35-4" class="slot"><i>v2.35.4</i><span>July 27, 2026</span></a><a href="#v2-35-3" class="slot"><i>v2.35.3</i><span>July 26, 2026</span></a><a href="#v2-35-2" class="slot"><i>v2.35.2</i><span>July 26, 2026</span></a><a href="#v2-35-1" class="slot"><i>v2.35.1</i><span>July 26, 2026</span></a><a href="#v2-35-0" class="slot"><i>v2.35.0</i><span>July 26, 2026</span></a><a href="#v2-34-1" class="slot"><i>v2.34.1</i><span>July 26, 2026</span></a><a href="#v2-34-0" class="slot"><i>v2.34.0</i><span>July 26, 2026</span></a><a href="#v2-33-6" class="slot"><i>v2.33.6</i><span>July 26, 2026</span></a><a href="#v2-33-5" class="slot"><i>v2.33.5</i><span>July 26, 2026</span></a><a href="#v2-33-4" class="slot"><i>v2.33.4</i><span>July 26, 2026</span></a><a href="#v2-33-3" class="slot"><i>v2.33.3</i><span>July 26, 2026</span></a><a href="#v2-33-2" class="slot"><i>v2.33.2</i><span>July 25, 2026</span></a><a href="#v2-33-1" class="slot"><i>v2.33.1</i><span>July 25, 2026</span></a><a href="#v2-33-0" class="slot"><i>v2.33.0</i><span>July 24, 2026</span></a><a href="#v2-32-0" class="slot"><i>v2.32.0</i><span>July 24, 2026</span></a><a href="#v2-31-0" class="slot"><i>v2.31.0</i><span>July 22, 2026</span></a><a href="#v2-30-2" class="slot"><i>v2.30.2</i><span>July 21, 2026</span></a><a href="#v2-30-1" class="slot"><i>v2.30.1</i><span>July 21, 2026</span></a><a href="#v2-30-0" class="slot"><i>v2.30.0</i><span>July 21, 2026</span></a><a href="#v2-29-0" class="slot"><i>v2.29.0</i><span>July 21, 2026</span></a><a href="#v2-28-0" class="slot"><i>v2.28.0</i><span>July 21, 2026</span></a><a href="#v2-27-0" class="slot"><i>v2.27.0</i><span>July 21, 2026</span></a><a href="#v2-26-0" class="slot"><i>v2.26.0</i><span>July 20, 2026</span></a><a href="#v2-25-0" class="slot"><i>v2.25.0</i><span>July 20, 2026</span></a><a href="#v2-24-0" class="slot"><i>v2.24.0</i><span>July 20, 2026</span></a><a href="#v2-23-0" class="slot"><i>v2.23.0</i><span>July 18, 2026</span></a><a href="#v2-22-0" class="slot"><i>v2.22.0</i><span>July 18, 2026</span></a><a href="#v2-21-0" class="slot"><i>v2.21.0</i><span>July 18, 2026</span></a><a href="#v2-20-0" class="slot"><i>v2.20.0</i><span>July 17, 2026</span></a><a href="#v2-19-0" class="slot"><i>v2.19.0</i><span>July 17, 2026</span></a><a href="#v2-18-0" class="slot"><i>v2.18.0</i><span>July 14–16, 2026</span></a><a href="#v2-17-0" class="slot"><i>v2.17.0</i><span>July 13, 2026</span></a><a href="#v2-16-0" class="slot"><i>v2.16.0</i><span>July 13, 2026</span></a><a href="#v2-14-0" class="slot"><i>v2.14.0</i><span>July 13, 2026</span></a><a href="#v2-13-0" class="slot"><i>v2.13.0</i><span>July 13, 2026</span></a><a href="#v2-12-0" class="slot"><i>v2.12.0</i><span>July 12, 2026</span></a><a href="#v2-10-0" class="slot"><i>v2.10.0</i><span>July 12, 2026</span></a><a href="#v2-9-0" class="slot"><i>v2.9.0</i><span>July 9, 2026</span></a><a href="#v2-8-0" class="slot"><i>v2.8.0</i><span>July 9, 2026</span></a><a href="#v2-7-0" class="slot"><i>v2.7.0</i><span>July 9, 2026</span></a><a href="#v2-6-0" class="slot"><i>v2.6.0</i><span>July 8, 2026</span></a><a href="#v2-5-1" class="slot"><i>v2.5.1</i><span>July 8, 2026</span></a><a href="#v2-5-0" class="slot"><i>v2.5.0</i><span>July 8, 2026</span></a><a href="#v2-4-0" class="slot"><i>v2.4.0</i><span>July 8, 2026</span></a><a href="#v2-3-1" class="slot"><i>v2.3.1</i><span>July 7, 2026</span></a><a href="#v2-3-0" class="slot"><i>v2.3.0</i><span>July 7, 2026</span></a><a href="#v2-2-1" class="slot"><i>v2.2.1</i><span>July 7, 2026</span></a><a href="#v2-2-0" class="slot"><i>v2.2.0</i><span>July 7, 2026</span></a><a href="#v2-1-0" class="slot"><i>v2.1.0</i><span>July 7, 2026</span></a><a href="#v2-0-0" class="slot slot-m"><i>v2.0.0</i><span>July 6, 2026</span></a><a href="#v1-7-0" class="slot"><i>v1.7.0</i><span>July 4, 2026</span></a><a href="#v1-6-0" class="slot"><i>v1.6.0</i><span>May 17, 2026</span></a><a href="#v1-5-0" class="slot"><i>v1.5.0</i><span>April 8, 2026</span></a><a href="#v1-4-0" class="slot"><i>v1.4.0</i><span>April 8, 2026</span></a><a href="#v1-3-0" class="slot"><i>v1.3.0</i><span>April 8, 2026</span></a><a href="#v1-2-0" class="slot"><i>v1.2.0</i><span>April 8, 2026</span></a><a href="#v1-1-0" class="slot"><i>v1.1.0</i><span>April 8, 2026</span></a><a href="#v1-0-0" class="slot slot-m"><i>v1.0.0</i><span>April 8, 2026</span></a></div>
   </details>
 </aside>
 
@@ -2034,7 +2089,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <div class="pn-op"><span class="pn-dot" aria-hidden="true"></span>OPERATOR // PATCH NOTES</div>
         <h1>What's New</h1>
         <p class="pn-lede">Every update to the bot, in plain language — what changed and when.</p>
-        <div class="pn-tick"><span>113 entries</span><span class="pn-clk" id="clk"></span></div>
+        <div class="pn-tick"><span>114 entries</span><span class="pn-clk" id="clk"></span></div>
       </header>
       <div class="clede"><p>The short version. For the full technical write-up, see <a href="detailed.html">CHANGELOG.md</a>.</p></div>
       
@@ -2049,10 +2104,15 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       </section>
       <section class="pn-hero" data-entry data-rv>
         <div class="pn-hero-t">LATEST</div>
-        <h2 id="v2-52-0" class="pn-v">v2.52.0</h2>
+        <h2 id="v2-53-0" class="pn-v">v2.53.0</h2>
         
-        <div class="pn-hero-b"><ul><li><strong>The bot is now called Dioreo.</strong> Same bot, same person running it, same everything it remembers about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored. The Terms and Privacy Policy both spell this out, and every mention of the old name still counts as a mention of the new one.</li><li><strong>The website has a proper front page.</strong> It used to open by introducing the legal documents; now it introduces the bot, with the legal documents still one tap away underneath.</li><li><strong>Easier to read on a phone.</strong> Code examples got a cleaner layout with a copy button that actually sits where you'd expect and tells you when it's copied, the footer spacing was evened out, and the Contributing and Contributors pages got a back-to-top button.</li><li><strong>You can download the licence and notice files directly</strong> from the menu on those pages, wherever you happen to be scrolled to.</li></ul></div>
+        <div class="pn-hero-b"><ul><li><strong>The "link to this section" button now actually shows "Copied."</strong> It was copying the link the whole time, just never telling you — fixed.</li><li><strong>The section download menu got a real redesign</strong> instead of a button that covered up whatever you were reading.</li><li><strong>The Notice page's dependency list is easier to read on a phone</strong> — each entry is now its own card instead of a squeezed table.</li><li><strong>The tooltip that pops up near buttons no longer fires from a scroll or swipe</strong> — only from an actual hover or keyboard focus.</li><li><strong>The Privacy Policy now mentions that the alert log lives in the same database as your preferences</strong>, not just a separate provider — no change to what's collected or for how long.</li><li>New logo colors: the mascot and wordmark switched to the coral palette.</li></ul></div>
       </section><div class="pn-deck">
+        <article class="pn-card" data-entry data-rv>
+          <h2 id="v2-52-0" class="pn-cv">v2.52.0</h2>
+          
+          <div class="pn-cb"><ul><li><strong>The bot is now called Dioreo.</strong> Same bot, same person running it, same everything it remembers about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored. The Terms and Privacy Policy both spell this out, and every mention of the old name still counts as a mention of the new one.</li><li><strong>The website has a proper front page.</strong> It used to open by introducing the legal documents; now it introduces the bot, with the legal documents still one tap away underneath.</li><li><strong>Easier to read on a phone.</strong> Code examples got a cleaner layout with a copy button that actually sits where you'd expect and tells you when it's copied, the footer spacing was evened out, and the Contributing and Contributors pages got a back-to-top button.</li><li><strong>You can download the licence and notice files directly</strong> from the menu on those pages, wherever you happen to be scrolled to.</li></ul></div>
+        </article>
         <article class="pn-card" data-entry data-rv>
           <h2 id="v2-51-3" class="pn-cv">v2.51.3</h2>
           
@@ -2634,7 +2694,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     </main>
   </div>
   <footer class="foot">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     <p class="disc">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="../legal/terms.html">Terms</a><span>&middot;</span><a href="../legal/privacy.html">Privacy</a><span>&middot;</span><a href="../legal/license.html">License</a><span>&middot;</span><a href="../legal/notice.html">Notice</a><span>&middot;</span><a href="../legal/contributing.html">Contributing</a><span>&middot;</span><a href="../legal/contributors.html">Contributors</a><span>&middot;</span><a href="./detailed.html">Changelog</a><span>&middot;</span><a href="./devlog.html">Devlog</a></nav>
   </footer>
@@ -3838,6 +3898,20 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
 })();
 
 (function(){
@@ -4271,8 +4345,20 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -4478,41 +4564,95 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    var cur=-1,queued=0;
+    /* ⚠️ THIRD DESIGN FOR THIS FUNCTION, 2026-08-05 10:10 EDT — and the reason
+       is worth keeping straight, because the first two both failed for
+       different reasons and it would be easy to wander back into either.
+       (1) Nearest-row-centre to a DIRECTION-BIASED line, with a 24px
+       hysteresis margin: reported as "Terms lingers, the rest rush by" —
+       diagnosed as the algorithm, not the (perfectly uniform) layout, and
+       replaced with —
+       (2) boundary containment: a row active exactly while its own box
+       contains that same biased line. Proven live to give EQUAL dwell
+       distance per row (confirmed: ~130px each, Terms through Notice) — but
+       then rejected anyway: "linear isn't the solution." Equal-by-the-numbers
+       still read as mechanical, because a fixed offset percentage down the
+       screen is not what a reader's eye is actually doing.
+       (3) THIS version: whichever row's centre is nearest the VIEWPORT'S OWN
+       centre — "whichever row is most prominently in view," Harkirat's own
+       framing. This is not just a different number, it drops the whole
+       direction-bias/easing apparatus (dir, lastY, the 8px threshold, lineY's
+       spring) outright, because the reference point is innerHeight*0.5 —
+       fixed, not direction-dependent — so there is nothing left for a
+       direction change to destabilise. Simpler code as a direct consequence
+       of the simpler mental model, not a separate cleanup. */
+    /* ⚠️ A ROW CAN BE SKIPPED ENTIRELY ON A FAST SWIPE, and no per-frame
+       distance rule fixes that — added 2026-08-05 10:13 EDT, proven with a
+       frame-by-frame recording. pick() only samples state once per
+       requestAnimationFrame; a fast flick can move the scroll far enough
+       between two consecutive frames that a row's whole "nearest the centre"
+       window falls entirely in the gap between samples — the recording
+       showed Privacy active, then License's entire on-screen span passing
+       with nothing lit, then Notices taking over, License never once
+       flagged. No amount of tuning the DISTANCE test closes that: the
+       problem is temporal (a row got no sampled moment), not spatial.
+       stepQueue turns a jump of more than one row into a walk, one row per
+       stepTimer tick, so a skipped row still gets a real, visible moment —
+       capped at 3 steps so an extreme jump (dragging the scrollbar from top
+       to bottom) snaps straight to the end instead of animating through
+       every row it technically passed. */
+    var stepTimer=0;
+    function advance(target){
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=target;
+      rows[cur].classList.add('act');
+    }
+    function stepToward(target){
+      clearTimeout(stepTimer);
+      if(cur<0||Math.abs(target-cur)>3){advance(target);return;}
+      if(cur===target)return;
+      var next=cur+(target>cur?1:-1);
+      advance(next);
+      if(next!==target)stepTimer=setTimeout(function(){stepToward(target);},70);
+    }
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
-      var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
-      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
-         A fixed line only marks a row once the row has reached it, so on the way
-         down the highlight always trails what you are looking at. Offsetting the
-         line by a tenth of the viewport in the direction of travel moves it DOWN
-         while scrolling down, which is the direction rows arrive from, so a row is
-         claimed on approach instead of on arrival — and symmetrically on the way
-         back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it. */
-      var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var mid=innerHeight*0.5;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
-        d=Math.abs(r.top+r.height/2-line);
+        d=Math.abs(r.top+r.height/2-mid);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
-      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      if(best<0||best===cur)return;
+      /* A light margin, not the old 24px — with a STABLE reference point the
+         flicker case (two rows trading the highlight every frame near a
+         shared boundary) is far less likely to begin with; this only damps
+         genuine near-ties rather than doing the main stabilising work the
+         way it had to before. Only applied to single-row moves — a jump big
+         enough to trigger stepToward's walk already means best is decisively
+         ahead, not a near-tie. */
+      if(cur>=0&&Math.abs(best-cur)<=1&&bestD>curD-10)return;
+      stepToward(best);
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
+       pick() immediately whenever want was true, which measured the row
+       nearest the line AT THE TOP OF THE PAGE and highlighted it before the
+       reader had scrolled at all — row 0 ("Terms of Service") lighting up on
+       load with no interaction. Clearing to no highlight and letting the
+       first real scroll event call pick() (via onScroll below) means the
+       highlight only ever appears once the reader has actually started
+       scrolling, which is what "auto" should mean here. */
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
-      if(!want){
-        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
-        cur=-1;
-      }else{cur=-1;pick();}
+      clearTimeout(stepTimer);
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
@@ -4522,7 +4662,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 
   /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
   (function(){
-    var tt=document.getElementById('totop');
+    var tt=document.getElementById('gotop');
     if(!tt)return;
     function past(){return scrollY_()>innerHeight*0.6;}
 
@@ -4622,12 +4762,12 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
           /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
              BUG. Measured: on is never re-added after a launch, but the control's
              computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
-             Removing on and birth in one statement hands the fade to the .totop
+             Removing on and birth in one statement hands the fade to the .gotop
              transition, and birth is also what hides the ring and the arrow — so
              for ~300ms after the liquid has flown away the REAL button chrome pops
              back and fades out behind it. It never was a second birth, which is
              why two fixes aimed at the threshold missed it.
-             Drop on while birth still applies (.totop.birth carries
+             Drop on while birth still applies (.gotop.birth carries
              transition:none, so it goes to 0 instantly), flush that state, and
              only then drop birth. */
           tt.classList.remove('on');
@@ -4873,9 +5013,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -4894,9 +5034,30 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -4965,14 +5126,57 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place.
+       ⚠️ flashCopied() FIRES SYNCHRONOUSLY, NOT INSIDE THE CLIPBOARD PROMISE'S
+       .then(). This used to wait for navigator.clipboard.writeText() to
+       resolve before showing anything — and a real .anchor is a genuine
+       <a href="#id">, so the browser's default action (the hash jump) runs
+       right after this listener finishes, as its own step in event dispatch.
+       That ran BEFORE the microtask the clipboard promise resolves on, so by
+       the time flashCopied() finally fired the page had already jumped once
+       — reported 2026-08-05 12:03 EDT as no visible confirmation at all, only the jump.
+       Calling it here, in the same synchronous tick as the click and before
+       the browser's default action, guarantees the capsule is placed against
+       the anchor's PRE-jump position; the scroll listener above (see
+       "flashing" note) is what then keeps it riding along as the jump
+       happens. The write to the clipboard itself doesn't need to finish
+       first — it either succeeds silently or doesn't, but the user should
+       never be kept waiting on it to see that the click registered. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        flashCopied(a);
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href')).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();

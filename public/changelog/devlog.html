@@ -211,30 +211,28 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
-  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
-   slot has been emptied on purpose. It held three stacked bars first, which is
-   the universal glyph for a menu, so readers tried to tap it expecting one to
-   open. It then held a rounded square carrying a "D" — which was worse in a
-   quieter way: a single letter in a box is the most generic mark there is, it
-   said nothing the wordmark next to it does not already say in full, and it made
-   the site's identity a placeholder logo rather than the typography.
-
-   The wordmark alone is the mark. Do not "restore the logo" without an actual
-   drawn mark to put there; another letter-in-a-square is not one. */
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ SUPERSEDES the two prior "no logo mark" decisions (this slot had held a
+   3-bar menu glyph, then a letter-in-a-square, and was emptied back to plain
+   type both times because neither was an actual drawn mark — see git history
+   on this comment for the full reasoning). Harkirat supplied a real drawn
+   Dioreo mark 2026-08-04 21:18 EDT (the mascot + bubble wordmark lockup), which
+   is exactly what those two notes said was missing, so it now REPLACES the
+   typographic wordmark outright rather than sitting beside it — there is no
+   longer a second "Dioreo" in text form for it to compete with in the bar. */
 
 
-.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
-   this it kept its full 90px of text inside a 31px box and simply drew across
-   the buttons beside it — the "too tight" header was really this one missing
-   rule. Truncation is the honest failure mode for a flexible label. */
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* Fixed height so the mark lines up with the 32px control row beside it;
+   width is intrinsic (object-fit:contain) so the mascot and the bubble
+   letters scale together and never crop. The image is allowed to be
+   narrower than its box shrinks to — it has no truncation failure mode the
+   way the old text did, so nothing here needs an overflow rule. */
 
-.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
-  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
-  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
-  background-size:280% 100%;background-position:130% 0;
-  -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+
+.wm.wm-hero{height:112px}/* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
    that states it twice is noise. Below 980 the switcher is gone. */
 
@@ -243,13 +241,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
    drop the keyboard focus styling on any device with a touchscreen, which is
-   most laptops now. Split, always. */
+   most laptops now. Split, always.
+   The old sweep animated a text-fill gradient, which has no equivalent on a
+   raster mark — replaced with the same scale nudge every other interactive
+   control in the bar uses on press/hover, so the mark still confirms it is
+   clickable without inventing a bespoke effect just for itself. */
 
 
-.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .wm{transform:scale(1.05)}
 .mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 @media (hover:hover) and (pointer:fine){
-  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .wm{transform:scale(1.05)}
   .mark.live:hover .go{opacity:1;transform:translateX(0)}
 }/* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -399,12 +401,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .bar.bar nav{gap:.5rem}/* The context line goes. It names the page you are on, and directly beneath it
      the strip names the page you are on with a filled pill — saying it twice in
      54px of header is what made the mark fight the buttons for width.
-     The wordmark also drops a step, because at 1.02rem it still truncated to
-     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
-     slightly smaller whole one. */
+     The mark also drops a step — same reasoning as the old text wordmark did
+     (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
+     smaller whole mark reads better than a squeezed one on a narrow header. */
   
   .mk-ctx.mk-ctx{display:none}
-  .wm{font-size:.85rem}/* 19px of the mark's width was its own padding — a hover affordance, on a
+  .wm{height:34px}
+  .wm.wm-hero{height:64px}/* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
      chasing. */
@@ -758,8 +761,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
@@ -788,7 +797,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
+
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -818,15 +840,25 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
 }
-.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+.sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
+   colour every other bold word in the sig line gets — Harkirat's call
+   2026-08-05 08:44 EDT. --accent-t is the site's text-safe accent token
+   (already re-mixed for contrast in both themes), so this follows whichever
+   accent the current page is on automatically. */
+
+.sig .sig-a{color:var(--accent-t);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
    the name is already the only emphasised word in it. */
 
@@ -838,6 +870,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
 a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
 a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
+   ⚠️ NAMED .gotop, NOT .totop — renamed 2026-08-05 08:11 EDT. "totop" is the
+   exact class/id a real, widely-deployed "scroll back to top" WordPress plugin
+   (and several clones) use, and it collides with generic ad-blocker cosmetic
+   filter rules written against THAT library rather than against this site —
+   Harkirat confirmed this by reproducing it with the SAME blocklist enabled on
+   two different browsers. It genuinely worked before: this is not a code
+   regression, it is a third-party filter list matching a common name by
+   coincidence, and it can recur at any time a list adds a similarly generic
+   rule. Never rename this back to something in the totop/back-to-top/scrollup
+   family — those are exactly the names blocklists target.
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -854,23 +896,35 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    So --lift is written from the script each frame: zero until the footer's top
    edge reaches the button, then exactly the overlap, so it rides up ahead of the
    footer and never crosses it. It is a variable rather than a direct transform
-   write because .totop.on owns the transform — a script setting style.transform
+   write because .gotop.on owns the transform — a script setting style.transform
    would have fought the entry animation. */
 
 
-.totop{--lift:0px;
+.gotop{--lift:0px;
   position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
   background:color-mix(in srgb,var(--paper) 90%,transparent);
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
-  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* ⚠️ --lift IS PINNED TO 0 BELOW 760px, ON PURPOSE — Harkirat's call
+   2026-08-05 09:01 EDT, after the footer redesign (side-by-side disclaimer +
+   sig, no more full-width stacked lines) freed up enough room that the
+   button riding up to clear the footer is no longer solving a real overlap;
+   it just makes the button drift on mobile instead of sitting still where a
+   thumb expects it. !important is required here: the script still WRITES
+   --lift as an inline style every frame (see the two writers this rule's own
+   comment above names), and a plain override loses to that inline value —
+   only an !important stylesheet rule beats it. The script itself is
+   untouched; it can keep computing a nonzero value; this simply stops it
+   from being read on a narrow viewport. */
+
+@media (max-width:760px){ .gotop{--lift:0px!important} }/* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
 
-.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+.gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
   transition:opacity .34s ease,border-color .3s ease}
-.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+.gotop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
    the border it sits in. Covering the border box instead puts both circles on one
@@ -889,8 +943,8 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .tt-ar i:nth-child(1){top:0}
 .tt-ar i:nth-child(2){top:12px}
 @media (hover:hover) and (pointer:fine){
-  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-  .totop:hover .tt-ar i{transform:translateY(-12px)}
+  .gotop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .gotop:hover .tt-ar i{transform:translateY(-12px)}
 }
 @keyframes ttFire{
   0%{transform:translateY(0);opacity:1}
@@ -898,16 +952,16 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   37%{transform:translateY(15px);opacity:0}
   100%{transform:translateY(0);opacity:1}
 }
-.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+.gotop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .totop{transition:opacity .2s ease}
+  .gotop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
-  .totop.fire .tt-ar{animation:none}
+  .gotop.fire .tt-ar{animation:none}
 }/* ── back to top, coalescing ───────────────────────────────────────────
    The control assembles from droplets falling inward when it first arrives, and
-   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
-   and .totop.on: they are all (0,2,0), so source order is what decides, and
-   .totop.birth has to win over both while the liquid is on screen.
+   comes apart upward when pressed. Every rule below has to sit AFTER .gotop:hover
+   and .gotop.on: they are all (0,2,0), so source order is what decides, and
+   .gotop.birth has to win over both while the liquid is on screen.
 
    ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
    filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
@@ -923,7 +977,7 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
    measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
    black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
-   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   an opaque backdrop, and .gotop is position:fixed with z-index:55 — its own
    stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
    background .birth has just made transparent. Black against nothing stays black.
    Giving the button an opaque background does not help either: the bed is inset
@@ -933,12 +987,12 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 
 .tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
   opacity:0;visibility:hidden}
-.totop.birth .tt-ink{opacity:1;visibility:visible}
+.gotop.birth .tt-ink{opacity:1;visibility:visible}
 .tt-goo{position:absolute;inset:0}
-.totop.birth .tt-goo{filter:url(#dbgoo-c)}
-.totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
+.gotop.birth .tt-goo{filter:url(#dbgoo-c)}
+.gotop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
-   to .totop's own transition is what made the button appear to come back after a
+   to .gotop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
    "gradient circle behind the button". Clearing background and border-color takes
    away the button's own paint, but a backdrop-filter is not paint — it is a
@@ -954,9 +1008,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    background. Two circles, two causes; the first fix made the second visible. */
 
 
-.totop.birth{background:transparent;border-color:transparent;
+.gotop.birth{background:transparent;border-color:transparent;
   backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
-.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.gotop.birth .tt-ring,.gotop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
   transform:scale(0);will-change:transform}
@@ -1467,7 +1521,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      the y-squash note on the particles. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
      a no-op for momentum since iOS 13 made smooth scrolling the default; the only
@@ -1476,6 +1530,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
   
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
@@ -1940,7 +1995,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <div class="bar">
   <a class="mark live" href="../legal/">
     <span class="mk-s">
-      <span class="wm">Dioreo</span>
+      <img class="wm" src="../assets/dioreo-wordmark.webp" width="600" height="279" alt="Dioreo">
       <span class="mk-ctx"><i aria-hidden="true"></i>Devlog</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2029,7 +2084,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#part-part-a-the-journey-chronological" class="slot slot-p"><i>—</i><span>Part A — The Journey (chronological)</span></a><a href="#2026-07-13" class="slot"><i>2026-07-13</i><span>The color-panel saga: one report, five root causes</span></a><a href="#earlier-milestones-backfill" class="slot"><i>Earlier milestones `[backfill</i><span>expand later from transcripts]</span></a><a href="#2026-07-14" class="slot"><i>2026-07-14</i><span>Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug</span></a><a href="#2026-07-1415" class="slot"><i>2026-07-14/15</i><span>Planning sessions: a roadmap out to v5, and two landmines found while filing notes</span></a><a href="#2026-07-16" class="slot"><i>2026-07-16</i><span>A silent 14-minute Gateway hang, and a documentation gap it exposed</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>The Render outage that became a migration to GCP</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>(later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>A tidy session: turning the scratchpad into a conveyor, not a landfill</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Solving a mystery Harkirat couldn't solve about his own bot</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>The v2 quick-wins polish batch: 8 filed items, shipped in one pass</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later) — Going private broke the deploy, and a documentation lapse right after fixing it</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — A 15-note dump, and two real findings worth keeping</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Building the passive auto-disable, and confirming it actually matches the spec</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — Building a real MarkEdit extension, live, through a working session</span></a><a href="#2026-07-19" class="slot"><i>2026-07-19</i><span>A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>A "still active" link that was actually dead, and designing an automation idea properly</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Antigravity — The Vertex AI Keyless ADC Migration</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Queued housekeeping while /autobuild awaits its live test</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later) — The alert log, and three process misses caught before the build even started</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>/autobuild's first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at</span></a><a href="#2026-07-22" class="slot"><i>2026-07-22</i><span>Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>11:52 EDT — Caught deferring, again, on the very hook built to stop it</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>15:26 EDT — Reversed twice on a convention, and both reversals were the system working</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>18:43 EDT — PR #9 finally gets a real boot test, not just node --check</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>21:04 EDT — A cleanup branch found a log line that lies about which database you're on</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:02 EDT — A "parsing bug" that was actually a display/design mismatch</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>18:50 EDT — Planning v3 meant first proving what "isolated" actually meant</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:35 EDT — The two-commit knot was one sentence disagreeing with itself</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:50 EDT — Ten merged branches nobody could see</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>22:35 EDT — Three ways to document a rule and still not have one</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>01:41 EDT — The memory was in a folder nothing was looking at</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>11:20 EDT — Two small releases that were both my own mess</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:20 EDT — The rules that enforce the rules were never backed up</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:45 EDT — The sweep that searched for its own wording</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>15:52 EDT — The error counter that could never have been right</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:05 EDT — "Why do I always have to ask you to check?"</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:35 EDT — A table of contents you can't actually search</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:05 EDT — A number I invented, in three files, wrong by 4x</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:40 EDT — The reset that ate a session I wasn't in</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>21:00 EDT — "Not checkable" was never true</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>11:44 EDT — The refs I left behind</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>12:30 EDT — The ledger that claimed no dated entries, and had 19</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:24 EDT — The licence that granted everything it meant to withhold</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:55 EDT — Seven dead links in the documents whose point is being checkable</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>00:40 EDT — A fix that was documented as working, and a site that was down behind a cache</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>22:24 EDT — Six notes-file items that all turned out to be the same document</span></a><a href="#2026-07-31" class="slot"><i>2026-07-31</i><span>23:50 EDT — Two features built twice, and what both corrections had in common</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>03:05 EDT — A gesture nobody wanted was eating every click</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>16:30 EDT — A model that was exact on paper and wrong on screen</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>00:40 EDT — Three wrong diagnoses in a row, and what that actually means</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>14:43 EDT — The session that kept catching its own bugs (v2.48.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:22 EDT — A linter that does not know your vocabulary (v2.50.4)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)</span></a></div>
+    <div class="mp-list msec"><a href="#part-part-a-the-journey-chronological" class="slot slot-p"><i>—</i><span>Part A — The Journey (chronological)</span></a><a href="#2026-07-13" class="slot"><i>2026-07-13</i><span>The color-panel saga: one report, five root causes</span></a><a href="#earlier-milestones-backfill" class="slot"><i>Earlier milestones `[backfill</i><span>expand later from transcripts]</span></a><a href="#2026-07-14" class="slot"><i>2026-07-14</i><span>Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug</span></a><a href="#2026-07-1415" class="slot"><i>2026-07-14/15</i><span>Planning sessions: a roadmap out to v5, and two landmines found while filing notes</span></a><a href="#2026-07-16" class="slot"><i>2026-07-16</i><span>A silent 14-minute Gateway hang, and a documentation gap it exposed</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>The Render outage that became a migration to GCP</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>(later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>A tidy session: turning the scratchpad into a conveyor, not a landfill</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Solving a mystery Harkirat couldn't solve about his own bot</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>The v2 quick-wins polish batch: 8 filed items, shipped in one pass</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later) — Going private broke the deploy, and a documentation lapse right after fixing it</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — A 15-note dump, and two real findings worth keeping</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Building the passive auto-disable, and confirming it actually matches the spec</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — Building a real MarkEdit extension, live, through a working session</span></a><a href="#2026-07-19" class="slot"><i>2026-07-19</i><span>A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>A "still active" link that was actually dead, and designing an automation idea properly</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Antigravity — The Vertex AI Keyless ADC Migration</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Queued housekeeping while /autobuild awaits its live test</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later) — The alert log, and three process misses caught before the build even started</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>/autobuild's first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at</span></a><a href="#2026-07-22" class="slot"><i>2026-07-22</i><span>Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>11:52 EDT — Caught deferring, again, on the very hook built to stop it</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>15:26 EDT — Reversed twice on a convention, and both reversals were the system working</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>18:43 EDT — PR #9 finally gets a real boot test, not just node --check</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>21:04 EDT — A cleanup branch found a log line that lies about which database you're on</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:02 EDT — A "parsing bug" that was actually a display/design mismatch</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>18:50 EDT — Planning v3 meant first proving what "isolated" actually meant</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:35 EDT — The two-commit knot was one sentence disagreeing with itself</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:50 EDT — Ten merged branches nobody could see</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>22:35 EDT — Three ways to document a rule and still not have one</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>01:41 EDT — The memory was in a folder nothing was looking at</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>11:20 EDT — Two small releases that were both my own mess</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:20 EDT — The rules that enforce the rules were never backed up</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:45 EDT — The sweep that searched for its own wording</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>15:52 EDT — The error counter that could never have been right</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:05 EDT — "Why do I always have to ask you to check?"</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:35 EDT — A table of contents you can't actually search</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:05 EDT — A number I invented, in three files, wrong by 4x</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:40 EDT — The reset that ate a session I wasn't in</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>21:00 EDT — "Not checkable" was never true</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>11:44 EDT — The refs I left behind</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>12:30 EDT — The ledger that claimed no dated entries, and had 19</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:24 EDT — The licence that granted everything it meant to withhold</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:55 EDT — Seven dead links in the documents whose point is being checkable</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>00:40 EDT — A fix that was documented as working, and a site that was down behind a cache</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>22:24 EDT — Six notes-file items that all turned out to be the same document</span></a><a href="#2026-07-31" class="slot"><i>2026-07-31</i><span>23:50 EDT — Two features built twice, and what both corrections had in common</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>03:05 EDT — A gesture nobody wanted was eating every click</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>16:30 EDT — A model that was exact on paper and wrong on screen</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>00:40 EDT — Three wrong diagnoses in a row, and what that actually means</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>14:43 EDT — The session that kept catching its own bugs (v2.48.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:22 EDT — A linter that does not know your vocabulary (v2.50.4)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)</span></a><a href="#2026-08-05" class="slot"><i>2026-08-05</i><span>13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)</span></a></div>
   </details>
 </aside>
 
@@ -2037,7 +2092,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   <div class="cols">
     <aside class="rail" id="rail">
       <span class="lab">Entries</span>
-      <div class="slots" id="slots"><a href="#part-part-a-the-journey-chronological" class="slot slot-p"><i>—</i><span>Part A — The Journey (chronological)</span></a><a href="#2026-07-13" class="slot"><i>2026-07-13</i><span>The color-panel saga: one report, five root causes</span></a><a href="#earlier-milestones-backfill" class="slot"><i>Earlier milestones `[backfill</i><span>expand later from transcripts]</span></a><a href="#2026-07-14" class="slot"><i>2026-07-14</i><span>Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug</span></a><a href="#2026-07-1415" class="slot"><i>2026-07-14/15</i><span>Planning sessions: a roadmap out to v5, and two landmines found while filing notes</span></a><a href="#2026-07-16" class="slot"><i>2026-07-16</i><span>A silent 14-minute Gateway hang, and a documentation gap it exposed</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>The Render outage that became a migration to GCP</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>(later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>A tidy session: turning the scratchpad into a conveyor, not a landfill</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Solving a mystery Harkirat couldn't solve about his own bot</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>The v2 quick-wins polish batch: 8 filed items, shipped in one pass</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later) — Going private broke the deploy, and a documentation lapse right after fixing it</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — A 15-note dump, and two real findings worth keeping</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Building the passive auto-disable, and confirming it actually matches the spec</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — Building a real MarkEdit extension, live, through a working session</span></a><a href="#2026-07-19" class="slot"><i>2026-07-19</i><span>A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>A "still active" link that was actually dead, and designing an automation idea properly</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Antigravity — The Vertex AI Keyless ADC Migration</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Queued housekeeping while /autobuild awaits its live test</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later) — The alert log, and three process misses caught before the build even started</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>/autobuild's first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at</span></a><a href="#2026-07-22" class="slot"><i>2026-07-22</i><span>Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>11:52 EDT — Caught deferring, again, on the very hook built to stop it</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>15:26 EDT — Reversed twice on a convention, and both reversals were the system working</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>18:43 EDT — PR #9 finally gets a real boot test, not just node --check</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>21:04 EDT — A cleanup branch found a log line that lies about which database you're on</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:02 EDT — A "parsing bug" that was actually a display/design mismatch</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>18:50 EDT — Planning v3 meant first proving what "isolated" actually meant</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:35 EDT — The two-commit knot was one sentence disagreeing with itself</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:50 EDT — Ten merged branches nobody could see</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>22:35 EDT — Three ways to document a rule and still not have one</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>01:41 EDT — The memory was in a folder nothing was looking at</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>11:20 EDT — Two small releases that were both my own mess</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:20 EDT — The rules that enforce the rules were never backed up</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:45 EDT — The sweep that searched for its own wording</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>15:52 EDT — The error counter that could never have been right</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:05 EDT — "Why do I always have to ask you to check?"</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:35 EDT — A table of contents you can't actually search</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:05 EDT — A number I invented, in three files, wrong by 4x</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:40 EDT — The reset that ate a session I wasn't in</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>21:00 EDT — "Not checkable" was never true</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>11:44 EDT — The refs I left behind</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>12:30 EDT — The ledger that claimed no dated entries, and had 19</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:24 EDT — The licence that granted everything it meant to withhold</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:55 EDT — Seven dead links in the documents whose point is being checkable</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>00:40 EDT — A fix that was documented as working, and a site that was down behind a cache</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>22:24 EDT — Six notes-file items that all turned out to be the same document</span></a><a href="#2026-07-31" class="slot"><i>2026-07-31</i><span>23:50 EDT — Two features built twice, and what both corrections had in common</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>03:05 EDT — A gesture nobody wanted was eating every click</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>16:30 EDT — A model that was exact on paper and wrong on screen</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>00:40 EDT — Three wrong diagnoses in a row, and what that actually means</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>14:43 EDT — The session that kept catching its own bugs (v2.48.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:22 EDT — A linter that does not know your vocabulary (v2.50.4)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)</span></a></div>
+      <div class="slots" id="slots"><a href="#part-part-a-the-journey-chronological" class="slot slot-p"><i>—</i><span>Part A — The Journey (chronological)</span></a><a href="#2026-07-13" class="slot"><i>2026-07-13</i><span>The color-panel saga: one report, five root causes</span></a><a href="#earlier-milestones-backfill" class="slot"><i>Earlier milestones `[backfill</i><span>expand later from transcripts]</span></a><a href="#2026-07-14" class="slot"><i>2026-07-14</i><span>Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug</span></a><a href="#2026-07-1415" class="slot"><i>2026-07-14/15</i><span>Planning sessions: a roadmap out to v5, and two landmines found while filing notes</span></a><a href="#2026-07-16" class="slot"><i>2026-07-16</i><span>A silent 14-minute Gateway hang, and a documentation gap it exposed</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>The Render outage that became a migration to GCP</span></a><a href="#2026-07-17" class="slot"><i>2026-07-17</i><span>(later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>A tidy session: turning the scratchpad into a conveyor, not a landfill</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Solving a mystery Harkirat couldn't solve about his own bot</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>The v2 quick-wins polish batch: 8 filed items, shipped in one pass</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later) — Going private broke the deploy, and a documentation lapse right after fixing it</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — A 15-note dump, and two real findings worth keeping</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(new session) — Building the passive auto-disable, and confirming it actually matches the spec</span></a><a href="#2026-07-18" class="slot"><i>2026-07-18</i><span>(later still) — Building a real MarkEdit extension, live, through a working session</span></a><a href="#2026-07-19" class="slot"><i>2026-07-19</i><span>A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>A "still active" link that was actually dead, and designing an automation idea properly</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Antigravity — The Vertex AI Keyless ADC Migration</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>| Claude — Queued housekeeping while /autobuild awaits its live test</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later) — The alert log, and three process misses caught before the build even started</span></a><a href="#2026-07-20" class="slot"><i>2026-07-20</i><span>(later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>/autobuild's first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no</span></a><a href="#2026-07-21" class="slot"><i>2026-07-21</i><span>(new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at</span></a><a href="#2026-07-22" class="slot"><i>2026-07-22</i><span>Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)</span></a><a href="#2026-07-24" class="slot"><i>2026-07-24</i><span>18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md</span></a><a href="#2026-07-25" class="slot"><i>2026-07-25</i><span>21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>11:52 EDT — Caught deferring, again, on the very hook built to stop it</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>15:26 EDT — Reversed twice on a convention, and both reversals were the system working</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>18:43 EDT — PR #9 finally gets a real boot test, not just node --check</span></a><a href="#2026-07-26" class="slot"><i>2026-07-26</i><span>21:04 EDT — A cleanup branch found a log line that lies about which database you're on</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:02 EDT — A "parsing bug" that was actually a display/design mismatch</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>18:50 EDT — Planning v3 meant first proving what "isolated" actually meant</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:35 EDT — The two-commit knot was one sentence disagreeing with itself</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>21:50 EDT — Ten merged branches nobody could see</span></a><a href="#2026-07-27" class="slot"><i>2026-07-27</i><span>22:35 EDT — Three ways to document a rule and still not have one</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>01:41 EDT — The memory was in a folder nothing was looking at</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>11:20 EDT — Two small releases that were both my own mess</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:20 EDT — The rules that enforce the rules were never backed up</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>13:45 EDT — The sweep that searched for its own wording</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>15:52 EDT — The error counter that could never have been right</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:05 EDT — "Why do I always have to ask you to check?"</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>17:35 EDT — A table of contents you can't actually search</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:05 EDT — A number I invented, in three files, wrong by 4x</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>18:40 EDT — The reset that ate a session I wasn't in</span></a><a href="#2026-07-28" class="slot"><i>2026-07-28</i><span>21:00 EDT — "Not checkable" was never true</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>11:44 EDT — The refs I left behind</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>12:30 EDT — The ledger that claimed no dated entries, and had 19</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:24 EDT — The licence that granted everything it meant to withhold</span></a><a href="#2026-07-29" class="slot"><i>2026-07-29</i><span>18:55 EDT — Seven dead links in the documents whose point is being checkable</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>00:40 EDT — A fix that was documented as working, and a site that was down behind a cache</span></a><a href="#2026-07-30" class="slot"><i>2026-07-30</i><span>22:24 EDT — Six notes-file items that all turned out to be the same document</span></a><a href="#2026-07-31" class="slot"><i>2026-07-31</i><span>23:50 EDT — Two features built twice, and what both corrections had in common</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>03:05 EDT — A gesture nobody wanted was eating every click</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>16:30 EDT — A model that was exact on paper and wrong on screen</span></a><a href="#2026-08-01" class="slot"><i>2026-08-01</i><span>21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>00:40 EDT — Three wrong diagnoses in a row, and what that actually means</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>14:43 EDT — The session that kept catching its own bugs (v2.48.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)</span></a><a href="#2026-08-02" class="slot"><i>2026-08-02</i><span>23:22 EDT — A linter that does not know your vocabulary (v2.50.4)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)</span></a><a href="#2026-08-03" class="slot"><i>2026-08-03</i><span>21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)</span></a><a href="#2026-08-04" class="slot"><i>2026-08-04</i><span>16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)</span></a><a href="#2026-08-05" class="slot"><i>2026-08-05</i><span>13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)</span></a></div>
     </aside>
     <main class="tl-wrap" id="main" tabindex="-1">
       
@@ -2045,7 +2100,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         <div class="tl-op">OPERATOR // LOG KEEPER<span class="tl-clk" id="clk"></span></div>
         <h1>Devlog</h1>
         <p class="tl-lede">The story behind the bot — the bugs, the dead ends, and what each one taught us.</p>
-        <div class="tl-stats">80 entries · 2 parts</div>
+        <div class="tl-stats">81 entries · 2 parts</div>
       </header>
       <div class="clede"><p>The <strong>story</strong> behind the bot: discoveries, bugs and their real root causes, the things we tried and walked back, the reasoning behind decisions, platform gotchas, concerns, and tips for our future selves.</p>
 <p><strong>How this differs from the other records:</strong></p>
@@ -2055,7 +2110,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <details class="cfold"><summary>🗺️ Table of contents</summary><div class="cfold-b">
 <p><em>Greppable heading map (added 2026-07-21) — jump by searching the entry text, not a line number (numbers rot on every edit). <strong>Every dated Part A line is its body heading VERBATIM, <code>## </code> stripped</strong> — that exact mirroring is what makes "search the entry text" actually land on the heading, and it is why the old vague qualifiers ("later", "afternoon", "late afternoon") were retired 2026-07-28 17:35 EDT: they were ambiguous AND they rotted, since inserting one entry silently shifted the meaning of every "later" below it. Older entries whose body heading carries no clock time keep the bare date — mirror what the heading says, never invent a time. ⚠️ The block also holds a non-dated pointer line with no body heading; <strong>don't blind- regenerate the TOC</strong>, it deletes that. Sync is now checked by <code>.claude/hooks/devlog-toc-check.sh</code> at <code>gh pr create</code> (it was found 15 entries behind the body on 2026-07-28 16:20 EDT under the old keep-it-in-sync-by-hand rule). Part A is strictly chronological; Part B is purely thematic — a dated narrative entry goes in Part A, a reusable takeaway goes in a Part B bullet. (2026-07-21: seven dated entries that had drifted into Part B were moved back into their chronological Part A slots — don't re-file dated deep-dives under Part B.)</em></p>
 <p><strong>Part A — The Journey (chronological)</strong></p>
-<ul><li>2026-07-13 — The color-panel saga: one report, five root causes</li><li>2026-07-14 — Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug</li><li>2026-07-14/15 — Planning sessions: a roadmap out to v5, and two landmines found while filing notes</li><li>2026-07-16 — A silent 14-minute Gateway hang, and a documentation gap it exposed</li><li>2026-07-17 — The Render outage that became a migration to GCP</li><li>2026-07-17 (later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API</li><li>2026-07-18 — A tidy session: turning the scratchpad into a conveyor, not a landfill</li><li>2026-07-18 (new session) — Solving a mystery Harkirat couldn't solve about his own bot</li><li>2026-07-18 — The v2 quick-wins polish batch: 8 filed items, shipped in one pass</li><li>2026-07-18 (later) — Going private broke the deploy, and a documentation lapse right after fixing it</li><li>2026-07-18 (later still) — A 15-note dump, and two real findings worth keeping</li><li>2026-07-18 (yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly</li><li>2026-07-18 (new session) — Building the passive auto-disable, and confirming it actually matches the spec</li><li>2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session</li><li>2026-07-19 — A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga</li><li>2026-07-20 — A "still active" link that was actually dead, and designing an automation idea properly</li><li>2026-07-20 | Antigravity — The Vertex AI Keyless ADC Migration</li><li>2026-07-20 | Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process</li><li>2026-07-20 | Claude — Queued housekeeping while <code>/autobuild</code> awaits its live test</li><li>2026-07-20 (later) — The alert log, and three process misses caught before the build even started</li><li>2026-07-20 (later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it</li><li>2026-07-21 — <code>/autobuild</code>'s first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives</li><li>2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no</li><li>2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at</li><li>2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction</li><li>2026-07-24 12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged</li><li>2026-07-24 16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)</li><li>2026-07-24 18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0</li><li>2026-07-25 16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md</li><li>2026-07-25 21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished</li><li>2026-07-26 11:52 EDT — Caught deferring, again, on the very hook built to stop it</li><li>2026-07-26 13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot</li><li>2026-07-26 15:26 EDT — Reversed twice on a convention, and both reversals were the system working</li><li>2026-07-26 16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures</li><li>2026-07-26 18:43 EDT — PR #9 finally gets a real boot test, not just <code>node --check</code></li><li>2026-07-26 21:04 EDT — A cleanup branch found a log line that lies about which database you're on</li><li>2026-07-27 08:02 EDT — A "parsing bug" that was actually a display/design mismatch</li><li>2026-07-27 08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer</li><li>2026-07-27 18:50 EDT — Planning v3 meant first proving what "isolated" actually meant</li><li>2026-07-27 20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't</li><li>2026-07-27 21:35 EDT — The two-commit knot was one sentence disagreeing with itself</li><li>2026-07-27 21:50 EDT — Ten merged branches nobody could see</li><li>2026-07-27 22:35 EDT — Three ways to document a rule and still not have one</li><li>2026-07-28 01:41 EDT — The memory was in a folder nothing was looking at</li><li>2026-07-28 11:20 EDT — Two small releases that were both my own mess</li><li>2026-07-28 13:20 EDT — The rules that enforce the rules were never backed up</li><li>2026-07-28 13:45 EDT — The sweep that searched for its own wording</li><li>2026-07-28 14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed</li><li>2026-07-28 15:52 EDT — The error counter that could never have been right</li><li>2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"</li><li>2026-07-28 17:35 EDT — A table of contents you can't actually search</li><li>2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x</li><li>2026-07-28 18:40 EDT — The reset that ate a session I wasn't in</li><li>2026-07-28 21:00 EDT — "Not checkable" was never true</li><li>2026-07-29 11:44 EDT — The refs I left behind</li><li>2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19</li><li>2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold</li><li>2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable</li><li>2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache</li><li>2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document</li><li>2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common</li><li>2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click</li><li>2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen</li><li>2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</li><li>2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means</li><li>2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)</li><li>2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)</li><li>2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)</li><li>2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)</li><li>2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)</li><li>2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)</li><li>2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)</li><li>2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)</li><li>2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)</li><li>2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)</li><li>2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)</li><li>2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)</li><li>2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)</li><li>2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)</li><li><em>Earlier milestones</em> <code>[backfill — expand later from transcripts]</code></li></ul>
+<ul><li>2026-07-13 — The color-panel saga: one report, five root causes</li><li>2026-07-14 — Access locks, a scope-correction, and a perf finding that turned out to be architecture, not a bug</li><li>2026-07-14/15 — Planning sessions: a roadmap out to v5, and two landmines found while filing notes</li><li>2026-07-16 — A silent 14-minute Gateway hang, and a documentation gap it exposed</li><li>2026-07-17 — The Render outage that became a migration to GCP</li><li>2026-07-17 (later) — Three cleanups on the healthy VM: a fix's own fix, a heartbeat, and a disabled API</li><li>2026-07-18 — A tidy session: turning the scratchpad into a conveyor, not a landfill</li><li>2026-07-18 (new session) — Solving a mystery Harkirat couldn't solve about his own bot</li><li>2026-07-18 — The v2 quick-wins polish batch: 8 filed items, shipped in one pass</li><li>2026-07-18 (later) — Going private broke the deploy, and a documentation lapse right after fixing it</li><li>2026-07-18 (later still) — A 15-note dump, and two real findings worth keeping</li><li>2026-07-18 (yet later) — Wrong on the button-disable claim; caught the same turn, corrected properly</li><li>2026-07-18 (new session) — Building the passive auto-disable, and confirming it actually matches the spec</li><li>2026-07-18 (later still) — Building a real MarkEdit extension, live, through a working session</li><li>2026-07-19 — A crash, a wrong field name, and a real ccTLD collision: the MarkEdit follow-up-mark saga</li><li>2026-07-20 — A "still active" link that was actually dead, and designing an automation idea properly</li><li>2026-07-20 | Antigravity — The Vertex AI Keyless ADC Migration</li><li>2026-07-20 | Claude — Reviewing the Antigravity handoff: what held up, what didn't, and Harkirat's frustration with the process</li><li>2026-07-20 | Claude — Queued housekeeping while <code>/autobuild</code> awaits its live test</li><li>2026-07-20 (later) — The alert log, and three process misses caught before the build even started</li><li>2026-07-20 (later still) — "wtf are these reconnect alerts?" → answer with evidence, then act on it</li><li>2026-07-21 — <code>/autobuild</code>'s first live test: six findings, one shared root, and a metadata question answered by looking at where the data actually lives</li><li>2026-07-21 (later) — A clean 15-minute feature, then "are we actually caught up?" — and the answer was no</li><li>2026-07-21 (new session) — Deploying v2.30.1, and finding a live crash in the logs I was only glancing at</li><li>2026-07-22 — Modularizing the 3,272-line CLAUDE.md, and being wrong about Gemini in the right direction</li><li>2026-07-24 12:12 EDT — "Part 3 shipped" — except it wasn't committed, and v2.31.0 was never tagged</li><li>2026-07-24 16:18 EDT — Turning repeatedly-ignored prose rules into hooks (backfilled 2026-07-26 11:52 EDT)</li><li>2026-07-24 18:18 EDT — The inaugural dogfood: branch → PR → squash-merge as v2.33.0</li><li>2026-07-25 16:20 EDT — Second dogfood of the branch workflow: splitting deferred-items.md</li><li>2026-07-25 21:43 EDT — "You did such a half-ass job of it": finishing a split that was never finished</li><li>2026-07-26 11:52 EDT — Caught deferring, again, on the very hook built to stop it</li><li>2026-07-26 13:45 EDT — Finally building a place to test, and the leak it sprang on the first boot</li><li>2026-07-26 15:26 EDT — Reversed twice on a convention, and both reversals were the system working</li><li>2026-07-26 16:04 EDT — The emoji sync reported 39/39 and was still wrong: four require-time captures</li><li>2026-07-26 18:43 EDT — PR #9 finally gets a real boot test, not just <code>node --check</code></li><li>2026-07-26 21:04 EDT — A cleanup branch found a log line that lies about which database you're on</li><li>2026-07-27 08:02 EDT — A "parsing bug" that was actually a display/design mismatch</li><li>2026-07-27 08:29 EDT — Mislabeled a MINOR fix as MODERATE, then acted before waiting for the answer</li><li>2026-07-27 18:50 EDT — Planning v3 meant first proving what "isolated" actually meant</li><li>2026-07-27 20:40 EDT — Closing out the old host, and what a scripted sweep found that reading hadn't</li><li>2026-07-27 21:35 EDT — The two-commit knot was one sentence disagreeing with itself</li><li>2026-07-27 21:50 EDT — Ten merged branches nobody could see</li><li>2026-07-27 22:35 EDT — Three ways to document a rule and still not have one</li><li>2026-07-28 01:41 EDT — The memory was in a folder nothing was looking at</li><li>2026-07-28 11:20 EDT — Two small releases that were both my own mess</li><li>2026-07-28 13:20 EDT — The rules that enforce the rules were never backed up</li><li>2026-07-28 13:45 EDT — The sweep that searched for its own wording</li><li>2026-07-28 14:15 EDT — Why the DEVLOG kept getting skipped, measured rather than guessed</li><li>2026-07-28 15:52 EDT — The error counter that could never have been right</li><li>2026-07-28 17:05 EDT — "Why do I always have to ask you to check?"</li><li>2026-07-28 17:35 EDT — A table of contents you can't actually search</li><li>2026-07-28 18:05 EDT — A number I invented, in three files, wrong by 4x</li><li>2026-07-28 18:40 EDT — The reset that ate a session I wasn't in</li><li>2026-07-28 21:00 EDT — "Not checkable" was never true</li><li>2026-07-29 11:44 EDT — The refs I left behind</li><li>2026-07-29 12:30 EDT — The ledger that claimed no dated entries, and had 19</li><li>2026-07-29 18:24 EDT — The licence that granted everything it meant to withhold</li><li>2026-07-29 18:55 EDT — Seven dead links in the documents whose point is being checkable</li><li>2026-07-30 00:40 EDT — A fix that was documented as working, and a site that was down behind a cache</li><li>2026-07-30 22:24 EDT — Six notes-file items that all turned out to be the same document</li><li>2026-07-31 23:50 EDT — Two features built twice, and what both corrections had in common</li><li>2026-08-01 03:05 EDT — A gesture nobody wanted was eating every click</li><li>2026-08-01 16:30 EDT — A model that was exact on paper and wrong on screen</li><li>2026-08-01 21:40 EDT — Four wrong fixes for one snap, and the memory that already had the answer</li><li>2026-08-02 00:40 EDT — Three wrong diagnoses in a row, and what that actually means</li><li>2026-08-02 02:20 EDT — Every guard I wrote today was defeated by the thing it guarded (v2.47.1)</li><li>2026-08-02 14:43 EDT — The session that kept catching its own bugs (v2.48.0)</li><li>2026-08-02 15:41 EDT — Every gate I wrote today passed a lie, and the tools were already installed (v2.49.0)</li><li>2026-08-02 16:09 EDT — The guards started correcting me, and one of them was right about the wrong thing (v2.49.1–v2.49.2)</li><li>2026-08-02 17:14 EDT — Six tests, zero runners: auditing an enforcement layer that was enforcing less than it looked (v2.50.0)</li><li>2026-08-02 18:22 EDT — The gate refused a real deadline, and the Stop hook caught what I had only said out loud (v2.50.1)</li><li>2026-08-02 18:43 EDT — Measuring a gate instead of arguing with it: 18% precision to 100% (v2.50.2)</li><li>2026-08-02 23:01 EDT — Two exploration passes, no code shipped, and that was the right outcome (v2.50.3)</li><li>2026-08-02 23:22 EDT — A linter that does not know your vocabulary (v2.50.4)</li><li>2026-08-03 17:04 EDT — Four rounds of being told the screen disagreed with the numbers (v2.51.0)</li><li>2026-08-03 18:22 EDT — A theory that mirrored working code turned out to be wrong, twice, live (v2.51.1)</li><li>2026-08-03 21:12 EDT — The fix that got copy-pasted instead of shared (v2.51.2)</li><li>2026-08-04 00:04 EDT — A CLI wrapper less safe than the script it wrapped (v2.51.3)</li><li>2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)</li><li>2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)</li><li><em>Earlier milestones</em> <code>[backfill — expand later from transcripts]</code></li></ul>
 <p><strong>Part B — Lessons Ledger (thematic, no dated entries)</strong> — reusable takeaways grouped by theme: War stories / root causes · Walk-backs &amp; reversals · Design decisions &amp; the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.</p>
 <hr>
 <p>Durable, reusable takeaways. Each is a compressed version of a story in Part A.</p>
@@ -3310,11 +3365,23 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 <p><strong>On renaming a product properly.</strong> The instinct is find-and-replace; the work is deciding what <em>doesn't</em> move. History stays as written, because a record that backdates a name is no longer a record. Infrastructure identifiers stay, because they have no reader. The repo folder stays, because the memory store's path derives from it. And the licence — a dated, published instrument — cannot quietly change its own name: it went to v1.1 with a clause saying the change is a name only, that copies held under v1.0 remain valid, and that the old identifier still denotes v1.0. Two of the survivors were then found by a <strong>multiline</strong> re-sweep: the files are hard-wrapped, and a single-line pattern cannot see a name broken across a line.</p>
 <p><strong>The version number, and a rule that already existed.</strong> The release had been blocked for hours on one question — which version — asked earlier and <em>denied</em>. Misreading that denial as licence to choose is what had pushed the branch to the remote prematurely, so the temptation to "just decide" was exactly the thing to resist a second time. It never needed a second question: CLAUDE.md already says <strong>"the merge-yes IS the version-number-yes; MAJOR always asked separately."</strong> An instruction to merge carries the version with it. <em>When a decision looks blocked, check whether the project has already written down who owns it.</em></p>
         </div>
+      </article>
+      <article class="tl-item" data-entry data-rv>
+        <span class="tl-node" aria-hidden="true"></span>
+        <div class="tl-date">2026-08-05</div>
+        <div class="tl-body">
+          <h2 id="2026-08-05">13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)</h2>
+          <p>Three bugs this session shared one shape: something that looked correct in isolation broke because of what ELSE happens at the same moment, and the fix in each case was to stop assuming the isolated view was the whole picture.</p>
+<p><strong>The clearest one.</strong> The anchor-copy "Copied" confirmation was written to fire from inside <code>navigator.clipboard.writeText()</code>'s <code>.then()</code>. That reads as correct — copy the link, then confirm it copied. But <code>.anchor</code> is a real <code>&lt;a href="#id"&gt;</code>, and a browser processes a link's default action (the hash jump) as its OWN step immediately after the click finishes dispatching, while the clipboard promise resolves later, on a microtask. The confirmation was racing the jump and losing every time. Live testing with a stubbed clipboard write proved the DISPLAY logic was correct — <code>place()</code>, the shared hint bubble, all fine — which made it easy to conclude the feature worked. It took testing with the REAL clipboard call, unstubbed, to see the actual failure: the tip stayed hidden through the whole 1400ms window. <em>A test that removes the race to make the assertion easier also removes the thing that was going to fail.</em></p>
+<p><strong>Fixing that surfaced a second one immediately.</strong> With the confirmation now synchronous, it showed — and then vanished within the same frame, because the module's own "hide the hint on scroll" listener was catching the SAME native scroll-to-hash that had caused the first bug. Two different failure modes, one shared cause: code written against "the click happens, then things settle" that never accounted for a browser doing real work of its own between those two points. The fix for both was the same shape — stop assuming you own the timeline, and make the confirmation track the thing racing it instead of losing to it.</p>
+<p><strong>The privacy gap was a scope bug, not a logic bug.</strong> <code>privacy-inventory</code> has verified <code>UserPreference</code>'s fields against the policy's Appendix A for weeks, correctly, every time it ran. It was never wrong about what it checked — it just only ever checked one of six models. The alert-log disclosure gap wasn't caught by that gate being broken; it was caught by not trusting that a check with a narrow, hardcoded scope had told the whole story, and looking at the other five schemas by hand instead. The new check that generalizes this (<code>privacy-model-coverage</code>) then repeated the session's own lesson back immediately: its first version was vacuous on the real repo, examining zero items, because excluding <code>UserPreference.js</code> (correctly — that's the other check's job) left nothing else in scope YET. A pass that verifies nothing is not evidence the check works; the shared test fixture needed a second, genuinely-disclosed model before the baseline PASS meant anything.</p>
+<p><strong>One user report, taken at face value instead of half-believed.</strong> "It's copying it but no notification, and it still jumps to the section" read, on a first pass, like it might be describing intended behavior (the jump was always supposed to happen) plus a vague complaint. It wasn't vague — it was a precise, correct bug report, and the fix followed directly from trusting it rather than reading the more comfortable interpretation into it first.</p>
+        </div>
       </article></div>
     </main>
   </div>
   <footer class="foot">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     <p class="disc">Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
     <nav class="endnav"><a href="../legal/terms.html">Terms</a><span>&middot;</span><a href="../legal/privacy.html">Privacy</a><span>&middot;</span><a href="../legal/license.html">License</a><span>&middot;</span><a href="../legal/notice.html">Notice</a><span>&middot;</span><a href="../legal/contributing.html">Contributing</a><span>&middot;</span><a href="../legal/contributors.html">Contributors</a><span>&middot;</span><a href="./">What's New</a><span>&middot;</span><a href="./detailed.html">Changelog</a></nav>
   </footer>
@@ -4518,6 +4585,20 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
 })();
 
 (function(){
@@ -4951,8 +5032,20 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -5158,41 +5251,95 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    var cur=-1,queued=0;
+    /* ⚠️ THIRD DESIGN FOR THIS FUNCTION, 2026-08-05 10:10 EDT — and the reason
+       is worth keeping straight, because the first two both failed for
+       different reasons and it would be easy to wander back into either.
+       (1) Nearest-row-centre to a DIRECTION-BIASED line, with a 24px
+       hysteresis margin: reported as "Terms lingers, the rest rush by" —
+       diagnosed as the algorithm, not the (perfectly uniform) layout, and
+       replaced with —
+       (2) boundary containment: a row active exactly while its own box
+       contains that same biased line. Proven live to give EQUAL dwell
+       distance per row (confirmed: ~130px each, Terms through Notice) — but
+       then rejected anyway: "linear isn't the solution." Equal-by-the-numbers
+       still read as mechanical, because a fixed offset percentage down the
+       screen is not what a reader's eye is actually doing.
+       (3) THIS version: whichever row's centre is nearest the VIEWPORT'S OWN
+       centre — "whichever row is most prominently in view," Harkirat's own
+       framing. This is not just a different number, it drops the whole
+       direction-bias/easing apparatus (dir, lastY, the 8px threshold, lineY's
+       spring) outright, because the reference point is innerHeight*0.5 —
+       fixed, not direction-dependent — so there is nothing left for a
+       direction change to destabilise. Simpler code as a direct consequence
+       of the simpler mental model, not a separate cleanup. */
+    /* ⚠️ A ROW CAN BE SKIPPED ENTIRELY ON A FAST SWIPE, and no per-frame
+       distance rule fixes that — added 2026-08-05 10:13 EDT, proven with a
+       frame-by-frame recording. pick() only samples state once per
+       requestAnimationFrame; a fast flick can move the scroll far enough
+       between two consecutive frames that a row's whole "nearest the centre"
+       window falls entirely in the gap between samples — the recording
+       showed Privacy active, then License's entire on-screen span passing
+       with nothing lit, then Notices taking over, License never once
+       flagged. No amount of tuning the DISTANCE test closes that: the
+       problem is temporal (a row got no sampled moment), not spatial.
+       stepQueue turns a jump of more than one row into a walk, one row per
+       stepTimer tick, so a skipped row still gets a real, visible moment —
+       capped at 3 steps so an extreme jump (dragging the scrollbar from top
+       to bottom) snaps straight to the end instead of animating through
+       every row it technically passed. */
+    var stepTimer=0;
+    function advance(target){
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=target;
+      rows[cur].classList.add('act');
+    }
+    function stepToward(target){
+      clearTimeout(stepTimer);
+      if(cur<0||Math.abs(target-cur)>3){advance(target);return;}
+      if(cur===target)return;
+      var next=cur+(target>cur?1:-1);
+      advance(next);
+      if(next!==target)stepTimer=setTimeout(function(){stepToward(target);},70);
+    }
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
-      var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
-      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
-         A fixed line only marks a row once the row has reached it, so on the way
-         down the highlight always trails what you are looking at. Offsetting the
-         line by a tenth of the viewport in the direction of travel moves it DOWN
-         while scrolling down, which is the direction rows arrive from, so a row is
-         claimed on approach instead of on arrival — and symmetrically on the way
-         back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it. */
-      var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var mid=innerHeight*0.5;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
-        d=Math.abs(r.top+r.height/2-line);
+        d=Math.abs(r.top+r.height/2-mid);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
-      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      if(best<0||best===cur)return;
+      /* A light margin, not the old 24px — with a STABLE reference point the
+         flicker case (two rows trading the highlight every frame near a
+         shared boundary) is far less likely to begin with; this only damps
+         genuine near-ties rather than doing the main stabilising work the
+         way it had to before. Only applied to single-row moves — a jump big
+         enough to trigger stepToward's walk already means best is decisively
+         ahead, not a near-tie. */
+      if(cur>=0&&Math.abs(best-cur)<=1&&bestD>curD-10)return;
+      stepToward(best);
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
+       pick() immediately whenever want was true, which measured the row
+       nearest the line AT THE TOP OF THE PAGE and highlighted it before the
+       reader had scrolled at all — row 0 ("Terms of Service") lighting up on
+       load with no interaction. Clearing to no highlight and letting the
+       first real scroll event call pick() (via onScroll below) means the
+       highlight only ever appears once the reader has actually started
+       scrolling, which is what "auto" should mean here. */
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
-      if(!want){
-        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
-        cur=-1;
-      }else{cur=-1;pick();}
+      clearTimeout(stepTimer);
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
@@ -5202,7 +5349,7 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
 
   /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
   (function(){
-    var tt=document.getElementById('totop');
+    var tt=document.getElementById('gotop');
     if(!tt)return;
     function past(){return scrollY_()>innerHeight*0.6;}
 
@@ -5302,12 +5449,12 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
           /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
              BUG. Measured: on is never re-added after a launch, but the control's
              computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
-             Removing on and birth in one statement hands the fade to the .totop
+             Removing on and birth in one statement hands the fade to the .gotop
              transition, and birth is also what hides the ring and the arrow — so
              for ~300ms after the liquid has flown away the REAL button chrome pops
              back and fades out behind it. It never was a second birth, which is
              why two fixes aimed at the threshold missed it.
-             Drop on while birth still applies (.totop.birth carries
+             Drop on while birth still applies (.gotop.birth carries
              transition:none, so it goes to 0 instantly), flush that state, and
              only then drop birth. */
           tt.classList.remove('on');
@@ -5553,9 +5700,9 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -5574,9 +5721,30 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -5645,14 +5813,57 @@ h2:hover .anchor,h3:hover .anchor{opacity:1}}@media (hover:hover) and (pointer:f
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place.
+       ⚠️ flashCopied() FIRES SYNCHRONOUSLY, NOT INSIDE THE CLIPBOARD PROMISE'S
+       .then(). This used to wait for navigator.clipboard.writeText() to
+       resolve before showing anything — and a real .anchor is a genuine
+       <a href="#id">, so the browser's default action (the hash jump) runs
+       right after this listener finishes, as its own step in event dispatch.
+       That ran BEFORE the microtask the clipboard promise resolves on, so by
+       the time flashCopied() finally fired the page had already jumped once
+       — reported 2026-08-05 12:03 EDT as no visible confirmation at all, only the jump.
+       Calling it here, in the same synchronous tick as the click and before
+       the browser's default action, guarantees the capsule is placed against
+       the anchor's PRE-jump position; the scroll listener above (see
+       "flashing" note) is what then keeps it riding along as the jump
+       happens. The write to the clipboard itself doesn't need to finish
+       first — it either succeeds silently or doesn't, but the user should
+       never be kept waiting on it to see that the click registered. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        flashCopied(a);
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href')).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();

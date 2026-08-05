@@ -1,11 +1,11 @@
 # Privacy Policy — Dioreo
 
-**Effective date:** 4 August 2026
-**Version:** 1.8
+**Effective date:** 5 August 2026
+**Version:** 1.9
 **Applies to:** the Dioreo Discord application (the "Bot") and this
 documentation website (the "Site")
 
----
+
 
 ## 0. The short version
 
@@ -26,7 +26,7 @@ You can have everything deleted by emailing **harkirat117@gmail.com** — see §
 
 *This summary is for convenience. The sections below are the actual policy.*
 
----
+
 
 ## 1. Who is responsible for your data
 
@@ -62,7 +62,7 @@ If that assessment ever stops being accurate, we will appoint a representative
 and update this policy. EU and UK users can reach us directly at the address
 above, and we answer.
 
----
+
 
 ## 2. What we collect
 
@@ -213,7 +213,7 @@ never sent anywhere.** We mention it because a colour-scheme preference is one o
 the signals that *can* be used to help fingerprint a browser when it is collected
 and transmitted, and we would rather state plainly that this one is not.
 
----
+
 
 ## 3. What we do NOT collect
 
@@ -234,7 +234,7 @@ and transmitted, and we would rather state plainly that this one is not.
 We do **no** profiling, no behavioural advertising, and **no automated
 decision-making producing legal or similarly significant effects** (GDPR Art. 22).
 
----
+
 
 ## 4. Why we process it, and our legal basis
 
@@ -257,7 +257,7 @@ can withdraw consent at any time (§9).
 > and non-commercial, so PIPEDA arguably doesn't bind us at all. **We comply with
 > it regardless**, and don't rely on that argument to hold anything back.
 
----
+
 
 ## 5. Who your data is shared with
 
@@ -268,7 +268,7 @@ We have never done so, and we have no plans to.
 | Provider | What it handles | Where |
 |---|---|---|
 | **Discord Inc.** | The platform itself — your ID, your interactions | Per [Discord's Privacy Policy](https://discord.com/privacy) |
-| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record** | **🇨🇦 Azure Canada Central (Toronto)** |
+| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, plus the operational alert log described in §2.4** | **🇨🇦 Azure Canada Central (Toronto)** |
 | **Google Cloud Platform** (Google LLC) | Hosts the server the Bot runs on | 🇺🇸 `us-east1` (South Carolina) |
 | **Google Cloud Logging** (Google LLC) | Server logs, 30-day retention | 🇺🇸 United States |
 | **Google Cloud Vertex AI** (Google LLC) | Admin-only image extraction — **no end-user data** | 🇺🇸 United States |
@@ -287,7 +287,9 @@ this page is the only thing that involves them.
 **Your stored personal data stays in Canada.** The `UserPreference` records —
 the only place your preferences live — are in an Atlas cluster hosted in **Azure
 Canada Central, Toronto**. Verified 2026-07-28 21:36 EDT by resolving the
-cluster's DNS records.
+cluster's DNS records. The alert log described in §2.4 lives in the same
+cluster, for the same reason: it is a different collection, not a different
+provider or region.
 
 **Cloudinary holds no personal data.** The images there are game screenshots and
 weapon artwork supplied by the administrator. Your avatar is never uploaded.
@@ -350,7 +352,7 @@ to tell you about such a request, we will.
 If the Bot were ever transferred to another operator, your data could transfer
 with it. We would give notice first, and you could delete your data beforehand.
 
----
+
 
 ## 6. International transfers
 
@@ -371,7 +373,7 @@ in the Google Cloud data processing terms.
 Given the data involved is a user ID and colour preferences, the practical risk
 of these transfers is low.
 
----
+
 
 ## 7. How long we keep it
 
@@ -400,7 +402,7 @@ updated when they ship.
 `/settings` currently lets you **change** stored values, which overwrites them. It
 has no reset or delete.
 
----
+
 
 ## 8. Security
 
@@ -435,7 +437,7 @@ If a breach creates a **real risk of significant harm**, we will:
 3. For EEA/UK users, notify the relevant supervisory authority within **72
    hours** where GDPR requires it, and notify you directly where the risk is high.
 
----
+
 
 ## 9. Your rights and how to use them
 
@@ -527,7 +529,7 @@ plus user-set preferences; we collect it directly from your use of the Bot; we
 use it solely to operate the Bot; **we do not and have never sold or shared
 personal information**; and we do not collect sensitive personal information.
 
----
+
 
 ## 10. Children's privacy
 
@@ -546,7 +548,7 @@ Because we never collect names, emails, photographs, or message content, the dat
 we hold about any user — including a young one — is limited to a Discord ID and
 display preferences.
 
----
+
 
 ## 11. Third-party links and content
 
@@ -556,7 +558,7 @@ site or service.** Discord's own handling of your data is governed by
 [Discord's Privacy Policy](https://discord.com/privacy), which is worth reading —
 it covers far more data than we ever see.
 
----
+
 
 ## 12. Changes to this policy
 
@@ -579,6 +581,7 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.9 | 5 August 2026 | §5's MongoDB Atlas row said it stores only "your preference record" — true of `UserPreference`, but MongoDB also backs the operational alert log §2.4 already discloses in prose. The row and §5.1 now say so and cross-reference §2.4; §2.4 itself is unchanged, because the alert log's contents and 30-day retention were already described accurately there. **No change to what is collected, why, or how long it is kept** — this closes a gap in *where the provider table said it lives*, not a change to what MongoDB stores. |
 | 1.8 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** §1 now records the former name and states plainly that the controller did not change. **Nothing else changed at all** — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one. |
 | 1.7 | 4 August 2026 | Corrected §2.6, which still described the Site as storing **one** item and stated that nothing is written unless you press the light/dark switch. Both had been untrue since `db-booted` was added in version 1.6: that item is written when you open What's New, the Changelog or the Devlog, without being asked for. The consent-banner reasoning was affected too — it argued the strictly-necessary exemption only for a preference you set by pressing a switch, which does not reach `db-booted` at all. Every statement in §2.6 now names which item it applies to, and the exemption is argued for `db-booted` explicitly. **No change to what is stored, why, who receives it, or how long it is kept** — the two items, their values and their lifetimes are exactly as listed in version 1.6. |
 | 1.6 | 3 August 2026 | §2.6 and Appendix A began listing the Site's **second** browser-storage item, `db-booted` — a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It had been written since those pages launched while the policy described `db-theme` as the only key: the verification note had searched the generator, and the flag is written by a separate file, so it was never in scope. The note searches the built pages now. **No change to what is collected, why, who receives it, or how long it is kept** — the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
@@ -589,7 +592,7 @@ change record you can't reach isn't a change record.
 | 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
 | 1.0 | 28 July 2026 | First published version. |
 
----
+
 
 ## 13. Contact
 
@@ -605,7 +608,7 @@ contact point in a privacy policy must not be able to go dead.
 For privacy requests, use the subject line **"Privacy Request"** and include your
 Discord user ID.
 
----
+
 
 ## Appendix A — Complete data inventory
 
@@ -644,12 +647,13 @@ keeps a `db-theme` entry in your own browser's local storage, holding `light` or
 listed here for completeness only — neither reaches our database or any server,
 and both are described in full in §2.6.
 
----
+
 
 ## Appendix B — Change history
 
 | Version | Date | Change |
 |---|---|---|
+| **1.9** | 5 August 2026 | §5's MongoDB Atlas row and §5.1 now note that the same cluster also holds the operational alert log §2.4 already describes, not only `UserPreference`. **No change to what is collected, why, who receives it, or how long it is kept.** |
 | **1.8** | 4 August 2026 | Renamed from Dior's Builds to Dioreo. §1 records the former name and confirms the controller is unchanged. **No change to what is stored, why, who receives it, or how long it is kept** — no new controller, processor, recipient or purpose, and Appendix A is identical to 1.7. |
 | **1.7** | 4 August 2026 | §2.6 corrected: it still said the Site stored **one** item and that nothing is written unless you press the light/dark switch, neither of which had been true since `db-booted` arrived in 1.6, and the no-consent-banner argument reached only the switch. Each statement now names the item it applies to and the strictly-necessary basis is argued for both. **No change to what is stored, why, who receives it, or how long it is kept.** |
 | **1.6** | 3 August 2026 | §2.6 and Appendix A now list the Site's **second** browser-storage item, `db-booted`, a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It has been written since those pages launched, while the policy said `db-theme` was the only key — the verification note had searched the GENERATOR and the flag is written by `scripts/lib/chronicle.js`, so it was never in scope. The note now searches the BUILT pages. **No change to what is collected, why, who receives it, or how long it is kept:** the flag holds `1`, never reaches any server, and is discarded when the tab closes. |
@@ -663,7 +667,7 @@ and both are described in full in §2.6.
 Future revisions will be listed here. The complete drafting history is kept in the
 repository's git log.
 
----
+
 
 ## Appendix C — How each claim was verified
 
@@ -694,7 +698,7 @@ backup-retention caveat in §9.4 and the honest limits stated in §5.2, §7.1, a
 You are welcome to check any of this yourself, or to ask us to show you the
 relevant code.
 
----
+
 
 *Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights

@@ -145,30 +145,28 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
-  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
-   slot has been emptied on purpose. It held three stacked bars first, which is
-   the universal glyph for a menu, so readers tried to tap it expecting one to
-   open. It then held a rounded square carrying a "D" — which was worse in a
-   quieter way: a single letter in a box is the most generic mark there is, it
-   said nothing the wordmark next to it does not already say in full, and it made
-   the site's identity a placeholder logo rather than the typography.
-
-   The wordmark alone is the mark. Do not "restore the logo" without an actual
-   drawn mark to put there; another letter-in-a-square is not one. */
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ SUPERSEDES the two prior "no logo mark" decisions (this slot had held a
+   3-bar menu glyph, then a letter-in-a-square, and was emptied back to plain
+   type both times because neither was an actual drawn mark — see git history
+   on this comment for the full reasoning). Harkirat supplied a real drawn
+   Dioreo mark 2026-08-04 21:18 EDT (the mascot + bubble wordmark lockup), which
+   is exactly what those two notes said was missing, so it now REPLACES the
+   typographic wordmark outright rather than sitting beside it — there is no
+   longer a second "Dioreo" in text form for it to compete with in the bar. */
 
 
-.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
-   this it kept its full 90px of text inside a 31px box and simply drew across
-   the buttons beside it — the "too tight" header was really this one missing
-   rule. Truncation is the honest failure mode for a flexible label. */
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* Fixed height so the mark lines up with the 32px control row beside it;
+   width is intrinsic (object-fit:contain) so the mascot and the bubble
+   letters scale together and never crop. The image is allowed to be
+   narrower than its box shrinks to — it has no truncation failure mode the
+   way the old text did, so nothing here needs an overflow rule. */
 
-.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
-  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
-  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
-  background-size:280% 100%;background-position:130% 0;
-  -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+
+.wm.wm-hero{height:112px}/* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
    that states it twice is noise. Below 980 the switcher is gone. */
 
@@ -177,13 +175,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
    drop the keyboard focus styling on any device with a touchscreen, which is
-   most laptops now. Split, always. */
+   most laptops now. Split, always.
+   The old sweep animated a text-fill gradient, which has no equivalent on a
+   raster mark — replaced with the same scale nudge every other interactive
+   control in the bar uses on press/hover, so the mark still confirms it is
+   clickable without inventing a bespoke effect just for itself. */
 
 
-.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .wm{transform:scale(1.05)}
 .mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 @media (hover:hover) and (pointer:fine){
-  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .wm{transform:scale(1.05)}
   .mark.live:hover .go{opacity:1;transform:translateX(0)}
 }/* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -333,12 +335,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .bar.bar nav{gap:.5rem}/* The context line goes. It names the page you are on, and directly beneath it
      the strip names the page you are on with a filled pill — saying it twice in
      54px of header is what made the mark fight the buttons for width.
-     The wordmark also drops a step, because at 1.02rem it still truncated to
-     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
-     slightly smaller whole one. */
+     The mark also drops a step — same reasoning as the old text wordmark did
+     (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
+     smaller whole mark reads better than a squeezed one on a narrow header. */
   
   .mk-ctx.mk-ctx{display:none}
-  .wm{font-size:.85rem}/* 19px of the mark's width was its own padding — a hover affordance, on a
+  .wm{height:34px}
+  .wm.wm-hero{height:64px}/* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
      chasing. */
@@ -692,8 +695,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
@@ -722,7 +731,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
+
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -752,15 +774,25 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
 }
-.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+.sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
+   colour every other bold word in the sig line gets — Harkirat's call
+   2026-08-05 08:44 EDT. --accent-t is the site's text-safe accent token
+   (already re-mixed for contrast in both themes), so this follows whichever
+   accent the current page is on automatically. */
+
+.sig .sig-a{color:var(--accent-t);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
    the name is already the only emphasised word in it. */
 
@@ -772,6 +804,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
 a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
 a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
+   ⚠️ NAMED .gotop, NOT .totop — renamed 2026-08-05 08:11 EDT. "totop" is the
+   exact class/id a real, widely-deployed "scroll back to top" WordPress plugin
+   (and several clones) use, and it collides with generic ad-blocker cosmetic
+   filter rules written against THAT library rather than against this site —
+   Harkirat confirmed this by reproducing it with the SAME blocklist enabled on
+   two different browsers. It genuinely worked before: this is not a code
+   regression, it is a third-party filter list matching a common name by
+   coincidence, and it can recur at any time a list adds a similarly generic
+   rule. Never rename this back to something in the totop/back-to-top/scrollup
+   family — those are exactly the names blocklists target.
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -788,23 +830,35 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    So --lift is written from the script each frame: zero until the footer's top
    edge reaches the button, then exactly the overlap, so it rides up ahead of the
    footer and never crosses it. It is a variable rather than a direct transform
-   write because .totop.on owns the transform — a script setting style.transform
+   write because .gotop.on owns the transform — a script setting style.transform
    would have fought the entry animation. */
 
 
-.totop{--lift:0px;
+.gotop{--lift:0px;
   position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
   background:color-mix(in srgb,var(--paper) 90%,transparent);
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
-  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* ⚠️ --lift IS PINNED TO 0 BELOW 760px, ON PURPOSE — Harkirat's call
+   2026-08-05 09:01 EDT, after the footer redesign (side-by-side disclaimer +
+   sig, no more full-width stacked lines) freed up enough room that the
+   button riding up to clear the footer is no longer solving a real overlap;
+   it just makes the button drift on mobile instead of sitting still where a
+   thumb expects it. !important is required here: the script still WRITES
+   --lift as an inline style every frame (see the two writers this rule's own
+   comment above names), and a plain override loses to that inline value —
+   only an !important stylesheet rule beats it. The script itself is
+   untouched; it can keep computing a nonzero value; this simply stops it
+   from being read on a narrow viewport. */
+
+@media (max-width:760px){ .gotop{--lift:0px!important} }/* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
 
-.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+.gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
   transition:opacity .34s ease,border-color .3s ease}
-.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+.gotop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
    the border it sits in. Covering the border box instead puts both circles on one
@@ -823,8 +877,8 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .tt-ar i:nth-child(1){top:0}
 .tt-ar i:nth-child(2){top:12px}
 @media (hover:hover) and (pointer:fine){
-  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-  .totop:hover .tt-ar i{transform:translateY(-12px)}
+  .gotop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .gotop:hover .tt-ar i{transform:translateY(-12px)}
 }
 @keyframes ttFire{
   0%{transform:translateY(0);opacity:1}
@@ -832,16 +886,16 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   37%{transform:translateY(15px);opacity:0}
   100%{transform:translateY(0);opacity:1}
 }
-.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+.gotop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .totop{transition:opacity .2s ease}
+  .gotop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
-  .totop.fire .tt-ar{animation:none}
+  .gotop.fire .tt-ar{animation:none}
 }/* ── back to top, coalescing ───────────────────────────────────────────
    The control assembles from droplets falling inward when it first arrives, and
-   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
-   and .totop.on: they are all (0,2,0), so source order is what decides, and
-   .totop.birth has to win over both while the liquid is on screen.
+   comes apart upward when pressed. Every rule below has to sit AFTER .gotop:hover
+   and .gotop.on: they are all (0,2,0), so source order is what decides, and
+   .gotop.birth has to win over both while the liquid is on screen.
 
    ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
    filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
@@ -857,7 +911,7 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
    measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
    black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
-   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   an opaque backdrop, and .gotop is position:fixed with z-index:55 — its own
    stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
    background .birth has just made transparent. Black against nothing stays black.
    Giving the button an opaque background does not help either: the bed is inset
@@ -867,12 +921,12 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 
 .tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
   opacity:0;visibility:hidden}
-.totop.birth .tt-ink{opacity:1;visibility:visible}
+.gotop.birth .tt-ink{opacity:1;visibility:visible}
 .tt-goo{position:absolute;inset:0}
-.totop.birth .tt-goo{filter:url(#dbgoo-c)}
-.totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
+.gotop.birth .tt-goo{filter:url(#dbgoo-c)}
+.gotop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
-   to .totop's own transition is what made the button appear to come back after a
+   to .gotop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
    "gradient circle behind the button". Clearing background and border-color takes
    away the button's own paint, but a backdrop-filter is not paint — it is a
@@ -888,9 +942,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    background. Two circles, two causes; the first fix made the second visible. */
 
 
-.totop.birth{background:transparent;border-color:transparent;
+.gotop.birth{background:transparent;border-color:transparent;
   backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
-.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.gotop.birth .tt-ring,.gotop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
   transform:scale(0);will-change:transform}
@@ -1402,7 +1456,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      the y-squash note on the particles. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
      a no-op for momentum since iOS 13 made smooth scrolling the default; the only
@@ -1411,6 +1465,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
   
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
@@ -1650,18 +1705,18 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
-   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
-   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap (4rem), false
-   here, where .page ends at 0. Measured on an iPhone against Contributing, which
-   is the rhythm Harkirat asked these pages to match: 96px above the link row and
-   28px below it, against 54 and 80. So this restores the missing floor and trims
-   the card's own 3rem gap, which is a desktop value that reads as a hole once the
-   footer is a single narrow column. Both numbers are the warm page's, not new
-   ones — the point is that the two templates agree. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
+   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
+   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap, false here,
+   where .page ends at 0. This restores the missing floor, and the two numbers
+   have to move together — see .wrap below — or the templates drift apart again.
+   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
+   original 4rem) was reported as too much dead space below the sign-off on
+   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
+   with .wrap's own trim to the same value. */
 
-@media (max-width:760px){ .page{padding-bottom:4rem} }
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1713,11 +1768,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}/* ── the plain-text download ──────────────────────────────────────────
-   One rule set for both hosts, because it is one control: the section index's
-   last row on the desktop rail, and the same row inside the mobile disclosure.
-   It reads as an ACTION, not as another section — a filled chip rather than a
-   ruled row — because a reader scanning for "where am I" must not mistake it for
-   a place to go. Its touch target is the 44px the mobile list already uses. */
+   The desktop rail's last row. It reads as an ACTION, not as another section —
+   a filled chip rather than a ruled row — because a reader scanning for "where
+   am I" must not mistake it for a place to go.
+   ⚠️ MOBILE REUSES THIS SAME ROW AGAIN (changed 2026-08-05 11:31 EDT) — it used
+   to get its own compact icon-only control, .dlm, living in the sticky tab bar.
+   That read as a stray icon inside what otherwise looks like page navigation,
+   with no room to say what it does. It moved into the section menu instead —
+   see mobileNav() and ".mp-list .dlr" below — as the SAME row this is, not a
+   second markup shape to keep in sync. */
 
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
@@ -1732,26 +1791,34 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .dlr-t b{color:var(--ink);font-weight:650}/* Tabular so the two pages' sizes line up if they are ever seen together. */
 
 .dlr-s{flex:0 0 auto;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;
-  color:var(--ink3);font-variant-numeric:tabular-nums}/* Drawn, not typed: a glyph would render at whatever weight the mono face has and
-   would also join the page text, which is the trap documented on the copy button.
-   A tray with an arrow coming down into it — the shape a download actually is. *//* ⚠️ The tray's floor is a BORDER on the element itself, not a third child. An
-   element has two pseudo-elements and the arrow needs both — a stem and a head —
-   so the base had to come from somewhere that is not a box. A stray <span> for it
-   would have been markup existing only to be painted. */
+  color:var(--ink3);font-variant-numeric:tabular-nums}/* See dlIcon() — inline SVG now, not a CSS border/pseudo-element tray. */
 
+.dlr-i{flex:0 0 auto;display:block;width:13px;height:13px;color:var(--accent-t)}/* ── the section menu's download card ───────────────────────────────────
+   The mobile home for the row above, as the last child of .mp-list — see the
+   note on .msecd for why it's a different kind of question than "which
+   section" and belongs apart from the list rather than styled as one more
+   row in it.
+   ⚠️ NOT STICKY, ON PURPOSE (reversed 2026-08-05 12:28 EDT). A sticky-to-the-
+   list version shipped first, edge-to-edge with square corners, so it could
+   sit flush against the scroll boundary — but that same edge-to-edge opaque
+   bar is what made it PIN OVER whatever section row happened to be scrolled
+   underneath it, mid-word, with no transition. Reported as "such a poor
+   implementation... looks slapped on." The desktop rail's identical .dlr row
+   has never drawn that complaint sitting as a plain trailing row with normal
+   margin — so rather than polish the overlap (a fade mask, a shadow) this
+   drops the mechanism that caused it. Inset margin matching the slot rows'
+   own horizontal padding, and a hairline drawn in the gap above it via
+   ::before rather than a real border — a border on the card itself would
+   have doubled up against .msecd's own bottom border when the list is short
+   enough not to scroll. */
 
-.dlr-i{position:relative;flex:0 0 auto;display:block;box-sizing:border-box;
-  width:13px;height:13px;color:var(--accent-t);
-  border-bottom:1.6px solid currentColor}
-.dlr-i::before{content:"";position:absolute;left:5.7px;top:0;width:1.6px;height:6.4px;
-  background:currentColor;border-radius:1px}/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE — same trap as the landing page's
-   .arw. The head is a 5.6px box turned 45deg, so its tip reaches 5.6/sqrt(2)=3.96px
-   from its own centre, not 2.8. Centred at x=6.5 that puts the point at 10.46 and
-   2.54, both inside the 13px box. */
-
-.dlr-i::after{content:"";position:absolute;left:3.7px;top:1.9px;width:5.6px;height:5.6px;
-  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  border-radius:0 0 2px 0;transform:rotate(45deg)}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
+.mp-list .dlr{position:relative;margin:1.1rem .9rem .3rem;padding:.75rem .9rem;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--accent) 9%,var(--paper));
+  border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}
+.mp-list .dlr::before{content:"";position:absolute;left:0;right:0;top:-.65rem;
+  height:1px;background:var(--rule)}@media (hover:hover) and (pointer:fine){
+.mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 
 @media (max-width:980px){ .rail{display:none} }
@@ -1902,11 +1969,20 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 @media (hover:none){.anchor{display:none}}/* ── prose ───────────────────────────────────────────────────────── */
 
 
-.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
-.doc p{margin:0 0 1.15rem;max-width:72ch}
+.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}/* ⚠️ WIDENED 72ch -> 88ch, and every other doc-body max-width shifted by the
+   same +16ch, 2026-08-05 08:58 EDT. 72ch is a reasonable READING line length
+   in isolation, but .doc's actual column (the page minus the 200px rail
+   minus its own padding) runs well past 100ch on a normal laptop width, so
+   the cap was leaving a wide dead margin down the right side of the card
+   instead of the text using space the layout already allocated for it. Kept
+   every doc-body type at the SAME relative gap it had before (70/72/74 ->
+   86/88/90) rather than picking one flat number, so paragraphs, lists,
+   callouts and the shout blocks still line up with each other. */
+
+.doc p{margin:0 0 1.15rem;max-width:88ch}
 .doc strong{color:var(--ink);font-weight:600}
 .doc em{font-style:italic}
-.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:88ch}
 .doc li{margin:.5rem 0}
 .doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
 .doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
@@ -1932,24 +2008,19 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
   letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
   border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
-  max-width:72ch}
+  max-width:88ch}
 .authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
   justify-content:space-between}
 .authoritative p{margin:0;flex:1 1 34ch}
-.authoritative a{color:var(--ink)}/* Download the instrument. The arrow is drawn rather than typed so it inherits
-   the button's colour in both themes and cannot fall back to a missing glyph. */
+.authoritative a{color:var(--ink)}/* Download the instrument. See dlIcon() — inline SVG, inherits the button's
+   colour in both themes and cannot fall back to a missing glyph. */
 
 .dl{display:inline-flex;align-items:center;gap:.55rem;flex:0 0 auto;min-height:38px;
   padding:.45rem .95rem;border-radius:999px;border:1px solid var(--rule2);
   background:color-mix(in srgb,var(--ink) 7%,transparent);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
   text-decoration:none;transition:border-color .25s,background .25s}
-.dl-i{position:relative;width:9px;height:11px;flex:0 0 auto}
-.dl-i::before{content:"";position:absolute;left:3.6px;top:0;width:1.6px;height:7px;
-  background:currentColor}
-.dl-i::after{content:"";position:absolute;left:.6px;top:3.6px;width:6px;height:6px;
-  border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  transform:rotate(-45deg)}
+.dl-i{flex:0 0 auto;display:block;width:11px;height:11px}
 .dl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){
   .dl:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent);
@@ -1979,10 +2050,10 @@ h3.clause .ht:empty{display:none}
   h3.clause:has(.ht:empty){margin-bottom:.15rem}
 }
 p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
-  margin:0 0 .95rem;max-width:70ch}
+  margin:0 0 .95rem;max-width:86ch}
 p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
   font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
-ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:86ch}
 ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
   margin:.34rem 0}/* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
    so they are preserved rather than down-cased — but a wall of capital serif at
@@ -1990,21 +2061,61 @@ ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color
 
 p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
   color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
-  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:90ch}/* ⚠️ pre-wrap, NOT pre — reported 2026-08-05 08:34 EDT against NOTICE §4A.1's
+   quoted emoji.gg licence text: white-space:pre never wraps, so a QUOTED
+   PARAGRAPH landed here (renderIndented() sends anything indented deeper
+   than its paragraph baseline to this class, on purpose, for addresses and
+   the SPDX identifier) forced a horizontal scrollbar instead of wrapping like
+   the prose it actually is. pre-wrap keeps this block's real job — an
+   address or identifier's own line breaks stay literal — while also wrapping
+   at the box edge, which a short address never needed and a long quote
+   always did. */
+
 pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
   background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
-  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;
+  white-space:pre-wrap;overflow-wrap:break-word}/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
    IS the structure, so it must not wrap — hence its own horizontal scroll rather
    than letting the page body scroll, which is the rule for every wide element. */
 
 pre.aligned{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
   background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
   margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
-pre.aligned a{color:var(--ink)}/* ── callouts ────────────────────────────────────────────────────── */
+pre.aligned a{color:var(--ink)}/* ── dependency/asset cards — see isDepEntry()/depCard() ────────────────
+   Each record stacks vertically: name+version+license on one line, then
+   copyright, then the link, each free to wrap on its own rather than being
+   held to a fixed column that a phone-width viewport can't honour. Adjacent
+   cards are consecutive .dep divs, not one shared box, so the gap between
+   them is ordinary block margin rather than a divider drawn across a table. */
+
+.dep{border:1px solid var(--rule);border-radius:11px;padding:.85rem 1.05rem;
+  margin:0 0 .65rem;background:var(--raised);max-width:88ch}
+.dep:last-child{margin-bottom:0}
+.dep-h{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.55rem;row-gap:.3rem;
+  margin-bottom:.45rem}
+.dep-n{font-family:var(--display);font-weight:700;font-size:.94rem;color:var(--ink);
+  letter-spacing:-.005em}
+.dep-v{font-family:var(--mono);font-size:.66rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.dep-lic{flex:0 0 auto;margin-left:auto;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-t);
+  padding:.22rem .6rem;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+  background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.dep-c{margin:0 0 .3rem;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  color:var(--ink2)}
+.dep-u{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  word-break:break-all}
+.dep-u a{color:var(--accent-t)}
+.dep-note{margin:.4rem 0 0;font-family:var(--serif);font-size:.83rem;line-height:1.55;
+  color:var(--ink3)}
+.dep-note:first-child{margin-top:0}/* NOTICE's "*** ... ***" inline aside — see inlineText(). */
+
+.hi{color:var(--accent-t);font-weight:700}/* ── callouts ────────────────────────────────────────────────────── */
 
 
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
-  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:88ch}
 .callout>:last-child{margin-bottom:0}
 .callout p{max-width:none}
 .callout.warn{border-left-color:var(--gold);
@@ -2076,7 +2187,7 @@ pre.aligned a{color:var(--ink)}/* ── callouts ──────────
 
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.totop,.ins{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.gotop,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -2153,7 +2264,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dioreo</span>
+      <img class="wm" src="../assets/dioreo-wordmark.webp" width="600" height="279" alt="Dioreo">
       <span class="mk-ctx"><i aria-hidden="true"></i>Source-Available License</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2238,7 +2349,7 @@ html{scroll-behavior:smooth}
   </div>
   <details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
-    <div class="mp-list msec"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a><a class="dlr" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>LICENSE</b></span><span class="dlr-s">45 KB</span></a></div>
+    <div class="mp-list msec"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a><a class="dlr" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>LICENSE</b></span><span class="dlr-s">45 KB</span></a></div>
   </details>
 </aside>
 
@@ -2262,15 +2373,16 @@ html{scroll-behavior:smooth}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
-    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
-         so the download sits in both or in neither. It is OUTSIDE .slots because
-         that box is the scroller the scrollspy drives — a non-section row inside
-         it would travel with the tracked section and could scroll out of reach,
-         which is the one thing this control exists not to do. -->
+    <!-- The rail is the desktop half of the panel the mobile "On this page"
+         disclosure is, and both offer the download — but no longer via the same
+         markup. Desktop keeps the full row, OUTSIDE .slots because that box is
+         the scroller the scrollspy drives and a non-section row inside it would
+         travel with the tracked section. Mobile gets its own compact .dlm
+         instead of reusing this row — see mobileNav(). -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots"><a href="#plain-english-summary-not-part-of-the-license" class="slot"><i>—</i><span>PLAIN-ENGLISH SUMMARY (NOT PART OF THE LICENSE)</span></a><a href="#s-1" class="slot"><i>1</i><span>DEFINITIONS</span></a><a href="#s-2" class="slot"><i>2</i><span>GRANT OF RIGHTS</span></a><a href="#s-3" class="slot"><i>3</i><span>CONDITIONS</span></a><a href="#s-4" class="slot"><i>4</i><span>PROHIBITED USES</span></a><a href="#s-5" class="slot"><i>5</i><span>CONTRIBUTIONS</span></a><a href="#s-6" class="slot"><i>6</i><span>TRADEMARKS AND BRAND</span></a><a href="#s-7" class="slot"><i>7</i><span>THIRD-PARTY MATERIALS</span></a><a href="#s-8" class="slot"><i>8</i><span>RESERVATION AND OWNERSHIP</span></a><a href="#s-8a" class="slot"><i>8A</i><span>AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span></a><a href="#s-9" class="slot"><i>9</i><span>TERM AND TERMINATION</span></a><a href="#s-10" class="slot"><i>10</i><span>NO WARRANTY</span></a><a href="#s-11" class="slot"><i>11</i><span>LIMITATION OF LIABILITY</span></a><a href="#s-12" class="slot"><i>12</i><span>INDEMNITY</span></a><a href="#s-13" class="slot"><i>13</i><span>GOVERNING LAW AND DISPUTE RESOLUTION</span></a><a href="#s-14" class="slot"><i>14</i><span>GENERAL</span></a><a href="#s-15" class="slot"><i>15</i><span>FILE-LEVEL NOTICE</span></a><a href="#s-16" class="slot"><i>16</i><span>SPDX IDENTIFIER</span></a><a href="#s-17" class="slot"><i>17</i><span>CONTACT AND PERMISSIONS</span></a><a href="#s-18" class="slot"><i>18</i><span>NAME CHANGE AND PRIOR VERSIONS</span></a></div>
-      <a class="dlr" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain-text original"><span class="dlr-i" aria-hidden="true"></span><span class="dlr-t">Download <b>LICENSE</b></span><span class="dlr-s">45 KB</span></a>
+      <a class="dlr" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain-text original"><svg class="dlr-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg><span class="dlr-t">Download <b>LICENSE</b></span><span class="dlr-s">45 KB</span></a>
     </aside>
 
     <main class="doc" id="main" tabindex="-1">
@@ -2280,7 +2392,7 @@ html{scroll-behavior:smooth}
         <div class="rule"></div>
         <div class="meta"><span>Effective <b>4 August 2026</b></span><span>Revision <b>1.1</b></span><span>Ontario, Canada</span></div>
       </header>
-      <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain text"><span class="dl-i" aria-hidden="true"></span>Download LICENSE</a></div><p>(formerly the Dior's Builds Source-Available License, Version 1.0, 28 July 2026)</p>
+      <div class="authoritative"><p>This page is a formatted reading copy. The <a href="../LICENSE">plain-text LICENSE</a> is the authoritative instrument, and governs if the two ever differ.</p><a class="dl" href="../LICENSE" download="LICENSE.txt" data-tip="Download the plain text"><svg class="dl-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 18.5h15"/></svg>Download LICENSE</a></div><p>(formerly the Dior's Builds Source-Available License, Version 1.0, 28 July 2026)</p>
 <p>Copyright (c) 2026 Harkirat Mangat ("dior", "diorswrld"). All rights reserved.</p>
 <p>This is a source-available license, not an open-source license. It is not approved by the Open Source Initiative and does not meet the Open Source Definition. The source code of Dioreo is published so that it can be read, studied, audited, and improved -- not so that it can be copied, deployed, redistributed, or turned into a competing bot.</p>
 <section class="dsec">
@@ -2290,7 +2402,7 @@ html{scroll-behavior:smooth}
 <ul class="lettered"><li>Read, study, and learn from the source code.</li><li>Look for security vulnerabilities and report them.</li><li>Run the Software on a computer you control, by yourself, to test it or to prepare an improvement you intend to send back.</li><li>Send improvements, and be publicly credited for them.</li></ul>
 <p class="sub">YOU MAY NOT:</p>
 <ul class="lettered"><li>Run the Software, or anything derived from it, anywhere that another person can use it -- including a Discord server with other members in it.</li><li>Publish, share, redistribute, sell, or sublicense the Software or any modified version of it.</li><li>Use the Software, its curated data, or its output to build, train, or operate a competing bot or service.</li><li>Use the "Dioreo" name, branding, or visual identity.</li></ul>
-<p class="sub">If you want to do something this license does not allow, ask. Permission is freely given in writing where it makes sense; see <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
+<p class="sub">If you want to do something this license does not allow, ask. Permission is freely given in writing where it makes sense; see <a class="xref" href="#s-17" data-tip="Jump to section">Section&nbsp;17</a>.</p>
 </section>
 <section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">DEFINITIONS</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2330,15 +2442,15 @@ html{scroll-behavior:smooth}
 <p class="sub">Subject to Your full and continuing compliance with every term and condition of this License, the Licensor grants You a worldwide, royalty-free, non-exclusive, non-transferable, non-sublicensable, revocable license to:</p>
 <ul class="lettered"><li>(a) reproduce the Software for the purpose of reading and studying it;</li><li>(b) make and retain a reasonable number of copies of the Software as necessary for Permitted Local Use;</li><li>(c) engage in Permitted Local Use of the Software; and</li><li>(d) create Modifications solely to the extent necessary for Permitted Local Use, and solely for the Permitted Purposes.</li></ul>
 <h3 id="s-2.2" class="clause"><span class="idx" aria-hidden="true">2.2</span><span class="ht">Nature of the grant.</span><a class="anchor" href="#s-2.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">The rights granted in <a class="xref" href="#s-2.1">Section&nbsp;2.1</a> are a bare license to act, not a transfer of any ownership interest. No title, ownership, or proprietary right in the Software, the Curated Data, or the Brand Assets passes to You under this License.</p>
+<p class="sub">The rights granted in <a class="xref" href="#s-2.1" data-tip="Jump to section">Section&nbsp;2.1</a> are a bare license to act, not a transfer of any ownership interest. No title, ownership, or proprietary right in the Software, the Curated Data, or the Brand Assets passes to You under this License.</p>
 <h3 id="s-2.3" class="clause"><span class="idx" aria-hidden="true">2.3</span><span class="ht">No implied rights.</span><a class="anchor" href="#s-2.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">All rights not expressly granted in <a class="xref" href="#s-2.1">Section&nbsp;2.1</a> are reserved to the Licensor. Nothing in this License may be construed as granting, by implication, estoppel, exhaustion, acquiescence, course of dealing, or otherwise, any license or right other than those expressly stated. The publication of the Software in a publicly readable repository is not, and shall not be construed as, a waiver, abandonment, dedication to the public, or implied license of any right.</p>
+<p class="sub">All rights not expressly granted in <a class="xref" href="#s-2.1" data-tip="Jump to section">Section&nbsp;2.1</a> are reserved to the Licensor. Nothing in this License may be construed as granting, by implication, estoppel, exhaustion, acquiescence, course of dealing, or otherwise, any license or right other than those expressly stated. The publication of the Software in a publicly readable repository is not, and shall not be construed as, a waiver, abandonment, dedication to the public, or implied license of any right.</p>
 <h3 id="s-2.4" class="clause"><span class="idx" aria-hidden="true">2.4</span><span class="ht">Patents.</span><a class="anchor" href="#s-2.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor grants You no patent license under this License, except for a non-exclusive, royalty-free license under those patent claims owned or controlled by the Licensor that are necessarily infringed by Permitted Local Use of the Software as furnished by the Licensor. That patent license terminates automatically and immediately if You, or any entity controlled by You, initiate or voluntarily participate in any patent claim, cross-claim, counterclaim, or proceeding alleging that the Software or any Contribution constitutes direct or contributory patent infringement.</p>
 </section>
 <section class="dsec">
 <h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">CONDITIONS</span><a class="anchor" href="#s-3" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Every right granted in <a class="xref" href="#s-2">Section&nbsp;2</a> is conditional on Your compliance with this <a class="xref" href="#s-3">Section&nbsp;3</a>. Failure to comply is both a breach of this License and, because the grant is conditional, an act outside the scope of the license granted and therefore an infringement of the Licensor's copyright.</p>
+<p>Every right granted in <a class="xref" href="#s-2" data-tip="Jump to section">Section&nbsp;2</a> is conditional on Your compliance with this <a class="xref" href="#s-3" data-tip="Jump to section">Section&nbsp;3</a>. Failure to comply is both a breach of this License and, because the grant is conditional, an act outside the scope of the license granted and therefore an infringement of the Licensor's copyright.</p>
 <h3 id="s-3.1" class="clause"><span class="idx" aria-hidden="true">3.1</span><span class="ht">Notices.</span><a class="anchor" href="#s-3.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You must retain, in every copy and every Modification You make, this License file in full, all copyright notices, all attribution notices, and all notices identifying the Licensor as the author. You must not remove, obscure, alter, or falsify any such notice.</p>
 <h3 id="s-3.2" class="clause"><span class="idx" aria-hidden="true">3.2</span><span class="ht">No misrepresentation of origin.</span><a class="anchor" href="#s-3.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2354,12 +2466,12 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">PROHIBITED USES</span><a class="anchor" href="#s-4" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Without limiting <a class="xref" href="#s-2.3">Section&nbsp;2.3</a>, and for the avoidance of any doubt, You must not do any of the following, whether directly or indirectly, whether for a fee or free of charge, and whether or not You attribute the Licensor:</p>
+<p>Without limiting <a class="xref" href="#s-2.3" data-tip="Jump to section">Section&nbsp;2.3</a>, and for the avoidance of any doubt, You must not do any of the following, whether directly or indirectly, whether for a fee or free of charge, and whether or not You attribute the Licensor:</p>
 <h3 id="s-4.1" class="clause"><span class="idx" aria-hidden="true">4.1</span><span class="ht">Deployment.</span><a class="anchor" href="#s-4.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Deploy the Software or any Modification. This prohibition applies regardless of the size, membership, privacy setting, or purpose of the Discord server, group, or environment concerned, and applies to servers You own, administer, or belong to.</p>
 <h3 id="s-4.2" class="clause"><span class="idx" aria-hidden="true">4.2</span><span class="ht">Distribution.</span><a class="anchor" href="#s-4.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Distribute, publish, transmit, upload, sell, rent, lease, lend, share, mirror, or otherwise make available the Software, any Modification, or any part of either, to any other person, in source or object form, in whole or in part, by any medium. This includes publishing it to any package registry, container registry, file host, code host, archive, forum, chat platform, or website.</p>
-<p class="sub aside">Exception: reproduction of the Software solely on GitHub through GitHub's own forking functionality is not a breach of this <a class="xref" href="#s-4.2">Section&nbsp;4.2</a>, because that reproduction is authorized by the GitHub Terms of Service and not by this License. That exception is strictly limited to the act of forking on GitHub. It does not permit You to Modify a fork beyond Permitted Local Use, to Deploy it, to distribute it off GitHub, or to do anything else this License prohibits.</p>
+<p class="sub aside">Exception: reproduction of the Software solely on GitHub through GitHub's own forking functionality is not a breach of this <a class="xref" href="#s-4.2" data-tip="Jump to section">Section&nbsp;4.2</a>, because that reproduction is authorized by the GitHub Terms of Service and not by this License. That exception is strictly limited to the act of forking on GitHub. It does not permit You to Modify a fork beyond Permitted Local Use, to Deploy it, to distribute it off GitHub, or to do anything else this License prohibits.</p>
 <h3 id="s-4.3" class="clause"><span class="idx" aria-hidden="true">4.3</span><span class="ht">Sublicensing and assignment.</span><a class="anchor" href="#s-4.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Sublicense, assign, novate, delegate, or otherwise transfer this License or any right under it, in whole or in part, whether voluntarily, by operation of law, by merger, by acquisition, or otherwise. Any purported transfer is void.</p>
 <h3 id="s-4.4" class="clause"><span class="idx" aria-hidden="true">4.4</span><span class="ht">Commercial use.</span><a class="anchor" href="#s-4.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2367,7 +2479,7 @@ html{scroll-behavior:smooth}
 <p class="sub aside">Carve-out: reading or studying the Software to learn from it is not commercial use, even if You happen to be employed, and even if what You learn later informs Your paid work. This Section is directed at exploitation of the Software, not at the education of the person reading it. The line is whether the Software, a Modification, or the Curated Data is itself put to commercial use -- not whether the reader has a job.</p>
 <h3 id="s-4.5" class="clause"><span class="idx" aria-hidden="true">4.5</span><span class="ht">Competing Services.</span><a class="anchor" href="#s-4.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Use the Software, any Modification, the Curated Data, or knowledge of the Software's internal structure to create, develop, operate, market, or assist any other person in creating, developing, operating, or marketing a Competing Service.</p>
-<p class="sub aside">For clarity and in good faith: copyright protects the expression in the Software, not the underlying ideas, facts, or functionality. This <a class="xref" href="#s-4.5">Section&nbsp;4.5</a> is a contractual undertaking You give in exchange for access to the source code. It does not purport to prevent any person who has not accepted this License from independently creating a bot with similar features.</p>
+<p class="sub aside">For clarity and in good faith: copyright protects the expression in the Software, not the underlying ideas, facts, or functionality. This <a class="xref" href="#s-4.5" data-tip="Jump to section">Section&nbsp;4.5</a> is a contractual undertaking You give in exchange for access to the source code. It does not purport to prevent any person who has not accepted this License from independently creating a bot with similar features.</p>
 <h3 id="s-4.6" class="clause"><span class="idx" aria-hidden="true">4.6</span><span class="ht">Curated Data.</span><a class="anchor" href="#s-4.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Extract, copy, scrape, harvest, mirror, index, re-host, republish, or create a substantial derivative of the Curated Data, whether from the repository, from a database, or from the output of the Official Service. Automated access to the Official Service for the purpose of collecting its output is prohibited.</p>
 <h3 id="s-4.7" class="clause"><span class="idx" aria-hidden="true">4.7</span><span class="ht">AI and machine learning.</span><a class="anchor" href="#s-4.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2380,20 +2492,20 @@ html{scroll-behavior:smooth}
 <h3 id="s-4.10" class="clause"><span class="idx" aria-hidden="true">4.10</span><span class="ht">Brand Assets.</span><a class="anchor" href="#s-4.10" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Use any Brand Asset, or any confusingly similar name or mark, for any purpose, including in the name, description, avatar, documentation, or marketing of any project, service, or account. This prohibition survives termination of this License indefinitely.</p>
 <h3 id="s-4.11" class="clause"><span class="idx" aria-hidden="true">4.11</span><span class="ht">Security research limits.</span><a class="anchor" href="#s-4.11" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Notwithstanding <a class="xref" href="#s-1.10">Section&nbsp;1.10</a>(c), You must not, in the course of security research, test against the Official Service or its live infrastructure, access or exfiltrate any data belonging to the Licensor or to any user, or publicly disclose a vulnerability before the Licensor has had a reasonable opportunity to remedy it. Test against Your own local instance, and report findings privately in accordance with <a class="xref" href="#s-17">Section&nbsp;17</a>.</p>
+<p class="sub">Notwithstanding <a class="xref" href="#s-1.10" data-tip="Jump to section">Section&nbsp;1.10</a>(c), You must not, in the course of security research, test against the Official Service or its live infrastructure, access or exfiltrate any data belonging to the Licensor or to any user, or publicly disclose a vulnerability before the Licensor has had a reasonable opportunity to remedy it. Test against Your own local instance, and report findings privately in accordance with <a class="xref" href="#s-17" data-tip="Jump to section">Section&nbsp;17</a>.</p>
 </section>
 <section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">CONTRIBUTIONS</span><a class="anchor" href="#s-5" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-5.1" class="clause"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Contributor License.</span><a class="anchor" href="#s-5.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">By submitting a Contribution, You grant the Licensor a perpetual, worldwide, non-exclusive, irrevocable, royalty-free, fully paid-up, transferable license, with the right to sublicense through multiple tiers, to reproduce, prepare derivative works of, publicly display, publicly perform, distribute, Deploy, commercialize, and otherwise exploit Your Contribution and such derivative works, in any medium and by any means now known or later devised, and to license or relicense Your Contribution under any terms the Licensor chooses, including proprietary terms.</p>
 <h3 id="s-5.2" class="clause"><span class="idx" aria-hidden="true">5.2</span><span class="ht">Retention of Your rights.</span><a class="anchor" href="#s-5.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">You retain all copyright, moral rights (to the extent not waived below), and other rights in Your Contribution. The license in <a class="xref" href="#s-5.1">Section&nbsp;5.1</a> is non-exclusive and does not prevent You from using Your own Contribution elsewhere, subject to Sections 4.1 and 4.2 as they apply to the Software as a whole.</p>
+<p class="sub">You retain all copyright, moral rights (to the extent not waived below), and other rights in Your Contribution. The license in <a class="xref" href="#s-5.1" data-tip="Jump to section">Section&nbsp;5.1</a> is non-exclusive and does not prevent You from using Your own Contribution elsewhere, subject to Sections <a class="xref" href="#s-4.1" data-tip="Jump to section">4.1</a> and <a class="xref" href="#s-4.2" data-tip="Jump to section">4.2</a> as they apply to the Software as a whole.</p>
 <h3 id="s-5.3" class="clause"><span class="idx" aria-hidden="true">5.3</span><span class="ht">Patent license for Contributions.</span><a class="anchor" href="#s-5.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You grant the Licensor and all recipients of the Software a perpetual, worldwide, non-exclusive, royalty-free, irrevocable patent license under those patent claims You own or control that are necessarily infringed by Your Contribution alone or by its combination with the Software, to make, have made, use, offer to sell, sell, import, and otherwise transfer the Software.</p>
 <h3 id="s-5.4" class="clause"><span class="idx" aria-hidden="true">5.4</span><span class="ht">Your warranties.</span><a class="anchor" href="#s-5.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">You represent and warrant that: (a) each Contribution is Your original creation, or You have the necessary rights to submit it and to grant the licenses in this <a class="xref" href="#s-5">Section&nbsp;5</a>; (b) the Contribution does not incorporate any third-party material except as You clearly identify at the time of submission, together with its license; (c) the Contribution does not knowingly infringe any third party's copyright, patent, trademark, trade secret, or other right; (d) if Your employer has rights in intellectual property You create, You have obtained permission to make the Contribution or Your employer has waived those rights; and (e) the Contribution contains no malicious code, backdoor, or intentionally concealed functionality.</p>
+<p class="sub">You represent and warrant that: (a) each Contribution is Your original creation, or You have the necessary rights to submit it and to grant the licenses in this <a class="xref" href="#s-5" data-tip="Jump to section">Section&nbsp;5</a>; (b) the Contribution does not incorporate any third-party material except as You clearly identify at the time of submission, together with its license; (c) the Contribution does not knowingly infringe any third party's copyright, patent, trademark, trade secret, or other right; (d) if Your employer has rights in intellectual property You create, You have obtained permission to make the Contribution or Your employer has waived those rights; and (e) the Contribution contains no malicious code, backdoor, or intentionally concealed functionality.</p>
 <h3 id="s-5.5" class="clause"><span class="idx" aria-hidden="true">5.5</span><span class="ht">Moral rights.</span><a class="anchor" href="#s-5.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">To the fullest extent permitted by applicable law, and in particular by section 14.1 of the Copyright Act (Canada), You waive, and agree not to assert, any moral rights in Your Contribution against the Licensor or persons authorized by the Licensor, to the extent necessary to permit the exploitation licensed in <a class="xref" href="#s-5.1">Section&nbsp;5.1</a>. This waiver does not affect Your right to attribution under <a class="xref" href="#s-5.6">Section&nbsp;5.6</a>.</p>
+<p class="sub">To the fullest extent permitted by applicable law, and in particular by section 14.1 of the Copyright Act (Canada), You waive, and agree not to assert, any moral rights in Your Contribution against the Licensor or persons authorized by the Licensor, to the extent necessary to permit the exploitation licensed in <a class="xref" href="#s-5.1" data-tip="Jump to section">Section&nbsp;5.1</a>. This waiver does not affect Your right to attribution under <a class="xref" href="#s-5.6" data-tip="Jump to section">Section&nbsp;5.6</a>.</p>
 <h3 id="s-5.6" class="clause"><span class="idx" aria-hidden="true">5.6</span><span class="ht">Attribution and credit.</span><a class="anchor" href="#s-5.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor will credit each accepted Contribution to its author, by the name or handle the author specifies, in the project's contributor records and in the changelog entry for the release in which the Contribution first ships. The Licensor will not represent a Contribution as his own original work. This commitment is a binding obligation of the Licensor and survives termination. It does not entitle You to compensation, to co-ownership, to a right of approval over how the Contribution is used or modified, or to any right in the Software as a whole.</p>
 <h3 id="s-5.7" class="clause"><span class="idx" aria-hidden="true">5.7</span><span class="ht">No obligation to accept.</span><a class="anchor" href="#s-5.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2404,7 +2516,7 @@ html{scroll-behavior:smooth}
 <section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">TRADEMARKS AND BRAND</span><a class="anchor" href="#s-6" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-6.1" class="clause"><span class="idx" aria-hidden="true">6.1</span><span class="ht">This License grants no trademark rights, express or implied.</span><a class="anchor" href="#s-6.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub"><a class="xref" href="#s-4.10">Section&nbsp;4.10</a> applies in full.</p>
+<p class="sub"><a class="xref" href="#s-4.10" data-tip="Jump to section">Section&nbsp;4.10</a> applies in full.</p>
 <h3 id="s-6.2" class="clause"><span class="idx" aria-hidden="true">6.2</span><span class="ht">Nominative fair use is not restricted.</span><a class="anchor" href="#s-6.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You may truthfully refer to the Software by name -- for example, to say that You reported a bug in Dioreo, to cite it in an article, or to describe a Contribution You made -- provided You do not thereby suggest endorsement, affiliation, or sponsorship.</p>
 </section>
@@ -2412,8 +2524,8 @@ html{scroll-behavior:smooth}
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">THIRD-PARTY MATERIALS</span><a class="anchor" href="#s-7" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-7.1" class="clause"><span class="idx" aria-hidden="true">7.1</span><span class="ht">Dependencies.</span><a class="anchor" href="#s-7.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Software depends on third-party packages that are not owned by the Licensor and are licensed to You by their own respective licensors under their own terms, not under this License. Those terms govern those packages, and nothing in this License purports to restrict, enlarge, or otherwise vary any right You have in them.</p>
-<p class="sub">**The NOTICE file at the repository root is incorporated into this License by reference** and identifies each direct dependency, its version, its license, and its copyright holder, together with the trademark acknowledgements in <a class="xref" href="#s-7.2">Section&nbsp;7.2</a> and the authorship disclosure referenced in <a class="xref" href="#s-8a">Section&nbsp;8A</a>. Read it. Authoritative per-package license text lives in each package's own distribution under node_modules/.</p>
-<p class="sub">Certain components -- currently discord.js and xlsx -- are licensed under the Apache License 2.0, which imposes attribution and NOTICE-reproduction obligations on anyone who redistributes them. Those obligations attach to those components independently of this License and are not waived, narrowed, or satisfied by anything the Licensor permits or prohibits here. See NOTICE <a class="xref" href="#s-2">Section&nbsp;2</a>.</p>
+<p class="sub">**The NOTICE file at the repository root is incorporated into this License by reference** and identifies each direct dependency, its version, its license, and its copyright holder, together with the trademark acknowledgements in <a class="xref" href="#s-7.2" data-tip="Jump to section">Section&nbsp;7.2</a> and the authorship disclosure referenced in <a class="xref" href="#s-8a" data-tip="Jump to section">Section&nbsp;8A</a>. Read it. Authoritative per-package license text lives in each package's own distribution under node_modules/.</p>
+<p class="sub">Certain components -- currently discord.js and xlsx -- are licensed under the Apache License 2.0, which imposes attribution and NOTICE-reproduction obligations on anyone who redistributes them. Those obligations attach to those components independently of this License and are not waived, narrowed, or satisfied by anything the Licensor permits or prohibits here. See NOTICE <a class="xref" href="#s-2" data-tip="Jump to section">Section&nbsp;2</a>.</p>
 <h3 id="s-7.2" class="clause"><span class="idx" aria-hidden="true">7.2</span><span class="ht">Game content.</span><a class="anchor" href="#s-7.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Call of Duty and Call of Duty: Mobile are trademarks of Activision Publishing, Inc. Call of Duty: Mobile is developed by TiMi Studio Group and published by Activision. The Software is an unofficial, non-commercial fan project. It is not developed, published, endorsed, sponsored by, or affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Garena, VNG Games, or any of their affiliates.</p>
 <h3 id="s-7.3" class="clause"><span class="idx" aria-hidden="true">7.3</span><span class="ht">No grant in third-party material.</span><a class="anchor" href="#s-7.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2424,22 +2536,22 @@ html{scroll-behavior:smooth}
 <section class="dsec">
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">RESERVATION AND OWNERSHIP</span><a class="anchor" href="#s-8" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-8.1" class="clause"><span class="idx" aria-hidden="true">8.1</span><span class="ht"></span><a class="anchor" href="#s-8.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">The Licensor retains all right, title, and interest in and to the Software, the Curated Data, and the Brand Assets, including all intellectual property rights in them, subject only to <a class="xref" href="#s-7">Section&nbsp;7</a>.</p>
+<p class="sub">The Licensor retains all right, title, and interest in and to the Software, the Curated Data, and the Brand Assets, including all intellectual property rights in them, subject only to <a class="xref" href="#s-7" data-tip="Jump to section">Section&nbsp;7</a>.</p>
 <h3 id="s-8.2" class="clause"><span class="idx" aria-hidden="true">8.2</span><span class="ht"></span><a class="anchor" href="#s-8.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The publication of the Software does not place it in the public domain. Public availability and public licensing are distinct; the former has occurred, the latter has not.</p>
 <h3 id="s-8.3" class="clause"><span class="idx" aria-hidden="true">8.3</span><span class="ht"></span><a class="anchor" href="#s-8.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">The Licensor may at any time, in his sole discretion and without notice, change the license under which future versions of the Software are made available, cease publishing the source code, make the repository private, or discontinue the Official Service. Doing so does not retroactively withdraw the rights You held in a version You lawfully obtained before the change, except on termination under <a class="xref" href="#s-9">Section&nbsp;9</a>.</p>
+<p class="sub">The Licensor may at any time, in his sole discretion and without notice, change the license under which future versions of the Software are made available, cease publishing the source code, make the repository private, or discontinue the Official Service. Doing so does not retroactively withdraw the rights You held in a version You lawfully obtained before the change, except on termination under <a class="xref" href="#s-9" data-tip="Jump to section">Section&nbsp;9</a>.</p>
 </section>
 <section class="dsec">
 <h2 id="s-8a" class="numbered"><span class="idx" aria-hidden="true">8A</span><span class="ht">AUTHORSHIP, AI ASSISTANCE, AND DATABASE RIGHTS</span><a class="anchor" href="#s-8a" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-8a.1" class="clause"><span class="idx" aria-hidden="true">8A.1</span><span class="ht">AI assistance disclosed.</span><a class="anchor" href="#s-8a.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Portions of the Software, its documentation, and this License were authored with the assistance of AI tools, principally Claude (Anthropic PBC), used as a drafting and implementation instrument under the continuous direction of the human author. Full disclosure: NOTICE <a class="xref" href="#s-6">Section&nbsp;6</a>.</p>
+<p class="sub">Portions of the Software, its documentation, and this License were authored with the assistance of AI tools, principally Claude (Anthropic PBC), used as a drafting and implementation instrument under the continuous direction of the human author. Full disclosure: NOTICE <a class="xref" href="#s-6" data-tip="Jump to section">Section&nbsp;6</a>.</p>
 <h3 id="s-8a.2" class="clause"><span class="idx" aria-hidden="true">8A.2</span><span class="ht">Human authorship asserted.</span><a class="anchor" href="#s-8a.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor states affirmatively that a human author conceived the Software and its features; specified its requirements and behavior; directed, reviewed, selected, rejected, corrected, and revised all generated output; determined the architecture, structure, sequence, and organization of the codebase; and personally researched, selected, verified, arranged, and curated the Curated Data. The creative choices giving the Software its expressive character are human choices, and copyright subsists in the Software accordingly.</p>
 <h3 id="s-8a.3" class="clause"><span class="idx" aria-hidden="true">8A.3</span><span class="ht">No admission or waiver.</span><a class="anchor" href="#s-8a.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub"><a class="xref" href="#s-8a.1">Section&nbsp;8A.1</a> is made in the interest of candor. It is not an admission that any part of the Software lacks copyright protection, not a waiver of any right, and not to be construed against the Licensor. No inference adverse to the subsistence, ownership, scope, or enforceability of the Licensor's rights may be drawn from it.</p>
+<p class="sub"><a class="xref" href="#s-8a.1" data-tip="Jump to section">Section&nbsp;8A.1</a> is made in the interest of candor. It is not an admission that any part of the Software lacks copyright protection, not a waiver of any right, and not to be construed against the Licensor. No inference adverse to the subsistence, ownership, scope, or enforceability of the Licensor's rights may be drawn from it.</p>
 <h3 id="s-8a.4" class="clause"><span class="idx" aria-hidden="true">8A.4</span><span class="ht">Database and compilation rights.</span><a class="anchor" href="#s-8a.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Independently of copyright in the code, the Licensor asserts rights in the Curated Data as a compilation arising from the selection, verification, arrangement, and presentation of its contents -- including, where applicable, the sui generis database right under Directive 96/9/EC and its national implementations, and equivalent protection under the Copyright Act (Canada) and 17 U.S.C. Section 101. <a class="xref" href="#s-4.6">Section&nbsp;4.6</a> applies to the Curated Data whether or not copyright subsists in any individual fact within it. Facts themselves are not owned; their selection and arrangement are.</p>
+<p class="sub">Independently of copyright in the code, the Licensor asserts rights in the Curated Data as a compilation arising from the selection, verification, arrangement, and presentation of its contents -- including, where applicable, the sui generis database right under Directive 96/9/EC and its national implementations, and equivalent protection under the Copyright Act (Canada) and 17 U.S.C. Section 101. <a class="xref" href="#s-4.6" data-tip="Jump to section">Section&nbsp;4.6</a> applies to the Curated Data whether or not copyright subsists in any individual fact within it. Facts themselves are not owned; their selection and arrangement are.</p>
 <h3 id="s-8a.5" class="clause"><span class="idx" aria-hidden="true">8A.5</span><span class="ht">Independent development.</span><a class="anchor" href="#s-8a.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor may develop, acquire, commission, or operate software, features, data, or services similar or identical to anything You suggest, contribute, or build, without obligation to You. Nothing in this License restricts the Licensor's own activities, and submitting a Contribution or an idea grants You no rights in what the Licensor later creates.</p>
 </section>
@@ -2456,22 +2568,22 @@ html{scroll-behavior:smooth}
 <h3 id="s-9.5" class="clause"><span class="idx" aria-hidden="true">9.5</span><span class="ht">Effect of termination.</span><a class="anchor" href="#s-9.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">On termination You must immediately cease all use of the Software, permanently delete all copies and Modifications in Your possession or control, delete any GitHub fork of the repository, and confirm in writing on request that You have done so.</p>
 <h3 id="s-9.6" class="clause"><span class="idx" aria-hidden="true">9.6</span><span class="ht">Survival.</span><a class="anchor" href="#s-9.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Sections 1, 3.1, 3.2, 4.4, 4.5, 4.6, 4.7, 4.10, 5, 6, 7, 8, 8A, 9.5, 9.6, 10, 11, 12, 13, and 14 survive termination.</p>
+<p class="sub">Sections <a class="xref" href="#s-1" data-tip="Jump to section">1</a>, <a class="xref" href="#s-3.1" data-tip="Jump to section">3.1</a>, <a class="xref" href="#s-3.2" data-tip="Jump to section">3.2</a>, <a class="xref" href="#s-4.4" data-tip="Jump to section">4.4</a>, <a class="xref" href="#s-4.5" data-tip="Jump to section">4.5</a>, <a class="xref" href="#s-4.6" data-tip="Jump to section">4.6</a>, <a class="xref" href="#s-4.7" data-tip="Jump to section">4.7</a>, <a class="xref" href="#s-4.10" data-tip="Jump to section">4.10</a>, <a class="xref" href="#s-5" data-tip="Jump to section">5</a>, <a class="xref" href="#s-6" data-tip="Jump to section">6</a>, <a class="xref" href="#s-7" data-tip="Jump to section">7</a>, <a class="xref" href="#s-8" data-tip="Jump to section">8</a>, <a class="xref" href="#s-8a" data-tip="Jump to section">8A</a>, <a class="xref" href="#s-9.5" data-tip="Jump to section">9.5</a>, <a class="xref" href="#s-9.6" data-tip="Jump to section">9.6</a>, <a class="xref" href="#s-10" data-tip="Jump to section">10</a>, <a class="xref" href="#s-11" data-tip="Jump to section">11</a>, <a class="xref" href="#s-12" data-tip="Jump to section">12</a>, <a class="xref" href="#s-13" data-tip="Jump to section">13</a>, and <a class="xref" href="#s-14" data-tip="Jump to section">14</a> survive termination.</p>
 <h3 id="s-9.7" class="clause"><span class="idx" aria-hidden="true">9.7</span><span class="ht">Remedies.</span><a class="anchor" href="#s-9.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">You acknowledge that a breach of Sections 4.1, 4.2, 4.5, 4.6, 4.7, or 4.10 would cause the Licensor harm that monetary damages alone could not adequately remedy, and that the Licensor is entitled to seek injunctive or other equitable relief without the necessity of posting a bond, in addition to any other remedy available at law. The Licensor's failure to enforce any provision on any occasion is not a waiver of that or any other provision on any other occasion.</p>
+<p class="sub">You acknowledge that a breach of Sections <a class="xref" href="#s-4.1" data-tip="Jump to section">4.1</a>, <a class="xref" href="#s-4.2" data-tip="Jump to section">4.2</a>, <a class="xref" href="#s-4.5" data-tip="Jump to section">4.5</a>, <a class="xref" href="#s-4.6" data-tip="Jump to section">4.6</a>, <a class="xref" href="#s-4.7" data-tip="Jump to section">4.7</a>, or 4.10 would cause the Licensor harm that monetary damages alone could not adequately remedy, and that the Licensor is entitled to seek injunctive or other equitable relief without the necessity of posting a bond, in addition to any other remedy available at law. The Licensor's failure to enforce any provision on any occasion is not a waiver of that or any other provision on any other occasion.</p>
 </section>
 <section class="dsec">
 <h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">NO WARRANTY</span><a class="anchor" href="#s-10" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p class="shout">THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY, CONDITION, REPRESENTATION, OR TERM OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, COLLATERAL, OR OTHERWISE. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR EXPRESSLY DISCLAIMS ALL IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, MERCHANTABLE QUALITY, FITNESS FOR A PARTICULAR PURPOSE, DURABILITY, TITLE, NON-INFRINGEMENT, ACCURACY, AND QUIET ENJOYMENT.</p>
 <p class="shout">THE LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF HARMFUL COMPONENTS, THAT DEFECTS WILL BE CORRECTED, THAT ANY DATA IT PRODUCES OR STORES IS ACCURATE, CURRENT, OR COMPLETE, OR THAT IT WILL MEET YOUR REQUIREMENTS. GAME DATA CHANGES FREQUENTLY AND MAY BE WRONG OR OUT OF DATE AT ANY TIME.</p>
 <p class="shout">NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED FROM THE LICENSOR CREATES ANY WARRANTY NOT EXPRESSLY STATED HERE.</p>
-<p>Some jurisdictions do not allow the exclusion of certain warranties. To the extent an exclusion above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-10">Section&nbsp;10</a> continues in effect.</p>
+<p>Some jurisdictions do not allow the exclusion of certain warranties. To the extent an exclusion above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-10" data-tip="Jump to section">Section&nbsp;10</a> continues in effect.</p>
 </section>
 <section class="dsec">
 <h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">LIMITATION OF LIABILITY</span><a class="anchor" href="#s-11" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p class="shout">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL THE LICENSOR BE LIABLE, WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF STATUTORY DUTY, OR ANY OTHER THEORY, FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF PROFIT, REVENUE, DATA, GOODWILL, OPPORTUNITY, OR ANTICIPATED SAVINGS, OR FOR BUSINESS INTERRUPTION OR COST OF SUBSTITUTE SERVICES, ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND EVEN IF A LIMITED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.</p>
 <p class="shout">THE LICENSOR'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS LICENSE OR THE SOFTWARE WILL NOT EXCEED THE GREATER OF (A) THE TOTAL AMOUNT YOU PAID THE LICENSOR FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE EVENT GIVING RISE TO THE CLAIM, AND (B) TWENTY CANADIAN DOLLARS (CAD $20).</p>
-<p>Some jurisdictions do not allow the limitation or exclusion of liability for death or personal injury caused by negligence, for fraud or fraudulent misrepresentation, or for certain other liabilities. Nothing in this License limits any liability that cannot lawfully be limited. To the extent a limitation above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-11">Section&nbsp;11</a> continues in effect.</p>
+<p>Some jurisdictions do not allow the limitation or exclusion of liability for death or personal injury caused by negligence, for fraud or fraudulent misrepresentation, or for certain other liabilities. Nothing in this License limits any liability that cannot lawfully be limited. To the extent a limitation above is unenforceable, it is limited to the minimum extent necessary and the remainder of this <a class="xref" href="#s-11" data-tip="Jump to section">Section&nbsp;11</a> continues in effect.</p>
 </section>
 <section class="dsec">
 <h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">INDEMNITY</span><a class="anchor" href="#s-12" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2486,16 +2598,16 @@ html{scroll-behavior:smooth}
 <h3 id="s-13.3" class="clause"><span class="idx" aria-hidden="true">13.3</span><span class="ht">Venue.</span><a class="anchor" href="#s-13.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The courts of the Province of Ontario, sitting in Toronto, have exclusive jurisdiction over any dispute arising out of or relating to this License, and You irrevocably attorn to that jurisdiction and waive any objection based on venue or forum non conveniens.</p>
 <h3 id="s-13.4" class="clause"><span class="idx" aria-hidden="true">13.4</span><span class="ht">Mandatory local law preserved.</span><a class="anchor" href="#s-13.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">If You are a consumer resident in a jurisdiction whose law grants You rights that cannot be excluded by agreement, Sections 13.1 and 13.3 do not deprive You of the protection of those mandatory rules or of the right to bring proceedings in the courts of Your place of residence where that right cannot lawfully be excluded.</p>
+<p class="sub">If You are a consumer resident in a jurisdiction whose law grants You rights that cannot be excluded by agreement, Sections <a class="xref" href="#s-13.1" data-tip="Jump to section">13.1</a> and <a class="xref" href="#s-13.3" data-tip="Jump to section">13.3</a> do not deprive You of the protection of those mandatory rules or of the right to bring proceedings in the courts of Your place of residence where that right cannot lawfully be excluded.</p>
 <h3 id="s-13.5" class="clause"><span class="idx" aria-hidden="true">13.5</span><span class="ht">Injunctive relief anywhere.</span><a class="anchor" href="#s-13.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Notwithstanding <a class="xref" href="#s-13.3">Section&nbsp;13.3</a>, the Licensor may seek injunctive or other equitable relief to protect his intellectual property in any court of competent jurisdiction.</p>
+<p class="sub">Notwithstanding <a class="xref" href="#s-13.3" data-tip="Jump to section">Section&nbsp;13.3</a>, the Licensor may seek injunctive or other equitable relief to protect his intellectual property in any court of competent jurisdiction.</p>
 <h3 id="s-13.6" class="clause"><span class="idx" aria-hidden="true">13.6</span><span class="ht">Limitation period.</span><a class="anchor" href="#s-13.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Any claim You bring arising out of or relating to this License must be commenced within one (1) year after the claim arose, except where a longer period is required by law.</p>
 </section>
 <section class="dsec">
 <h2 id="s-14" class="numbered"><span class="idx" aria-hidden="true">14</span><span class="ht">GENERAL</span><a class="anchor" href="#s-14" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <h3 id="s-14.1" class="clause"><span class="idx" aria-hidden="true">14.1</span><span class="ht">Entire agreement.</span><a class="anchor" href="#s-14.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">This License, together with any written permission granted under <a class="xref" href="#s-17">Section&nbsp;17</a>, is the entire agreement between You and the Licensor concerning the Software, and supersedes all prior or contemporaneous understandings, communications, and representations, including anything stated in the repository's README, documentation, package metadata, or issue tracker. In the event of any conflict between this License and any other file in the repository, this License governs.</p>
+<p class="sub">This License, together with any written permission granted under <a class="xref" href="#s-17" data-tip="Jump to section">Section&nbsp;17</a>, is the entire agreement between You and the Licensor concerning the Software, and supersedes all prior or contemporaneous understandings, communications, and representations, including anything stated in the repository's README, documentation, package metadata, or issue tracker. In the event of any conflict between this License and any other file in the repository, this License governs.</p>
 <h3 id="s-14.2" class="clause"><span class="idx" aria-hidden="true">14.2</span><span class="ht">Amendment.</span><a class="anchor" href="#s-14.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor may issue new versions of this License. A new version applies only to versions of the Software distributed under it; it does not retroactively change the terms on which You obtained an earlier version. This License may not be varied by You except by a writing signed by the Licensor.</p>
 <h3 id="s-14.3" class="clause"><span class="idx" aria-hidden="true">14.3</span><span class="ht">Severability.</span><a class="anchor" href="#s-14.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
@@ -2507,11 +2619,11 @@ html{scroll-behavior:smooth}
 <h3 id="s-14.6" class="clause"><span class="idx" aria-hidden="true">14.6</span><span class="ht">Headings and summary.</span><a class="anchor" href="#s-14.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">Headings are for convenience only. The Plain-English Summary above is not part of this License and has no legal effect.</p>
 <h3 id="s-14.7" class="clause"><span class="idx" aria-hidden="true">14.7</span><span class="ht">Notices.</span><a class="anchor" href="#s-14.7" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Notices to the Licensor must be sent to the address in <a class="xref" href="#s-17">Section&nbsp;17</a>. Notices to You may be sent to any email address, GitHub account, or Discord account You have used to contact the Licensor or to access the Software, and are deemed received on the day sent.</p>
+<p class="sub">Notices to the Licensor must be sent to the address in <a class="xref" href="#s-17" data-tip="Jump to section">Section&nbsp;17</a>. Notices to You may be sent to any email address, GitHub account, or Discord account You have used to contact the Licensor or to access the Software, and are deemed received on the day sent.</p>
 <h3 id="s-14.8" class="clause"><span class="idx" aria-hidden="true">14.8</span><span class="ht">Language.</span><a class="anchor" href="#s-14.8" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">This License is drafted in English. Any translation is for convenience only, and the English version governs.</p>
 <h3 id="s-14.9" class="clause"><span class="idx" aria-hidden="true">14.9</span><span class="ht">Relationship to platform terms.</span><a class="anchor" href="#s-14.9" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">This License operates alongside, and does not purport to override, the terms of service of Discord Inc. and GitHub Inc. Where a platform's terms grant a right that this License would otherwise prohibit, that right prevails to the extent of the conflict and only to that extent, and the remainder of this License continues to apply. <a class="xref" href="#s-4.2">Section&nbsp;4.2</a>'s forking exception reflects this principle.</p>
+<p class="sub">This License operates alongside, and does not purport to override, the terms of service of Discord Inc. and GitHub Inc. Where a platform's terms grant a right that this License would otherwise prohibit, that right prevails to the extent of the conflict and only to that extent, and the remainder of this License continues to apply. <a class="xref" href="#s-4.2" data-tip="Jump to section">Section&nbsp;4.2</a>'s forking exception reflects this principle.</p>
 <h3 id="s-14.10" class="clause"><span class="idx" aria-hidden="true">14.10</span><span class="ht">Acceptance.</span><a class="anchor" href="#s-14.10" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">You accept this License, and it becomes a binding agreement between You and the Licensor, upon ANY of the following, each of which is a separate and independent act of acceptance:</p>
 <ul class="lettered"><li>(a) accessing, viewing, or reading the Software's source code;</li><li>(b) downloading, cloning, forking, or copying the Software, in whole or in part, by any means;</li><li>(c) compiling, installing, executing, or running the Software or any Modification;</li><li>(d) creating a Modification;</li><li>(e) submitting a Contribution; or</li><li>(f) continuing any of the above after a new version of this License applies to a version of the Software You obtain.</li></ul>
@@ -2519,19 +2631,19 @@ html{scroll-behavior:smooth}
 <h3 id="s-14.11" class="clause"><span class="idx" aria-hidden="true">14.11</span><span class="ht">Notice and opportunity to read.</span><a class="anchor" href="#s-14.11" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">This License is published in full at the root of the repository, under the filename LICENSE, which is the conventional and expected location; GitHub additionally surfaces it in the repository interface. You acknowledge that You have been given a reasonable opportunity to read it before acting, and that choosing not to read terms You were able to read does not prevent them binding You.</p>
 <h3 id="s-14.12" class="clause"><span class="idx" aria-hidden="true">14.12</span><span class="ht">Electronic agreement.</span><a class="anchor" href="#s-14.12" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">You consent to contract electronically. This License satisfies any requirement that an agreement be in writing, and Your acceptance under <a class="xref" href="#s-14.10">Section&nbsp;14.10</a> has the same legal effect as a handwritten signature under Ontario's Electronic Commerce Act, 2000 and equivalent legislation elsewhere.</p>
+<p class="sub">You consent to contract electronically. This License satisfies any requirement that an agreement be in writing, and Your acceptance under <a class="xref" href="#s-14.10" data-tip="Jump to section">Section&nbsp;14.10</a> has the same legal effect as a handwritten signature under Ontario's Electronic Commerce Act, 2000 and equivalent legislation elsewhere.</p>
 <h3 id="s-14.13" class="clause"><span class="idx" aria-hidden="true">14.13</span><span class="ht"></span><a class="anchor" href="#s-14.13" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Interpretation. "Including" and "such as" mean "including without limitation" and are never words of limitation. The singular includes the plural and vice versa. "Or" is inclusive. A reference to a statute includes its amendments and successors. Examples illustrate and do not confine the general words they follow. Where a prohibition could be read narrowly or broadly, and the narrow reading would defeat the evident purpose of <a class="xref" href="#s-4">Section&nbsp;4</a>, the broader reading applies.</p>
+<p class="sub">Interpretation. "Including" and "such as" mean "including without limitation" and are never words of limitation. The singular includes the plural and vice versa. "Or" is inclusive. A reference to a statute includes its amendments and successors. Examples illustrate and do not confine the general words they follow. Where a prohibition could be read narrowly or broadly, and the narrow reading would defeat the evident purpose of <a class="xref" href="#s-4" data-tip="Jump to section">Section&nbsp;4</a>, the broader reading applies.</p>
 <h3 id="s-14.14" class="clause"><span class="idx" aria-hidden="true">14.14</span><span class="ht">No third-party beneficiaries.</span><a class="anchor" href="#s-14.14" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">This License confers no right or remedy on any person other than You and the Licensor, except that <a class="xref" href="#s-7">Section&nbsp;7</a>'s third-party licensors and rights holders may enforce their own rights under their own terms.</p>
+<p class="sub">This License confers no right or remedy on any person other than You and the Licensor, except that <a class="xref" href="#s-7" data-tip="Jump to section">Section&nbsp;7</a>'s third-party licensors and rights holders may enforce their own rights under their own terms.</p>
 <h3 id="s-14.15" class="clause"><span class="idx" aria-hidden="true">14.15</span><span class="ht">Assignment by the Licensor.</span><a class="anchor" href="#s-14.15" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">The Licensor may assign, novate, or transfer this License and any right under it, in whole or in part, freely and without Your consent, including to a successor in connection with a transfer of the Software. <a class="xref" href="#s-4.3">Section&nbsp;4.3</a> restricts only You.</p>
+<p class="sub">The Licensor may assign, novate, or transfer this License and any right under it, in whole or in part, freely and without Your consent, including to a successor in connection with a transfer of the Software. <a class="xref" href="#s-4.3" data-tip="Jump to section">Section&nbsp;4.3</a> restricts only You.</p>
 <h3 id="s-14.16" class="clause"><span class="idx" aria-hidden="true">14.16</span><span class="ht">No support obligation.</span><a class="anchor" href="#s-14.16" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor has no obligation to provide support, maintenance, updates, bug fixes, security patches, or any assistance whatsoever, and no obligation to continue publishing, developing, or operating the Software. Providing any of these on any occasion creates no obligation to continue, and no course of dealing or course of performance may be construed as creating one.</p>
 <h3 id="s-14.17" class="clause"><span class="idx" aria-hidden="true">14.17</span><span class="ht">Force majeure.</span><a class="anchor" href="#s-14.17" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor is not liable for any failure or delay caused by events beyond his reasonable control, including acts of God, natural disaster, war, terrorism, civil unrest, epidemic or pandemic, strike, government action, change of law, power or network failure, or any act, omission, outage, policy change, suspension, or termination by Discord, GitHub, Google, MongoDB, Cloudinary, Activision, or any other third party.</p>
 <h3 id="s-14.18" class="clause"><span class="idx" aria-hidden="true">14.18</span><span class="ht">Not a sale.</span><a class="anchor" href="#s-14.18" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">This License is a grant of limited permission, not a sale. No exhaustion, first-sale, or equivalent doctrine applies to it, and no right is transferred to You beyond the express permissions in <a class="xref" href="#s-2">Section&nbsp;2</a>.</p>
+<p class="sub">This License is a grant of limited permission, not a sale. No exhaustion, first-sale, or equivalent doctrine applies to it, and no right is transferred to You beyond the express permissions in <a class="xref" href="#s-2" data-tip="Jump to section">Section&nbsp;2</a>.</p>
 <h3 id="s-14.19" class="clause"><span class="idx" aria-hidden="true">14.19</span><span class="ht">Cumulative remedies.</span><a class="anchor" href="#s-14.19" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Licensor's rights and remedies under this License are cumulative and in addition to, and not in substitution for, any right or remedy available at law or in equity.</p>
 </section>
@@ -2547,7 +2659,7 @@ html{scroll-behavior:smooth}
 </section>
 <section class="dsec">
 <h2 id="s-17" class="numbered"><span class="idx" aria-hidden="true">17</span><span class="ht">CONTACT AND PERMISSIONS</span><a class="anchor" href="#s-17" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>Requests for permission beyond the scope of this License, security reports under <a class="xref" href="#s-4.11">Section&nbsp;4.11</a>, licensing enquiries, and notices under <a class="xref" href="#s-14.7">Section&nbsp;14.7</a> should be sent to:</p>
+<p>Requests for permission beyond the scope of this License, security reports under <a class="xref" href="#s-4.11" data-tip="Jump to section">Section&nbsp;4.11</a>, licensing enquiries, and notices under <a class="xref" href="#s-14.7" data-tip="Jump to section">Section&nbsp;14.7</a> should be sent to:</p>
 <pre class="block">Harkirat Mangat ("dior", "diorswrld")
 <a href="mailto:harkirat117@gmail.com">harkirat117@gmail.com</a>
 <a href="https://github.com/HarkiratMangat/dioreo" target="_blank" rel="noopener noreferrer">https://github.com/HarkiratMangat/dioreo</a></pre>
@@ -2559,16 +2671,16 @@ html{scroll-behavior:smooth}
 <h3 id="s-18.1" class="clause"><span class="idx" aria-hidden="true">18.1</span><span class="ht">Name change.</span><a class="anchor" href="#s-18.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">The Software and the Official Service were published under the name "Dior's Builds" until 4 August 2026 and are published under the name "Dioreo" from that date. This is a change of name only. The Licensor, the Software, the Official Service, the Curated Data, and the scope of every permission and restriction in this License are unchanged by it. No assignment, transfer, novation, or change of ownership has occurred, and none is to be inferred from the change of name.</p>
 <h3 id="s-18.2" class="clause"><span class="idx" aria-hidden="true">18.2</span><span class="ht">References to the former name.</span><a class="anchor" href="#s-18.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">A reference to "Dior's Builds" in this License, in any document incorporated into it, in any prior grant of permission, in any Contribution or Contributor Licence Agreement under <a class="xref" href="#s-5">Section&nbsp;5</a>, or in any notice given under <a class="xref" href="#s-14.7">Section&nbsp;14.7</a>, is a reference to Dioreo, and is as effective as if it named Dioreo. The converse also holds: a reference to Dioreo reaches conduct that occurred while the Software was called Dior's Builds.</p>
+<p class="sub">A reference to "Dior's Builds" in this License, in any document incorporated into it, in any prior grant of permission, in any Contribution or Contributor Licence Agreement under <a class="xref" href="#s-5" data-tip="Jump to section">Section&nbsp;5</a>, or in any notice given under <a class="xref" href="#s-14.7" data-tip="Jump to section">Section&nbsp;14.7</a>, is a reference to Dioreo, and is as effective as if it named Dioreo. The converse also holds: a reference to Dioreo reaches conduct that occurred while the Software was called Dior's Builds.</p>
 <h3 id="s-18.3" class="clause"><span class="idx" aria-hidden="true">18.3</span><span class="ht">Both names are Brand Assets.</span><a class="anchor" href="#s-18.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub"><a class="xref" href="#s-1.5">Section&nbsp;1.5</a> covers the former name as well as the current one, and <a class="xref" href="#s-6">Section&nbsp;6</a> applies to both. Retiring a name does not release it: passing your copy or your service off as "Dior's Builds" is prohibited on exactly the terms that prohibit passing it off as "Dioreo".</p>
+<p class="sub"><a class="xref" href="#s-1.5" data-tip="Jump to section">Section&nbsp;1.5</a> covers the former name as well as the current one, and <a class="xref" href="#s-6" data-tip="Jump to section">Section&nbsp;6</a> applies to both. Retiring a name does not release it: passing your copy or your service off as "Dior's Builds" is prohibited on exactly the terms that prohibit passing it off as "Dioreo".</p>
 <h3 id="s-18.4" class="clause"><span class="idx" aria-hidden="true">18.4</span><span class="ht"></span><a class="anchor" href="#s-18.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Relationship to Version 1.0. This Version 1.1 supersedes Version 1.0 of 28 July 2026 and governs the Software from 4 August 2026. It differs from Version 1.0 only in the name it carries, the machine-readable identifier in <a class="xref" href="#s-16">Section&nbsp;16</a>, the extension of <a class="xref" href="#s-1.5">Section&nbsp;1.5</a> to the former name, and this <a class="xref" href="#s-18">Section&nbsp;18</a>. No permission granted by Version 1.0 is narrowed and no restriction is enlarged.</p>
+<p class="sub">Relationship to Version 1.0. This Version 1.1 supersedes Version 1.0 of 28 July 2026 and governs the Software from 4 August 2026. It differs from Version 1.0 only in the name it carries, the machine-readable identifier in <a class="xref" href="#s-16" data-tip="Jump to section">Section&nbsp;16</a>, the extension of <a class="xref" href="#s-1.5" data-tip="Jump to section">Section&nbsp;1.5</a> to the former name, and this <a class="xref" href="#s-18" data-tip="Jump to section">Section&nbsp;18</a>. No permission granted by Version 1.0 is narrowed and no restriction is enlarged.</p>
 <h3 id="s-18.5" class="clause"><span class="idx" aria-hidden="true">18.5</span><span class="ht">Copies already in your hands.</span><a class="anchor" href="#s-18.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p class="sub">If you received the Software under Version 1.0, you may continue to rely on Version 1.0 for that copy, or you may treat it as governed by this Version 1.1. Either is permitted, and the two grant the same rights.</p>
 <h3 id="s-18.6" class="clause"><span class="idx" aria-hidden="true">18.6</span><span class="ht">Machine-readable identifier.</span><a class="anchor" href="#s-18.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p class="sub">Metadata written before 4 August 2026 may carry "LicenseRef-Diors-Builds-Source-Available-1.0". That identifier denotes Version 1.0 of this License and remains valid for the copies it was applied to. <a class="xref" href="#s-16">Section&nbsp;16</a> gives the identifier to use going forward.</p>
-<p>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</p>
+<p class="sub">Metadata written before 4 August 2026 may carry "LicenseRef-Diors-Builds-Source-Available-1.0". That identifier denotes Version 1.0 of this License and remains valid for the copies it was applied to. <a class="xref" href="#s-16" data-tip="Jump to section">Section&nbsp;16</a> gives the identifier to use going forward.</p>
+<hr class="disc-rule" aria-hidden="true"><p class="disc-p"><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
 </section>
     </main>
   </div>
@@ -2578,13 +2690,13 @@ html{scroll-behavior:smooth}
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
   <footer class="foot nodisc">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./privacy.html">Privacy</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
 </div>
 
-<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -2595,7 +2707,7 @@ html{scroll-behavior:smooth}
 <script>
 (function(){
   var prog=document.getElementById('prog');
-  var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
+  var top=document.getElementById('gotop'), ttBar=top&&top.querySelector('.tt-bar');
   /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
      value only changes with the viewport (it is a clamp of vw). */
   var foot=document.querySelector('.foot'), ttBase=0, ttPad=0;
@@ -3750,6 +3862,20 @@ html{scroll-behavior:smooth}
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
 })();
 
 (function(){
@@ -4183,8 +4309,20 @@ html{scroll-behavior:smooth}
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -4390,41 +4528,95 @@ html{scroll-behavior:smooth}
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    var cur=-1,queued=0;
+    /* ⚠️ THIRD DESIGN FOR THIS FUNCTION, 2026-08-05 10:10 EDT — and the reason
+       is worth keeping straight, because the first two both failed for
+       different reasons and it would be easy to wander back into either.
+       (1) Nearest-row-centre to a DIRECTION-BIASED line, with a 24px
+       hysteresis margin: reported as "Terms lingers, the rest rush by" —
+       diagnosed as the algorithm, not the (perfectly uniform) layout, and
+       replaced with —
+       (2) boundary containment: a row active exactly while its own box
+       contains that same biased line. Proven live to give EQUAL dwell
+       distance per row (confirmed: ~130px each, Terms through Notice) — but
+       then rejected anyway: "linear isn't the solution." Equal-by-the-numbers
+       still read as mechanical, because a fixed offset percentage down the
+       screen is not what a reader's eye is actually doing.
+       (3) THIS version: whichever row's centre is nearest the VIEWPORT'S OWN
+       centre — "whichever row is most prominently in view," Harkirat's own
+       framing. This is not just a different number, it drops the whole
+       direction-bias/easing apparatus (dir, lastY, the 8px threshold, lineY's
+       spring) outright, because the reference point is innerHeight*0.5 —
+       fixed, not direction-dependent — so there is nothing left for a
+       direction change to destabilise. Simpler code as a direct consequence
+       of the simpler mental model, not a separate cleanup. */
+    /* ⚠️ A ROW CAN BE SKIPPED ENTIRELY ON A FAST SWIPE, and no per-frame
+       distance rule fixes that — added 2026-08-05 10:13 EDT, proven with a
+       frame-by-frame recording. pick() only samples state once per
+       requestAnimationFrame; a fast flick can move the scroll far enough
+       between two consecutive frames that a row's whole "nearest the centre"
+       window falls entirely in the gap between samples — the recording
+       showed Privacy active, then License's entire on-screen span passing
+       with nothing lit, then Notices taking over, License never once
+       flagged. No amount of tuning the DISTANCE test closes that: the
+       problem is temporal (a row got no sampled moment), not spatial.
+       stepQueue turns a jump of more than one row into a walk, one row per
+       stepTimer tick, so a skipped row still gets a real, visible moment —
+       capped at 3 steps so an extreme jump (dragging the scrollbar from top
+       to bottom) snaps straight to the end instead of animating through
+       every row it technically passed. */
+    var stepTimer=0;
+    function advance(target){
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=target;
+      rows[cur].classList.add('act');
+    }
+    function stepToward(target){
+      clearTimeout(stepTimer);
+      if(cur<0||Math.abs(target-cur)>3){advance(target);return;}
+      if(cur===target)return;
+      var next=cur+(target>cur?1:-1);
+      advance(next);
+      if(next!==target)stepTimer=setTimeout(function(){stepToward(target);},70);
+    }
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
-      var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
-      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
-         A fixed line only marks a row once the row has reached it, so on the way
-         down the highlight always trails what you are looking at. Offsetting the
-         line by a tenth of the viewport in the direction of travel moves it DOWN
-         while scrolling down, which is the direction rows arrive from, so a row is
-         claimed on approach instead of on arrival — and symmetrically on the way
-         back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it. */
-      var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var mid=innerHeight*0.5;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
-        d=Math.abs(r.top+r.height/2-line);
+        d=Math.abs(r.top+r.height/2-mid);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
-      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      if(best<0||best===cur)return;
+      /* A light margin, not the old 24px — with a STABLE reference point the
+         flicker case (two rows trading the highlight every frame near a
+         shared boundary) is far less likely to begin with; this only damps
+         genuine near-ties rather than doing the main stabilising work the
+         way it had to before. Only applied to single-row moves — a jump big
+         enough to trigger stepToward's walk already means best is decisively
+         ahead, not a near-tie. */
+      if(cur>=0&&Math.abs(best-cur)<=1&&bestD>curD-10)return;
+      stepToward(best);
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
+       pick() immediately whenever want was true, which measured the row
+       nearest the line AT THE TOP OF THE PAGE and highlighted it before the
+       reader had scrolled at all — row 0 ("Terms of Service") lighting up on
+       load with no interaction. Clearing to no highlight and letting the
+       first real scroll event call pick() (via onScroll below) means the
+       highlight only ever appears once the reader has actually started
+       scrolling, which is what "auto" should mean here. */
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
-      if(!want){
-        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
-        cur=-1;
-      }else{cur=-1;pick();}
+      clearTimeout(stepTimer);
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
@@ -4434,7 +4626,7 @@ html{scroll-behavior:smooth}
 
   /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
   (function(){
-    var tt=document.getElementById('totop');
+    var tt=document.getElementById('gotop');
     if(!tt)return;
     function past(){return scrollY_()>innerHeight*0.6;}
 
@@ -4534,12 +4726,12 @@ html{scroll-behavior:smooth}
           /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
              BUG. Measured: on is never re-added after a launch, but the control's
              computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
-             Removing on and birth in one statement hands the fade to the .totop
+             Removing on and birth in one statement hands the fade to the .gotop
              transition, and birth is also what hides the ring and the arrow — so
              for ~300ms after the liquid has flown away the REAL button chrome pops
              back and fades out behind it. It never was a second birth, which is
              why two fixes aimed at the threshold missed it.
-             Drop on while birth still applies (.totop.birth carries
+             Drop on while birth still applies (.gotop.birth carries
              transition:none, so it goes to 0 instantly), flush that state, and
              only then drop birth. */
           tt.classList.remove('on');
@@ -4785,9 +4977,9 @@ html{scroll-behavior:smooth}
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -4806,9 +4998,30 @@ html{scroll-behavior:smooth}
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -4877,14 +5090,57 @@ html{scroll-behavior:smooth}
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place.
+       ⚠️ flashCopied() FIRES SYNCHRONOUSLY, NOT INSIDE THE CLIPBOARD PROMISE'S
+       .then(). This used to wait for navigator.clipboard.writeText() to
+       resolve before showing anything — and a real .anchor is a genuine
+       <a href="#id">, so the browser's default action (the hash jump) runs
+       right after this listener finishes, as its own step in event dispatch.
+       That ran BEFORE the microtask the clipboard promise resolves on, so by
+       the time flashCopied() finally fired the page had already jumped once
+       — reported 2026-08-05 12:03 EDT as no visible confirmation at all, only the jump.
+       Calling it here, in the same synchronous tick as the click and before
+       the browser's default action, guarantees the capsule is placed against
+       the anchor's PRE-jump position; the scroll listener above (see
+       "flashing" note) is what then keeps it riding along as the jump
+       happens. The write to the clipboard itself doesn't need to finish
+       first — it either succeeds silently or doesn't, but the user should
+       never be kept waiting on it to see that the click registered. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        flashCopied(a);
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href')).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();

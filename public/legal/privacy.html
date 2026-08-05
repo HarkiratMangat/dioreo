@@ -145,30 +145,28 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
-  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
-   slot has been emptied on purpose. It held three stacked bars first, which is
-   the universal glyph for a menu, so readers tried to tap it expecting one to
-   open. It then held a rounded square carrying a "D" — which was worse in a
-   quieter way: a single letter in a box is the most generic mark there is, it
-   said nothing the wordmark next to it does not already say in full, and it made
-   the site's identity a placeholder logo rather than the typography.
-
-   The wordmark alone is the mark. Do not "restore the logo" without an actual
-   drawn mark to put there; another letter-in-a-square is not one. */
+  white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}/* ⚠️ SUPERSEDES the two prior "no logo mark" decisions (this slot had held a
+   3-bar menu glyph, then a letter-in-a-square, and was emptied back to plain
+   type both times because neither was an actual drawn mark — see git history
+   on this comment for the full reasoning). Harkirat supplied a real drawn
+   Dioreo mark 2026-08-04 21:18 EDT (the mascot + bubble wordmark lockup), which
+   is exactly what those two notes said was missing, so it now REPLACES the
+   typographic wordmark outright rather than sitting beside it — there is no
+   longer a second "Dioreo" in text form for it to compete with in the bar. */
 
 
-.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
-   this it kept its full 90px of text inside a 31px box and simply drew across
-   the buttons beside it — the "too tight" header was really this one missing
-   rule. Truncation is the honest failure mode for a flexible label. */
+.mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}/* Fixed height so the mark lines up with the 32px control row beside it;
+   width is intrinsic (object-fit:contain) so the mascot and the bubble
+   letters scale together and never crop. The image is allowed to be
+   narrower than its box shrinks to — it has no truncation failure mode the
+   way the old text did, so nothing here needs an overflow rule. */
 
-.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
-  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
-  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
-  background-size:280% 100%;background-position:130% 0;
-  -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}/* The context line names the document you are in. It is hidden on desktop on
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+
+.wm.wm-hero{height:112px}/* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
    that states it twice is noise. Below 980 the switcher is gone. */
 
@@ -177,13 +175,17 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .go{font-family:var(--mono);font-size:.9rem;line-height:1;color:var(--accent-t);
   opacity:0;transform:translateX(-6px);transition:opacity .26s,transform .26s}/* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
    drop the keyboard focus styling on any device with a touchscreen, which is
-   most laptops now. Split, always. */
+   most laptops now. Split, always.
+   The old sweep animated a text-fill gradient, which has no equivalent on a
+   raster mark — replaced with the same scale nudge every other interactive
+   control in the bar uses on press/hover, so the mark still confirms it is
+   clickable without inventing a bespoke effect just for itself. */
 
 
-.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+.mark.live:focus-visible .wm{transform:scale(1.05)}
 .mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 @media (hover:hover) and (pointer:fine){
-  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .wm{transform:scale(1.05)}
   .mark.live:hover .go{opacity:1;transform:translateX(0)}
 }/* ── action controls: pills ───────────────────────────────────────────
    ROUNDED, deliberately. The site's rule is squared = the documents that bind
@@ -333,12 +335,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .bar.bar nav{gap:.5rem}/* The context line goes. It names the page you are on, and directly beneath it
      the strip names the page you are on with a filled pill — saying it twice in
      54px of header is what made the mark fight the buttons for width.
-     The wordmark also drops a step, because at 1.02rem it still truncated to
-     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
-     slightly smaller whole one. */
+     The mark also drops a step — same reasoning as the old text wordmark did
+     (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
+     smaller whole mark reads better than a squeezed one on a narrow header. */
   
   .mk-ctx.mk-ctx{display:none}
-  .wm{font-size:.85rem}/* 19px of the mark's width was its own padding — a hover affordance, on a
+  .wm{height:34px}
+  .wm.wm-hero{height:64px}/* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
      chasing. */
@@ -692,8 +695,14 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   display:grid;grid-template-columns:minmax(min(100%,38ch),1fr) auto;
   column-gap:clamp(1.5rem,5vw,4rem);row-gap:.4rem;
   align-items:start;text-align:left}/* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
-   applied, and it is a notice we are obliged to show. Same size, full opacity. */
+   applied, and it is a notice we are obliged to show. Same size, full opacity. *//* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
 
+
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}/* The link row: mono, wide-tracked, dot-separated, with the accent drawn under
@@ -722,7 +731,20 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
+
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}/* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
    with, which is what looked unaligned. Row 1 puts the two on one baseline, and the
@@ -752,15 +774,25 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
 }
-.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
+.sig b{color:var(--ink2);font-weight:600}/* The name itself carries the page's own accent, not the neutral ink-family
+   colour every other bold word in the sig line gets — Harkirat's call
+   2026-08-05 08:44 EDT. --accent-t is the site's text-safe accent token
+   (already re-mixed for contrast in both themes), so this follows whichever
+   accent the current page is on automatically. */
+
+.sig .sig-a{color:var(--accent-t);font-weight:600}/* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
    the name is already the only emphasised word in it. */
 
@@ -772,6 +804,16 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 a.dh{text-decoration:none;transition:background .22s,color .22s}@media (hover:hover) and (pointer:fine){
 a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}}
 a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── back to top ──────────────────────────────────────────────────────
+   ⚠️ NAMED .gotop, NOT .totop — renamed 2026-08-05 08:11 EDT. "totop" is the
+   exact class/id a real, widely-deployed "scroll back to top" WordPress plugin
+   (and several clones) use, and it collides with generic ad-blocker cosmetic
+   filter rules written against THAT library rather than against this site —
+   Harkirat confirmed this by reproducing it with the SAME blocklist enabled on
+   two different browsers. It genuinely worked before: this is not a code
+   regression, it is a third-party filter list matching a common name by
+   coincidence, and it can recur at any time a list adds a similarly generic
+   rule. Never rename this back to something in the totop/back-to-top/scrollup
+   family — those are exactly the names blocklists target.
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -788,23 +830,35 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    So --lift is written from the script each frame: zero until the footer's top
    edge reaches the button, then exactly the overlap, so it rides up ahead of the
    footer and never crosses it. It is a variable rather than a direct transform
-   write because .totop.on owns the transform — a script setting style.transform
+   write because .gotop.on owns the transform — a script setting style.transform
    would have fought the entry animation. */
 
 
-.totop{--lift:0px;
+.gotop{--lift:0px;
   position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
   background:color-mix(in srgb,var(--paper) 90%,transparent);
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
-  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* No transition on the parked position: --lift tracks scroll, so easing it would
+  transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}/* ⚠️ --lift IS PINNED TO 0 BELOW 760px, ON PURPOSE — Harkirat's call
+   2026-08-05 09:01 EDT, after the footer redesign (side-by-side disclaimer +
+   sig, no more full-width stacked lines) freed up enough room that the
+   button riding up to clear the footer is no longer solving a real overlap;
+   it just makes the button drift on mobile instead of sitting still where a
+   thumb expects it. !important is required here: the script still WRITES
+   --lift as an inline style every frame (see the two writers this rule's own
+   comment above names), and a plain override loses to that inline value —
+   only an !important stylesheet rule beats it. The script itself is
+   untouched; it can keep computing a nonzero value; this simply stops it
+   from being read on a narrow viewport. */
+
+@media (max-width:760px){ .gotop{--lift:0px!important} }/* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
 
-.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+.gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
   transition:opacity .34s ease,border-color .3s ease}
-.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
+.gotop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}/* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
    the border it sits in. Covering the border box instead puts both circles on one
@@ -823,8 +877,8 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 .tt-ar i:nth-child(1){top:0}
 .tt-ar i:nth-child(2){top:12px}
 @media (hover:hover) and (pointer:fine){
-  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-  .totop:hover .tt-ar i{transform:translateY(-12px)}
+  .gotop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .gotop:hover .tt-ar i{transform:translateY(-12px)}
 }
 @keyframes ttFire{
   0%{transform:translateY(0);opacity:1}
@@ -832,16 +886,16 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
   37%{transform:translateY(15px);opacity:0}
   100%{transform:translateY(0);opacity:1}
 }
-.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+.gotop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .totop{transition:opacity .2s ease}
+  .gotop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
-  .totop.fire .tt-ar{animation:none}
+  .gotop.fire .tt-ar{animation:none}
 }/* ── back to top, coalescing ───────────────────────────────────────────
    The control assembles from droplets falling inward when it first arrives, and
-   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
-   and .totop.on: they are all (0,2,0), so source order is what decides, and
-   .totop.birth has to win over both while the liquid is on screen.
+   comes apart upward when pressed. Every rule below has to sit AFTER .gotop:hover
+   and .gotop.on: they are all (0,2,0), so source order is what decides, and
+   .gotop.birth has to win over both while the liquid is on screen.
 
    ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
    filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
@@ -857,7 +911,7 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
    measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
    black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
-   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   an opaque backdrop, and .gotop is position:fixed with z-index:55 — its own
    stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
    background .birth has just made transparent. Black against nothing stays black.
    Giving the button an opaque background does not help either: the bed is inset
@@ -867,12 +921,12 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
 
 .tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
   opacity:0;visibility:hidden}
-.totop.birth .tt-ink{opacity:1;visibility:visible}
+.gotop.birth .tt-ink{opacity:1;visibility:visible}
 .tt-goo{position:absolute;inset:0}
-.totop.birth .tt-goo{filter:url(#dbgoo-c)}
-.totop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
+.gotop.birth .tt-goo{filter:url(#dbgoo-c)}
+.gotop.nogoo.birth .tt-goo{filter:none}/* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
-   to .totop's own transition is what made the button appear to come back after a
+   to .gotop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. *//* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
    "gradient circle behind the button". Clearing background and border-color takes
    away the button's own paint, but a backdrop-filter is not paint — it is a
@@ -888,9 +942,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}/* ── 
    background. Two circles, two causes; the first fix made the second visible. */
 
 
-.totop.birth{background:transparent;border-color:transparent;
+.gotop.birth{background:transparent;border-color:transparent;
   backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
-.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.gotop.birth .tt-ring,.gotop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
   transform:scale(0);will-change:transform}
@@ -1402,7 +1456,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      the y-squash note on the particles. */
 
   
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}/* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
      a no-op for momentum since iOS 13 made smooth scrolling the default; the only
@@ -1411,6 +1465,7 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
      obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
   
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
@@ -1650,18 +1705,18 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 
 
 
-.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
-   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
-   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap (4rem), false
-   here, where .page ends at 0. Measured on an iPhone against Contributing, which
-   is the rhythm Harkirat asked these pages to match: 96px above the link row and
-   28px below it, against 54 and 80. So this restores the missing floor and trims
-   the card's own 3rem gap, which is a desktop value that reads as a hole once the
-   footer is a single narrow column. Both numbers are the warm page's, not new
-   ones — the point is that the two templates agree. */
+.page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
+   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
+   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap, false here,
+   where .page ends at 0. This restores the missing floor, and the two numbers
+   have to move together — see .wrap below — or the templates drift apart again.
+   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
+   original 4rem) was reported as too much dead space below the sign-off on
+   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
+   with .wrap's own trim to the same value. */
 
-@media (max-width:760px){ .page{padding-bottom:4rem} }
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}/* ── rail: the section index, tracking position ──────────────────── *//* align-self:start stops the rail STRETCHING to its grid row's full height, which is
@@ -1713,11 +1768,15 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .slot.on{border-left-color:var(--accent)}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}/* ── the plain-text download ──────────────────────────────────────────
-   One rule set for both hosts, because it is one control: the section index's
-   last row on the desktop rail, and the same row inside the mobile disclosure.
-   It reads as an ACTION, not as another section — a filled chip rather than a
-   ruled row — because a reader scanning for "where am I" must not mistake it for
-   a place to go. Its touch target is the 44px the mobile list already uses. */
+   The desktop rail's last row. It reads as an ACTION, not as another section —
+   a filled chip rather than a ruled row — because a reader scanning for "where
+   am I" must not mistake it for a place to go.
+   ⚠️ MOBILE REUSES THIS SAME ROW AGAIN (changed 2026-08-05 11:31 EDT) — it used
+   to get its own compact icon-only control, .dlm, living in the sticky tab bar.
+   That read as a stray icon inside what otherwise looks like page navigation,
+   with no room to say what it does. It moved into the section menu instead —
+   see mobileNav() and ".mp-list .dlr" below — as the SAME row this is, not a
+   second markup shape to keep in sync. */
 
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
@@ -1732,26 +1791,34 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .dlr-t b{color:var(--ink);font-weight:650}/* Tabular so the two pages' sizes line up if they are ever seen together. */
 
 .dlr-s{flex:0 0 auto;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;
-  color:var(--ink3);font-variant-numeric:tabular-nums}/* Drawn, not typed: a glyph would render at whatever weight the mono face has and
-   would also join the page text, which is the trap documented on the copy button.
-   A tray with an arrow coming down into it — the shape a download actually is. *//* ⚠️ The tray's floor is a BORDER on the element itself, not a third child. An
-   element has two pseudo-elements and the arrow needs both — a stem and a head —
-   so the base had to come from somewhere that is not a box. A stray <span> for it
-   would have been markup existing only to be painted. */
+  color:var(--ink3);font-variant-numeric:tabular-nums}/* See dlIcon() — inline SVG now, not a CSS border/pseudo-element tray. */
 
+.dlr-i{flex:0 0 auto;display:block;width:13px;height:13px;color:var(--accent-t)}/* ── the section menu's download card ───────────────────────────────────
+   The mobile home for the row above, as the last child of .mp-list — see the
+   note on .msecd for why it's a different kind of question than "which
+   section" and belongs apart from the list rather than styled as one more
+   row in it.
+   ⚠️ NOT STICKY, ON PURPOSE (reversed 2026-08-05 12:28 EDT). A sticky-to-the-
+   list version shipped first, edge-to-edge with square corners, so it could
+   sit flush against the scroll boundary — but that same edge-to-edge opaque
+   bar is what made it PIN OVER whatever section row happened to be scrolled
+   underneath it, mid-word, with no transition. Reported as "such a poor
+   implementation... looks slapped on." The desktop rail's identical .dlr row
+   has never drawn that complaint sitting as a plain trailing row with normal
+   margin — so rather than polish the overlap (a fade mask, a shadow) this
+   drops the mechanism that caused it. Inset margin matching the slot rows'
+   own horizontal padding, and a hairline drawn in the gap above it via
+   ::before rather than a real border — a border on the card itself would
+   have doubled up against .msecd's own bottom border when the list is short
+   enough not to scroll. */
 
-.dlr-i{position:relative;flex:0 0 auto;display:block;box-sizing:border-box;
-  width:13px;height:13px;color:var(--accent-t);
-  border-bottom:1.6px solid currentColor}
-.dlr-i::before{content:"";position:absolute;left:5.7px;top:0;width:1.6px;height:6.4px;
-  background:currentColor;border-radius:1px}/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE — same trap as the landing page's
-   .arw. The head is a 5.6px box turned 45deg, so its tip reaches 5.6/sqrt(2)=3.96px
-   from its own centre, not 2.8. Centred at x=6.5 that puts the point at 10.46 and
-   2.54, both inside the 13px box. */
-
-.dlr-i::after{content:"";position:absolute;left:3.7px;top:1.9px;width:5.6px;height:5.6px;
-  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  border-radius:0 0 2px 0;transform:rotate(45deg)}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
+.mp-list .dlr{position:relative;margin:1.1rem .9rem .3rem;padding:.75rem .9rem;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--accent) 9%,var(--paper));
+  border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}
+.mp-list .dlr::before{content:"";position:absolute;left:0;right:0;top:-.65rem;
+  height:1px;background:var(--rule)}@media (hover:hover) and (pointer:fine){
+.mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}}/* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 
 @media (max-width:980px){ .rail{display:none} }
@@ -1902,11 +1969,20 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 @media (hover:none){.anchor{display:none}}/* ── prose ───────────────────────────────────────────────────────── */
 
 
-.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
-.doc p{margin:0 0 1.15rem;max-width:72ch}
+.doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}/* ⚠️ WIDENED 72ch -> 88ch, and every other doc-body max-width shifted by the
+   same +16ch, 2026-08-05 08:58 EDT. 72ch is a reasonable READING line length
+   in isolation, but .doc's actual column (the page minus the 200px rail
+   minus its own padding) runs well past 100ch on a normal laptop width, so
+   the cap was leaving a wide dead margin down the right side of the card
+   instead of the text using space the layout already allocated for it. Kept
+   every doc-body type at the SAME relative gap it had before (70/72/74 ->
+   86/88/90) rather than picking one flat number, so paragraphs, lists,
+   callouts and the shout blocks still line up with each other. */
+
+.doc p{margin:0 0 1.15rem;max-width:88ch}
 .doc strong{color:var(--ink);font-weight:600}
 .doc em{font-style:italic}
-.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:88ch}
 .doc li{margin:.5rem 0}
 .doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
 .doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
@@ -1932,24 +2008,19 @@ html.liq,html.liq *{cursor:none !important}/* fixed, not absolute: a cursor belo
 .authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
   letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
   border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
-  max-width:72ch}
+  max-width:88ch}
 .authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
   justify-content:space-between}
 .authoritative p{margin:0;flex:1 1 34ch}
-.authoritative a{color:var(--ink)}/* Download the instrument. The arrow is drawn rather than typed so it inherits
-   the button's colour in both themes and cannot fall back to a missing glyph. */
+.authoritative a{color:var(--ink)}/* Download the instrument. See dlIcon() — inline SVG, inherits the button's
+   colour in both themes and cannot fall back to a missing glyph. */
 
 .dl{display:inline-flex;align-items:center;gap:.55rem;flex:0 0 auto;min-height:38px;
   padding:.45rem .95rem;border-radius:999px;border:1px solid var(--rule2);
   background:color-mix(in srgb,var(--ink) 7%,transparent);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
   text-decoration:none;transition:border-color .25s,background .25s}
-.dl-i{position:relative;width:9px;height:11px;flex:0 0 auto}
-.dl-i::before{content:"";position:absolute;left:3.6px;top:0;width:1.6px;height:7px;
-  background:currentColor}
-.dl-i::after{content:"";position:absolute;left:.6px;top:3.6px;width:6px;height:6px;
-  border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  transform:rotate(-45deg)}
+.dl-i{flex:0 0 auto;display:block;width:11px;height:11px}
 .dl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){
   .dl:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent);
@@ -1979,10 +2050,10 @@ h3.clause .ht:empty{display:none}
   h3.clause:has(.ht:empty){margin-bottom:.15rem}
 }
 p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
-  margin:0 0 .95rem;max-width:70ch}
+  margin:0 0 .95rem;max-width:86ch}
 p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
   font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
-ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:86ch}
 ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
   margin:.34rem 0}/* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
    so they are preserved rather than down-cased — but a wall of capital serif at
@@ -1990,21 +2061,61 @@ ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color
 
 p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
   color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
-  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:90ch}/* ⚠️ pre-wrap, NOT pre — reported 2026-08-05 08:34 EDT against NOTICE §4A.1's
+   quoted emoji.gg licence text: white-space:pre never wraps, so a QUOTED
+   PARAGRAPH landed here (renderIndented() sends anything indented deeper
+   than its paragraph baseline to this class, on purpose, for addresses and
+   the SPDX identifier) forced a horizontal scrollbar instead of wrapping like
+   the prose it actually is. pre-wrap keeps this block's real job — an
+   address or identifier's own line breaks stay literal — while also wrapping
+   at the box edge, which a short address never needed and a long quote
+   always did. */
+
 pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
   background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
-  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;
+  white-space:pre-wrap;overflow-wrap:break-word}/* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
    IS the structure, so it must not wrap — hence its own horizontal scroll rather
    than letting the page body scroll, which is the rule for every wide element. */
 
 pre.aligned{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(--ink2);
   background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
   margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
-pre.aligned a{color:var(--ink)}/* ── callouts ────────────────────────────────────────────────────── */
+pre.aligned a{color:var(--ink)}/* ── dependency/asset cards — see isDepEntry()/depCard() ────────────────
+   Each record stacks vertically: name+version+license on one line, then
+   copyright, then the link, each free to wrap on its own rather than being
+   held to a fixed column that a phone-width viewport can't honour. Adjacent
+   cards are consecutive .dep divs, not one shared box, so the gap between
+   them is ordinary block margin rather than a divider drawn across a table. */
+
+.dep{border:1px solid var(--rule);border-radius:11px;padding:.85rem 1.05rem;
+  margin:0 0 .65rem;background:var(--raised);max-width:88ch}
+.dep:last-child{margin-bottom:0}
+.dep-h{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.55rem;row-gap:.3rem;
+  margin-bottom:.45rem}
+.dep-n{font-family:var(--display);font-weight:700;font-size:.94rem;color:var(--ink);
+  letter-spacing:-.005em}
+.dep-v{font-family:var(--mono);font-size:.66rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.dep-lic{flex:0 0 auto;margin-left:auto;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-t);
+  padding:.22rem .6rem;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+  background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.dep-c{margin:0 0 .3rem;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  color:var(--ink2)}
+.dep-u{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  word-break:break-all}
+.dep-u a{color:var(--accent-t)}
+.dep-note{margin:.4rem 0 0;font-family:var(--serif);font-size:.83rem;line-height:1.55;
+  color:var(--ink3)}
+.dep-note:first-child{margin-top:0}/* NOTICE's "*** ... ***" inline aside — see inlineText(). */
+
+.hi{color:var(--accent-t);font-weight:700}/* ── callouts ────────────────────────────────────────────────────── */
 
 
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
-  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:88ch}
 .callout>:last-child{margin-bottom:0}
 .callout p{max-width:none}
 .callout.warn{border-left-color:var(--gold);
@@ -2076,7 +2187,7 @@ pre.aligned a{color:var(--ink)}/* ── callouts ──────────
 
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.totop,.ins{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.gotop,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -2153,7 +2264,7 @@ html{scroll-behavior:smooth}
 <div class="bar">
   <a class="mark live" href="./">
     <span class="mk-s">
-      <span class="wm">Dioreo</span>
+      <img class="wm" src="../assets/dioreo-wordmark.webp" width="600" height="279" alt="Dioreo">
       <span class="mk-ctx"><i aria-hidden="true"></i>Privacy Policy</span>
     </span>
     <span class="go" aria-hidden="true">&#8250;</span>
@@ -2262,11 +2373,12 @@ html{scroll-behavior:smooth}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
-    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
-         so the download sits in both or in neither. It is OUTSIDE .slots because
-         that box is the scroller the scrollspy drives — a non-section row inside
-         it would travel with the tracked section and could scroll out of reach,
-         which is the one thing this control exists not to do. -->
+    <!-- The rail is the desktop half of the panel the mobile "On this page"
+         disclosure is, and both offer the download — but no longer via the same
+         markup. Desktop keeps the full row, OUTSIDE .slots because that box is
+         the scroller the scrollspy drives and a non-section row inside it would
+         travel with the tracked section. Mobile gets its own compact .dlm
+         instead of reusing this row — see mobileNav(). -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots"><a href="#s-0" class="slot"><i>0</i><span>The short version</span></a><a href="#s-1" class="slot"><i>1</i><span>Who is responsible for your data</span></a><a href="#s-2" class="slot"><i>2</i><span>What we collect</span></a><a href="#s-3" class="slot"><i>3</i><span>What we do NOT collect</span></a><a href="#s-4" class="slot"><i>4</i><span>Why we process it, and our legal basis</span></a><a href="#s-5" class="slot"><i>5</i><span>Who your data is shared with</span></a><a href="#s-6" class="slot"><i>6</i><span>International transfers</span></a><a href="#s-7" class="slot"><i>7</i><span>How long we keep it</span></a><a href="#s-8" class="slot"><i>8</i><span>Security</span></a><a href="#s-9" class="slot"><i>9</i><span>Your rights and how to use them</span></a><a href="#s-10" class="slot"><i>10</i><span>Children's privacy</span></a><a href="#s-11" class="slot"><i>11</i><span>Third-party links and content</span></a><a href="#s-12" class="slot"><i>12</i><span>Changes to this policy</span></a><a href="#s-13" class="slot"><i>13</i><span>Contact</span></a><a href="#appendix-a-complete-data-inventory" class="slot"><i>—</i><span>Appendix A — Complete data inventory</span></a><a href="#appendix-b-change-history" class="slot"><i>—</i><span>Appendix B — Change history</span></a><a href="#appendix-c-how-each-claim-was-verified" class="slot"><i>—</i><span>Appendix C — How each claim was verified</span></a></div>
@@ -2278,16 +2390,15 @@ html{scroll-behavior:smooth}
         <span class="lab">Data</span>
         <h1>Privacy Policy</h1>
         <div class="rule"></div>
-        <div class="meta"><span>Effective <b>4 August 2026</b></span><span>Revision <b>1.8</b></span><span>Ontario, Canada</span></div>
+        <div class="meta"><span>Effective <b>5 August 2026</b></span><span>Revision <b>1.9</b></span><span>Ontario, Canada</span></div>
       </header>
       <h2 id="s-0" class="numbered"><span class="idx" aria-hidden="true">0</span><span class="ht">The short version</span><a class="anchor" href="#s-0" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>We store <strong>your Discord user ID</strong> and <strong>your display preferences</strong> — timezone, visibility toggles, region, and colour settings. That's essentially it.</p>
 <p><strong>We cannot read your messages.</strong> The Bot doesn't have Discord's Message Content permission, so message text is technically inaccessible to us, not merely unused.</p>
 <p><strong>Your data is stored in Canada.</strong> No advertising, no analytics, no tracking, no cookies, no profiling, and nothing is sold or shared for marketing.</p>
-<p><strong>This website stores exactly one thing on your device:</strong> whether you chose light or dark mode. It never leaves your browser and identifies nobody — see <a class="xref" href="#s-2.6">§2.6</a>.</p>
-<p>You can have everything deleted by emailing <strong>harkirat117@gmail.com</strong> — see <a class="xref" href="#s-9">§9</a>.</p>
+<p><strong>This website stores exactly one thing on your device:</strong> whether you chose light or dark mode. It never leaves your browser and identifies nobody — see <a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a>.</p>
+<p>You can have everything deleted by emailing <strong>harkirat117@gmail.com</strong> — see <a class="xref" href="#s-9" data-tip="Jump to section">§9</a>.</p>
 <p><em>This summary is for convenience. The sections below are the actual policy.</em></p>
-<hr>
 <section class="dsec">
 <h2 id="s-1" class="numbered"><span class="idx" aria-hidden="true">1</span><span class="ht">Who is responsible for your data</span><a class="anchor" href="#s-1" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The <strong>data controller</strong> is:</p>
@@ -2297,7 +2408,6 @@ html{scroll-behavior:smooth}
 <h3 id="s-1.1" class="numbered"><span class="idx" aria-hidden="true">1.1</span><span class="ht">EU representative</span><a class="anchor" href="#s-1.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We have not appointed an EU representative under <strong>GDPR Article 27</strong>. We rely on the exemption in <strong>Article 27(2)(a)</strong>: our processing is occasional, does not include special-category or criminal-conviction data on any scale, involves only a user ID and display preferences, and is unlikely to result in a risk to the rights and freedoms of individuals.</p>
 <p>If that assessment ever stops being accurate, we will appoint a representative and update this policy. EU and UK users can reach us directly at the address above, and we answer.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-2" class="numbered"><span class="idx" aria-hidden="true">2</span><span class="ht">What we collect</span><a class="anchor" href="#s-2" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2331,42 +2441,38 @@ html{scroll-behavior:smooth}
 <p><strong>To remove them:</strong> clear site data for this domain in your browser settings, or use private browsing. <code>db-booted</code> also clears itself when you close the tab. Removing them costs you nothing but the appearance setting and one replayed animation.</p>
 <p><strong>Until you press the switch, no appearance preference is stored at all</strong> — the Site simply follows whatever light or dark setting your operating system or browser is already using. That happens through an ordinary CSS media query: your browser applies one set of colours or the other while drawing the page. We are not told which it chose. There is no server-side component that could be told — these are static files.</p>
 <p>The one place the Site reads that setting in code, it does so only to keep the switch's on/off state honest for screen readers, in your own browser. <strong>It is never stored, never written to a log, never combined with anything else, and never sent anywhere.</strong> We mention it because a colour-scheme preference is one of the signals that <em>can</em> be used to help fingerprint a browser when it is collected and transmitted, and we would rather state plainly that this one is not.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-3" class="numbered"><span class="idx" aria-hidden="true">3</span><span class="ht">What we do NOT collect</span><a class="anchor" href="#s-3" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">❌ We do not have</th><th role="columnheader" scope="col">Why</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your messages</strong></td><td role="cell" data-label="Why">The Bot runs with only the <code>Guilds</code> gateway intent. It does <strong>not</strong> have the Message Content intent, so Discord never sends us message text. A technical impossibility, not just a policy promise.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your DMs</strong></td><td role="cell" data-label="Why">Same reason.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your email address</strong></td><td role="cell" data-label="Why">Never requested, never received from Discord.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your real name</strong></td><td role="cell" data-label="Why">Never requested.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your Discord username or display name</strong></td><td role="cell" data-label="Why">Used momentarily to render a response, never written to the database.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your IP address</strong></td><td role="cell" data-label="Why">Discord handles the Bot's connection; we never see it. Loading <em>this website</em> is a normal web request, so the host that serves it necessarily processes your IP the way any web server does — that is described in <a class="xref" href="#s-5">§5</a>, and it never reaches us or our database.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Payment information</strong></td><td role="cell" data-label="Why">The Bot is free and has no payment feature.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>A list of your servers</strong></td><td role="cell" data-label="Why">Not collected or stored.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Analytics or tracking data</strong></td><td role="cell" data-label="Why">No analytics SDK, no telemetry, no tracking pixel, no ad network, no fingerprinting.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Cookies</strong></td><td role="cell" data-label="Why">None, anywhere. The Bot runs inside Discord and has no web surface at all. This documentation website sets no cookies either; it stores a single light/dark preference in your browser, which is described in full in <a class="xref" href="#s-2.6">§2.6</a> and is never transmitted.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Voice data, location, contacts, or biometrics</strong></td><td role="cell" data-label="Why">Not applicable, not collected.</td></tr></tbody></table></div>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">❌ We do not have</th><th role="columnheader" scope="col">Why</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your messages</strong></td><td role="cell" data-label="Why">The Bot runs with only the <code>Guilds</code> gateway intent. It does <strong>not</strong> have the Message Content intent, so Discord never sends us message text. A technical impossibility, not just a policy promise.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your DMs</strong></td><td role="cell" data-label="Why">Same reason.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your email address</strong></td><td role="cell" data-label="Why">Never requested, never received from Discord.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your real name</strong></td><td role="cell" data-label="Why">Never requested.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your Discord username or display name</strong></td><td role="cell" data-label="Why">Used momentarily to render a response, never written to the database.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Your IP address</strong></td><td role="cell" data-label="Why">Discord handles the Bot's connection; we never see it. Loading <em>this website</em> is a normal web request, so the host that serves it necessarily processes your IP the way any web server does — that is described in <a class="xref" href="#s-5" data-tip="Jump to section">§5</a>, and it never reaches us or our database.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Payment information</strong></td><td role="cell" data-label="Why">The Bot is free and has no payment feature.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>A list of your servers</strong></td><td role="cell" data-label="Why">Not collected or stored.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Analytics or tracking data</strong></td><td role="cell" data-label="Why">No analytics SDK, no telemetry, no tracking pixel, no ad network, no fingerprinting.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Cookies</strong></td><td role="cell" data-label="Why">None, anywhere. The Bot runs inside Discord and has no web surface at all. This documentation website sets no cookies either; it stores a single light/dark preference in your browser, which is described in full in <a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a> and is never transmitted.</td></tr><tr role="row"><td role="cell" data-label="❌ We do not have"><strong>Voice data, location, contacts, or biometrics</strong></td><td role="cell" data-label="Why">Not applicable, not collected.</td></tr></tbody></table></div>
 <p>We do <strong>no</strong> profiling, no behavioural advertising, and <strong>no automated decision-making producing legal or similarly significant effects</strong> (GDPR Art. 22).</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-4" class="numbered"><span class="idx" aria-hidden="true">4</span><span class="ht">Why we process it, and our legal basis</span><a class="anchor" href="#s-4" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Purpose</th><th role="columnheader" scope="col">Legal basis (GDPR Art. 6)</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Purpose">Remembering your preferences</td><td role="cell" data-label="Legal basis (GDPR Art. 6)"><strong>Consent</strong> — you chose to set them (Art. 6(1)(a))</td></tr><tr role="row"><td role="cell" data-label="Purpose">Making the Bot work when you invoke a command</td><td role="cell" data-label="Legal basis (GDPR Art. 6)"><strong>Contract</strong> — the Terms of Service (Art. 6(1)(b))</td></tr><tr role="row"><td role="cell" data-label="Purpose">Keeping the Bot secure and stable (cooldowns, crash logs)</td><td role="cell" data-label="Legal basis (GDPR Art. 6)"><strong>Legitimate interests</strong> — running a functioning, non-abused service (Art. 6(1)(f))</td></tr><tr role="row"><td role="cell" data-label="Purpose">Complying with legal obligations</td><td role="cell" data-label="Legal basis (GDPR Art. 6)"><strong>Legal obligation</strong> (Art. 6(1)(c))</td></tr></tbody></table></div>
 <p>No <strong>special category</strong> data (Art. 9) is processed — no health, biometric, racial or ethnic origin, political, religious, or sexual-orientation data.</p>
-<p>Under <strong>PIPEDA</strong>, our basis is your <strong>implied consent</strong>: you install the Bot and set a preference, and we store it for the obvious purpose of honouring it. You can withdraw consent at any time (<a class="xref" href="#s-9">§9</a>).</p>
+<p>Under <strong>PIPEDA</strong>, our basis is your <strong>implied consent</strong>: you install the Bot and set a preference, and we store it for the obvious purpose of honouring it. You can withdraw consent at any time (<a class="xref" href="#s-9" data-tip="Jump to section">§9</a>).</p>
 <blockquote class="callout"><p><strong>A note on PIPEDA's scope.</strong> PIPEDA applies to organisations collecting personal information "in the course of commercial activity." This Bot is free and non-commercial, so PIPEDA arguably doesn't bind us at all. <strong>We comply with it regardless</strong>, and don't rely on that argument to hold anything back.</p></blockquote>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-5" class="numbered"><span class="idx" aria-hidden="true">5</span><span class="ht">Who your data is shared with</span><a class="anchor" href="#s-5" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>We do not sell your data. We do not share it for advertising or cross-context behavioural advertising. We do not disclose it to data brokers.</strong> We have never done so, and we have no plans to.</p>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Provider</th><th role="columnheader" scope="col">What it handles</th><th role="columnheader" scope="col">Where</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Provider"><strong>Discord Inc.</strong></td><td role="cell" data-label="What it handles">The platform itself — your ID, your interactions</td><td role="cell" data-label="Where">Per <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a></td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>MongoDB Atlas</strong> (MongoDB, Inc.)</td><td role="cell" data-label="What it handles"><strong>Stores your preference record</strong></td><td role="cell" data-label="Where"><strong>🇨🇦 Azure Canada Central (Toronto)</strong></td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Google Cloud Platform</strong> (Google LLC)</td><td role="cell" data-label="What it handles">Hosts the server the Bot runs on</td><td role="cell" data-label="Where">🇺🇸 <code>us-east1</code> (South Carolina)</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Google Cloud Logging</strong> (Google LLC)</td><td role="cell" data-label="What it handles">Server logs, 30-day retention</td><td role="cell" data-label="Where">🇺🇸 United States</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Google Cloud Vertex AI</strong> (Google LLC)</td><td role="cell" data-label="What it handles">Admin-only image extraction — <strong>no end-user data</strong></td><td role="cell" data-label="Where">🇺🇸 United States</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Cloudinary Ltd.</strong></td><td role="cell" data-label="What it handles">Hosts cached <strong>game images</strong> only</td><td role="cell" data-label="Where">🇺🇸 United States</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Cloudflare, Inc.</strong></td><td role="cell" data-label="What it handles">Serves these legal documents as a public web page</td><td role="cell" data-label="Where">Global edge network</td></tr></tbody></table></div>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Provider</th><th role="columnheader" scope="col">What it handles</th><th role="columnheader" scope="col">Where</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Provider"><strong>Discord Inc.</strong></td><td role="cell" data-label="What it handles">The platform itself — your ID, your interactions</td><td role="cell" data-label="Where">Per <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a></td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>MongoDB Atlas</strong> (MongoDB, Inc.)</td><td role="cell" data-label="What it handles"><strong>Stores your preference record, plus the operational alert log described in <a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a></strong></td><td role="cell" data-label="Where"><strong>🇨🇦 Azure Canada Central (Toronto)</strong></td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Google Cloud Platform</strong> (Google LLC)</td><td role="cell" data-label="What it handles">Hosts the server the Bot runs on</td><td role="cell" data-label="Where">🇺🇸 <code>us-east1</code> (South Carolina)</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Google Cloud Logging</strong> (Google LLC)</td><td role="cell" data-label="What it handles">Server logs, 30-day retention</td><td role="cell" data-label="Where">🇺🇸 United States</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Google Cloud Vertex AI</strong> (Google LLC)</td><td role="cell" data-label="What it handles">Admin-only image extraction — <strong>no end-user data</strong></td><td role="cell" data-label="Where">🇺🇸 United States</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Cloudinary Ltd.</strong></td><td role="cell" data-label="What it handles">Hosts cached <strong>game images</strong> only</td><td role="cell" data-label="Where">🇺🇸 United States</td></tr><tr role="row"><td role="cell" data-label="Provider"><strong>Cloudflare, Inc.</strong></td><td role="cell" data-label="What it handles">Serves these legal documents as a public web page</td><td role="cell" data-label="Where">Global edge network</td></tr></tbody></table></div>
 <p><strong>About Cloudflare:</strong> it hosts <em>this policy and the Terms of Service</em> so they are publicly readable, as Discord requires. It has no role in the Bot itself and never sees your Discord data. Like any web host, it processes standard request data — including your IP address — when you load these pages, under <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's privacy policy</a>. Reading this page is the only thing that involves them.</p>
 <h3 id="s-5.1" class="numbered"><span class="idx" aria-hidden="true">5.1</span><span class="ht">Three clarifications worth making</span><a class="anchor" href="#s-5.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
-<p><strong>Your stored personal data stays in Canada.</strong> The <code>UserPreference</code> records — the only place your preferences live — are in an Atlas cluster hosted in <strong>Azure Canada Central, Toronto</strong>. Verified 2026-07-28 21:36 EDT by resolving the cluster's DNS records.</p>
+<p><strong>Your stored personal data stays in Canada.</strong> The <code>UserPreference</code> records — the only place your preferences live — are in an Atlas cluster hosted in <strong>Azure Canada Central, Toronto</strong>. Verified 2026-07-28 21:36 EDT by resolving the cluster's DNS records. The alert log described in <a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a> lives in the same cluster, for the same reason: it is a different collection, not a different provider or region.</p>
 <p><strong>Cloudinary holds no personal data.</strong> The images there are game screenshots and weapon artwork supplied by the administrator. Your avatar is never uploaded.</p>
 <p><strong>No AI system processes your data.</strong> The <code>/autobuild</code> command sends screenshots to a Gemini model for text extraction, but it is <strong>restricted to the administrator's own Discord account</strong>. No end-user data, image, or message is ever sent to any AI service.</p>
 <p>Two details that matter here:</p>
-<ul><li>We call <strong>Google Cloud Vertex AI</strong> (<code>aiplatform.googleapis.com</code>, project-scoped, service-account authenticated) — <strong>not</strong> the consumer Gemini API (<code>generativelanguage.googleapis.com</code>). The distinction is important: under the Google Cloud terms that govern Vertex AI, <strong>Google does not use customer data submitted to Vertex AI to train its models.</strong> The consumer Gemini API's free tier has materially weaker terms in this respect. We use the enterprise path.</li><li>Separately, AI tools were used to help <em>write</em> this project's code and documentation — see <a href="notice.html">NOTICE</a> <a class="xref" href="#s-6">§6</a>. That is development-time assistance, not runtime processing of your data.</li></ul>
+<ul><li>We call <strong>Google Cloud Vertex AI</strong> (<code>aiplatform.googleapis.com</code>, project-scoped, service-account authenticated) — <strong>not</strong> the consumer Gemini API (<code>generativelanguage.googleapis.com</code>). The distinction is important: under the Google Cloud terms that govern Vertex AI, <strong>Google does not use customer data submitted to Vertex AI to train its models.</strong> The consumer Gemini API's free tier has materially weaker terms in this respect. We use the enterprise path.</li><li>Separately, AI tools were used to help <em>write</em> this project's code and documentation — see <a href="notice.html">NOTICE</a> <a class="xref" href="#s-6" data-tip="Jump to section">§6</a>. That is development-time assistance, not runtime processing of your data.</li></ul>
 <h3 id="s-5.2" class="numbered"><span class="idx" aria-hidden="true">5.2</span><span class="ht">If a provider mishandles your data</span><a class="anchor" href="#s-5.2" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We choose our providers carefully and rely on their published privacy terms and data processing agreements. But we are one person, and <strong>we have no ability to audit, inspect, or control what Discord, Google, MongoDB, or Cloudinary actually do inside their own systems.</strong></p>
 <p>So, plainly:</p>
-<ul><li><strong>Discord is an independent controller of its own data</strong>, not our processor. What Discord collects about you through using Discord — far more than we ever see — is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a> and is Discord's responsibility, not ours.</li><li><strong>Our other providers act as processors</strong> on our instructions, under their own data processing agreements. We do not authorise any of them to use your data for their own purposes, and we have not agreed to any such use.</li><li><strong>If a provider acts outside those terms</strong>, that is their breach. To the fullest extent the law allows, we are not liable to you for it. Our liability to you in any event is limited by §15 of the <a href="terms.html">Terms of Service</a>.</li><li><strong>What we will do:</strong> if we learn a provider has mishandled your data, we will investigate, tell you where <a class="xref" href="#s-8.1">§8.1</a> requires it, notify the relevant regulator where required, and change provider where that's the right answer.</li></ul>
+<ul><li><strong>Discord is an independent controller of its own data</strong>, not our processor. What Discord collects about you through using Discord — far more than we ever see — is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a> and is Discord's responsibility, not ours.</li><li><strong>Our other providers act as processors</strong> on our instructions, under their own data processing agreements. We do not authorise any of them to use your data for their own purposes, and we have not agreed to any such use.</li><li><strong>If a provider acts outside those terms</strong>, that is their breach. To the fullest extent the law allows, we are not liable to you for it. Our liability to you in any event is limited by §15 of the <a href="terms.html">Terms of Service</a>.</li><li><strong>What we will do:</strong> if we learn a provider has mishandled your data, we will investigate, tell you where <a class="xref" href="#s-8.1" data-tip="Jump to section">§8.1</a> requires it, notify the relevant regulator where required, and change provider where that's the right answer.</li></ul>
 <blockquote class="callout"><p><strong>Being honest about a limit of this section.</strong> If data protection law applies to us, we are the <strong>controller</strong>, and a controller carries responsibility for choosing and overseeing its processors that it cannot simply disclaim in a privacy notice. This section allocates <em>contractual</em> risk between you and us and tells you the truth about what we can and can't control. It does not, and cannot, override any obligation the law places on us, and we don't pretend otherwise.</p></blockquote>
 <h3 id="s-5.3" class="numbered"><span class="idx" aria-hidden="true">5.3</span><span class="ht">Other disclosure</span><a class="anchor" href="#s-5.3" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We may disclose information where legally required — a valid court order, subpoena, or law-enforcement request under Canadian law — or where necessary to investigate a security incident or protect someone's rights or safety. Given what we hold, such a request would yield very little. Where we are lawfully permitted to tell you about such a request, we will.</p>
 <p>If the Bot were ever transferred to another operator, your data could transfer with it. We would give notice first, and you could delete your data beforehand.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-6" class="numbered"><span class="idx" aria-hidden="true">6</span><span class="ht">International transfers</span><a class="anchor" href="#s-6" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2374,17 +2480,15 @@ html{scroll-behavior:smooth}
 <p>Some <em>processing</em> happens elsewhere: the server that runs the Bot is in the United States (Google Cloud <code>us-east1</code>), so your data is handled in memory there while a command runs. Discord operates globally and handles your data under its own policy.</p>
 <p><strong>If you are in the EEA, the UK, or Switzerland:</strong> Canada holds a partial <strong>adequacy decision</strong> from the European Commission for organisations subject to PIPEDA, which means transfers to Canada are recognised as offering adequate protection. For the US-based processing, we rely on Google's transfer mechanisms — Standard Contractual Clauses and the EU–US Data Privacy Framework — as set out in the Google Cloud data processing terms.</p>
 <p>Given the data involved is a user ID and colour preferences, the practical risk of these transfers is low.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-7" class="numbered"><span class="idx" aria-hidden="true">7</span><span class="ht">How long we keep it</span><a class="anchor" href="#s-7" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Data</th><th role="columnheader" scope="col">Retention</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Data"><strong>Your preference record</strong></td><td role="cell" data-label="Retention"><strong>Kept until you ask us to delete it</strong> — see <a class="xref" href="#s-9">§9</a></td></tr><tr role="row"><td role="cell" data-label="Data"><strong>Alert logs</strong></td><td role="cell" data-label="Retention"><strong>30 days</strong>, then automatically deleted</td></tr><tr role="row"><td role="cell" data-label="Data"><strong>Server logs (Google Cloud Logging)</strong></td><td role="cell" data-label="Retention"><strong>30 days</strong>, then automatically deleted</td></tr><tr role="row"><td role="cell" data-label="Data"><strong>In-memory caches</strong></td><td role="cell" data-label="Retention">Until the next restart or deploy — hours to days</td></tr><tr role="row"><td role="cell" data-label="Data"><strong>Cloudinary game images</strong></td><td role="cell" data-label="Retention">Until the underlying content rolls out of the Bot's history</td></tr></tbody></table></div>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Data</th><th role="columnheader" scope="col">Retention</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Data"><strong>Your preference record</strong></td><td role="cell" data-label="Retention"><strong>Kept until you ask us to delete it</strong> — see <a class="xref" href="#s-9" data-tip="Jump to section">§9</a></td></tr><tr role="row"><td role="cell" data-label="Data"><strong>Alert logs</strong></td><td role="cell" data-label="Retention"><strong>30 days</strong>, then automatically deleted</td></tr><tr role="row"><td role="cell" data-label="Data"><strong>Server logs (Google Cloud Logging)</strong></td><td role="cell" data-label="Retention"><strong>30 days</strong>, then automatically deleted</td></tr><tr role="row"><td role="cell" data-label="Data"><strong>In-memory caches</strong></td><td role="cell" data-label="Retention">Until the next restart or deploy — hours to days</td></tr><tr role="row"><td role="cell" data-label="Data"><strong>Cloudinary game images</strong></td><td role="cell" data-label="Retention">Until the underlying content rolls out of the Bot's history</td></tr></tbody></table></div>
 <h3 id="s-7.1" class="numbered"><span class="idx" aria-hidden="true">7.1</span><span class="ht">An honest disclosure about deletion</span><a class="anchor" href="#s-7.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p><strong>There is currently no automated deletion and no self-service delete command.</strong></p>
 <p>Removing the Bot from your Discord account stops all future interaction, but does <strong>not</strong> by itself erase your stored preferences — they simply sit unused.</p>
 <p><strong>Deletion is currently handled manually, on request, by email.</strong> That is a legitimate and compliant route — the law requires that you be able to exercise the right, not that a button exist — but we consider the absence of self-service a shortcoming rather than a design choice. A <code>/settings</code> delete option and an automatic clean-up of long-dormant records are planned, and this policy will be updated when they ship.</p>
 <p><code>/settings</code> currently lets you <strong>change</strong> stored values, which overwrites them. It has no reset or delete.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-8" class="numbered"><span class="idx" aria-hidden="true">8</span><span class="ht">Security</span><a class="anchor" href="#s-8" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2395,7 +2499,6 @@ html{scroll-behavior:smooth}
 <h3 id="s-8.1" class="numbered"><span class="idx" aria-hidden="true">8.1</span><span class="ht">If there's a breach</span><a class="anchor" href="#s-8.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>If a breach creates a <strong>real risk of significant harm</strong>, we will:</p>
 <ol><li>Report it to the <strong>Office of the Privacy Commissioner of Canada</strong> as PIPEDA requires, and keep a record of it.</li><li>Notify affected users through the Bot or the project's public channels, without undue delay.</li><li>For EEA/UK users, notify the relevant supervisory authority within <strong>72 hours</strong> where GDPR requires it, and notify you directly where the risk is high.</li></ol>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-9" class="numbered"><span class="idx" aria-hidden="true">9</span><span class="ht">Your rights and how to use them</span><a class="anchor" href="#s-9" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2414,27 +2517,24 @@ html{scroll-behavior:smooth}
 <h3 id="s-9.4" class="numbered"><span class="idx" aria-hidden="true">9.4</span><span class="ht">What deletion actually does</span><a class="anchor" href="#s-9.4" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>We delete your <code>UserPreference</code> record entirely. Your preferences revert to defaults, and the Bot behaves as though you'd never used it. Nothing is retained in a shadow copy.</p>
 <p>Two honest caveats:</p>
-<ul><li><strong>Alert logs and server logs</strong> may briefly contain an incidental user ID (<a class="xref" href="#s-2.4">§2.4</a>, <a class="xref" href="#s-2.4a">§2.4a</a>). Both purge automatically within 30 days and neither is indexed by user, so we do not routinely search them. Ask and we will.</li><li><strong>Database backups</strong> maintained by MongoDB Atlas may retain a copy until they age out on Atlas's own schedule. We cannot selectively edit a backup, which is a normal and accepted limitation.</li></ul>
+<ul><li><strong>Alert logs and server logs</strong> may briefly contain an incidental user ID (<a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a>, <a class="xref" href="#s-2.4a" data-tip="Jump to section">§2.4a</a>). Both purge automatically within 30 days and neither is indexed by user, so we do not routinely search them. Ask and we will.</li><li><strong>Database backups</strong> maintained by MongoDB Atlas may retain a copy until they age out on Atlas's own schedule. We cannot selectively edit a backup, which is a normal and accepted limitation.</li></ul>
 <h3 id="s-9.5" class="numbered"><span class="idx" aria-hidden="true">9.5</span><span class="ht">Complaints</span><a class="anchor" href="#s-9.5" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>If you're unhappy with how we've handled your data, please tell us first — but you have every right to go straight to a regulator:</p>
 <ul><li><strong>Canada:</strong> <a href="https://www.priv.gc.ca/" target="_blank" rel="noopener noreferrer">Office of the Privacy Commissioner of Canada</a> — 1-800-282-1376</li><li><strong>EEA:</strong> your national data protection authority (<a href="https://edpb.europa.eu/about-edpb/board/members_en" target="_blank" rel="noopener noreferrer">list</a>)</li><li><strong>UK:</strong> <a href="https://ico.org.uk/" target="_blank" rel="noopener noreferrer">Information Commissioner's Office</a> — 0303 123 1113</li><li><strong>Quebec:</strong> <a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Commission d'accès à l'information</a></li><li><strong>California:</strong> <a href="https://cppa.ca.gov/" target="_blank" rel="noopener noreferrer">California Privacy Protection Agency</a></li></ul>
 <h3 id="s-9.6" class="numbered"><span class="idx" aria-hidden="true">9.6</span><span class="ht">A note on California</span><a class="anchor" href="#s-9.6" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>The CCPA/CPRA applies to "businesses" meeting thresholds — over $25M in annual revenue, personal information on 100,000+ consumers, or 50%+ of revenue from selling personal information. <strong>We meet none of them</strong>, so the CCPA does not apply to us as a matter of law.</p>
 <p>We honour the equivalent rights anyway. For the record, in CCPA terms: the only category of personal information we collect is <strong>identifiers</strong> (a Discord user ID) plus user-set preferences; we collect it directly from your use of the Bot; we use it solely to operate the Bot; <strong>we do not and have never sold or shared personal information</strong>; and we do not collect sensitive personal information.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-10" class="numbered"><span class="idx" aria-hidden="true">10</span><span class="ht">Children's privacy</span><a class="anchor" href="#s-10" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<p>The Bot is <strong>not directed at children</strong>. You must meet Discord's minimum age for your country — <strong>13 in most places, and 14, 15, or 16 in parts of the EU and elsewhere</strong>. See <a class="xref" href="#s-3">§3</a> of the <a href="terms.html">Terms of Service</a>.</p>
+<p>The Bot is <strong>not directed at children</strong>. You must meet Discord's minimum age for your country — <strong>13 in most places, and 14, 15, or 16 in parts of the EU and elsewhere</strong>. See <a class="xref" href="#s-3" data-tip="Jump to section">§3</a> of the <a href="terms.html">Terms of Service</a>.</p>
 <p>We do not knowingly collect data from anyone below that age, and we have no mechanism to verify age beyond Discord's own — we rely on Discord's enforcement of its minimum age.</p>
-<p>If you believe a child's data is stored, email <strong>harkirat117@gmail.com</strong> and we will delete it promptly and without requiring the verification steps in <a class="xref" href="#s-9.2">§9.2</a>.</p>
+<p>If you believe a child's data is stored, email <strong>harkirat117@gmail.com</strong> and we will delete it promptly and without requiring the verification steps in <a class="xref" href="#s-9.2" data-tip="Jump to section">§9.2</a>.</p>
 <p>Because we never collect names, emails, photographs, or message content, the data we hold about any user — including a young one — is limited to a Discord ID and display preferences.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-11" class="numbered"><span class="idx" aria-hidden="true">11</span><span class="ht">Third-party links and content</span><a class="anchor" href="#s-11" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>The Bot displays images and information sourced from third parties and may link elsewhere. <strong>We are not responsible for the privacy practices of any third-party site or service.</strong> Discord's own handling of your data is governed by <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">Discord's Privacy Policy</a>, which is worth reading — it covers far more data than we ever see.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="s-12" class="numbered"><span class="idx" aria-hidden="true">12</span><span class="ht">Changes to this policy</span><a class="anchor" href="#s-12" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2443,15 +2543,13 @@ html{scroll-behavior:smooth}
 <p>Continued use after a change takes effect means you accept the updated policy. We will not apply a materially different use of already-collected data retroactively without your consent.</p>
 <h3 id="s-12.1" class="numbered"><span class="idx" aria-hidden="true">12.1</span><span class="ht">Revision history</span><a class="anchor" href="#s-12.1" data-tip="Link to section" aria-label="Link to this section">¶</a></h3>
 <p>Kept here as well as in git, because the repository's visibility can change and a change record you can't reach isn't a change record.</p>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Effective</th><th role="columnheader" scope="col">What changed</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version">1.8</td><td role="cell" data-label="Effective">4 August 2026</td><td role="cell" data-label="What changed"><strong>The Bot was renamed from Dior's Builds to Dioreo.</strong> <a class="xref" href="#s-1">§1</a> now records the former name and states plainly that the controller did not change. <strong>Nothing else changed at all</strong> — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one.</td></tr><tr role="row"><td role="cell" data-label="Version">1.7</td><td role="cell" data-label="Effective">4 August 2026</td><td role="cell" data-label="What changed">Corrected <a class="xref" href="#s-2.6">§2.6</a>, which still described the Site as storing <strong>one</strong> item and stated that nothing is written unless you press the light/dark switch. Both had been untrue since <code>db-booted</code> was added in version 1.6: that item is written when you open What's New, the Changelog or the Devlog, without being asked for. The consent-banner reasoning was affected too — it argued the strictly-necessary exemption only for a preference you set by pressing a switch, which does not reach <code>db-booted</code> at all. Every statement in <a class="xref" href="#s-2.6">§2.6</a> now names which item it applies to, and the exemption is argued for <code>db-booted</code> explicitly. <strong>No change to what is stored, why, who receives it, or how long it is kept</strong> — the two items, their values and their lifetimes are exactly as listed in version 1.6.</td></tr><tr role="row"><td role="cell" data-label="Version">1.6</td><td role="cell" data-label="Effective">3 August 2026</td><td role="cell" data-label="What changed"><a class="xref" href="#s-2.6">§2.6</a> and Appendix A began listing the Site's <strong>second</strong> browser-storage item, <code>db-booted</code> — a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It had been written since those pages launched while the policy described <code>db-theme</code> as the only key: the verification note had searched the generator, and the flag is written by a separate file, so it was never in scope. The note searches the built pages now. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — the flag holds <code>1</code>, never reaches any server, and is discarded when the tab closes.</td></tr><tr role="row"><td role="cell" data-label="Version">1.5</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Appendix A gained <code>decorationColorHex</code> and <code>nameplateColorHex</code>, which were stored but not listed, and began naming the four palette-source fields individually rather than abbreviating them. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — these fields were already stored and already described by <a class="xref" href="#s-2">§2</a>; the appendix was an incomplete transcription. A build check now compares the appendix against the live schema so it cannot drift again.</td></tr><tr role="row"><td role="cell" data-label="Version">1.4</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Added Discord (<code>diorswrld</code>) as a second contact route in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-13">§13</a>, alongside the canonical email. A Privacy Request under <a class="xref" href="#s-9">§9</a> must still come by email, so that it is on the record.</td></tr><tr role="row"><td role="cell" data-label="Version">1.3</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr role="row"><td role="cell" data-label="Version">1.2</td><td role="cell" data-label="Effective">31 July 2026</td><td role="cell" data-label="What changed">Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds <a class="xref" href="#s-2.6">§2.6</a> describing that item in full — including how the Site behaves <em>before</em> you touch the switch, when it simply follows your operating system's light/dark setting and stores nothing at all — extends the scope line to cover the Site, and corrects the <a class="xref" href="#s-3">§3</a> and Appendix C entries. <strong>No change to what the Bot collects, why, who receives it, or how long it is kept</strong> — the stored fields in Appendix A are identical to versions 1.0 and 1.1.</td></tr><tr role="row"><td role="cell" data-label="Version">1.1</td><td role="cell" data-label="Effective">29 July 2026</td><td role="cell" data-label="What changed">Noted the controller's <code>diorswrld</code> alias in <a class="xref" href="#s-1">§1</a>, <a class="xref" href="#s-9">§9</a>, and <a class="xref" href="#s-13">§13</a>. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — the stored fields in Appendix A are identical to version 1.0.</td></tr><tr role="row"><td role="cell" data-label="Version">1.0</td><td role="cell" data-label="Effective">28 July 2026</td><td role="cell" data-label="What changed">First published version.</td></tr></tbody></table></div>
-<hr>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Effective</th><th role="columnheader" scope="col">What changed</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version">1.9</td><td role="cell" data-label="Effective">5 August 2026</td><td role="cell" data-label="What changed"><a class="xref" href="#s-5" data-tip="Jump to section">§5</a>'s MongoDB Atlas row said it stores only "your preference record" — true of <code>UserPreference</code>, but MongoDB also backs the operational alert log <a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a> already discloses in prose. The row and <a class="xref" href="#s-5.1" data-tip="Jump to section">§5.1</a> now say so and cross-reference <a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a>; <a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a> itself is unchanged, because the alert log's contents and 30-day retention were already described accurately there. <strong>No change to what is collected, why, or how long it is kept</strong> — this closes a gap in <em>where the provider table said it lives</em>, not a change to what MongoDB stores.</td></tr><tr role="row"><td role="cell" data-label="Version">1.8</td><td role="cell" data-label="Effective">4 August 2026</td><td role="cell" data-label="What changed"><strong>The Bot was renamed from Dior's Builds to Dioreo.</strong> <a class="xref" href="#s-1" data-tip="Jump to section">§1</a> now records the former name and states plainly that the controller did not change. <strong>Nothing else changed at all</strong> — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one.</td></tr><tr role="row"><td role="cell" data-label="Version">1.7</td><td role="cell" data-label="Effective">4 August 2026</td><td role="cell" data-label="What changed">Corrected <a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a>, which still described the Site as storing <strong>one</strong> item and stated that nothing is written unless you press the light/dark switch. Both had been untrue since <code>db-booted</code> was added in version 1.6: that item is written when you open What's New, the Changelog or the Devlog, without being asked for. The consent-banner reasoning was affected too — it argued the strictly-necessary exemption only for a preference you set by pressing a switch, which does not reach <code>db-booted</code> at all. Every statement in <a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a> now names which item it applies to, and the exemption is argued for <code>db-booted</code> explicitly. <strong>No change to what is stored, why, who receives it, or how long it is kept</strong> — the two items, their values and their lifetimes are exactly as listed in version 1.6.</td></tr><tr role="row"><td role="cell" data-label="Version">1.6</td><td role="cell" data-label="Effective">3 August 2026</td><td role="cell" data-label="What changed"><a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a> and Appendix A began listing the Site's <strong>second</strong> browser-storage item, <code>db-booted</code> — a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It had been written since those pages launched while the policy described <code>db-theme</code> as the only key: the verification note had searched the generator, and the flag is written by a separate file, so it was never in scope. The note searches the built pages now. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — the flag holds <code>1</code>, never reaches any server, and is discarded when the tab closes.</td></tr><tr role="row"><td role="cell" data-label="Version">1.5</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Appendix A gained <code>decorationColorHex</code> and <code>nameplateColorHex</code>, which were stored but not listed, and began naming the four palette-source fields individually rather than abbreviating them. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — these fields were already stored and already described by <a class="xref" href="#s-2" data-tip="Jump to section">§2</a>; the appendix was an incomplete transcription. A build check now compares the appendix against the live schema so it cannot drift again.</td></tr><tr role="row"><td role="cell" data-label="Version">1.4</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Added Discord (<code>diorswrld</code>) as a second contact route in <a class="xref" href="#s-1" data-tip="Jump to section">§1</a> and <a class="xref" href="#s-13" data-tip="Jump to section">§13</a>, alongside the canonical email. A Privacy Request under <a class="xref" href="#s-9" data-tip="Jump to section">§9</a> must still come by email, so that it is on the record.</td></tr><tr role="row"><td role="cell" data-label="Version">1.3</td><td role="cell" data-label="Effective">1 August 2026</td><td role="cell" data-label="What changed">Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr role="row"><td role="cell" data-label="Version">1.2</td><td role="cell" data-label="Effective">31 July 2026</td><td role="cell" data-label="What changed">Brought this policy into line with the documentation website. Version 1.1 stated "there is no website" and that nothing similar to a cookie was set on your device; both became inaccurate once the site gained a light/dark switch that remembers your choice. Adds <a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a> describing that item in full — including how the Site behaves <em>before</em> you touch the switch, when it simply follows your operating system's light/dark setting and stores nothing at all — extends the scope line to cover the Site, and corrects the <a class="xref" href="#s-3" data-tip="Jump to section">§3</a> and Appendix C entries. <strong>No change to what the Bot collects, why, who receives it, or how long it is kept</strong> — the stored fields in Appendix A are identical to versions 1.0 and 1.1.</td></tr><tr role="row"><td role="cell" data-label="Version">1.1</td><td role="cell" data-label="Effective">29 July 2026</td><td role="cell" data-label="What changed">Noted the controller's <code>diorswrld</code> alias in <a class="xref" href="#s-1" data-tip="Jump to section">§1</a>, <a class="xref" href="#s-9" data-tip="Jump to section">§9</a>, and <a class="xref" href="#s-13" data-tip="Jump to section">§13</a>. <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — the stored fields in Appendix A are identical to version 1.0.</td></tr><tr role="row"><td role="cell" data-label="Version">1.0</td><td role="cell" data-label="Effective">28 July 2026</td><td role="cell" data-label="What changed">First published version.</td></tr></tbody></table></div>
 </section>
 <section class="dsec">
 <h2 id="s-13" class="numbered"><span class="idx" aria-hidden="true">13</span><span class="ht">Contact</span><a class="anchor" href="#s-13" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p><strong>Harkirat Mangat ("dior", "diorswrld")</strong> — Data Controller<br>Ontario, Canada<br>📧 <strong>harkirat117@gmail.com</strong><br>💬 <strong>Discord:</strong> <a href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer">diorswrld</a></p>
-<p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. A <strong>Privacy Request</strong> under <a class="xref" href="#s-9">§9</a> must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-2.5">§2.5</a>) and a contact point in a privacy policy must not be able to go dead.</p>
+<p>Email is the canonical contact and always reaches us; Discord is usually faster for a question. A <strong>Privacy Request</strong> under <a class="xref" href="#s-9" data-tip="Jump to section">§9</a> must come by email, so that it is on the record and we can verify it against the account it concerns. We deliberately don't list a repository link here, because the repository's visibility can change (<a class="xref" href="#s-2.5" data-tip="Jump to section">§2.5</a>) and a contact point in a privacy policy must not be able to go dead.</p>
 <p>For privacy requests, use the subject line <strong>"Privacy Request"</strong> and include your Discord user ID.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="appendix-a-complete-data-inventory" class="plain"><span class="ht">Appendix A — Complete data inventory</span><a class="anchor" href="#appendix-a-complete-data-inventory" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
@@ -2463,23 +2561,20 @@ html{scroll-behavior:smooth}
 <p><strong>Cached colour values</strong> (derived, not raw images)</p>
 <ul><li><code>avatarColorHex</code> / <code>avatarColorSource</code></li><li><code>bannerColorHex</code> / <code>bannerColorSource</code></li><li><code>displayNameColorHex</code> / <code>displayNameColorSource</code></li><li><code>decorationColorHex</code> / <code>decorationColorSource</code></li><li><code>nameplateColorHex</code> / <code>nameplateColorSource</code></li><li><code>avatarPalette</code> / <code>avatarPaletteSource</code></li><li><code>bannerPalette</code> / <code>bannerPaletteSource</code></li><li><code>decorationPalette</code> / <code>decorationPaletteSource</code></li><li><code>nameplatePalette</code> / <code>nameplatePaletteSource</code></li></ul>
 <p><strong>That's the whole list.</strong> It mirrors the schema in the source code rather than paraphrasing it, so it can be checked line-by-line against the software itself. If you have access to the repository you can verify it directly; if you don't, ask and we will show you the relevant file.</p>
-<p><strong>Stored on your device, not on ours:</strong> the documentation website additionally keeps a <code>db-theme</code> entry in your own browser's local storage, holding <code>light</code> or <code>dark</code>, and a <code>db-booted</code> entry in session storage on the record pages. They are listed here for completeness only — neither reaches our database or any server, and both are described in full in <a class="xref" href="#s-2.6">§2.6</a>.</p>
-<hr>
+<p><strong>Stored on your device, not on ours:</strong> the documentation website additionally keeps a <code>db-theme</code> entry in your own browser's local storage, holding <code>light</code> or <code>dark</code>, and a <code>db-booted</code> entry in session storage on the record pages. They are listed here for completeness only — neither reaches our database or any server, and both are described in full in <a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a>.</p>
 </section>
 <section class="dsec">
 <h2 id="appendix-b-change-history" class="plain"><span class="ht">Appendix B — Change history</span><a class="anchor" href="#appendix-b-change-history" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Date</th><th role="columnheader" scope="col">Change</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version"><strong>1.8</strong></td><td role="cell" data-label="Date">4 August 2026</td><td role="cell" data-label="Change">Renamed from Dior's Builds to Dioreo. <a class="xref" href="#s-1">§1</a> records the former name and confirms the controller is unchanged. <strong>No change to what is stored, why, who receives it, or how long it is kept</strong> — no new controller, processor, recipient or purpose, and Appendix A is identical to 1.7.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.7</strong></td><td role="cell" data-label="Date">4 August 2026</td><td role="cell" data-label="Change"><a class="xref" href="#s-2.6">§2.6</a> corrected: it still said the Site stored <strong>one</strong> item and that nothing is written unless you press the light/dark switch, neither of which had been true since <code>db-booted</code> arrived in 1.6, and the no-consent-banner argument reached only the switch. Each statement now names the item it applies to and the strictly-necessary basis is argued for both. <strong>No change to what is stored, why, who receives it, or how long it is kept.</strong></td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.6</strong></td><td role="cell" data-label="Date">3 August 2026</td><td role="cell" data-label="Change"><a class="xref" href="#s-2.6">§2.6</a> and Appendix A now list the Site's <strong>second</strong> browser-storage item, <code>db-booted</code>, a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It has been written since those pages launched, while the policy said <code>db-theme</code> was the only key — the verification note had searched the GENERATOR and the flag is written by <code>scripts/lib/chronicle.js</code>, so it was never in scope. The note now searches the BUILT pages. <strong>No change to what is collected, why, who receives it, or how long it is kept:</strong> the flag holds <code>1</code>, never reaches any server, and is discarded when the tab closes.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.5</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Appendix A now names <code>decorationColorHex</code> and <code>nameplateColorHex</code>, which were stored but not listed, and names the four <code>*PaletteSource</code> fields individually rather than as "(+ source hashes)". <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — these fields were already being stored and are already described by <a class="xref" href="#s-2">§2</a>; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.4</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Added Discord (diorswrld) as a second contact route in <a class="xref" href="#s-1">§1</a> and <a class="xref" href="#s-13">§13</a>, alongside the canonical email. A Privacy Request under <a class="xref" href="#s-9">§9</a> must still come by email.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.3</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.2</strong></td><td role="cell" data-label="Date">31 July 2026</td><td role="cell" data-label="Change">Documented the Site's single <code>db-theme</code> local-storage item (<a class="xref" href="#s-2.6">§2.6</a>); corrected the "there is no website" statement in <a class="xref" href="#s-3">§3</a>.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.1</strong></td><td role="cell" data-label="Date">29 July 2026</td><td role="cell" data-label="Change">Added the controller's <code>diorswrld</code> alias.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.0</strong></td><td role="cell" data-label="Date">28 July 2026</td><td role="cell" data-label="Change">Initial policy.</td></tr></tbody></table></div>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Version</th><th role="columnheader" scope="col">Date</th><th role="columnheader" scope="col">Change</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Version"><strong>1.9</strong></td><td role="cell" data-label="Date">5 August 2026</td><td role="cell" data-label="Change"><a class="xref" href="#s-5" data-tip="Jump to section">§5</a>'s MongoDB Atlas row and <a class="xref" href="#s-5.1" data-tip="Jump to section">§5.1</a> now note that the same cluster also holds the operational alert log <a class="xref" href="#s-2.4" data-tip="Jump to section">§2.4</a> already describes, not only <code>UserPreference</code>. <strong>No change to what is collected, why, who receives it, or how long it is kept.</strong></td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.8</strong></td><td role="cell" data-label="Date">4 August 2026</td><td role="cell" data-label="Change">Renamed from Dior's Builds to Dioreo. <a class="xref" href="#s-1" data-tip="Jump to section">§1</a> records the former name and confirms the controller is unchanged. <strong>No change to what is stored, why, who receives it, or how long it is kept</strong> — no new controller, processor, recipient or purpose, and Appendix A is identical to 1.7.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.7</strong></td><td role="cell" data-label="Date">4 August 2026</td><td role="cell" data-label="Change"><a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a> corrected: it still said the Site stored <strong>one</strong> item and that nothing is written unless you press the light/dark switch, neither of which had been true since <code>db-booted</code> arrived in 1.6, and the no-consent-banner argument reached only the switch. Each statement now names the item it applies to and the strictly-necessary basis is argued for both. <strong>No change to what is stored, why, who receives it, or how long it is kept.</strong></td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.6</strong></td><td role="cell" data-label="Date">3 August 2026</td><td role="cell" data-label="Change"><a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a> and Appendix A now list the Site's <strong>second</strong> browser-storage item, <code>db-booted</code>, a session-storage flag set on the What's New, Changelog and Devlog pages so their opening animation plays once per browsing session. It has been written since those pages launched, while the policy said <code>db-theme</code> was the only key — the verification note had searched the GENERATOR and the flag is written by <code>scripts/lib/chronicle.js</code>, so it was never in scope. The note now searches the BUILT pages. <strong>No change to what is collected, why, who receives it, or how long it is kept:</strong> the flag holds <code>1</code>, never reaches any server, and is discarded when the tab closes.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.5</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Appendix A now names <code>decorationColorHex</code> and <code>nameplateColorHex</code>, which were stored but not listed, and names the four <code>*PaletteSource</code> fields individually rather than as "(+ source hashes)". <strong>No change to what is collected, why, who receives it, or how long it is kept</strong> — these fields were already being stored and are already described by <a class="xref" href="#s-2" data-tip="Jump to section">§2</a>; the appendix was an incomplete transcription of them. A build check now compares the appendix against the live schema so it cannot drift again.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.4</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Added Discord (diorswrld) as a second contact route in <a class="xref" href="#s-1" data-tip="Jump to section">§1</a> and <a class="xref" href="#s-13" data-tip="Jump to section">§13</a>, alongside the canonical email. A Privacy Request under <a class="xref" href="#s-9" data-tip="Jump to section">§9</a> must still come by email.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.3</strong></td><td role="cell" data-label="Date">1 August 2026</td><td role="cell" data-label="Change">Broadened the closing non-affiliation notice to name TiMi Studio Group, Tencent, and the rights holders of licensed in-game content, matching the notice the Site already carried. No change to any right or obligation.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.2</strong></td><td role="cell" data-label="Date">31 July 2026</td><td role="cell" data-label="Change">Documented the Site's single <code>db-theme</code> local-storage item (<a class="xref" href="#s-2.6" data-tip="Jump to section">§2.6</a>); corrected the "there is no website" statement in <a class="xref" href="#s-3" data-tip="Jump to section">§3</a>.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.1</strong></td><td role="cell" data-label="Date">29 July 2026</td><td role="cell" data-label="Change">Added the controller's <code>diorswrld</code> alias.</td></tr><tr role="row"><td role="cell" data-label="Version"><strong>1.0</strong></td><td role="cell" data-label="Date">28 July 2026</td><td role="cell" data-label="Change">Initial policy.</td></tr></tbody></table></div>
 <p>Future revisions will be listed here. The complete drafting history is kept in the repository's git log.</p>
-<hr>
 </section>
 <section class="dsec">
 <h2 id="appendix-c-how-each-claim-was-verified" class="plain"><span class="ht">Appendix C — How each claim was verified</span><a class="anchor" href="#appendix-c-how-each-claim-was-verified" data-tip="Link to section" aria-label="Link to this section">¶</a></h2>
 <p>A privacy policy is a set of <strong>enforceable representations</strong>. Saying more than is true is worse than saying nothing. Every factual claim in this policy was checked against the running software rather than asserted, and this table records how.</p>
-<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Claim</th><th role="columnheader" scope="col">How it was verified</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Claim">We cannot read your messages</td><td role="cell" data-label="How it was verified">The Discord client is constructed with <code>GatewayIntentBits.Guilds</code> only — no Message Content intent. Verified in <code>index.js</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">No analytics, telemetry, or tracking</td><td role="cell" data-label="How it was verified">Searched the codebase for analytics and error-reporting SDKs (Sentry, PostHog, Mixpanel, Google Analytics). <strong>None present.</strong></td></tr><tr role="row"><td role="cell" data-label="Claim">The exact fields we store</td><td role="cell" data-label="How it was verified">Read directly from the <code>UserPreference</code> Mongoose schema. Appendix A is a transcription of it, not a summary.</td></tr><tr role="row"><td role="cell" data-label="Claim">Alert logs deleted after 30 days</td><td role="cell" data-label="How it was verified"><code>RETENTION_DAYS = 30</code> in <code>utils/alertStore.js</code>, with a matching <code>deleteMany</code> on <code>createdAt</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">Server logs deleted after 30 days</td><td role="cell" data-label="How it was verified">Google Cloud Logging default retention, as relied on by <code>scripts/vmstatus.sh</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">Your data is stored in Canada</td><td role="cell" data-label="How it was verified">Resolved the Atlas cluster's DNS records to <code>mtm-azure-**canatral**-…</code> — Azure Canada Central, Toronto.</td></tr><tr role="row"><td role="cell" data-label="Claim">Cloudinary stores in the US</td><td role="cell" data-label="How it was verified">Cloudinary's published documentation: standard accounts default to US storage; EU residency is an Enterprise option.</td></tr><tr role="row"><td role="cell" data-label="Claim">We use Vertex AI, not the consumer Gemini API</td><td role="cell" data-label="How it was verified">The request endpoint in <code>utils/visionExtract.js</code> is <code>aiplatform.googleapis.com</code>, project- and location-scoped — not <code>generativelanguage.googleapis.com</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">No AI receives end-user data</td><td role="cell" data-label="How it was verified"><code>/autobuild</code> is the only AI call site and is gated on the administrator's Discord ID.</td></tr><tr role="row"><td role="cell" data-label="Claim">Admin commands are locked to one account</td><td role="cell" data-label="How it was verified"><code>ALLOWED_ADMIN_ID</code> guards in <code>commands/manage.js</code>, <code>commands/autobuild.js</code>, and the central interaction router.</td></tr><tr role="row"><td role="cell" data-label="Claim"><strong>There is no automated deletion</strong></td><td role="cell" data-label="How it was verified">Searched for every <code>deleteOne</code> / <code>deleteMany</code> / <code>findOneAndDelete</code> in the codebase. <strong>None operates on <code>UserPreference</code>.</strong> This is why <a class="xref" href="#s-7.1">§7.1</a> discloses a shortcoming instead of claiming a capability.</td></tr><tr role="row"><td role="cell" data-label="Claim"><code>/settings</code> has no reset or delete</td><td role="cell" data-label="How it was verified">Searched <code>commands/settings.js</code> for reset/restore-default handling. None exists — it only overwrites individual values.</td></tr><tr role="row"><td role="cell" data-label="Claim">No cookies</td><td role="cell" data-label="How it was verified">The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for <code>document.cookie</code> — no occurrences.</td></tr><tr role="row"><td role="cell" data-label="Claim">Two storage items on the Site</td><td role="cell" data-label="How it was verified">Searched the built pages, not just the generator, for <code>localStorage</code>, <code>sessionStorage</code> and <code>document.cookie</code>: <code>db-theme</code> (<code>light</code>/<code>dark</code>, written by <code>THEME_JS</code>/<code>THEME_BOOT</code> in <code>scripts/buildLegalPages.js</code>) and <code>db-booted</code> (<code>1</code>, written by <code>scripts/lib/chronicle.js</code> on the three record pages). No cookies are set. Nothing else is stored, and nothing is sent anywhere.</td></tr></tbody></table></div>
-<p><strong>Where we could not verify something, we said so rather than guessing</strong> — see the backup-retention caveat in <a class="xref" href="#s-9.4">§9.4</a> and the honest limits stated in <a class="xref" href="#s-5.2">§5.2</a>, <a class="xref" href="#s-7.1">§7.1</a>, and <a class="xref" href="#s-8">§8</a>.</p>
+<div class="tw"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Claim</th><th role="columnheader" scope="col">How it was verified</th></tr></thead><tbody role="rowgroup"><tr role="row"><td role="cell" data-label="Claim">We cannot read your messages</td><td role="cell" data-label="How it was verified">The Discord client is constructed with <code>GatewayIntentBits.Guilds</code> only — no Message Content intent. Verified in <code>index.js</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">No analytics, telemetry, or tracking</td><td role="cell" data-label="How it was verified">Searched the codebase for analytics and error-reporting SDKs (Sentry, PostHog, Mixpanel, Google Analytics). <strong>None present.</strong></td></tr><tr role="row"><td role="cell" data-label="Claim">The exact fields we store</td><td role="cell" data-label="How it was verified">Read directly from the <code>UserPreference</code> Mongoose schema. Appendix A is a transcription of it, not a summary.</td></tr><tr role="row"><td role="cell" data-label="Claim">Alert logs deleted after 30 days</td><td role="cell" data-label="How it was verified"><code>RETENTION_DAYS = 30</code> in <code>utils/alertStore.js</code>, with a matching <code>deleteMany</code> on <code>createdAt</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">Server logs deleted after 30 days</td><td role="cell" data-label="How it was verified">Google Cloud Logging default retention, as relied on by <code>scripts/vmstatus.sh</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">Your data is stored in Canada</td><td role="cell" data-label="How it was verified">Resolved the Atlas cluster's DNS records to <code>mtm-azure-**canatral**-…</code> — Azure Canada Central, Toronto.</td></tr><tr role="row"><td role="cell" data-label="Claim">Cloudinary stores in the US</td><td role="cell" data-label="How it was verified">Cloudinary's published documentation: standard accounts default to US storage; EU residency is an Enterprise option.</td></tr><tr role="row"><td role="cell" data-label="Claim">We use Vertex AI, not the consumer Gemini API</td><td role="cell" data-label="How it was verified">The request endpoint in <code>utils/visionExtract.js</code> is <code>aiplatform.googleapis.com</code>, project- and location-scoped — not <code>generativelanguage.googleapis.com</code>.</td></tr><tr role="row"><td role="cell" data-label="Claim">No AI receives end-user data</td><td role="cell" data-label="How it was verified"><code>/autobuild</code> is the only AI call site and is gated on the administrator's Discord ID.</td></tr><tr role="row"><td role="cell" data-label="Claim">Admin commands are locked to one account</td><td role="cell" data-label="How it was verified"><code>ALLOWED_ADMIN_ID</code> guards in <code>commands/manage.js</code>, <code>commands/autobuild.js</code>, and the central interaction router.</td></tr><tr role="row"><td role="cell" data-label="Claim"><strong>There is no automated deletion</strong></td><td role="cell" data-label="How it was verified">Searched for every <code>deleteOne</code> / <code>deleteMany</code> / <code>findOneAndDelete</code> in the codebase. <strong>None operates on <code>UserPreference</code>.</strong> This is why <a class="xref" href="#s-7.1" data-tip="Jump to section">§7.1</a> discloses a shortcoming instead of claiming a capability.</td></tr><tr role="row"><td role="cell" data-label="Claim"><code>/settings</code> has no reset or delete</td><td role="cell" data-label="How it was verified">Searched <code>commands/settings.js</code> for reset/restore-default handling. None exists — it only overwrites individual values.</td></tr><tr role="row"><td role="cell" data-label="Claim">No cookies</td><td role="cell" data-label="How it was verified">The Bot has no web surface. Cloudflare serves these documents; that is the only web interaction. Checked the generated site for <code>document.cookie</code> — no occurrences.</td></tr><tr role="row"><td role="cell" data-label="Claim">Two storage items on the Site</td><td role="cell" data-label="How it was verified">Searched the built pages, not just the generator, for <code>localStorage</code>, <code>sessionStorage</code> and <code>document.cookie</code>: <code>db-theme</code> (<code>light</code>/<code>dark</code>, written by <code>THEME_JS</code>/<code>THEME_BOOT</code> in <code>scripts/buildLegalPages.js</code>) and <code>db-booted</code> (<code>1</code>, written by <code>scripts/lib/chronicle.js</code> on the three record pages). No cookies are set. Nothing else is stored, and nothing is sent anywhere.</td></tr></tbody></table></div>
+<p><strong>Where we could not verify something, we said so rather than guessing</strong> — see the backup-retention caveat in <a class="xref" href="#s-9.4" data-tip="Jump to section">§9.4</a> and the honest limits stated in <a class="xref" href="#s-5.2" data-tip="Jump to section">§5.2</a>, <a class="xref" href="#s-7.1" data-tip="Jump to section">§7.1</a>, and <a class="xref" href="#s-8" data-tip="Jump to section">§8</a>.</p>
 <p>You are welcome to check any of this yourself, or to ask us to show you the relevant code.</p>
-<hr>
-<p><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
+<hr class="disc-rule" aria-hidden="true"><p class="disc-p"><em>Dioreo is an unofficial fan project and is not affiliated with Activision Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights holders of any content the game features under licence.</em></p>
 </section>
     </main>
   </div>
@@ -2489,13 +2584,13 @@ html{scroll-behavior:smooth}
        "Notice" entries side by side. The email stays off it — that belongs on the
        landing page and in the Privacy Policy. -->
   <footer class="foot nodisc">
-    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a></p>
+    <p class="sig"><span class="hrt" aria-hidden="true">&#9825;</span> Made with love by <a class="sig-a" href="https://discord.com/users/1139845545754632283" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a><span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span></p>
     
     <nav class="endnav"><a href="./terms.html">Terms</a><span>&middot;</span><a href="./license.html">License</a><span>&middot;</span><a href="./notice.html">Notice</a><span>&middot;</span><a href="./contributing.html">Contributing</a><span>&middot;</span><a href="./contributors.html">Contributors</a></nav>
   </footer>
 </div>
 
-<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -2506,7 +2601,7 @@ html{scroll-behavior:smooth}
 <script>
 (function(){
   var prog=document.getElementById('prog');
-  var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
+  var top=document.getElementById('gotop'), ttBar=top&&top.querySelector('.tt-bar');
   /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
      value only changes with the viewport (it is a clamp of vw). */
   var foot=document.querySelector('.foot'), ttBase=0, ttPad=0;
@@ -3661,6 +3756,20 @@ html{scroll-behavior:smooth}
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
 })();
 
 (function(){
@@ -4094,8 +4203,20 @@ html{scroll-behavior:smooth}
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -4301,41 +4422,95 @@ html{scroll-behavior:smooth}
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    var cur=-1,queued=0;
+    /* ⚠️ THIRD DESIGN FOR THIS FUNCTION, 2026-08-05 10:10 EDT — and the reason
+       is worth keeping straight, because the first two both failed for
+       different reasons and it would be easy to wander back into either.
+       (1) Nearest-row-centre to a DIRECTION-BIASED line, with a 24px
+       hysteresis margin: reported as "Terms lingers, the rest rush by" —
+       diagnosed as the algorithm, not the (perfectly uniform) layout, and
+       replaced with —
+       (2) boundary containment: a row active exactly while its own box
+       contains that same biased line. Proven live to give EQUAL dwell
+       distance per row (confirmed: ~130px each, Terms through Notice) — but
+       then rejected anyway: "linear isn't the solution." Equal-by-the-numbers
+       still read as mechanical, because a fixed offset percentage down the
+       screen is not what a reader's eye is actually doing.
+       (3) THIS version: whichever row's centre is nearest the VIEWPORT'S OWN
+       centre — "whichever row is most prominently in view," Harkirat's own
+       framing. This is not just a different number, it drops the whole
+       direction-bias/easing apparatus (dir, lastY, the 8px threshold, lineY's
+       spring) outright, because the reference point is innerHeight*0.5 —
+       fixed, not direction-dependent — so there is nothing left for a
+       direction change to destabilise. Simpler code as a direct consequence
+       of the simpler mental model, not a separate cleanup. */
+    /* ⚠️ A ROW CAN BE SKIPPED ENTIRELY ON A FAST SWIPE, and no per-frame
+       distance rule fixes that — added 2026-08-05 10:13 EDT, proven with a
+       frame-by-frame recording. pick() only samples state once per
+       requestAnimationFrame; a fast flick can move the scroll far enough
+       between two consecutive frames that a row's whole "nearest the centre"
+       window falls entirely in the gap between samples — the recording
+       showed Privacy active, then License's entire on-screen span passing
+       with nothing lit, then Notices taking over, License never once
+       flagged. No amount of tuning the DISTANCE test closes that: the
+       problem is temporal (a row got no sampled moment), not spatial.
+       stepQueue turns a jump of more than one row into a walk, one row per
+       stepTimer tick, so a skipped row still gets a real, visible moment —
+       capped at 3 steps so an extreme jump (dragging the scrollbar from top
+       to bottom) snaps straight to the end instead of animating through
+       every row it technically passed. */
+    var stepTimer=0;
+    function advance(target){
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=target;
+      rows[cur].classList.add('act');
+    }
+    function stepToward(target){
+      clearTimeout(stepTimer);
+      if(cur<0||Math.abs(target-cur)>3){advance(target);return;}
+      if(cur===target)return;
+      var next=cur+(target>cur?1:-1);
+      advance(next);
+      if(next!==target)stepTimer=setTimeout(function(){stepToward(target);},70);
+    }
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
-      var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
-      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
-         A fixed line only marks a row once the row has reached it, so on the way
-         down the highlight always trails what you are looking at. Offsetting the
-         line by a tenth of the viewport in the direction of travel moves it DOWN
-         while scrolling down, which is the direction rows arrive from, so a row is
-         claimed on approach instead of on arrival — and symmetrically on the way
-         back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it. */
-      var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var mid=innerHeight*0.5;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
-        d=Math.abs(r.top+r.height/2-line);
+        d=Math.abs(r.top+r.height/2-mid);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
-      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      if(best<0||best===cur)return;
+      /* A light margin, not the old 24px — with a STABLE reference point the
+         flicker case (two rows trading the highlight every frame near a
+         shared boundary) is far less likely to begin with; this only damps
+         genuine near-ties rather than doing the main stabilising work the
+         way it had to before. Only applied to single-row moves — a jump big
+         enough to trigger stepToward's walk already means best is decisively
+         ahead, not a near-tie. */
+      if(cur>=0&&Math.abs(best-cur)<=1&&bestD>curD-10)return;
+      stepToward(best);
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
+       pick() immediately whenever want was true, which measured the row
+       nearest the line AT THE TOP OF THE PAGE and highlighted it before the
+       reader had scrolled at all — row 0 ("Terms of Service") lighting up on
+       load with no interaction. Clearing to no highlight and letting the
+       first real scroll event call pick() (via onScroll below) means the
+       highlight only ever appears once the reader has actually started
+       scrolling, which is what "auto" should mean here. */
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
-      if(!want){
-        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
-        cur=-1;
-      }else{cur=-1;pick();}
+      clearTimeout(stepTimer);
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
@@ -4345,7 +4520,7 @@ html{scroll-behavior:smooth}
 
   /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
   (function(){
-    var tt=document.getElementById('totop');
+    var tt=document.getElementById('gotop');
     if(!tt)return;
     function past(){return scrollY_()>innerHeight*0.6;}
 
@@ -4445,12 +4620,12 @@ html{scroll-behavior:smooth}
           /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
              BUG. Measured: on is never re-added after a launch, but the control's
              computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
-             Removing on and birth in one statement hands the fade to the .totop
+             Removing on and birth in one statement hands the fade to the .gotop
              transition, and birth is also what hides the ring and the arrow — so
              for ~300ms after the liquid has flown away the REAL button chrome pops
              back and fades out behind it. It never was a second birth, which is
              why two fixes aimed at the threshold missed it.
-             Drop on while birth still applies (.totop.birth carries
+             Drop on while birth still applies (.gotop.birth carries
              transition:none, so it goes to 0 instantly), flush that state, and
              only then drop birth. */
           tt.classList.remove('on');
@@ -4696,9 +4871,9 @@ html{scroll-behavior:smooth}
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -4717,9 +4892,30 @@ html{scroll-behavior:smooth}
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -4788,14 +4984,57 @@ html{scroll-behavior:smooth}
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place.
+       ⚠️ flashCopied() FIRES SYNCHRONOUSLY, NOT INSIDE THE CLIPBOARD PROMISE'S
+       .then(). This used to wait for navigator.clipboard.writeText() to
+       resolve before showing anything — and a real .anchor is a genuine
+       <a href="#id">, so the browser's default action (the hash jump) runs
+       right after this listener finishes, as its own step in event dispatch.
+       That ran BEFORE the microtask the clipboard promise resolves on, so by
+       the time flashCopied() finally fired the page had already jumped once
+       — reported 2026-08-05 12:03 EDT as no visible confirmation at all, only the jump.
+       Calling it here, in the same synchronous tick as the click and before
+       the browser's default action, guarantees the capsule is placed against
+       the anchor's PRE-jump position; the scroll listener above (see
+       "flashing" note) is what then keeps it riding along as the jump
+       happens. The write to the clipboard itself doesn't need to finish
+       first — it either succeeds silently or doesn't, but the user should
+       never be kept waiting on it to see that the click registered. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        flashCopied(a);
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href')).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();

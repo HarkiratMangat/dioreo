@@ -5,7 +5,7 @@
 **Applies to:** the Dioreo Discord application (the "Bot") and the website
 these documents are published on (the "Site")
 
----
+
 
 > ## ⚠️ PLEASE READ BEFORE USING THE BOT
 >
@@ -17,7 +17,7 @@ these documents are published on (the "Site")
 >
 > **If you do not agree, do not install or use the Bot.**
 
----
+
 
 ## 0. The short version
 
@@ -29,7 +29,7 @@ can't be signed away.
 
 *This summary is for convenience only. The numbered sections are the actual terms.*
 
----
+
 
 ## 1. Who you're dealing with
 
@@ -64,7 +64,7 @@ nothing on the Site to use in that sense.
 **If the two ever conflict about a document's contents, the plain-text original
 governs**, as stated on each rendered page.
 
----
+
 
 ## 2. Agreement to these Terms
 
@@ -122,7 +122,7 @@ agreement — using the Bot does not license you its code.
 **Don't install or use the Bot.** If you've already installed it, remove it via
 Discord's "Authorized Apps" settings and stop issuing commands. See §13.1.
 
----
+
 
 ## 3. Eligibility
 
@@ -145,7 +145,7 @@ independent age-verification mechanism and rely on Discord's enforcement. If we
 learn a user is under that age, we will delete their stored preferences — see §10
 of the [Privacy Policy](PRIVACY.md).
 
----
+
 
 ## 4. What the Bot does
 
@@ -192,7 +192,7 @@ We have no obligation to provide support, respond to reports, fix bugs, maintain
 the Bot, or keep any feature working. We generally try. That is a courtesy, not a
 commitment, and no course of dealing creates one.
 
----
+
 
 ## 5. Accuracy — please read this one
 
@@ -230,7 +230,7 @@ responsibility, not ours.
 
 Nothing in the Bot is financial, legal, medical, or other professional advice.
 
----
+
 
 ## 6. Acceptable use
 
@@ -268,7 +268,7 @@ To report misuse of the Bot, a security issue, or content that shouldn't be ther
 email **harkirat117@gmail.com**. Security issues should never go in a public
 GitHub issue.
 
----
+
 
 ## 7. Intellectual property
 
@@ -393,7 +393,7 @@ We may develop, acquire, or operate features, products, or services similar to
 anything you suggest. Nothing in these Terms restricts that, and submitting an idea
 gives you no rights in what we later build.
 
----
+
 
 ## 8. AI disclosure
 
@@ -405,7 +405,7 @@ documents — were **written with the assistance of AI tools**, principally Clau
 administrator-only image-extraction command that never receives end-user data. See
 §5.1 of the [Privacy Policy](PRIVACY.md).
 
----
+
 
 ## 9. Third-party services
 
@@ -450,7 +450,7 @@ law cannot be disclaimed by contract, and we don't claim otherwise.
 
 Data details: [Privacy Policy](PRIVACY.md) §5.
 
----
+
 
 ## 10. Availability and changes
 
@@ -467,7 +467,7 @@ We may, at any time and without notice or liability:
 The Bot runs on a single small server instance with no redundancy. Outages,
 restarts, and deploys will happen.
 
----
+
 
 ## 11. Force majeure
 
@@ -478,7 +478,7 @@ power or internet failure, hosting or cloud-provider outage, denial-of-service
 attack, or **any act, omission, outage, policy change, suspension, or termination
 by Discord, GitHub, Google, MongoDB, Cloudinary, or Activision**.
 
----
+
 
 ## 12. Export control and sanctions
 
@@ -486,7 +486,7 @@ You must not use the Bot in violation of Canadian, US, EU, UK, or other applicab
 export-control or sanctions laws, and you represent that you are not a restricted
 party under any of them.
 
----
+
 
 ## 13. Suspension and termination
 
@@ -512,7 +512,7 @@ faith.
 
 Sections 5, 6, 7, 8, 11, 12, 13.3, 14, 15, 16, 17, and 18 survive termination.
 
----
+
 
 ## 14. Disclaimer of warranties
 
@@ -536,7 +536,7 @@ Some jurisdictions don't allow the exclusion of certain warranties. Where an
 exclusion isn't permitted, it applies to the minimum extent the law allows and the
 rest of this section stands.
 
----
+
 
 ## 15. Limitation of liability
 
@@ -564,7 +564,7 @@ consumer, nothing here affects your statutory rights.
 provided free of charge, and we could not offer it at all on terms of unlimited
 liability.
 
----
+
 
 ## 16. Indemnity
 
@@ -576,7 +576,7 @@ This does not apply to the extent the claim arises from our own breach, negligen
 or wilful misconduct, and it does not apply where you are a consumer and the law
 prohibits it.
 
----
+
 
 ## 17. Governing law and disputes
 
@@ -623,7 +623,7 @@ we would rather have terms that work than terms that look strong and fail.
 Any claim must be commenced within **one year** after it arose, except where a
 longer period is required by law.
 
----
+
 
 ## 18. General
 
@@ -657,7 +657,7 @@ venture between us.
 **Language.** Drafted in English; the English version governs. *Les parties ont
 exigé que la présente convention soit rédigée en anglais.*
 
----
+
 
 ## 19. Changes to these Terms
 
@@ -705,7 +705,7 @@ Builds.
 The former name is still ours. §7.1 covers it, and retiring a name does not put it
 in the public domain.
 
----
+
 
 ## 20. Contact
 
@@ -721,7 +721,7 @@ contact point in binding terms must not be able to go dead.
 For security reports, email — don't open a public issue. See §4.11 of the
 [LICENSE](../../LICENSE).
 
----
+
 
 ## Appendix — Change history
 
@@ -736,7 +736,7 @@ For security reports, email — don't open a public issue. See §4.11 of the
 Future revisions will be listed here. The complete drafting history is public in
 the repository's git log.
 
----
+
 
 *Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights

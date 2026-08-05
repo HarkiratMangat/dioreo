@@ -446,15 +446,32 @@ function linkifyRefs(html, ids) {
         if (inAnchor) return seg;
         seg = seg.replace(/§\s?(\d+[A-Za-z]?(?:\.\d+[a-z]?)?)/g, (whole, n) => {
             const id = 's-' + n.toLowerCase();
-            return ids.has(id) ? `<a class="xref" href="#${id}">§${n}</a>` : whole;
+            return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">§${n}</a>` : whole;
         });
+        /* ⚠️ THE PLURAL FORM IS A LIST, NOT ONE MORE SINGLE REFERENCE — "Sections
+           5, 6, 7, 8, 11, 12, 13.3, 14, ... and 18 survive termination." is the
+           classic survival-clause shape, and every number in it used to render as
+           dead plain text: the singular regex below only ever matches "Section"
+           immediately followed by whitespace, and "Sections " fails that on the
+           trailing s alone, before it even gets to the list. Reported 2026-08-05
+           12:13 EDT against exactly this sentence. Matched as ONE span (the whole
+           comma/and list after "Sections "), then each number inside that span is
+           linked individually — so the commas and the "and" stay exactly as the
+           source wrote them, only the numbers become links. */
+        const NUM = '\\d+[A-Za-z]?(?:\\.\\d+[a-z]?)?';
+        const numRe = new RegExp(NUM, 'g');
+        const listRe = new RegExp(`\\bSections\\s+(${NUM}(?:\\s*,\\s*${NUM})*(?:\\s*,?\\s+and\\s+${NUM})?)`, 'g');
+        seg = seg.replace(listRe, (whole, list) => 'Sections ' + list.replace(numRe, n => {
+            const id = 's-' + n.toLowerCase();
+            return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">${n}</a>` : n;
+        }));
         // The plain-text licence spells its cross-references out in full
         // ("under Section 4.11", "notices under Section 14.7") rather than with §.
         // Same payoff, different spelling, so it is handled here rather than by
         // rewriting the source — the source is the authoritative wording.
         return seg.replace(/\bSection\s(\d+[A-Za-z]?(?:\.\d+[a-z]?)?)/g, (whole, n) => {
             const id = 's-' + n.toLowerCase();
-            return ids.has(id) ? `<a class="xref" href="#${id}">Section&nbsp;${n}</a>` : whole;
+            return ids.has(id) ? `<a class="xref" href="#${id}" data-tip="Jump to section">Section&nbsp;${n}</a>` : whole;
         });
     }).join('');
 }
@@ -654,6 +671,17 @@ function parseBlocks(md) {
  */
 function inlineText(s) {
     s = esc(s);
+    // NOTICE's own emphasis marker for an inline aside ("*** See Section 2 —
+    // Apache-2.0 obligations ***", "*** No copyleft ... is present ... ***")
+    // — the plain-text source has no markdown bold to reach for, so it wraps
+    // in asterisks instead. Inside a raw <pre> that read fine as literal
+    // punctuation; once the same text landed inside a real card (depCard())
+    // or a normal paragraph, the literal "***" on both sides looked like
+    // broken markdown rather than emphasis. Reported 2026-08-05 12:38 EDT
+    // against the discord.js dependency card specifically. Non-greedy and
+    // single-line by construction — every caller already joins its text to
+    // one line before this runs.
+    s = s.replace(/\*\*\*([^*]+)\*\*\*/g, (_, t) => `<strong class="hi">${t}</strong>`);
     // URLs first, so an address inside a URL isn't also matched as an email.
     // Trailing sentence punctuation is excluded from the href.
     s = s.replace(/(https?:\/\/[^\s<)]+?)([.,;:)]*)(?=\s|$)/g,
@@ -862,18 +890,90 @@ function renderIndented(head, region) {
         return `<pre class="aligned">${grp.map(l => inlineText(l.slice(cut))).join('\n')}</pre>`;
     };
 
+    /* ── dependency/asset entries: cards, not a monospace grid ──────────────
+       "chrono-node 2.9.1              MIT" + indented Copyright/URL/notes is
+       structurally a RECORD, not a table — a package name, a version, a
+       license, an owner, a link. colsBlock() rendered it as raw <pre> columns
+       because that is what the source's spacing literally is, but on a
+       narrow column those columns don't reflow: the license name crowds the
+       package name and the URL runs off the edge. Reported 2026-08-05 12:28
+       EDT ("such a poor implementation ... old style").
+       ⚠️ ONLY THIS SPECIFIC SHAPE QUALIFIES — a name/license header line
+       followed by lines that are each MORE indented than it. That is what
+       distinguishes a dependency record from the OTHER column-aligned tables
+       renderIndented() still owns (the Platform-and-Service-Providers table,
+       the transitive-dependency license counts): those repeat entries at the
+       SAME indent with no per-entry continuation, so the "every following
+       line is deeper" test rejects them and they keep the <pre> treatment —
+       see structureAudit()'s "or a dependency card" branch for how both
+       shapes stay verified. */
+    const isDepEntry = grp => {
+        if (grp.length < 2) return false;
+        const cut = Math.min(...grp.map(indentOf));
+        if (!/^\S.*?\s{2,}[A-Z0-9]/.test(grp[0].slice(cut))) return false;
+        const headInd = indentOf(grp[0]);
+        return grp.slice(1).every(l => indentOf(l) > headInd);
+    };
+    const depCard = grp => {
+        const cut = Math.min(...grp.map(indentOf));
+        const lines = grp.map(l => l.slice(cut).trimEnd());
+        const [, nameVer, license] = lines[0].match(/^(\S.*?)\s{2,}(\S.*)$/);
+        const vm = nameVer.match(/^(.*?)\s+(v?\d[\d.]*[A-Za-z]?)$/);
+        const name = vm ? vm[1] : nameVer;
+        const ver = vm ? vm[2] : '';
+
+        const rest = lines.slice(1).map(l => l.trim()).filter(Boolean);
+        let i = 0, copyright = '';
+        if (/^Copyright/i.test(rest[0] || '')) {
+            copyright = rest[i++];
+            // A wrapped continuation of the copyright line ("... Instrument Sans
+            // Project" / "Authors") — short, no terminal punctuation on the line
+            // before it, and not itself the URL. Same continuation heuristic the
+            // verbatim-block detector above uses.
+            while (rest[i] && !/^https?:\/\//.test(rest[i]) && !/[.:]$/.test(rest[i - 1])) {
+                copyright += ' ' + rest[i++];
+            }
+        }
+        let url = '';
+        if (/^https?:\/\//.test(rest[i] || '')) url = rest[i++];
+        const notes = rest.slice(i).join(' ');
+
+        return '<div class="dep">'
+            + `<div class="dep-h"><span class="dep-n">${inlineText(name)}</span> `
+            + (ver ? `<span class="dep-v">${inlineText(ver)}</span> ` : '')
+            + `<span class="dep-lic">${inlineText(license)}</span></div>`
+            + (copyright ? `<p class="dep-c">${inlineText(copyright)}</p>` : '')
+            + (url ? `<p class="dep-u">${inlineText(url)}</p>` : '')
+            + (notes ? `<p class="dep-note">${inlineText(notes)}</p>` : '')
+            + '</div>';
+    };
+
     const out = [];
     let buf = head.slice();
     let list = null;      // open lettered/bulleted list, as an array of item texts
     let pre = null;       // open verbatim block (address, identifier)
     const flushPara = () => {
-        const t = buf.join(' ').trim();
-        // "Exception:", "Carve-out:", "For clarity" — the document's own signal
-        // that what follows narrows or explains the clause above it. Marking them
-        // is styling of existing text, not added content.
+        // ⚠️ >>> — the same load-bearing-warning marker parseBlocks() recognises
+        // for the Markdown documents' callouts (see its own ⚠️|🔴|>>> test) —
+        // also marks NOTICE's plain-text trademark disclaimer, one per wrapped
+        // line ("  >>> DIOR'S BUILDS IS AN UNOFFICIAL...\n  >>> DEVELOPED,
+        // PUBLISHED..."). This parser never stripped it, so it rendered as
+        // literal ">>>" sprinkled through the paragraph at every line-wrap
+        // point instead of the highlighted box the marker is meant to produce.
+        // Reported 2026-08-05 08:27 EDT.
+        const isCallout = buf.length > 0 && buf.every(l => /^\s*>>>/.test(l));
+        const raw = isCallout ? buf.map(l => l.replace(/^\s*>>>\s*/, '')) : buf;
+        const t = raw.join(' ').trim();
         if (t) {
-            const aside = /^(Exception|Carve-out|Carve out|For clarity|Note|Example)\b/.test(t);
-            out.push(`<p class="sub${aside ? ' aside' : ''}">${inlineText(t)}</p>`);
+            if (isCallout) {
+                out.push(`<blockquote class="callout warn"><p>${inlineText(t)}</p></blockquote>`);
+            } else {
+                // "Exception:", "Carve-out:", "For clarity" — the document's own
+                // signal that what follows narrows or explains the clause above
+                // it. Marking them is styling of existing text, not added content.
+                const aside = /^(Exception|Carve-out|Carve out|For clarity|Note|Example)\b/.test(t);
+                out.push(`<p class="sub${aside ? ' aside' : ''}">${inlineText(t)}</p>`);
+            }
         }
         buf = [];
     };
@@ -916,6 +1016,7 @@ function renderIndented(head, region) {
     // regardless of what surrounds it, which is what lets NOTICE §5 carry prose
     // paragraphs and aligned trademark tables in the same region.
     groups.forEach((grp, gi) => {
+        if (isDepEntry(grp)) { flushAll(); out.push(depCard(grp)); return; }
         if (isCols(grp)) { flushAll(); out.push(colsBlock(grp)); return; }
 
         for (const raw of grp) {
@@ -1224,6 +1325,13 @@ const DISCORD_URL = 'https://discord.com/users/1139845545754632283';
 // the same words rather than inventing a second voice for the same person.
 const DIOR_SIG = '<span class="hrt" aria-hidden="true">&#9825;</span> Made with love by '
     + `<a class="sig-a" href="${DISCORD_URL}" target="_blank" rel="noopener noreferrer" data-tip="Message on Discord">dior</a>`;
+/* ⚠️ ONE CONSTANT, EVERY FOOTER — the same lesson TRADEMARK_NOTE's own comment
+   already states for a different string. Appended directly after whichever sig
+   text is in play (DIOR_SIG or a warm page's own closing line), never assembled
+   separately, so the copyright can't end up detached from the signature it
+   belongs to on some future page. .sig-cr is display:block in CSS, which is
+   what puts it on its own line under the sig rather than trailing it inline. */
+const SIG_COPYRIGHT = '<span class="sig-cr">&copy; Dioreo&trade;. All rights reserved.</span>';
 const INSTALL_URL = 'https://discord.com/oauth2/authorize?client_id=1491474871778021550';
 
 /**
@@ -1270,8 +1378,20 @@ const installBtn = (big = false) => `<a class="ins${big ? ' big' : ''}" href="${
 // share the name index.html, so a filename alone no longer identifies a page.
 const wordmark = (href, cur) => {
     const here = cur ? ALL_PAGES.find(p => p.out === cur.out && dirOf(p) === dirOf(cur)) : null;
+    // The landing page carries no nav bar beside it, so it can afford — and per
+    // Harkirat's own call, should carry — a much larger mark than the 54px bar
+    // on every other page has room for. href is null only on the landing page
+    // (see below), so that is also the flag that selects the hero size.
+    // ⚠️ TWO DIFFERENT ASSETS, NOT ONE SCALED TWO WAYS — swapped 2026-08-05
+    // 09:05 EDT. The nav bar is too short for the mascot to read as anything
+    // but noise at 44px tall, so it gets the typographic-only mark; the
+    // landing hero has the room and gets the mascot alone instead of the
+    // combo lockup, per Harkirat's own asset choice.
+    const [src, w, h] = href
+        ? ['../assets/dioreo-wordmark.webp', 600, 279]
+        : ['../assets/dioreo-mascot.webp', 600, 525];
     const body = `<span class="mk-s">
-      <span class="wm">Dioreo</span>
+      <img class="wm${href ? '' : ' wm-hero'}" src="${src}" width="${w}" height="${h}" alt="Dioreo">
       ${here ? `<span class="mk-ctx"><i aria-hidden="true"></i>${esc(here.title)}</span>` : ''}
     </span>`;
     return href
@@ -1489,6 +1609,23 @@ const navGroups = (cur, i0 = 0) => navSetFor(cur).map((grp, gi) => {
  * no extension, which is right in a repository and a support problem in a Downloads
  * folder. The bytes are untouched; only the saved name differs.
  */
+/**
+ * The download glyph, shared by every button that offers one (.dl, .dlr, and the
+ * mobile menu's copy of .dlr). Drawn as inline SVG rather than the CSS
+ * border/pseudo-element tray this used to be — that version needed two
+ * pseudo-elements per icon, hand-measured pixel offsets for the arrowhead's
+ * rotated-square corner, and still only looked right at the one size it was
+ * tuned for. An SVG path scales cleanly at any size, inherits currentColor the
+ * same way the CSS version did (so it still themes for free in both palettes),
+ * and does not carry a missing-glyph risk the way a typed character would —
+ * see the note on .cpy-g for why a typed glyph was rejected there too.
+ * Replaced 2026-08-05 11:31 EDT: "these look so unrefined."
+ */
+const dlIcon = cls => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" `
+    + `stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" `
+    + `aria-hidden="true"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/>`
+    + `<path d="M4.5 18.5h15"/></svg>`;
+
 const rawDownload = page => {
     if (page.kind !== 'text' || !page.file) return '';
     let kb = '';
@@ -1497,7 +1634,7 @@ const rawDownload = page => {
     } catch { /* a missing source is buildCompanions()'s error to raise, not ours */ }
     return `<a class="dlr" href="../${page.file}" download="${page.file}.txt"`
         + ` data-tip="Download the plain-text original">`
-        + `<span class="dlr-i" aria-hidden="true"></span>`
+        + dlIcon('dlr-i')
         + `<span class="dlr-t">Download <b>${page.file}</b></span>`
         + (kb ? `<span class="dlr-s">${kb}</span>` : '')
         + `</a>`;
@@ -1515,6 +1652,15 @@ const mobileNav = (cur, slots, dl = '') => {
     /* .mbar and .mstrip are two elements on purpose — see the CSS. The
        indicator has to sit outside the scroller, which is why it is a sibling
        of the strip rather than a child of it. */
+    /* ⚠️ THE DOWNLOAD MOVED OUT OF .mbar AND INTO THE SECTION MENU (2026-08-05
+       11:31 EDT) — it used to sit as a bare icon beside the page tabs, which put
+       an action control inside what reads as a navigation strip and gave it no
+       room to say what it does. It is the same .dlr row the desktop rail uses
+       (see rawDownload()), not a separate compact control any more — dropped
+       DRY-ly rather than kept as a second markup shape to maintain. It renders
+       as the LAST child of .mp-list, set apart from the sections above it by a
+       card treatment and a hairline — see ".mp-list .dlr" in COMPONENT_CSS for
+       why that is no longer a sticky footer. */
     return `<aside class="mnav" id="mnav">
   <div class="mbar">
     <span class="mgw" id="mgw" aria-hidden="true"><span class="mgo"></span><i class="mtint"></i></span>
@@ -1522,7 +1668,7 @@ const mobileNav = (cur, slots, dl = '') => {
       ${navSetFor(cur).map(grp => grp.map(tab).join('')).join('<span class="ms-sep" aria-hidden="true"></span>')}
     </nav>
   </div>
-  ${slots ? `<details class="msecd">
+  ${(slots || dl) ? `<details class="msecd">
     <summary><span class="msd-l">On this page</span><span class="mt-at" id="railcur"></span></summary>
     <div class="mp-list msec">${slots}${dl}</div>
   </details>` : ''}
@@ -1554,13 +1700,42 @@ const TRADEMARK_NOTE = 'Dioreo is an unofficial fan project and is not '
     + 'Discord Inc., or with the rights holders of any content the game features '
     + 'under licence.';
 
+/**
+ * The SAME disclaimer sentence closes six different source documents
+ * (LICENSE, NOTICE, TERMS.md, PRIVACY.md, CONTRIBUTING.md, CONTRIBUTORS.md),
+ * typed into each one's own operative text rather than pulled from
+ * TRADEMARK_NOTE above — and each source formats it differently (CONTRIBUTING.md
+ * wraps it in markdown italics, the plain-text instruments don't, since plain
+ * text has no italics to wrap it in). Reported 2026-08-05 08:19 EDT: on the
+ * rendered pages that reads as inconsistent — italic on one page, plain on the
+ * next, no visual separation from the paragraph before it.
+ *
+ * This is a RENDER-ONLY normalisation, not a rewording, and it never touches
+ * the six source files — LICENSE and NOTICE are served verbatim as the
+ * authoritative instrument (see buildCompanions()), and italicising THAT
+ * text would misrepresent what the instrument actually says. This runs on
+ * the parsed HTML, after the source has already been rendered as an ordinary
+ * paragraph — matching the same "formatted reading copy, not the instrument"
+ * distinction the plain-text download note next to it already makes.
+ * Matches with or without existing <em>, so it is safe to run whether or not
+ * a given source already italicised it by hand.
+ */
+const DISCLAIMER_RE = new RegExp(
+    '<p>(?:<em>)?Dioreo is an unofficial fan project and is not affiliated '
+    + 'with Activision Publishing, Inc\\., TiMi Studio Group, Tencent, Discord '
+    + 'Inc\\., or with the rights holders of any content the game features '
+    + 'under licence\\.(?:</em>)?</p>'
+);
+const styleDisclaimer = html => html.replace(DISCLAIMER_RE,
+    '<hr class="disc-rule" aria-hidden="true"><p class="disc-p"><em>' + TRADEMARK_NOTE + '</em></p>');
+
 /* `disc` is false on the four legal instruments, and only there. Each of those
    documents now CLOSES with this same notice as part of its own text, so printing
    it again in the chrome a centimetre below said the same thing twice on one
    screen — which is what Harkirat was looking at. The warm and chronicle pages
    carry no such closing line, so they keep the footer's copy. */
 const pageFoot = (cur, sig, disc = true) => `<footer class="foot${disc ? '' : ' nodisc'}">
-    <p class="sig">${sig || DIOR_SIG}</p>
+    <p class="sig">${sig || DIOR_SIG}${SIG_COPYRIGHT}</p>
     ${disc ? `<p class="disc">${TRADEMARK_NOTE}</p>` : ''}
     <nav class="endnav">${navSetFor(cur).flat()
         .filter(p => !isHere(p, cur))
@@ -1626,28 +1801,26 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 .mark{display:inline-flex;align-items:center;gap:.62rem;text-decoration:none;color:var(--ink);
   white-space:nowrap;position:relative;padding:.25rem 0;min-width:0}
 
-/* ⚠️ THERE IS NO LOGO MARK BESIDE THE WORDMARK, and that is the second time this
-   slot has been emptied on purpose. It held three stacked bars first, which is
-   the universal glyph for a menu, so readers tried to tap it expecting one to
-   open. It then held a rounded square carrying a "D" — which was worse in a
-   quieter way: a single letter in a box is the most generic mark there is, it
-   said nothing the wordmark next to it does not already say in full, and it made
-   the site's identity a placeholder logo rather than the typography.
-
-   The wordmark alone is the mark. Do not "restore the logo" without an actual
-   drawn mark to put there; another letter-in-a-square is not one. */
+/* ⚠️ SUPERSEDES the two prior "no logo mark" decisions (this slot had held a
+   3-bar menu glyph, then a letter-in-a-square, and was emptied back to plain
+   type both times because neither was an actual drawn mark — see git history
+   on this comment for the full reasoning). Harkirat supplied a real drawn
+   Dioreo mark 2026-08-04 21:18 EDT (the mascot + bubble wordmark lockup), which
+   is exactly what those two notes said was missing, so it now REPLACES the
+   typographic wordmark outright rather than sitting beside it — there is no
+   longer a second "Dioreo" in text form for it to compete with in the bar. */
 .mk-s{display:flex;flex-direction:column;gap:.05rem;min-width:0}
-/* The wordmark is allowed to be squeezed; it is NOT allowed to overflow. Without
-   this it kept its full 90px of text inside a 31px box and simply drew across
-   the buttons beside it — the "too tight" header was really this one missing
-   rule. Truncation is the honest failure mode for a flexible label. */
-.wm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wm{font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.028em;
-  line-height:1.16;position:relative;background-image:linear-gradient(100deg,
-  var(--ink) 38%,color-mix(in srgb,var(--accent) 92%,white) 50%,var(--ink) 62%);
-  background-size:280% 100%;background-position:130% 0;
-  -webkit-background-clip:text;background-clip:text;
-  transition:background-position .62s cubic-bezier(.3,.7,.2,1)}
+/* Fixed height so the mark lines up with the 32px control row beside it;
+   width is intrinsic (object-fit:contain) so the mascot and the bubble
+   letters scale together and never crop. The image is allowed to be
+   narrower than its box shrinks to — it has no truncation failure mode the
+   way the old text did, so nothing here needs an overflow rule. */
+.wm{display:block;height:44px;width:auto;object-fit:contain;flex:0 0 auto;
+  transition:transform .26s cubic-bezier(.3,.7,.2,1)}
+/* The landing page's hero-sized mark. .wm.wm-hero (not .wm-hero alone) so this
+   wins over the base rule regardless of source order — the same doubled-class
+   defence the mobile .bar.bar override above uses, for the same reason. */
+.wm.wm-hero{height:112px}
 
 /* The context line names the document you are in. It is hidden on desktop on
    purpose — the switcher is right there saying the same thing, and a header
@@ -1658,11 +1831,15 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
 
 /* ⚠️ :focus-visible stays OUTSIDE the hover guard. Guarding both together would
    drop the keyboard focus styling on any device with a touchscreen, which is
-   most laptops now. Split, always. */
-.mark.live:focus-visible .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+   most laptops now. Split, always.
+   The old sweep animated a text-fill gradient, which has no equivalent on a
+   raster mark — replaced with the same scale nudge every other interactive
+   control in the bar uses on press/hover, so the mark still confirms it is
+   clickable without inventing a bespoke effect just for itself. */
+.mark.live:focus-visible .wm{transform:scale(1.05)}
 .mark.live:focus-visible .go{opacity:1;transform:translateX(0)}
 @media (hover:hover) and (pointer:fine){
-  .mark.live:hover .wm{-webkit-text-fill-color:transparent;background-position:-30% 0}
+  .mark.live:hover .wm{transform:scale(1.05)}
   .mark.live:hover .go{opacity:1;transform:translateX(0)}
 }
 
@@ -1809,11 +1986,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   /* The context line goes. It names the page you are on, and directly beneath it
      the strip names the page you are on with a filled pill — saying it twice in
      54px of header is what made the mark fight the buttons for width.
-     The wordmark also drops a step, because at 1.02rem it still truncated to
-     "Dior's B..." on a 393px phone, and a truncated wordmark is worse than a
-     slightly smaller whole one. */
+     The mark also drops a step — same reasoning as the old text wordmark did
+     (which used to truncate to "Dior's B..." at 1.02rem on a 393px phone): a
+     smaller whole mark reads better than a squeezed one on a narrow header. */
   .mk-ctx.mk-ctx{display:none}
-  .wm{font-size:.85rem}
+  .wm{height:34px}
+  .wm.wm-hero{height:64px}
   /* 19px of the mark's width was its own padding — a hover affordance, on a
      surface that has no hover. Reclaiming it is what actually gives the wordmark
      room; every other lever here was worth 2-4px and would have been pixel
@@ -2167,6 +2345,12 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   align-items:start;text-align:left}
 /* Quiet, but it still has to be READABLE — it measured 2.3:1 with the opacity
    applied, and it is a notice we are obliged to show. Same size, full opacity. */
+/* The in-document trademark disclaimer, normalised by styleDisclaimer() —
+   see its own comment for why this runs on rendered HTML rather than the six
+   source files it appears in. Divider + italic, consistently, wherever it
+   lands: the numbered legal set, the warm pages, doesn't matter. */
+.disc-rule{border:0;border-top:1px solid var(--rule);margin:2.4rem 0 1.4rem}
+.disc-p{font-style:italic;color:var(--ink3)}
 .disc{grid-column:1;grid-row:1;align-self:start;
   margin:0;font-family:var(--mono);font-size:.6rem;line-height:1.85;
   letter-spacing:.05em;color:var(--ink3);max-width:52ch}
@@ -2196,6 +2380,19 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    this is simply the bottom-left line. */
 .sig{grid-column:1;grid-row:2;text-align:left;justify-self:start;margin:.85rem 0 0;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink3)}
+/* Plain text, not a repeat of the logo — Harkirat's call: the footer gets a
+   copyright line, not a second mark. Inherits .sig's own colour/size and just
+   dims further, so it reads as one quiet line rather than a competing element.
+   display:block puts it on its OWN line under the sig (Harkirat's call
+   2026-08-05 08:40 EDT — it started inline after a middot, which read as
+   trailing the sig rather than belonging with it); margin-top gives it a
+   little daylight from the sig text above without the two reading as
+   unrelated lines.
+   ⚠️ NAMED .sig-cr, NOT .cpy — .cpy already names the code-block copy BUTTON
+   ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
+   inherit that pill's border/background by accident. Never reuse .cpy for
+   anything that is not that button. */
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}
 /* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
@@ -2226,14 +2423,24 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
      which put about 118px of dead space under the sign-off — measured on
      Contributors, where the two are adjacent. The wrapper already provides the
      breathing room at this width; the footer only needs to not crowd its own last
-     line. Top padding is untouched: the back-to-top parks against it. */
+     line. Top padding is untouched: the back-to-top parks against it.
+     ⚠️ Trimmed 1.1rem -> .7rem 2026-08-05 11:31 EDT alongside the wrapper cuts
+     above (.page and .wrap) — still reported as too much once those two came
+     down on their own, since this floor stacks with whichever wrapper it
+     sits inside. */
   .foot{display:flex;flex-direction:column;align-items:flex-start;gap:1.3rem;
-    padding-bottom:1.1rem}
+    padding-bottom:.7rem}
   .disc{order:1;max-width:none}
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
 }
-.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}
+.sig b{color:var(--ink2);font-weight:600}
+/* The name itself carries the page's own accent, not the neutral ink-family
+   colour every other bold word in the sig line gets — Harkirat's call
+   2026-08-05 08:44 EDT. --accent-t is the site's text-safe accent token
+   (already re-mixed for contrast in both themes), so this follows whichever
+   accent the current page is on automatically. */
+.sig .sig-a{color:var(--accent-t);font-weight:600}
 /* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
    the name is already the only emphasised word in it. */
@@ -2246,6 +2453,16 @@ a.dh{text-decoration:none;transition:background .22s,color .22s}
 a.dh:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 28%,transparent)}
 a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* ── back to top ──────────────────────────────────────────────────────
+   ⚠️ NAMED .gotop, NOT .totop — renamed 2026-08-05 08:11 EDT. "totop" is the
+   exact class/id a real, widely-deployed "scroll back to top" WordPress plugin
+   (and several clones) use, and it collides with generic ad-blocker cosmetic
+   filter rules written against THAT library rather than against this site —
+   Harkirat confirmed this by reproducing it with the SAME blocklist enabled on
+   two different browsers. It genuinely worked before: this is not a code
+   regression, it is a third-party filter list matching a common name by
+   coincidence, and it can recur at any time a list adds a similarly generic
+   rule. Never rename this back to something in the totop/back-to-top/scrollup
+   family — those are exactly the names blocklists target.
    The ring IS the scroll position, so the control answers "how much is left"
    as well as "take me back" — on a 22-section document that is worth more than
    a bare arrow. It is driven from the SAME scroll handler that feeds the
@@ -2263,9 +2480,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    So --lift is written from the script each frame: zero until the footer's top
    edge reaches the button, then exactly the overlap, so it rides up ahead of the
    footer and never crosses it. It is a variable rather than a direct transform
-   write because .totop.on owns the transform — a script setting style.transform
+   write because .gotop.on owns the transform — a script setting style.transform
    would have fought the entry animation. */
-.totop{--lift:0px;
+.gotop{--lift:0px;
   position:fixed;right:clamp(.9rem,3vw,2rem);bottom:clamp(.9rem,3vw,2rem);
   z-index:55;width:46px;height:46px;display:grid;place-items:center;cursor:pointer;
   -webkit-appearance:none;appearance:none;border:1px solid var(--rule2);border-radius:50%;
@@ -2273,11 +2490,23 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
   transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}
+/* ⚠️ --lift IS PINNED TO 0 BELOW 760px, ON PURPOSE — Harkirat's call
+   2026-08-05 09:01 EDT, after the footer redesign (side-by-side disclaimer +
+   sig, no more full-width stacked lines) freed up enough room that the
+   button riding up to clear the footer is no longer solving a real overlap;
+   it just makes the button drift on mobile instead of sitting still where a
+   thumb expects it. !important is required here: the script still WRITES
+   --lift as an inline style every frame (see the two writers this rule's own
+   comment above names), and a plain override loses to that inline value —
+   only an !important stylesheet rule beats it. The script itself is
+   untouched; it can keep computing a nonzero value; this simply stops it
+   from being read on a narrow viewport. */
+@media (max-width:760px){ .gotop{--lift:0px!important} }
 /* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
-.totop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
+.gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
   transition:opacity .34s ease,border-color .3s ease}
-.totop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.gotop:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 /* ⚠️ inset:-1px, not 0. An absolutely positioned child resolves inset against the
    PADDING box, which is 44px inside this button's 1px border — but the svg is
    46px, so it hung 1px down and right and its ring stopped being concentric with
@@ -2296,8 +2525,8 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tt-ar i:nth-child(1){top:0}
 .tt-ar i:nth-child(2){top:12px}
 @media (hover:hover) and (pointer:fine){
-  .totop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
-  .totop:hover .tt-ar i{transform:translateY(-12px)}
+  .gotop:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+  .gotop:hover .tt-ar i{transform:translateY(-12px)}
 }
 @keyframes ttFire{
   0%{transform:translateY(0);opacity:1}
@@ -2305,18 +2534,18 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   37%{transform:translateY(15px);opacity:0}
   100%{transform:translateY(0);opacity:1}
 }
-.totop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
+.gotop.fire .tt-ar{animation:ttFire .6s cubic-bezier(.3,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .totop{transition:opacity .2s ease}
+  .gotop{transition:opacity .2s ease}
   .tt-ar i{transition:none}
-  .totop.fire .tt-ar{animation:none}
+  .gotop.fire .tt-ar{animation:none}
 }
 
 /* ── back to top, coalescing ───────────────────────────────────────────
    The control assembles from droplets falling inward when it first arrives, and
-   comes apart upward when pressed. Every rule below has to sit AFTER .totop:hover
-   and .totop.on: they are all (0,2,0), so source order is what decides, and
-   .totop.birth has to win over both while the liquid is on screen.
+   comes apart upward when pressed. Every rule below has to sit AFTER .gotop:hover
+   and .gotop.on: they are all (0,2,0), so source order is what decides, and
+   .gotop.birth has to win over both while the liquid is on screen.
 
    ⚠️ visibility, NOT JUST opacity:0. A filtered element still allocates its
    filter REGION at opacity 0 — #dbgoo-c is 260% of a 44px layer, a ~114px disc,
@@ -2332,7 +2561,7 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    ⛔ AND THE CSS BLUR/CONTRAST CRUSH IS NOT THE FIX FOR THAT. It was built and
    measured (2026-08-03 12:02 EDT): the masses merged correctly and the recipe's
    black bed rendered as a SOLID SQUARE. The bed erases itself by blending against
-   an opaque backdrop, and .totop is position:fixed with z-index:55 — its own
+   an opaque backdrop, and .gotop is position:fixed with z-index:55 — its own
    stacking context — so mix-blend-mode:lighten composites INSIDE it, against a
    background .birth has just made transparent. Black against nothing stays black.
    Giving the button an opaque background does not help either: the bed is inset
@@ -2340,13 +2569,13 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    ON a bar; a floating control has no surface to sit on. Do not re-attempt it. */
 .tt-ink{position:absolute;inset:0;z-index:0;pointer-events:none;
   opacity:0;visibility:hidden}
-.totop.birth .tt-ink{opacity:1;visibility:visible}
+.gotop.birth .tt-ink{opacity:1;visibility:visible}
 .tt-goo{position:absolute;inset:0}
-.totop.birth .tt-goo{filter:url(#dbgoo-c)}
-.totop.nogoo.birth .tt-goo{filter:none}
+.gotop.birth .tt-goo{filter:url(#dbgoo-c)}
+.gotop.nogoo.birth .tt-goo{filter:none}
 /* The real chrome stands down while the liquid is on screen. transition:none is
    what lets the launch drop opacity to 0 instantly at the end — handing that fade
-   to .totop's own transition is what made the button appear to come back after a
+   to .gotop's own transition is what made the button appear to come back after a
    tap, because .birth is also what hides the ring and the arrow. */
 /* ⚠️ backdrop-filter HAS TO BE CLEARED HERE TOO, AND FORGETTING IT IS THE
    "gradient circle behind the button". Clearing background and border-color takes
@@ -2361,9 +2590,9 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
    ~114px region while idle, and it is handled by .tt-ink's visibility:hidden
    BETWEEN births. This one only appears DURING a birth, when .birth strips the
    background. Two circles, two causes; the first fix made the second visible. */
-.totop.birth{background:transparent;border-color:transparent;
+.gotop.birth{background:transparent;border-color:transparent;
   backdrop-filter:none;-webkit-backdrop-filter:none;transition:none}
-.totop.birth .tt-ring,.totop.birth .tt-ar{opacity:0}
+.gotop.birth .tt-ring,.gotop.birth .tt-ar{opacity:0}
 .tt-blob{position:absolute;left:50%;top:50%;width:44px;height:44px;
   margin:-22px 0 0 -22px;border-radius:50%;background:var(--accent);
   transform:scale(0);will-change:transform}
@@ -2495,9 +2724,9 @@ html.liq,html.liq *{cursor:none !important}
    already in COMPONENT_CSS and its behaviour already in MORPH_JS — both loaded on
    the warm pages the whole time and did nothing, because the one thing missing
    was the button itself. Copying the markup instead of sharing it is how the two
-   would drift; MORPH_JS bails cleanly when #totop is absent, so a template that
+   would drift; MORPH_JS bails cleanly when #gotop is absent, so a template that
    omits this constant still works. */
-const TOTOP_HTML = `<button class="totop" id="totop" data-tip="Back to top" aria-label="Back to top">
+const TOTOP_HTML = `<button class="gotop" id="gotop" data-tip="Back to top" aria-label="Back to top">
   <svg class="tt-ring" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
     <circle class="tt-trk" cx="23" cy="23" r="20"/>
     <circle class="tt-bar" cx="23" cy="23" r="20"/>
@@ -2516,7 +2745,7 @@ const TOTOP_HTML = `<button class="totop" id="totop" data-tip="Back to top" aria
    which is a bug already paid for once. */
 const TOTOP_TRACK_JS = `
 (function(){
-  var tt=document.getElementById('totop');
+  var tt=document.getElementById('gotop');
   if(!tt)return;
   var bar=tt.querySelector('.tt-bar'), foot=document.querySelector('.foot');
   /* Cached: getComputedStyle forces a style resolve, and both values change only
@@ -3580,7 +3809,37 @@ const NAV_JS = `
   }
   anchorOffset();
   addEventListener('resize',anchorOffset);
+  /* ⚠️ A DIRECT LINK TO A SECTION LANDS SHORT ON FIRST LOAD, EVEN WITH THE
+     ABOVE. The browser performs its own scroll-to-fragment before this script
+     runs at all — it only has the CSS fallback (76px) to work from at that
+     point, not the measured value anchorOffset() just computed — and Chrome
+     does not repeat that scroll once the page has settled. Reported
+     2026-08-05 08:24 EDT against a direct link to a sub-section, landing a
+     few lines past the heading it named. Re-issuing the scroll AFTER the real
+     offset is set corrects it; scrollIntoView() reads the (now-correct)
+     scroll-margin-top the CSS already declares, so this needs no offset math
+     of its own. */
+  if(location.hash){
+    var tgt=document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if(tgt)tgt.scrollIntoView({block:'start'});
+  }
 })();`;
+
+/* ⚠️ COPY ON CLICK, WITHOUT REPLACING THE JUMP. .anchor links are real
+   <a href="#id"> elements — clicking one already updates the hash and scrolls
+   to the section, which is the whole point of "link to section". This adds a
+   side effect (copy the full shareable URL) rather than intercepting the
+   click, so the control still works exactly like a plain link anywhere
+   Clipboard API access is unavailable.
+   ⚠️ THE CONFIRMATION LIVES IN THE HINT MODULE NOW, NOT HERE. This used to
+   spawn its own toast — a second floating bubble independent of the
+   [data-tip] hint that was already sitting over the same link a moment
+   earlier. Reported 2026-08-05 11:31 EDT as feeling bolted-on rather than like a
+   response to the hint that was just showing. MORPH_JS's hint module (see
+   "6 · the hint") owns the one floating capsule every [data-tip] control
+   already uses, so the click handler and the "Copied" text swap moved there
+   — see flashCopied() — where it can reuse that same element instead of
+   creating a second one. */
 
 const SWITCHER_CSS = `
 /* ── segmented page switcher ──────────────────────────────────────────
@@ -3964,7 +4223,7 @@ const SWITCHER_CSS = `
      across the whole bar. Deterministic beats pretty here.
      overflow:hidden clips the swarm to the bar, which is also deliberate — see
      the y-squash note on the particles. */
-  .mbar{position:relative;isolation:isolate;overflow:hidden;
+  .mbar{position:relative;isolation:isolate;overflow:hidden;display:flex;
     background:var(--paper);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
   /* ⚠️ NO -webkit-overflow-scrolling HERE, AND IT MUST NOT COME BACK. It has been
@@ -3973,6 +4232,7 @@ const SWITCHER_CSS = `
      which is the other half of the blend failure described above. Removing an
      obsolete prefix is the fix, not a cleanup that happens to sit nearby. */
   .mstrip{position:relative;z-index:1;display:flex;align-items:stretch;gap:.3rem;
+    flex:1 1 auto;min-width:0;
     overflow-x:auto;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;
     padding:.5rem .75rem;
@@ -4404,17 +4664,17 @@ ${SWITCHER_CSS}
    travelling into the footer, and keeping it in .page is what stops it stretching to
    the full viewport width. Do not fold these two back together. */
 .page{max-width:1220px;margin:0 auto;padding:54px clamp(1rem,3vw,2rem) 0}
-/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS 4rem, WHICH IS
-   WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS drops .foot's
-   own bottom padding to 1.1rem below 760px on the reasoning that "the wrapper
-   already provides the breathing room" — true of warmShell's .wrap (4rem), false
-   here, where .page ends at 0. Measured on an iPhone against Contributing, which
-   is the rhythm Harkirat asked these pages to match: 96px above the link row and
-   28px below it, against 54 and 80. So this restores the missing floor and trims
-   the card's own 3rem gap, which is a desktop value that reads as a hole once the
-   footer is a single narrow column. Both numbers are the warm page's, not new
-   ones — the point is that the two templates agree. */
-@media (max-width:760px){ .page{padding-bottom:4rem} }
+/* ⚠️ THE LEGAL WRAPPER HAS NO BOTTOM PADDING AND THE WARM ONE HAS A FLOOR OF ITS
+   OWN, WHICH IS WHY THE TWO FOOTERS BREATHE DIFFERENTLY ON A PHONE. COMPONENT_CSS
+   drops .foot's own bottom padding below 760px on the reasoning that "the wrapper
+   already provides the breathing room" — true of warmShell's .wrap, false here,
+   where .page ends at 0. This restores the missing floor, and the two numbers
+   have to move together — see .wrap below — or the templates drift apart again.
+   ⚠️ TRIMMED 2026-08-05 11:31 EDT: the original 4rem here (matched to .wrap's
+   original 4rem) was reported as too much dead space below the sign-off on
+   every legal, Contributing, and Contributors page. Cut to 2.6rem, still paired
+   with .wrap's own trim to the same value. */
+@media (max-width:760px){ .page{padding-bottom:2.6rem} }
 .cols{display:grid;grid-template-columns:200px minmax(0,1fr);
   gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
@@ -4467,11 +4727,15 @@ ${SWITCHER_CSS}
 .slot.on i{color:var(--accent-t)}
 .slot.on span{color:var(--ink);font-weight:650}
 /* ── the plain-text download ──────────────────────────────────────────
-   One rule set for both hosts, because it is one control: the section index's
-   last row on the desktop rail, and the same row inside the mobile disclosure.
-   It reads as an ACTION, not as another section — a filled chip rather than a
-   ruled row — because a reader scanning for "where am I" must not mistake it for
-   a place to go. Its touch target is the 44px the mobile list already uses. */
+   The desktop rail's last row. It reads as an ACTION, not as another section —
+   a filled chip rather than a ruled row — because a reader scanning for "where
+   am I" must not mistake it for a place to go.
+   ⚠️ MOBILE REUSES THIS SAME ROW AGAIN (changed 2026-08-05 11:31 EDT) — it used
+   to get its own compact icon-only control, .dlm, living in the sticky tab bar.
+   That read as a stray icon inside what otherwise looks like page navigation,
+   with no room to say what it does. It moved into the section menu instead —
+   see mobileNav() and ".mp-list .dlr" below — as the SAME row this is, not a
+   second markup shape to keep in sync. */
 .dlr{display:flex;align-items:center;gap:.55rem;margin-top:.9rem;
   padding:.6rem .7rem;border-radius:9px;text-decoration:none;
   background:color-mix(in srgb,var(--accent) 9%,transparent);
@@ -4486,25 +4750,33 @@ ${SWITCHER_CSS}
 /* Tabular so the two pages' sizes line up if they are ever seen together. */
 .dlr-s{flex:0 0 auto;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;
   color:var(--ink3);font-variant-numeric:tabular-nums}
-/* Drawn, not typed: a glyph would render at whatever weight the mono face has and
-   would also join the page text, which is the trap documented on the copy button.
-   A tray with an arrow coming down into it — the shape a download actually is. */
-/* ⚠️ The tray's floor is a BORDER on the element itself, not a third child. An
-   element has two pseudo-elements and the arrow needs both — a stem and a head —
-   so the base had to come from somewhere that is not a box. A stray <span> for it
-   would have been markup existing only to be painted. */
-.dlr-i{position:relative;flex:0 0 auto;display:block;box-sizing:border-box;
-  width:13px;height:13px;color:var(--accent-t);
-  border-bottom:1.6px solid currentColor}
-.dlr-i::before{content:"";position:absolute;left:5.7px;top:0;width:1.6px;height:6.4px;
-  background:currentColor;border-radius:1px}
-/* ⚠️ A ROTATED SQUARE IS WIDER THAN ITS SIDE — same trap as the landing page's
-   .arw. The head is a 5.6px box turned 45deg, so its tip reaches 5.6/sqrt(2)=3.96px
-   from its own centre, not 2.8. Centred at x=6.5 that puts the point at 10.46 and
-   2.54, both inside the 13px box. */
-.dlr-i::after{content:"";position:absolute;left:3.7px;top:1.9px;width:5.6px;height:5.6px;
-  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  border-radius:0 0 2px 0;transform:rotate(45deg)}
+/* See dlIcon() — inline SVG now, not a CSS border/pseudo-element tray. */
+.dlr-i{flex:0 0 auto;display:block;width:13px;height:13px;color:var(--accent-t)}
+/* ── the section menu's download card ───────────────────────────────────
+   The mobile home for the row above, as the last child of .mp-list — see the
+   note on .msecd for why it's a different kind of question than "which
+   section" and belongs apart from the list rather than styled as one more
+   row in it.
+   ⚠️ NOT STICKY, ON PURPOSE (reversed 2026-08-05 12:28 EDT). A sticky-to-the-
+   list version shipped first, edge-to-edge with square corners, so it could
+   sit flush against the scroll boundary — but that same edge-to-edge opaque
+   bar is what made it PIN OVER whatever section row happened to be scrolled
+   underneath it, mid-word, with no transition. Reported as "such a poor
+   implementation... looks slapped on." The desktop rail's identical .dlr row
+   has never drawn that complaint sitting as a plain trailing row with normal
+   margin — so rather than polish the overlap (a fade mask, a shadow) this
+   drops the mechanism that caused it. Inset margin matching the slot rows'
+   own horizontal padding, and a hairline drawn in the gap above it via
+   ::before rather than a real border — a border on the card itself would
+   have doubled up against .msecd's own bottom border when the list is short
+   enough not to scroll. */
+.mp-list .dlr{position:relative;margin:1.1rem .9rem .3rem;padding:.75rem .9rem;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--accent) 9%,var(--paper));
+  border-color:color-mix(in srgb,var(--accent) 28%,var(--rule))}
+.mp-list .dlr::before{content:"";position:absolute;left:0;right:0;top:-.65rem;
+  height:1px;background:var(--rule)}
+.mp-list .dlr:hover{background:color-mix(in srgb,var(--accent) 17%,var(--paper))}
 /* Below 980 the rail is replaced wholesale by .mnav, the single mobile
    control. It is not restyled for small screens any more — it is hidden. */
 @media (max-width:980px){ .rail{display:none} }
@@ -4656,10 +4928,19 @@ ${SWITCHER_CSS}
 
 /* ── prose ───────────────────────────────────────────────────────── */
 .doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
-.doc p{margin:0 0 1.15rem;max-width:72ch}
+/* ⚠️ WIDENED 72ch -> 88ch, and every other doc-body max-width shifted by the
+   same +16ch, 2026-08-05 08:58 EDT. 72ch is a reasonable READING line length
+   in isolation, but .doc's actual column (the page minus the 200px rail
+   minus its own padding) runs well past 100ch on a normal laptop width, so
+   the cap was leaving a wide dead margin down the right side of the card
+   instead of the text using space the layout already allocated for it. Kept
+   every doc-body type at the SAME relative gap it had before (70/72/74 ->
+   86/88/90) rather than picking one flat number, so paragraphs, lists,
+   callouts and the shout blocks still line up with each other. */
+.doc p{margin:0 0 1.15rem;max-width:88ch}
 .doc strong{color:var(--ink);font-weight:600}
 .doc em{font-style:italic}
-.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:88ch}
 .doc li{margin:.5rem 0}
 .doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
 .doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
@@ -4685,24 +4966,19 @@ ${SWITCHER_CSS}
 .authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
   letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
   border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
-  max-width:72ch}
+  max-width:88ch}
 .authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
   justify-content:space-between}
 .authoritative p{margin:0;flex:1 1 34ch}
 .authoritative a{color:var(--ink)}
-/* Download the instrument. The arrow is drawn rather than typed so it inherits
-   the button's colour in both themes and cannot fall back to a missing glyph. */
+/* Download the instrument. See dlIcon() — inline SVG, inherits the button's
+   colour in both themes and cannot fall back to a missing glyph. */
 .dl{display:inline-flex;align-items:center;gap:.55rem;flex:0 0 auto;min-height:38px;
   padding:.45rem .95rem;border-radius:999px;border:1px solid var(--rule2);
   background:color-mix(in srgb,var(--ink) 7%,transparent);
   font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
   text-decoration:none;transition:border-color .25s,background .25s}
-.dl-i{position:relative;width:9px;height:11px;flex:0 0 auto}
-.dl-i::before{content:"";position:absolute;left:3.6px;top:0;width:1.6px;height:7px;
-  background:currentColor}
-.dl-i::after{content:"";position:absolute;left:.6px;top:3.6px;width:6px;height:6px;
-  border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
-  transform:rotate(-45deg)}
+.dl-i{flex:0 0 auto;display:block;width:11px;height:11px}
 .dl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){
   .dl:hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent);
@@ -4732,10 +5008,10 @@ h3.clause .ht:empty{display:none}
   h3.clause:has(.ht:empty){margin-bottom:.15rem}
 }
 p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
-  margin:0 0 .95rem;max-width:70ch}
+  margin:0 0 .95rem;max-width:86ch}
 p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
   font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
-ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:86ch}
 ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
   margin:.34rem 0}
 /* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
@@ -4743,10 +5019,20 @@ ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color
    reading size is genuinely hard going, hence the smaller, looser, mono setting. */
 p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
   color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
-  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:90ch}
+/* ⚠️ pre-wrap, NOT pre — reported 2026-08-05 08:34 EDT against NOTICE §4A.1's
+   quoted emoji.gg licence text: white-space:pre never wraps, so a QUOTED
+   PARAGRAPH landed here (renderIndented() sends anything indented deeper
+   than its paragraph baseline to this class, on purpose, for addresses and
+   the SPDX identifier) forced a horizontal scrollbar instead of wrapping like
+   the prose it actually is. pre-wrap keeps this block's real job — an
+   address or identifier's own line breaks stay literal — while also wrapping
+   at the box edge, which a short address never needed and a long quote
+   always did. */
 pre.block{font-family:var(--mono);font-size:.82rem;line-height:1.75;color:var(--ink);
   background:var(--raised);border:1px solid var(--rule);border-left:3px solid var(--accent);
-  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;white-space:pre}
+  padding:.85rem 1.1rem;margin:0 0 1.15rem;max-width:72ch;overflow-x:auto;
+  white-space:pre-wrap;overflow-wrap:break-word}
 /* Column-aligned tables (NOTICE's dependency and trademark lists). The alignment
    IS the structure, so it must not wrap — hence its own horizontal scroll rather
    than letting the page body scroll, which is the rule for every wide element. */
@@ -4754,10 +5040,40 @@ pre.aligned{font-family:var(--mono);font-size:.76rem;line-height:1.72;color:var(
   background:var(--raised);border:1px solid var(--rule);padding:.8rem 1rem;
   margin:0 0 1.1rem;overflow-x:auto;white-space:pre;max-width:100%}
 pre.aligned a{color:var(--ink)}
+/* ── dependency/asset cards — see isDepEntry()/depCard() ────────────────
+   Each record stacks vertically: name+version+license on one line, then
+   copyright, then the link, each free to wrap on its own rather than being
+   held to a fixed column that a phone-width viewport can't honour. Adjacent
+   cards are consecutive .dep divs, not one shared box, so the gap between
+   them is ordinary block margin rather than a divider drawn across a table. */
+.dep{border:1px solid var(--rule);border-radius:11px;padding:.85rem 1.05rem;
+  margin:0 0 .65rem;background:var(--raised);max-width:88ch}
+.dep:last-child{margin-bottom:0}
+.dep-h{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.55rem;row-gap:.3rem;
+  margin-bottom:.45rem}
+.dep-n{font-family:var(--display);font-weight:700;font-size:.94rem;color:var(--ink);
+  letter-spacing:-.005em}
+.dep-v{font-family:var(--mono);font-size:.66rem;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.dep-lic{flex:0 0 auto;margin-left:auto;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-t);
+  padding:.22rem .6rem;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+  background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.dep-c{margin:0 0 .3rem;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  color:var(--ink2)}
+.dep-u{margin:0;font-family:var(--mono);font-size:.7rem;line-height:1.55;
+  word-break:break-all}
+.dep-u a{color:var(--accent-t)}
+.dep-note{margin:.4rem 0 0;font-family:var(--serif);font-size:.83rem;line-height:1.55;
+  color:var(--ink3)}
+.dep-note:first-child{margin-top:0}
+/* NOTICE's "*** ... ***" inline aside — see inlineText(). */
+.hi{color:var(--accent-t);font-weight:700}
 
 /* ── callouts ────────────────────────────────────────────────────── */
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
-  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:88ch}
 .callout>:last-child{margin-bottom:0}
 .callout p{max-width:none}
 .callout.warn{border-left-color:var(--gold);
@@ -4829,7 +5145,7 @@ pre.aligned a{color:var(--ink)}
    longer exists. It spans the full .page width simply by being a block child of it. */
 
 @media print{
-  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.totop,.ins{display:none!important}
+  .bar,#prog,.rail,.anchor,.thm,.ghb,.mnav,.gotop,.ins{display:none!important}
   .authoritative{border:1px solid #999}
   p.shout,pre.block{border:1px solid #999;background:#fff;color:#000;break-inside:avoid}
   body{background:#fff;color:#000}
@@ -4885,11 +5201,12 @@ ${mobileNav(cur, slots, dl)}
        column. Both halves were verified in a live browser at the scrolled-to-bottom
        position, which is the only place the bug is visible at all. -->
   <div class="cols">
-    <!-- The rail is the desktop half of the same panel the mobile disclosure is,
-         so the download sits in both or in neither. It is OUTSIDE .slots because
-         that box is the scroller the scrollspy drives — a non-section row inside
-         it would travel with the tracked section and could scroll out of reach,
-         which is the one thing this control exists not to do. -->
+    <!-- The rail is the desktop half of the panel the mobile "On this page"
+         disclosure is, and both offer the download — but no longer via the same
+         markup. Desktop keeps the full row, OUTSIDE .slots because that box is
+         the scroller the scrollspy drives and a non-section row inside it would
+         travel with the tracked section. Mobile gets its own compact .dlm
+         instead of reusing this row — see mobileNav(). -->
     <aside class="rail" id="rail">
       <span class="lab">Sections</span>
       <div class="slots" id="slots">${slots}</div>
@@ -4919,7 +5236,7 @@ ${TOTOP_HTML}
 <script>
 (function(){
   var prog=document.getElementById('prog');
-  var top=document.getElementById('totop'), ttBar=top&&top.querySelector('.tt-bar');
+  var top=document.getElementById('gotop'), ttBar=top&&top.querySelector('.tt-bar');
   /* Cached, not read per frame: getComputedStyle forces a style resolve, and this
      value only changes with the viewport (it is a clamp of vw). */
   var foot=document.querySelector('.foot'), ttBase=0, ttPad=0;
@@ -6059,8 +6376,20 @@ const MORPH_JS = `
       if(!r)return true;
       if(!r.width&&!r.height)return true;
       /* the caret rect is the LINE BOX, so this is the height the beam should
-         be — measured off the text it is actually over, not assumed */
-      if(r.height>6&&r.height<80)lineH=r.height;
+         be — measured off the text it is actually over, not assumed.
+         ⚠️ CAPPED AT 34px — reported 2026-08-05 07:40 EDT: hovering an h1 (line box up
+         to ~79px on the doc masthead) made the caret nearly disappear, down to
+         one faint surviving dot. The seven masses stack across lineH*0.9 or so;
+         at a heading's height that spread puts adjacent masses too far apart
+         for #dbgoo-p's crush to merge them into one continuous bar, so the
+         alpha threshold erodes nearly all of them — the same erosion this
+         whole caret design exists to avoid, just triggered by a taller line
+         than it was tuned against. Every measurement on record for a WORKING
+         caret is body-text sized (the 23px line, 22.5px measured height), so
+         34px is a margin above that rather than a heading size. Re-measure with
+         the canvas method (see the nav pill's dilation table) before raising
+         this — don't just try a bigger number. */
+      if(r.height>6&&r.height<80)lineH=Math.min(r.height,34);
       return x>=r.left-14&&x<=r.right+14&&y>=r.top-3&&y<=r.bottom+3;
     }
     function probe(){
@@ -6266,41 +6595,95 @@ const MORPH_JS = `
     var mq=matchMedia('(max-width:700px)');
     function wanted(){return !fine||mq.matches;}
 
-    var cur=-1,queued=0,lastY=scrollY_(),dir=1;
+    var cur=-1,queued=0;
+    /* ⚠️ THIRD DESIGN FOR THIS FUNCTION, 2026-08-05 10:10 EDT — and the reason
+       is worth keeping straight, because the first two both failed for
+       different reasons and it would be easy to wander back into either.
+       (1) Nearest-row-centre to a DIRECTION-BIASED line, with a 24px
+       hysteresis margin: reported as "Terms lingers, the rest rush by" —
+       diagnosed as the algorithm, not the (perfectly uniform) layout, and
+       replaced with —
+       (2) boundary containment: a row active exactly while its own box
+       contains that same biased line. Proven live to give EQUAL dwell
+       distance per row (confirmed: ~130px each, Terms through Notice) — but
+       then rejected anyway: "linear isn't the solution." Equal-by-the-numbers
+       still read as mechanical, because a fixed offset percentage down the
+       screen is not what a reader's eye is actually doing.
+       (3) THIS version: whichever row's centre is nearest the VIEWPORT'S OWN
+       centre — "whichever row is most prominently in view," Harkirat's own
+       framing. This is not just a different number, it drops the whole
+       direction-bias/easing apparatus (dir, lastY, the 8px threshold, lineY's
+       spring) outright, because the reference point is innerHeight*0.5 —
+       fixed, not direction-dependent — so there is nothing left for a
+       direction change to destabilise. Simpler code as a direct consequence
+       of the simpler mental model, not a separate cleanup. */
+    /* ⚠️ A ROW CAN BE SKIPPED ENTIRELY ON A FAST SWIPE, and no per-frame
+       distance rule fixes that — added 2026-08-05 10:13 EDT, proven with a
+       frame-by-frame recording. pick() only samples state once per
+       requestAnimationFrame; a fast flick can move the scroll far enough
+       between two consecutive frames that a row's whole "nearest the centre"
+       window falls entirely in the gap between samples — the recording
+       showed Privacy active, then License's entire on-screen span passing
+       with nothing lit, then Notices taking over, License never once
+       flagged. No amount of tuning the DISTANCE test closes that: the
+       problem is temporal (a row got no sampled moment), not spatial.
+       stepQueue turns a jump of more than one row into a walk, one row per
+       stepTimer tick, so a skipped row still gets a real, visible moment —
+       capped at 3 steps so an extreme jump (dragging the scrollbar from top
+       to bottom) snaps straight to the end instead of animating through
+       every row it technically passed. */
+    var stepTimer=0;
+    function advance(target){
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=target;
+      rows[cur].classList.add('act');
+    }
+    function stepToward(target){
+      clearTimeout(stepTimer);
+      if(cur<0||Math.abs(target-cur)>3){advance(target);return;}
+      if(cur===target)return;
+      var next=cur+(target>cur?1:-1);
+      advance(next);
+      if(next!==target)stepTimer=setTimeout(function(){stepToward(target);},70);
+    }
     function pick(){
       queued=0;
       if(!wrap.classList.contains('scrolly'))return;
-      var y=scrollY_();
-      if(Math.abs(y-lastY)>1){dir=y>lastY?1:-1;lastY=y;}
-      /* ⚠️ THE LINE LEADS THE SCROLL, and that is what stops it feeling late.
-         A fixed line only marks a row once the row has reached it, so on the way
-         down the highlight always trails what you are looking at. Offsetting the
-         line by a tenth of the viewport in the direction of travel moves it DOWN
-         while scrolling down, which is the direction rows arrive from, so a row is
-         claimed on approach instead of on arrival — and symmetrically on the way
-         back up. 0.46 rather than dead centre because the row being read sits
-         above the middle of a phone screen, not on it. */
-      var line=innerHeight*(0.46+dir*0.10);
-      var best=-1,bestD=1e9,i,r,d;
+      var mid=innerHeight*0.5;
+      var best=-1,bestD=1e9,curD=1e9,i,r,d;
       for(i=0;i<rows.length;i++){
         r=rows[i].getBoundingClientRect();
         if(r.bottom<8||r.top>innerHeight-8)continue;
-        d=Math.abs(r.top+r.height/2-line);
+        d=Math.abs(r.top+r.height/2-mid);
+        if(i===cur)curD=d;
         if(d<bestD){bestD=d;best=i;}
       }
-      if(best===cur)return;
-      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
-      cur=best;
-      if(cur>=0)rows[cur].classList.add('act');
+      if(best<0||best===cur)return;
+      /* A light margin, not the old 24px — with a STABLE reference point the
+         flicker case (two rows trading the highlight every frame near a
+         shared boundary) is far less likely to begin with; this only damps
+         genuine near-ties rather than doing the main stabilising work the
+         way it had to before. Only applied to single-row moves — a jump big
+         enough to trigger stepToward's walk already means best is decisively
+         ahead, not a near-tie. */
+      if(cur>=0&&Math.abs(best-cur)<=1&&bestD>curD-10)return;
+      stepToward(best);
     }
     function onScroll(){if(!queued)queued=requestAnimationFrame(pick);}
+    /* ⚠️ NO INITIAL pick() — changed 2026-08-05 09:37 EDT. This used to call
+       pick() immediately whenever want was true, which measured the row
+       nearest the line AT THE TOP OF THE PAGE and highlighted it before the
+       reader had scrolled at all — row 0 ("Terms of Service") lighting up on
+       load with no interaction. Clearing to no highlight and letting the
+       first real scroll event call pick() (via onScroll below) means the
+       highlight only ever appears once the reader has actually started
+       scrolling, which is what "auto" should mean here. */
     function sync(){
       var want=wanted(),i;
       wrap.classList.toggle('scrolly',want);
-      if(!want){
-        for(i=0;i<rows.length;i++)rows[i].classList.remove('act');
-        cur=-1;
-      }else{cur=-1;pick();}
+      clearTimeout(stepTimer);
+      if(cur>=0&&rows[cur])rows[cur].classList.remove('act');
+      cur=-1;
     }
     addEventListener('scroll',onScroll,{passive:true});
     addEventListener('resize',function(){sync();onScroll();},{passive:true});
@@ -6310,7 +6693,7 @@ const MORPH_JS = `
 
   /* ══ 4 · back to top, coalescing ════════════════════════════════════════ */
   (function(){
-    var tt=document.getElementById('totop');
+    var tt=document.getElementById('gotop');
     if(!tt)return;
     function past(){return scrollY_()>innerHeight*0.6;}
 
@@ -6410,12 +6793,12 @@ const MORPH_JS = `
           /* ⚠️ ORDER MATTERS, AND THIS IS THE "IT COMES BACK AFTER YOU TAP IT"
              BUG. Measured: on is never re-added after a launch, but the control's
              computed opacity ran 0.91 -> 0.33 -> 0.02 between 604ms and 846ms.
-             Removing on and birth in one statement hands the fade to the .totop
+             Removing on and birth in one statement hands the fade to the .gotop
              transition, and birth is also what hides the ring and the arrow — so
              for ~300ms after the liquid has flown away the REAL button chrome pops
              back and fades out behind it. It never was a second birth, which is
              why two fixes aimed at the threshold missed it.
-             Drop on while birth still applies (.totop.birth carries
+             Drop on while birth still applies (.gotop.birth carries
              transition:none, so it goes to 0 instantly), flush that state, and
              only then drop birth. */
           tt.classList.remove('on');
@@ -6661,9 +7044,9 @@ const MORPH_JS = `
       document.body.appendChild(tipEl);
       return tipEl;
     }
-    function place(node){
+    function place(node,text){
       var tip=build();
-      tip.lastChild.textContent=node.getAttribute('data-tip')||'';
+      tip.lastChild.textContent=(text!=null?text:node.getAttribute('data-tip'))||'';
       /* measured with the class off, so the transform is not folded into the
          box the arithmetic is done against */
       tip.classList.remove('on');
@@ -6682,9 +7065,30 @@ const MORPH_JS = `
       cur=node;
     }
     function hide(){
-      clearTimeout(showT);
+      clearTimeout(showT);clearTimeout(flashT);
       cur=null;pending=null;
       if(tipEl)tipEl.classList.remove('on');
+    }
+    /* ⚠️ THE ".anchor" COPY CONFIRMATION REUSES THIS CAPSULE RATHER THAN
+       SPAWNING ITS OWN — see the note at the top of the click-to-copy handler
+       in NAV_JS for why. place() already knows how to sit the capsule over
+       any [data-tip] node; the only new thing needed is a way to override its
+       text and hold it there past the click that would otherwise hide it.
+       ⚠️ flashing MUST GATE THE SCROLL LISTENER BELOW, NOT JUST SUPPRESS IT.
+       Clicking .anchor is a real <a href="#id">, so the browser's own
+       scroll-to-hash fires immediately after — and this module already hides
+       the capsule on any scroll (a stale tip pointing at a control that
+       scrolled away is worse than none). Measured live: with a plain
+       suppression the capsule vanished the instant the jump started, so
+       "Copied" was never actually seen. Re-placing the capsule at its new
+       position on every scroll tick while flashing keeps it riding along
+       with the heading instead of either vanishing or being left behind. */
+    var flashT=0,flashing=false;
+    function flashCopied(node){
+      clearTimeout(showT);pending=null;clearTimeout(flashT);
+      flashing=true;
+      place(node,'Copied');
+      flashT=setTimeout(function(){flashing=false;hide();},1400);
     }
     /* ⚠️ A DELAY ALONE DOES NOT STOP FALSE TRIGGERS, and raising it further is
        the wrong lever — it just makes the wanted case feel broken too. The
@@ -6753,14 +7157,57 @@ const MORPH_JS = `
         hide();
       },true);
     }
+    /* ⚠️ GATED ON :focus-visible, NOT ON FOCUS ALONE. A real Tab-key move onto a
+       control is a request to know what it is; a touch tap is not — but a tap
+       still fires focusin on the anchor it lands on, and unlike pointerover this
+       listener was never gated on device type, on the reasoning that keyboard
+       focus is legitimate on any device. That reasoning missed that a TOUCH can
+       also produce focus (a scroll gesture that grazes a link, or a tap that
+       lands on one) without being a keyboard request at all. Reported 2026-08-05
+       11:31 EDT: a swipe that only grazed "diorswrld" showed its hint instantly,
+       with the link visibly focused in the screenshot. :focus-visible is the
+       browser's own answer to "was this focus a keyboard request" — it is false
+       for pointer/touch-triggered focus in every evergreen browser — so asking it
+       replaces a device guess with the platform's real answer. */
     document.addEventListener('focusin',function(e){
       var n=tipOf(e);
-      if(n)want(n,0); else hide();
+      if(n&&n.matches&&n.matches(':focus-visible'))want(n,0); else hide();
     },true);
     document.addEventListener('focusout',hide,true);
-    addEventListener('scroll',hide,{passive:true,capture:true});
+    /* ⚠️ .anchor's CLICK IS HANDLED HERE, NOT AS A SEPARATE LISTENER, because a
+       plain click anywhere hides the tip (below) and a second listener racing
+       against that would either lose to it or need its own ordering games.
+       Folding the copy into the same dispatch means "this click is the one
+       exception" is decided in one place.
+       ⚠️ flashCopied() FIRES SYNCHRONOUSLY, NOT INSIDE THE CLIPBOARD PROMISE'S
+       .then(). This used to wait for navigator.clipboard.writeText() to
+       resolve before showing anything — and a real .anchor is a genuine
+       <a href="#id">, so the browser's default action (the hash jump) runs
+       right after this listener finishes, as its own step in event dispatch.
+       That ran BEFORE the microtask the clipboard promise resolves on, so by
+       the time flashCopied() finally fired the page had already jumped once
+       — reported 2026-08-05 12:03 EDT as no visible confirmation at all, only the jump.
+       Calling it here, in the same synchronous tick as the click and before
+       the browser's default action, guarantees the capsule is placed against
+       the anchor's PRE-jump position; the scroll listener above (see
+       "flashing" note) is what then keeps it riding along as the jump
+       happens. The write to the clipboard itself doesn't need to finish
+       first — it either succeeds silently or doesn't, but the user should
+       never be kept waiting on it to see that the click registered. */
+    document.addEventListener('click',function(e){
+      var a=e.target.closest&&e.target.closest('.anchor');
+      if(a&&navigator.clipboard){
+        flashCopied(a);
+        navigator.clipboard.writeText(location.origin+location.pathname+a.getAttribute('href')).catch(function(){});
+        return;
+      }
+      hide();
+    },true);
+    addEventListener('scroll',function(){
+      if(flashing&&cur){place(cur,'Copied');return;}
+      hide();
+    },{passive:true,capture:true});
     addEventListener('wheel',hide,{passive:true});
-    addEventListener('click',hide,true);
     addEventListener('blur',hide);
   })();
 })();`;
@@ -6831,7 +7278,11 @@ body{min-height:100vh;background:
    width — they are auto-fit grids and simply gain a column. Running PROSE does
    not, so it is capped below; the ragged right on paragraphs is deliberate and
    is what keeps a 950px card readable. */
-.wrap{max-width:950px;margin:0 auto;padding:calc(54px + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 4rem}
+/* Bottom padding trimmed 4rem -> 2.6rem 2026-08-05 11:31 EDT, paired with the
+   legal shell's own .page trim above it — too much dead space below the
+   footer on Contributing/Contributors, reported against the same complaint
+   on the four legal pages. */
+.wrap{max-width:950px;margin:0 auto;padding:calc(54px + clamp(2.6rem,9vh,5rem)) clamp(1.2rem,5vw,2rem) 2.6rem}
 
 .hero{text-align:center;margin-bottom:clamp(2.4rem,7vh,3.6rem)}
 .chip{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.63rem;
@@ -7098,6 +7549,18 @@ pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:.5rem;
 .card .slip-t{flex:0 1 auto;max-width:max-content;margin:0;font-family:var(--mono);
   font-size:.78rem;line-height:1.7;color:var(--ink);word-break:break-word}
 .slip .cpy{margin-left:auto}
+/* ⚠️ BELOW 640px THE BUTTON STACKS FULL-WIDTH, RATHER THAN STAYING A SMALL
+   RIGHT-FLOATED PILL. At phone widths the CLA line wraps to two or three
+   lines and margin-left:auto then parks the pill on its own row with a wide
+   empty gutter beside it — reachable, but reading as an afterthought bolted
+   on after the text rather than a real action. A full-width button below the
+   text is the same shape the tear-off metaphor already implies (a stub you
+   act on along its edge), so it reads as the slip's intended footer instead
+   of a control that happened to land there. Reported 2026-08-05 11:31 EDT. */
+@media (max-width:640px){
+  .slip{flex-direction:column;align-items:stretch}
+  .slip .cpy{margin-left:0;width:100%}
+}
 .cpy{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
   min-height:44px;padding:0 1.05rem;border-radius:999px;cursor:pointer;
   font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;
@@ -7380,10 +7843,18 @@ function indexPage(built) {
        so a headline that spends itself on a benefit leaves the reader with no idea what
        the thing is called, while one that spends itself on the name alone says nothing
        about what it does. Doing both is what the two rejected options each did half of. */
-    const intro = 'It lives in Discord — lucky-draw odds and CP costs, loadouts worth '
-        + 'building, what is live this season and when it ends, all without leaving the '
-        + 'chat. Install it once and it answers anywhere you can type: any server, any '
-        + 'DM, no invite needed.';
+    // ⚠️ REWORDED AGAIN 2026-08-05 09:41 EDT — the parallelism fix (2026-08-05
+    // 09:03 EDT, kept below in git history) was still "too AI-written" per
+    // feedback. The tell was structural: two em dashes doing the same job
+    // (joining a clause on either side of a list), a parenthetical aside
+    // tacked on rather than integrated, and near-uniform clause length. Zero
+    // em dashes now; the aside is a plain list item; sentence length varies
+    // (one longer list sentence, a fragment, a medium sentence, a short
+    // closer) instead of two similar-length dash-halves.
+    const intro = 'New & returning draw releases, CP costs, MP & DMZ loadouts, '
+        + 'what’s live this season, when it ends, and so much more — all without '
+        + 'leaving the chat! Install it once and it answers anywhere, in any server '
+        + 'or any DM. Type / and go.';
 
     return `<!doctype html>
 <html lang="en"><head>
@@ -7397,9 +7868,21 @@ ${THEME_BOOT}
 ${TOKENS}
 :root{--accent:${BRAND.coral}}
 ${COMPONENT_CSS}
-body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
+/* ⚠️ VERTICAL PADDING TRIMMED, 2026-08-05 09:57 EDT — Harkirat compared a
+   before/after screenshot pair of where the logo sits on first load and
+   asked for it higher, closer to the top of the viewport. Was
+   clamp(2rem,8vh,6rem); the 8vh term is what actually governs on a typical
+   phone height, so that's the term trimmed. */
+body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh,4rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
-.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.5rem,9vh,5rem)}
+/* ⚠️ MASCOT +16px, MARGIN TIGHTENED then EASED BACK OUT TWICE — 2026-08-05
+   09:37 EDT tightened this to clamp(1.6rem,6vh,3.4rem) alongside the bigger
+   mascot; 09:49 EDT eased it to clamp(2rem,7.5vh,4rem) as that read too
+   close. 09:58 EDT nudges it again, on purpose this time to COMPENSATE for
+   the body padding trim above it — with the whole hero block sitting higher
+   on the page now, some of that reclaimed space goes back in here rather
+   than leaving it all at the very top. */
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.6rem,9.5vh,4.8rem)}
 .top .ghb{margin-left:auto}
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
@@ -7474,11 +7957,27 @@ h1 em{font-style:normal;color:var(--accent-t)}
   align-items:flex-start;text-align:left;padding:0}
 .foot .disc{max-width:66ch}
 /* The shared .sig carries grid placement for the document footer's two-column
-   layout; here it is a plain block in the page flow, so only the spacing needs
-   restating. Its own margin is set for sitting under a link row, not under the
-   trademark notice. */
-.sig.lsig{margin:clamp(1.5rem,4.5vh,2.2rem) 0 0}
-.disc.fine{margin:clamp(2.4rem,7vh,3.6rem) 0 0;font-size:.56rem;line-height:1.9;
+   layout; here it is a flex child of .lfoot instead, so only the spacing needs
+   restating. */
+/* .lfoot puts the disclaimer and the sign-off side by side instead of each
+   taking a full-width line with nothing beside it. space-between is enough on
+   its own with exactly two children — .disc's own max-width already stops it
+   growing to meet the sig, so no flex-grow is needed on either child. Both
+   children's own top margins move up to this wrapper. */
+.lfoot{display:flex;justify-content:space-between;align-items:flex-start;
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}
+/* Right-aligned, not left — it sits on the RIGHT side of the row, and
+   left-aligned text there just trails off into the same empty space .lfoot
+   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
+   ⚠️ LEFT AGAIN BELOW 760px. .lfoot's flex-wrap folds the sig block onto its
+   own full-width row there — it is no longer sitting beside anything on the
+   right, so right-aligning it just floats short lines oddly rather than
+   flush against the same edge the disclaimer above it starts from.
+   Reported same session, 08:56 EDT, with a phone screenshot showing exactly
+   that. 760px matches this template's other mobile breakpoints. */
+.sig.lsig{margin:0;flex:0 0 auto;text-align:right}
+@media (max-width:760px){ .sig.lsig{text-align:left} }
+.disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
   letter-spacing:.04em;color:var(--ink3);max-width:62ch}
@@ -7754,11 +8253,16 @@ h1 em{font-style:normal;color:var(--accent-t)}
     ${repoBtn}
     ${installBtn()}
   </div>
-  <!-- "Unofficial" leads the kicker rather than waiting for the trademark notice
-       at the foot of the page. The notice is an obligation and stays where it is;
-       this is about not letting the first three words a reader sees imply a
-       relationship with Activision that the last three deny. -->
-  <span class="lab">Unofficial &middot; Call of Duty: Mobile</span>
+  <!-- ⚠️ CHANGED TO "Discord bot", 2026-08-05 09:35 EDT — supersedes the note this
+       comment used to carry about "Unofficial" leading the kicker specifically to
+       preempt Activision-affiliation confusion. That reasoning doesn't vanish —
+       it is still true that a reader's first impression matters — but Harkirat
+       made the call explicitly, after that exact concern had already been raised
+       in this session, so it is a deliberate trade rather than an oversight. The
+       trademark notice in the footer (TRADEMARK_NOTE) is unaffected and still
+       carries the disclaimer in full; this kicker was never the ONLY place it
+       lives, just the first. -->
+  <span class="lab">Discord bot</span>
   <h1>Meet <em>Dioreo</em>,<br>your CODM companion.</h1>
   <p class="lede">${esc(intro)}</p>
   <span class="lab lab-sec">The fine print</span>
@@ -7777,14 +8281,21 @@ h1 em{font-style:normal;color:var(--accent-t)}
        an invitation, and it was competing with the contact block for the end of
        the page — which is the one place a reader is actually deciding what to do
        next. Still on every page, still full opacity: quiet is a matter of size and
-       placement, never of contrast. -->
-  <p class="disc fine">${TRADEMARK_NOTE}</p>
-  <!-- The sign-off closes the landing page as it closes every other one. It was
-       the only page without it, which made the site look like it ended twice:
-       every document signed off and the front door did not. Last, and after the
-       trademark notice, because that notice is an obligation and this is the
-       author — the same order the document pages use. -->
-  <p class="sig lsig">${DIOR_SIG}</p>
+       placement, never of contrast.
+       ⚠️ SIDE BY SIDE WITH THE SIGN-OFF, NOT STACKED ABOVE IT (changed
+       2026-08-05 08:40 EDT). Both used to be full-width lines, each with
+       nothing beside it — Harkirat's call: on a wide viewport that reads as
+       wasted width, not as two important closing lines. .lfoot puts them in
+       one flex row instead; .disc's own 52ch cap keeps it from stretching
+       into the sig's space, and flex-wrap folds it back to the original
+       stacked order the moment the row can't fit both. -->
+  <div class="lfoot">
+    <p class="disc fine">${TRADEMARK_NOTE}</p>
+    <!-- The sign-off closes the landing page as it closes every other one. It was
+         the only page without it, which made the site look like it ended twice:
+         every document signed off and the front door did not. -->
+    <p class="sig lsig">${DIOR_SIG}${SIG_COPYRIGHT}</p>
+  </div>
 </main>
 <script>${THEME_JS}${MORPH_JS}</script>
 </body></html>`;
@@ -7909,7 +8420,7 @@ function build() {
                 `The <a href="../${page.file}">plain-text ${esc(page.file)}</a> is the ` +
                 `authoritative instrument, and governs if the two ever differ.</p>` +
                 `<a class="dl" href="../${page.file}" download="${esc(page.file)}.txt" data-tip="Download the plain text">` +
-                `<span class="dl-i" aria-hidden="true"></span>` +
+                dlIcon('dl-i') +
                 `Download ${esc(page.file)}</a></div>`;
         } else {
             // Pull the metadata straight out of the document, so the page can never
@@ -7926,10 +8437,10 @@ function build() {
         // Stripping the metadata block leaves the rule that separated it from the
         // content as the first element, which renders as dead space under the
         // masthead. Drop a leading (or trailing) rule.
-        const html = note + linkifyRefs(
+        const html = styleDisclaimer(note + linkifyRefs(
             parsed.html.replace(/^\s*<hr>\s*/, '').replace(/\s*<hr>\s*$/, ''),
             ids
-        );
+        ));
 
         writePage(path.join(OUT, page.out), shell({
             ...page, body: html, toc: parsed.toc, meta
@@ -7952,7 +8463,7 @@ function build() {
         // and linkifyRefs only ever rewrites text nodes, so it is safe either way —
         // but composing first keeps the patterns it matches against simple.
         const comp = warmCompose(parsed.blocks, page.out);
-        const html = linkifyRefs(comp.body, ids);
+        const html = styleDisclaimer(linkifyRefs(comp.body, ids));
         warmResults[page.out] = comp.hits;
         writePage(path.join(OUT, page.out), warmShell({
             ...page, body: html, sig: comp.sig, spine: comp.spine
@@ -8271,9 +8782,15 @@ function linkAudit() {
  * gates, a wrecked document. This checks the property they can't see.
  *
  * The invariant: every column-aligned source line must end up inside a <pre>, or
- * be a heading. Headings are the legitimate exception — a clause number followed
- * by two spaces ("4A.1  EMOJI") looks column-aligned to any simple test, and an
- * earlier version of this check reported five of them as defects.
+ * be a heading, or be inside a dependency card. Headings are the legitimate
+ * exception — a clause number followed by two spaces ("4A.1  EMOJI") looks
+ * column-aligned to any simple test, and an earlier version of this check
+ * reported five of them as defects. Dependency cards are the same idea one
+ * level up: depCard() (see renderIndented()) deliberately breaks a package's
+ * "name  version  license" line into separate spaced elements rather than one
+ * literal run, so the match has to be against the CARD's flattened text, not
+ * a single element's — a source line can legitimately land as a substring of
+ * that, the same way a heading's number and text land in two different spots.
  */
 function structureAudit(built) {
     const norm = s => s.replace(/\s+/g, ' ').trim();
@@ -8290,6 +8807,8 @@ function structureAudit(built) {
             [...html.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/g)]
                 .map(m => norm(m[1].replace(/<[^>]+>/g, ' ')))
         );
+        const inDep = [...html.matchAll(/<div class="dep">([\s\S]*?)<\/div>/g)]
+            .map(m => norm(m[1].replace(/<[^>]+>/g, ' ')));
 
         const aligned = fs.readFileSync(sourcePath(page), 'utf8')
             .split('\n').filter(l => /\S {2,}\S/.test(l));
@@ -8298,7 +8817,8 @@ function structureAudit(built) {
             if (inPre.has(n)) return false;
             // A heading line: its number and text both land in the heading, but
             // joined differently, so compare on the collapsed form.
-            return ![...inHead].some(h => h.includes(n) || n.includes(h.replace(/\s*¶$/, '')));
+            if ([...inHead].some(h => h.includes(n) || n.includes(h.replace(/\s*¶$/, '')))) return false;
+            return !inDep.some(d => d.includes(n));
         });
 
         if (lost.length) {

@@ -1641,6 +1641,69 @@ check(
   }
 );
 
+/* --------------------- privacy-model-coverage ------------------------ */
+check(
+  "privacy-model-coverage",
+  "ERROR",
+  "any new per-user Mongoose model is disclosed somewhere in the Privacy Policy",
+  () => {
+    // ⚠️ THE CHECK ABOVE ONLY EVER LOOKED AT UserPreference.js BY NAME. That catches drift within the
+    // one schema everyone already knows is personal data, but a second model with its OWN
+    // user-identifying key — a future collection with a discordId/userId field — would ship with
+    // nothing checking whether the policy ever mentions it at all. Requested 2026-08-05 12:43 EDT,
+    // after auditing the six live models against the policy and finding AlertLog's data undisclosed
+    // in §5's provider table (§2.4 already described it in prose; §5's MongoDB row didn't — fixed
+    // separately, see PRIVACY.md's change history).
+    //
+    // The heuristic: a model whose schema paths include a field literally named discordId, userId, or
+    // user_id is "per-user", the same shape UserPreference has. SeasonalData, Loadout, BotInstance,
+    // AlertCounter and AlertLog all genuinely don't key on a user — which is WHY none of them are
+    // named in the policy today — so this check's clean baseline comes from them not matching the
+    // heuristic, not from an allow-list. It keeps working if one of them is later reshaped to key on
+    // a user, which an allow-list would not.
+    const md = read("docs/legal/PRIVACY.md");
+    if (md === null) return { findings: [], examined: 0 };
+    const dir = join(REPO, "models");
+    let files;
+    try {
+      files = readdirSync(dir).filter((f) => f.endsWith(".js"));
+    } catch (e) {
+      return { findings: [], skipped: `could not read models/ (${e.code || e.message}) — model coverage NOT verified` };
+    }
+    const require_ = createRequire(import.meta.url);
+    const out = [];
+    let examined = 0;
+    for (const file of files) {
+      // UserPreference is the check ABOVE's job, at the stricter field level — asserting it here
+      // too would only ever be a weaker, name-substring version of the same assertion, and the
+      // policy is not obliged to spell out an internal Mongoose class name anywhere as long as
+      // its FIELDS are all named, which the other check already verifies. This one exists for
+      // every model UserPreference.js is not.
+      if (file === "UserPreference.js") continue;
+      let schema;
+      try {
+        schema = require_(join(dir, file)).schema;
+      } catch {
+        continue; // not every export here is guaranteed to load standalone outside the app — skip what won't
+      }
+      if (!schema || !schema.paths) continue;
+      const isPerUser = Object.keys(schema.paths)
+        .some((f) => /^(discordId|userId|user_id)$/i.test(f.split(".")[0]));
+      if (!isPerUser) continue;
+      examined++;
+      const name = file.replace(/\.js$/, "");
+      if (!md.toLowerCase().includes(name.toLowerCase())) {
+        out.push({
+          msg: `models/${file} stores a per-user field (discordId/userId) and is not named anywhere ` +
+            "in docs/legal/PRIVACY.md. A new per-user collection needs its own disclosure — extend " +
+            "§2 or Appendix A the way UserPreference already is, and add a change-history row.",
+        });
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
 /* ------------------------- external-anchors ------------------------- */
 check(
   "external-anchors",

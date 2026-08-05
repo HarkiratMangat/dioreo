@@ -232,6 +232,13 @@ its output are the property of their respective owners. Their use here is
 nominative — for identification and reference only — and does not imply
 endorsement, sponsorship, affiliation, or any commercial relationship.
 
+This section acknowledges THIRD-PARTY marks. The Dioreo name and the Dioreo
+logo are the Licensor's OWN marks, not third-party ones — they are Brand
+Assets under LICENSE §1.5, unregistered and asserted under common law rather
+than by registration. They are not listed below for that reason: this is a
+list of what belongs to others, not a claim about what belongs to the
+Licensor.
+
   Call of Duty(R), Call of Duty(R): Mobile, Activision(R)
       Trademarks of Activision Publishing, Inc.
       Call of Duty: Mobile is developed by TiMi Studio Group (a Tencent
@@ -254,7 +261,7 @@ endorsement, sponsorship, affiliation, or any commercial relationship.
   Claude(TM), Anthropic(R)
                          Anthropic PBC
 
-  >>> DIOR'S BUILDS IS AN UNOFFICIAL, NON-COMMERCIAL FAN PROJECT. IT IS NOT
+  >>> DIOREO IS AN UNOFFICIAL, NON-COMMERCIAL FAN PROJECT. IT IS NOT
   >>> DEVELOPED, PUBLISHED, LICENSED, ENDORSED, SPONSORED BY, OR AFFILIATED
   >>> WITH ACTIVISION PUBLISHING, INC., TiMi STUDIO GROUP, TENCENT, GARENA,
   >>> VNG GAMES, DISCORD INC., OR ANY OF THEIR AFFILIATES.
@@ -344,6 +351,16 @@ This disclosure is made deliberately, for three reasons.
      image-to-text extraction in the /autobuild command, which is restricted to
      the administrator's own Discord account and never receives end-user data,
      messages, or images. See PRIVACY.md §5.1.
+
+6.4  THE LOGO. The Dioreo logo (the mascot-and-wordmark mark displayed in the
+     site header and app icon, `public/assets/dioreo-logo.webp`) was produced
+     the same way as the rest of this disclosure describes: AI image
+     generation (Gemini) was directed and prompted by the human author, who
+     then selected, cropped, composited, and finished the published result.
+     The same §6.2 analysis applies to it — selecting among generated
+     candidates, arranging the composition, and finishing the published file
+     are the human author's creative contributions, and it is a Brand Asset
+     under LICENSE §1.5 on the same footing as the Dioreo name itself.
 
 LICENSE §4.7 separately prohibits YOU from using this project, its data, or its
 output to train or otherwise feed any AI or machine-learning system. That
