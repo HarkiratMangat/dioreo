@@ -2385,6 +2385,18 @@ a.dh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   backdrop-filter:blur(12px) saturate(1.25);
   opacity:0;transform:translateY(14px) scale(.88);pointer-events:none;
   transition:opacity .34s ease,transform .46s cubic-bezier(.22,.9,.24,1),border-color .3s ease}
+/* ⚠️ --lift IS PINNED TO 0 BELOW 760px, ON PURPOSE — Harkirat's call
+   2026-08-05 09:01 EDT, after the footer redesign (side-by-side disclaimer +
+   sig, no more full-width stacked lines) freed up enough room that the
+   button riding up to clear the footer is no longer solving a real overlap;
+   it just makes the button drift on mobile instead of sitting still where a
+   thumb expects it. !important is required here: the script still WRITES
+   --lift as an inline style every frame (see the two writers this rule's own
+   comment above names), and a plain override loses to that inline value —
+   only an !important stylesheet rule beats it. The script itself is
+   untouched; it can keep computing a nonzero value; this simply stops it
+   from being read on a narrow viewport. */
+@media (max-width:760px){ .gotop{--lift:0px!important} }
 /* No transition on the parked position: --lift tracks scroll, so easing it would
    make the button lag the footer it is supposed to stay clear of. */
 .gotop.on{opacity:1;transform:translateY(calc(var(--lift) * -1));pointer-events:auto;
