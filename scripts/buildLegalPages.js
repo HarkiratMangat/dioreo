@@ -1388,7 +1388,7 @@ const wordmark = (href, cur) => {
     // landing hero has the room and gets the mascot alone instead of the
     // combo lockup, per Harkirat's own asset choice.
     const [src, w, h] = href
-        ? ['../assets/dioreo-wordmark.webp', 900, 421]
+        ? ['../assets/dioreo-wordmark.webp', 600, 279]
         : ['../assets/dioreo-mascot.webp', 600, 525];
     const body = `<span class="mk-s">
       <img class="wm${href ? '' : ' wm-hero'}" src="${src}" width="${w}" height="${h}" alt="Dioreo">
