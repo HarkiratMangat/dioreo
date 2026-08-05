@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.55.1 — August 5, 2026
+- Housekeeping only — nothing about the bot or the site changed.
+
 ## v2.55.0 — August 5, 2026
 - **The homepage types out commands now.** The `/` under the headline cycles through real commands
   you can actually use — `/draws`, `/patch notes`, `/ar weapon AK117`, `/calendar page Events` and

@@ -181,7 +181,41 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.55.0 — 2026-08-05 18:51 EDT (#80) — A homepage that types, and a button an ad blocker had been hiding
+## v2.55.1 — 2026-08-05 19:09 EDT (#81) — A P1 that had been fixed for a day, and a guard that blocks the cleanup it asks for
+
+Records-only. Both corrections were found while closing out v2.55.0, which is the point worth
+recording: neither came from reading the list.
+
+**The `[P1 · XS]` saying every GitHub link on the live site 404s until the repo is renamed had already
+been fixed.** Harkirat ran the rename; nobody closed the item. So the deferred list has been asserting
+the live site is broken while it works — the actively-misleading kind of stale, worse than an item
+that is merely old. Verified rather than assumed before closing: `gh api repos/HarkiratMangat/dioreo`
+returns that `full_name`, the old path still resolves through GitHub's redirect, and `REPO_URL` in the
+generator points at the name that now exists. Moved to `docs/archive/resolved-list.md` with its
+original wording plus the outcome, per the conservation rule.
+
+**It stayed open because of a detail with no functional consequence.** The local clone's `origin`
+still read `.../diors-builds.git`. Harmless — GitHub redirects, every push in this session worked —
+but it printed the old name on every push, which is exactly what made the item look current. Remote
+URL updated in the same pass. The repo *folder* deliberately stays as it is; the memory-store slug
+derives from that path.
+
+**Filed against tech-debt: `main-push-guard.sh` denies a branch DELETION.** Standing on `main`,
+`git push origin --delete <branch>` is refused with "this would push commits directly to main". It
+does not: a `--delete` pushes no commits and cannot touch `main`. The matcher stops at `git push` plus
+a remote. It fires on precisely the cleanup the chore checklist mandates after every merge — "a merged
+branch must never outlive its PR" — so it recurs every release, and it was hit during this one.
+
+Left unfixed deliberately, with the reason written into the item: every script in `.claude/hooks/`
+must carry a `<name>.test.sh`, so the fix is a matcher change **plus** a negative case in
+`main-push-guard.test.sh` proving a `--delete` is allowed while a real commit push is still denied.
+The note also says what not to do — broaden the matcher until it stops firing, which is how a guard
+becomes decorative. Workaround meanwhile, and arguably clearer about intent anyway:
+`gh api -X DELETE repos/HarkiratMangat/dioreo/git/refs/heads/<branch>`.
+
+---
+
+## v2.55.0 — 2026-08-05 18:51 EDT (#80 · `66f5c4c`) — A homepage that types, and a button an ad blocker had been hiding
 
 The static `/` sitting under the hero lede — placed there last release and deliberately left inert —
 now types a real slash command, holds it, backspaces to `/` and moves on. It never erases past the

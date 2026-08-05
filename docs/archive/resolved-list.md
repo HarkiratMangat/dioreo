@@ -25,6 +25,38 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🔗 Every GitHub link on the live site was a 404 until the repo was renamed to `dioreo` — CLOSED
+  2026-08-05 19:07 EDT, verified rather than assumed.** Filed 2026-08-04 16:23 EDT as
+  `[P1 · XS · Harkirat action, not a build]`, shipped-broken in v2.52.0 with Harkirat's prior
+  go-ahead for the rename itself.
+
+  Original wording, kept: the v2.52.0 rename changed the repo URL everywhere it appears —
+  `package.json`'s three URL fields, `LICENSE` §17, `NOTICE` §8, `CONTRIBUTING.md`'s issue link and
+  its `git clone` snippet, and `REPO_URL` in the generator, which is what the **Source** button in
+  every page header points at. They all read `github.com/HarkiratMangat/dioreo` while the repository
+  was still called `Diors-Builds`, so each one 404'd. It was a deliberate ordering choice rather than
+  an oversight — GitHub 301-redirects the old path after a rename, so either order ends up correct
+  and only this one has a window.
+
+  The fix as originally written, kept verbatim because the rule here is never-delete-always-move —
+  it was Harkirat's to run, being outward-facing, so it was not run unasked:
+  ```
+  gh repo rename dioreo --repo HarkiratMangat/Diors-Builds
+  ```
+  followed by `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local
+  clone.
+
+  **Outcome: Harkirat ran the rename at some point before 2026-08-05.** Confirmed during the v2.55.0
+  release rather than taken on trust — `gh api repos/HarkiratMangat/dioreo` returns `full_name:
+  HarkiratMangat/dioreo`, the old path still resolves through GitHub's redirect, and `REPO_URL` in
+  the generator points at the name that now exists. So the window closed and the Source button works.
+
+  ⚠️ **It was found stale only because a push printed the old name.** The local clone's `origin` was
+  still `…/diors-builds.git` (harmless, GitHub redirects), which is what made the item *look* live
+  when it wasn't. Remote URL updated to `…/dioreo.git` in the same pass. The folder itself is
+  deliberately NOT renamed — the memory-store slug derives from that path; see
+  `project_rename_to_dioreo`.
+
 - **🌿 `fix/mobile-site-polish` sat finished, pushed and unmerged, blocked on a version decision —
   RELEASED 2026-08-04 16:23 EDT as v2.52.0.** Filed as `[P1 · S]` ⛓️ blocked at 13:42 EDT the same
   day; closed when Harkirat said "commit, push, pr, and merge".
