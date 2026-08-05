@@ -149,11 +149,21 @@ const makeFixture = () => {
     "models/UserPreference.js",
     "module.exports = { schema: { paths: { discordId: {}, timezone: {} } } };\n"
   );
+  // A SECOND per-user model, disclosed, so privacy-model-coverage examines something on the plain
+  // baseline instead of only ever seeing the one file it deliberately excludes (UserPreference.js —
+  // that's privacy-inventory's job). Without this its baseline pass is vacuous: 0 items examined
+  // proves nothing, which is exactly the failure mode "scripts-documented" exists to catch elsewhere.
+  write(
+    root,
+    "models/GuildSettings.js",
+    "module.exports = { schema: { paths: { discordId: {}, prefix: {} } } };\n"
+  );
   write(
     root,
     "docs/legal/PRIVACY.md",
     "# Privacy\n\n## Appendix A — Complete data inventory\n\n" +
-      "- `discordId` — the user id\n- `timezone`\n\n**That's the whole list.**\n"
+      "- `discordId` — the user id\n- `timezone`\n\n**That's the whole list.**\n\n" +
+      "GuildSettings stores a server's command prefix.\n"
   );
   write(
     root,
@@ -660,6 +670,17 @@ proves("a stored field missing from the privacy policy's inventory", "privacy-in
   const p = join(root, "docs/legal/PRIVACY.md");
   write(root, "docs/legal/PRIVACY.md",
     readFileSync(p, "utf8").replace(/^- `discordId`.*$/m, "- (removed)"));
+});
+
+proves("a new per-user model with no privacy-policy mention", "privacy-model-coverage", (root) => {
+  // A brand-new collection, keyed on discordId the same way UserPreference is, added without ever
+  // updating the policy — the exact drift this check exists to catch on a model the other one
+  // (privacy-inventory) never looks at, because it only ever reads UserPreference.js by name.
+  write(
+    root,
+    "models/GuildMember.js",
+    "module.exports = { schema: { paths: { discordId: {}, notes: {} } } };\n"
+  );
 });
 
 // ---- the evidence ledger: a pass you cannot audit is not a pass -------------------------------
