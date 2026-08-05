@@ -2291,7 +2291,7 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
    ("a labelled pill", COMPONENT_CSS below), and reusing it here made this text
    inherit that pill's border/background by accident. Never reuse .cpy for
    anything that is not that button. */
-.sig-cr{display:block;margin-top:.2rem;opacity:.6}
+.sig-cr{display:block;margin-top:.4rem;opacity:.6}
 /* ⚠️ WITH NO NOTICE ABOVE IT, THE SIGN-OFF MOVES UP A ROW. On the four legal pages
    the notice is part of the document, so the footer's row 1 is empty — leaving the
    sign-off in row 2 dropped it a whole line below the link row it should sit level
@@ -2329,7 +2329,13 @@ button.lab{-webkit-appearance:none;appearance:none;background:none;border:0;
   .endnav{order:2;justify-content:flex-start}
   .sig{order:3;margin:0}
 }
-.sig b,.sig .sig-a{color:var(--ink2);font-weight:600}
+.sig b{color:var(--ink2);font-weight:600}
+/* The name itself carries the page's own accent, not the neutral ink-family
+   colour every other bold word in the sig line gets — Harkirat's call
+   2026-08-05 08:44 EDT. --accent-t is the site's text-safe accent token
+   (already re-mixed for contrast in both themes), so this follows whichever
+   accent the current page is on automatically. */
+.sig .sig-a{color:var(--accent-t);font-weight:600}
 /* The sign-off's name is a link to the controller's Discord profile. Underlined on
    hover only: a permanent underline in a 0.68rem mono line reads as clutter, and
    the name is already the only emphasised word in it. */
