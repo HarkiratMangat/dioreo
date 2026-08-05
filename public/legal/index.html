@@ -1129,9 +1129,12 @@ h1 em{font-style:normal;color:var(--accent-t)}
    children's own top margins move up to this wrapper. */
 
 
-.lfoot{display:flex;justify-content:space-between;align-items:flex-end;
-  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}
-.sig.lsig{margin:0;flex:0 0 auto}
+.lfoot{display:flex;justify-content:space-between;align-items:flex-start;
+  flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}/* Right-aligned, not left — it sits on the RIGHT side of the row, and
+   left-aligned text there just trails off into the same empty space .lfoot
+   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT. */
+
+.sig.lsig{margin:0;flex:0 0 auto;text-align:right}
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;

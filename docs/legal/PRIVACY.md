@@ -5,7 +5,7 @@
 **Applies to:** the Dioreo Discord application (the "Bot") and this
 documentation website (the "Site")
 
----
+
 
 ## 0. The short version
 
@@ -26,7 +26,7 @@ You can have everything deleted by emailing **harkirat117@gmail.com** — see §
 
 *This summary is for convenience. The sections below are the actual policy.*
 
----
+
 
 ## 1. Who is responsible for your data
 
@@ -62,7 +62,7 @@ If that assessment ever stops being accurate, we will appoint a representative
 and update this policy. EU and UK users can reach us directly at the address
 above, and we answer.
 
----
+
 
 ## 2. What we collect
 
@@ -213,7 +213,7 @@ never sent anywhere.** We mention it because a colour-scheme preference is one o
 the signals that *can* be used to help fingerprint a browser when it is collected
 and transmitted, and we would rather state plainly that this one is not.
 
----
+
 
 ## 3. What we do NOT collect
 
@@ -234,7 +234,7 @@ and transmitted, and we would rather state plainly that this one is not.
 We do **no** profiling, no behavioural advertising, and **no automated
 decision-making producing legal or similarly significant effects** (GDPR Art. 22).
 
----
+
 
 ## 4. Why we process it, and our legal basis
 
@@ -257,7 +257,7 @@ can withdraw consent at any time (§9).
 > and non-commercial, so PIPEDA arguably doesn't bind us at all. **We comply with
 > it regardless**, and don't rely on that argument to hold anything back.
 
----
+
 
 ## 5. Who your data is shared with
 
@@ -350,7 +350,7 @@ to tell you about such a request, we will.
 If the Bot were ever transferred to another operator, your data could transfer
 with it. We would give notice first, and you could delete your data beforehand.
 
----
+
 
 ## 6. International transfers
 
@@ -371,7 +371,7 @@ in the Google Cloud data processing terms.
 Given the data involved is a user ID and colour preferences, the practical risk
 of these transfers is low.
 
----
+
 
 ## 7. How long we keep it
 
@@ -400,7 +400,7 @@ updated when they ship.
 `/settings` currently lets you **change** stored values, which overwrites them. It
 has no reset or delete.
 
----
+
 
 ## 8. Security
 
@@ -435,7 +435,7 @@ If a breach creates a **real risk of significant harm**, we will:
 3. For EEA/UK users, notify the relevant supervisory authority within **72
    hours** where GDPR requires it, and notify you directly where the risk is high.
 
----
+
 
 ## 9. Your rights and how to use them
 
@@ -527,7 +527,7 @@ plus user-set preferences; we collect it directly from your use of the Bot; we
 use it solely to operate the Bot; **we do not and have never sold or shared
 personal information**; and we do not collect sensitive personal information.
 
----
+
 
 ## 10. Children's privacy
 
@@ -546,7 +546,7 @@ Because we never collect names, emails, photographs, or message content, the dat
 we hold about any user — including a young one — is limited to a Discord ID and
 display preferences.
 
----
+
 
 ## 11. Third-party links and content
 
@@ -556,7 +556,7 @@ site or service.** Discord's own handling of your data is governed by
 [Discord's Privacy Policy](https://discord.com/privacy), which is worth reading —
 it covers far more data than we ever see.
 
----
+
 
 ## 12. Changes to this policy
 
@@ -589,7 +589,7 @@ change record you can't reach isn't a change record.
 | 1.1 | 29 July 2026 | Noted the controller's `diorswrld` alias in §1, §9, and §13. **No change to what is collected, why, who receives it, or how long it is kept** — the stored fields in Appendix A are identical to version 1.0. |
 | 1.0 | 28 July 2026 | First published version. |
 
----
+
 
 ## 13. Contact
 
@@ -605,7 +605,7 @@ contact point in a privacy policy must not be able to go dead.
 For privacy requests, use the subject line **"Privacy Request"** and include your
 Discord user ID.
 
----
+
 
 ## Appendix A — Complete data inventory
 
@@ -644,7 +644,7 @@ keeps a `db-theme` entry in your own browser's local storage, holding `light` or
 listed here for completeness only — neither reaches our database or any server,
 and both are described in full in §2.6.
 
----
+
 
 ## Appendix B — Change history
 
@@ -663,7 +663,7 @@ and both are described in full in §2.6.
 Future revisions will be listed here. The complete drafting history is kept in the
 repository's git log.
 
----
+
 
 ## Appendix C — How each claim was verified
 
@@ -694,7 +694,7 @@ backup-retention caveat in §9.4 and the honest limits stated in §5.2, §7.1, a
 You are welcome to check any of this yourself, or to ask us to show you the
 relevant code.
 
----
+
 
 *Dioreo is an unofficial fan project and is not affiliated with Activision
 Publishing, Inc., TiMi Studio Group, Tencent, Discord Inc., or with the rights
