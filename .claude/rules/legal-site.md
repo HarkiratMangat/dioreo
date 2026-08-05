@@ -376,7 +376,19 @@ it directly with an empty build command, so nothing has to run on their side.
     BUTTON IF IT IS** (found 2026-08-05 18:35 EDT, on Harkirat's own browser, where the control
     simply was not there). **Fanboy's Annoyance List** carries the *generic* cosmetic rule
     `##[aria-label="Back to top"]` — no domain prefix, so it applies to this site like any other —
-    and uBlock's "Ignore generic cosmetic filters" is off by default. Both generators now say
+    and uBlock's "Ignore generic cosmetic filters" is off by default. **Canonical upstream source:
+    `easylist/easylist` → `fanboy-addon/fanboy_annoyance_general_hide.txt`, line 787** — an
+    823-line file of *generic* hide rules, which is both why it is domain-less and a far better
+    thing to re-check than a 55k-line compiled list. Its neighbour on 788 is
+    `##[data-trackname="page-top"]`, the same trick on a different attribute. Line 960 is
+    `##a[title="Back to top"]` — a third one, which misses us only because this control is a
+    `<button>` carrying `data-tip` rather than an `<a title=...>`.
+    ✅ **The uBO-specific variant was checked too (`fanboy-annoyance_ubo.txt`) and it matters more
+    than it sounds**, because that flavour is the one that may carry *procedural* filters —
+    `:has-text()`, `:matches-attr()` — which match on TEXT or partial attributes and would sail
+    straight past a reworded label. Swept it: **no procedural rule targets anything top- or
+    label-shaped**, so changing the attribute really is sufficient rather than merely evasive. If
+    that ever changes, the durable answer is a visually-hidden text label instead of an attribute. Both generators now say
     `aria-label="Scroll back to top of page"`; the visible `data-tip` still reads "Back to top".
     ⚠️ **The obvious suspect is the class name and the class name is INNOCENT.** Verified against
     the live lists: Fanboy filters `.gotop-btn` and `.gotop-wrapper` but not a bare `gotop`, and
