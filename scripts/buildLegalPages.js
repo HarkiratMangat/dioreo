@@ -7673,14 +7673,21 @@ ${THEME_BOOT}
 ${TOKENS}
 :root{--accent:${BRAND.coral}}
 ${COMPONENT_CSS}
-body{min-height:100vh;display:flex;align-items:center;padding:clamp(2rem,8vh,6rem) clamp(1.2rem,5vw,2rem)}
+/* ⚠️ VERTICAL PADDING TRIMMED, 2026-08-05 09:57 EDT — Harkirat compared a
+   before/after screenshot pair of where the logo sits on first load and
+   asked for it higher, closer to the top of the viewport. Was
+   clamp(2rem,8vh,6rem); the 8vh term is what actually governs on a typical
+   phone height, so that's the term trimmed. */
+body{min-height:100vh;display:flex;align-items:center;padding:clamp(1.4rem,5.5vh,4rem) clamp(1.2rem,5vw,2rem)}
 .wrap{width:100%;max-width:780px;margin:0 auto}
-/* ⚠️ MASCOT +16px, MARGIN TIGHTENED then EASED BACK OUT — 2026-08-05 09:37 EDT
-   tightened this to clamp(1.6rem,6vh,3.4rem) alongside the bigger mascot; by
-   09:49 EDT that read as too close between the logo/button row and the H1
-   below it. Split the difference with the original 2.5-5rem rather than
-   reverting to it outright — "subtle," Harkirat's word, not a full revert. */
-.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2rem,7.5vh,4rem)}
+/* ⚠️ MASCOT +16px, MARGIN TIGHTENED then EASED BACK OUT TWICE — 2026-08-05
+   09:37 EDT tightened this to clamp(1.6rem,6vh,3.4rem) alongside the bigger
+   mascot; 09:49 EDT eased it to clamp(2rem,7.5vh,4rem) as that read too
+   close. 09:58 EDT nudges it again, on purpose this time to COMPENSATE for
+   the body padding trim above it — with the whole hero block sitting higher
+   on the page now, some of that reclaimed space goes back in here rather
+   than leaving it all at the very top. */
+.top{display:flex;align-items:center;gap:.6rem;margin-bottom:clamp(2.3rem,8.5vh,4.4rem)}
 .top .ghb{margin-left:auto}
 /* ⚠️ -.038em, not -.05em, AND THE REASON OUTLIVES THE WORDS IT WAS FOUND ON.
    The headline was "The fine print, in plain sight." until 2026-08-04 14:36 EDT, and
