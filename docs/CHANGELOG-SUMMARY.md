@@ -26,6 +26,17 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.55.0 — August 5, 2026
+- **The homepage types out commands now.** The `/` under the headline cycles through real commands
+  you can actually use — `/draws`, `/patch notes`, `/ar weapon AK117`, `/calendar page Events` and
+  a dozen more — picking a different order and different options every visit.
+- **The command, the option, and what you picked are shown separately**, the same way Discord shows
+  them, so it's clear which part is which rather than reading as one long name.
+- **The back-to-top button was invisible if you use uBlock Origin.** A filter list meant for hiding
+  ads was hiding our button too. Fixed — no change to how it looks or works.
+- **The download button in the mobile section menu no longer cuts text off mid-word** as you scroll
+  past it, and no longer sits flush against the edge of the menu.
+
 ## v2.54.0 — August 5, 2026
 - **The website has a real domain now: dioreo.app.**
 - **Cleaner links.** The Terms, Privacy Policy, License, and Notice pages moved from
