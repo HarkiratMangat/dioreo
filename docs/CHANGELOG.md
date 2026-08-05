@@ -181,7 +181,120 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.54.0 — 2026-08-05 14:53 EDT (#79) — dioreo.app, and a site that no longer lives one folder down from itself
+## v2.55.0 — 2026-08-05 18:51 EDT (#80) — A homepage that types, and a button an ad blocker had been hiding
+
+The static `/` sitting under the hero lede — placed there last release and deliberately left inert —
+now types a real slash command, holds it, backspaces to `/` and moves on. It never erases past the
+slash, so the resting look it replaced is exactly what a reader sees between commands.
+
+**It composes each line rather than holding a list of them**, and that distinction is the feature.
+`SPECS` carries the sixteen public commands; each renders freshly every time it comes up — bare
+about two showings in five, otherwise carrying a randomly chosen option, occasionally two. So `/ar`
+is sometimes just `/ar`, sometimes `/ar weapon AK117`, sometimes with `build 2` on the end. A fixed
+list would have looked identical on every visit, which was the thing to avoid.
+
+**Every command and every option value is real, and each was checked against its own source.** That
+mattered more than expected: `/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and
+`/secondaries` are registered at BOOT in `index.js`'s `handleBotReady()`, from
+`Loadout.distinct('category', { mode: 'MP' })` — so grepping `commands/*.js` for `.setName(` finds
+nine commands and makes the weapon classes look invented. A handoff note asserted exactly that and
+was wrong. The weapon pools are the live `loadouts` collection grouped by category, verbatim, since
+autocomplete answers with the stored `weaponName`. The choice labels are the `name:` half of the
+real `addChoices(...)` calls — Discord renders the name, so `page` / `New Draws`, never `page` /
+`new`. Every `datetime` sample parses under chrono-node, which is the parser `/timestamp` hands them
+to. `/all` is excluded by Harkirat's call; `/manage`, `/alerts` and `/autobuild` because two are
+admin-locked and one is unfinished, and the front door should not send a reader to a refusal.
+
+**The one place a repeat can happen is the cycle seam, and it is invisible to casual reasoning.** A
+shuffled full pass shows every command exactly once, so within a cycle two showings are the whole
+list apart and the design looks safe. But the LAST command of one cycle can be the FIRST of the
+next — and shuffling harder never fixes that, because each pass is individually fine. `spaced()`
+rejects an order whose opening repeats the previous ending too soon, guaranteeing at least three
+other commands between showings.
+
+**The parts are drawn the way Discord draws them**, checked against a screenshot of a real used
+command rather than from memory — an earlier guess at the model was wrong. The command is bold
+accent text; the option name and its value each sit in their own box forming one continuous pill,
+with no colon, since two adjacent beds already separate the pair. The beds are different materials
+on purpose: neutral grey for the label, coral tint for the value.
+
+**The boxes are `inline-block`, and that is what contains descenders — not padding.** An inline box
+paints its background over the font's *content area*, derived from the face's ascent/descent metrics
+and shorter than the glyphs actually drawn, so the legs of p, g and y hung outside the chip at any
+horizontal padding. Worth recording how that was diagnosed: a canvas `TextMetrics` check reported
+1.7px of clearance and therefore no clipping, and a screenshot showed the legs plainly outside. The
+font the canvas measured was not the box the browser painted. When a measurement and a rasterisation
+disagree, believe the pixels — the same lesson the nav indicator's dilation taught, one level
+sneakier, because a measurement carries the authority of having been checked.
+
+**A width cap keeps `nowrap` safe, and it needs two numbers rather than one.** Each chip carries its
+own padding, so a two-option line spends four lots of it — roughly 1.6em more than a one-option line
+of the same length. A single flat cap has to be set for the widest shape and then starves the narrow
+one: at a flat 30 characters, `/calendar page Playlists & Modes` and *every* `/draw prices` option
+were silently filtered out despite painting 260px into a 281px box. That is the failure mode worth
+remembering — the cap does not error, it just quietly stops offering things.
+
+**Reduced motion is handled in JS on purpose.** `COMPONENT_CSS`'s global override kills CSS
+transitions and keyframes, and this effect is neither, so a reduced-motion reader would have got the
+full typewriter unless the module opted out itself. It goes still on one whole command rather than a
+bare slash, and is bound live so toggling the OS setting takes effect. `#cmd-line` keeps
+`aria-hidden`, now as a decision rather than an inherited default: it duplicates nothing the lede
+already says, its text is rewritten every ~50ms so a reader landing on it would get a partial
+string, and `aria-live` would be worse — a region announcing every keystroke.
+
+**The driver is one `requestAnimationFrame` loop on a time-based clock.** Each frame asks how many
+characters should be visible by now rather than assuming the previous timer fired on schedule, so
+the cadence holds under load instead of drifting later on every character. `paint()` writes only the
+segment whose visible length changed — 1.93 DOM writes per character, against one per segment
+before. That also let the `visibilitychange` handler go, which is a fix and not a tidy-up:
+`setTimeout` keeps firing in a hidden tab throttled to about one tick a second, so the old code had
+to detect the return and restart the whole command, where rAF simply stops and resumes where it was.
+
+### The back-to-top button was invisible under uBlock Origin
+
+Not a regression — it had been happening on Harkirat's browser and looked like the button "not
+working". **Fanboy's Annoyance List carries the GENERIC cosmetic rule `##[aria-label="Back to top"]`**
+— no domain prefix, so it applies to this site like any other — and uBlock's *"Ignore generic
+cosmetic filters"* is off by default. Our button carried exactly that label and was `display:none`.
+Upstream source: `easylist/easylist` → `fanboy-addon/fanboy_annoyance_general_hide.txt` line 787.
+
+**The obvious suspect was innocent, and this is the part to remember.** The instinct is to rename the
+class, and the class is fine: the list filters `.gotop-btn` and `.gotop-wrapper` but not a bare
+`gotop`, and its only `##.totop` rule is domain-scoped to unrelated sites. Renaming would have been
+pure wasted work. Both generators now use `aria-label="Scroll back to top of page"`; the visible
+tooltip still reads "Back to top", since nothing filters `data-tip`.
+
+Before settling on that wording it was verified to be a real escape rather than a guess: that is the
+*only* generic `aria-label` rule mentioning "top", and the list contains **no** substring
+(`[aria-label*=]`) aria-label rules at all. The **uBO-specific variant** was checked too, which
+matters more than it sounds — that flavour is the one that can carry *procedural* filters
+(`:has-text()`, `:matches-attr()`) matching on text content or partial attributes, and such a rule
+would have sailed straight past a reworded label. None target anything top- or label-shaped. Then
+all seven `aria-label` strings the two generators emit were audited across every annoyance list
+enabled — Fanboy's, EasyList Notifications, EasyList Social Widgets, EasyList/uBO Cookie Notices,
+third-party Notifications, AdGuard Annoyances and AdGuard Privacy. One collision in total, the one
+above. Fixing only the reported control would have left the same class of bug in six other places.
+
+### Also in this release
+
+The mobile section-menu download button is sticky again, but the card wrapping it (`.mp-dl`) now
+spans a full row height above the button so text fades in before it is covered instead of cutting
+off mid-word, and carries its own solid bottom padding so the button never sits flush against the
+dropdown's edge. The homepage link-preview description was reworded, and "Type / and go." was split
+out of the intro into the standalone line this release then animated.
+
+**Verification.** 15 build gates, `docs:audit`, `npm test` (18/18) and two purpose-built generator
+harnesses. 300 sampled lines off the *emitted* script covered all sixteen commands with all twelve
+option-bearing ones showing options, a minimum same-command gap of 3, and nothing over the cap.
+Width was re-measured at 320px after every padding change — worst case 274px into a 281px box, zero
+document overflow. The rAF loop needed a real browser to verify: the Browser pane reports
+`visibilityState: "hidden"` even while screenshotting, so rAF never ticks there and the line sat at
+`/` — a harness artefact, but not one to assume away, so it was driven through headless Chrome over
+CDP instead (73 distinct frames, paragraph height steady at 28.05px).
+
+---
+
+## v2.54.0 — 2026-08-05 14:53 EDT (#79 · `88f969e`) — dioreo.app, and a site that no longer lives one folder down from itself
 
 Harkirat bought `dioreo.app` and linked it to the site's existing Cloudflare Pages project — the
 first time the domain named in the branding actually matches the URL. That exposed a structural

@@ -116,6 +116,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-04 16:24 EDT — A rename that exposed a bug arithmetic had been hiding (v2.52.0)
 - 2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)
 - 2026-08-05 14:53 EDT — The asymmetry a symmetric-looking refactor was hiding (v2.54.0)
+- 2026-08-05 18:51 EDT — A measurement that measured the wrong thing, and a filter list hiding our own button (v2.55.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4400,6 +4401,72 @@ The gate suite was built for a different kind of change and covered this one com
 because it verifies OUTCOMES (does every link resolve against the real tree) rather than the
 specific shape of today's directories. That is what a good verification suite buys: the next
 structural change doesn't need its own bespoke checks, it just needs to pass the ones already there.
+
+## 2026-08-05 18:51 EDT — A measurement that measured the wrong thing, and a filter list hiding our own button (v2.55.0)
+
+The homepage's inert `/` became an animated command line. Most of the session was iteration on look,
+which is normal; what is worth writing down are the four places where something *said it was fine*
+and wasn't.
+
+**A handoff told me two commands were fake. They weren't.** The spec I was working from said `/ar`
+and `/smg` were not real, on the evidence that grepping `commands/*.js` for `.setName(` doesn't find
+them. Harkirat said flatly that they *are* real — and he was right. They are registered at BOOT, in
+`index.js`'s `handleBotReady()`, from `Loadout.distinct('category', { mode: 'MP' })`. The grep ran, it
+returned honestly, and it could not see them, because they exist in no source file's registration
+block. **"I searched and found nothing" is a statement about the search.** The tell was available:
+`models/Loadout.js` has a comment saying "/dmz isn't split into per-category commands the way MP is",
+which is a direct statement that MP *is*.
+
+**Two colour attempts were rejected, and the second failure explained the first.** The option label
+started as neutral grey — rejected as thin and washed out on a warm line. Then a dimmed accent,
+`--accent-t` mixed 85% toward `--desk`, which cleared AA at 5.56:1 and was rejected as *muddy*. The
+reason is a property of the mix, not of the number: **moving a saturated hue toward a near-black
+ground desaturates it**, so every "dimmed coral" lands in brown. Building a five-variant lab and
+screenshotting both themes showed the same trap sits under the site's own light-theme `--accent-t`
+formula, which turns Neon Amber into `#67432D` and Patch Gold into olive. The resolution wasn't a
+better colour: Harkirat sent a screenshot of what Discord *actually* renders, and the answer was that
+weight and a chip carry the structure, not hue. **I had guessed at Discord's model instead of looking
+at it.**
+
+**A measurement reported "no clipping" while the screenshot showed clipping.** Descenders hung below
+the option chips. I did the right-looking thing and measured — canvas `TextMetrics
+.actualBoundingBoxDescent` against the span's baseline — and got 1.7px of *clearance*. The screenshot
+showed the legs plainly outside the box. The font string I built from `getComputedStyle` didn't
+resolve to the face the browser was painting, so I measured a different font's metrics very
+precisely. This is the nav-indicator lesson one level sneakier: there, I derived a constant instead of
+measuring; here I *did* measure, and the measurement carried the authority of having been checked. The
+real fix was structural anyway — an inline box paints its background over the font's content area,
+which is shorter than the glyph range; `inline-block` makes it cover the content box.
+
+**A width cap silently stopped offering things.** Chips carry padding, so a two-option line spends
+four lots of it — a flat character cap has to be set for the widest shape and then starves the narrow
+one. At a flat 30, `/calendar page Playlists & Modes` and *every* `/draw prices` option vanished from
+the rotation while painting 260px into a 281px box. Nothing errored. It took a per-command coverage
+count in the test harness to see it, and the fix was two caps rather than one. **A constraint that
+silently narrows output is worse than one that fails**, because there is nothing to notice.
+
+**The back-to-top button was invisible, and the obvious suspect was innocent.** Harkirat's browser
+simply didn't show it. Cause: Fanboy's Annoyance List carries the *generic* cosmetic rule
+`##[aria-label="Back to top"]` — no domain prefix, so it applies to us — and uBlock's "ignore generic
+cosmetic filters" is off by default. My instinct was to rename the `.gotop` class, which would have
+been **pure wasted work**: the list filters `.gotop-btn` and `.gotop-wrapper` but not a bare `gotop`.
+One `curl | rg` over the actual list beat the hypothesis outright. Then, because fixing the reported
+control would have left the same bug in six siblings, all seven `aria-label`s the site emits were
+audited across every list enabled — including the **uBO-specific variant**, which is the one that can
+carry procedural `:has-text()` rules that would defeat a merely-reworded label. None do, which is what
+makes changing the attribute a fix rather than an evasion.
+
+**A verification method broke, and the break was invisible.** The rAF rewrite couldn't be verified in
+the Browser pane at all: it reports `visibilityState: "hidden"` even while screenshotting, so rAF
+never ticks and the line sat at `/` — which looks exactly like a broken animation. Under the old
+`setTimeout` it had animated there (throttled), so the *change in tooling behaviour* was a
+side-effect of the code change. Driving headless Chrome over CDP settled it: visible, 73 distinct
+frames. Worth remembering that **a harness can stop being able to see the thing you just changed.**
+
+Closing note on process: Harkirat believed a padding tweak had fixed the line-jump bug. Measuring
+bare-vs-decorated paragraph heights showed 19.5px → 27.88px — the 8.38px jump still entirely there;
+he'd been looking at a build that already contained the real fix. **Someone reporting a fix is not
+evidence of a fix**, and checking was two minutes.
 
 # Part B — Lessons Ledger (thematic)
 

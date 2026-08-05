@@ -102,6 +102,109 @@ it directly with an empty build command, so nothing has to run on their side.
   ⚠️ **Horizontal ruled-paper lines were tried and REMOVED.** A repeating gradient has one interval;
   prose leading is ~1.74rem and headings/lists/code are each something else, so the rules drift out of
   phase within a screen and strike through the text. Unsound, not mistuned. Don't reintroduce them.
+- ⌨️ **`CMD_JS` is the landing page's animated command line** (shipped 2026-08-05 16:49 EDT). A
+  typewriter under the lede that types a real slash command, holds it, backspaces to `/` and moves on.
+  Emitted only by `indexPage()`; it returns after one `getElementById` if `#cmd-line` is absent, the
+  same self-selecting shape `MORPH_JS`'s modules use.
+  - 🚨 **`/ar`, `/smg`, `/lmg`, `/marksman`, `/sniper`, `/shotgun` and `/secondaries` ARE REAL
+    COMMANDS, and `rg '\.setName\(' commands/*.js` WILL TELL YOU THEY ARE NOT.** They are registered
+    at boot in `index.js`'s `handleBotReady()` from `Loadout.distinct('category', { mode: 'MP' })`
+    with `SECONDARIES` merged in, so they exist in the live command list and in no source file's
+    registration block. A handoff wrote them off as invented on exactly that missing-grep-hit
+    evidence and Harkirat caught it. **Absence from `commands/` is not absence from Discord** —
+    check the dynamic registration too. Same trap, different shape, as
+    `feedback_not_checkable_is_usually_unexamined`: the search ran, it just could not see the thing.
+  - ⚠️ **Admin and PoC commands are deliberately excluded** — `/manage`, `/alerts`, `/autobuild`.
+    They are registered and would "work", but two are locked to Harkirat and one is unfinished.
+  - ⚠️ **The reduced-motion check is in JS because the global rule cannot reach this.**
+    `COMPONENT_CSS`'s reduced-motion override kills transitions and keyframes; a `setTimeout`-driven
+    `textContent` swap is neither, so it would have run at full speed for a reader who asked for
+    less. It goes still on one WHOLE command, not the bare `/` — a lone slash reads as a page
+    waiting for something that never arrives. Bound live, so toggling the OS setting takes effect.
+  - ⚠️ **`#cmd-line` KEEPS `aria-hidden="true"` now that it carries real content, and that is a
+    decision.** It duplicates nothing (the lede states what the bot does), its text is rewritten
+    every ~50ms so a reader landing on it gets a partial string, and `aria-live` would be worse
+    still — a region announcing every keystroke. Revisit only if this becomes the only place a
+    command is named.
+  - ⚠️ **Do not write a CSS comment containing braces.** The first build of this failed
+    `hoverGuardAudit` because a comment here spelled out the global reduced-motion rule in full
+    syntax. Describe such rules in prose. The gate is right and the same class of mistake once
+    destroyed eight rules via a comma in a comment.
+  - ⚠️ **It COMPOSES lines, it does not hold a list.** `SPECS` carries the sixteen commands and each
+    renders freshly every time it comes up: bare about two showings in five, otherwise with a
+    randomly picked option and sometimes a second. Option VALUES are real and each was checked
+    against its own source — the weapon pools are the live `loadouts` collection grouped by
+    category, the choice labels are the **`name:` half of the real `addChoices(...)`** (Discord
+    renders the name, never the value, so `page:New Draws` is right and `page:new` would be a
+    string no reader ever sees), and every `datetime:` sample was run through **chrono-node**,
+    which is the parser `/timestamp` actually feeds them to.
+  - ⚠️ **The order is a shuffled full pass, and the SEAM is the only place a repeat can happen.**
+    Every command appears once per cycle, so within a cycle they are the whole list apart — but the
+    last of one cycle can be the first of the next. `spaced()` rejects such an order: an item `d`
+    places from the end of the old one must land at index `4-d` or later in the new one, which
+    leaves **at least three** other commands between showings. Harkirat's ask and his number.
+    Shuffling harder does not fix this, because each pass is individually fine.
+  - ⚠️ **TWO caps keep `white-space:nowrap` safe — `MAXLEN` 32 for a one-option line, `MAXLEN2` 30
+    once a second option lands.** The pool is FILTERED to values that still fit rather than
+    truncated, since a half-written option reads as a bug. **Two caps, not one, because characters
+    are not the whole width**: each chip carries its own padding, so a two-option line spends four
+    lots of it. A single flat cap has to be set for the widest shape and then starves the narrow
+    one — at a flat 30, `/calendar page Playlists & Modes` and **every** `/draw prices` option were
+    silently filtered out despite painting 260px into a 281px box. **That is the failure mode to
+    watch: the cap does not error, it just quietly stops offering things.** Measured at 320px at
+    the font clamp's floor — one pair at 31 chars = 260px, two pairs at 30 chars = 270px, box
+    281px, zero document overflow. Re-measure both shapes if the padding, the gap or the floor
+    moves.
+  - ⚠️ **THE LAYOUT MIRRORS DISCORD'S OWN, checked against a screenshot of a real used command**
+    rather than from memory — an earlier guess at it was wrong. Discord draws the command as bold
+    plain text, then puts the option NAME and the VALUE each in their own box, **one continuous
+    pill with only the outer corners rounded** and **no colon** (two adjacent boxes already
+    separate the pair). `.cmd-c` is the only emphasised token (`--accent-t`, 700); both boxes are
+    regular weight 400. **The beds are different materials on purpose**: the option name is a
+    neutral grey mixed from `--ink` (10%), the value a coral tint mixed from `--accent` (**26%**) —
+    the grey says "label", the tint says "your selection". The grey inverts correctly per theme with
+    no second declaration, since `--ink` is near-white on the dark page and near-black on the light
+    one. Measured text-on-bed: grey 12.04 dark / 11.88 light, accent 9.75 / 12.00. ⚠️ **26%, not
+    11%** — a faint 11% tint was tried and read *darker* than the grey beside it, inverting the
+    point, since the value should be the more present of the two.
+  - ⚠️ **The boxes are `inline-block`, and THAT is what contains descenders — not padding.** An
+    inline box paints its background over the font's **content area**, which comes from the face's
+    ascent/descent metrics and is shorter than the glyphs actually drawn, so the legs of p, g and y
+    hung below the chip at any horizontal padding. An inline-block's background covers its content
+    box, whose height is the line-height, so the whole glyph range is inside it by construction.
+    `vertical-align:baseline` keeps the chips on the command's baseline.
+    ⚠️ **Arithmetic got this wrong and the render got it right.** A canvas `TextMetrics` check
+    reported 1.7px of clearance and therefore no clipping; a screenshot showed the legs plainly
+    outside the box — the font the canvas measured was not the box the browser painted. Same lesson
+    as the nav indicator's dilation: when a model and a rasterisation disagree, believe the pixels.
+  - ⚠️ **`.cmd-o:has(+ .cmd-v:empty)` restores the full radius while the value is still empty.**
+    Splitting a pill means each half must know whether the other is there, and mid-typing the value
+    IS absent — without this the option name sits as a square-edged stub for the whole time it
+    types. Degrades to that square edge for a few hundred ms if `:has()` is unavailable.
+    🚫 **Two rejected attempts, recorded so they are not retried.** (1) `--ink2` at 500 — a neutral
+    grey read thin and washed out on an otherwise warm line. (2) `--accent-t` mixed 85% toward
+    `--desk` — cleared AA at 5.56 / 5.20 but read **muddy**, and the reason is a property of the
+    mix rather than of the number: *moving a saturated hue toward a near-black ground desaturates
+    it*, so every "dimmed" coral lands in brown. **The same trap sits under the site's light-theme
+    `--accent-t` formula** (38% accent + near-black), which turns amber into `#67432D` and gold
+    into olive — so a future second hue here must **hand-tune its light value**, never inherit that
+    formula. Measured alternatives if it ever comes up: amber `#F2994A` dark needs about `#8A4E08`
+    light (5.26:1); the inherited formula's `#A85F0F`/`#B3690F` region fails AA at 3.88 / 3.38.
+    Rendered
+    flat, `/ar weapon:AK117` reads as one long command name and the reader cannot see the
+    structure. The typewriter therefore reveals **per-segment spans**, not a string — anything that
+    flattens it back to `textContent` keeps working and silently loses the meaning.
+    **`.cmd-v:empty` is load-bearing**: an empty span still carries the chip's padding, so without
+    it a bare coloured blob sits on the line the whole time it types. And the chip's contrast is
+    **hand-checked, because `contrastAudit()` cannot see a `color-mix()` surface** — measured
+    13.30:1 light / 12.88:1 dark at 12% and 12.91 / 11.97 at 16%, so 14% is bounded by the pair.
+  - ⚠️ **Two backtick failures in two builds.** Comments inside the `CMD_JS` template literal, and
+    inside `indexPage()`'s CSS, quoted option names with backticks — each terminated the string and
+    failed `node --check` with a SyntaxError pointing at prose. Quote with `"` inside any template
+    literal. Same family as the no-regex rule: what reads as documentation is program text.
+  - Verified in-browser: five loads gave five different opening commands, and a 260-sample run of
+    the emitted script covered all sixteen commands with a minimum same-command gap of exactly 3
+    and nothing over the cap.
 - **Web assets are VENDORED into `public/assets/`, never CDN-linked** (fonts + Motion One). This is a
   privacy obligation, not a preference: the Privacy Policy is served from this same origin, and a
   third-party CDN would disclose every visitor's IP to a party the policy does not name. All three are
@@ -269,6 +372,45 @@ it directly with an empty build command, so nothing has to run on their side.
     `--lift` — is `TOTOP_TRACK_JS` for a template with no scroll loop of its own; `shell()` keeps
     doing it inside the loop it already runs for the scrollspy and the progress bar, so it does
     **not** include that constant. Two hosts, one writer per property, still.
+  - 🚫 **ITS `aria-label` MUST NOT BE THE EXACT STRING "Back to top" — uBLOCK ORIGIN HIDES THE
+    BUTTON IF IT IS** (found 2026-08-05 18:35 EDT, on Harkirat's own browser, where the control
+    simply was not there). **Fanboy's Annoyance List** carries the *generic* cosmetic rule
+    `##[aria-label="Back to top"]` — no domain prefix, so it applies to this site like any other —
+    and uBlock's "Ignore generic cosmetic filters" is off by default. **Canonical upstream source:
+    `easylist/easylist` → `fanboy-addon/fanboy_annoyance_general_hide.txt`, line 787** — an
+    823-line file of *generic* hide rules, which is both why it is domain-less and a far better
+    thing to re-check than a 55k-line compiled list. Its neighbour on 788 is
+    `##[data-trackname="page-top"]`, the same trick on a different attribute. Line 960 is
+    `##a[title="Back to top"]` — a third one, which misses us only because this control is a
+    `<button>` carrying `data-tip` rather than an `<a title=...>`.
+    ✅ **The uBO-specific variant was checked too (`fanboy-annoyance_ubo.txt`) and it matters more
+    than it sounds**, because that flavour is the one that may carry *procedural* filters —
+    `:has-text()`, `:matches-attr()` — which match on TEXT or partial attributes and would sail
+    straight past a reworded label. Swept it: **no procedural rule targets anything top- or
+    label-shaped**, so changing the attribute really is sufficient rather than merely evasive. If
+    that ever changes, the durable answer is a visually-hidden text label instead of an attribute. Both generators now say
+    `aria-label="Scroll back to top of page"`; the visible `data-tip` still reads "Back to top".
+    ⚠️ **The obvious suspect is the class name and the class name is INNOCENT.** Verified against
+    the live lists: Fanboy filters `.gotop-btn` and `.gotop-wrapper` but not a bare `gotop`, and
+    its only `##.totop` rule is domain-scoped to unrelated sites. Renaming the class would have
+    been pure wasted work. **The attribute was the whole of it.**
+    ⚠️ Checked before choosing the replacement, so the new wording is not another guess: that is
+    the *only* generic `aria-label` rule mentioning "top", the list contains **no** substring
+    (`[aria-label*=]`) aria-label rules at all, and nothing filters `data-tip`.
+    ✅ **THE WHOLE SURFACE WAS AUDITED, not just the control that was reported** — fixing only the
+    reported one would have left the same class of bug sitting in six other places. All seven
+    `aria-label` strings the two generators emit (`Back to top` → now `Scroll back to top of
+    page`, `Copy code`, `Install Dioreo on Discord`, `Link to this section`, `Pages`, `Switch
+    between light and dark`) were checked against every annoyance list enabled on Harkirat's
+    uBlock: Fanboy's Annoyance, EasyList Notifications, EasyList Social Widgets, EasyList/uBO
+    Cookie Notices, third-party Notifications, AdGuard Annoyances (65k lines) and AdGuard Privacy
+    (152k). One collision total — the one above. Cookie Notices carries `##.cookieToTop`, which
+    touches nothing here. **Re-run this if a new icon-only control lands**: enumerate with
+    `rg -oI 'aria-label="[^"]+"'` over both generators (note `-I`, since `rg -h` is `--help` and
+    silently prints help text that reads like an empty result).
+    ⚠️ **Generalise the lesson, not the string:** an icon-only control's accessible name is markup
+    a filter list can collide with, and the failure is *silent* — no console error, no layout gap,
+    the element is simply `display:none`. Any new icon-only control deserves the same check.
   - ⚠️ **`prefers-reduced-motion` builds NOTHING liquid.** No cursor layer, no `html.liq`, no
     `.tt-ink` — a reduced-motion reader gets the site exactly as it shipped. That matters more than
     usual here because the cursor sets `cursor:none !important` site-wide; a hidden pointer with
