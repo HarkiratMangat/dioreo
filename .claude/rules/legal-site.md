@@ -148,16 +148,22 @@ it directly with an empty build command, so nothing has to run on their side.
     that still fit rather than truncated — a half-written option reads as a bug. Measured at 320px:
     worst case paints 271px into a 281px box, zero document overflow, at the `.76rem` floor of the
     font clamp. Re-measure if the clamp, the cap or the chip padding moves.
-  - ⚠️ **Three roles, three treatments, ALL IN ONE HUE** — `.cmd-c` the command (full `--accent-t`,
-    700), `.cmd-o` the option name (`--accent-t` mixed **85% toward `--desk`**, 600), `.cmd-v` the
-    chosen value (`--ink`, 600, on a 14% accent chip). **The option name was `--ink2`/500 and must
-    not go back** — a neutral grey read thin and washed out on an otherwise warm line and Harkirat
-    rejected it on sight (2026-08-05 17:50 EDT). Mixing toward `--desk` dims in *both* themes, so
-    one declaration covers both with no light override: dark's accent-t is the raw coral on a
-    near-black ground, light's is already a dark mix on pale paper, and moving toward the ground
-    steps away from the eye either way. **85% is the dimmest step that still clears AA** — measured
-    5.56:1 dark / 5.20:1 light, against 4.86 / **4.41** at 78% where light fails, and 7.30 / 7.40
-    at full accent. Rendered
+  - ⚠️ **WEIGHT carries the hierarchy, not hue — this is Discord's own model** (Harkirat's call,
+    2026-08-05 18:04 EDT, after two hue attempts were rejected by eye). `.cmd-c` the command is the
+    **only** emphasised token (`--accent-t`, 700); `.cmd-o` the option name and `.cmd-v` the value
+    are both **regular weight 400**, so the line stays one coral and only the value's chip breaks
+    it. Full `--accent-t` measures 7.30:1 dark / 7.40:1 light — the strongest either role has had,
+    and WCAG's 4.5:1 for regular-weight text clears easily.
+    🚫 **Two rejected attempts, recorded so they are not retried.** (1) `--ink2` at 500 — a neutral
+    grey read thin and washed out on an otherwise warm line. (2) `--accent-t` mixed 85% toward
+    `--desk` — cleared AA at 5.56 / 5.20 but read **muddy**, and the reason is a property of the
+    mix rather than of the number: *moving a saturated hue toward a near-black ground desaturates
+    it*, so every "dimmed" coral lands in brown. **The same trap sits under the site's light-theme
+    `--accent-t` formula** (38% accent + near-black), which turns amber into `#67432D` and gold
+    into olive — so a future second hue here must **hand-tune its light value**, never inherit that
+    formula. Measured alternatives if it ever comes up: amber `#F2994A` dark needs about `#8A4E08`
+    light (5.26:1); the inherited formula's `#A85F0F`/`#B3690F` region fails AA at 3.88 / 3.38.
+    Rendered
     flat, `/ar weapon:AK117` reads as one long command name and the reader cannot see the
     structure. The typewriter therefore reveals **per-segment spans**, not a string — anything that
     flattens it back to `textContent` keeps working and silently loses the meaning.
