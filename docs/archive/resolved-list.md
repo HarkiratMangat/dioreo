@@ -38,6 +38,14 @@ active file a given dead item came out of.
   an oversight — GitHub 301-redirects the old path after a rename, so either order ends up correct
   and only this one has a window.
 
+  The fix as originally written, kept verbatim because the rule here is never-delete-always-move —
+  it was Harkirat's to run, being outward-facing, so it was not run unasked:
+  ```
+  gh repo rename dioreo --repo HarkiratMangat/Diors-Builds
+  ```
+  followed by `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local
+  clone.
+
   **Outcome: Harkirat ran the rename at some point before 2026-08-05.** Confirmed during the v2.55.0
   release rather than taken on trust — `gh api repos/HarkiratMangat/dioreo` returns `full_name:
   HarkiratMangat/dioreo`, the old path still resolves through GitHub's redirect, and `REPO_URL` in
