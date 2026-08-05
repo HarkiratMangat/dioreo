@@ -4835,10 +4835,19 @@ ${SWITCHER_CSS}
 
 /* ── prose ───────────────────────────────────────────────────────── */
 .doc p,.doc li{font-family:var(--serif);font-size:1.055rem;line-height:1.78;color:var(--ink2)}
-.doc p{margin:0 0 1.15rem;max-width:72ch}
+/* ⚠️ WIDENED 72ch -> 88ch, and every other doc-body max-width shifted by the
+   same +16ch, 2026-08-05 08:58 EDT. 72ch is a reasonable READING line length
+   in isolation, but .doc's actual column (the page minus the 200px rail
+   minus its own padding) runs well past 100ch on a normal laptop width, so
+   the cap was leaving a wide dead margin down the right side of the card
+   instead of the text using space the layout already allocated for it. Kept
+   every doc-body type at the SAME relative gap it had before (70/72/74 ->
+   86/88/90) rather than picking one flat number, so paragraphs, lists,
+   callouts and the shout blocks still line up with each other. */
+.doc p{margin:0 0 1.15rem;max-width:88ch}
 .doc strong{color:var(--ink);font-weight:600}
 .doc em{font-style:italic}
-.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:72ch}
+.doc ul,.doc ol{margin:0 0 1.25rem;padding-left:1.35rem;max-width:88ch}
 .doc li{margin:.5rem 0}
 .doc li::marker{color:var(--ink3);font-family:var(--mono);font-size:.85em}
 .doc a{color:var(--ink);text-decoration:underline;text-underline-offset:.19em;
@@ -4864,7 +4873,7 @@ ${SWITCHER_CSS}
 .authoritative{font-family:var(--mono)!important;font-size:.72rem!important;line-height:1.7;
   letter-spacing:.03em;color:var(--ink3)!important;border:1px solid var(--rule2);
   border-left:3px solid var(--accent);padding:.75rem 1rem;margin:0 0 2.4rem!important;
-  max-width:72ch}
+  max-width:88ch}
 .authoritative{display:flex;align-items:center;gap:1rem 1.4rem;flex-wrap:wrap;
   justify-content:space-between}
 .authoritative p{margin:0;flex:1 1 34ch}
@@ -4911,10 +4920,10 @@ h3.clause .ht:empty{display:none}
   h3.clause:has(.ht:empty){margin-bottom:.15rem}
 }
 p.sub{font-family:var(--serif);font-size:1.02rem;line-height:1.76;color:var(--ink2);
-  margin:0 0 .95rem;max-width:70ch}
+  margin:0 0 .95rem;max-width:86ch}
 p.sub.aside{border-left:2px solid var(--rule2);padding-left:1rem;color:var(--ink2);
   font-size:.97rem;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent 60%)}
-ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:70ch}
+ul.lettered{list-style:none;margin:0 0 1.05rem;padding-left:1.1rem;max-width:86ch}
 ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color:var(--ink2);
   margin:.34rem 0}
 /* Legal convention treats the capitals in a warranty disclaimer AS the emphasis,
@@ -4922,7 +4931,7 @@ ul.lettered li{font-family:var(--serif);font-size:1.01rem;line-height:1.72;color
    reading size is genuinely hard going, hence the smaller, looser, mono setting. */
 p.shout{font-family:var(--mono);font-size:.8rem;line-height:1.85;letter-spacing:.015em;
   color:var(--ink2);background:var(--raised);border:1px solid var(--rule);
-  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:74ch}
+  padding:1rem 1.15rem;margin:0 0 1.1rem;max-width:90ch}
 /* ⚠️ pre-wrap, NOT pre — reported 2026-08-05 08:34 EDT against NOTICE §4A.1's
    quoted emoji.gg licence text: white-space:pre never wraps, so a QUOTED
    PARAGRAPH landed here (renderIndented() sends anything indented deeper
@@ -4946,7 +4955,7 @@ pre.aligned a{color:var(--ink)}
 
 /* ── callouts ────────────────────────────────────────────────────── */
 .callout{margin:1.7rem 0;padding:1.15rem 1.35rem;background:var(--raised);
-  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:72ch}
+  border:1px solid var(--rule);border-left:3px solid var(--accent);max-width:88ch}
 .callout>:last-child{margin-bottom:0}
 .callout p{max-width:none}
 .callout.warn{border-left-color:var(--gold);
