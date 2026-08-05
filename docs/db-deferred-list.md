@@ -62,29 +62,6 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-- `[P1 · XS · Harkirat action, not a build]` **Every GitHub link on the live site is a 404 until the
-  repo is renamed to `dioreo`.** *Filed 2026-08-04 16:23 EDT, shipped-broken in v2.52.0 with Harkirat's
-  prior go-ahead for the rename itself.*
-
-  The v2.52.0 rename changed the repo URL everywhere it appears — `package.json`'s three URL fields,
-  `LICENSE` §17, `NOTICE` §8, `CONTRIBUTING.md`'s issue link and its `git clone` snippet, and
-  `REPO_URL` in the generator, which is what the **Source** button in every page header points at.
-  They all now read `github.com/HarkiratMangat/dioreo`, and **the repository is still called
-  `Diors-Builds`**, so each one 404s.
-
-  ⚠️ **This was a deliberate ordering choice, not an oversight.** Harkirat selected the GitHub rename
-  when asked which identifiers should move, and the alternative — landing the release with the OLD
-  URLs and re-editing seven files afterwards — is strictly worse. GitHub 301-redirects the old path
-  after a rename, so doing it in either order ends up correct; only this order has a window.
-
-  **Fix — one command, Harkirat's to run** (it is outward-facing, so it was not run unasked):
-  ```
-  gh repo rename dioreo --repo HarkiratMangat/Diors-Builds
-  ```
-  Then `git remote set-url origin https://github.com/HarkiratMangat/dioreo.git` in any local clone.
-  ⚠️ **Do NOT rename the local folder** — the memory-store slug derives from that path. See
-  `project_rename_to_dioreo` in the memory store for the full did/didn't-move boundary.
-
 - `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
   animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
   and chased across the mobile-polish session.*
@@ -1258,6 +1235,27 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 (accepted gaps), and memory. Model tags re-audited 2026-07-18 against the "tier vs. effort" calibration
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
+
+- **🪝 `main-push-guard.sh` blocks a branch DELETION, not just a push of commits** `[P3 · XS]`
+  (filed 2026-08-05 19:08 EDT, hit during the v2.55.0 release cleanup).
+
+  Standing on `main`, `git push origin --delete <branch>` is denied with the guard's
+  "this would push commits directly to main" message. It doesn't — a `--delete` pushes *no* commits
+  and cannot touch `main`; the matcher sees `git push` plus a remote and stops there. It fires on
+  exactly the operation the chore checklist asks for at the end of every release ("a merged branch
+  must never outlive its PR"), so it will recur each time.
+
+  **Not urgent — the workaround is one line and arguably better:**
+  `gh api -X DELETE repos/HarkiratMangat/dioreo/git/refs/heads/<branch>`, which states the intent
+  unambiguously. Filed rather than fixed because touching an enforcement hook is its own change:
+  every script in `.claude/hooks/` must carry a `<name>.test.sh` (see CLAUDE.md's self-test rule), so
+  the fix is a matcher change **plus** a new negative case in `main-push-guard.test.sh` proving a
+  `--delete` is allowed while a real commit push is still denied.
+
+  ⚠️ **Do not "fix" it by broadening the matcher until it stops firing** — that is how a guard becomes
+  decorative. The narrow correct change is to exempt `--delete`/`-d` with no refspec pushing to a
+  branch, and to prove the deny path still works, per the "prove a new gate against broken input"
+  rule that has already caught two blind gates on this project.
 
 - **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
   `[P3 · S]` 🧩 needs-design (filed 2026-08-02 14:43 EDT). The *data* was repaired (see the resolved
