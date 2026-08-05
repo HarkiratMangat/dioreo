@@ -7705,8 +7705,15 @@ h1 em{font-style:normal;color:var(--accent-t)}
   flex-wrap:wrap;gap:1.2rem 2.5rem;margin-top:clamp(2.4rem,7vh,3.6rem)}
 /* Right-aligned, not left — it sits on the RIGHT side of the row, and
    left-aligned text there just trails off into the same empty space .lfoot
-   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT. */
+   exists to reclaim. Harkirat's call 2026-08-05 08:53 EDT.
+   ⚠️ LEFT AGAIN BELOW 760px. .lfoot's flex-wrap folds the sig block onto its
+   own full-width row there — it is no longer sitting beside anything on the
+   right, so right-aligning it just floats short lines oddly rather than
+   flush against the same edge the disclaimer above it starts from.
+   Reported same session, 08:56 EDT, with a phone screenshot showing exactly
+   that. 760px matches this template's other mobile breakpoints. */
 .sig.lsig{margin:0;flex:0 0 auto;text-align:right}
+@media (max-width:760px){ .sig.lsig{text-align:left} }
 .disc.fine{margin:0;font-size:.56rem;line-height:1.9;
   letter-spacing:.06em;max-width:74ch;color:var(--ink3)}
 .contact{margin:0;font-family:var(--mono);font-size:.68rem;line-height:1.75;
