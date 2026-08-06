@@ -152,13 +152,15 @@ const PAGES = [
         file: 'TERMS.md', kind: 'md', out: 'terms.html', title: 'Terms of Service',
         short: 'Terms', kicker: 'Agreement',
         accent: BRAND.amber, glow: BRAND.plum,
-        blurb: 'What the bot does, what you agree to, and the limits of what we promise.'
+        blurb: 'What the bot does, what you agree to, and the limits of what we promise.',
+        desc: 'What you agree to by using Dioreo — what the bot does, what it does not promise, and where the limits sit.'
     },
     {
         file: 'PRIVACY.md', kind: 'md', out: 'privacy.html', title: 'Privacy Policy',
         short: 'Privacy', kicker: 'Data', 
         accent: BRAND.teal, glow: BRAND.emerald,
-        blurb: 'Every field stored about you, where it lives, and how to have it deleted.'
+        blurb: 'Every field stored about you, where it lives, and how to have it deleted.',
+        desc: 'Exactly what Dioreo stores about you, where it lives, how long it stays, and how to have it deleted.'
     },
     {
         // The licence is rendered as a THIRD page for readability, but the verbatim
@@ -168,7 +170,8 @@ const PAGES = [
         title: 'Source-Available License',
         short: 'License', kicker: 'Licence',
         accent: BRAND.violet, glow: BRAND.plum,
-        blurb: 'Read it, study it, run it on your own machine. Source-available, not open source.'
+        blurb: 'Read it, study it, run it on your own machine. Source-available, not open source.',
+        desc: 'Dioreo is source-available, not open source. Read it, study it, run it on your own machine — and the terms for everything else.'
     },
     {
         // Incorporated into LICENSE by reference (§7.1), so it is an operative
@@ -177,7 +180,8 @@ const PAGES = [
         title: 'Notices & Attributions',
         short: 'Notice', kicker: 'Attribution', 
         accent: BRAND.crimson, glow: BRAND.plum,
-        blurb: 'Every dependency and its licence, the marks that are not ours, and where AI helped.'
+        blurb: 'Every dependency and its licence, the marks that are not ours, and where AI helped.',
+        desc: 'Every dependency Dioreo builds on and its licence, the trademarks that are not ours, and an honest note on where AI helped.'
     }
 ];
 
@@ -202,7 +206,8 @@ const EXTRA_PAGES = [
         kicker: 'Join in', accent: BRAND.periwinkle, glow: '#C3CBFF',
         lede: 'Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.',
         badge: 'Open to anyone',
-        blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.'
+        blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.',
+        desc: 'How to report a bug, raise a security finding, or send a change to Dioreo — and how every contribution gets credited.'
     },
     {
         file: 'CONTRIBUTORS.md', kind: 'md', root: true, out: 'contributors.html',
@@ -213,7 +218,8 @@ const EXTRA_PAGES = [
         // subject is that crediting is a binding obligation under LICENSE §5.6.
         // This says the same thing the page does.
         badge: 'Credit, in writing',
-        blurb: 'Who helped build this, and how credit works. Bug reports count.'
+        blurb: 'Who helped build this, and how credit works. Bug reports count.',
+        desc: 'Everyone who has helped build Dioreo, credited under the name they chose — because crediting them is a binding obligation, not a courtesy.'
     }
 ];
 
@@ -4685,8 +4691,20 @@ function sectionise(html) {
 /* `file` and `kind` come in with the rest of the page record — build() spreads the
    whole thing — and are used only to offer the plain-text original on the two
    instruments that have one. See rawDownload(). */
-function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir, file, kind }) {
+function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir, file, kind, desc }) {
     const dl = rawDownload({ file, kind });
+    /* ⚠️ `desc` IS THE SHARE DESCRIPTION AND IT IS SEPARATE FROM `blurb` ON PURPOSE
+       (both hand-written, added 2026-08-05 20:48 EDT at Harkirat's request). They
+       answer different questions: `blurb` sits in the landing page's numbered list
+       where all four are visible at once, so it can be comparative and terse;
+       `desc` arrives ALONE in a search result or a share card with no siblings for
+       context, so it names the product and stands by itself. Deriving one from the
+       other would make one of the two read wrong.
+       The fallback is the old formula — "<Title> for Dioreo, an unofficial Call of
+       Duty: Mobile Discord bot." — which is what all four used until now. It stays
+       so a page added without a `desc` still gets something sane rather than the
+       string "undefined" in its meta tag, but a new page should carry its own. */
+    const shareDesc = desc || `${title} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.`;
     // The nav helpers identify a page by directory AND filename now — two pages on
     // the site are called index.html, so a bare name no longer picks one out.
     const cur = { out, dir };
@@ -4700,11 +4718,11 @@ function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} — Dioreo</title>
-<meta name="description" content="${esc(title)} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
+<meta name="description" content="${esc(shareDesc)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
 <meta property="og:title" content="${esc(title)} — Dioreo">
-<meta property="og:description" content="${esc(title)} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:description" content="${esc(shareDesc)}">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='${encodeURIComponent(accent)}'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
@@ -7568,7 +7586,7 @@ const CMD_JS = `
       var sp=document.createElement('span');
       if(parts[i].k) sp.className='cmd-'+parts[i].k;
       el.appendChild(sp);
-      segs.push({e:sp,t:parts[i].t,n:0});
+      segs.push({e:sp,t:parts[i].t,n:0,k:parts[i].k});
       total+=parts[i].t.length;
     }
   }
@@ -7591,6 +7609,18 @@ const CMD_JS = `
       take=left<=0?0:(left<s.t.length?left:s.t.length);
       if(take!==s.n){ s.n=take; s.e.textContent=take?s.t.slice(0,take):''; }
       left-=take;
+    }
+    /* ⚠️ THE "OPTION NAME ALONE" STATE IS TOGGLED HERE, NOT BY A CSS SELECTOR.
+       This used to be .cmd-o:has(+ .cmd-v:empty). :has() is the tidier-looking
+       expression, but it asks the engine to re-derive state this loop already
+       knows exactly — the value segment's own character count — and it made the
+       rounding depend on a selector feature behaving identically everywhere.
+       A class the animation sets itself cannot disagree between browsers. */
+    for(i=0;i<segs.length;i++){
+      if(segs[i].k!=='o') continue;
+      var nx=segs[i+1];
+      var solo=!nx || nx.k!=='v' || nx.n===0;
+      segs[i].e.classList[solo?'add':'remove']('solo');
     }
   }
 
@@ -7667,7 +7697,13 @@ const CMD_JS = `
   if(mq.matches) still(); else start();
 })();`;
 
-function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine, dir }) {
+function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine, dir, desc }) {
+    /* Same split as shell()'s `desc` — see the note there. Here the fallback is
+       `lede`, which is what both meta tags used until 2026-08-05 20:51 EDT. That
+       was never wrong, just redundant: the lede is the first line ON the page, so
+       a share card quoting it repeated what the reader was about to see anyway,
+       and it is written to sit under a headline rather than to stand alone. */
+    const shareDesc = desc || lede;
     // See the same note in shell(): a page is identified by directory AND filename.
     const cur = { out, dir };
     return `<!doctype html>
@@ -7676,11 +7712,11 @@ function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, s
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} — Dioreo</title>
-<meta name="description" content="${esc(lede)}">
+<meta name="description" content="${esc(shareDesc)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
 <meta property="og:title" content="${esc(title)} — Dioreo">
-<meta property="og:description" content="${esc(lede)}">
+<meta property="og:description" content="${esc(shareDesc)}">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Ccircle cx='16' cy='16' r='9' fill='${encodeURIComponent(accent)}'/%3E%3C/svg%3E">
 <style>
@@ -8316,13 +8352,35 @@ function indexPage(built) {
         + 'leaving the chat! Install it once and it answers anywhere, in any server '
         + 'or any DM.';
 
+    /* ⚠️ THE LANDING PAGE HAD NO OPEN GRAPH TAGS AT ALL until 2026-08-05 20:44 EDT,
+       and it is the one URL anybody actually shares. Every other template emits
+       og:title/og:description/og:type from its own title; only this one relied on
+       scrapers falling back to <title> + <meta name="description">. Most do fall
+       back, which is exactly why it went unnoticed — the preview looked fine and
+       was one scraper's heuristic away from not being. Harkirat asked what the
+       per-page share descriptions were, which is what surfaced it.
+       ⚠️ ONE STRING, USED TWICE ON PURPOSE. The description feeds both the plain
+       meta tag and og:description, so it is a const rather than two literals —
+       two copies of the same sentence drift, and the drift is invisible until
+       someone compares a search result against a share card. Match the sibling
+       templates if you add og:image or twitter: tags: they have neither today, so
+       adding them here alone would make the landing page inconsistent again in a
+       new way. */
+    const metaDesc = 'Dioreo is a COD:M companion Discord bot for lucky draws, CP '
+        + 'costs, loadouts, the seasonal calendar, and so much more. Install it once '
+        + 'and it works in any server or DM.';
+    const pageTitle = 'Dioreo — COD:M Companion Bot';
+
     return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dioreo — Call of Duty: Mobile, in Discord</title>
-<meta name="description" content="Dioreo is a COD:M companion Discord bot for lucky draws, CP costs, loadouts, the seasonal calendar, and so much more. Install it once and it works in any server or DM.">
+<title>${esc(pageTitle)}</title>
+<meta name="description" content="${esc(metaDesc)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
+<meta property="og:title" content="${esc(pageTitle)}">
+<meta property="og:description" content="${esc(metaDesc)}">
+<meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
 ${TOKENS}
@@ -8499,14 +8557,27 @@ h1 em{font-style:normal;color:var(--accent-t)}
    all four sides is what produced both complaints. */
 .cmd-line .cmd-o,.cmd-line .cmd-v{display:inline-block;vertical-align:baseline;
   line-height:1.5;color:var(--ink);font-weight:400}
-.cmd-line .cmd-o{padding:.08em .5em .08em .3em;
+/* ⚠️ THE -1px MARGIN IS A DELIBERATE OVERLAP, AND REMOVING IT REOPENS A BUG THAT
+   DOES NOT REPRODUCE IN CHROME. Harkirat photographed the two beds visibly
+   separated on an iPhone (2026-08-05 20:29 EDT) while Chrome measured the gap at
+   EXACTLY ZERO — option right edge and value left edge both at 112.594px. That
+   fractional position is the tell: the boundary lands mid-device-pixel, and at
+   iOS's 3x DPR the antialiasing of two abutting edges can each leave that pixel
+   partly transparent, so the page shows through as a hairline. Two boxes that
+   merely touch are not enough; they have to overlap. The right padding adds the
+   same 1px back so the gap between the two WORDS is unchanged — only the beds
+   move. Do not "simplify" this to a plain .5em. */
+.cmd-line .cmd-o{padding:.08em calc(.5em + 1px) .08em .3em;margin-right:-1px;
   background:color-mix(in srgb,var(--ink) 10%,transparent);
   border-radius:.34em 0 0 .34em}
 .cmd-line .cmd-v{padding:.08em .3em .08em .5em;
   background:color-mix(in srgb,var(--accent) 26%,transparent);
   border-radius:0 .34em .34em 0}
-.cmd-line .cmd-o:has(+ .cmd-v:empty){border-radius:.34em}
+/* Set by CMD_JS's paint() while the value has no characters yet — see the note
+   there for why this is a class rather than :has(+ .cmd-v:empty). */
+.cmd-line .cmd-o.solo{border-radius:.34em;margin-right:0}
 .cmd-line .cmd-o:empty,.cmd-line .cmd-v:empty{padding:0;background:none}
+.cmd-line .cmd-o:empty{margin-right:0}
 .cmd-line::after{content:"";display:inline-block;width:.5em;height:1em;
   margin-left:.15em;background:var(--accent-t);vertical-align:-.15em;
   animation:cmd-blink 1.1s steps(1) infinite}

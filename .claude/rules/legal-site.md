@@ -177,10 +177,24 @@ it directly with an empty build command, so nothing has to run on their side.
     reported 1.7px of clearance and therefore no clipping; a screenshot showed the legs plainly
     outside the box — the font the canvas measured was not the box the browser painted. Same lesson
     as the nav indicator's dilation: when a model and a rasterisation disagree, believe the pixels.
-  - ⚠️ **`.cmd-o:has(+ .cmd-v:empty)` restores the full radius while the value is still empty.**
-    Splitting a pill means each half must know whether the other is there, and mid-typing the value
-    IS absent — without this the option name sits as a square-edged stub for the whole time it
-    types. Degrades to that square edge for a few hundred ms if `:has()` is unavailable.
+  - ⚠️ **`.cmd-o.solo` restores the full radius while the value is still empty, and the class is set
+    by `paint()` — NOT by `:has()`.** Splitting a pill means each half must know whether the other is
+    there, and mid-typing the value IS absent, so without this the option name sits as a square-edged
+    stub for the whole time it types. This was `.cmd-o:has(+ .cmd-v:empty)` until 2026-08-05 20:32 EDT.
+    `:has()` is the tidier expression, but it asks the engine to re-derive state the paint loop
+    already knows exactly — the value segment's own character count — and it made the rounding depend
+    on a selector feature behaving identically across engines. **A class the animation sets itself
+    cannot disagree between browsers.** General form: if the animation already computes the state,
+    don't restate it as a selector.
+  - 🚫 **`.cmd-o` carries `margin-right:-1px` with the 1px added back to its right padding. Do not
+    "simplify" that to a plain `.5em`.** Harkirat photographed the two beds visibly separated on an
+    iPhone while **Chrome measured the gap at exactly zero** — option right edge and value left edge
+    both at `112.594px`. That fractional position is the tell: the boundary lands mid-device-pixel,
+    and at iOS's 3× DPR the antialiasing of two abutting edges can each leave that pixel partly
+    transparent, so the page ground shows through as a hairline. **Two boxes that merely touch are
+    not enough; they have to overlap.** The padding compensation means only the beds move — the gap
+    between the two words is unchanged. ⚠️ It does not reproduce in Chrome, so a future "this margin
+    looks pointless" reading will be *locally* correct and wrong on the device.
     🚫 **Two rejected attempts, recorded so they are not retried.** (1) `--ink2` at 500 — a neutral
     grey read thin and washed out on an otherwise warm line. (2) `--accent-t` mixed 85% toward
     `--desk` — cleared AA at 5.56 / 5.20 but read **muddy**, and the reason is a property of the
@@ -205,6 +219,26 @@ it directly with an empty build command, so nothing has to run on their side.
   - Verified in-browser: five loads gave five different opening commands, and a 260-sample run of
     the emitted script covered all sixteen commands with a minimum same-command gap of exactly 3
     and nothing over the cap.
+- 🔗 **SHARE METADATA: three fields per page, and they are NOT interchangeable** (settled
+  2026-08-05 20:51 EDT). `blurb` is the landing page's numbered list, where all pages are visible at
+  once — it can be comparative and terse. `lede` is the first line ON the page, written to sit under
+  a headline. **`desc` is the share/search description**, which arrives ALONE in a card with no
+  siblings and no headline for context, so it names the product and stands by itself. Deriving any
+  one from another makes that one read wrong somewhere. `shell()` falls back to the old
+  `"<Title> for Dioreo, an unofficial…"` formula and `warmShell()` falls back to `lede`, so a new
+  page still gets something sane — but **give a new page its own `desc`**.
+  - ⚠️ **The landing page had NO Open Graph tags at all** until that date, while every other template
+    emitted them. Scrapers mostly fall back to `<title>` + `<meta name="description">`, which is
+    exactly why it survived unnoticed: the preview looked right and was one heuristic away from not
+    being — on the one URL anyone actually shares. **When adding a template, check its `<head>`
+    against a sibling's rather than against how the page looks.**
+  - ⚠️ **No page has `og:image` or `twitter:` tags.** That is currently consistent; adding them to
+    one page only would re-create the inconsistency above in a new direction.
+  - 🚫 **Do not rewrite these meta tags with `sd`/`sed`.** `${esc(shareDesc)}` in a replacement
+    string is read as a capture-group reference and silently produced `content=""` on all four legal
+    pages. **No gate catches it** — `verify()` checks that source text survived into the page, not
+    that a meta attribute is non-empty, so the build still reported success. Use an exact edit, and
+    confirm by listing every page's description rather than trusting the build's verdict.
 - **Web assets are VENDORED into `public/assets/`, never CDN-linked** (fonts + Motion One). This is a
   privacy obligation, not a preference: the Privacy Policy is served from this same origin, and a
   third-party CDN would disclose every visitor's IP to a party the policy does not name. All three are
