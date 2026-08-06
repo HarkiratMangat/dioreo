@@ -900,7 +900,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
     It clones the real landing page and layers the effects on. Sources now live in
     **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full
-    map, build command and per-item diagnosis in **`local/handoff/morph-poc-handoff.md`**.
+    map, build command and per-item diagnosis in **`local/handoff/2026-08-03-morph-poc-handoff.md`**.
     ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location
     a later session can find.** The next session had to hunt through
     `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is
