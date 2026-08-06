@@ -8328,13 +8328,35 @@ function indexPage(built) {
         + 'leaving the chat! Install it once and it answers anywhere, in any server '
         + 'or any DM.';
 
+    /* ⚠️ THE LANDING PAGE HAD NO OPEN GRAPH TAGS AT ALL until 2026-08-05 20:44 EDT,
+       and it is the one URL anybody actually shares. Every other template emits
+       og:title/og:description/og:type from its own title; only this one relied on
+       scrapers falling back to <title> + <meta name="description">. Most do fall
+       back, which is exactly why it went unnoticed — the preview looked fine and
+       was one scraper's heuristic away from not being. Harkirat asked what the
+       per-page share descriptions were, which is what surfaced it.
+       ⚠️ ONE STRING, USED TWICE ON PURPOSE. The description feeds both the plain
+       meta tag and og:description, so it is a const rather than two literals —
+       two copies of the same sentence drift, and the drift is invisible until
+       someone compares a search result against a share card. Match the sibling
+       templates if you add og:image or twitter: tags: they have neither today, so
+       adding them here alone would make the landing page inconsistent again in a
+       new way. */
+    const metaDesc = 'Dioreo is a COD:M companion Discord bot for lucky draws, CP '
+        + 'costs, loadouts, the seasonal calendar, and so much more. Install it once '
+        + 'and it works in any server or DM.';
+    const pageTitle = 'Dioreo — COD:M Companion Bot';
+
     return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dioreo — COD:M Companion Bot</title>
-<meta name="description" content="Dioreo is a COD:M companion Discord bot for lucky draws, CP costs, loadouts, the seasonal calendar, and so much more. Install it once and it works in any server or DM.">
+<title>${esc(pageTitle)}</title>
+<meta name="description" content="${esc(metaDesc)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
+<meta property="og:title" content="${esc(pageTitle)}">
+<meta property="og:description" content="${esc(metaDesc)}">
+<meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%23FF7D5C'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>
 ${TOKENS}
