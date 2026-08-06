@@ -1288,8 +1288,11 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   3. **`docs/archive/`, and the CHANGELOG/DEVLOG bodies** — only headers, versions, and SHAs were
      checked; the prose was never read.
   4. **Folder cleanup (Harkirat's ask).** `local/` holds ageing artifacts: `crash report.txt`,
-     `session-report-*.html` (364K), `claude-code-receipts-*` (both formats), `sessionhandoff*.md`,
-     the now-complete `memory-migration-handoff.md`, and `Screenshots/` (~13M, the bulk). **`local/` is
+     `session-report-*.html` (364K), `claude-code-receipts-*` (both formats), and `Screenshots/`
+     (~13M, the bulk). *(The loose handoffs named here — `sessionhandoff*.md` and the now-complete
+     `memory-migration-handoff.md` — were consolidated into `local/handoff/` on 2026-08-06 19:36 EDT
+     and renamed to `<date>-<topic>-handoff.md`; they are no longer at `local/`'s root, though they are
+     still candidates for pruning.)* **`local/` is
      Harkirat's personal scratch folder — never delete from it unprompted; propose a list and let him
      choose.** Also sweep `/Applications/Claude Code/local/`, `docs/archive/`, and
      `local/claude md backup/` (a full stale `.claude` snapshot, now carrying a `_README` marker).
