@@ -62,6 +62,29 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P1 · S]` **CI was CANCELLED at 15m04s on PR #89 and the cause is unknown — a run that normally
+  takes ~1m30s.** *Filed 2026-08-06 13:25 EDT, blocking the v2.56.3 merge.*
+
+  **Status: `cancelled`, with ZERO failed steps** — so it is not an assertion failure. A rerun then
+  sat *queued* for 10+ minutes without starting.
+
+  **Ruled out already, do not re-derive:**
+  - `npm test` passes locally in well under 4 minutes (21/21 hooks, 58 audit checks proven failable).
+  - It also passes with **ripgrep removed from `PATH`**, which is the known CI-vs-local difference —
+    the ubuntu runner has no `rg`. So it is not the rg guard added in that branch.
+  - An earlier run on the same branch (`31121110586`, `7a2cdf0`) **succeeded**. Only the records
+    commit `c3b7546` (CHANGELOG/DEVLOG/SUMMARY/version bump) has failed.
+
+  **Hypothesis, NOT a finding:** runner starvation or a queue timeout, i.e. GitHub infrastructure
+  rather than the change. It is recorded as a guess on purpose — a plausible explanation written down
+  as fact is worse than an open question, and this list already carries that lesson twice.
+
+  **Next test if it recurs:** whether the *size* of the DEVLOG/CHANGELOG additions in `c3b7546` slows
+  a check — push that records commit alone onto a scratch branch and time it.
+  ⚠️ **Do not merge on a cancelled CI because branch protection allows it.** There is no required
+  status check yet (`syntax-check` is identified but not applied), so a red PR still merges. That is
+  a known gap, not permission.
+
 - `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever
   tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md`
   back when it was still called **known-issues** — it was split so the file could honestly take the new
