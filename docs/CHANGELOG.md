@@ -181,7 +181,42 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.55.3 — 2026-08-05 21:03 EDT (#83) — The DEVLOG entry that should have blocked the previous release
+## v2.55.4 — 2026-08-05 22:26 EDT (#84) — A pack triage, and a tool chosen for the wrong reason
+
+Records-only. Harkirat was approved for the GitHub Student Developer Pack and asked which of its
+offers were genuinely worth adopting for this project, and which were traps. All 85 were assessed
+against the real stack; the verdicts are now in `docs/db-deferred-list.md` so they cannot be
+re-derived from scratch or quietly re-litigated later.
+
+**The headline result contradicted the premise it started from.** The nominated highest-value
+candidate was real-device testing, on the strength of the `[P2 · M]` iOS liquid-indicator bug — filed
+as needing *"a real device or CDP against a WebKit build"*, with four fixes already spent on it. That
+is right about the need and wrong about the tool. The artefact is a **compositing** failure, so what
+closes it is the **layer tree**, and the instrument that provides one is Safari's Web Inspector
+attached over USB to the iPhone that already reproduces it — free, already owned, and the one thing a
+remote-device vendor structurally cannot offer, because BrowserStack and LambdaTest hand you a screen,
+not an inspector. The item now carries a cheapest-first ladder, marked **NOT YET RUN**, with the
+vendor rung marked contingent on the free rungs failing first. The pack's real contribution there is
+narrower and worth being honest about: it buys iteration speed and iOS-version breadth, because every
+one of those four fixes cost a round trip through Harkirat's phone.
+
+**The second finding is a coupling nobody had priced.** Sentry looked like a free "why not". It isn't:
+`docs/legal/PRIVACY.md`'s verification appendix names Sentry, PostHog, Mixpanel and Google Analytics
+**explicitly** and states *"None present"*, while §2.6 promises no third-party scripts. Adopting any
+of them costs a policy amendment, a new US sub-processor disclosure, a policy version bump, and a site
+rebuild — before a line of code. That applies to **any** third-party SDK, not just error reporting,
+and it is now written down where the next session will find it.
+
+**Also recorded:** the pack yields this project *no cost reduction*, which is a checked result rather
+than an oversight — every line is already $0 or credit-funded, and nothing among the 85 touches Vertex
+AI, the only line that could ever become real spend. The MongoDB credit is worth $0 against an M0
+cluster. Travis CI cannot replace Actions here without running two CI systems and breaking
+`docs-audit`'s `ci-wiring` check. And Imgbot would open automated PRs into a repo where every merge
+mints a version.
+
+---
+
+## v2.55.3 — 2026-08-05 21:03 EDT (#83 · `ab4a576`) — The DEVLOG entry that should have blocked the previous release
 
 Records-only, and it exists because a gate was overridden rather than because anything shipped.
 
