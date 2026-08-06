@@ -1224,6 +1224,31 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap,
   and the fix has to address the cap (batching or a second pass), not just the prompt wording.
   Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
+
+  ✅ **UNBLOCKED — corrected 2026-08-06 18:18 EDT. The "need a DMZ screenshot with empty slots" blocker
+  is STALE and was carried forward for two weeks after it stopped being true.** The 2026-07-24 note said
+  the DMZ slot layout was unknown, so a reliable prompt could not be written. **The 2026-07-26 metadata
+  backfill then did exactly that job and proved it works** — recorded in
+  `local/autobuild testing notes.md` (a gitignored file no in-repo search surfaces):
+  *"uncapping the vision prompt to 9 attachments for DMZ (it was truncating DMZ builds at 5). DMZ builds
+  like AK117 now have all 9 slots."* The prompt reads slot labels **off each image**, so no fixed
+  a-priori layout was ever required — which is why the screenshot was never actually the blocker.
+
+  **What is genuinely left, all of it in this repo and none of it needing Harkirat:**
+  1. `utils/visionExtract.js` **already takes `{ maxAttachments }` (default 5)** and was run at 9
+     against real DMZ images. `/autobuild` calls it at `utils/autobuildPipeline.js:148` **without the
+     option**, so it silently truncates at 5. That is the whole "5-attachment cap".
+  2. **`mode: 'MP'` is hardcoded through the pipeline** — `autobuildPipeline.js` lines ~17, 131, 157,
+     186, 241, 263 (sibling lookup, duplicate check, the saved doc). Every one has to become mode-aware.
+  3. **The review card is fixed at 5 slots** (`visionExtract.js:255` pads/truncates to exactly
+     `maxAttachments` "for /autobuild's review card, which always shows 5"). It needs to render up to 9.
+  4. **Choosing the mode:** prefer an explicit `mode` option on the command over auto-detection —
+     cheaper, deterministic, and it removes the "silently treated as MP" failure entirely. Auto-detect
+     can come later if it is actually wanted.
+  ⚠️ **Lesson worth keeping:** the blocker was recorded as "waiting on Harkirat" and nothing ever
+  re-checked it after the capability landed. A blocked item needs a re-test date, not just a reason —
+  and `local/` is invisible to every repo-wide search, so anything filed there has to be read
+  deliberately. See [[feedback_verify_before_claiming]].
 - `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20
   runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run:
   `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
