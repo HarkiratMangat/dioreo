@@ -131,6 +131,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-05 22:27 EDT — A tool chosen for the wrong reason, and a free instrument nobody had reached for (v2.55.4)
 - 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
 - 2026-08-06 10:35 EDT — Three prompts, three kinds of check: building the thing that stops him asking twice (v2.56.0)
+- 2026-08-06 10:53 EDT — The guard that blocked the PR fixing the guard (v2.56.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5101,6 +5102,51 @@ reporting only unanswered marks would have stayed silent on the exact case it ex
 - **Verify the fix discriminates.** Two of my own new tests initially passed against the broken code,
   and one fixture sat below the sampling floor so it could never fail for the right reason. Running
   the new test against the old implementation is the only thing that proves it tests anything.
+
+## 2026-08-06 10:53 EDT — The guard that blocked the PR fixing the guard (v2.56.1)
+
+Minutes after v2.56.0 merged — the release that shipped a three-pass audit built to catch exactly
+this class of thing — `main-push-guard.sh` refused to let me push the dior-CLI fix. Not a subtle
+refusal: a flat deny on `cd ~/.config/dior && git push -u origin fix/notes-path-after-move`, a branch
+push, in a **different repository**.
+
+The guard asked one question: *is the project dir on `main`?* It never asked what the command in
+front of it actually did. That question is fine right up until a squash-merge with `--delete-branch`
+deletes your working branch and drops HEAD back on `main` — and from that instant the guard denies
+every push you will ever make, including ones aimed at repositories it has never heard of.
+
+**The tell was already on the deferred list.** A `[P3 · XS]` filed the day before said the same guard
+blocked `git push origin --delete <branch>` — "the matcher sees `git push` plus a remote and stops
+there." Same sentence, same defect, a different face of it. The filed item had also written the
+warning that turned out to matter most: *do not fix it by broadening the matcher until it stops
+firing — that is how a guard becomes decorative.*
+
+So the fix narrows instead of widens: an explicit non-`main` **destination** ref disclaims main. A
+bare `git push` on main still denies, because nothing there disclaims it.
+
+Then the suite did its job twice. My first attempt compared the whole refspec against a fixed list,
+which let `abc1234:main` sail through — pushing an arbitrary sha straight onto main, a strictly worse
+hole than the one I was fixing. The pre-existing `sha:main` case caught it. The correction judges
+`${ref##*:}`, and that immediately exposed a second bug: `:` wasn't in the ref character class, so
+the extractor stopped at the colon and read `abc1234:main` as a branch named `abc1234`. Same case
+caught that too.
+
+### Lessons
+
+- **A guard must judge the operation in front of it, not the ambient state around it.** "Which repo
+  am I in, and what branch is it on" is context; "what does this command do" is the question. The
+  first is a cheap proxy for the second right up until it isn't.
+- **A false positive is a real defect.** This one fired on the exact operation the release checklist
+  ends with, so the documented workaround (`gh api -X DELETE`) had already become the habit — and a
+  guard people route around protects nothing. It sat at P3 because it was *only* annoying.
+- **Loosening a guard is where you introduce the worse hole.** Every relaxation is a new gap by
+  construction, so the deny path has to be re-proven line by line afterwards, not assumed to be
+  untouched. Two attempts, two holes, both caught only because someone had written the adversarial
+  cases months earlier.
+- **The order of events is the whole story:** the release that shipped the audit system was merged,
+  and eleven minutes later a different gate blocked real work for a bad reason. Shipping the checker
+  is not the end of the work; it is the beginning of finding out what it gets wrong.
+
 
 # Part B — Lessons Ledger (thematic)
 

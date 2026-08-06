@@ -38,7 +38,16 @@ if [ -z "$base" ]; then
   base=$(gh pr view ${pr:+"$pr"} --json baseRefName -q .baseRefName 2>/dev/null)
   [ -z "$base" ] && base=main
 fi
-git fetch origin "$base" --quiet 2>/dev/null
+# ⚠️ NON-FATAL, AND SKIPPED ENTIRELY WHEN THE TEST INJECTS ITS OWN FILE LIST.
+# This script runs under `set -e`, so a failing fetch killed it outright and produced NO output —
+# which reads exactly like "the release is complete". It passed locally and failed only in CI
+# (2026-08-06 11:12 EDT), the classic shape of an environment-dependent gate: green on the machine
+# that wrote it, silently dead on the machine that runs it. And when RELEASE_CHECK_FILES is set the
+# diff is overridden anyway, so reaching the network at all was pointless — a unit test must never
+# depend on a remote being reachable.
+if [ -z "${RELEASE_CHECK_FILES:-}" ]; then
+  git fetch origin "$base" --quiet 2>/dev/null || true
+fi
 
 # RELEASE_CHECK_FILES overrides the diff so the miss-branches can be PROVEN, not assumed. Nothing in
 # normal operation sets it. Every hook written without tests today regressed; the four written with
@@ -76,5 +85,39 @@ if ! echo "$changed" | grep -qx 'docs/DEVLOG.md'; then
 fi
 
 [ -z "$miss" ] && exit 0
-printf 'RELEASE NOT READY — checked the BRANCH before merging, which is the only moment these can still be fixed:%s\n\nAdd them to this branch now; after the merge the only remedy is an extra release, which is what this gate exists to prevent. If a gap is deliberate, say which and why — then proceed.' "$miss" \
-  | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
+
+# 🔴 THIS MUST **DENY**, NOT NARRATE — changed 2026-08-06 11:02 EDT, and it cost a release to learn.
+# It emitted `additionalContext` only: a pure notice with NO permissionDecision at all, so it could
+# never stop anything. It fired correctly on v2.56.1 — "four non-mechanical files, no DEVLOG entry" —
+# and the merge proceeded regardless, exactly as it had every previous time. The fix then needed its
+# own release (v2.56.2), which is precisely the cost this gate's own message warns about.
+#
+# This is the THIRD hook here caught at the wrong enforcement level. The force-overwrite gate and the
+# squash-trailer gate were both `ask` until 2026-08-02, when it was measured that an `ask` from a
+# PreToolUse hook is SILENTLY AUTO-APPROVED in this permission mode — never even shown. Both became
+# `deny` and both now actually work (the trailer gate blocked this very session's first merge attempt
+# and was right to). This one was weaker still and nobody re-checked it when those two were fixed.
+# **When you fix one gate's enforcement level, audit every sibling the same day.**
+#
+# ⚠️ THE ESCAPE IS DELIBERATE AND MUST STAY. A hard deny on a JUDGEMENT call with no way through is a
+# gate people route around by editing the hook — the failure mode the filed `--delete` item named as
+# "how a guard becomes decorative". Skipping a DEVLOG entry is legitimately right for a purely
+# mechanical release. So the skip is allowed, but only NAMED: prefix the merge with
+#   RELEASE_SKIP="why this release genuinely needs no DEVLOG entry" gh pr merge …
+# which turns an omission into a recorded decision sitting in the command itself. That is the
+# distinction this gate has always been about — "it must be a decision, not an omission".
+# ⚠️ `grep -o`, not a sed backreference, and `|| true` is load-bearing. This script runs under
+# `set -eu`. The first version used `sed -nE 's/…\2\3/p'` with alternating groups, and when only one
+# group participated BSD sed exited non-zero — `set -e` then killed the script MID-CHECK, producing
+# ZERO output. A gate that silently emits nothing reads exactly like a gate that found no problems,
+# which is the failure this whole file exists to prevent, reintroduced by the fix for it.
+skip=$(printf '%s' "$cmd" | grep -oE 'RELEASE_SKIP=("[^"]*"|[^ ]+)' | head -1 || true)
+skip=$(printf '%s' "$skip" | sed -e 's/^RELEASE_SKIP=//' -e 's/^"//' -e 's/"$//')
+if [ -n "$skip" ]; then
+  printf 'RELEASE GATE SKIPPED BY EXPLICIT DECISION: "%s"\n\nUnmet items were:%s\n\nThis is recorded rather than silent. If the reason above is not actually true, stop and fix the gap instead.' "$skip" "$miss" \
+    | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
+  exit 0
+fi
+
+printf 'RELEASE NOT READY — checked the BRANCH before merging, which is the only moment these can still be fixed:%s\n\nAdd them to this branch NOW, push, then merge: after the merge the only remedy is an extra release, which is what this gate exists to prevent (and it already cost one — v2.56.2 exists solely because this check could not block v2.56.1).\n\nIf the gap is genuinely deliberate — a purely mechanical release needs no DEVLOG entry — re-run the merge naming the reason, so the skip is a decision on the record instead of an omission:\n  RELEASE_SKIP="why this release needs no DEVLOG entry" gh pr merge …' "$miss" \
+  | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:.}}'
