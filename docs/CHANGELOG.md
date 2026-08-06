@@ -181,7 +181,70 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.55.1 — 2026-08-05 19:09 EDT (#81) — A P1 that had been fixed for a day, and a guard that blocks the cleanup it asks for
+## v2.55.2 — 2026-08-05 20:50 EDT (#82) — A seam only one device could see, and the share card nobody had checked
+
+Three fixes, all from Harkirat looking at the site on his phone rather than from anything a gate
+caught.
+
+**The command line's two chip beds showed a seam on iOS, and it does not reproduce in Chrome — which
+is the diagnosis, not a dead end.** He photographed the option and value beds visibly separated where
+they should read as one continuous pill. Chrome measures the gap at **exactly zero**: the option's
+right edge and the value's left edge both land on `112.594px`. That fractional coordinate is the
+whole answer. A boundary at `.594` sits mid-device-pixel, and at iOS's 3× DPR the antialiasing of two
+merely *abutting* edges can each leave that pixel partly transparent, so the page ground shows
+through as a hairline. **Layout adjacency is not paint adjacency.** The option bed now carries
+`margin-right:-1px` with the same pixel added back to its right padding, so the beds overlap while
+the gap between the two words is unchanged.
+
+**`.cmd-o:has(+ .cmd-v:empty)` became a class the animation sets itself**, which is a second candidate
+cause of the same photo — both beds appeared fully rounded rather than forming one pill, which is
+what a misfiring selector would produce. `:has()` is the tidier expression, but it asked the engine
+to re-derive state `paint()` already knows exactly, the value segment's own character count, and made
+rendering depend on a selector feature behaving identically across engines. The general form is worth
+keeping: **if the code already computes the state, do not restate it as a selector.** Choosing a fix
+that is correct under *every* candidate cause is also what makes an unreproducible bug shippable —
+being wrong about which cause it was does not matter.
+
+**The homepage had no Open Graph tags at all.** Asking what the per-page share descriptions were is
+what surfaced it: every other template emits `og:title`, `og:description` and `og:type`, and
+`indexPage` emitted none. Most scrapers fall back to `<title>` and `<meta name="description">`, which
+is precisely why it survived unnoticed — the preview looked right and was one heuristic away from not
+being — and it is the only URL anyone actually shares. Its description is now a single const feeding
+both tags rather than the same sentence written twice, since two copies drift and the drift stays
+invisible until someone compares a search result against a share card.
+
+**The four legal pages had one formula between them** — "*<Title>* for Dioreo, an unofficial Call of
+Duty: Mobile Discord bot." — accurate and empty. Each now has a hand-written sentence, carried on a
+new `desc` field. Deliberately NOT the existing `blurb`: that one sits in the landing page's numbered
+list where all four are visible at once, so it can be comparative and terse, while `desc` arrives
+alone in a card with no siblings for context and has to name the product and stand by itself.
+Deriving either from the other would make one of them read wrong. The old formula stays as the
+fallback so a future page without a `desc` gets something sane rather than the literal "undefined".
+
+**Contributing and Contributors got the same treatment**, for a different reason. Those two were
+never formulaic — `warmShell()` fed both meta tags from the page's `lede`, which is hand-written and
+good. It was redundant rather than wrong: the lede is the first line *on* the page, so a share card
+quoting it previewed the exact sentence the reader was about to see, and a lede is written to sit
+under a headline rather than to carry a card alone. They now have their own `desc`, with `lede` kept
+as the fallback. All ten pages were then checked with both tags side by side — present, matching,
+and non-empty — rather than spot-checking the two that changed.
+
+The homepage tab title also changed, `Dioreo — Call of Duty: Mobile, in Discord` →
+`Dioreo — COD:M Companion Bot`. The old one spent its width on positioning; the new one says what the
+thing is. That change is exercised by `deploy-site.yml`, which asserts the live `<title>` matches
+what it uploaded.
+
+⚠️ **One near-miss worth recording, because no gate would have caught it.** Rewriting the two meta
+tags with `sd`, the replacement string `${esc(shareDesc)}` was read as a capture-group reference and
+both tags came out as `content=""`. Every legal page would have deployed with an empty description
+and the build would still have said *Done* — the content gate checks that source text survives into
+the page, not that a meta attribute is non-empty. It was caught only by listing all ten descriptions
+afterwards instead of trusting the build's own verdict. **Verify the thing you changed, not the thing
+the tool reports.**
+
+---
+
+## v2.55.1 — 2026-08-05 19:09 EDT (#81 · `3342446`) — A P1 that had been fixed for a day, and a guard that blocks the cleanup it asks for
 
 Records-only. Both corrections were found while closing out v2.55.0, which is the point worth
 recording: neither came from reading the list.

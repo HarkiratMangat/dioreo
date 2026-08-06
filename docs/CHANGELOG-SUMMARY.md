@@ -26,6 +26,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.55.2 — August 5, 2026
+- **The two boxes on the homepage's command line no longer show a gap between them on iPhone.**
+- **Sharing a link to the site now shows a proper preview** — the homepage was missing its share
+  info entirely, and the Terms, Privacy, License and Notice pages each have a real description now
+  instead of the same generic line.
+- The homepage's browser-tab name is now "Dioreo — COD:M Companion Bot".
+
 ## v2.55.1 — August 5, 2026
 - Housekeeping only — nothing about the bot or the site changed.
 

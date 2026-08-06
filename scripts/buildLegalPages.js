@@ -206,7 +206,8 @@ const EXTRA_PAGES = [
         kicker: 'Join in', accent: BRAND.periwinkle, glow: '#C3CBFF',
         lede: 'Bug reports, security findings, ideas, code — all of it welcome, and all of it credited.',
         badge: 'Open to anyone',
-        blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.'
+        blurb: 'How to report a bug, send a fix, and what the CLA actually asks of you.',
+        desc: 'How to report a bug, raise a security finding, or send a change to Dioreo — and how every contribution gets credited.'
     },
     {
         file: 'CONTRIBUTORS.md', kind: 'md', root: true, out: 'contributors.html',
@@ -217,7 +218,8 @@ const EXTRA_PAGES = [
         // subject is that crediting is a binding obligation under LICENSE §5.6.
         // This says the same thing the page does.
         badge: 'Credit, in writing',
-        blurb: 'Who helped build this, and how credit works. Bug reports count.'
+        blurb: 'Who helped build this, and how credit works. Bug reports count.',
+        desc: 'Everyone who has helped build Dioreo, credited under the name they chose — because crediting them is a binding obligation, not a courtesy.'
     }
 ];
 
@@ -7695,7 +7697,13 @@ const CMD_JS = `
   if(mq.matches) still(); else start();
 })();`;
 
-function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine, dir }) {
+function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, spine, dir, desc }) {
+    /* Same split as shell()'s `desc` — see the note there. Here the fallback is
+       `lede`, which is what both meta tags used until 2026-08-05 20:51 EDT. That
+       was never wrong, just redundant: the lede is the first line ON the page, so
+       a share card quoting it repeated what the reader was about to see anyway,
+       and it is written to sit under a headline rather than to stand alone. */
+    const shareDesc = desc || lede;
     // See the same note in shell(): a page is identified by directory AND filename.
     const cur = { out, dir };
     return `<!doctype html>
@@ -7704,11 +7712,11 @@ function warmShell({ title, kicker, accent, glow, lede, badge, body, out, sig, s
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} — Dioreo</title>
-<meta name="description" content="${esc(lede)}">
+<meta name="description" content="${esc(shareDesc)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
 <meta property="og:title" content="${esc(title)} — Dioreo">
-<meta property="og:description" content="${esc(lede)}">
+<meta property="og:description" content="${esc(shareDesc)}">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Ccircle cx='16' cy='16' r='9' fill='${encodeURIComponent(accent)}'/%3E%3C/svg%3E">
 <style>

@@ -219,6 +219,26 @@ it directly with an empty build command, so nothing has to run on their side.
   - Verified in-browser: five loads gave five different opening commands, and a 260-sample run of
     the emitted script covered all sixteen commands with a minimum same-command gap of exactly 3
     and nothing over the cap.
+- 🔗 **SHARE METADATA: three fields per page, and they are NOT interchangeable** (settled
+  2026-08-05 20:51 EDT). `blurb` is the landing page's numbered list, where all pages are visible at
+  once — it can be comparative and terse. `lede` is the first line ON the page, written to sit under
+  a headline. **`desc` is the share/search description**, which arrives ALONE in a card with no
+  siblings and no headline for context, so it names the product and stands by itself. Deriving any
+  one from another makes that one read wrong somewhere. `shell()` falls back to the old
+  `"<Title> for Dioreo, an unofficial…"` formula and `warmShell()` falls back to `lede`, so a new
+  page still gets something sane — but **give a new page its own `desc`**.
+  - ⚠️ **The landing page had NO Open Graph tags at all** until that date, while every other template
+    emitted them. Scrapers mostly fall back to `<title>` + `<meta name="description">`, which is
+    exactly why it survived unnoticed: the preview looked right and was one heuristic away from not
+    being — on the one URL anyone actually shares. **When adding a template, check its `<head>`
+    against a sibling's rather than against how the page looks.**
+  - ⚠️ **No page has `og:image` or `twitter:` tags.** That is currently consistent; adding them to
+    one page only would re-create the inconsistency above in a new direction.
+  - 🚫 **Do not rewrite these meta tags with `sd`/`sed`.** `${esc(shareDesc)}` in a replacement
+    string is read as a capture-group reference and silently produced `content=""` on all four legal
+    pages. **No gate catches it** — `verify()` checks that source text survived into the page, not
+    that a meta attribute is non-empty, so the build still reported success. Use an exact edit, and
+    confirm by listing every page's description rather than trusting the build's verdict.
 - **Web assets are VENDORED into `public/assets/`, never CDN-linked** (fonts + Motion One). This is a
   privacy obligation, not a preference: the Privacy Policy is served from this same origin, and a
   third-party CDN would disclose every visitor's IP to a party the policy does not name. All three are
