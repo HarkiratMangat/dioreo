@@ -19,7 +19,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/ideas/diors-notes.md\"; H=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-open-items.sh\"; if [ -f \"$F\" ] && [ -x \"$H\" ]; then base=$(\"$H\" \"$F\"); n=$(printf '%s' \"$base\" | grep -c .); open=$(printf '%s' \"$base\" | cut -c1-120 | head -15); if [ \"$n\" -gt 0 ]; then printf 'NOTES-FILE CHECK: docs/ideas/diors-notes.md has %s open (unmarked) item(s) in its working sections (above the 📍 pointer section). Do NOT skip the notes file this session -- review, answer, mark, and file them per the notes workflow (project_central_notes_file memory). Truncated previews:\\n%s' \"$n\" \"$open\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/ideas/diors-notes.md\"; H=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-open-items.sh\"; if [ -f \"$F\" ] && [ -x \"$H\" ]; then base=$(\"$H\" \"$F\"); n=$(printf '%s' \"$base\" | grep -c .); open=$(printf '%s' \"$base\" | cut -c1-120 | head -15); if [ \"$n\" -gt 0 ]; then printf 'NOTES-FILE CHECK: docs/ideas/diors-notes.md has %s open (unmarked) item(s) in its working sections (between ## Questions and the <!-- /open-items --> marker). Do NOT skip the notes file this session -- review, answer, mark, and file them per the notes workflow (project_central_notes_file memory). Truncated previews:\\n%s' \"$n\" \"$open\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/ideas/diors-notes.md\"; H=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-followups.sh\"; if [ -f \"$F\" ] && [ -x \"$H\" ]; then out=$(bash \"$H\" \"$F\"); if [ -n \"$out\" ]; then printf 'FOLLOW-UP MARKS AWAITING YOU -- these are ※ exchanges in docs/ideas/diors-notes.md that are still open. An ANSWERED follow-up whose reply asks Harkirat something is NOT resolved: one sat unseen for ~5 sessions because it was below the open-items scan boundary, was not a \"- [ ]\" item, and no hook matched the mark. RAISE each of these with him in your FIRST message this session -- do not just read them.\\n%s' \"$out\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
             "timeout": 5
           }
         ]

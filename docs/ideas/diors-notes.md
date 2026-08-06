@@ -58,6 +58,27 @@ editor) — the colors are a local MarkEdit-only rendering layer, never baked in
 
 ---
 
+## 📍 Where everything else lives — not here
+
+*This file is intake only. Nothing below is duplicated here — these are the real homes an item gets filed INTO, after which it leaves this file. It sits near the top now, right after the Legend, so a session meets it before the working sections rather than after.* ※ [2026-08-03 19:14 EDT] Lowkey, why is this at the bottom of the file? shouldn’t this be at the top near the legend so session’s dont miss it? ※ ∴ [2026-08-03 19:39 EDT] Answered in the italic note above — the hook's scan range is why. Say the word and I'll rework the hook to use an explicit end-marker instead, which would let this section move. ∵ ∴ [2026-08-06 10:22 EDT] **Done — you were right twice over.** The section is moved here, and `notes-open-items.sh` now closes its scan on an explicit `<!-- /open-items -->` marker at the end of the working sections instead of on this heading, so the layout is yours to arrange and no longer dictated by a hook's scan range. Verified the open-item count is unchanged at 3 across the move — the first attempt silently took it to **0**, because the unguarded `## 📍` exit rule fired at line 61 before the scan had even started, which would have quietly disabled both this check and the records-close gate that delegates to it. **The bigger miss is that you had to raise this at all:** this reply sat here from 2026-08-03 and no session surfaced it, because it was below the scan boundary, wasn't a `- [ ]` item, and **no hook anywhere matched `※`**. Three blind spots stacked, so "I read the notes file" was true every time and still useless. `notes-followups.sh` now runs at every `SessionStart` and reports open follow-ups — including **answered ones whose reply still asks you something**, which is precisely this case and the one a naive "unanswered only" check would have kept missing. ∵
+
+| It's a… | Its real home |
+|---|---|
+| Feature / roadmap item (**v2 → v3 → v4 → v5**) | **`docs/ROADMAP.md`** — authoritative since 2026-07-22 (moved out of CLAUDE.md). `CHANGELOG.md`'s "🔮 Planned & Upcoming" + `CHANGELOG-SUMMARY.md`'s "🔜 Coming soon" are synced VIEWS of it, never separate lists. |
+| Deferred maintenance / tech-debt, or a feature big enough for its own session | **`docs/db-deferred-list.md`** (this repo) |
+| Confirmed **bug** in the bot, or a Dior's-Builds reminder / watch-for | **`docs/db-deferred-list.md`** → its 🐞 Active Bugs / 🔔 Reminders sections (moved in-repo 2026-07-25 21:43 EDT — these used to live in the cross-project file) |
+| Genuinely cross-project item, MarkEdit-extension work, or Claude/Anthropic product feedback | **`/Applications/Claude Code/meta-deferred-list.md`** |
+| Architecture / design "why" | **`CLAUDE.md`** (invariants + nav map) + the matching **`.claude/rules/*.md`** |
+| Workflow lesson or standing rule | **memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` |
+| Resolved **and** ℋ-confirmed item from this file | **`docs/archive/graveyard.md`** (swept, never deleted) |
+
+**This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless.
+New feature ideas start here as intake in the sections above, then get filed to the right home on the
+next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
+
+---
+
+
 ## Questions/Notes for Claude
 *Answers recorded inline; kept here as a reference record until swept out to `docs/archive/graveyard.md`.*
 
@@ -97,25 +118,4 @@ editor) — the colors are a local MarkEdit-only rendering layer, never baked in
 - [x] ✓ (2026-08-03 19:40 EDT) ~~Can you update the follow up extension so it defaults to in Sentence-Case formatting? Regardless of where the follow-up is placed (Eg. In headings). The follow-up needs to supersede the Case Tools Extension for itself. I raise this issue because the first word I type after the timestamp is always lowercase, even tho it’s technically the start of the sentence. And I was typing a follow-up note in line 212, which is a h2 heading, and every word in the follow-up kept being capitalized since the case tools extension auto formats headings. So I want to manually set the format for the follow-up text and make it supersede the other extension.~~
   <!-- FIXED 2026-08-03 19:40 EDT (Claude): two separate root causes, both fixed. (1) `markedit-dior-autocase.js`'s per-keystroke sentence-casing never recognized a follow-up's own "symbol [timestamp] " prefix as a sentence start, so the first word after it was never capitalized even outside headings — added `findFollowupOpen()`/`isFollowupSentenceStart()` so a follow-up's own first word (and the start of any later sentence inside it) is detected and cased correctly. (2) `case-tools.js`'s whole-node heading reformat (fires on Enter when Auto-Format is on) blindly title-cased the ENTIRE heading text including any follow-up mark living inside it — your exact repro. Added `protectFollowupSpans()`/`transformPreservingFollowups()`, which mask out any `※...※`/`∴...∵` span before running a transform and restore it byte-for-byte after, so a follow-up's own casing is now NEVER touched by Case Tools at all — `markedit-dior-autocase.js` is the only thing that ever cases follow-up text, exactly the "supersede" you asked for. Verified with a standalone Node test (8 cases: heading+followup-with-a-date for the digit-collision risk, multiple followups in one heading, sentence-start detection, mid-followup words staying uncapitalized) rather than by eye — all passed. `node --check` clean on both files. Not yet live-verified by you in the running app. -->
 
----
-
-## 📍 Where everything else lives — not here
-
-*This file is intake only. Nothing below is duplicated here — these are the real homes an item gets filed
-INTO, after which it leaves this file. Kept as the LAST section on purpose: the `SessionStart` hook counts
-open items strictly between `## Questions` and this heading, and moving the section up would pull its own
-table rows into that count — a one-line pointer at the top of the file links down here instead.* ※ [2026-08-03 19:14 EDT] Lowkey, why is this at the bottom of the file? shouldn’t this be at the top near the legend so session’s dont miss it? ※ ∴ [2026-08-03 19:39 EDT] Answered in the italic note above — the hook's scan range is why. Say the word and I'll rework the hook to use an explicit end-marker instead, which would let this section move. ∵
-
-| It's a… | Its real home |
-|---|---|
-| Feature / roadmap item (**v2 → v3 → v4 → v5**) | **`docs/ROADMAP.md`** — authoritative since 2026-07-22 (moved out of CLAUDE.md). `CHANGELOG.md`'s "🔮 Planned & Upcoming" + `CHANGELOG-SUMMARY.md`'s "🔜 Coming soon" are synced VIEWS of it, never separate lists. |
-| Deferred maintenance / tech-debt, or a feature big enough for its own session | **`docs/db-deferred-list.md`** (this repo) |
-| Confirmed **bug** in the bot, or a Dior's-Builds reminder / watch-for | **`docs/db-deferred-list.md`** → its 🐞 Active Bugs / 🔔 Reminders sections (moved in-repo 2026-07-25 21:43 EDT — these used to live in the cross-project file) |
-| Genuinely cross-project item, MarkEdit-extension work, or Claude/Anthropic product feedback | **`/Applications/Claude Code/meta-deferred-list.md`** |
-| Architecture / design "why" | **`CLAUDE.md`** (invariants + nav map) + the matching **`.claude/rules/*.md`** |
-| Workflow lesson or standing rule | **memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` |
-| Resolved **and** ℋ-confirmed item from this file | **`docs/archive/graveyard.md`** (swept, never deleted) |
-
-**This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless.
-New feature ideas start here as intake in the sections above, then get filed to the right home on the
-next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
+<!-- /open-items -->
