@@ -25,6 +25,21 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ✅ **CI cancelled at 15m04s on PR #89 — RESOLVED 2026-08-06 19:45 EDT: it was a GitHub Actions major
+  outage, never this repo.** Two runs died at *exactly* 15m04s / 15m03s with **zero log bytes** (no
+  runner was ever assigned — a failing step always leaves output), and **`main`'s own run failed
+  identically** on a branch the work never touched. The repo is public, so Actions minutes were never a
+  candidate. Confirmed at githubstatus.com. Once Actions recovered, `syntax-check` passed on the head
+  commit unchanged and **v2.57.0 merged and tagged normally** (`129304f`) — nothing in the repo was ever
+  fixed, because nothing in it was ever broken.
+  ⚠️ **The standing lesson:** the failure shape — a cancel with **no failed step and no log output** —
+  is the tell. **Check githubstatus.com before debugging the repo.** A prior session had recorded
+  "runner starvation" as an explicit hypothesis-not-a-finding, which was the right call and turned out
+  correct; the cheap confirmation (one status-page request) simply hadn't been run.
+  ⚠️ **Also surfaced:** `syntax-check` **is** a required status check, while CLAUDE.md still claimed
+  none existed — so a PR became genuinely unmergeable with 0 checks during the outage. CLAUDE.md is
+  corrected.
+
 - ✅ **DONE 2026-08-06 15:20 EDT (v2.57.0)** — `utils/alertExplain.js` supplies the plain-language layer
   (what happened · does it fix itself · what to do), reads Discord close codes so a transient 1006 and a
   fatal 4004 no longer read alike, and humanises the DISPLAY title only (the stored title stays a

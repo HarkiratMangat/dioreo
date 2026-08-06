@@ -181,7 +181,28 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.57.0 — 2026-08-06 15:15 EDT (#89) — Alerts a human can read, and a dev database that isn't anyone's
+## v2.57.1 — 2026-08-06 19:48 EDT (#90) — Closing out the outage
+
+Records only; no behaviour changed.
+
+**The CI mystery is closed, and the answer was never in this repo.** Two runs on the v2.57.0 branch
+died at *exactly* 15m04s and 15m03s with **zero log bytes** — no runner was ever assigned, and a
+failing step always leaves output. `main`'s own run failed identically, on a branch that work never
+touched. It was a **GitHub Actions major outage**, confirmed at githubstatus.com. Once Actions
+recovered, `syntax-check` passed on the head commit *unchanged* and v2.57.0 merged normally. Nothing
+was fixed, because nothing here was broken. **The tell is the shape: a cancel with no failed step and
+no log output. Check githubstatus.com before debugging the repo.**
+
+**A stale claim in CLAUDE.md surfaced while diagnosing it.** That file said no required status check
+existed, so "a PR with red CI still merges". **`syntax-check` IS required** (verified against the
+protection API), which is why the PR sat `BLOCKED` with 0 checks and genuinely could not be merged
+during the outage. The warning is replaced with the fact, plus the new failure mode it creates.
+
+**Handoff files moved to `local/handoff/`** and renamed to `<date>-<topic>-handoff.md` (Harkirat's
+call — `local/`'s root had six of them under three naming schemes). Each was dated from a date written
+inside the file and cross-checked against its mtime; all six agreed, so none of the dates are guesses.
+
+## v2.57.0 — 2026-08-06 15:15 EDT (#89 · `129304f`) — Alerts a human can read, and a dev database that isn't anyone's
 
 **A live `🔴 Gateway shard error` alert read, in full: `Unexpected server response: 503` and three
 `node_modules/ws/lib/websocket.js` stack frames.** Harkirat, on receiving it: *"absolutely no clue what
