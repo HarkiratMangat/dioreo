@@ -297,6 +297,32 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]`
+  *(filed 2026-08-06 09:35 EDT, in the same pass that built it.)* Trigger: **the next session that
+  makes a completion claim on a branch with commits** — it should be interrupted with a
+  `COMPLETENESS SWEEP` block. If a session ends claiming done and nothing fires, the wiring is wrong.
+
+  **Why this cannot be self-verified.** The hook is registered in `.claude/settings.json`, which the
+  harness reads at session start, so the session that *added* it is running the previous
+  registration by construction — the identical structural blind spot as the notes hook below. Its
+  logic is proven (17/17 self-tests, both directions of the angle detector, live-tested against this
+  branch), and its wiring is proven valid JSON in the right event. **What is unproven is that the
+  harness invokes it**, and that is exactly the gap that produced two dead gates in this repo.
+  ⚠️ **Do not close this by re-reading the settings file.** Only a fresh session's observed behaviour
+  counts. See [[feedback_verify_before_claiming]].
+
+  **Three stated limits, deliberately accepted rather than engineered around** — reconsider only if
+  one actually bites:
+  1. **The stamp means it fires ONCE per repo state.** Ignore the block, change nothing, re-claim →
+     silence. Matches every other `Stop` gate here and is what keeps it off ordinary messages, but
+     it does mean the gate cannot nag.
+  2. **Broad angle detectors**: searching FOR a string in a Bash command counts as having run that
+     angle (`rg -n 'buildLegalPages'` reads as covered). Deliberate — a false "covered" beats a gate
+     that fires on everything and gets dismissed unread.
+  3. **The `ANGLES` registry is a whitelist of failures that already happened**, so a genuinely new
+     KIND of miss has no entry by construction. Same honest edge `docs-audit` documents about
+     itself. Add an angle by appending one `id|detector|demand` line.
+
 - **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
   *(filed 2026-08-06 08:08 EDT, in the same pass that moved the file.)* Trigger: **the very next fresh
   session in this repo** — check its startup context for a `NOTES-FILE CHECK:` line naming
