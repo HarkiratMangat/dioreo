@@ -237,15 +237,26 @@ the project's canonical audit check is `discordId: /^[0-9]{17,20}$/`, so a fully
 have reported 17 real users **forever**. A check that cries wolf is one that gets ignored on the day it
 is right.
 
-**Sentry: asked, answered, no.** The tracker held a `[P3 · S]` *"re-evaluate Sentry"* item in 🗂️ Queued
-**while the same file's 🚫 Decided-no section already recorded the decision not to** — the question and
-its answer, filed separately, so a session picking up the queued item would have re-litigated a settled
-call without noticing. Re-evaluated on its own terms anyway, and it loses on the technical question
-too: structured Cloud Logging already carries severity + version + commit per entry, `vmstatus.sh`
-tiers errors/alerts/noise, and this release supplies the readability that motivated wanting error
-grouping. The decisive objection remains legal and was re-verified live rather than quoted —
-`PRIVACY.md` v1.9 names Sentry in its verification appendix and states **"None present"**, on a
-published page. **Nothing was built.**
+**Sentry: asked, answered, not now — and not for the reason I first gave.** The tracker held a
+`[P3 · S]` *"re-evaluate Sentry"* item in 🗂️ Queued **while the same file's 🚫 Decided-no section
+already recorded the decision not to** — the question and its answer, filed separately, so a session
+picking up the queued item would have re-litigated a settled call without noticing.
+
+⚠️ **My first verdict rested on the published Privacy Policy, and Harkirat threw it out:** *"the privacy
+policy shouldn't be the decision maker when it comes to implementing things or trying things. It's only
+advisory but I'm open to changing the policy."* He is right, and the reasoning was circular — the policy
+says "None present" **because** we previously chose not to adopt one, so quoting it back dresses our own
+past decision up as an external constraint. A policy amendment is a **cost line**, never a veto.
+
+**The real case is volume.** Of 409 stored alerts, **2 are errors, across 1 distinct error title.**
+Sentry's core value is fingerprinting many occurrences of many distinct exceptions and tracking
+regressions across releases; at this rate that view holds a single row. And the practical want behind
+it — *"I can't tell what this means or whether to act"* — is what the rest of this release fixes
+directly. 🔎 **What the original evaluation missed entirely: Google Cloud Error Reporting**, which does
+the grouping and dedup half for free, off the stack traces `utils/logger.js` already emits, with no SDK
+inside the bot process and no policy amendment at all — and **it is not enabled**
+(`gcloud services list --enabled` returns only `logging.googleapis.com`, checked live). Try that first.
+**Nothing was built, and this is explicitly not a permanent no.**
 
 **Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js`
 (13 cases) and `scripts/gatewayRecovery.test.js` (8). They exist because the obvious verification —

@@ -679,14 +679,21 @@ active file a given dead item came out of.
   a separate open question.** This sat in 🗂️ Queued asking whether to adopt Sentry while the SAME file's
   🚫 Decided-no section already recorded the decision not to; the tracker held both the question and its
   answer, and a session picking up the Queued item would have re-litigated a settled call without
-  noticing. **The re-evaluation was performed on its own terms** and Sentry lost on the technical
-  question too: structured Cloud Logging carries severity + version + commit per entry, `vmstatus.sh`
-  tiers errors/alerts/noise, and v2.57.0's alert-readability work supplied the plain-language layer and
-  paired recovery signal that were the practical motivation for wanting error grouping. The decisive
-  objection is still the legal one, re-verified live rather than quoted: `docs/legal/PRIVACY.md` v1.9
-  names Sentry explicitly in its verification appendix and states **"None present"**, and that page is
-  published. Full reasoning now lives in `db-deferred-list.md`'s 🚫 Decided-no entry, which is where a
-  standing decision belongs per this file's own rules. Nothing was built.
+  noticing. **The answer is not now, on the technical merits — and it is not permanent.**
+  ⚠️ **This entry originally gave the published Privacy Policy as the decisive reason, and Harkirat
+  rejected that outright** (2026-08-06 15:46 EDT): *"the privacy policy shouldn't be the decision maker
+  when it comes to implementing things or trying things. It's only advisory but I'm open to changing
+  the policy."* He is right — the policy says "None present" **because** we chose not to adopt one, so
+  citing it back is circular. The amendment is a cost line. The real case, measured:
+  **of 409 stored alerts, 2 are errors across 1 distinct title** — Sentry's core value is fingerprinting
+  many distinct exceptions at volume, and that volume does not exist here; and the practical want
+  ("I can't tell what an alert means") was answered directly by v2.57.0 instead.
+  🔎 **The genuinely useful finding: Google Cloud Error Reporting was never considered and is not
+  enabled** (`gcloud services list --enabled` shows only `logging.googleapis.com`, checked live). It
+  does the grouping/dedup half for free, off the stack traces `utils/logger.js` already emits, with no
+  SDK in the process and no policy amendment. **Try that first.** Full reasoning in
+  `db-deferred-list.md`'s 🚫 Decided-no entry; lesson in [[feedback_policy_is_advisory_not_a_veto]].
+  Nothing was built.
 
 - ~~[Diors Builds] `/secondary` rename + `/pistols` alias~~ → **DROPPED, replaced 2026-07-18 (v2.21.0).**
   `/secondaries` stays exactly as-is; built a category-level search-synonym feature instead

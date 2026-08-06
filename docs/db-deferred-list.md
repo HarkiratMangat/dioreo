@@ -1715,24 +1715,49 @@ doesn't re-open them as if they were new.*
   85 offers assessed against the real stack — the adopted three are in the 🔔 claim reminder above,
   and the source table Harkirat extracted is `local/pack_summary.md`)*. Each was considered and
   declined for the stated reason; don't re-raise without new information.
-  - **Sentry, and any third-party error-reporting or analytics SDK** — ✅ **re-evaluated and re-declined
-    2026-08-06 15:12 EDT**, closing the separate `[P3 · S]` "re-evaluate Sentry" item that had been
-    sitting in 🗂️ Queued *contradicting this entry* — the tracker was simultaneously asking the question
-    and recording the answer. The re-evaluation asked what the item told it to ask ("what does Sentry
-    add over structured Cloud Logging?") and the answer is **less than it did**: Cloud Logging already
-    carries severity + version + commit per entry, `vmstatus.sh` tiers errors/alerts/noise, and the
-    2026-08-06 15:12 EDT alert-readability work added the plain-language layer and the paired recovery signal
-    that were the practical reasons to want grouping. What remains unique to Sentry — release-health
-    graphs, cross-session breadcrumbs — is not worth the cost below for a single-maintainer bot. The
-    legal objection was and remains the decisive one, verified live against the published policy
-    (v1.9, §2.6 + Appendix A line 681). ⚠️ **Do not re-file this as a new "re-evaluate" item.**
-    This is a legal-document decision, not a technical one. `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
+  - **Sentry, and any third-party error-reporting or analytics SDK** — ✅ **re-evaluated 2026-08-06
+    15:49 EDT. Verdict: not now, ON THE TECHNICAL MERITS — and there is a cheaper thing to try FIRST
+    that nobody has enabled.** This also closes the separate `[P3 · S]` "re-evaluate Sentry" item that
+    had been sitting in 🗂️ Queued *contradicting this entry* — the tracker held both the question and
+    its answer.
+    ⚠️ **CORRECTED 2026-08-06 15:49 EDT.** The first version of this verdict rested on the published
+    Privacy Policy ("it names Sentry and says None present, therefore no"). Harkirat rejected that
+    reasoning outright: *"the privacy policy shouldn't be the decision maker when it comes to
+    implementing things or trying things. It's only advisory but I'm open to changing the policy."*
+    He is right, and the argument was circular — the policy says "None present" **because** we chose
+    not to adopt one, so quoting it back is our own past decision wearing an external constraint's
+    clothes. The amendment is a **cost line**, not a wall. See
+    [[feedback_policy_is_advisory_not_a_veto]].
+    **The actual technical case, measured:**
+    · **Volume kills it.** Of 409 alerts in the store, **2 are errors, across 1 distinct error title.**
+      Sentry's core value — fingerprinting many occurrences of many distinct exceptions, deduplicating
+      them, tracking regressions across releases — is a solution to a volume problem this bot does not
+      have. At this rate the grouping view would hold a single row.
+    · **The practical want was already delivered.** The reason to want grouping was "I can't tell what
+      an alert means or whether to act". v2.57.0's plain-language layer + paired recovery signal answer
+      that directly, without a vendor.
+    · 🔎 **The real alternative was never named, and it is free and already in the stack: Google Cloud
+      Error Reporting.** It does automatic grouping/dedup and new-error notification, consumes the
+      stack traces `utils/logger.js` ALREADY emits to Cloud Logging, needs **no SDK inside the bot
+      process** (so no RAM on a 969MB e2-micro), no new vendor, and no data leaving the existing
+      processor — which means **no policy amendment either**. Checked live 2026-08-06 15:46 EDT:
+      `gcloud services list --enabled` shows only `logging.googleapis.com`, so
+      **`clouderrorreporting.googleapis.com` is NOT enabled.** Turning it on is one API enable and zero
+      code.
+    **Recommendation:** enable Cloud Error Reporting first and live with it. If a real gap survives —
+    breadcrumbs, release-health, crash-free-session rate, none of which Error Reporting does — then
+    Sentry becomes a genuine question again, and the policy amendment is priced in rather than
+    treated as a blocker. **Not a permanent no.**
+    *(The policy consequence, kept as a COST, not a reason:)* `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
     PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises
     *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it.
     Adopting one costs a policy amendment + a new US sub-processor disclosure + a policy version bump
-    + a `public/` rebuild and redeploy. The homegrown three-tier model (errors/alerts/noise) already
-    works and must never be collapsed into or replaced by a vendor. ⚠️ **This applies to ANY
-    third-party SDK, not only Sentry** — check the appendix before adding one.
+    + a `public/` rebuild and redeploy — real work, and the reason to be sure the gain is real first.
+    Whatever gets adopted, the three-tier model (errors/alerts/noise) must keep its three tiers: the
+    standing rule is that they are never collapsed into one number, by a vendor or by anything else —
+    that is about not losing a distinction, not about refusing tools. ⚠️ **The policy check applies to
+    ANY third-party SDK, not only Sentry** — read the appendix before adding one, so the amendment is
+    priced in rather than discovered afterwards.
   - **SimpleAnalytics** — same published-claim problem, and Cloudflare Web Analytics is free,
     cookieless, and already in the stack.
   - **Codecov** — `npm test` is `node --check` + docs-audit + hook tests + one dedup test. Coverage

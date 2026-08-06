@@ -5269,12 +5269,36 @@ numeric and snowflake-shaped, on the reasoning that preserving the shape preserv
 project's canonical audit check is `/^[0-9]{17,20}$/`. A fully-cleaned database would have reported 17
 real users forever — and a check that cries wolf is one that gets ignored on the day it is right.
 
-**Last: a tracker that held both a question and its answer.** A `[P3]` item asked whether to adopt
-Sentry. The same file's decided-no section already recorded that we would not, on legal grounds — the
-published Privacy Policy names Sentry by name and says "None present." Either entry read alone is
-coherent. Together they are a trap: a session picking up the queued item re-opens a settled decision
-and never learns it was settled. I answered the question on its own terms anyway (it loses on the
-technical merits too, now), and then closed the contradiction, which was the more valuable half.
+**Last: a tracker that held both a question and its answer — and a verdict I got wrong.** A `[P3]` item
+asked whether to adopt Sentry. The same file's decided-no section already recorded that we would not.
+Either entry read alone is coherent; together they are a trap, because a session picking up the queued
+item re-opens a settled decision and never learns it was settled. Closing that contradiction was real
+work.
+
+Then I answered the question badly. My reason was the published Privacy Policy: it names Sentry and
+says "None present", so adopting one would make a live legal document false. Harkirat rejected the
+whole shape of that: *"the privacy policy shouldn't be the decision maker when it comes to implementing
+things or trying things. It's only advisory but I'm open to changing the policy."*
+
+He is right, and the error is worth naming precisely, because it did not feel like an error. **The
+argument was circular.** The policy says "None present" *because we chose not to adopt one*. Citing it
+as the reason not to adopt one is quoting our own past decision back as though somebody else had
+imposed it. And a legal-sounding objection carries more apparent weight than a technical one, so it
+closed the discussion while the question I was actually asked went unanswered. Every one of these
+documents — PRIVACY, TERMS, LICENSE, CLAUDE.md, a decided-no entry — belongs to the person asking me
+the question. An amendment is a line in the cost column, not a wall.
+
+Redone on the merits, the answer is still "not now" but for a reason that can actually be checked:
+**of 409 stored alerts, 2 are errors across 1 distinct title.** Sentry exists to fingerprint many
+occurrences of many distinct exceptions and catch regressions across releases; at that volume the
+grouping view holds one row. And the thing that made him want it — not being able to tell what an alert
+meant — is what the rest of this release fixed directly.
+
+The more useful finding is the one the original evaluation never reached: **Google Cloud Error
+Reporting** does the grouping-and-dedup half for free, consuming the stack traces the logger already
+emits, with no SDK inside the process and no policy amendment — and it is simply not switched on. I
+had been comparing Sentry against "raw Cloud Logging" when the real comparison was sitting unenabled
+in the same cloud project. **Ruling something out on a document is how you avoid finding that.**
 
 ### What this cost, and what it taught
 
@@ -5287,6 +5311,10 @@ technical merits too, now), and then closed the contradiction, which was the mor
 - **A test that judges text will encode your taste unless you make it prove a property.** Mine failed
   twice on correct content before it checked the right thing.
 - **A script is not an outcome.** Two days of documented cleanliness, zero rows changed.
+- **Our own documents do not get a veto.** If a recommendation's load-bearing sentence quotes one of
+  our files, the analysis probably has not happened. Ask what you would recommend if the document did
+  not exist — that is the real answer — then add the amendment back as a cost and see if it changes
+  anything. Here it did not, and the honest reason was better than the one I gave.
 
 
 # Part B — Lessons Ledger (thematic)
