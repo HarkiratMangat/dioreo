@@ -274,9 +274,22 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **🚀 v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3** `[P1 · XS]`
-  *(filed 2026-08-04 16:23 EDT, replacing the branch reminder this supersedes)*. Trigger: the next
-  session that touches this repo, or any report that a site/bot change "did not land".
+- **🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED** `[P1 · XS]`
+  *(filed 2026-08-04 16:23 EDT; **rewritten 2026-08-06 00:36 EDT** because it had gone stale in the
+  worst way — see below)*. Trigger: the next session that touches this repo, or any report that a
+  site/bot change "did not land".
+
+  ⚠️ **This entry previously read "v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running
+  v2.51.3", and by 2026-08-06 `main` was at v2.55.5.** Both numbers were copies of state that nothing
+  updated, so the item quietly understated the gap by several releases while looking precise — the
+  exact failure [[feedback_no_duplicated_state_in_prose]] describes. It is now written so it cannot
+  rot: **`main`'s version is whatever `package.json` says, and the VM's is whatever the VM says.**
+  **Never write either number back into this entry — go and read them.**
+
+  **FIRST STEP IS TO MEASURE, NOT TO DEPLOY.** Nobody has checked what the VM is actually running;
+  `./scripts/vmstatus.sh` reports it. Only once that number is known can anyone judge whether a deploy
+  is wanted — and **several releases since v2.52.0 carried real bot and site code**, not just records,
+  so this is not automatically a docs-only backlog.
 
   Deploy is a separate, optional step and is deliberately NOT implied by a merge — Harkirat asked for
   "commit, push, pr, and merge" and said nothing about deploying, so it was held. On the VM:
@@ -1482,6 +1495,25 @@ well-specified execution/polish, not novel design.*
   one of those references needs quoting — but it means a literal-string sweep must catch both the
   old *path* and the old *name*.
   🔗 Bundle with the `known-issues.md` split/rename below: same class of work, same sweep, one audit.
+- `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg above]` **Fold `docs/reference/design-history.md`
+  into `docs/DEVLOG.md` as its earliest entries, then delete it** — *(filed 2026-08-06 00:37 EDT.)*
+
+  ⚠️ **Filed late, and that is the point of the entry.** The v2.55.5 DEVLOG entry states *"Filed, not
+  done"* about this — and it was **not** filed. The claim shipped in a merged, tagged record before it
+  was true. Caught by the outstanding-items gate at 2026-08-06 00:36 EDT, minutes after the merge.
+  Writing "filed" is not filing; the two feel identical in the moment and only one survives the session.
+
+  **Why the fold is right rather than a new folder.** `design-history.md` fails the `docs/reference/`
+  test — it is narrative, not "look this up to do the thing correctly." But it does not need
+  `docs/history/` either: it covers **2026-07-12**, `DEVLOG.md`'s earliest entry is **2026-07-13**, and
+  DEVLOG's own status header says the earlier backfill is **still outstanding**. It is not a misfiled
+  reference doc; it is the missing chapter DEVLOG has been waiting for.
+
+  **Steps:** fold its sections in as DEVLOG's earliest Part A entries (preserving their own dates,
+  not backdating them) · add TOC lines · resolve the `[backfill — expand later from transcripts]`
+  marker if this closes it · delete the file · sweep its references, **measured at 12 files on
+  2026-08-05 23:58 EDT** · `npm run docs:audit` (expect exit 0; `record-structure` will exercise the
+  new headings).
 - `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move above]` **Split `docs/reference/known-issues.md`,
   then rename it to `platform-constraints.md`, renamed from `known-issues.md`** — ⚠️ *the new name
   does not exist yet; it is the planned end state, not a live pointer.* — *(filed 2026-08-06 00:14 EDT,
