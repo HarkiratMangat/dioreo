@@ -57,6 +57,21 @@ a "--tags from main is fine"              "$ON_MAIN" "git push --tags"          
 a "non-push command is ignored"           "$ON_MAIN" "git status"                        ALLOW
 a "'git pushd' is not a push"             "$ON_MAIN" "echo git pushing things"           ALLOW
 
+# --- the FALSE POSITIVE that blocked real work, 2026-08-06 10:46 EDT ---
+# Once a squash-merge deletes the working branch, HEAD lands back on main — and from that moment the
+# guard denied EVERY push, including pushing a brand-new feature branch and including pushes aimed at
+# a DIFFERENT REPOSITORY, where the project dir's branch says nothing about the operation. It blocked
+# the dior-CLI PR minutes after this guard's own release merged. An explicit non-main destination ref
+# disclaims main; a bare push does not, which is why the first case below must still BLOCK.
+a "feature branch pushed FROM main is fine" "$ON_MAIN" "git push -u origin fix/some-branch"  ALLOW
+a "another repo's push from main is fine"   "$ON_MAIN" "cd ~/.config/dior && git push -u origin fix/x" ALLOW
+a "branch DELETE from main is fine"         "$ON_MAIN" "git push origin --delete old-branch"  ALLOW
+a "short -d delete from main is fine"       "$ON_MAIN" "git push origin -d old-branch"        ALLOW
+# ...and the deny path must survive all of that, or the fix has hollowed the guard out.
+a "still blocks 'origin HEAD' on main"      "$ON_MAIN" "git push origin HEAD"                 BLOCK
+a "still blocks the rtk-wrapped bare push"  "$ON_MAIN" "rtk git push"                         BLOCK
+a "still blocks deleting main itself"       "$ON_MAIN" "git push origin --delete main"        BLOCK
+
 # --- word boundary: 'main' must not match a branch that merely starts with it ---
 a "pushing 'maintenance' is fine"         "$ON_FEAT" "git push origin maintenance"       ALLOW
 a "pushing 'main-notes' is fine"          "$ON_FEAT" "git push origin main-notes"        ALLOW
