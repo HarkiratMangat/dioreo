@@ -1336,6 +1336,31 @@ check(
 );
 
 /* -------------------------- chronicle-drift ------------------------- */
+// ⚠️ SUPPRESSED IN THE REAL REPO — 2026-08-06 00:18 EDT, Harkirat's call.
+//
+// WHY. The three chronicle pages are withdrawn from the nav and are waiting on the journey-pages
+// rework. Until that starts, this meter reports the same known drift on every single run, and it
+// grows by one line per release. A warning that is always present and always expected trains
+// everyone to read past the whole WARN block — which is worse than no warning at all, because it
+// camouflages the NEXT one. That is the failure this file exists to prevent, so leaving it noisy
+// was not the safe option it looks like.
+//
+// ⚠️ SUPPRESSED, NOT DELETED, AND NOT SILENT — the three properties that keep this from becoming a
+// dead gate:
+//   1. It still RUNS and still examines both pairs, so the vacuous-pass detector keeps watching it.
+//      A broken matcher here would still surface as "examined 0".
+//   2. It still PRINTS one line per run stating how far behind the pages are. The state stays
+//      visible; only the WARN finding is withheld.
+//   3. It is gated on DOCS_AUDIT_ROOT being ABSENT, so the fixture tree is untouched and
+//      docs-audit.test.mjs's `proves("a changelog entry whose built page was never regenerated")`
+//      keeps exercising the real logic. A suppression that also disabled its own failure test would
+//      be precisely the silently-dead gate this repo has already paid for twice.
+//
+// LIFT IT when work starts on the three journey pages. That is the trigger, and it is tracked as a
+// reminder in docs/db-deferred-list.md — flip this to `false`, delete this block, and run
+// `npm run site` to resync public/changelog/.
+const SUPPRESS_CHRONICLE_DRIFT = !process.env.DOCS_AUDIT_ROOT;
+
 check(
   "chronicle-drift",
   "WARN",
@@ -1374,6 +1399,15 @@ check(
             "pages are revived.",
         });
       }
+    }
+    // Withhold the findings, but never the information — see the SUPPRESS_CHRONICLE_DRIFT note above.
+    if (SUPPRESS_CHRONICLE_DRIFT && out.length) {
+      console.log(
+        `  · chronicle-drift SUPPRESSED (since 2026-08-06 00:20 EDT): ${out.length} of ${examined} ` +
+          `chronicle page(s) behind their source. Deliberate while those pages are withdrawn from ` +
+          `the nav — lift it when the journey-pages rework starts (reminder in db-deferred-list.md).`
+      );
+      return { findings: [], examined };
     }
     return { findings: out, examined };
   }

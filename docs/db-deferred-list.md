@@ -287,6 +287,26 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   with the merge while the bot on the VM is still the old build. That split is normal here and is
   exactly why "merged" must never be reported as "live" — say which of the two actually happened.
 
+- **🔇 LIFT the `chronicle-drift` suppression when the journey-pages rework starts** `[P2 · XS]`
+  *(filed 2026-08-06 00:20 EDT, Harkirat's call)*. **Trigger:** the first session that touches the
+  three journey/chronicle pages (`public/changelog/index.html`, `detailed.html`, `devlog.html`).
+
+  The check reported the same known drift on every run and grew by a line per release. A warning
+  that is always present and always expected trains everyone to read past the whole WARN block,
+  which camouflages the next real one — so it was suppressed rather than left to be ignored.
+
+  **It is suppressed, not deleted, and not silent** — `SUPPRESS_CHRONICLE_DRIFT` in
+  `scripts/docs-audit.mjs`. It still runs, still examines both pairs (so a broken matcher still
+  shows as "examined 0"), and still prints one line per run stating how far behind the pages are.
+  It is gated on `DOCS_AUDIT_ROOT` being absent, so `docs-audit.test.mjs`'s
+  `proves("a changelog entry whose built page was never regenerated")` keeps exercising the real
+  logic — a suppression that disabled its own failure test would be the dead gate this repo has
+  already paid for twice.
+
+  **To lift:** flip the constant to `false`, delete its comment block, run `npm run site`, and
+  commit the resynced `public/changelog/`. Also revisit CI's `public/`-staleness exclusion and
+  `deploy-site.yml`'s changelog-only skip — both were correct for unreachable pages and become
+  wrong the moment those pages are reachable again.
 - **🎓 CLAIM the three GitHub Student Pack offers that were actually adopted** `[P2 · XS]`
   *(filed 2026-08-05 22:08 EDT — a full triage of all 85 offers ran this session)*. Trigger: before
   student status lapses, or the next time the iOS nav bug is picked up. **Harkirat claims these, not
