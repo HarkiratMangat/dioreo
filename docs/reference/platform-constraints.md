@@ -1,14 +1,47 @@
-# Known open issues (flagged, not silently patched)
+# Platform constraints — things the platform will not currently let us do
 
-*Read on demand / when touching a flagged area. Moved from CLAUDE.md on 2026-07-22 13:27 EDT; root
-CLAUDE.md's nav map points here. Also cross-check `docs/db-deferred-list.md` (🐞 Active Bugs — this
-project's confirmed bugs moved in-repo 2026-07-25 21:43 EDT; `/Applications/Claude Code/meta-deferred-list.md`
-now only holds cross-project ones).*
+*Read on demand, and before concluding that something "can't be done."*
 
-- `calendar.js` and `draws.js` both have defensive component-count chunking;
-  `patchnotes.js`'s media carousel does not (untested at scale — likely fine since
-  patch note screenshots per entry are usually few, but not empirically verified
-  the way draws/calendar chunking was).
+## What this file is, and what belongs in it
+
+This file holds **accepted constraints imposed from outside this codebase** — Discord's Components V2,
+the Discord client's own rendering, and system-level dependencies. An entry here answers *"why is it
+like that?"* with **"because the platform, not because we haven't got to it."**
+
+**What does NOT belong here:**
+- **Open bugs in our own code** → `docs/db-deferred-list.md`'s 🐞 Active Bugs section.
+- **Work we've decided on but not built** → that same file's 🗂️ Queued or 🧹 Someday sections.
+- **Design decisions we made freely** → `.claude/rules/design-decisions.md`.
+
+The test is *whose* limitation it is. If a sufficiently determined session could fix it inside this
+repo, it is not a constraint — it is work, and it belongs on a list that gets worked.
+
+## ⚠️ These are NOT forever-constraints — re-test before citing one
+
+**Harkirat's explicit point, and the reason this file was renamed rather than just tidied.** Every
+entry below is a snapshot of what the platform allowed *on the date in the entry*. Discord ships
+platform updates; a component type gains a property; a client limitation gets fixed; a feature changes
+shape and stops needing the thing that was blocked.
+
+So an entry here is **evidence, not a verdict**. Before using one as the reason something cannot be
+done — especially before telling Harkirat a request is impossible — **re-test it against the current
+platform** and update the entry with what you found and when. An entry that has never been re-checked
+since it was written is a claim about the past being used to make a decision about the present.
+
+The file's own history is the argument: the button-expiry entry below is here *because* a confident
+"hard Discord platform wall" claim was made, pushed back on, and turned out to be wrong — twice in one
+day. It is kept as a permanent refutation precisely so nobody re-derives the wrong version.
+
+---
+
+*Renamed from `known-issues.md` 2026-08-06 08:13 EDT, after splitting the genuine open defects out to
+`docs/db-deferred-list.md` (the `patchnotes.js` chunking gap → 🐞 Active Bugs; the pagination
+double-round-trip investigation and its agreed hybrid fix → 🧹 Someday). The old name had become a lie
+on the tin: most of what it held were facts, not defects. Originally moved out of `CLAUDE.md`
+2026-07-22 13:27 EDT; the root nav map points here.*
+
+---
+
 - **View Colors panel's vertical centering is unsolved.** Discord's Components V2 has no native
   vertical-align control for a Section's text relative to its accessory; a blank-emoji-line
   workaround was tried and reverted after it looked wrong on mobile. Purely cosmetic, no functional
@@ -29,29 +62,8 @@ now only holds cross-project ones).*
   `docs/reference/deployment-and-ops.md`). Kept as a flagged dependency only because it is still a
   *system* binary that a VM rebuild could omit: if decoration color extraction ever works locally but
   not live, check `ffmpeg` on the VM before assuming a code bug.
-- **Pagination/toggle clicks (draws' New/Returning switch, calendar/draw-prices sub-page nav, etc.)
-  have a structural double network round-trip, not a CPU/DB bug** (investigated 2026-07-14, Harkirat
-  flagged it "feels slow"). Traced every `await` on the hot path for both `/draws`' view-switch and
-  `/calendar`'s sub-page nav: 1 `deferUpdate()` round-trip, 2 concurrent Mongo reads (`prefs` +
-  `SeasonalData`), then a SEPARATE `rest.patch(Routes.webhookMessage(...))` round-trip to actually
-  update the message — `buildContainer()` itself is pure sync string-building, no image/attachment
-  work happens on this path at all. Ruled out the earlier View-Colors-incident-style cause too:
-  Harkirat's own saved `accentColorStyle` is `'preset'`, which returns `presetHex` immediately with
-  no live Discord fetch, so that's not contributing here. The real fix — answering with a single
-  direct `UPDATE_MESSAGE` interaction response instead of defer-then-patch — would cut one full
-  network hop per click, but touches every paginated command (draws/calendar/drawprices/settings/
-  colors/loadouts), a broader refactor than anything else done this session. **Deliberately deferred
-  to a future session** (Harkirat's explicit call — ship the smaller asks first) rather than attempted
-  alongside the panel-lock/share-button/timestamp-format work above. **When we do tackle it, the agreed
-  shape is a HYBRID, not a blanket conversion** (Harkirat's call, 2026-07-14): split by what each
-  handler does before it can respond. Pure string-building paginated commands (draws, calendar,
-  drawprices, settings) → single `UPDATE_MESSAGE` (one hop; they finish well inside Discord's 3s ACK
-  window, so the margin `deferUpdate()` buys isn't needed). Anything that does heavy work before
-  replying — View Colors (k-means extraction, swatch/gradient PNG generation, the ffmpeg still-frame)
-  and any attachment-generating path → KEEP defer-then-patch, since blowing the 3s ACK is a real risk
-  there. Heuristic: "does this path do CPU or image/network work before it replies?" → heavy stays
-  defer, light goes single-hop.
-- **CORRECTED 2026-07-18 (was wrong in an earlier same-day pass, caught when Harkirat pushed back):**
+- **NOT a constraint — the standing refutation of one.** **CORRECTED 2026-07-18 (was wrong in an
+  earlier same-day pass, caught when Harkirat pushed back):**
   physically disabling expired buttons IS achievable — do not reintroduce the earlier wrong claim that
   it's a hard Discord platform wall. What's actually true: **every button click is its OWN fresh
   interaction with its OWN fresh 15-minute token** — confirmed via Discord's docs and community sources,
@@ -64,7 +76,7 @@ now only holds cross-project ones).*
   freshness window), NOT derived from any Discord token limit** — the earlier claim that it "had to"
   be 15 minutes because of Discord's ceiling was incorrect; it could be any duration.
   **FURTHER CORRECTED same day, after this paragraph was first written:** the "only genuinely
-  unavailable thing" claim below (a fully proactive, zero-click update) was ALSO wrong — a scheduled
+  unavailable thing" claim (a fully proactive, zero-click update) was ALSO wrong — a scheduled
   `setTimeout` inside the bot process can hold an already-issued interaction token and fire a `PATCH`
   with it directly, entirely on its own, as long as it fires before that token's own 15-minute
   ceiling. No click, no channel-edit permission, no scheduled job outside the bot process needed —
@@ -73,6 +85,5 @@ now only holds cross-project ones).*
   does exactly this. Still open: extending the same pattern to draws/calendar/drawprices/loadouts —
   tracked in **`docs/ROADMAP.md`** (the "Extending `utils/passiveExpiry.js`'s `schedulePanelExpiry` to
   their own render/re-render sites" item). *(Corrected 2026-07-28 01:41 EDT: this used to say "the
-  roadmap item below," but nothing follows it — this is the last entry in the file, and the roadmap
+  roadmap item below," but nothing follows it — this was the last entry in the file, and the roadmap
   moved out to its own file on 2026-07-22.)*
-

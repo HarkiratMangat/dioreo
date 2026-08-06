@@ -25,6 +25,50 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🧭 Split `docs/reference/known-issues.md`, then rename it to `platform-constraints.md` — CLOSED
+  2026-08-06 08:15 EDT.** Filed 2026-08-06 00:14 EDT as
+  `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move]`, Harkirat's call.
+
+  Original reasoning, kept: the file's 78 lines were mostly **accepted platform constraints**, not
+  open bugs — "View Colors vertical centering is unsolved", "Deco renders as a static poster",
+  "`ffmpeg` is a real system dependency". Those are *facts*, not defects. A minority genuinely were
+  open items duplicating `db-deferred-list.md`'s own 🐞 section. **Renaming without splitting would
+  have put a lie on the tin**, and merging wholesale into 🐞 would have invited a future session to
+  "fix" something that is not fixable.
+
+  **The split, as actually decided — 6 entries, 2 out and 4 kept:**
+  - **Out → 🐞 Active Bugs:** `patchnotes.js`'s media carousel has no component-count chunking. Our
+    missing guard, not a Discord limit. Filed honestly as UNVERIFIED rather than confirmed broken,
+    with the cheap close (count what a worst-case entry actually renders) stated.
+  - **Out → 🧹 Someday:** the pagination double-round-trip investigation and its agreed hybrid fix.
+    Never a constraint — our own architecture with a *decided* design, which belongs where
+    decided-but-unbuilt work lives. It was folded into the existing "Pagination perf hybrid" item,
+    which had been a pointer back at `known-issues.md`; the detail is now in one place instead of
+    split across two files pointing at each other.
+  - **Kept:** View Colors vertical centering · Deco's static poster · the `ffmpeg` system dependency.
+  - **Kept, and reframed:** the button-expiry entry, now labelled *"NOT a constraint — the standing
+    refutation of one."* It records a confident "hard Discord platform wall" claim that was wrong and
+    corrected **twice in one day** after Harkirat pushed back. In a constraints file that is the most
+    valuable entry present, because it is the one that stops a wrong constraint being re-derived.
+
+  **The header note Harkirat asked for is in the file**, and says three things: what belongs here,
+  what belongs in the deferred list instead (with the test — *whose* limitation is it), and that these
+  are **not forever-constraints**. An entry is *evidence, not a verdict*; re-test it against the
+  current platform before citing it as a reason something cannot be done, especially before telling
+  Harkirat a request is impossible.
+
+  **Sweep:** the filed estimate was 8 files; the live set was 6 in-repo (`CLAUDE.md`, `docs/README.md`,
+  `docs/ROADMAP.md`, `docs/db-deferred-list.md`, `docs/ideas/docs-system.md`,
+  `.claude/rules/settings-and-expiry.md`) plus 4 memory files. Records and the dated
+  `docs/superpowers/specs/**` were left alone.
+  ⚠️ **A blind find-replace corrupted three of them** and had to be undone by hand: the sentences that
+  *describe* the rename legitimately contain the old name, and a path-shaped matcher cannot tell a
+  live pointer from a historical mention. Same class of trap as the notes-file move.
+  ⚠️ **It also exposed a pre-existing false cross-reference:** the "Verify Cloudinary folder
+  organization" item claimed it was "also tracked in `known-issues.md`". It never was — that file held
+  six entries and none concerned Cloudinary. Removed rather than repointed; a cross-reference to a
+  file that does not carry the item reads as corroboration and supplies none.
+
 - **📓 Move + rename the notes file: `docs/diors-builds notes.md` → `docs/ideas/diors-notes.md` —
   CLOSED 2026-08-06 08:07 EDT.** Filed 2026-08-06 00:14 EDT as
   `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split]`, Harkirat's call: the folder move AND

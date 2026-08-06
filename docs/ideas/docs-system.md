@@ -329,7 +329,7 @@ produces a collection of warning labels, not a manual.
    reachable in one click from anywhere.
 
 Sections 1–5 are new writing; §6 overlaps the already-filed ops-guide item; §7 can be assembled largely
-from `docs/reference/known-issues.md` and the DEVLOG's war stories.
+from `docs/reference/platform-constraints.md` and the DEVLOG's war stories.
 
 #### The fork that must be decided first: public or private?
 

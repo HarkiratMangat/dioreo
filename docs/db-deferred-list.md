@@ -33,7 +33,7 @@ you check something off here.
   which stay below on purpose so nobody re-raises them).
 - **Cross-project work, MarkEdit-extension bugs, Claude/Anthropic product feedback** —
   `/Applications/Claude Code/meta-deferred-list.md`.
-- **Design gaps we're knowingly living with** — `docs/reference/known-issues.md`.
+- **Design gaps we're knowingly living with** — `docs/reference/platform-constraints.md`.
 
 ## 🏷️ Priority & effort tags
 Every OPEN item carries `[Priority · Effort]` (+ optional flags). Two axes: one for *what to focus on*,
@@ -61,6 +61,29 @@ is reported or found, it lands here with a repro + a `[Priority · Effort]` tag 
 leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
+
+- `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever
+  tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md`
+  back when it was still called **known-issues** — it was split so the file could honestly take the new
+  name. (The old name is written without its `.md` on purpose: `xref` matches path-shaped references
+  and cannot tell a historical mention from a live pointer, so spelling it as a path would fail CI.)
+  This entry is the
+  clearest thing in it that was never a platform constraint.*
+
+  `calendar.js` and `draws.js` both carry defensive chunking; `patchnotes.js` does not. Components V2
+  caps a message at **40 components counted recursively**, and exceeding it is a real production crash
+  this project has already hit once (see the platform cheat-sheet in `CLAUDE.md`).
+
+  ⚠️ **Filed as a bug rather than a constraint, but stated honestly: it is UNVERIFIED, not confirmed
+  broken.** The original wording was "likely fine since patch note screenshots per entry are usually
+  few, but not empirically verified the way draws/calendar chunking was" — and that is still exactly
+  the state. It sits here because the thing at fault would be *our* missing guard, not a Discord
+  limit; leaving it in a constraints file would have implied the opposite.
+  **Cheapest close:** count the components a worst-case real patch-note entry renders, rather than
+  building chunking speculatively. If it is nowhere near 40, this becomes a not-a-real-issue entry in
+  the archive and costs nothing further.
+  ⇄ Also named in the 🧹 Someday "General housekeeping session" item ("decide `/patch notes` carousel
+  component-count chunking"); that line is the horizon, this is the detail.
 
 - `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
   animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
@@ -1336,7 +1359,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 ---
 
 ## 🧹 Someday / tech-debt
-*Full context lives in `.claude/rules/*.md` (subsystem detail), `docs/reference/known-issues.md`
+*Full context lives in `.claude/rules/*.md` (subsystem detail), `docs/reference/platform-constraints.md`
 (accepted gaps), and memory. Model tags re-audited 2026-07-18 against the "tier vs. effort" calibration
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
@@ -1472,13 +1495,44 @@ well-specified execution/polish, not novel design.*
   `/status` command + vmstatus overhaul. Nothing decided — just don't lose the list.
 - `[P2 · M · Sonnet5-H]` **Pagination perf hybrid** — single `UPDATE_MESSAGE` for the light string-building
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
-  command) but the design itself is ALREADY decided (see `docs/reference/known-issues.md`) — what's left is
-  careful, well-specified execution across call sites, not open design work.
+  command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
+  across call sites, not open design work.
+
+  **The full investigation and the agreed shape, moved here 2026-08-06 08:13 EDT** from
+  `docs/reference/platform-constraints.md` when it was split and renamed from **known-issues**.
+  It was never a platform constraint — it is our own architecture with a decided fix, and this list is
+  where decided-but-unbuilt work lives. Kept verbatim in substance so nothing is re-derived:
+
+  Pagination/toggle clicks (draws' New/Returning switch, calendar and draw-prices sub-page nav, etc.)
+  have a **structural double network round-trip, not a CPU or DB bug** — investigated 2026-07-14 after
+  Harkirat flagged it "feels slow". Every `await` on the hot path was traced for both `/draws`'
+  view-switch and `/calendar`'s sub-page nav: 1 `deferUpdate()` round-trip, 2 concurrent Mongo reads
+  (`prefs` + `SeasonalData`), then a SEPARATE `rest.patch(Routes.webhookMessage(...))` round-trip to
+  actually update the message. `buildContainer()` itself is pure sync string-building — no image or
+  attachment work happens on this path at all. The View-Colors-incident-style cause was ruled out too:
+  Harkirat's saved `accentColorStyle` is `'preset'`, which returns `presetHex` immediately with no live
+  Discord fetch.
+
+  **The agreed shape is a HYBRID, not a blanket conversion** (Harkirat's call, 2026-07-14), split by
+  what each handler does before it can respond:
+  - Pure string-building paginated commands (draws, calendar, drawprices, settings) → single
+    `UPDATE_MESSAGE`, one hop. They finish well inside Discord's 3s ACK window, so the margin
+    `deferUpdate()` buys isn't needed.
+  - Anything doing heavy work before replying — View Colors (k-means extraction, swatch/gradient PNG
+    generation, the ffmpeg still-frame) and any attachment-generating path → **KEEP** defer-then-patch;
+    blowing the 3s ACK is a real risk there.
+
+  Heuristic: *"does this path do CPU or image/network work before it replies?"* → heavy stays defer,
+  light goes single-hop.
   ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list as "Pagination double round-trip perf fix" (horizon only — the design detail above is canonical).
 - `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, notes L59)* read-only
   check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as
   designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above
-  only if confirmed. Also tracked in `docs/reference/known-issues.md`.
+  only if confirmed. ⚠️ *This used to claim it was also tracked in the file then called
+  **known-issues** — it never was. Found 2026-08-06 08:14 EDT while sweeping that file's rename to
+  `docs/reference/platform-constraints.md`: it held six entries and none of
+  them was about Cloudinary folders. A cross-reference to a file that does not carry the item reads as
+  corroboration and supplies none, so it is removed rather than repointed.*
   ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 - `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** —
   retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B.
@@ -1531,25 +1585,6 @@ well-specified execution/polish, not novel design.*
   marker if this closes it · delete the file · sweep its references, **measured at 12 files on
   2026-08-05 23:58 EDT** · `npm run docs:audit` (expect exit 0; `record-structure` will exercise the
   new headings).
-- `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move above]` **Split `docs/reference/known-issues.md`,
-  then rename it to `platform-constraints.md`, renamed from `known-issues.md`** — ⚠️ *the new name
-  does not exist yet; it is the planned end state, not a live pointer.* — *(filed 2026-08-06 00:14 EDT,
-  Harkirat's call.)*
-
-  **Why split before renaming:** the file's 78 lines are mostly **accepted platform constraints**, not
-  open bugs — "View Colors vertical centering is unsolved (Components V2 has no native mechanism)",
-  "Deco renders as a static poster", "`ffmpeg` is a real system dependency, not an npm package". Those
-  are *facts*, not defects. But a minority genuinely are open cosmetic bugs that duplicate this file's
-  own 🐞 section, which is read and written far more often. **Renaming without splitting would put a
-  lie on the tin**, and merging wholesale into 🐞 would invite a future session to "fix" something
-  that is not fixable.
-  - Real open bugs → this file's 🐞 Active Bugs section.
-  - Platform constraints → stay, under the new name.
-  - **The rename needs an internal header note** stating what the file is, what belongs in it, and —
-    Harkirat's explicit point — that these are **not forever-constraints**: a Discord platform update
-    or a feature change may lift any of them, so an entry should be re-tested before being cited as a
-    reason something cannot be done.
-  - Sweep cost, measured 2026-08-05 23:58 EDT: `known-issues` is named in **8 files**.
 - `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, notes L34)* a rich but
   noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so
   Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse

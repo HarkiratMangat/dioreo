@@ -28,7 +28,7 @@ guard is documented in `.claude/rules/manage-panel.md`.)
 ### Passive idle-timeout auto-disable (2026-07-18) — replaces `/settings`' old reactive expiry
 The reactive design above could only ever reply "this panel expired" AFTER a stale click already
 failed — the buttons themselves stayed visually live forever, since Discord genuinely CAN'T disable a
-message with zero interaction at all (see `docs/reference/known-issues.md` (button-expiry mechanics),
+message with zero interaction at all (see `docs/reference/platform-constraints.md` (button-expiry mechanics),
 which this section makes concrete). Replaced with a real passive mechanism: `utils/passiveExpiry.js`'s
 `schedulePanelExpiry(interaction, messageId, components)`.
 - **Mechanism**: every render of `/settings` — the initial slash-command invocation AND every
