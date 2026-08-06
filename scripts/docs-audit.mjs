@@ -1401,8 +1401,16 @@ check(
       }
     }
     // Withhold the findings, but never the information — see the SUPPRESS_CHRONICLE_DRIFT note above.
+    //
+    // ⚠️ STDERR, NOT STDOUT, and this cost a real defect within two minutes of being written.
+    // `--json` mode writes the whole report to stdout as a single JSON document, and TWO hooks
+    // (`docs-audit-gate.sh`, `devlog-toc-check.sh`) parse it. A `console.log` here prepended a prose
+    // line to that document, so both hooks reported "DOCS AUDIT CRASHED: it did not return valid
+    // JSON" — a check that delegates is only as sound as the contract it delegates across. This
+    // check body runs in BOTH modes, unlike the summary notes further down which run only in the
+    // human path, so anything printed from inside a check must go to stderr.
     if (SUPPRESS_CHRONICLE_DRIFT && out.length) {
-      console.log(
+      console.error(
         `  · chronicle-drift SUPPRESSED (since 2026-08-06 00:20 EDT): ${out.length} of ${examined} ` +
           `chronicle page(s) behind their source. Deliberate while those pages are withdrawn from ` +
           `the nav — lift it when the journey-pages rework starts (reminder in db-deferred-list.md).`

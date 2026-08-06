@@ -181,7 +181,53 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.55.4 — 2026-08-05 22:26 EDT (#84) — A pack triage, and a tool chosen for the wrong reason
+## v2.55.5 — 2026-08-06 00:26 EDT (#85) — A tier for thinking, and a warning that had become noise
+
+Records and tooling only. Nothing about the bot or the site changed.
+
+**A new documentation tier: `docs/ideas/`.** Harkirat created it and moved his private
+`Harkirats-Space.md` there; this release moves the other two forward-looking documents in beside it
+and sweeps every reference. The distinction is now written into both nav maps and is the useful part:
+**`docs/ideas/` is forward-looking and MAINTAINED** — edited as thinking changes — against
+**`docs/superpowers/specs/`**, whose dated documents are **snapshots** that get superseded rather
+than revised. `docs/reference/` is a **legend**: *look this up to do the thing correctly.* That test
+is what exposed two misfits — `design-history.md`, which is narrative rather than lookup, and
+`known-issues.md`, whose 78 lines are mostly accepted platform facts rather than open bugs.
+
+**The docs-system guide.** A mini brainstorming side-session produced a guide to what a Dioreo
+documentation system could be — a player-facing command help system and an admin operations manual.
+Three scratch files were consolidated into one restructured document at `docs/ideas/docs-system.md`.
+It is **explicitly undecided**, says so in its own banner, and instructs a future session to change it
+rather than defend it — which is precisely why it belongs in the maintained tier and not among the
+dated snapshots. Its one idea worth not losing: the command reference should be **generated** from the
+`SlashCommandBuilder` definitions, because Discord renders its own command picker from that same
+object and a generated reference therefore cannot drift.
+
+**`chronicle-drift` is suppressed until the journey pages are reworked.** It reported the same known
+drift on every run and grew by a line per release. **A warning that is always present and always
+expected trains everyone to read past the whole WARN block, which camouflages the next real one** — so
+leaving it noisy was not the safe option it looked like. It is suppressed, **not deleted and not
+silent**: it still runs, still examines both pairs so the vacuous-pass detector keeps watching it,
+still prints its state every run, and is gated on `DOCS_AUDIT_ROOT` so its own failure test keeps
+exercising the real logic. A `[P2 · XS]` reminder carries the lift trigger.
+
+⚠️ **And the suppression immediately broke something, which is the most useful thing in this release.**
+The status line was printed with `console.log` — but `docs-audit.mjs --json` writes the whole report to
+stdout as one JSON document, and **two hooks parse it**. Both instantly reported *"DOCS AUDIT CRASHED:
+it did not return valid JSON"* while the script itself was fine. **Stdout is a contract wherever
+something parses it**, check bodies run in both modes, and anything printed from inside one belongs on
+stderr. Caught by the repo's own gate roughly two minutes after the line was written; the rule is now
+recorded in `.claude/rules/scripts-and-migrations.md`.
+
+**Queued rather than done**, each with its traps inventoried so nothing is rediscovered: the notes-file
+move and rename (**not** a `git mv` — 7 hardcoded references plus 3 test files, and
+`records-close-check.sh:53` uses `grep -qx` against the changed-file list, so after a move it stops
+matching *silently*); the `known-issues.md` split-then-rename; and lifting the `chronicle-drift`
+suppression. Also eases `design-ideas.md`'s read-when-asked rule, which read more harshly than intended.
+
+---
+
+## v2.55.4 — 2026-08-05 22:26 EDT (#84 · `88851ef`) — A pack triage, and a tool chosen for the wrong reason
 
 Records-only. Harkirat was approved for the GitHub Student Developer Pack and asked which of its
 offers were genuinely worth adopting for this project, and which were traps. All 85 were assessed

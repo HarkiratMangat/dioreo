@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.55.5 — August 6, 2026
+- Housekeeping only — nothing about the bot or the site changed.
+
 ## v2.55.4 — August 5, 2026
 - Housekeeping only — nothing about the bot or the site changed.
 

@@ -119,6 +119,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-05 18:51 EDT — A measurement that measured the wrong thing, and a filter list hiding our own button (v2.55.0)
 - 2026-08-05 21:02 EDT — A bug only one device could see, and three gates that all said fine (v2.55.2, written in v2.55.3)
 - 2026-08-05 22:27 EDT — A tool chosen for the wrong reason, and a free instrument nobody had reached for (v2.55.4)
+- 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4591,6 +4592,73 @@ was real when the branch was created; I just never revisited it when it stopped 
 - **When a constraint lifts, revisit the decisions it caused.** A separate branch was correct while the
   other PR was held; nothing re-examined it the moment the hold came off.
 
+## 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
+
+A records-only release that started as "where should this file live" and turned into two corrections,
+both mine.
+
+**The first: I read a folder's purpose out of its contents and presented it as a convention.** The
+docs-system guide needed a home. `docs/superpowers/specs/` held seven dated design documents, so I put
+it there and said the folder was "the existing convention for exactly this shape" — after explicitly
+warning, earlier the same session, that checking whether a thing already exists is the step people
+skip. I checked that the folder existed. I never checked what it was *for*.
+
+Harkirat pushed back: wasn't that folder created by the superpowers skill? Checking properly: it has
+**no README, and no row in `docs/README.md`** — the file that is supposed to be the documentation map.
+Its purpose is genuinely undocumented, so neither reading was authoritative. But the structure favours
+his: the folder is named after the skills plugin, contains `specs/` *and* `plans/`, and the 2026-07-19
+pair is one spec beside one plan — the shape that flow emits. **Descriptive is not normative.** Seven
+files of a kind tell you what a folder *contains*, never what it is *for*.
+
+**A second argument arrived independently, and it was the better one.** At Harkirat's request the guide
+carries a banner telling a future session to *change this file rather than defend it*. That makes it a
+**maintained** document — and everything in `specs/` is a dated **snapshot**, superseded rather than
+revised. The placement was wrong on its own terms, regardless of who owns the folder. The resulting
+distinction is now the useful residue: `docs/ideas/` is edited as thinking changes; `specs/` is frozen;
+`docs/reference/` is a **legend** — *look this up to do the thing correctly.* Harkirat's framing, and
+sharper than the README's. Applying it immediately exposed two misfits sitting in `reference/`.
+
+**One of which solved itself.** `design-history.md` looked like it needed a new `docs/history/` folder.
+It doesn't: it covers **2026-07-12**, DEVLOG's earliest entry is **2026-07-13**, and DEVLOG's own header
+says the earlier backfill is still outstanding. It is not a misfiled reference doc looking for a home —
+it is the missing chapter this file has been waiting for. Filed, not done.
+
+**The second correction: a warning that had stopped being read.** `chronicle-drift` reported the same
+expected drift every run and grew by a line per release. Harkirat asked for it to be silenced, and the
+instinct to refuse — *never disable a check* — is exactly wrong here. **A warning that is always present
+and always expected trains everyone to read past the block it lives in, which camouflages the next real
+one.** Leaving it noisy was not the safe option it looked like.
+
+So: suppressed, **not deleted and not silent**. It still runs, still examines both pairs so the
+vacuous-pass detector keeps watching it, still prints its state every run, and carries a filed lift
+trigger. The property that mattered most was the third one — **there is a `proves()` for this check in
+the self-test**, so a naive suppression would have silently killed its own failure test. Gating on
+`DOCS_AUDIT_ROOT` kept the fixture path exercising real logic.
+
+**Then the suppression broke something within two minutes, and the repo caught it.** The status line
+went out through `console.log`. `docs-audit.mjs --json` writes the whole report to stdout as one JSON
+document, and **two hooks parse it** — both immediately reported *"DOCS AUDIT CRASHED: it did not return
+valid JSON"* while the script itself was perfectly fine. Check bodies run in both modes; the summary
+notes near the bottom of that file run only in the human path, which is why `console.log` is safe there
+and not inside a check. The best part is that nothing about this was noticed by reading the code. A gate
+written months ago, about a delegation risk documented in prose, caught it on the next command.
+
+### Lesson
+
+- **Descriptive is not normative.** What a folder contains tells you nothing about what it is for. If
+  no README and no map row explains it, there is no convention to follow — say so instead of inferring
+  one, especially right after warning someone else about the same trap.
+- **A permanently-firing warning is a defect in the gate, not a fact about the repo.** Fix it or
+  suppress it properly; "it's only a warning" is how the next real one gets skipped.
+- **SUPPRESSED is a third state, and it needs three properties** to not be a dead gate: still runs and
+  examines, still prints its state, and is gated so the self-test still exercises real logic. Plus a
+  filed lift trigger — an exemption with no removal condition is permanent by accident.
+- **Before suppressing any check, grep the self-test for it.** This one had a `proves()`.
+- **Stdout is a contract wherever something parses it.** Anything printed from inside a check goes to
+  stderr.
+- **Ask what a document does — updated, or superseded?** That single question sorts every doc in the
+  tree, and it settled a placement question that two rounds of taste had not.
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
@@ -4727,6 +4795,25 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
 - **Test the degenerate input, not just the populated one.** Absent/null/zero fields are where parsing
   bugs live. A status line whose happy path is perfect but which misreports the model when one field is
   missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.
+- **A permanently-firing warning is a defect in the gate, not a fact about the repo.** When a check
+  reports the same expected finding every run, people stop reading the block it lives in — and it
+  camouflages the next real finding. `chronicle-drift` reached that state. Fix it or suppress it
+  properly; "it's only a warning" is how the next real one gets skipped.
+- **SUPPRESSED is a third state beside pass and fail, and needs three properties to not be a dead
+  gate:** the check still runs and examines its items · it still prints its state every run
+  (information withheld from the *findings*, never from the *reader*) · it is gated so the **self-test
+  still exercises the real logic**. Plus a filed lift trigger — an exemption with no removal condition
+  is permanent by accident. **Grep the self-test before suppressing anything**; this check had a
+  `proves()` a naive suppression would have silently killed.
+- **Stdout is a contract wherever something parses it.** A `console.log` inside a check body prepended
+  prose to `--json` output and both delegating hooks reported the audit had crashed, while the script
+  was fine. Anything printed from inside a check goes to stderr.
+- **Descriptive is not normative.** What a folder *contains* says nothing about what it is *for*. Seven
+  dated design docs in `docs/superpowers/specs/` looked like a convention; the folder has no README and
+  no row in the docs map, so there was no convention to follow — only an inference presented as one.
+- **Ask of any document: is it updated, or superseded?** Maintained documents and dated snapshots are
+  different genres and belong in different places. That single question sorted the whole `docs/` tree
+  after two rounds of taste had not.
 - **A deferred item's stated requirement is a claim, not a specification.** It was written to stop
   work, not to solve the problem. The iOS indicator bug's entry said it needed "a real device or CDP
   against a WebKit build"; what it actually needed was a layer tree, which a free inspector on hardware

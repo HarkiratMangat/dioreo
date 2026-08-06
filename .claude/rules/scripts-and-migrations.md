@@ -148,6 +148,27 @@ prior detection layer still stands beside it — the `gh pr merge` hooks (change
 check), the `git tag` invariant gate, the Edit/Write TIMESTAMP check and the `Stop` completion-claim
 hooks all run without this script and catch different failures.
 
+⚠️ **`--json` mode means STDOUT IS A CONTRACT — never `console.log` from inside a check body**
+(learned the hard way 2026-08-06 00:23 EDT, within two minutes of writing the offending line). The
+whole report goes to stdout as one JSON document and the two delegating hooks parse it, so a single
+prose line printed from a check prepends itself to that document and both hooks report
+**"DOCS AUDIT CRASHED: it did not return valid JSON"** — the script itself was fine. Check bodies run
+in **both** modes; the summary notes near the bottom of the file run only in the human path, which is
+why `console.log` is safe there and not here. **Anything printed from inside a check goes to
+`console.error`.** This is the delegation cost the paragraph above describes, in its concrete form.
+
+⚠️ **A SUPPRESSED check is a third state beside pass and fail, and it has three requirements.**
+`SUPPRESS_CHRONICLE_DRIFT` (added 2026-08-06 00:20 EDT, Harkirat's call — the chronicle pages are
+withdrawn from the nav, so that meter reported the same expected drift on every run and was training
+everyone to read past the whole WARN block). A suppression is only legitimate when: **(1)** the check
+still runs and still examines its items, so the vacuous-pass detector keeps watching it; **(2)** it
+still prints its state every run, so the information is withheld from the *findings*, never from the
+*reader*; and **(3)** it is gated on `DOCS_AUDIT_ROOT` being absent, so the fixture tree is untouched
+and `docs-audit.test.mjs`'s `proves()` keeps exercising the real logic. Miss (3) and the suppression
+disables its own failure test — the silently-dead gate this whole file exists to prevent. Every
+suppression also needs a **filed lift-trigger** (`docs/db-deferred-list.md`), because an exemption
+with no removal condition is permanent by accident.
+
 ## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 14:59 EDT)
 Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`;
 writes nothing and touches no project state. It measures the 7-day MCP observation window opened
