@@ -477,7 +477,15 @@ throwing) plus a long follow-up list. All addressed same session:
   appended, matching the same tip convention `/draw prices`' footer already uses.
 - **Explicitly deferred to separate follow-up projects** (Harkirat's own call, not scope-cut
   silently): patch notes Cloudinary caching with season-based retention (**shipped 2026-07-13**, no
-  longer pending); `/secondaries` → `/secondary` rename + a `/pistols` alias (still pending).
+  longer pending); `/secondaries` → `/secondary` rename + a `/pistols` alias — **which the source
+  document still called "(still pending)" and it had not been for weeks.** *Corrected on the way in,
+  2026-08-06 08:59 EDT:* that idea was **RECONSIDERED and DROPPED** on 2026-07-18 (v2.21.0, see
+  `docs/ROADMAP.md`) — Discord has no real command-alias mechanism, so category-level search synonyms
+  shipped instead (`pistol`/`handgun` → `SECONDARIES`, see `.claude/rules/loadouts.md`). The original
+  sentence was true when written on 2026-07-12, which is why it stays; the annotation is here because
+  **a fold carries stale claims forward into a record, where they stop looking stale.** Nothing in the
+  move flagged it — it surfaced only from a content-conservation check that asked what each folded
+  line still asserts, rather than which filenames had changed.
 
 ## 2026-07-13 — The color-panel saga: one report, five root causes
 

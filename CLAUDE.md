@@ -413,6 +413,14 @@ merged and been tagged**: `public/` was correct in `main` and nothing ever pushe
   does it** (`dior help`, or `~/.config/dior/*.zsh`). The CLI wraps this project's dev/deploy/
   observability workflow and is easy to forget because it lives outside the repo — see memory
   `project_dior_cli_repo`. This wart is exactly what skipping that check produces.
+- 🔴 **AND SWEEP `~/.config/dior/` WHENEVER YOU MOVE OR RENAME A FILE IN THIS REPO.** It hardcodes
+  real paths inside here (`docs/`, `scripts/`, `public/`, `.env`, `.claude/hooks/`) and **no in-repo
+  search can see it — `rg -uu --hidden` included, because it is a different repository.** Proven
+  2026-08-06 09:03 EDT: moving the notes file broke `dior notes` outright while four separate
+  repo-wide sweeps all came back clean. The same blind spot had been hiding a **third copy of the
+  open-items regex** that `.claude/hooks/notes-open-items.sh` exists to consolidate — it reported
+  **29** open items where the hook reported **3**, under a comment asserting the two could not drift.
+  It is a separate git repo on a protected `main`, so a fix there is its own branch and PR.
 Editing a source and re-running the build is the ENTIRE update path; no HTML is ever touched by hand.
 ⚠️ The script is still called `buildLegalPages.js` but now builds the whole site: the flat document
 pages at the site root (`public/*.html` — dioreo.app went live 2026-08-05 14:43 EDT and the site
