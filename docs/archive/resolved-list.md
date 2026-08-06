@@ -25,6 +25,44 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **📖 Fold `docs/reference/design-history.md` into `docs/DEVLOG.md` as its earliest entries, then
+  delete it — CLOSED 2026-08-06 08:24 EDT.** Filed 2026-08-06 00:37 EDT as
+  `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg]`.
+
+  ⚠️ **Filed late, and that was the point of the entry.** The v2.55.5 DEVLOG entry stated *"Filed, not
+  done"* about this — and it was **not** filed. The claim shipped in a merged, tagged record before it
+  was true, and was caught by the outstanding-items gate minutes after the merge. Writing "filed" is
+  not filing; the two feel identical in the moment and only one survives the session.
+
+  Original reasoning, kept: `design-history.md` failed the `docs/reference/` test — narrative, not
+  "look this up to do the thing correctly." But it did not need a `docs/history/` either. It covered
+  **2026-07-12**, `DEVLOG.md`'s earliest entry was **2026-07-13**, and DEVLOG's own status header
+  described that earlier backfill as outstanding. Not a misfiled reference doc — the missing chapter
+  DEVLOG had been waiting for.
+
+  **What shipped:** its four sections folded in as Part A's four earliest entries, dates preserved
+  rather than backdated, bodies kept in substance; four TOC lines added, mirroring each heading
+  verbatim as that block requires. `docs/reference/` now holds two files.
+
+  **Two judgement calls worth not re-deriving:**
+  - **The `[backfill — expand later from transcripts]` marker was KEPT, not resolved.** The filed item
+    said "resolve it *if* this closes it" — it doesn't. That marker never only meant 07-12: 2026-07-06
+    (the Components V2 rewrite), the Excel→Mongo migration and 2026-07-10 (the security incident) are
+    still one-bullet summaries with no transcript behind them. Removing it because *part* of its scope
+    got written would have retired an outstanding job by accident. The header now says which half is
+    done, and the "Earlier milestones" 07-11/12 bullet says the same.
+  - **The headings carry no time-of-day qualifier**, even though the source sections were labelled
+    "evening"/"night". The TOC's own note retired exactly those qualifiers on 2026-07-28 17:35 EDT for
+    being ambiguous *and* rot-prone (inserting one entry silently shifts what every "later" below it
+    means). Four same-day entries are distinguished by their content instead.
+
+  **Sweep:** the filed estimate was 12 files; the live set was 11 in-repo + 1 memory file. Seven
+  `.claude/rules/*.md` cross-references were repointed **individually to the specific new entry**
+  rather than blanket-swapped to `docs/DEVLOG.md` — each had been citing a particular section
+  (the repalette, the wording overpass, the `/settings` 2-page layout), and a pointer to a
+  3,000-line file is not the same pointer. The dated `docs/superpowers/specs/2026-07-22-*` snapshot
+  was left alone.
+
 - **🧭 Split `docs/reference/known-issues.md`, then rename it to `platform-constraints.md` — CLOSED
   2026-08-06 08:15 EDT.** Filed 2026-08-06 00:14 EDT as
   `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move]`, Harkirat's call.

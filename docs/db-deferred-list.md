@@ -1566,25 +1566,6 @@ well-specified execution/polish, not novel design.*
   answer is a coverage hole rather than a failure, the follow-up question is whether it is *worth*
   closing — a checker for prose truthfulness may not be buildable, and saying so honestly is a
   legitimate outcome.
-- `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg above]` **Fold `docs/reference/design-history.md`
-  into `docs/DEVLOG.md` as its earliest entries, then delete it** — *(filed 2026-08-06 00:37 EDT.)*
-
-  ⚠️ **Filed late, and that is the point of the entry.** The v2.55.5 DEVLOG entry states *"Filed, not
-  done"* about this — and it was **not** filed. The claim shipped in a merged, tagged record before it
-  was true. Caught by the outstanding-items gate at 2026-08-06 00:36 EDT, minutes after the merge.
-  Writing "filed" is not filing; the two feel identical in the moment and only one survives the session.
-
-  **Why the fold is right rather than a new folder.** `design-history.md` fails the `docs/reference/`
-  test — it is narrative, not "look this up to do the thing correctly." But it does not need
-  `docs/history/` either: it covers **2026-07-12**, `DEVLOG.md`'s earliest entry is **2026-07-13**, and
-  DEVLOG's own status header says the earlier backfill is **still outstanding**. It is not a misfiled
-  reference doc; it is the missing chapter DEVLOG has been waiting for.
-
-  **Steps:** fold its sections in as DEVLOG's earliest Part A entries (preserving their own dates,
-  not backdating them) · add TOC lines · resolve the `[backfill — expand later from transcripts]`
-  marker if this closes it · delete the file · sweep its references, **measured at 12 files on
-  2026-08-05 23:58 EDT** · `npm run docs:audit` (expect exit 0; `record-structure` will exercise the
-  new headings).
 - `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, notes L34)* a rich but
   noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so
   Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse

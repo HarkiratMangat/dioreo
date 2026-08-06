@@ -207,7 +207,8 @@ copy). This also means Share Publicly can't work in a context the bot can't resp
 
 ## Live nav-order → `PRESET_ACCENT` color map
 *The current per-command accent colors, ordered by their nav-button position (this is LIVE config — the
-STORY of how these were chosen is in `docs/reference/design-history.md`'s "Color repalette" section;
+STORY of how these were chosen is in `docs/DEVLOG.md` → *"2026-07-12 — The color repalette: chosen per
+command, not per position in a fade (Section 5)"*;
 each command's `PRESET_ACCENT` constant holds its own value). If the nav-button order ever changes,
 re-derive this mapping from scratch rather than trusting the existing alignment.*
 

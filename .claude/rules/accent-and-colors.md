@@ -17,7 +17,8 @@ paths:
 *Loads when you touch the color utils, `/colors`, or `/settings`. Covers accent-color extraction
 (avatar/banner/displayName/dynamicProfile styles) and the `/colors` View Colors k-means panel.
 Cross-refs: `.claude/rules/rendering-and-ui.md` (sendV2Payload, pagination), `.claude/rules/settings-and-expiry.md`,
-`docs/reference/design-history.md`. The live nav-order→PRESET_ACCENT color map lives in
+`docs/DEVLOG.md` → *"2026-07-12 — The color repalette: chosen per command, not per position in a fade
+(Section 5)"*. The live nav-order→PRESET_ACCENT color map lives in
 `.claude/rules/rendering-and-ui.md`.*
 
 ## Accent color system (`utils/accentColor.js`, `utils/colorExtract.js`)

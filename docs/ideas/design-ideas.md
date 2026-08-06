@@ -6,8 +6,9 @@ outcome (a bug to fix, a chore to do, a decision to make). An entry here has no 
 nobody is waiting on it, nothing is blocked by it, and it may never be built. It exists so the
 shape is not lost and so the same ground is not re-explored from scratch in a year.*
 
-*The backward-looking counterpart is `docs/reference/design-history.md`, which narrates redesigns
-that already happened. This file is the forward-looking one.*
+*The backward-looking counterpart is `docs/DEVLOG.md`, which narrates redesigns that already happened
+— including the four `2026-07-12` Part A entries folded in 2026-08-06 08:23 EDT from the former
+**design-history** reference doc. This file is the forward-looking one.*
 
 📖 **Read this when it's relevant, not as a reminder.** *(Harkirat's preference, 2026-08-02 23:03 EDT;
 wording eased 2026-08-05 23:35 EDT.)* An idea parked on timing isn't a backlog item, so it doesn't

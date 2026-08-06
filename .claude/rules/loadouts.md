@@ -277,7 +277,8 @@ type what they actually think, not this bot's internal category label — meet t
 
 
 ## "Browse other builds" dropdown + alphabetical category sort (2026-07-12/13, follow-up)
-- **`/all`'s category sort dropped `CATEGORY_SORT_ORDER` entirely** (see `docs/reference/design-history.md`) —
+- **`/all`'s category sort dropped `CATEGORY_SORT_ORDER` entirely** (see `docs/DEVLOG.md` →
+  *"2026-07-12 — Post-deploy fixes: discord.js will not open a modal from a modal submit"*) —
   Harkirat's explicit follow-up call to just go alphabetical instead of hand-confirming a category
   order. `index.js`'s autocomplete sort is now `category.localeCompare` then `weaponName.localeCompare`,
   nothing else.

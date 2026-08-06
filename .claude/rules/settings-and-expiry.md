@@ -9,7 +9,8 @@ paths:
 *Loads when you touch `commands/settings.js` or `utils/passiveExpiry.js`. The per-user panel locks
 (also covering View Colors / `/colors`). The `/manage` admin-only guard is separate —
 `.claude/rules/manage-panel.md`. Accent-style options: `.claude/rules/accent-and-colors.md`. The
-`/settings` 2-page layout + region-mode history: `docs/reference/design-history.md`.*
+`/settings` 2-page layout + region-mode history: `docs/DEVLOG.md` → *"2026-07-12 — The batch
+refinement pass: three panels rebuilt, and an Edit crash traced to `setValue(undefined)`"*.*
 
 ## Panel interaction locks — `/settings` (author-lock + passive idle auto-disable)
 Original gap (2026-07-14): `/settings` had NO author-lock on some components (`set_page_` carried no
