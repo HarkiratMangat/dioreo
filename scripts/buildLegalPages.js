@@ -152,13 +152,15 @@ const PAGES = [
         file: 'TERMS.md', kind: 'md', out: 'terms.html', title: 'Terms of Service',
         short: 'Terms', kicker: 'Agreement',
         accent: BRAND.amber, glow: BRAND.plum,
-        blurb: 'What the bot does, what you agree to, and the limits of what we promise.'
+        blurb: 'What the bot does, what you agree to, and the limits of what we promise.',
+        desc: 'What you agree to by using Dioreo — what the bot does, what it does not promise, and where the limits sit.'
     },
     {
         file: 'PRIVACY.md', kind: 'md', out: 'privacy.html', title: 'Privacy Policy',
         short: 'Privacy', kicker: 'Data', 
         accent: BRAND.teal, glow: BRAND.emerald,
-        blurb: 'Every field stored about you, where it lives, and how to have it deleted.'
+        blurb: 'Every field stored about you, where it lives, and how to have it deleted.',
+        desc: 'Exactly what Dioreo stores about you, where it lives, how long it stays, and how to have it deleted.'
     },
     {
         // The licence is rendered as a THIRD page for readability, but the verbatim
@@ -168,7 +170,8 @@ const PAGES = [
         title: 'Source-Available License',
         short: 'License', kicker: 'Licence',
         accent: BRAND.violet, glow: BRAND.plum,
-        blurb: 'Read it, study it, run it on your own machine. Source-available, not open source.'
+        blurb: 'Read it, study it, run it on your own machine. Source-available, not open source.',
+        desc: 'Dioreo is source-available, not open source. Read it, study it, run it on your own machine — and the terms for everything else.'
     },
     {
         // Incorporated into LICENSE by reference (§7.1), so it is an operative
@@ -177,7 +180,8 @@ const PAGES = [
         title: 'Notices & Attributions',
         short: 'Notice', kicker: 'Attribution', 
         accent: BRAND.crimson, glow: BRAND.plum,
-        blurb: 'Every dependency and its licence, the marks that are not ours, and where AI helped.'
+        blurb: 'Every dependency and its licence, the marks that are not ours, and where AI helped.',
+        desc: 'Every dependency Dioreo builds on and its licence, the trademarks that are not ours, and an honest note on where AI helped.'
     }
 ];
 
@@ -4685,8 +4689,20 @@ function sectionise(html) {
 /* `file` and `kind` come in with the rest of the page record — build() spreads the
    whole thing — and are used only to offer the plain-text original on the two
    instruments that have one. See rawDownload(). */
-function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir, file, kind }) {
+function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', dir, file, kind, desc }) {
     const dl = rawDownload({ file, kind });
+    /* ⚠️ `desc` IS THE SHARE DESCRIPTION AND IT IS SEPARATE FROM `blurb` ON PURPOSE
+       (both hand-written, added 2026-08-05 20:48 EDT at Harkirat's request). They
+       answer different questions: `blurb` sits in the landing page's numbered list
+       where all four are visible at once, so it can be comparative and terse;
+       `desc` arrives ALONE in a search result or a share card with no siblings for
+       context, so it names the product and stands by itself. Deriving one from the
+       other would make one of the two read wrong.
+       The fallback is the old formula — "<Title> for Dioreo, an unofficial Call of
+       Duty: Mobile Discord bot." — which is what all four used until now. It stays
+       so a page added without a `desc` still gets something sane rather than the
+       string "undefined" in its meta tag, but a new page should carry its own. */
+    const shareDesc = desc || `${title} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.`;
     // The nav helpers identify a page by directory AND filename now — two pages on
     // the site are called index.html, so a bare name no longer picks one out.
     const cur = { out, dir };
@@ -4700,11 +4716,11 @@ function shell({ title, short, kicker, accent, glow, body, toc, meta, out = '', 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)} — Dioreo</title>
-<meta name="description" content="${esc(title)} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
+<meta name="description" content="${esc(shareDesc)}">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
 <meta property="og:title" content="${esc(title)} — Dioreo">
-<meta property="og:description" content="${esc(title)} for Dioreo, an unofficial Call of Duty: Mobile Discord bot.">
+<meta property="og:description" content="${esc(shareDesc)}">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316131B'/%3E%3Crect x='6' y='7' width='20' height='3' fill='${encodeURIComponent(accent)}'/%3E%3Crect x='6' y='14' width='14' height='3' fill='%236E6782'/%3E%3Crect x='6' y='21' width='17' height='3' fill='%236E6782'/%3E%3C/svg%3E">
 <style>

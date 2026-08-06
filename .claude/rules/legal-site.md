@@ -177,10 +177,24 @@ it directly with an empty build command, so nothing has to run on their side.
     reported 1.7px of clearance and therefore no clipping; a screenshot showed the legs plainly
     outside the box — the font the canvas measured was not the box the browser painted. Same lesson
     as the nav indicator's dilation: when a model and a rasterisation disagree, believe the pixels.
-  - ⚠️ **`.cmd-o:has(+ .cmd-v:empty)` restores the full radius while the value is still empty.**
-    Splitting a pill means each half must know whether the other is there, and mid-typing the value
-    IS absent — without this the option name sits as a square-edged stub for the whole time it
-    types. Degrades to that square edge for a few hundred ms if `:has()` is unavailable.
+  - ⚠️ **`.cmd-o.solo` restores the full radius while the value is still empty, and the class is set
+    by `paint()` — NOT by `:has()`.** Splitting a pill means each half must know whether the other is
+    there, and mid-typing the value IS absent, so without this the option name sits as a square-edged
+    stub for the whole time it types. This was `.cmd-o:has(+ .cmd-v:empty)` until 2026-08-05 20:32 EDT.
+    `:has()` is the tidier expression, but it asks the engine to re-derive state the paint loop
+    already knows exactly — the value segment's own character count — and it made the rounding depend
+    on a selector feature behaving identically across engines. **A class the animation sets itself
+    cannot disagree between browsers.** General form: if the animation already computes the state,
+    don't restate it as a selector.
+  - 🚫 **`.cmd-o` carries `margin-right:-1px` with the 1px added back to its right padding. Do not
+    "simplify" that to a plain `.5em`.** Harkirat photographed the two beds visibly separated on an
+    iPhone while **Chrome measured the gap at exactly zero** — option right edge and value left edge
+    both at `112.594px`. That fractional position is the tell: the boundary lands mid-device-pixel,
+    and at iOS's 3× DPR the antialiasing of two abutting edges can each leave that pixel partly
+    transparent, so the page ground shows through as a hairline. **Two boxes that merely touch are
+    not enough; they have to overlap.** The padding compensation means only the beds move — the gap
+    between the two words is unchanged. ⚠️ It does not reproduce in Chrome, so a future "this margin
+    looks pointless" reading will be *locally* correct and wrong on the device.
     🚫 **Two rejected attempts, recorded so they are not retried.** (1) `--ink2` at 500 — a neutral
     grey read thin and washed out on an otherwise warm line. (2) `--accent-t` mixed 85% toward
     `--desk` — cleared AA at 5.56 / 5.20 but read **muddy**, and the reason is a property of the
