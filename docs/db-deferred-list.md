@@ -101,7 +101,12 @@ scratchpad for 2 days.*
   **🔧 Tooling verdict — filed 2026-08-05 22:04 EDT from the GitHub Student Pack triage.** This item
   was filed as *"needs a real device or CDP against a WebKit build"*. That is right about the need and
   wrong about the tool: this is a **compositing** failure, so what it needs is the **layer tree**, not
-  a better picture of the artefact. Work the ladder in this order, cheapest first:
+  a better picture of the artefact. Work the ladder in this order, cheapest first.
+
+  ⚠️ **NOTHING ON THIS LADDER HAS BEEN RUN YET** — as of 2026-08-05 22:19 EDT, rungs 1 and 2 are the
+  literal next action on this item. Until one of them reports, every claim below about *which* rung is
+  actually needed is reasoning from how the renderers are built, not measurement. Run them before
+  spending anything — money, a vendor signup, or another fix attempt.
   1. **Playwright WebKit, locally** — free, ~10 min. Expected *not* to reproduce, because Playwright's
      WebKit is a custom embedding that does not use iOS's Core Animation compositor, which is where
      this lives. Run it anyway: a clean non-repro is itself evidence that the compositor rather than
@@ -117,6 +122,9 @@ scratchpad for 2 days.*
   4. **LambdaTest Live** (Student Pack, free 1 yr) — buys *iteration speed and iOS-version breadth*,
      not diagnosis. Its real value is taking Harkirat out of the fix loop: all four spent fixes cost a
      round trip through his phone, and compositor bugs are frequently iOS-version-specific.
+     ⚠️ **Contingent, and unproven.** If rung 1 or 2 reproduces the lime plate, the bug is diagnosable
+     for free on hardware already owned and this rung buys nothing. Re-read this line before claiming
+     a vendor is needed for it.
 
   **Verify any candidate fix the way the bug was found** — License page, light mode, real iPhone,
   watching the full ~2.4s birth. The colour test above remains the diagnostic: a lime plate means
