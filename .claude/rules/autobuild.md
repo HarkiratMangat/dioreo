@@ -212,3 +212,89 @@ upload to Cloudinary, and create the `Loadout` doc — without hand-typing any o
 - **Cloudinary structured metadata** (a real Cloudinary feature — custom fields attached per-asset) is a
   nice-to-have for browsing the dashboard directly, not the source of truth — MongoDB stays what the bot
   actually reads from either way.
+
+---
+
+## 🎯 MP vs DMZ: how the vision model tells them apart (ground truth, 2026-08-06 18:44 EDT)
+
+**This section is derived from real in-game screenshots Harkirat supplied**, not inferred from stored
+data. A previous session tried to infer the DMZ slot roster from backfilled DB rows and he overruled it —
+correctly, since a derived artefact cannot establish the authoritative roster. Reference images live in
+`local/Screenshots/` (gitignored, so the *knowledge* has to live here): `IMG_5641` (DMZ Fennec, 9 slots),
+`IMG_5642` + `DMZ-J358-1` (DMZ revolver), `DMZ-AS-VAL-1` (DMZ, no Muzzle), `IMG_5643` (DMZ SVD, 5 slots),
+`IMG_5634` (MP Crossbow), `IMG_5630` (MP Dobvra, akimbo restrictions).
+
+### 🔴 The three assumptions that are WRONG, and each one breaks a naive implementation
+
+1. **"MP has 5 slots, DMZ has 9."** False. **MP shows the same nine slot positions as DMZ** — Muzzle,
+   Barrel, Optic, Stock, Perk, Laser, Underbarrel/Trigger Action, Ammunition, Rear Grip. What MP has is a
+   **5-attachment EQUIP CAP**, shown as `ATTACHMENTS ● ● ● ● ●` in the right panel. Nine slots, five may
+   be filled. *This is the actual meaning of Harkirat's note "DMZ partials are the 5-attachment prompt
+   cap": the prompt's cap of 5 is correct for MP and silently truncates DMZ.*
+2. **"Slot COUNT identifies the mode."** False, and this is the trap. **`IMG_5643` is a DMZ SVD with only
+   FIVE slots** (low weapon rarity), so counting slots would classify it as MP. Never branch on count.
+3. **"Slot POSITION identifies the slot."** False. `DMZ-AS-VAL-1` has **no Muzzle at all** (integrally
+   suppressed), so its top row starts at Barrel; `IMG_5643` renders literal GAPS where Barrel, Perk and
+   Laser would be. **Always read the slot's LABEL. Never infer a slot from its grid position.**
+
+### ✅ How to classify the mode — UI chrome, not slots
+
+| Signal | **MP (Gunsmith)** | **DMZ** |
+|---|---|---|
+| Title | **blueprint code appended** — `Dobvra-1D2C5F7B8B`, `Crossbow-1B2C4A5A6B` | plain weapon name — `AS VAL`, `J358` |
+| Accent | gold / yellow, gold ◆ MAX badge | blue / cyan, blue MAX bar |
+| Stats | right-hand card, **6 stats**, ends at CONTROL + `DETAILS ≫` | **full-width bottom bar, 8 stats — includes `PEN.` and `PEN. MULTI`** |
+| Unique chrome | `Recommended Attachments` / `EQUIPPED`, `CAMO` · **`SELECT BLUEPRINTS`** · `SAVE`, left tool rail | **`EQUIP` / `CUSTOMIZE` tabs**, `TRY` / `READY` buttons |
+| Attachment name | **below** the slot box | **inside** the chip, right of the icon |
+| Restricted slot | **RED** circle-slash 🚫 | grey struck-through icon |
+
+**Strongest single discriminators, in order:** `PEN.`/`PEN. MULTI` present → DMZ · `SELECT BLUEPRINTS`
+present → MP · `EQUIP`/`CUSTOMIZE` tabs → DMZ · blueprint code in the title → MP. Prefer **two agreeing
+signals**, and if they conflict, return the mode as unknown rather than guessing — a build filed under the
+wrong mode is worse than one that asks.
+⚠️ **Do NOT lean on the `ATTACHMENTS ● ● ● ● ●` dot row** (Harkirat, 2026-08-06 18:52 EDT: *"i wouldnt
+fixate on those dot elements in the UI too much"*). It is real, and it is what makes MP's five-attachment
+equip cap visible, so it is worth understanding — but small repeated glyphs are exactly what a vision
+model miscounts, and a miscount here silently changes the mode. Use the text-bearing signals above.
+
+### Empty vs restricted vs absent — three different states, and the prompt already handles two
+
+- **Absent** — the slot is not part of that weapon's system at all (AS VAL's Muzzle; Crossbow's Rear
+  Grip). No chip is rendered; there is a gap. Must not appear in the output.
+- **Empty** — chip rendered with its label greyed and no attachment (J358's Optic). Must not appear.
+- **Restricted** — chip rendered with a slash icon because another equipped attachment disallows it
+  (Dobvra + Akimbo blocks Stock and Laser; DMZ J358's Trigger Action). Must not appear, and must never be
+  emitted with the slot's own LABEL as if that were the attachment name.
+  ⚠️ `visionExtract.js`'s prompt already instructs exactly this ("skip any slot showing a crossed-out or
+  prohibited icon … never output a slot's label as if it were the attachment name"). **Keep that wording
+  when raising `maxAttachments`** — it is what stops a 9-slot cap from inventing four phantom attachments
+  on a 5-slot DMZ weapon.
+
+### 🔑 Weapon-specific slot names — THE main takeaway from the Crossbow
+Harkirat, 2026-08-06 18:52 EDT: *"The main takeaway from the crossbow screenshot is it's missing 'rear
+grip' slot, the mag slot is labeled as 'bolt', the muzzle slot is labelled as 'bowstring', the barrel
+slot is labelled as 'limb'."*
+
+**A weapon can RENAME its canonical slots and OMIT others.** The label on screen is not the canonical
+slot name, and there is no fixed nine-name roster to validate against:
+
+| Canonical slot | Crossbow shows | Revolvers (J358, MP Dobvra) show |
+|---|---|---|
+| Muzzle | **Bowstring** | Muzzle |
+| Barrel | **Limb** | Barrel |
+| Ammunition | **Bolt** | Ammunition |
+| Underbarrel | Underbarrel | **Trigger Action** |
+| Rear Grip | **— absent entirely —** | Rear Grip |
+
+⚠️ **So a fixed allow-list of nine slot names fails twice over**: it drops `Bowstring`/`Limb`/`Bolt`/
+`Trigger Action` as unrecognised, *and* it expects a `Rear Grip` the Crossbow does not have. That is
+exactly the recorded `J358 … Trigger Action slot wasn't captured (6/7)` miss from the 2026-07-26
+backfill — the same bug, already paid for once.
+
+**Implication for the extractor:** take the slot label **verbatim from the image**, and map it onto the
+canonical slot separately (an alias table like the one above), rather than asking the model to emit a
+canonical name it cannot see. The backfill already used the safe version of this shape — slot label from
+vision, attachment NAME from stored data — so a misread can never corrupt an attachment name. ⚠️ **The
+alias table above is seeded from two weapons only.** Other weapon families almost certainly rename
+slots too; treat an unrecognised label as *a new alias to ask Harkirat about*, never as a parse failure
+and never as a reason to drop the slot.

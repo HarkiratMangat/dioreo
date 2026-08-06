@@ -1194,31 +1194,49 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   and the fix has to address the cap (batching or a second pass), not just the prompt wording.
   Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
 
-  ⛓️ **STILL BLOCKED ON HARKIRAT'S SCREENSHOT — reaffirmed by him 2026-08-06 18:22 EDT.** I briefly
-  marked this unblocked at 18:18 EDT on the reasoning that the 2026-07-26 backfill had already extracted
-  9-slot DMZ builds, so the layout could be inferred from existing data. **He overruled that
-  explicitly:** *"for the dmz autobuild, still wait on my screenshot instead of guessing at slots based
-  on pre-existing info."* **Do not infer the slot layout from the backfilled data, the DB, or the
-  testing notes.** Wait for one DMZ screenshot with EMPTY slots (so the labels are legible), or a plain
-  top-to-bottom list of the slot positions. Ask at the START of that session.
-  ⚠️ *Why he is right and my inference was not good enough:* the backfill mapped slot labels
-  per-image onto already-stored attachment names, and its own log flags "partial slot coverage" cases.
-  That proves the extraction path can be widened to 9 — it does **not** establish the authoritative
-  DMZ slot roster or its order, which is what the prompt needs to detect and validate a DMZ build.
-  Working from it would be building on a derived artefact instead of ground truth.
+  ✅ **UNBLOCKED 2026-08-06 18:48 EDT — Harkirat supplied the reference screenshots.** They live in
+  `local/Screenshots/` (gitignored), so the **knowledge is written up in `.claude/rules/autobuild.md`'s
+  "MP vs DMZ" section**, which is the authoritative reference for this work. Read it before touching the
+  prompt. *(Earlier in the same session I marked this unblocked by inferring the roster from backfilled
+  DB rows; he overruled that and was right — a derived artefact cannot establish ground truth. This
+  unblock is the real thing: actual in-game UI.)*
 
-  **What IS settled, and does not need his input** (useful groundwork, safe to record — this is
-  mechanism, not slot layout):
-  1. `utils/visionExtract.js` **already accepts `{ maxAttachments }` (default 5)**; `/autobuild` calls it
-     at `utils/autobuildPipeline.js:148` **without the option**, which is the "5-attachment cap".
-  2. **`mode: 'MP'` is hardcoded** through `autobuildPipeline.js` (~lines 17, 131, 157, 186, 241, 263 —
-     sibling lookup, duplicate check, the saved doc). All of it has to become mode-aware.
-  3. **The review card is fixed at 5 slots** (`visionExtract.js:255`) and needs to render up to 9.
-  4. **Mode selection:** prefer an explicit `mode` option over auto-detection — deterministic, and it
-     removes the "silently treated as MP" failure. Auto-detect can follow later if wanted.
-  ⚠️ **Lesson kept from the wrong turn:** a blocked item still deserves a re-test date rather than an
-  open-ended "waiting on Harkirat" — but re-testing means checking whether the BLOCKER is gone, not
-  substituting a derived guess for the thing that was asked for. See [[feedback_verify_before_claiming]].
+  🔴 **Three assumptions the obvious implementation would make, all of them WRONG:**
+  1. **MP is NOT 5 slots.** MP shows the same nine slot positions as DMZ; what it has is a 5-attachment
+     **equip cap** (`ATTACHMENTS ● ● ● ● ●`). *That is what "DMZ partials are the 5-attachment prompt
+     cap" actually means — the cap is right for MP and truncates DMZ.*
+  2. **Slot COUNT cannot identify the mode.** `IMG_5643` is a DMZ SVD with **five** slots (low weapon
+     rarity). Counting slots misclassifies it as MP.
+  3. **Slot POSITION cannot identify the slot.** AS VAL has no Muzzle at all; SVD renders gaps where
+     Barrel/Perk/Laser would be. Read the LABEL, always.
+
+  **Classify by UI chrome instead** (full table in the rule): `PEN.`/`PEN. MULTI` in a full-width bottom
+  stat bar → DMZ · `SELECT BLUEPRINTS` / blueprint code in the title → MP · `EQUIP`/`CUSTOMIZE` tabs →
+  DMZ. Require **two agreeing signals**; on conflict return unknown rather than guessing, since a build
+  filed under the wrong mode is worse than one that asks. ⚠️ **Don't lean on the `ATTACHMENTS ●●●●●` dot
+  row** (Harkirat: *"i wouldnt fixate on those dot elements"*) — small repeated glyphs are what a vision
+  model miscounts, and a miscount silently flips the mode.
+
+  🔑 **A weapon can RENAME its canonical slots and OMIT others** — the main lesson of the Crossbow, and
+  the one most likely to be missed: `Bowstring` = Muzzle, `Limb` = Barrel, `Bolt` = Ammunition, and it
+  has **no Rear Grip at all**; revolvers show `Trigger Action` where Underbarrel would be. A fixed
+  nine-name allow-list therefore fails twice — it drops the renamed slots AND expects one that does not
+  exist. Take the label verbatim from the image and map to canonical separately; treat an unknown label
+  as a new alias to ask about, never as a parse failure.
+
+  **The build, now fully specified:**
+  1. Pass `{ maxAttachments: 9 }` for DMZ — `utils/visionExtract.js` already accepts it;
+     `utils/autobuildPipeline.js:148` just never passes it.
+  2. Un-hardcode `mode: 'MP'` through `autobuildPipeline.js` (~lines 17, 131, 157, 186, 241, 263 —
+     sibling lookup, duplicate check, saved doc).
+  3. Widen the review card beyond its fixed 5 slots (`visionExtract.js:255` pads/truncates to exactly
+     `maxAttachments`).
+  4. Add mode detection to the prompt per the table above, and **keep the existing empty/restricted
+     skip wording** — it is what stops a 9-cap from inventing phantom attachments on a 5-slot weapon.
+  5. Handle weapon-specific slot names (`Trigger Action` for revolvers; Crossbow's
+     `Bowstring`/`Limb`/`Bolt`). No fixed nine-name allow-list.
+  ⚠️ **Ask Harkirat for the DMZ equip cap if it matters** — the screenshots show up to 9 equipped and no
+  visible dot-budget, but "9 is the max" is inferred from the widest example, not confirmed.
 - `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20
   runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run:
   `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to

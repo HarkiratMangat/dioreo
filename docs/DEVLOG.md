@@ -5316,6 +5316,26 @@ believing any of it. Enabling Error Reporting on a project the bot never logs to
 perfectly clean, permanently empty dashboard. And I reported a real test event to confirm the pipeline
 accepts and groups it, then deleted it so his dashboard starts empty rather than with my debris.
 
+### A postscript: the blocker, and being wrong about it twice
+
+The `/autobuild` DMZ item had sat "waiting on Harkirat's screenshot" since 2026-07-24. Late in this
+session I decided the wait was stale — the 2026-07-26 backfill had already pulled 9-slot DMZ builds, so
+surely the roster could be inferred from the stored data. I marked it unblocked and told him so.
+
+He overruled it: *"still wait on my screenshot instead of guessing at slots based on pre-existing
+info."* Then he sent the screenshots, and they proved him right in a way I could not have argued
+against. **Three things I would have built on were false.** MP is not a five-slot mode — it has the same
+nine slot positions as DMZ and a five-attachment *equip cap*, which is what his original note about the
+"5-attachment prompt cap" had meant all along. Slot count cannot identify the mode, because a low-rarity
+DMZ SVD renders five slots and would have classified as MP. And slot position cannot identify a slot,
+because the AS VAL has no Muzzle and the SVD renders gaps where Barrel and Perk should be.
+
+Every one of those is invisible in the backfilled data, which records what was *extracted*, not what the
+UI *offers*. The derived artefact could only ever have told me about builds that already worked. **The
+cases that break an implementation are the ones absent from the data you derived it from** — which is
+the whole reason ground truth is not substitutable, and why "I can infer this" deserves more suspicion
+the more confident it feels.
+
 ### What this cost, and what it taught
 
 - **"Correct" and "useful" are different properties, and only one of them is testable by the author.**
@@ -5327,6 +5347,10 @@ accepts and groups it, then deleted it so his dashboard starts empty rather than
 - **A test that judges text will encode your taste unless you make it prove a property.** Mine failed
   twice on correct content before it checked the right thing.
 - **A script is not an outcome.** Two days of documented cleanliness, zero rows changed.
+- **A derived artefact is not ground truth.** Backfilled data describes the builds that already
+  extracted successfully; the edge cases that break the next implementation are precisely the ones it
+  does not contain. When someone says wait for the real thing, the confident inference is the argument
+  against yourself.
 - **Our own documents do not get a veto.** If a recommendation's load-bearing sentence quotes one of
   our files, the analysis probably has not happened. Ask what you would recommend if the document did
   not exist — that is the real answer — then add the amendment back as a cost and see if it changes

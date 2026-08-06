@@ -269,6 +269,24 @@ because `sendAlert` throttles to 1/min per `level:title`. Neither is wrong — o
 the other what was *announced*. **The disagreement is the finding**, and the three tiers must not be
 reconciled into one figure.
 
+**And the `/autobuild` DMZ blocker is gone — with three of my assumptions killed on the way.** Harkirat
+supplied real in-game screenshots, and they contradict the obvious implementation at every point.
+**MP is not a 5-slot mode**: it shows the *same nine slot positions* as DMZ and applies a 5-attachment
+**equip cap** (`ATTACHMENTS ● ● ● ● ●`) — which is what his original note *"DMZ partials are the
+5-attachment prompt cap"* actually meant. **Slot count cannot identify the mode**, because a low-rarity
+DMZ SVD renders only five slots and would classify as MP. **And slot position cannot identify a slot**:
+the AS VAL has no Muzzle at all, and the SVD renders literal gaps. Mode detection keys on UI chrome
+instead — `PEN.`/`PEN. MULTI` and `EQUIP`/`CUSTOMIZE` mean DMZ; `SELECT BLUEPRINTS` and a blueprint code
+in the title mean MP — requiring two agreeing signals and returning *unknown* rather than guessing.
+
+And the sharpest trap of all: **a weapon can rename its canonical slots and omit others.** The Crossbow
+labels its Muzzle `Bowstring`, its Barrel `Limb`, its Ammunition `Bolt`, and has **no Rear Grip
+whatsoever**; revolvers show `Trigger Action` in place of Underbarrel. Any fixed nine-name allow-list
+fails twice over — dropping the renamed slots *and* demanding one that does not exist — which is
+precisely the `J358 … Trigger Action wasn't captured (6/7)` miss already paid for in the 2026-07-26
+backfill. Written up as `.claude/rules/autobuild.md`'s **"MP vs DMZ"**
+section, because the screenshots live in gitignored `local/` and the knowledge cannot.
+
 **Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js`
 (13 cases) and `scripts/gatewayRecovery.test.js` (8). They exist because the obvious verification —
 firing sample alerts and reading the embeds — **cannot reach the branch that matters**: `sendAlert`
