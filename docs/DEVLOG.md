@@ -5326,7 +5326,7 @@ He overruled it: *"still wait on my screenshot instead of guessing at slots base
 info."* Then he sent the screenshots, and they proved him right in a way I could not have argued
 against. **Three things I would have built on were false.** MP is not a five-slot mode — it has the same
 nine slot positions as DMZ and a five-attachment *equip cap*, which is what his original note about the
-"5-attachment prompt cap" had meant all along. Slot count cannot identify the mode, because a low-rarity
+"5-attachment prompt cap" had meant all along. Slot count cannot identify the mode, because a
 DMZ SVD renders five slots and would have classified as MP. And slot position cannot identify a slot,
 because the AS VAL has no Muzzle and the SVD renders gaps where Barrel and Perk should be.
 

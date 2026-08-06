@@ -1202,11 +1202,14 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   unblock is the real thing: actual in-game UI.)*
 
   🔴 **Three assumptions the obvious implementation would make, all of them WRONG:**
-  1. **MP is NOT 5 slots.** MP shows the same nine slot positions as DMZ; what it has is a 5-attachment
+  1. **MP is NOT 5 slots.** MP shows up to the same nine slot positions as DMZ; what it has is a 5-attachment
      **equip cap** (`ATTACHMENTS ● ● ● ● ●`). *That is what "DMZ partials are the 5-attachment prompt
      cap" actually means — the cap is right for MP and truncates DMZ.*
   2. **Slot COUNT cannot identify the mode.** `IMG_5643` is a DMZ SVD with **five** slots (low weapon
-     rarity). Counting slots misclassifies it as MP.
+     ). Counting slots misclassifies it as MP. **Why the count varies differs by mode:** in **MP** the
+     roster is intrinsic to the weapon and rarity does not affect it; in **DMZ** rarity DOES change the
+     total (max 9) on top of the weapon's own restrictions/uniques/renames — so never hardcode a
+     per-weapon DMZ slot count, and never read a short DMZ build as a failed extraction.
   3. **Slot POSITION cannot identify the slot.** AS VAL has no Muzzle at all; SVD renders gaps where
      Barrel/Perk/Laser would be. Read the LABEL, always.
 
@@ -1227,7 +1230,8 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   So a fixed nine-name allow-list fails three ways — drops renames, rejects uniques, expects absent
   slots — and grid-position mapping fails outright. Take the label verbatim, map to canonical
   separately, and treat an unknown label as a new alias to ASK about, never a parse failure.
-  *(Rarity wording varies too: R9-0 reads `GOLD`, not `MAX` — don't key on that string.)*
+  ⛔ *Ignore the top-right `MAX`/`GOLD` badge — it is an internal weapon LEVELING display, not rarity
+  and not a mode signal (Harkirat, 2026-08-06 19:16 EDT).*
 
   **The build, now fully specified:**
   1. Pass `{ maxAttachments: 9 }` for DMZ — `utils/visionExtract.js` already accepts it;

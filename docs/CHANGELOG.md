@@ -273,8 +273,10 @@ reconciled into one figure.
 supplied real in-game screenshots, and they contradict the obvious implementation at every point.
 **MP is not a 5-slot mode**: it shows the *same nine slot positions* as DMZ and applies a 5-attachment
 **equip cap** (`ATTACHMENTS ● ● ● ● ●`) — which is what his original note *"DMZ partials are the
-5-attachment prompt cap"* actually meant. **Slot count cannot identify the mode**, because a low-rarity
-DMZ SVD renders only five slots and would classify as MP. **And slot position cannot identify a slot**:
+5-attachment prompt cap"* actually meant. **Slot count cannot identify the mode**, because a DMZ
+SVD renders only five slots and would classify as MP — and the reason a count varies differs by mode:
+in MP the roster is intrinsic to the weapon (rarity is irrelevant), while in DMZ rarity itself changes
+the total, capped at 9. **And slot position cannot identify a slot**:
 the AS VAL has no Muzzle at all, and the SVD renders literal gaps. Mode detection keys on UI chrome
 instead — `PEN.`/`PEN. MULTI` and `EQUIP`/`CUSTOMIZE` mean DMZ; `SELECT BLUEPRINTS` and a blueprint code
 in the title mean MP — requiring two agreeing signals and returning *unknown* rather than guessing.

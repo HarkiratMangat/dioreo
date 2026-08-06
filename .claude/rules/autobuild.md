@@ -232,7 +232,15 @@ correctly, since a derived artefact cannot establish the authoritative roster. R
    be filled. *This is the actual meaning of Harkirat's note "DMZ partials are the 5-attachment prompt
    cap": the prompt's cap of 5 is correct for MP and silently truncates DMZ.*
 2. **"Slot COUNT identifies the mode."** False, and this is the trap. **`IMG_5643` is a DMZ SVD with only
-   FIVE slots** (low weapon rarity), so counting slots would classify it as MP. Never branch on count.
+   FIVE slots**, so counting slots would classify it as MP. Never branch on count.
+   📌 **And the reason the count varies differs BY MODE** (Harkirat, 2026-08-06 19:16 EDT):
+   - **MP** — the slot roster is a property of the **weapon itself**. A missing slot or a unique slot is
+     intrinsic to that gun and **rarity does not affect it at all**.
+   - **DMZ** — the weapon's **rarity DOES change the total number of slots** (capped at 9), *on top of*
+     that weapon's own restrictions, unique slots and renames.
+   So in DMZ the same weapon can legitimately present a different slot count at different rarities.
+   **Never cache or hardcode a per-weapon DMZ slot count**, and never treat a short DMZ build as a
+   failed extraction.
 3. **"Slot POSITION identifies the slot."** False. `DMZ-AS-VAL-1` has **no Muzzle at all** (integrally
    suppressed), so its top row starts at Barrel; `IMG_5643` renders literal GAPS where Barrel, Perk and
    Laser would be. **Always read the slot's LABEL. Never infer a slot from its grid position.**
@@ -242,7 +250,7 @@ correctly, since a derived artefact cannot establish the authoritative roster. R
 | Signal | **MP (Gunsmith)** | **DMZ** |
 |---|---|---|
 | Title | **blueprint code appended** — `Dobvra-1D2C5F7B8B`, `Crossbow-1B2C4A5A6B` | plain weapon name — `AS VAL`, `J358` |
-| Accent | gold / yellow, gold ◆ MAX badge | blue / cyan, blue MAX bar |
+| Accent | gold / yellow | blue / cyan |
 | Stats | right-hand card, **6 stats**, ends at CONTROL + `DETAILS ≫` | **full-width bottom bar, 8 stats — includes `PEN.` and `PEN. MULTI`** |
 | Unique chrome | `Recommended Attachments` / `EQUIPPED`, `CAMO` · **`SELECT BLUEPRINTS`** · `SAVE`, left tool rail | **`EQUIP` / `CUSTOMIZE` tabs**, `TRY` / `READY` buttons |
 | Attachment name | **below** the slot box | **inside** the chip, right of the icon |
@@ -301,8 +309,12 @@ lot, and both examples come from Harkirat directly:
   occupies the bottom row's Ammunition position.
 
 So "the 4th chip is Stock" and "the last chip is Rear Grip" are both false. **Never map a slot by its
-grid coordinates — only ever by its label.** (Rarity wording varies too: the R9-0 reads `GOLD`, not
-`MAX`, so do not key anything on that string either.)
+grid coordinates — only ever by its label.**
+
+⛔ **IGNORE the top-right `MAX` / `GOLD` badge entirely.** Harkirat, 2026-08-06 19:16 EDT: *"that's not
+a rarity badge. that's just an internal weapon leveling system … it's not relevant."* An earlier draft
+of this section read it as rarity and treated its wording as a signal. It is neither a rarity indicator
+nor a mode indicator — do not key anything on it.
 
 ⚠️ **So a fixed allow-list of nine slot names fails twice over**: it drops `Bowstring`/`Limb`/`Bolt`/
 `Trigger Action` as unrecognised, *and* it expects a `Rear Grip` the Crossbow does not have. That is
