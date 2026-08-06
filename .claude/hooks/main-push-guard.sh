@@ -66,6 +66,38 @@ if echo "$cmd" | grep -qE 'git +push[^;&|]*(--tags|refs/tags/|[[:space:]]v[0-9]+
   exit 0
 fi
 
+# ⚠️ AN EXPLICIT NON-main DESTINATION REF IS NOT A PUSH TO main — added 2026-08-06 10:46 EDT.
+# The only question asked before this was "is the PROJECT DIR on main?", so once a merge deleted the
+# working branch and left HEAD on main, this denied EVERY push — including pushing a feature branch,
+# and including pushes belonging to a DIFFERENT REPOSITORY (`cd ~/.config/dior && git push -u origin
+# fix/...`), where the project dir's branch says nothing about the operation at all. That blocked the
+# dior-CLI PR minutes after this same session shipped the guard's own release.
+#
+# Same matcher defect already filed at [P3 · XS] for `git push origin --delete <branch>`: the pattern
+# saw `git push` plus a remote and stopped there. One rule fixes both, and it is the narrow shape the
+# filed item asked for rather than broadening until it stops firing — "that is how a guard becomes
+# decorative".
+#
+# Only an EXPLICIT ref counts. A bare `git push` on main still denies, because there the destination
+# really is main and no refspec disclaims it.
+# ⚠️ `:` MUST be in the ref character class, in BOTH the test and the extraction. Without it the
+# extractor stopped at the colon of `abc1234:main`, yielding dest `abc1234` — so pushing an arbitrary
+# sha straight onto main read as "a branch that is not main" and was allowed. The suite's existing
+# sha:main case caught it, which is exactly why that case exists.
+if echo "$cmd" | grep -qE 'git +push[^;&|]*[[:space:]](origin|upstream)[[:space:]]+(-d[[:space:]]+|--delete[[:space:]]+)?[A-Za-z0-9._/:-]+'; then
+  ref=$(echo "$cmd" | sed -E 's|.*git +push[^;\&\|]*[[:space:]](origin\|upstream)[[:space:]]+(-d[[:space:]]+\|--delete[[:space:]]+)?([A-Za-z0-9._/:-]+).*|\3|')
+  # ⚠️ JUDGE THE DESTINATION, NOT THE WHOLE REFSPEC. A refspec is `<src>:<dst>`, and only the
+  # destination decides where the commits land. The first version of this exemption compared the
+  # whole string against a fixed list, so `git push origin abc1234:main` — pushing an arbitrary sha
+  # straight onto main — matched none of them and was ALLOWED. Caught by this suite's existing
+  # `sha:main` case, which is the reason that case was written in the first place.
+  dest="${ref##*:}"
+  case "$dest" in
+    main|HEAD) ;;    # destined for main (bare HEAD on main IS main) -> keep denying
+    *) exit 0 ;;     # a named branch that is not main -> allowed
+  esac
+fi
+
 cat <<'MSG' >&2
 BLOCKED: you are on `main` and this would push commits directly to it.
 

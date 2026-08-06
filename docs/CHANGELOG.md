@@ -181,7 +181,29 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.56.0 — 2026-08-06 10:34 EDT (#86) — Three filed reorgs, and the audit that came out of checking them
+## v2.56.1 — 2026-08-06 10:53 EDT (#87) — A guard that judged the room instead of the request
+
+`main-push-guard.sh` asked one question — *is the project dir on `main`?* — and answered it about the
+ambient repository rather than about the command in front of it. A squash-merge with
+`--delete-branch` leaves HEAD back on `main`, so from that moment it denied **every** push: a
+brand-new feature branch, a branch deletion, and pushes belonging to a **different repository**
+(`cd ~/.config/dior && git push -u origin fix/...`), where the project dir's branch says nothing
+about the operation at all. It blocked the dior-CLI PR minutes after the guard's own release merged,
+which is how it was found.
+
+**The rule is now that an explicit non-`main` DESTINATION ref disclaims main.** A bare `git push` on
+main still denies, because nothing disclaims it there. This also closes the separately filed
+`[P3 · XS]` `--delete` false positive — one defect with two faces, and the narrow shape that item
+asked for rather than broadening the matcher until it stopped firing.
+
+⚠️ **Two holes opened and closed during the fix, both caught by the suite's pre-existing cases.**
+Comparing the whole refspec against a fixed list let `abc1234:main` through — an arbitrary sha
+pushed straight onto `main`; it now judges the destination (`${ref##*:}`). And `:` was missing from
+the ref character class, so the extractor stopped at the colon and read that as a branch called
+`abc1234`. The four new cases were verified to fail against the old guard, and every deny path was
+re-proven.
+
+## v2.56.0 — 2026-08-06 10:34 EDT (#86 · `ae1e3b8`) — Three filed reorgs, and the audit that came out of checking them
 
 Records, docs structure and the enforcement layer. Nothing about the bot or the site changed.
 
