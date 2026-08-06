@@ -98,6 +98,30 @@ scratchpad for 2 days.*
   as a blended sibling, behaves differently. **Verify on a real iPhone in light mode**, on a page
   whose accent makes an inverted plate obvious (License is ideal — lime is unmistakable).
 
+  **🔧 Tooling verdict — filed 2026-08-05 22:04 EDT from the GitHub Student Pack triage.** This item
+  was filed as *"needs a real device or CDP against a WebKit build"*. That is right about the need and
+  wrong about the tool: this is a **compositing** failure, so what it needs is the **layer tree**, not
+  a better picture of the artefact. Work the ladder in this order, cheapest first:
+  1. **Playwright WebKit, locally** — free, ~10 min. Expected *not* to reproduce, because Playwright's
+     WebKit is a custom embedding that does not use iOS's Core Animation compositor, which is where
+     this lives. Run it anyway: a clean non-repro is itself evidence that the compositor rather than
+     the CSS is the cause, and it costs almost nothing to obtain.
+  2. **Real Safari on macOS via `safaridriver`** — iPhone viewport, light mode, License page. Free,
+     and shares far more of the WebKit stack than (1) does. If it ever needs automating, GitHub
+     Actions provides macOS runners free on public repos, so no vendor is required for that either.
+  3. **Real iPhone + Mac Safari Web Inspector over USB** — iPhone Settings → Safari → Advanced → Web
+     Inspector, then Mac Safari → Develop → \[device]. **This is the rung that actually answers the
+     question:** the Layers panel reports compositing reasons on the device that reproduces the bug.
+     Free, already owned, and **no remote-device vendor can substitute for it** — BrowserStack and
+     LambdaTest both hand you a screen, never an inspector.
+  4. **LambdaTest Live** (Student Pack, free 1 yr) — buys *iteration speed and iOS-version breadth*,
+     not diagnosis. Its real value is taking Harkirat out of the fix loop: all four spent fixes cost a
+     round trip through his phone, and compositor bugs are frequently iOS-version-specific.
+
+  **Verify any candidate fix the way the bug was found** — License page, light mode, real iPhone,
+  watching the full ~2.4s birth. The colour test above remains the diagnostic: a lime plate means
+  `.mtint` is still being composited into the filtered group, whatever else changed.
+
 - `[P3 · S]` 🧩 **The mobile nav morph's droplet travel reads as too short.** *Filed 2026-08-04
   13:02 EDT, deferred with the item above.*
 
@@ -254,6 +278,32 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
   `public/` to Cloudflare Pages on any merge to `main` that touches it, so the renamed site went out
   with the merge while the bot on the VM is still the old build. That split is normal here and is
   exactly why "merged" must never be reported as "live" — say which of the two actually happened.
+
+- **🎓 CLAIM the three GitHub Student Pack offers that were actually adopted** `[P2 · XS]`
+  *(filed 2026-08-05 22:08 EDT — a full triage of all 85 offers ran this session)*. Trigger: before
+  student status lapses, or the next time the iOS nav bug is picked up. **Harkirat claims these, not
+  Claude — they are account actions.**
+  - **LambdaTest** (Live plan, free 1 yr) — the iteration rung on the liquid-indicator bug above.
+  - **BrowserStack** (Automate Mobile, 1 parallel/1 user, free 1 yr) — claim now, **wire nothing yet**;
+    see the Someday entry for why the CI case is weaker than it looks.
+  - **GitHub Pro** — arrives with the pack; only matters if the repo ever goes private.
+
+  Optional, lossless, no project dependency: Name.com's free domain (a defensive `dioreo.dev`
+  registration is on-point — LICENSE §1.5/§18.3 treats the name as a protected Brand Asset), Termius
+  Pro (SSH to the VM, incl. from a phone), 1Password, FrontendMasters, Polypane ⚠️ *Chromium — it will
+  not help the iOS bug*, CodeScene, DeepScan, JetBrains, Codespaces, WorkingCopy, Requestly.
+
+  ⚠️ **MongoDB's $50 Atlas credit is worth $0 here** — confirmed with Harkirat 2026-08-05 22:04 EDT: the cluster
+  is on the **M0 free plan**, and credits only offset a paid cluster. Claim it for the free University
+  certification if wanted; treat the credit as a contingency that activates only if M0's limits ever
+  bite. If the cluster is ever upgraded it **must stay Azure Canada Central** — *"Your data is stored
+  in Canada"* is a published claim with its own row in `docs/legal/PRIVACY.md`'s verification appendix.
+
+  📌 **The pack offers this project no cost reduction, and that is a checked result, not an oversight.**
+  Every line is already $0 or credit-funded: GCP always-free tier + the $300/$10-mo credits · Cloudflare
+  Pages free · Atlas M0 · Cloudinary free tier · Vertex AI billed against those same GCP credits at a
+  few loadouts a week (`.claude/rules/autobuild.md`). Nothing among the 85 touches Vertex, the only
+  line that could ever become real spend.
 
 - **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE)
   (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
@@ -1388,6 +1438,23 @@ well-specified execution/polish, not novel design.*
 - `[P3 · XS · Sonnet5-L · 🔗bundle-with next VM/ops touch]` **Guest disk-usage peaks in `scripts/vmpeaks.sh`**
   — small add mirroring the new `rampeak()` now that the Ops Agent (2026-07-17) provides the metric.
   🔗 Natural bundle with the "Watch that GCP holds long-term" reminder above, which is also a VM/ops touch.
+- `[P3 · M · 🧩needs-design · ⛓️blocked-by: claiming BrowserStack]` **Real-iOS screenshot regression
+  harness for the site's mobile nav** — *(filed 2026-08-05 22:08 EDT out of the GitHub Student Pack
+  triage)*. BrowserStack's Automate Mobile plan drives real iOS Safari and captures frames, which is
+  the only automated way to catch a repeat of the light-mode liquid-indicator artefact without
+  Harkirat's phone in the loop.
+  **Two honest reasons this sits at P3 rather than P1 — both must be solved BEFORE building it:**
+  1. **It would only catch regressions after they ship.** `deploy-site.yml` publishes on merge to
+     `main` and there are no PR preview deployments, so a job pointed at `dioreo.app` tests
+     already-live bytes. Fixing that means Cloudflare Pages preview deployments, or a BrowserStack
+     Local tunnel from the runner — *that* is the real first task, not the screenshots.
+  2. **Diffing a 2.4s animation is flaky by construction.** Frame timing on a remote real device is
+     not deterministic, so a naive whole-page baseline will throw false failures and get muted — and
+     a muted gate is worse than no gate, which is the lesson `.claude/hooks/run-all-tests.sh` exists
+     to enforce. Design a *specific* assertion instead: sample the tab-strip pixel region for the
+     inverted-accent hue the bug actually produces (lime on the License page).
+  ⚠️ Needs BrowserStack credentials as repo secrets — fine on a solo repo — and the plan is
+  **1 parallel / 1 user**, so runs queue behind each other.
 
 ### 🧮 `scripts/docs-audit.mjs` — the limits it does NOT cover (filed 2026-07-29 02:10 EDT, v2.42.0)
 *These are the honest edges of the documentation audit, filed so a future session improves the program
@@ -1432,3 +1499,41 @@ doesn't re-open them as if they were new.*
   `project_dependabot_vulnerabilities_deferred` memory.
 - **A maintained ToC for `CHANGELOG.md` / `DEVLOG.md`** — Harkirat's explicit call: their headers are
   already uniform and grep-able. The archive-split reminder above is the accepted lever instead.
+- **GitHub Student Developer Pack — the offers rejected on merit** *(triage 2026-08-05 22:09 EDT; all
+  85 offers assessed against the real stack — the adopted three are in the 🔔 claim reminder above,
+  and the source table Harkirat extracted is `local/pack_summary.md`)*. Each was considered and
+  declined for the stated reason; don't re-raise without new information.
+  - **Sentry, and any third-party error-reporting or analytics SDK** — this is a legal-document
+    decision, not a technical one. `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
+    PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises
+    *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it.
+    Adopting one costs a policy amendment + a new US sub-processor disclosure + a policy version bump
+    + a `public/` rebuild and redeploy. The homegrown three-tier model (errors/alerts/noise) already
+    works and must never be collapsed into or replaced by a vendor. ⚠️ **This applies to ANY
+    third-party SDK, not only Sentry** — check the appendix before adding one.
+  - **SimpleAnalytics** — same published-claim problem, and Cloudflare Web Analytics is free,
+    cookieless, and already in the stack.
+  - **Codecov** — `npm test` is `node --check` + docs-audit + hook tests + one dedup test. Coverage
+    would accurately report ~0%. A badge that says so is worse than no badge.
+  - **Imgbot** — opens automated PRs into a repo where **every merge mints a version**, so an image
+    squeeze would force a release.
+  - **Doppler** — puts secrets behind a network fetch at systemd boot: added failure surface on a
+    working `.env`, for no gain.
+  - **DevCycle / ConfigCat** — a runtime feature-flag service is a network dependency inside a
+    Discord bot, replacing a documented and working `v3-pre-release` branch strategy.
+  - **Datadog / New Relic / Honeybadger** — agent overhead on a 1GB e2-micro, against monitoring
+    (AlertLog, `vmstatus.sh`, `vmpeaks.sh`, the Ops Agent) that already exists and is understood.
+  - **Travis CI** — its only benefit is free *private* builds, a contingency GitHub Pro already
+    covers on the platform already wired. It cannot replace Actions either: `deploy-site.yml` and
+    `sync-v3-pre-release.yml` are GitHub-native and stay put, so adopting it means running **two** CI
+    systems. And it would break a gate — `scripts/docs-audit.mjs`'s `ci-wiring` check reads
+    `.github/workflows/ci.yml` by literal path, fails with an ERROR if it is missing, and asserts four
+    literal strings in its contents; `syntax-check` is also the verified required-status-check
+    context name settled 2026-08-02 17:16 EDT.
+  - **Cloud credits — Azure, Heroku, VS Dev Essentials** — Harkirat's standing rule: credits are
+    never a reason to redo working infrastructure. Render → Railway → GCP is already two migrations.
+  - **GitHub Pages** (Cloudflare Pages is wired with auto-deploy and a custom domain) · **Namecheap
+    SSL** (Cloudflare TLS is free and automatic) · **.TECH** (redundant with Name.com's offer) ·
+    **Dashlane** (redundant with 1Password).
+  - **GitHub Copilot** — listed but **not claimable**: new sign-ups were paused as of this triage.
+    Re-check if it reopens; it costs nothing and does not displace Claude Code.
