@@ -181,7 +181,38 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.55.2 — 2026-08-05 20:50 EDT (#82) — A seam only one device could see, and the share card nobody had checked
+## v2.55.3 — 2026-08-05 21:03 EDT (#83) — The DEVLOG entry that should have blocked the previous release
+
+Records-only, and it exists because a gate was overridden rather than because anything shipped.
+
+Before the v2.55.2 merge, `release-ready-check.sh` reported that twelve non-mechanical files had
+changed with no `docs/DEVLOG.md` entry. That warning fires PreToolUse — before the merge lands —
+specifically because it is the last moment the gap can be closed cheaply. I merged anyway, on the
+reasoning that the changelog already carried the detail. Wrong: the changelog records *what shipped*,
+and the DEVLOG records *how the answers were reached*, which is the half that transfers to the next
+problem. The gate's own message states the remedy after a merge is an extra release. This is that
+release, at Harkirat's instruction.
+
+**What the entry captures is worth more than the fix it describes.** All three defects in v2.55.2 were
+found by looking at the site on a phone, and **all three were reported as fine by a fifteen-gate
+build**, because each sat in a blind spot: a paint-level seam that measured exactly zero in layout, an
+entire `<head>` tag family absent from one template, and a meta attribute emptied by a text tool. None
+of those are exotic. The lesson block is therefore written about the shape rather than the instances —
+**a green gate is a statement about what it checks and nothing else**, and when adding a check it is
+worth writing down what shape of defect it cannot see.
+
+It also records the third variation in two days on the measurement theme, where the progression is the
+useful part: the nav indicator was *derived instead of measured*, the descender clipping was
+*measured, but the canvas measured a different font*, and this one was *measured correctly and the
+correct answer was zero*. Each narrowing gets closer to the actual rule, which is that a layout number
+is not a claim about pixels.
+
+The heading is titled v2.55.2 because that is what it narrates, with this release named alongside so
+the two are not confused, and the TOC line mirrors it verbatim as that section requires.
+
+---
+
+## v2.55.2 — 2026-08-05 20:50 EDT (#82 · `0cfec7f`) — A seam only one device could see, and the share card nobody had checked
 
 Three fixes, all from Harkirat looking at the site on his phone rather than from anything a gate
 caught.
