@@ -62,6 +62,37 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P2 · M · 🧩needs-design]` **Pagination / nav buttons cost TWO Discord round-trips per click instead
+  of one.** *Filed 2026-08-06 18:14 EDT — Harkirat's report: the left/right buttons "currently send a
+  back n forth request or something instead of 1 combined request."*
+
+  **What the code does today:** a component click is handled as `await interaction.deferUpdate()` and
+  then a separate edit of the original message (`sendV2Payload` → `rest.patch(@original)`). That is two
+  sequential HTTP calls to Discord for every single page turn. `deferUpdate()` exists to buy the
+  15-minute window and dodge the 3-second timeout / 10062 crashes — the comment at `index.js:1014`
+  says so explicitly, and it was added to fix a real crash.
+
+  **The one-call alternative:** Discord's `UPDATE_MESSAGE` (type 7) interaction response carries the new
+  components **in the callback itself**, so a page turn is a single request with no follow-up patch.
+  It is the intended mechanism for exactly this case.
+
+  ⚠️ **Do not just swap them — this is why it is tagged needs-design.** Three things have to hold before
+  the change is safe, and each one is a documented past crash in this repo:
+  1. **The 3-second budget becomes real again.** `UPDATE_MESSAGE` must be sent within ~3s of the click;
+     `deferUpdate()` is what currently removes that constraint. Any paginated view whose render does I/O
+     (a Mongo read, a Cloudinary fetch, accent extraction) can exceed it. **Audit which paginated
+     surfaces actually render synchronously from data already in hand** — those are the safe ones. The
+     rest should keep the defer.
+  2. **`sendV2Payload` exists because discord.js's high-level helpers do not serialize raw Components V2
+     JSON** (`.claude/rules/rendering-and-ui.md`). A one-call path needs the same raw-REST treatment for
+     the callback, not `interaction.update()`.
+  3. **The anti-spam cooldown at `index.js:511` assumes the defer+edit cycle** and swallows a rapid
+     second click with a bare `deferUpdate()`. That interacts directly with any change here.
+
+  **Payoff is latency, not correctness** — nothing is broken today. Worth measuring the actual saving on
+  the dev bot before committing to a wide refactor. 🔗 Bundle-with: the `index.js` → `handlers/*.js`
+  split, since both touch every component branch.
+
 - ✅ **CAUSE FOUND 2026-08-06 15:27 EDT — a GitHub Actions MAJOR OUTAGE, confirmed at githubstatus.com,
   not anything in this repo.** The hypothesis below was recorded as a guess and turned out right, but
   it was *checked* rather than assumed, and the check took one request. What settled it: two runs died
