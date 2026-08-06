@@ -1466,14 +1466,13 @@ well-specified execution/polish, not novel design.*
   can't be generated (quirks, examples, screenshots), with a `docs-audit` coverage check so a new
   undocumented command fails rather than passing silently.
 
-  **Full thinking is parked in `local/` (gitignored, so it does not clutter the tracked records):**
-  - `local/docs-system-recommendations.md` — tooling landscape: the five-criterion rubric, why a docs
-    framework is the wrong answer here, Pagefind as the highest-value addition, and every tool
-    considered including the rejected ones.
-  - `local/docs-help-system-scope.md` — the two products: audiences, voices, content, and how each
-    document dies if built carelessly.
-  - `local/docs-system-master-plan.md` — the synthesis: information architecture, the unified build
-    pipeline, what it touches in existing CI/deploy machinery, a phased plan, and a risk register.
+  **Full thinking is parked in `local/docs-system-guide.md`** (gitignored, so it does not clutter the
+  tracked records) — a single ~670-line guide covering: the five-criterion rubric any docs tool has to
+  survive here · why a docs framework is the wrong answer · the two products and their different
+  failure modes · the `SlashCommandBuilder` generation design and its coverage gate · the admin
+  manual's structure and its public/private fork · tooling by tier, plus MCPs, services and apps ·
+  information architecture and the build pipeline · what it touches in existing CI/deploy machinery ·
+  a six-phase plan · a risk register · and an honest case for doing nothing.
 
   ⚠️ **Two live constraints any version of this must survive**, both already paid for elsewhere:
   `docs/legal/PRIVACY.md` §2.6 promises *"no analytics, no third-party scripts"*, which disqualifies
