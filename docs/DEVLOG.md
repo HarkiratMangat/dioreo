@@ -117,6 +117,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-05 13:12 EDT — A confirmation that only ever fired in the test that stubbed the race away (v2.53.0)
 - 2026-08-05 14:53 EDT — The asymmetry a symmetric-looking refactor was hiding (v2.54.0)
 - 2026-08-05 18:51 EDT — A measurement that measured the wrong thing, and a filter list hiding our own button (v2.55.0)
+- 2026-08-05 21:02 EDT — A bug only one device could see, and three gates that all said fine (v2.55.2, written in v2.55.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4467,6 +4468,72 @@ Closing note on process: Harkirat believed a padding tweak had fixed the line-ju
 bare-vs-decorated paragraph heights showed 19.5px → 27.88px — the 8.38px jump still entirely there;
 he'd been looking at a build that already contained the real fix. **Someone reporting a fix is not
 evidence of a fix**, and checking was two minutes.
+
+## 2026-08-05 21:02 EDT — A bug only one device could see, and three gates that all said fine (v2.55.2, written in v2.55.3)
+
+⚠️ **This entry is late on purpose-of-record: the work shipped as v2.55.2 and this was written
+afterwards, in v2.55.3.** The release-ready gate warned before that merge that twelve non-mechanical
+files had changed with no DEVLOG entry, and I merged anyway, reasoning that the changelog already
+carried the detail. That was the wrong call — the changelog records *what shipped*, and everything
+below is about *how the answers were arrived at*, which is the thing that transfers. Harkirat asked
+for it as its own release. The gate was right and I was the failure mode it exists to catch.
+
+**The whole session's findings came from Harkirat's phone, not from any check we run.** Three separate
+defects, and the tooling reported success for all three.
+
+**The seam that measured zero.** He photographed the command line's two chip beds visibly separated
+where they should read as one pill. Chrome put the gap at **exactly 0** — both edges on `112.594px`.
+Nothing was wrong with the measurement, and the bug was still real. The fractional coordinate was the
+entire diagnosis: `.594` lands mid-device-pixel, and at 3× DPR the antialiasing of two *abutting*
+edges can each leave that pixel partly transparent, so the page ground shows through as a hairline.
+**Layout adjacency is not paint adjacency.** Boxes that touch have to be made to overlap.
+
+This is the third variation on the same theme in two days, and the progression is worth seeing:
+the nav indicator was *derived instead of measured*; the descender clipping was *measured, but the
+canvas measured a different font*; this one was *measured correctly and the correct answer was zero*.
+The lesson keeps getting narrower — the last one is simply that **a layout number is not a claim
+about pixels**.
+
+**Fixing what you cannot reproduce.** The honest position was that I had a mechanism that predicted
+the platform difference but no way to confirm it locally. Two things made that shippable rather than
+a guess: choosing a fix **correct under every candidate cause** — the 1px overlap kills a sub-pixel
+seam *and* any small layout difference — and treating it as a hypothesis until Harkirat confirmed on
+the device. I also removed the second candidate outright: `.cmd-o:has(+ .cmd-v:empty)` became a class
+`paint()` sets itself, because both beds appearing fully rounded in the photo is exactly what a
+misfiring selector produces. **If the code already computes the state, do not restate it as a
+selector** — `:has()` asked the engine to re-derive a character count the paint loop already had.
+
+**A question found a bug that no check could.** He asked what the per-page share descriptions were.
+Answering it required listing them, and the listing showed the landing page emitted **no Open Graph
+tags at all** while every sibling template emitted three. Most scrapers fall back to `<title>` and
+`<meta name="description">`, which is precisely why it survived: the preview looked right, on the one
+URL anyone actually shares, and was one heuristic away from not. **Nothing was broken enough to
+notice.** The generalisable move is to check a new template's `<head>` against a sibling's rather
+than against how the page renders — the head is invisible by definition, so "it looks fine" carries
+no information about it.
+
+**And then I nearly shipped the fix as blank.** Rewriting the two meta tags with `sd`, the replacement
+string `${esc(shareDesc)}` was read as a capture-group reference; both tags came out `content=""`.
+The build said **Done**, all fifteen gates green. It would have deployed every legal page with an
+empty description. `verify()` checks that *source text survived into the page* — a meta attribute is
+not source text, so an empty one is invisible to it. Caught only because I listed all ten
+descriptions afterwards instead of trusting the build's verdict.
+
+### Lesson
+
+- **A green gate is a statement about what it checks, and nothing else.** Three defects this session
+  sat in the blind spots of a fifteen-gate build: paint-level rendering, an absent `<head>` tag, and
+  an emptied attribute. None are exotic. When adding a check, ask what shape of defect it *cannot*
+  see, and write that down next to it.
+- **Verify the thing you changed, not the thing the tool reports.** The build's "Done" and the meta
+  tags' contents are different propositions.
+- **Don't use `sd`/`sed` on template literals containing `${...}`.** It is read as a capture-group
+  reference. This is the second family of quoting trap in this file after the backtick-in-a-CSS-
+  comment one — both come from text tools operating on code that is itself a template.
+- **An unreproducible report is not a wrong report.** Look for a mechanism that predicts the platform
+  difference, prefer a fix correct under every candidate cause, then have the reporter confirm.
+- **The gate that fires before a merge is the last moment anything can be fixed cheaply.** Overriding
+  it because "the information exists elsewhere" cost an extra release — this one.
 
 # Part B — Lessons Ledger (thematic)
 
