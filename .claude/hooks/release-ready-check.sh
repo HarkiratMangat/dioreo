@@ -38,7 +38,16 @@ if [ -z "$base" ]; then
   base=$(gh pr view ${pr:+"$pr"} --json baseRefName -q .baseRefName 2>/dev/null)
   [ -z "$base" ] && base=main
 fi
-git fetch origin "$base" --quiet 2>/dev/null
+# ⚠️ NON-FATAL, AND SKIPPED ENTIRELY WHEN THE TEST INJECTS ITS OWN FILE LIST.
+# This script runs under `set -e`, so a failing fetch killed it outright and produced NO output —
+# which reads exactly like "the release is complete". It passed locally and failed only in CI
+# (2026-08-06 11:12 EDT), the classic shape of an environment-dependent gate: green on the machine
+# that wrote it, silently dead on the machine that runs it. And when RELEASE_CHECK_FILES is set the
+# diff is overridden anyway, so reaching the network at all was pointless — a unit test must never
+# depend on a remote being reachable.
+if [ -z "${RELEASE_CHECK_FILES:-}" ]; then
+  git fetch origin "$base" --quiet 2>/dev/null || true
+fi
 
 # RELEASE_CHECK_FILES overrides the diff so the miss-branches can be PROVEN, not assumed. Nothing in
 # normal operation sets it. Every hook written without tests today regressed; the four written with
