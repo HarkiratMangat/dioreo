@@ -31,6 +31,15 @@ set -uo pipefail
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
 MEM="$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory"
 
+# ⚠️ EXTERNAL ROOTS — trees OUTSIDE this repo that hardcode paths INSIDE it.
+# Added 2026-08-06 09:10 EDT after a measured miss: moving the notes scratchpad to
+# docs/ideas/diors-notes.md broke `dior notes` outright, and FOUR repo-wide sweeps read clean before
+# an explicit search of ~/.config/dior found it. `rg -uu --hidden` cannot help — the completeness
+# flags address hidden and gitignored files, and this is a DIFFERENT GIT REPOSITORY. No search rooted
+# in this tree can ever reach it, which makes it the one blind spot that is invisible by construction.
+# Anything added here must be a real path; a missing root is skipped rather than reported as clean.
+EXTERNAL_ROOTS=("$HOME/.config/dior")
+
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
@@ -49,18 +58,94 @@ if ! command -v rg >/dev/null 2>&1; then
   exit 0
 fi
 
-# Only code/config/script changes redefine behaviour that prose elsewhere describes. A docs-only branch
-# is exempt: doc-to-doc references are what the changelog/DEVLOG hooks already cover, and flagging them
-# here would fire on every release and train the gate into background noise.
+# ⚠️ `docs/` WAS EXCLUDED HERE AND `.md` WAS NOT IN THE EXTENSION LIST, so a documentation branch
+# produced ZERO subjects and this gate swept NOTHING. Measured 2026-08-06 09:11 EDT: a session that
+# moved the notes scratchpad, split-and-renamed known-issues.md and deleted design-history.md would
+# have generated an empty subject list and exited silently — indistinguishable from clean.
+# The old comment claimed doc-to-doc references were "what the changelog/DEVLOG hooks already cover".
+# They are not: those hooks check that entries EXIST, never that a path in one still resolves. A doc
+# is referenced by other docs exactly as much as a script is, and renaming one is the most
+# reference-breaking thing anyone does in this repo.
+# `stem` replaces `xargs -n1 basename`, which SPLITS ON SPACES — and the very file that motivated
+# this was named "diors-builds notes.md".
+stem() { while IFS= read -r p; do [ -n "$p" ] || continue; b="${p##*/}"; printf '%s\n' "${b%.*}"; done; }
+
 subjects=$(printf '%s\n' "$changed" \
-  | grep -E '\.(js|mjs|sh|ya?ml)$' \
-  | grep -vE '^(docs|node_modules)/' \
-  | xargs -n1 basename 2>/dev/null \
-  | sed 's/\.[^.]*$//' \
-  | sort -u)
-[ -n "$subjects" ] || exit 0
+  | grep -E '\.(js|mjs|sh|ya?ml|md|json)$' \
+  | grep -vE '^node_modules/' \
+  | stem | sort -u)
+
+# ⚠️ GONE NAMES — the ones that die SILENTLY, and they were never swept at all.
+# Every subject above comes from a file that still EXISTS. The dangerous case is the opposite: a
+# DELETED file, or the OLD side of a RENAME. Nothing in the tree carries that name any more, so every
+# remaining hit is BY CONSTRUCTION a reference nobody updated — no mtime heuristic needed, no
+# judgement call. This is the exact class that broke `dior notes` and left 12 stale design-history
+# pointers, and the old sweep could not see it because it only ever looked at surviving files.
+# `-M` makes git report a rename as R<score>\told\tnew, so $2 is the old path for both D and R.
+gone=$(git diff --name-status -M "$BASE...HEAD" 2>/dev/null \
+  | awk -F'\t' '$1=="D"||$1 ~ /^R/{print $2}' \
+  | stem | sort -u)
+
+[ -n "$subjects$gone" ] || exit 0
 
 report=""
+external=""
+
+# ---- GONE names: search everywhere, including outside this repo ------------------------------
+# No mtime filter and no "was it touched on this branch" filter: the name no longer exists, so any
+# hit at all is stale. Archive/records/specs are excluded because they are deliberately NOT
+# backdated — an old entry keeps the old name, and flagging those would train the gate into noise.
+# ⚠️ ITERATE WITH `while IFS= read -r`, NEVER `for s in $list`.
+# A bare `for` word-splits on whitespace — and the first real subject this gate ever had was
+# "diors-builds notes", whose SPACE split it into 'diors-builds' and 'notes'. 'notes' then matched
+# half of every tree searched. Caught 2026-08-06 09:12 EDT on this hook's own first live run, which
+# is exactly the SC2086 class that silently updated zero files on 2026-08-02. The space in that
+# filename is why the file was renamed in the first place; it got one last shot on the way out.
+too_generic() { case "$1" in index|config|utils|main|test|setup|package|README|CLAUDE|notes|docs|hooks|scripts) return 0;; esac; [ "${#1}" -lt 5 ]; }
+
+# Shared exclusions. Records, archives and dated specs deliberately keep old names — they are NOT
+# backdated — so flagging them would generate permanent unactionable noise, and noise is how a real
+# hit gets skipped. `.git/` is excluded because commit messages and reflogs legitimately contain the
+# old name forever.
+# ⚠️ `!**/.git/**`, not `!.git/**` — rg anchors a leading-slash-free glob differently per search root,
+# and the bare form let /Users/.../.config/dior/.git/COMMIT_EDITMSG through on the first live run.
+# A commit message legitimately names a retired file forever; reporting reflogs is pure noise.
+# `.claude/hooks/**` is skipped for the same reason the subject loop skips it: this gate's own
+# comments name every file it was built to catch, so it would report itself on every run.
+RG_SKIP=(--glob '!archive/**' --glob '!CHANGELOG*.md' --glob '!DEVLOG.md'
+         --glob '!superpowers/specs/**' --glob '!**/.git/**' --glob '!**/local/**'
+         --glob '!**/.claude/hooks/**')
+
+fmt_hits() { sed 's|^|      - |'; }
+
+while IFS= read -r s; do
+  [ -n "$s" ] && ! too_generic "$s" || continue
+  hits=$(rg --hidden --no-ignore -l --fixed-strings "${RG_SKIP[@]}" \
+           "$s" "$REPO/docs" "$REPO/.claude" "$REPO/CLAUDE.md" "$REPO/scripts" "$MEM" 2>/dev/null \
+         | sed "s|^$REPO/||" | sort -u | fmt_hits)
+  [ -n "$hits" ] && report="$report
+  🔴 '$s' NO LONGER EXISTS (deleted or renamed away) yet is still named by:
+$hits"
+done <<< "$gone"
+
+# ---- EXTERNAL ROOTS: the blind spot no in-repo search can reach -------------------------------
+for root in "${EXTERNAL_ROOTS[@]}"; do
+  [ -d "$root" ] || continue
+  while IFS= read -r s; do
+    [ -n "$s" ] && ! too_generic "$s" || continue
+    hits=$(rg --hidden --no-ignore -l --fixed-strings "${RG_SKIP[@]}" "$s" "$root" 2>/dev/null | sort -u | fmt_hits)
+    [ -n "$hits" ] && external="$external
+  🔴 '$s' is GONE from this repo but still hardcoded in:
+$hits"
+  done <<< "$gone"
+  while IFS= read -r s; do
+    [ -n "$s" ] && ! too_generic "$s" || continue
+    hits=$(rg --hidden --no-ignore -l --fixed-strings "${RG_SKIP[@]}" "$s" "$root" 2>/dev/null | sort -u | fmt_hits)
+    [ -n "$hits" ] && external="$external
+  ⚠️  '$s' changed here and is also named in:
+$hits"
+  done <<< "$subjects"
+done
 for s in $subjects; do
   # Skip names too generic to be a meaningful reference (index, config, utils...) — matching those
   # returns the whole repo and buries the real signal.
@@ -73,7 +158,7 @@ for s in $subjects; do
   # outdated reference inside one is correct, not drift. Sweeping them would generate permanent noise
   # that can never be actioned — and noise is how a real hit gets ignored.
   hits=$(rg --hidden --no-ignore -l --fixed-strings --glob '!archive/**' "$s" \
-           "$REPO/docs" "$REPO/.claude" "$REPO/CLAUDE.md" "$MEM" 2>/dev/null \
+           "$REPO/docs" "$REPO/.claude" "$REPO/CLAUDE.md" "$REPO/scripts" "$MEM" 2>/dev/null \
          | sed "s|^$REPO/||" | sort -u)
   [ -n "$hits" ] || continue
 
@@ -103,7 +188,13 @@ for s in $subjects; do
   '$s' is referenced by files NOT touched on this branch:$unswept"
 done
 
-[ -n "$report" ] || exit 0
+[ -n "$report$external" ] || exit 0
+
+# EXTERNAL findings go FIRST and in their own section. They are the ones no other tool, search or
+# session can find, so burying them under a long in-repo list is how they get skipped again.
+[ -n "$external" ] && report="
+── OUTSIDE THIS REPO — no in-repo search can reach these ──$external
+$report"
 
 jq -n --arg r "$report" '{
   hookSpecificOutput: {
