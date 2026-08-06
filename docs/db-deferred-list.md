@@ -1144,7 +1144,16 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
   mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
   before scoping the actual build.
-- `[P1 · M · Sonnet5-M]` **User-data deletion path — the privacy policy now publicly promises it.**
+- `[P3 · M · Sonnet5-M · ⛓️deferred to v4 by Harkirat]` **User-data deletion path (self-service).**
+  ⬇️ **DOWNGRADED P1 → P3 and pushed to v4 on 2026-08-06 12:20 EDT, Harkirat's explicit call:**
+  *"The privacy self deletion isn't a priority. They can email me if needed. That self deletion thing
+  is honestly a v4 feature."* **Do not re-propose it as near-term work.**
+  ⚠️ **This does NOT make the privacy policy inaccurate — checked, not assumed.** `PRIVACY.md` §7.1
+  already discloses that there is no self-service delete, states the email route as the live
+  mechanism, and calls a `/settings` option *"planned"* with **no timeline attached**. Deferring it
+  keeps every sentence in that section true. If that wording ever gains a date, this becomes
+  time-sensitive again.
+  Original framing, kept:
   *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
   automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
   reset — it only overwrites individual values. Only `AlertLog` prunes (30 days, `utils/alertStore.js`).
