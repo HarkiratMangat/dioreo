@@ -179,10 +179,14 @@ while IFS= read -r f; do
     [ "$total" -ge 40 ] && break
   done < <(git show "$BASE:$f" 2>/dev/null | sed 's/^[[:space:]]*//')
 
+  # ⚠️ Say so when the count STOPPED EARLY. The 6-miss break is a cost control, but it made the
+  # report read "6 of 6 lines missing" — 100% loss — for a file where the real figure was 10 of 60.
+  # A ratio that overstates by 10x on its first live run is how a finding gets dismissed as broken.
+  qual=$([ "$missing" -ge 6 ] && printf 'at least %s of the first %s' "$missing" "$total" || printf '%s of %s' "$missing" "$total")
   [ "$missing" -gt 0 ] && findings="$findings
-  📦 CONSERVATION — '$f' was deleted or renamed and $missing of $total sampled lines are findable
-     nowhere in the tree. Deliberate rewrite, or content DROPPED? A reference check cannot see this:
-     nothing points at text that no longer exists. First: \"$worst\""
+  📦 CONSERVATION — '$f' was deleted or renamed and $qual sampled lines are findable nowhere in the
+     tree. Deliberate rewrite, or content DROPPED? A reference check cannot see this: nothing points
+     at text that no longer exists. First: \"$worst\""
 done <<< "$gone_files"
 
 # ══ PASS 2b — DID I ADD AUDIT WARNINGS? (pr mode only — see COST CONTROL 4) ═══════════════════════

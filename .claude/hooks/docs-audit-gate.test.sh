@@ -34,6 +34,15 @@ CLEAN=$(mkrepo clean   'console.log(JSON.stringify({errors:0,results:[],ledger:[
 ERRS=$(mkrepo errs     'console.log(JSON.stringify({errors:2,results:[{severity:"ERROR",id:"xref",msg:"a dead path"},{severity:"WARN",id:"w",msg:"advisory"}],ledger:[]}))')
 WARNS=$(mkrepo warns   'console.log(JSON.stringify({errors:0,results:[{severity:"WARN",id:"w",msg:"advisory only"}],ledger:[]}))')
 CRASH=$(mkrepo crash   'process.stderr.write("ReferenceError: boom\n"); process.exit(1)')
+# ⚠️ A HEALTHY audit that also writes to STDERR. `--json` makes stdout a contract, so the audit
+# deliberately puts its human-readable notices (the chronicle-drift suppression line) on stderr.
+# This gate captured with `2>&1`, which put that notice in front of the JSON — `jq -e .` failed and
+# the gate announced "DOCS AUDIT CRASHED: nothing was verified" about an audit that ran perfectly.
+# It did that on EVERY PR from 2026-08-06 00:20 EDT until 10:30 EDT, and none of the eight existing
+# cases could see it: the crash fixture writes to stderr AND exits non-zero, so it never separated
+# "wrote to stderr" from "actually failed". A false crash is worse than a missed check — it teaches
+# everyone the gate is broken, so the one real crash reads as more noise.
+NOISY=$(mkrepo noisy   'process.stderr.write("  · chronicle-drift SUPPRESSED: 2 of 2 pages behind\n"); console.log(JSON.stringify({errors:0,results:[],ledger:[]}))')
 GONE=$(mkrepo gone     '')
 NOREPO="$TMP/plain"; mkdir -p "$NOREPO"
 
@@ -48,6 +57,9 @@ a "WARNs alone never gate"         "DOCS AUDIT"          no  "$WARNS"
 a "missing audit is REPORTED"      "CANNOT RUN"          yes "$GONE"
 a "crashing audit is REPORTED"     "CRASHED"             yes "$CRASH"
 a "crash output is surfaced"       "ReferenceError"      yes "$CRASH"
+# The regression this suite could not see: stderr noise from a HEALTHY audit must not read as a crash.
+a "stderr noise is NOT a crash"    "CRASHED"             no  "$NOISY"
+a "and a clean noisy audit is silent" "SILENT"           yes "$NOISY"
 # Fail-safe in the other direction: outside a repo it must do nothing rather than error.
 a "non-repo directory is silent"   "DOCS AUDIT"          no  "$NOREPO"
 
