@@ -169,7 +169,12 @@ const makeFixture = () => {
     root,
     "docs/README.md",
     "# Map\n\n| File | What |\n|---|---|\n| `CHANGELOG.md` | log |\n| `CHANGELOG-SUMMARY.md` | summary |\n" +
-      "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `diors-builds notes.md` | intake |\n" +
+      // `ideas/` is named as a DIRECTORY, not by the file inside it: readme-map's coverage unit is the
+      // top-level entry under docs/, so a loose file is covered by its name but anything inside a
+      // subdirectory is covered only by naming that directory. The notes file moved from a loose
+      // `docs/…notes.md` into `docs/ideas/` on 2026-08-06 08:00 EDT, which flipped which of the two
+      // applies — and the baseline meta-test caught the fixture still spelling it the old way.
+      "| `DEVLOG.md` | story |\n| `db-deferred-list.md` | deferred |\n| `ideas/` | intake + proposals |\n" +
       "| `archive/` | dead |\n| `ROADMAP.md` | roadmap |\n| `SESSION-START.md` | session |\n" +
       "| `legal/PRIVACY.md` | policy |\n" +
       "\nPath-scoped rules: example (1 file).\n"
@@ -189,7 +194,7 @@ const makeFixture = () => {
   // a whitespace fix isn't reported as a deleted item. A 14-char stub silently passed the first run.
   write(
     root,
-    "docs/diors-builds notes.md",
+    "docs/ideas/diors-notes.md",
     "# Notes\n\n## Questions/Notes for Claude\n\n- an open intake item long enough to count as substance, not reflow churn\n\n## 📍 Where everything else lives\n"
   );
   write(root, "docs/archive/graveyard.md", "# Graveyard\n");
@@ -411,7 +416,7 @@ provesSilent("a dated entry that sits before the Part B marker", "devlog-parts",
 proves("closed + ℋ-confirmed intake left in the notes scratchpad", "notes-sweep", (root) => {
   write(
     root,
-    "docs/diors-builds notes.md",
+    "docs/ideas/diors-notes.md",
     "# Notes\n\n## Questions/Notes for Claude\n\n- [x] ℋ ✓ (2026-07-01) ~~a confirmed, closed item~~\n\n## 📍 Where everything else lives\n"
   );
 });
@@ -447,7 +452,7 @@ proves("a confirmed notes item using ✴︎ rather than ℋ", "notes-sweep", (ro
   // meant an item confirmed with any other symbol was invisible and sat unswept forever.
   write(
     root,
-    "docs/diors-builds notes.md",
+    "docs/ideas/diors-notes.md",
     "# Notes\n\n## Questions/Notes for Claude\n\n- [x] ✴︎ ✓ (2026-07-01) ~~a confirmed, closed item~~\n\n## 📍 Where everything else lives\n"
   );
 });
@@ -512,7 +517,7 @@ proves("the DEVLOG's real \"# Part B\" heading going missing", "devlog-parts", (
 });
 
 proves("the notes-file \"## Questions\" heading being renamed", "notes-sweep", (root) => {
-  write(root, "docs/diors-builds notes.md", "# Notes\n\n## Intake for Claude\n\n- [x] ℋ ✓ ~~a confirmed item nobody will ever notice~~\n\n## 📍 Where everything else lives\n");
+  write(root, "docs/ideas/diors-notes.md", "# Notes\n\n## Intake for Claude\n\n- [x] ℋ ✓ ~~a confirmed item nobody will ever notice~~\n\n## 📍 Where everything else lives\n");
 });
 
 // ---- the records/config/CI/rule checks -----------------------------------------------------------
@@ -698,7 +703,7 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
 {
   const root = makeFixture();
   try {
-    write(root, "docs/diors-builds notes.md",
+    write(root, "docs/ideas/diors-notes.md",
       "# Notes\n\n## Questions/Notes for Claude\n\n## 📍 Where everything else lives\n");
     write(root, "docs/archive/graveyard.md", "# Graveyard\n\n- something completely unrelated was swept here instead today\n");
     execFileSync("git", ["add", "-A"], { cwd: root });
@@ -721,8 +726,8 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
 {
   const root = makeFixture();
   try {
-    const p = join(root, "docs/diors-builds notes.md");
-    write(root, "docs/diors-builds notes.md",
+    const p = join(root, "docs/ideas/diors-notes.md");
+    write(root, "docs/ideas/diors-notes.md",
       readFileSync(p, "utf8").replace("an open intake item long enough to count as substance, not reflow churn",
         "an open intake item long enough to count as substance, not reflow churn (edited in place)"));
     execFileSync("git", ["add", "-A"], { cwd: root });
@@ -747,20 +752,20 @@ proves("a check that examines nothing reporting a VACUOUS PASS", "scripts-docume
 {
   const root = makeFixture();
   try {
-    const p = join(root, "docs/diors-builds notes.md");
+    const p = join(root, "docs/ideas/diors-notes.md");
     // ⚠️ The stock fixture's H1 is "# Notes" — seven characters, which the 40-char churn filter drops
     // before the heading rule is ever consulted. Renaming THAT would pass whether or not the fix
     // exists, which is the vacuous-test failure this suite is built to prevent. So the baseline gets
     // a long title first, in its own commit, and the rename is measured against that.
     const OLD_H1 = "# Deferred intake notes for Dior's Builds, the project scratchpad";
     const NEW_H1 = "# Deferred intake notes for Dioreo, the project scratchpad";
-    write(root, "docs/diors-builds notes.md", readFileSync(p, "utf8").replace(/^# Notes$/m, OLD_H1));
+    write(root, "docs/ideas/diors-notes.md", readFileSync(p, "utf8").replace(/^# Notes$/m, OLD_H1));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "baseline with a long title"], { cwd: root });
     // ⚠️ The rename must change a word INSIDE the fingerprint, not append to it. editedInPlace()
     // pairs a removal with an addition on any surviving six-word window, so a heading that merely
     // grew would be rescued by that branch and prove nothing about the heading rule.
-    write(root, "docs/diors-builds notes.md", readFileSync(p, "utf8").replace(OLD_H1, NEW_H1));
+    write(root, "docs/ideas/diors-notes.md", readFileSync(p, "utf8").replace(OLD_H1, NEW_H1));
     execFileSync("git", ["add", "-A"], { cwd: root });
     execFileSync("git", ["commit", "-qm", "rename in the title"], { cwd: root });
     const ids = idsReported(root, ["--diff", "HEAD~1"]);
@@ -782,7 +787,7 @@ proves(
   (root) => {
     write(
       root,
-      "docs/diors-builds notes.md",
+      "docs/ideas/diors-notes.md",
       "# Notes\n\n## Questions/Notes for Claude\n\n## 📍 Where everything else lives\n"
     );
     execFileSync("git", ["add", "-A"], { cwd: root });

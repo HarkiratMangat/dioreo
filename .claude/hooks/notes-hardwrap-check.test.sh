@@ -5,7 +5,7 @@
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/notes-hardwrap-check.sh"
 pass=0; fail=0
-NOTES="/Applications/Claude Code/Diors-Builds/docs/diors-builds notes.md"
+NOTES="/Applications/Claude Code/Diors-Builds/docs/ideas/diors-notes.md"
 
 r() { local o; o=$(printf '{"tool_input":{"file_path":%s,"new_string":%s}}' \
         "$(printf '%s' "$1" | jq -Rs .)" "$(printf '%s' "$2" | jq -Rs .)" | bash "$HOOK")

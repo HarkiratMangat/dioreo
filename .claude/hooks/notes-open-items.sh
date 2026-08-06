@@ -1,5 +1,5 @@
 #!/bin/bash
-# notes-open-items.sh — single source of truth for "which lines in docs/diors-builds notes.md's
+# notes-open-items.sh — single source of truth for "which lines in docs/ideas/diors-notes.md's
 # working sections count as open".
 #
 # WHY THIS EXISTS (2026-08-03 21:03 EDT). The exact same regex — `^- [^<[]`, which silently

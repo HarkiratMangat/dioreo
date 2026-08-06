@@ -48,7 +48,7 @@ New session on Dioreo. Before anything else:
    ONLY when you touch matching code) and `docs/` (ROADMAP, reference/ ops+history) —
    modularized 2026-07-22, follow the root nav map to find a topic. Skim the changelog-system
    memory before touching any changelog or version number.
-   Also read `docs/diors-builds notes.md` — my central scratchpad for thoughts/plans.
+   Also read `docs/ideas/diors-notes.md` — my central scratchpad for thoughts/plans.
    It's raw intake, NOT source of truth (CLAUDE.md + the rules are); keep it tidy, and mark
    items [x] implemented / [-] abandoned per its own header. See the central-notes memory.
    ⚠️ Canonical Diors memory = the -Applications-Claude-Code-Diors-Builds path (the repo's

@@ -25,6 +25,45 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **📓 Move + rename the notes file: `docs/diors-builds notes.md` → `docs/ideas/diors-notes.md` —
+  CLOSED 2026-08-06 08:07 EDT.** Filed 2026-08-06 00:14 EDT as
+  `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split]`, Harkirat's call: the folder move AND
+  the shorter name together, since both drag the same sweep.
+
+  Original wording, kept: this is NOT a `git mv` — the path was hardcoded in 7 places plus 3 test
+  files, inventoried 2026-08-05 23:58 EDT (the `SessionStart` open-items hook in
+  `.claude/settings.json`; `records-close-check.sh` ×2; `notes-hardwrap-check.sh` ×3;
+  `outstanding-not-filed.sh`; `notes-open-items.sh`; the tests `records-close-check.test.sh` ×4,
+  `notes-hardwrap-check.test.sh` — an absolute path — and `.claude/rules/autobuild.md`). The
+  dangerous one was `records-close-check.sh:53`, a literal `grep -qx 'docs/diors-builds notes.md'`
+  against the changed-file list, which after a move simply stops matching: the gate keeps running,
+  keeps passing, and nothing reports that it has died.
+
+  **What actually shipped**, beyond the inventory: the live reference set was **14 files**, not 10 —
+  the extra four were `scripts/docs-audit.mjs` (×6, including the `archive-conservation` pairing),
+  `scripts/docs-audit.test.mjs` (×12 fixtures), `docs/README.md` and `docs/SESSION-START.md` — plus
+  8 memory files. Records (`CHANGELOG.md`, `DEVLOG.md`, `docs/archive/**`) and the dated
+  `docs/superpowers/specs/**` were deliberately left alone; they say the old name because that is
+  what it was called when they were written.
+
+  **The dangerous reference was not just repointed, it was made underivable-from-two-places.**
+  `records-close-check.sh` now sets `NOTES_REL` once and matches with `grep -qxF "$NOTES_REL"`, so
+  the path it looks for and the path it reads cannot drift apart again. Two spellings of one path
+  was the actual defect; there is one spelling now. Its self-test's
+  *"open notes + touched → silent"* case discriminates — with the old literal it would have fired.
+
+  **One consequence the inventory did not predict:** moving the file from a loose `docs/*.md` into a
+  subdirectory flipped which `readme-map` coverage unit applies (loose files are covered by their
+  own name, anything nested only by naming its directory), so `docs-audit.test.mjs`'s baseline
+  fixture failed on valid input until its README named `ideas/`. The meta-test caught it — that is
+  the *"broken fixture fails AND valid input stays silent"* half doing its job.
+
+  Verified: both affected hook self-tests pass individually (12/12 and 10/10), `npm test` green
+  (58 checks proven failable, 18/18 hooks), `npm run docs:audit` exit 0. The `SessionStart` notes
+  hook was dry-run against the new path and returned the identical 3 open items.
+  ⚠️ **Left open on purpose:** the hook firing for real in a *fresh* session cannot be proven from
+  inside the session that changed it — see the reminder filed for it.
+
 - **🔗 Every GitHub link on the live site was a 404 until the repo was renamed to `dioreo` — CLOSED
   2026-08-05 19:07 EDT, verified rather than assumed.** Filed 2026-08-04 16:23 EDT as
   `[P1 · XS · Harkirat action, not a build]`, shipped-broken in v2.52.0 with Harkirat's prior

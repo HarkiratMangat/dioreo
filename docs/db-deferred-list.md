@@ -13,7 +13,7 @@ pulled all of them in, added the priority legend, and moved resolved entries out
 now `/Applications/Claude Code/meta-deferred-list.md`.
 
 ## Closing the loop back to the notes file
-When a Queued/bug item here that was **filed FROM `docs/diors-builds notes.md`** ships or gets fixed,
+When a Queued/bug item here that was **filed FROM `docs/ideas/diors-notes.md`** ships or gets fixed,
 go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a
 separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31,
 shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions,
@@ -273,6 +273,20 @@ though the Return-key one only reproduces in this repo's notes file.*
 *Time- or condition-based — not "do this now," but things not to forget when the trigger hits. Tagged
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
+
+- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
+  *(filed 2026-08-06 08:08 EDT, in the same pass that moved the file.)* Trigger: **the very next fresh
+  session in this repo** — check its startup context for a `NOTES-FILE CHECK:` line naming
+  `docs/ideas/diors-notes.md`. If it is absent while the file still has open items, the hook is broken.
+
+  **Why this is a reminder and not a claim.** The hook command in `.claude/settings.json` was dry-run
+  against the new path in the moving session and produced the correct output (3 open items, the same
+  three the old path reported). That proves the *command* works. It does **not** prove the harness
+  fires it — a `SessionStart` hook is read at session start, so the session that edits it is running
+  the previous version by construction and can never observe its own change. This is the one step of
+  the move's checklist that is structurally unprovable from inside, so it is written down rather than
+  assumed, per [[feedback_verify_before_claiming]].
+  Close it by deleting this entry once a fresh session's startup context has been seen.
 
 - **🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED** `[P1 · XS]`
   *(filed 2026-08-04 16:23 EDT; **rewritten 2026-08-06 00:36 EDT** because it had gone stale in the
@@ -1469,32 +1483,6 @@ well-specified execution/polish, not novel design.*
 - `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** —
   retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B.
   ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
-- `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split below]` **Move + rename the notes file:
-  into `docs/ideas/` as **`diors-notes.md`**, renamed from `docs/diors-builds notes.md`** — ⚠️ *the
-  target does not exist yet; it is the planned end state, not a live pointer, so do not "fix" it.* — *(filed 2026-08-06 00:14 EDT.
-  Harkirat's call: the folder move AND the shorter name, together, since both drag the same sweep.)*
-
-  ⚠️ **This is NOT a `git mv`. The path is hardcoded in 7 places plus 3 test files**, inventoried
-  2026-08-05 23:58 EDT so the next session does not have to rediscover them:
-  - `.claude/settings.json:22` — the `SessionStart` open-items hook builds the path inline.
-  - `.claude/hooks/records-close-check.sh:32` — `NOTES="$REPO/docs/diors-builds notes.md"`.
-  - **`.claude/hooks/records-close-check.sh:53` — `grep -qx 'docs/diors-builds notes.md'`.** 🔴 **The
-    dangerous one.** It exact-matches the changed-file list. After a move it simply stops matching:
-    the gate keeps running, keeps passing, and **nothing reports that it has died.** A silently dead
-    gate is the exact failure this repo has already paid for twice.
-  - `.claude/hooks/notes-hardwrap-check.sh:29` (a `case` glob) and `:63` (message text).
-  - `.claude/hooks/outstanding-not-filed.sh:31` — `diors-builds notes\.md` inside a grep alternation.
-  - `.claude/hooks/notes-open-items.sh:2` — header comment.
-  - Tests: `records-close-check.test.sh` (×4 fixtures), `notes-hardwrap-check.test.sh:8` (**an
-    absolute path**), plus `.claude/rules/autobuild.md:169`.
-
-  **Do it in this order:** update every reference → run each affected `*.test.sh` individually → run
-  `npm test` → **start a fresh session and confirm the SessionStart notes hook actually fires**, since
-  that one cannot be proven from within the session that changed it.
-  ⚠️ **Renaming also loses the space in the filename**, which is a real win — the space is why every
-  one of those references needs quoting — but it means a literal-string sweep must catch both the
-  old *path* and the old *name*.
-  🔗 Bundle with the `known-issues.md` split/rename below: same class of work, same sweep, one audit.
 - `[P1 · S · 🧩needs-design]` **Why did both v2.55.5 defects surface only AFTER the merge — did a gate
   fail, or is there a coverage hole?** — *(Harkirat's question, 2026-08-06 00:40 EDT. **Deferred to a
   morning session at his instruction — do NOT investigate inline.** Filed so the question is not lost;

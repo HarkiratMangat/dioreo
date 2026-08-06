@@ -24,7 +24,7 @@ did and did NOT move, because the boundary is deliberate and re-deriving it wron
   - **The repo folder** `/Applications/Claude Code/Diors-Builds` — ⚠️ **the memory-store slug is
     derived from this path.** Renaming the folder strands the whole store again, exactly as the
     2026-07-28 migration fixed. Do not "finish the job" by moving it.
-  - `docs/diors-builds notes.md` — a filename two `SessionStart` hooks parse by path.
+  - `docs/ideas/diors-notes.md` — a filename two `SessionStart` hooks parse by path.
 - ⚠️ **The former name is still a Brand Asset** (LICENSE §1.5, §18.3) and TERMS §7.1 still protects it.
   Retiring a name does not release it.
 
@@ -462,7 +462,7 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
   `feedback_not_checkable_is_usually_unexamined`.
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
-- **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
+- **`docs/ideas/diors-notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
   Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
 - **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (start at `user_working_agreement.md`).
@@ -488,12 +488,13 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`,
-  `ideas/` (added 2026-08-06 00:12 EDT — forward-looking and maintained; also holds the **gitignored**
-  private `docs/ideas/Harkirats-Space.md`), and the
-  central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
+  `ideas/` (added 2026-08-06 00:12 EDT — forward-looking and maintained; holds the central intake
+  scratchpad **`diors-notes.md`**, moved here from `docs/diors-builds notes.md` 2026-08-06 08:00 EDT,
+  and the **gitignored** private `docs/ideas/Harkirats-Space.md`), and `archive/`.
+  Un-gitignored at Harkirat's explicit request so a
   real `git diff`/`git log` covers their history. ⚠️ **`SessionStart` hooks in `.claude/settings.json` PARSE these
   files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
-  by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
+  by path, the other counts open items in `docs/ideas/diors-notes.md` by scanning from `## Questions` to
   `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME
   change and dry-run it** (the `# Graveyard` anchor it used before 2026-07-25 21:43 EDT was removed by the
   archive split and would have silently un-bounded the scan). Since 2026-07-28 12:45 EDT these hooks live
