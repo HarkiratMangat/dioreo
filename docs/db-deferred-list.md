@@ -62,16 +62,39 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-- ✅ **CAUSE FOUND 2026-08-06 15:27 EDT — a GitHub Actions MAJOR OUTAGE, confirmed at githubstatus.com,
-  not anything in this repo.** The hypothesis below was recorded as a guess and turned out right, but
-  it was *checked* rather than assumed, and the check took one request. What settled it: two runs died
-  at **exactly 15m04s / 15m03s** with **ZERO log bytes** (the job never received a runner — a failing
-  step always leaves output); **`main`'s own CI run failed the same way** at 15:24 EDT, on a branch
-  this work never touched; and the repo is PUBLIC, so Actions minutes are free and unlimited and quota
-  was never a candidate. ⚠️ **Leaving open until a run actually goes green** — the outage is the
-  explanation, not the resolution, and "explained" is not "working". Blocks the **v2.57.0** merge.
-  ⚠️ **Do not merge past a red CI on the grounds that it is only the outage.** There is still no
-  required status check, so a red PR *can* merge; that is a known gap, not permission.
+- ⏸️ **`v2.57.0` IS READY TO MERGE AND IS DELIBERATELY NOT MERGED — waiting on GitHub Actions.**
+  *Status as of 2026-08-06 19:24 EDT. Harkirat's call: "no need to merge yet since github actions is
+  still down. just push and pr and leave a note for future sessions to check."*
+
+  **✅ Cause of the earlier CI failures is settled: a GitHub Actions MAJOR OUTAGE**, confirmed at
+  githubstatus.com — not anything in this repo. Two runs died at **exactly 15m04s / 15m03s with ZERO log
+  bytes** (the job never got a runner; a failing step always leaves output), and **`main`'s own run
+  failed identically** on a branch this work never touched. The repo is PUBLIC, so Actions minutes are
+  free and quota was never a candidate.
+
+  **⚠️ WHY IT CANNOT SIMPLY BE MERGED ANYWAY:** `syntax-check` **is now a required status check**
+  (verified against the protection API 2026-08-06 19:06 EDT — CLAUDE.md previously claimed no required
+  check existed; that was stale and is corrected). With Actions not dispatching, the head commit has
+  **0 checks** and the PR sits `BLOCKED` with nothing wrong in the repo. Closing and reopening the PR
+  did **not** force a dispatch. Actions began recovering ~18:56 EDT (a run went green for an earlier
+  commit on this branch), so this should clear on its own.
+
+  **✅ VERIFIED LOCALLY INSTEAD — CI's exact seven steps, all green on `8fbbdb8`:** `npm ci` ·
+  `npm test` · `npm run docs:audit:test` · `npm run docs:audit` · `node scripts/checkEmojiCaptures.js` ·
+  `npm run site` · `public/` not stale outside `public/changelog/`. So the work is verified, just
+  not CI-attested.
+
+  **📋 NEXT SESSION — do this first, then carry on:**
+  1. `gh run list --branch docs/deprioritize-self-deletion --limit 3` — is there a **completed/success**
+     run whose `headSha` matches the PR head? If not, check githubstatus.com before debugging anything.
+  2. Green on the head commit → `gh pr merge 89 --squash --delete-branch`
+  3. **Then, as a SEPARATE command** (never chain with `&&` — `gh pr merge` can fail while a pipeline
+     still reports success, which once produced a wrong pushed tag): verify `git log -1` shows the
+     release, then `git tag -a v2.57.0 <squash-sha> -m "v2.57.0"` and `git push origin v2.57.0`.
+  4. `git fetch origin main:main v3-pre-release:v3-pre-release` to refresh local refs.
+  5. Deploy is **separate and optional** — the VM is on v2.46.0 and far behind. Ask before deploying.
+  ⛔ **Do NOT merge past a red or check-less CI on the grounds that "it's just the outage."**
+  `enforce_admins` is off, so an override is possible — it is Harkirat's call, never an automatic one.
 
   <details><summary>original item, as filed</summary>
 
