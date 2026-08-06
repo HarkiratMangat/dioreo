@@ -132,7 +132,8 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
 - 2026-08-06 10:35 EDT — Three prompts, three kinds of check: building the thing that stops him asking twice (v2.56.0)
 - 2026-08-06 10:53 EDT — The guard that blocked the PR fixing the guard (v2.56.1)
-- 2026-08-06 12:52 EDT — The gate fired, and told me something false (v2.56.3)
+- 2026-08-06 12:52 EDT — The gate fired, and told me something false (folded into v2.57.0)
+- 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5149,7 +5150,7 @@ caught that too.
   is not the end of the work; it is the beginning of finding out what it gets wrong.
 
 
-## 2026-08-06 12:52 EDT — The gate fired, and told me something false (v2.56.3)
+## 2026-08-06 12:52 EDT — The gate fired, and told me something false (folded into v2.57.0)
 
 The three-pass sweep built this morning fired for the first time in a live session — unprompted, on a
 real completion claim, exactly where it was sited to fire. The filed reminder said this could not be
@@ -5194,6 +5195,98 @@ learn it.
 - **Copy the fix, not just the lesson.** `records-close-check.sh` had already solved the BASH_SOURCE
   ordering problem correctly; the knowledge existed in this directory and the new hook still shipped
   without it. Reading a sibling before writing is cheaper than rediscovering it.
+
+
+
+## 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
+
+The alert was correct. That was the problem.
+
+`🔴 Gateway shard error` · `Unexpected server response: 503` · three frames of
+`node_modules/ws/lib/websocket.js`. Every token of that is true, and Harkirat's reaction to receiving
+it was *"absolutely no clue what it meant."* The alert answered a question nobody was asking — *where
+in the websocket library did this surface* — and left the three that actually matter untouched: is the
+bot down, are users affected, do I need to get up right now.
+
+An alert is not a log line. A log line exists to be searched later; an alert exists to interrupt
+someone and drive a decision. Measured against that, a perfect stack trace at 03:00 is a failure.
+
+**The fix was easy. Knowing what NOT to do was the work.**
+
+The recovery half looked like a one-line change. There is no signal when the bot heals, `shardResume`
+already fires, so make it loud. I nearly did — and it would have quietly undone a decision from
+2026-07-20 that was more considered than my fix. That pair fires every 1-3 hours as routine gateway
+churn; the VM logged one ten minutes before this release shipped. Making it loud refills the channel
+with exactly the noise someone deliberately removed.
+
+**Noise is not the lesser failure.** Silence costs you one event. Noise costs you the channel — it
+teaches the reader to skim, and then the alert that matters arrives into a habit of not reading. The
+correct rule was symmetry, not volume: **a problem that was announced gets a recovery that is
+announced; a problem that was silent stays silent.** Routine blips stay invisible. The 03:00
+disconnect that woke him gets an explicit "Back online" and the duration.
+
+Then the second trap, which I only saw by asking which path I had *not* covered. `shardResume` is the
+good case — the session replays. When a disconnect is bad enough that it can't resume, discord.js
+re-identifies and only `shardReady` fires. Wiring recovery to `shardResume` alone would have left the
+**worst** outages, the ones most worth closing out, with no recovery signal at all: the exact bug I was
+fixing, reintroduced one level down, in the fix for it.
+
+**Three things I got wrong, all caught before they shipped, none by re-reading my own code.**
+
+Rendering the embeds is what exposed the first two. `formatUptime` floors to minutes, so a four-second
+outage would have announced itself as *"restored after 0m"*. And my own explanation text pointed the
+reader at an alert called "Discord connection lost" — a name that did not exist, because I had written
+the cross-reference before deciding to humanise the titles. Telling someone to go look for a message
+that isn't there is the same failure I was there to remove.
+
+The third came from writing the test. I asserted every explanation field was longer than ten
+characters, and it failed on `action: 'Nothing.'` — which is the *best* answer a recovery alert can
+give. I had encoded verbosity and called it usefulness. Fixed it, and it failed again on a line ending
+in `?`. Twice wrong in the same direction, on a test whose whole job was judging text quality. The
+assertion now checks the property I actually care about, and carries a comment saying so.
+
+**The tests exist because the obvious verification cannot reach the branch that matters.** Firing
+sample alerts through `sendAlert` and reading the output is how I checked the layout — but `sendAlert`
+throttles per `level:title`, so a second `Gateway disconnected` carrying a *different close code* is
+silently dropped. Transient-1006 versus fatal-4004 is the single most valuable distinction in the
+module, and it was unreachable that way. It looked covered. It wasn't. Only calling `explain()`
+directly proves it.
+
+**Elsewhere: two documents that described a cleanup nobody had run.**
+
+17 real users' Discord IDs were still in the local dev database. A script to fix that was written two
+days ago, the doc was updated to point at it, the finding was recorded as handled — and the script had
+never been executed once. The shipped artefact was the paperwork. Data does not clean itself because a
+script exists to clean it, and every check I ran said so plainly the moment I ran one.
+
+The filed item also undercounted what was there. It named three colour-source fields; two of them do
+not exist in the data at all, while three *palette*-source fields it never mentioned hold real Discord
+avatar and banner hashes — per-user CDN addresses for a specific person's image. The inventory was
+written from the schema, not from the rows.
+
+And mid-implementation I nearly built a permanent false alarm: my synthetic replacement IDs were
+numeric and snowflake-shaped, on the reasoning that preserving the shape preserved the test value. The
+project's canonical audit check is `/^[0-9]{17,20}$/`. A fully-cleaned database would have reported 17
+real users forever — and a check that cries wolf is one that gets ignored on the day it is right.
+
+**Last: a tracker that held both a question and its answer.** A `[P3]` item asked whether to adopt
+Sentry. The same file's decided-no section already recorded that we would not, on legal grounds — the
+published Privacy Policy names Sentry by name and says "None present." Either entry read alone is
+coherent. Together they are a trap: a session picking up the queued item re-opens a settled decision
+and never learns it was settled. I answered the question on its own terms anyway (it loses on the
+technical merits too, now), and then closed the contradiction, which was the more valuable half.
+
+### What this cost, and what it taught
+
+- **"Correct" and "useful" are different properties, and only one of them is testable by the author.**
+  Every alert this release rewrote was already correct.
+- **Before making a suppressed thing loud, find out who suppressed it and why.** The `silent` flag had
+  a dated comment explaining itself. Reading it was the difference between a fix and a regression.
+- **Ask which path you did NOT cover.** Both the `shardReady` hole and the throttled close-code branch
+  came from that question, not from re-reading the diff.
+- **A test that judges text will encode your taste unless you make it prove a property.** Mine failed
+  twice on correct content before it checked the right thing.
+- **A script is not an outcome.** Two days of documented cleanliness, zero rows changed.
 
 
 # Part B — Lessons Ledger (thematic)

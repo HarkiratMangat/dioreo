@@ -197,43 +197,6 @@ scratchpad for 2 days.*
   **Verify** on a phone in **dark** mode until the item above is fixed, or the artefact will mask
   whatever the droplets are doing.
 
-- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
-  no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
-  that session; this entry is the unfinished half.*
-
-  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with
-  `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production
-  personal data is copied onto a development machine. Confirmed present, not assumed —
-  `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'`
-  returned **17**, all real snowflake ids.
-
-  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data
-  (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`,
-  `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences`
-  is the only collection at issue.**
-
-  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
-  processing instead of documenting it, and is the standard answer to production personal data in a
-  development environment. Three parts, and **only the first is still open:**
-  1. ⏳ **Purge what is already there — STILL OPEN, and it is the part that actually matters.**
-     Writing the seeder did not delete anything: the 17 real records are still in
-     `diors-builds-dev` as of 2026-08-04 12:31 EDT, confirmed by the script's own dry run. The
-     deletion is destructive and irreversible, so it waits for Harkirat's explicit go-ahead:
-     `node --env-file=.env.dev scripts/seedDevData.js --yes`.
-  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and
-     inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to
-     re-run. Its guard is the real content: it requires a loopback host **and** a dev-named
-     database, because either alone is defeatable by one wrong environment variable, and it
-     refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
-     prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
-  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT.** The row that instructed
-     `mongodump` from prod is gone; it now points at the seeder and carries the verification
-     query plus the note that `userpreferences` is the only affected collection.
-
-  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
-  (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
-  against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 /
-  §7 / §8 change plus an Appendix A row — not a one-line note.
 
 - `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
   denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
@@ -1181,19 +1144,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
   means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
   gets its own Active/All toggle like `/calendar`'s or something simpler.
-- `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
-  "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
-  shard error" alert live and had "absolutely no clue what it meant," and separately has no
-  indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related
-  gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`,
-  `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a
-  plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves,
-  what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert
-  to close the loop after a disruption alert fires, so a one-off blip reads as an open question
-  forever. See `utils/alertStore.js` + the alert-tier design referenced in
-  `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
-  mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
-  before scoping the actual build.
 - `[P3 · M · Sonnet5-M · ⛓️deferred to v4 by Harkirat]` **User-data deletion path (self-service).**
   ⬇️ **DOWNGRADED P1 → P3 and pushed to v4 on 2026-08-06 12:20 EDT, Harkirat's explicit call:**
   *"The privacy self deletion isn't a priority. They can email me if needed. That self deletion thing
@@ -1249,14 +1199,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   it fails CI rather than silently degrading the audit — but read that assertion before trusting it.
   **It self-verifies:** merging to `main` triggers `sync-v3-pre-release.yml`, so both workflows get
   exercised by the PR that changes them. Watch that run rather than assuming it passed.
-- `[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried
-  over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did
-  not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error
-  grouping on top of the Discord webhook. **That gap is materially smaller now:** structured Cloud
-  Logging carries real severity plus the running version and commit on every entry, and `vmstatus.sh`
-  surfaces error/alert/noise tiers. So the question is no longer "webhook vs Sentry" but "what does
-  Sentry add over structured Cloud Logging" — answer that before adopting. 🔗 Bundle-with: the deferred
-  admin `/status` command (`getAlertSummary()` can feed it either way).
 - `[P3 · XS · any model]` **GitHub achievement badges — Pull Shark + Pair Extraordinaire.** Added
   2026-07-28 15:52 EDT (Harkirat's ask). **Pull Shark is not showing despite 42 merged PRs because all
   three of his repos are PRIVATE** (`diors-builds`, `dior-cli`, `gif-background-remover`) — verified via
@@ -1759,8 +1701,18 @@ doesn't re-open them as if they were new.*
   85 offers assessed against the real stack — the adopted three are in the 🔔 claim reminder above,
   and the source table Harkirat extracted is `local/pack_summary.md`)*. Each was considered and
   declined for the stated reason; don't re-raise without new information.
-  - **Sentry, and any third-party error-reporting or analytics SDK** — this is a legal-document
-    decision, not a technical one. `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
+  - **Sentry, and any third-party error-reporting or analytics SDK** — ✅ **re-evaluated and re-declined
+    2026-08-06 15:12 EDT**, closing the separate `[P3 · S]` "re-evaluate Sentry" item that had been
+    sitting in 🗂️ Queued *contradicting this entry* — the tracker was simultaneously asking the question
+    and recording the answer. The re-evaluation asked what the item told it to ask ("what does Sentry
+    add over structured Cloud Logging?") and the answer is **less than it did**: Cloud Logging already
+    carries severity + version + commit per entry, `vmstatus.sh` tiers errors/alerts/noise, and the
+    2026-08-06 15:12 EDT alert-readability work added the plain-language layer and the paired recovery signal
+    that were the practical reasons to want grouping. What remains unique to Sentry — release-health
+    graphs, cross-session breadcrumbs — is not worth the cost below for a single-maintainer bot. The
+    legal objection was and remains the decisive one, verified live against the published policy
+    (v1.9, §2.6 + Appendix A line 681). ⚠️ **Do not re-file this as a new "re-evaluate" item.**
+    This is a legal-document decision, not a technical one. `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
     PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises
     *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it.
     Adopting one costs a policy amendment + a new US sub-processor disclosure + a policy version bump

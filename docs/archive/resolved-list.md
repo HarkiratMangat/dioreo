@@ -25,6 +25,84 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ✅ **DONE 2026-08-06 15:20 EDT (v2.57.0)** — `utils/alertExplain.js` supplies the plain-language layer
+  (what happened · does it fix itself · what to do), reads Discord close codes so a transient 1006 and a
+  fatal 4004 no longer read alike, and humanises the DISPLAY title only (the stored title stays a
+  canonical key for the throttle and `AlertLog`). `utils/gatewayRecovery.js` adds the "Back online"
+  signal. ⚠️ **The recovery is PAIRED, not unconditional** — a problem that was announced gets a
+  recovery that is announced; routine 1-3h reconnect churn stays silent, preserving the 2026-07-20
+  anti-noise decision that a naive "make resume loud" fix would have undone. Both `shardResume` (session
+  replayed) and `shardReady` (session lost, re-identified) close an outage — wiring only the former
+  would have left the *worst* outages with no recovery signal. 21 unit tests; Discord returned HTTP 204
+  for the new payload. **Still open from the original filing:** Harkirat mentioned *"some discuss[ion]
+  around it as well"* — never clarified, so ask if there was more he wanted here.
+  <details><summary>original item</summary>
+
+  `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
+  "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
+  shard error" alert live and had "absolutely no clue what it meant," and separately has no
+  indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related
+  gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`,
+  `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a
+  plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves,
+  what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert
+  to close the loop after a disruption alert fires, so a one-off blip reads as an open question
+  forever. See `utils/alertStore.js` + the alert-tier design referenced in
+  `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
+  mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
+  before scoping the actual build.
+  </details>
+
+- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
+  no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
+  that session; this entry is the unfinished half.*
+
+  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with
+  `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production
+  personal data is copied onto a development machine. Confirmed present, not assumed —
+  `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'`
+  returned **17**, all real snowflake ids.
+
+  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data
+  (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`,
+  `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences`
+  is the only collection at issue.**
+
+  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
+  processing instead of documenting it, and is the standard answer to production personal data in a
+  development environment. Three parts — **all three now closed**, the first of them only on
+  2026-08-06 15:11 EDT, two days after the other two were filed as done:
+  1. ✅ **DONE 2026-08-06 15:11 EDT (v2.57.0) — but ANONYMISED, not purged.** Harkirat's call when he
+     scoped the session: *"I don't want to purge all the user data locally, I just want to decouple
+     and remove the user ids so the test data still remains and we can use it for testing."* So
+     `seedDevData.js` (which deletes all 17 and inserts six fixtures) was **not** the right tool, and
+     `scripts/anonymizeDevDb.js` was written instead: every document survives, only the identifiers
+     are replaced. Verified independently of the script's own report — the canonical audit query now
+     returns **0**, all 17 documents are still present with unique ids, and the dev bot boots against
+     them. Both scripts remain; `deployment-and-ops.md` documents when to reach for each.
+     ⚠️ **This sat open for two days while the record said it was handled.** The 2026-08-04 session
+     shipped the seeder and the doc and filed the finding as addressed — and never ran anything, so
+     all 17 real ids were still live on 2026-08-06. **A script existing is not the data being clean.**
+     ⚠️ **The inventory below undercounted the fields.** It named `discordId` only; the session that
+     scoped this added three colour-source fields, two of which do not exist in the data at all —
+     while `avatarPaletteSource`, `bannerPaletteSource` and `decorationPaletteSource`, named by
+     neither, **do** and hold real Discord avatar/banner asset hashes (per-user CDN addresses). The
+     list was written from the schema, not from the rows. Any new per-user cache key belongs on it.
+  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and
+     inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to
+     re-run. Its guard is the real content: it requires a loopback host **and** a dev-named
+     database, because either alone is defeatable by one wrong environment variable, and it
+     refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
+     prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
+  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT.** The row that instructed
+     `mongodump` from prod is gone; it now points at the seeder and carries the verification
+     query plus the note that `userpreferences` is the only affected collection.
+
+  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
+  (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
+  against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 /
+  §7 / §8 change plus an Appendix A row — not a one-line note.
+
 - **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]` —
   **ANSWERED YES, 2026-08-06 12:35 EDT.** *(Heading kept verbatim from the active list, per this
   file's own rule — and because `archive-conservation` traces a removed item by a six-word
@@ -585,6 +663,27 @@ active file a given dead item came out of.
   `project_deployment_migration_render_to_gcp` memory + DEVLOG.
 
 ## Dropped / replaced
+
+- ~~`[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried
+  over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did
+  not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error
+  grouping on top of the Discord webhook. **That gap is materially smaller now:** structured Cloud
+  Logging carries real severity plus the running version and commit on every entry, and `vmstatus.sh`
+  surfaces error/alert/noise tiers. So the question is no longer "webhook vs Sentry" but "what does
+  Sentry add over structured Cloud Logging" — answer that before adopting. 🔗 Bundle-with: the deferred
+  admin `/status` command (`getAlertSummary()` can feed it either way).~~
+  → **ANSWERED AND CLOSED 2026-08-06 15:12 EDT — the answer is no, and the item should never have been
+  a separate open question.** This sat in 🗂️ Queued asking whether to adopt Sentry while the SAME file's
+  🚫 Decided-no section already recorded the decision not to; the tracker held both the question and its
+  answer, and a session picking up the Queued item would have re-litigated a settled call without
+  noticing. **The re-evaluation was performed on its own terms** and Sentry lost on the technical
+  question too: structured Cloud Logging carries severity + version + commit per entry, `vmstatus.sh`
+  tiers errors/alerts/noise, and v2.57.0's alert-readability work supplied the plain-language layer and
+  paired recovery signal that were the practical motivation for wanting error grouping. The decisive
+  objection is still the legal one, re-verified live rather than quoted: `docs/legal/PRIVACY.md` v1.9
+  names Sentry explicitly in its verification appendix and states **"None present"**, and that page is
+  published. Full reasoning now lives in `db-deferred-list.md`'s 🚫 Decided-no entry, which is where a
+  standing decision belongs per this file's own rules. Nothing was built.
 
 - ~~[Diors Builds] `/secondary` rename + `/pistols` alias~~ → **DROPPED, replaced 2026-07-18 (v2.21.0).**
   `/secondaries` stays exactly as-is; built a category-level search-synonym feature instead

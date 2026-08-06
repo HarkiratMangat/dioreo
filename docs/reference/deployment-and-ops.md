@@ -295,7 +295,7 @@ node --watch --env-file=.env.dev index.js
 | Thing | Dev | Note |
 |---|---|---|
 | Discord application | `Dioreo (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
-| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). **Seed user preferences with `node --env-file=.env.dev scripts/seedDevData.js --yes`** — see the warning below |
+| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). **Never seeded from prod — see the two cleanup scripts below** (`seedDevData.js` for a fixed fixture set, `anonymizeDevDb.js` to keep live-shaped data without real identifiers) |
 | Alert webhook | its own `LOG_WEBHOOK_URL`, own channel | must NOT be prod's — see the dotenv trap below |
 | Emojis | its own 72 application-emoji copies | same names, different ids — see below |
 | Cloudinary / Vertex AI (`GCP_*`) | **shared with prod** | deliberate. Vertex needs no new credentials: it uses the local `gcloud` ADC already on Harkirat's Mac |
@@ -306,10 +306,29 @@ used to instruct exactly that — `mongodump` from prod into `diors-builds-dev` 
 second location that the Privacy Policy neither disclosed nor had any reason to. It was found
 2026-08-04 11:55 EDT by counting snowflake-shaped ids in the local database.
 
-Use **`scripts/seedDevData.js`** instead. It refuses to run unless the target is both a loopback
-host and a dev-named database — either alone is defeatable by one wrong environment variable — and
-it refuses to delete anything without `--yes`. Run it without the flag first: that is a dry run
-that reports what is there and changes nothing.
+There are **two** cleanup scripts, and they answer different questions. Both refuse to run unless the
+target is a loopback host **and** a dev-named database — either alone is defeatable by one wrong
+environment variable — and both default to a dry run that reports what is there and changes nothing.
+
+| Script | What it does | Use it when |
+|---|---|---|
+| `scripts/seedDevData.js --yes` | **Replaces** every UserPreference with 6 fixed synthetic people. | You want a known, reproducible fixture set. |
+| `scripts/anonymizeDevDb.js --write` | **Keeps every document**, replacing only the real `discordId` and the real Discord asset hashes. | You want the realistic spread of live-shaped data (17 rows, varied preferences) without it belonging to anyone. |
+
+⚠️ **A script existing is not the data being clean.** `seedDevData.js` was written 2026-08-04 12:07 EDT
+in response to this exact finding — and the 17 real IDs were still sitting in the local database
+**two days later**, on 2026-08-06 15:07 EDT, because nothing ever ran it. The shipped artefact was
+the script and the doc, not the cleanup. **Run the verification below rather than assuming.**
+
+⚠️ **`avatarColorSource` and the `*PaletteSource` fields are personal data too**, which the original
+finding missed: they hold real Discord **avatar/banner asset hashes** (`de36d199…`, `a_27ab8a48…`),
+which address a specific person's image on Discord's CDN. `anonymizeDevDb.js` replaces them;
+`seedDevData.js` deletes the rows that hold them. **Any new per-user cache key belongs on that list.**
+
+⚠️ **Synthetic ids must NOT be snowflake-shaped.** Both scripts use a `dev-` prefix on purpose. An
+all-numeric stand-in — even an obviously fake one like `90000000000001` — matches the audit regex
+below and would report a fully-cleaned database as holding 17 real users, permanently. A check that
+cries wolf is a check that gets ignored on the day it is right.
 
 **Verify a clean database** with the same check that found the problem — it must return `0`:
 
