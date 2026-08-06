@@ -1,7 +1,7 @@
 #!/bin/bash
 # notes-hardwrap-check.sh — PostToolUse (Edit|Write) gate.
 #
-# WHY THIS EXISTS. `docs/diors-builds notes.md` carries a rule in its own legend: do NOT hard-break
+# WHY THIS EXISTS. `docs/ideas/diors-notes.md` carries a rule in its own legend: do NOT hard-break
 # prose inside an HTML comment, because MarkEdit soft-wraps and manual breaks make the rendered text
 # jump mid-sentence. Harkirat has now corrected me on this THREE separate times (2026-07-18 when the
 # rule was created, again in a later pass, and again 2026-07-29 18:24 EDT with specific line numbers). Prose
@@ -26,7 +26,9 @@ input=$(cat)
 file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
 
 case "$file" in
-    *"diors-builds notes.md") ;;
+    # Matches the basename, so it holds wherever the file sits in the tree. Renamed from
+    # "diors-builds notes.md" when the file moved to docs/ideas/ (2026-08-06 07:58 EDT).
+    *"diors-notes.md") ;;
     *) exit 0 ;;
 esac
 
@@ -60,7 +62,7 @@ if [ -n "$offenders" ]; then
         hookSpecificOutput: {
             hookEventName: "PostToolUse",
             additionalContext: (
-                "NOTES HARD-WRAP CHECK: this edit hard-broke prose inside an HTML comment in `docs/diors-builds notes.md`:\n"
+                "NOTES HARD-WRAP CHECK: this edit hard-broke prose inside an HTML comment in `docs/ideas/diors-notes.md`:\n"
                 + $o
                 + "\n\nThat file'"'"'s own legend forbids it — MarkEdit soft-wraps, so manual breaks make the rendered sentence jump mid-line. Harkirat has corrected this THREE times; it is why this hook exists. Rewrite each flagged comment as ONE continuous physical line. A real bulleted list inside a comment is the one allowed exception (one bullet per line) and is not flagged here."
             )

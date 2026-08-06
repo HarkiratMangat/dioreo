@@ -24,7 +24,7 @@ did and did NOT move, because the boundary is deliberate and re-deriving it wron
   - **The repo folder** `/Applications/Claude Code/Diors-Builds` — ⚠️ **the memory-store slug is
     derived from this path.** Renaming the folder strands the whole store again, exactly as the
     2026-07-28 migration fixed. Do not "finish the job" by moving it.
-  - `docs/diors-builds notes.md` — a filename two `SessionStart` hooks parse by path.
+  - `docs/ideas/diors-notes.md` — a filename two `SessionStart` hooks parse by path.
 - ⚠️ **The former name is still a Brand Asset** (LICENSE §1.5, §18.3) and TERMS §7.1 still protects it.
   Retiring a name does not release it.
 
@@ -352,13 +352,33 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `scripts-and-migrations.md` | `scripts/**` | pointer map: which subsystem rule documents each script |
 | `legal-site.md` | `scripts/buildLegalPages.js`, `scripts/lib/chronicle.js`, `public/**`, `docs/legal/**`, `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` | the published site: three page families and their voices · the measured nav staging · the metaball constants · the build's gate roster · sticky headings · a11y + contrast |
 
+### 📁 What each `docs/` folder IS — decide by this before filing anything (settled 2026-08-06 08:33 EDT)
+*Three reorganizations in two days all came from files sitting in folders whose purpose they didn't
+match. The test is **what kind of thing is it**, never what it's about — a Discord topic can belong in
+any of these.*
+
+| Folder | It holds | Tense | It is NOT |
+|---|---|---|---|
+| **`docs/reference/`** | **Lookup docs.** "Read this to do the thing correctly." A legend, not a notebook. | Present — kept true | Not narrative, not a list of open work, not a story |
+| **`docs/ideas/`** | **Forward-looking, MAINTAINED.** Proposals, parked ideas, the intake scratchpad. **Edited as thinking changes.** | Future / undecided | Not decided work (that's `db-deferred-list.md`), not published |
+| **`docs/superpowers/specs/`** | **Dated design SNAPSHOTS.** What was decided, and why, on that date. **Superseded, never edited.** | Frozen at its date | Not a live document — a stale spec is *correct*; don't "fix" it |
+| **`docs/archive/`** | **Dead.** Swept intake + closed deferred items. **Don't read by default.** | Past, closed | Not a search target; nothing here is live |
+| **`docs/` root records** | `CHANGELOG` · `CHANGELOG-SUMMARY` · `DEVLOG` · `ROADMAP` · `db-deferred-list` · `README` · `SESSION-START` | Append-only history / live trackers | Records are **never backdated** — an old entry keeps the old name |
+
+⚠️ **`ideas/` vs `specs/` is the pair that gets confused**, and the difference is what you do when it
+goes out of date: an `ideas/` file you **edit**, a `specs/` file you **supersede with a new dated one**.
+⚠️ **Narrative belongs in `DEVLOG.md`, not `reference/`.** That is exactly why **design-history** was
+folded out — it read as a reference doc and was a story. *(Retired names are written without their
+`.md` throughout: `xref` matches path- and record-shaped references and cannot tell a historical
+mention from a live broken link, so spelling one out costs a permanent warning.)*
+
 ### `docs/` — read on demand (planning / ops / history; not code-triggered)
 | File | Covers |
 |---|---|
 | `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
 | `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dioreo (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
-| `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
-| `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
+| `docs/reference/platform-constraints.md` | **Accepted limits imposed from OUTSIDE this codebase** — Components V2, the Discord client, system dependencies. The test is *whose* limitation it is: if a determined session could fix it in this repo it is **work**, and belongs in `docs/db-deferred-list.md` instead. Renamed from `known-issues.md` 2026-08-06 08:15 EDT once the genuine open defects were split out. ⚠️ **NOT forever-constraints — an entry is EVIDENCE, NOT A VERDICT.** It is a snapshot of what the platform allowed on the date written. **Re-test it before citing it as a reason something can't be done, especially before telling Harkirat a request is impossible.** The file's own button-expiry entry is a permanent refutation of a "hard Discord platform wall" claim that was wrong and corrected twice in one day. |
+| *(**design-history** — deleted 2026-08-06 08:24 EDT)* | Redirect only. The 2026-07-12 redesign passes and the color-repalette story are now **`docs/DEVLOG.md`**'s four earliest Part A entries. It was narrative, not "look this up to do the thing correctly", so it failed `docs/reference/`'s own test. |
 | `docs/ideas/` | **forward-looking and MAINTAINED** (edited as thinking changes), vs `docs/superpowers/specs/` whose dated documents are snapshots that get superseded. `design-ideas.md` (parked on TIMING, not merit, each with its revisit condition) · `docs-system.md` (the docs-system guide — explicitly undecided) · `Harkirats-Space.md` (private, gitignored). Not published. Created 2026-08-06 00:12 EDT. |
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (versioned in the file itself, not copied here — see its own metadata block). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. The `privacy-inventory` docs-audit check verifies this for `UserPreference` specifically; `privacy-model-coverage` (added 2026-08-05 12:43 EDT) catches the same drift for any OTHER model that gains a per-user (`discordId`/`userId`) field. |
 
@@ -393,6 +413,14 @@ merged and been tagged**: `public/` was correct in `main` and nothing ever pushe
   does it** (`dior help`, or `~/.config/dior/*.zsh`). The CLI wraps this project's dev/deploy/
   observability workflow and is easy to forget because it lives outside the repo — see memory
   `project_dior_cli_repo`. This wart is exactly what skipping that check produces.
+- 🔴 **AND SWEEP `~/.config/dior/` WHENEVER YOU MOVE OR RENAME A FILE IN THIS REPO.** It hardcodes
+  real paths inside here (`docs/`, `scripts/`, `public/`, `.env`, `.claude/hooks/`) and **no in-repo
+  search can see it — `rg -uu --hidden` included, because it is a different repository.** Proven
+  2026-08-06 09:03 EDT: moving the notes file broke `dior notes` outright while four separate
+  repo-wide sweeps all came back clean. The same blind spot had been hiding a **third copy of the
+  open-items regex** that `.claude/hooks/notes-open-items.sh` exists to consolidate — it reported
+  **29** open items where the hook reported **3**, under a comment asserting the two could not drift.
+  It is a separate git repo on a protected `main`, so a fix there is its own branch and PR.
 Editing a source and re-running the build is the ENTIRE update path; no HTML is ever touched by hand.
 ⚠️ The script is still called `buildLegalPages.js` but now builds the whole site: the flat document
 pages at the site root (`public/*.html` — dioreo.app went live 2026-08-05 14:43 EDT and the site
@@ -462,7 +490,7 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
   `feedback_not_checkable_is_usually_unexamined`.
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing
   "what's new" / narrative journey + lessons.
-- **`docs/diors-builds notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
+- **`docs/ideas/diors-notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session).
   Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
 - **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (start at `user_working_agreement.md`).
@@ -488,12 +516,14 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`,
-  `ideas/` (added 2026-08-06 00:12 EDT — forward-looking and maintained; also holds the **gitignored**
-  private `docs/ideas/Harkirats-Space.md`), and the
-  central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
+  `ideas/` (added 2026-08-06 00:12 EDT — forward-looking and maintained; holds the central intake
+  scratchpad **`diors-notes.md`**, moved here 2026-08-06 08:00 EDT from the old **diors-builds notes**
+  file at the `docs/` root (the rename also dropped the space every reference had to quote around),
+  and the **gitignored** private `docs/ideas/Harkirats-Space.md`), and `archive/`.
+  Un-gitignored at Harkirat's explicit request so a
   real `git diff`/`git log` covers their history. ⚠️ **`SessionStart` hooks in `.claude/settings.json` PARSE these
   files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`
-  by path, the other counts open items in `docs/diors-builds notes.md` by scanning from `## Questions` to
+  by path, the other counts open items in `docs/ideas/diors-notes.md` by scanning from `## Questions` to
   `## 📍`. If either file moves, or the notes file's section headings change, **update the hook in the SAME
   change and dry-run it** (the `# Graveyard` anchor it used before 2026-07-25 21:43 EDT was removed by the
   archive split and would have silently un-bounded the scan). Since 2026-07-28 12:45 EDT these hooks live

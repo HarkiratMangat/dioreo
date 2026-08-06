@@ -32,9 +32,20 @@ if [ ! -f scripts/docs-audit.mjs ]; then
   exit 0
 fi
 
-out=$(node scripts/docs-audit.mjs --diff "$BASE" --json 2>&1)
+# ⚠️ STDERR MUST NOT BE FOLDED INTO THE JSON — fixed 2026-08-06 10:30 EDT, and this gate had been
+# FALSELY REPORTING A CRASH ON EVERY PR since 2026-08-06 00:20 EDT.
+# `--json` mode treats stdout as a contract, so the audit correctly writes its human-readable notices
+# (the chronicle-drift suppression line) to STDERR. This capture used `2>&1`, which put that notice
+# back in front of the JSON, `jq -e .` failed, and the gate announced "DOCS AUDIT CRASHED: nothing was
+# verified" — about an audit that had run perfectly. The stdout discipline was added to protect this
+# consumer, and the consumer was the thing undoing it.
+# A false crash is worse than a missed check: it teaches everyone that the gate is broken, so the one
+# real crash gets read as more noise. Caught on the FIRST live run of the sibling pre-PR sweep.
+# stderr is still captured — to a separate file — because "the audit crashed" must stay diagnosable.
+errf=$(mktemp); trap 'rm -f "$errf"' EXIT
+out=$(node scripts/docs-audit.mjs --diff "$BASE" --json 2>"$errf")
 if ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
-  jq -n --arg e "$(printf '%s' "$out" | head -c 400)" '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:("DOCS AUDIT CRASHED: it did not return valid JSON, so nothing was verified. Fix the audit before trusting this PR.\n\n" + $e)}}'
+  jq -n --arg e "$(printf '%s\n--- stderr ---\n%s' "$(printf '%s' "$out" | head -c 300)" "$(head -c 300 "$errf")")" '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:("DOCS AUDIT CRASHED: it did not return valid JSON, so nothing was verified. Fix the audit before trusting this PR.\n\n" + $e)}}'
   exit 0
 fi
 

@@ -16,8 +16,15 @@ paths:
 
 *Loads when you touch the color utils, `/colors`, or `/settings`. Covers accent-color extraction
 (avatar/banner/displayName/dynamicProfile styles) and the `/colors` View Colors k-means panel.
+⚠️ **The two known cosmetic gaps here (View Colors' vertical centering, the deco static poster) live in
+`docs/reference/platform-constraints.md` — and an entry there is EVIDENCE, NOT A VERDICT.** It records
+what the platform allowed on the date in the entry. **Re-test before telling Harkirat one of these
+can't be done**; Discord ships platform updates, and that file's own button-expiry entry exists because
+a confident "hard platform wall" claim turned out to be wrong twice in one day.
+
 Cross-refs: `.claude/rules/rendering-and-ui.md` (sendV2Payload, pagination), `.claude/rules/settings-and-expiry.md`,
-`docs/reference/design-history.md`. The live nav-order→PRESET_ACCENT color map lives in
+`docs/DEVLOG.md` → *"2026-07-12 — The color repalette: chosen per command, not per position in a fade
+(Section 5)"*. The live nav-order→PRESET_ACCENT color map lives in
 `.claude/rules/rendering-and-ui.md`.*
 
 ## Accent color system (`utils/accentColor.js`, `utils/colorExtract.js`)

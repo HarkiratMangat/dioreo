@@ -7,7 +7,7 @@ paths:
 
 *Loads when you touch `commands/drawprices.js`. The price data model, the final layout, and the
 Advanced Double Legendary page. Shared UI builders/pagination: `.claude/rules/rendering-and-ui.md`.
-Multi-pass redesign narrative: `docs/reference/design-history.md`.*
+Multi-pass redesign narrative: `docs/DEVLOG.md`'s four `2026-07-12` Part A entries.*
 
 ## `/draw prices` layout, final correction (2026-07-13)
 Took several wrong attempts to land (see `[[feedback_check_sibling_code_before_guessing]]` in

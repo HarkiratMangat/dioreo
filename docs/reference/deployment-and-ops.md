@@ -339,7 +339,10 @@ ones — `Database`, `BulkDelete`, `Edit` — needed re-encoding at 96px to fit 
 code side is `utils/emojiMap.js`'s **`refreshEmojiIds(client)`**, called from `handleBotReady`: it matches
 on emoji NAME and re-points every mention string at the booting app's own ids. Verified a true no-op on
 prod (0 rewrites, 0 unmatched) and a full re-point on dev (39/39). Fail-soft — any error keeps the
-hardcoded prod ids. An optional gitignored `utils/emojiMap.dev.json` overlay (applied only when
+hardcoded prod ids. An optional gitignored `utils/emojiMap.dev.json` *(✅ confirmed 2026-08-06 08:39 EDT: a REAL optional dev-only override, not
+a stale path — `utils/emojiMap.js:99` reads it if present, and `.gitignore:12` ignores it by design.
+`xref` reports it every run as "gitignored AND not present, confirm which"; this is that confirmation,
+so nobody re-investigates. Absent on a machine that has never generated one, which is fine.)* overlay (applied only when
 `NODE_ENV=development`, after the name sync) lets a dev session point individual keys at throwaway test
 emojis that don't exist on prod.
 

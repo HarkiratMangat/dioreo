@@ -78,7 +78,7 @@ this project's confirmed bugs and reminders.*
   Extending `utils/passiveExpiry.js`'s `schedulePanelExpiry` to their own render/re-render sites is the
   mechanical part; the open design question is whether 10 minutes is the right window everywhere or
   whether some commands should use a different duration (no Discord-imposed ceiling forces any specific
-  number — see `docs/reference/known-issues.md`).
+  number — see `docs/reference/platform-constraints.md`).
 
 **Second batch of v2 items (filed 2026-07-15 from the plan-notes file).** These ship to `main`/live
 NORMALLY even while v3 pre-release work runs in parallel — see the parallel-track note in

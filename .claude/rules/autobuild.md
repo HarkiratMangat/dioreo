@@ -166,7 +166,7 @@ two enhancements — all admin/back-end:
 
 ---
 
-`[P1 · L · 🧩needs-design → mostly resolved below]` Harkirat's own idea (`docs/diors-builds notes.md`),
+`[P1 · L · 🧩needs-design → mostly resolved below]` Harkirat's own idea (`docs/ideas/diors-notes.md`),
 refined into a concrete design over a design-only conversation (no code written yet — build is deferred to a
 dedicated future session, explicitly NOT this one). Goal: submit a Gunsmith screenshot (phone photo or URL) and
 have the bot extract the weapon name, code, and 5 attachments, auto-generate the `WEAPON-NAME-N` image key,

@@ -25,6 +25,127 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **📖 Fold `docs/reference/design-history.md` into `docs/DEVLOG.md` as its earliest entries, then
+  delete it — CLOSED 2026-08-06 08:24 EDT.** Filed 2026-08-06 00:37 EDT as
+  `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg]`.
+
+  ⚠️ **Filed late, and that was the point of the entry.** The v2.55.5 DEVLOG entry stated *"Filed, not
+  done"* about this — and it was **not** filed. The claim shipped in a merged, tagged record before it
+  was true, and was caught by the outstanding-items gate minutes after the merge. Writing "filed" is
+  not filing; the two feel identical in the moment and only one survives the session.
+
+  Original reasoning, kept: `design-history.md` failed the `docs/reference/` test — narrative, not
+  "look this up to do the thing correctly." But it did not need a `docs/history/` either. It covered
+  **2026-07-12**, `DEVLOG.md`'s earliest entry was **2026-07-13**, and DEVLOG's own status header
+  described that earlier backfill as outstanding. Not a misfiled reference doc — the missing chapter
+  DEVLOG had been waiting for.
+
+  **What shipped:** its four sections folded in as Part A's four earliest entries, dates preserved
+  rather than backdated, bodies kept in substance; four TOC lines added, mirroring each heading
+  verbatim as that block requires. `docs/reference/` now holds two files.
+
+  **Two judgement calls worth not re-deriving:**
+  - **The `[backfill — expand later from transcripts]` marker was KEPT, not resolved.** The filed item
+    said "resolve it *if* this closes it" — it doesn't. That marker never only meant 07-12: 2026-07-06
+    (the Components V2 rewrite), the Excel→Mongo migration and 2026-07-10 (the security incident) are
+    still one-bullet summaries with no transcript behind them. Removing it because *part* of its scope
+    got written would have retired an outstanding job by accident. The header now says which half is
+    done, and the "Earlier milestones" 07-11/12 bullet says the same.
+  - **The headings carry no time-of-day qualifier**, even though the source sections were labelled
+    "evening"/"night". The TOC's own note retired exactly those qualifiers on 2026-07-28 17:35 EDT for
+    being ambiguous *and* rot-prone (inserting one entry silently shifts what every "later" below it
+    means). Four same-day entries are distinguished by their content instead.
+
+  **Sweep:** the filed estimate was 12 files; the live set was 11 in-repo + 1 memory file. Seven
+  `.claude/rules/*.md` cross-references were repointed **individually to the specific new entry**
+  rather than blanket-swapped to `docs/DEVLOG.md` — each had been citing a particular section
+  (the repalette, the wording overpass, the `/settings` 2-page layout), and a pointer to a
+  3,000-line file is not the same pointer. The dated `docs/superpowers/specs/2026-07-22-*` snapshot
+  was left alone.
+
+- **🧭 Split `docs/reference/known-issues.md`, then rename it to `platform-constraints.md` — CLOSED
+  2026-08-06 08:15 EDT.** Filed 2026-08-06 00:14 EDT as
+  `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move]`, Harkirat's call.
+
+  Original reasoning, kept: the file's 78 lines were mostly **accepted platform constraints**, not
+  open bugs — "View Colors vertical centering is unsolved", "Deco renders as a static poster",
+  "`ffmpeg` is a real system dependency". Those are *facts*, not defects. A minority genuinely were
+  open items duplicating `db-deferred-list.md`'s own 🐞 section. **Renaming without splitting would
+  have put a lie on the tin**, and merging wholesale into 🐞 would have invited a future session to
+  "fix" something that is not fixable.
+
+  **The split, as actually decided — 6 entries, 2 out and 4 kept:**
+  - **Out → 🐞 Active Bugs:** `patchnotes.js`'s media carousel has no component-count chunking. Our
+    missing guard, not a Discord limit. Filed honestly as UNVERIFIED rather than confirmed broken,
+    with the cheap close (count what a worst-case entry actually renders) stated.
+  - **Out → 🧹 Someday:** the pagination double-round-trip investigation and its agreed hybrid fix.
+    Never a constraint — our own architecture with a *decided* design, which belongs where
+    decided-but-unbuilt work lives. It was folded into the existing "Pagination perf hybrid" item,
+    which had been a pointer back at `known-issues.md`; the detail is now in one place instead of
+    split across two files pointing at each other.
+  - **Kept:** View Colors vertical centering · Deco's static poster · the `ffmpeg` system dependency.
+  - **Kept, and reframed:** the button-expiry entry, now labelled *"NOT a constraint — the standing
+    refutation of one."* It records a confident "hard Discord platform wall" claim that was wrong and
+    corrected **twice in one day** after Harkirat pushed back. In a constraints file that is the most
+    valuable entry present, because it is the one that stops a wrong constraint being re-derived.
+
+  **The header note Harkirat asked for is in the file**, and says three things: what belongs here,
+  what belongs in the deferred list instead (with the test — *whose* limitation is it), and that these
+  are **not forever-constraints**. An entry is *evidence, not a verdict*; re-test it against the
+  current platform before citing it as a reason something cannot be done, especially before telling
+  Harkirat a request is impossible.
+
+  **Sweep:** the filed estimate was 8 files; the live set was 6 in-repo (`CLAUDE.md`, `docs/README.md`,
+  `docs/ROADMAP.md`, `docs/db-deferred-list.md`, `docs/ideas/docs-system.md`,
+  `.claude/rules/settings-and-expiry.md`) plus 4 memory files. Records and the dated
+  `docs/superpowers/specs/**` were left alone.
+  ⚠️ **A blind find-replace corrupted three of them** and had to be undone by hand: the sentences that
+  *describe* the rename legitimately contain the old name, and a path-shaped matcher cannot tell a
+  live pointer from a historical mention. Same class of trap as the notes-file move.
+  ⚠️ **It also exposed a pre-existing false cross-reference:** the "Verify Cloudinary folder
+  organization" item claimed it was "also tracked in `known-issues.md`". It never was — that file held
+  six entries and none concerned Cloudinary. Removed rather than repointed; a cross-reference to a
+  file that does not carry the item reads as corroboration and supplies none.
+
+- **📓 Move + rename the notes file: `docs/diors-builds notes.md` → `docs/ideas/diors-notes.md` —
+  CLOSED 2026-08-06 08:07 EDT.** Filed 2026-08-06 00:14 EDT as
+  `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split]`, Harkirat's call: the folder move AND
+  the shorter name together, since both drag the same sweep.
+
+  Original wording, kept: this is NOT a `git mv` — the path was hardcoded in 7 places plus 3 test
+  files, inventoried 2026-08-05 23:58 EDT (the `SessionStart` open-items hook in
+  `.claude/settings.json`; `records-close-check.sh` ×2; `notes-hardwrap-check.sh` ×3;
+  `outstanding-not-filed.sh`; `notes-open-items.sh`; the tests `records-close-check.test.sh` ×4,
+  `notes-hardwrap-check.test.sh` — an absolute path — and `.claude/rules/autobuild.md`). The
+  dangerous one was `records-close-check.sh:53`, a literal `grep -qx 'docs/diors-builds notes.md'`
+  against the changed-file list, which after a move simply stops matching: the gate keeps running,
+  keeps passing, and nothing reports that it has died.
+
+  **What actually shipped**, beyond the inventory: the live reference set was **14 files**, not 10 —
+  the extra four were `scripts/docs-audit.mjs` (×6, including the `archive-conservation` pairing),
+  `scripts/docs-audit.test.mjs` (×12 fixtures), `docs/README.md` and `docs/SESSION-START.md` — plus
+  8 memory files. Records (`CHANGELOG.md`, `DEVLOG.md`, `docs/archive/**`) and the dated
+  `docs/superpowers/specs/**` were deliberately left alone; they say the old name because that is
+  what it was called when they were written.
+
+  **The dangerous reference was not just repointed, it was made underivable-from-two-places.**
+  `records-close-check.sh` now sets `NOTES_REL` once and matches with `grep -qxF "$NOTES_REL"`, so
+  the path it looks for and the path it reads cannot drift apart again. Two spellings of one path
+  was the actual defect; there is one spelling now. Its self-test's
+  *"open notes + touched → silent"* case discriminates — with the old literal it would have fired.
+
+  **One consequence the inventory did not predict:** moving the file from a loose `docs/*.md` into a
+  subdirectory flipped which `readme-map` coverage unit applies (loose files are covered by their
+  own name, anything nested only by naming its directory), so `docs-audit.test.mjs`'s baseline
+  fixture failed on valid input until its README named `ideas/`. The meta-test caught it — that is
+  the *"broken fixture fails AND valid input stays silent"* half doing its job.
+
+  Verified: both affected hook self-tests pass individually (12/12 and 10/10), `npm test` green
+  (58 checks proven failable, 18/18 hooks), `npm run docs:audit` exit 0. The `SessionStart` notes
+  hook was dry-run against the new path and returned the identical 3 open items.
+  ⚠️ **Left open on purpose:** the hook firing for real in a *fresh* session cannot be proven from
+  inside the session that changed it — see the reminder filed for it.
+
 - **🔗 Every GitHub link on the live site was a 404 until the repo was renamed to `dioreo` — CLOSED
   2026-08-05 19:07 EDT, verified rather than assumed.** Filed 2026-08-04 16:23 EDT as
   `[P1 · XS · Harkirat action, not a build]`, shipped-broken in v2.52.0 with Harkirat's prior

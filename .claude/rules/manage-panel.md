@@ -34,7 +34,7 @@ mechanics, per-page accent colors, and the `/manage` admin-only lock. The per-us
     directly on a section, and an optional `hidden` boolean (default `true` — this is the one command
     that defaults ephemeral instead of public, since it's the admin panel; `hidden` itself is the same
     name/wording every other command's visibility option uses, see the slash-command wording overpass
-    section, see `docs/reference/design-history.md`). `commands/manage.js`'s **`buildPagesTable()`** is the single source of truth for every page's
+    section, see `docs/DEVLOG.md` → *"2026-07-12 — The slash-command wording overpass"*). `commands/manage.js`'s **`buildPagesTable()`** is the single source of truth for every page's
     title icon, grouped sections, action button copy/styles, and dropdown options (it was a
     module-level `const PAGES` until 2026-07-26 16:04 EDT — that froze pre-sync emoji ids and broke
     every `/manage` emoji on the dev bot; `buildManagePage()` now calls it per render into a local

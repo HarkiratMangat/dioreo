@@ -27,9 +27,13 @@ mkrepo() {
   echo "x" > "$d/utils/db.js"
   echo "x" > "$d/.claude/hooks/somehook.sh"
   # Prose that references them. docs/guide.md is NOT touched by any branch below.
-  printf 'the accentColor module does things\nindex handles routing\ndb is small\nsomehook guards\n' > "$d/docs/guide.md"
+  printf 'the accentColor module does things\nindex handles routing\ndb is small\nsomehook guards\nsee known-issues for the caveats\n' > "$d/docs/guide.md"
   printf 'CLAUDE describes accentColor too\n' > "$d/CLAUDE.md"
   echo seed > "$d/docs/plain.md"
+  # A DOC that other prose references by name — docs/guide.md above names it. Before 2026-08-06 the
+  # sweep excluded docs/ entirely and never had `.md` in its extension list, so changing or deleting
+  # this file produced no subjects at all and the gate reported clean.
+  echo "the known caveats live here" > "$d/docs/known-issues.md"
   git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
   git -C "$d" checkout --quiet -b feat
   sleep 1
@@ -58,8 +62,14 @@ a "names the describing file"           "docs/guide.md"         yes "$CODE"
 a "CLAUDE.md is swept too"              "CLAUDE.md"             yes "$CODE"
 
 # --- exclusions: each of these keeps the report readable ---
-DOCSONLY=$(mkrepo c2 docs/plain.md)
-a "docs-only branch is exempt"          "STALE-REFERENCE"       no  "$DOCSONLY"
+# ⚠️ THIS CASE WAS INVERTED 2026-08-06 09:22 EDT, and it is the whole reason the gate was blind.
+# It used to assert "docs-only branch is exempt" and PASSED — while a session that moved the notes
+# scratchpad, split-and-renamed known-issues.md and deleted design-history.md generated ZERO
+# subjects and swept nothing at all. The exemption's stated rationale (doc-to-doc references are
+# "covered by the changelog/DEVLOG hooks") was false: those hooks check an entry EXISTS, never that
+# a path inside one still resolves. A renamed doc is the most reference-breaking change made here.
+DOCSONLY=$(mkrepo c2 docs/known-issues.md)
+a "docs branch is swept, NOT exempt"    "known-issues"          yes "$DOCSONLY"
 GENERIC=$(mkrepo c3 utils/index.js)
 a "generic name 'index' is skipped"     "STALE-REFERENCE"       no  "$GENERIC"
 SHORT=$(mkrepo c4 utils/db.js)

@@ -29,7 +29,8 @@ set -uo pipefail
 # the WRONG branch -- reporting clean about work that isn't there, or dirty about work you can't see.
 # A gate that answers confidently about the wrong tree is worse than no gate.
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
-NOTES="$REPO/docs/diors-builds notes.md"
+NOTES_REL="docs/ideas/diors-notes.md"
+NOTES="$REPO/$NOTES_REL"
 MEM="$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory"
 # notes-open-items.sh lives beside this script, not necessarily inside $REPO (a test fixture's fake
 # $REPO has no .claude/hooks/ copy of it) — resolve relative to this script's own real location.
@@ -50,7 +51,13 @@ msg=""
 if [ -f "$NOTES" ]; then
   items=$("$HOOKDIR/notes-open-items.sh" "$NOTES")
   open=$(printf '%s' "$items" | grep -c . || true)
-  if [ "${open:-0}" -gt 0 ] && ! printf '%s' "$changed" | grep -qx 'docs/diors-builds notes.md'; then
+  # ⚠️ The changed-file match is DERIVED from $NOTES_REL, never re-typed. It used to be a literal
+  # `grep -qx 'docs/diors-builds notes.md'`, which is the one reference in this repo that dies
+  # SILENTLY on a move: the gate keeps running and keeps passing because nothing in the changed-file
+  # list can ever match a path that no longer exists. Found while moving the file to
+  # docs/ideas/diors-notes.md (2026-08-06 07:58 EDT). Two spellings of one path is the defect — so there is
+  # only one spelling now.
+  if [ "${open:-0}" -gt 0 ] && ! printf '%s' "$changed" | grep -qxF "$NOTES_REL"; then
     preview=$(printf '%s' "$items" | cut -c1-100 | head -3)
     msg="$msg(7) NOTES FILE: it carries $open open item(s) and this branch never touched it. Items are marked and filed IN-FILE the same session -- a note that stays open across sessions is how the DMZ /autobuild item sat only in the scratchpad for days. Open items:
 $preview

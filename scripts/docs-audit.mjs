@@ -159,14 +159,14 @@ const TAG_RULE_FROM = [2, 33, 0];
 // belonging to other machines entirely. Scanning them for LIVE cross-references produces guaranteed
 // false positives — a doc saying "renamed from `deferred-items.md`" is correct prose, not staleness.
 //   - CHANGELOG / SUMMARY / DEVLOG: append-only records of what was true at the time.
-//   - diors-builds notes.md: Harkirat's INTAKE scratchpad, not a maintained record. Its resolved
+//   - diors-notes.md: Harkirat's INTAKE scratchpad, not a maintained record. Its resolved
 //     comments reference MarkEdit extension files and other paths that never lived in this repo.
 //   - archive/: dead by definition. superpowers/: dated design snapshots of one moment.
 const XREF_SKIP_SOURCES = [
   "docs/CHANGELOG.md",
   "docs/CHANGELOG-SUMMARY.md",
   "docs/DEVLOG.md",
-  "docs/diors-builds notes.md",
+  "docs/ideas/diors-notes.md",
 ];
 const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/"];
 
@@ -713,16 +713,28 @@ check(
   "ERROR",
   "no closed + confirmed intake is still sitting in the notes scratchpad",
   () => {
-    const text = read("docs/diors-builds notes.md");
+    const text = read("docs/ideas/diors-notes.md");
     if (text === null) return [];
     const lines = text.split("\n");
-    // Working sections only: from the first "## Questions" heading to the "## 📍" pointer section.
+    // Working sections only: from the first "## Questions" heading to the explicit end marker.
     // The 🔑 Legend above it documents the markers using the same syntax and must not be scanned.
+    //
+    // ⚠️ THE END ANCHOR MUST BE SEARCHED FOR *AFTER* THE START, and the marker is why.
+    // This used to end at `## 📍`, found by a bare findIndex over the whole file. On 2026-08-06
+    // 10:21 EDT that section moved ABOVE `## Questions` (Harkirat asked for it near the Legend, and
+    // the only reason it had been pinned to the bottom was this very scan range). `e` then came out
+    // LESS than `s`, `slice(s, e)` returned an empty array, and this check reported a VACUOUS PASS —
+    // examining nothing while reading as green. The vacuous-pass detector is the only reason it was
+    // noticed at all; the identical bug in notes-open-items.sh's awk took the live count 3 -> 0.
+    // Two implementations of one scan range, both broken by the same move, exactly as this check's
+    // own error message predicts ("the SessionStart hook scans between the SAME two anchors").
     const s = lines.findIndex((l) => /^## Questions/.test(l));
-    const e = lines.findIndex((l) => /^## 📍/.test(l));
+    const eMarker = lines.findIndex((l, i) => i > s && /^<!-- \/open-items -->/.test(l));
+    const ePin = lines.findIndex((l, i) => i > s && /^## 📍/.test(l));
+    const e = eMarker >= 0 ? eMarker : ePin;
     if (s < 0) {
       return anchorMissing(
-        "docs/diors-builds notes.md",
+        "docs/ideas/diors-notes.md",
         'a "## Questions..." heading marking the start of the working sections',
         "No intake is being checked for unswept confirmed items. ⚠️ The SessionStart NOTES-FILE hook " +
           "in .claude/settings.json scans between the SAME two anchors and is now silently broken too."
@@ -836,7 +848,7 @@ check(
       "docs/ROADMAP.md",
       "docs/SESSION-START.md",
       "docs/db-deferred-list.md",
-      "docs/diors-builds notes.md",
+      "docs/ideas/diors-notes.md",
       "docs/archive/graveyard.md",
       "docs/archive/resolved-list.md",
       "CLAUDE.md",
@@ -1812,7 +1824,7 @@ check(
 const CONSERVATION_PAIRS = 2; // notes -> graveyard, deferred-list -> resolved-list
 const conservation = (base) => {
   const pairs = [
-    { active: "docs/diors-builds notes.md", archive: "docs/archive/graveyard.md", verb: "swept" },
+    { active: "docs/ideas/diors-notes.md", archive: "docs/archive/graveyard.md", verb: "swept" },
     { active: "docs/db-deferred-list.md", archive: "docs/archive/resolved-list.md", verb: "resolved" },
   ];
   const out = [];

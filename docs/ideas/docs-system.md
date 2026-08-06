@@ -55,7 +55,7 @@ Measured 2026-08-05 22:50 EDT. Every judgement below rests on these numbers.
 | | |
 |---|---|
 | `scripts/buildLegalPages.js` | **10,037 lines** (+ `scripts/lib/chronicle.js` at 1,177) |
-| Prose already written | **~16,400 lines** — DEVLOG 4,802 · CHANGELOG 4,232 · `.claude/rules/` 3,621 · db-deferred-list 1,547 · `docs/reference/` 1,041 · CLAUDE.md 507 · ROADMAP 451 |
+| Prose already written | **~16,400 lines as measured 2026-08-05** — DEVLOG 4,802 · CHANGELOG 4,232 · `.claude/rules/` 3,621 · db-deferred-list 1,547 · `docs/reference/` 1,041 · CLAUDE.md 507 · ROADMAP 451. ⚠️ **A dated snapshot, not live state** — it had already rotted by 2026-08-06 08:32 EDT (DEVLOG 5,242 after the design-history fold; `docs/reference/` smaller by the same move). The figure is here to size the *problem*, and the order of magnitude is what matters. Re-derive with `wc -l` rather than trusting these numbers. |
 | Built site | 10 HTML pages, 4.2 MB — including **3 parked `public/changelog/` pages** |
 | Search | **None.** All 5 matches for search-library names in the generator are the word "search" in comments |
 | Code surface | 12 commands · 32 utils · 6 models |
@@ -329,7 +329,7 @@ produces a collection of warning labels, not a manual.
    reachable in one click from anywhere.
 
 Sections 1–5 are new writing; §6 overlaps the already-filed ops-guide item; §7 can be assembled largely
-from `docs/reference/known-issues.md` and the DEVLOG's war stories.
+from `docs/reference/platform-constraints.md` and the DEVLOG's war stories.
 
 #### The fork that must be decided first: public or private?
 

@@ -28,7 +28,7 @@ tp=$(printf '%s' "$input" | jq -r '.transcript_path // empty')
 ln=$(grep -n '"role":"user","content":"' "$tp" | tail -1 | cut -d: -f1); ln=${ln:-1}
 
 # Did I touch a tracking list THIS turn? Edit/Write tool_use carries file_path.
-filed=$(tail -n +"$ln" "$tp" | grep -cE '"file_path":"[^"]*(db-deferred-list\.md|meta-deferred-list\.md|diors-builds notes\.md|resolved-list\.md|graveyard\.md)"')
+filed=$(tail -n +"$ln" "$tp" | grep -cE '"file_path":"[^"]*(db-deferred-list\.md|meta-deferred-list\.md|diors-notes\.md|resolved-list\.md|graveyard\.md)"')
 
 # My final message. Strip quoted spans and backticked code first: quoting the offending phrase back
 # while EXPLAINING it is not a new instance — the deferral-tell hook learned that the hard way.

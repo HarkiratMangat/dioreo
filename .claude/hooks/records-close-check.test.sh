@@ -20,12 +20,12 @@ MEMREL=".claude/projects/-Applications-Claude-Code-Diors-Builds/memory"
 #   $4: none | fresh | archive-only
 mkrepo() {
   local d="$TMP/$1" home="$TMP/$1-home"
-  mkdir -p "$d/docs" "$d/.claude/hooks" "$home/$MEMREL/archive"
+  mkdir -p "$d/docs/ideas" "$d/.claude/hooks" "$home/$MEMREL/archive"
   git -C "$d" init --quiet -b main
   if [ "$2" = yes ]; then
-    printf '## Questions\n- an open intake item\n- another open item\n## 📍 pointer\n' > "$d/docs/diors-builds notes.md"
+    printf '## Questions\n- an open intake item\n- another open item\n## 📍 pointer\n' > "$d/docs/ideas/diors-notes.md"
   else
-    printf '## Questions\n## 📍 pointer\n' > "$d/docs/diors-builds notes.md"
+    printf '## Questions\n## 📍 pointer\n' > "$d/docs/ideas/diors-notes.md"
   fi
   echo seed > "$d/docs/other.md"; echo seed > "$d/.claude/hooks/thing.sh"
   git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
@@ -55,7 +55,7 @@ echo "records-close-check.sh — proofs"
 OPEN_UNTOUCHED=$(mkrepo n1 yes docs/other.md fresh)
 a "open notes + untouched -> fires"  "(7) NOTES FILE" yes "$OPEN_UNTOUCHED"
 a "the open items are previewed"     "an open intake item" yes "$OPEN_UNTOUCHED"
-OPEN_TOUCHED=$(mkrepo n2 yes "docs/diors-builds notes.md" fresh)
+OPEN_TOUCHED=$(mkrepo n2 yes "docs/ideas/diors-notes.md" fresh)
 a "open notes + touched -> silent"   "(7) NOTES FILE" no  "$OPEN_TOUCHED"
 NO_OPEN=$(mkrepo n3 no docs/other.md fresh)
 a "no open notes -> silent"          "(7) NOTES FILE" no  "$NO_OPEN"
@@ -63,8 +63,8 @@ a "no open notes -> silent"          "(7) NOTES FILE" no  "$NO_OPEN"
 # `- [ ]`, never a bare `-`. The SessionStart open-item counter had this exact regex gap — `- [ ]`
 # read as closed because `[^<[]` excludes any line starting with `[` right after `- ` — and this
 # script carried the identical unfixed regex. Pin it here so it can't silently regress again.
-mkdir -p "$TMP/n4/docs"; git -C "$TMP/n4" init --quiet -b main 2>/dev/null
-printf '## Questions\n- [ ] a checkbox open item\n## 📍 pointer\n' > "$TMP/n4/docs/diors-builds notes.md"
+mkdir -p "$TMP/n4/docs/ideas"; git -C "$TMP/n4" init --quiet -b main 2>/dev/null
+printf '## Questions\n- [ ] a checkbox open item\n## 📍 pointer\n' > "$TMP/n4/docs/ideas/diors-notes.md"
 mkdir -p "$TMP/n4/.claude/hooks"; echo seed > "$TMP/n4/docs/other.md"; echo seed > "$TMP/n4/.claude/hooks/thing.sh"
 git -C "$TMP/n4" add -A; git -C "$TMP/n4" -c user.email=t@t -c user.name=t commit --quiet -m init
 git -C "$TMP/n4" checkout --quiet -b feat; sleep 1

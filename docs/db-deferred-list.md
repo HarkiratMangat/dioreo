@@ -13,7 +13,7 @@ pulled all of them in, added the priority legend, and moved resolved entries out
 now `/Applications/Claude Code/meta-deferred-list.md`.
 
 ## Closing the loop back to the notes file
-When a Queued/bug item here that was **filed FROM `docs/diors-builds notes.md`** ships or gets fixed,
+When a Queued/bug item here that was **filed FROM `docs/ideas/diors-notes.md`** ships or gets fixed,
 go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a
 separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31,
 shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions,
@@ -33,7 +33,7 @@ you check something off here.
   which stay below on purpose so nobody re-raises them).
 - **Cross-project work, MarkEdit-extension bugs, Claude/Anthropic product feedback** —
   `/Applications/Claude Code/meta-deferred-list.md`.
-- **Design gaps we're knowingly living with** — `docs/reference/known-issues.md`.
+- **Design gaps we're knowingly living with** — `docs/reference/platform-constraints.md`.
 
 ## 🏷️ Priority & effort tags
 Every OPEN item carries `[Priority · Effort]` (+ optional flags). Two axes: one for *what to focus on*,
@@ -61,6 +61,29 @@ is reported or found, it lands here with a repro + a `[Priority · Effort]` tag 
 leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
+
+- `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever
+  tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md`
+  back when it was still called **known-issues** — it was split so the file could honestly take the new
+  name. (The old name is written without its `.md` on purpose: `xref` matches path-shaped references
+  and cannot tell a historical mention from a live pointer, so spelling it as a path would fail CI.)
+  This entry is the
+  clearest thing in it that was never a platform constraint.*
+
+  `calendar.js` and `draws.js` both carry defensive chunking; `patchnotes.js` does not. Components V2
+  caps a message at **40 components counted recursively**, and exceeding it is a real production crash
+  this project has already hit once (see the platform cheat-sheet in `CLAUDE.md`).
+
+  ⚠️ **Filed as a bug rather than a constraint, but stated honestly: it is UNVERIFIED, not confirmed
+  broken.** The original wording was "likely fine since patch note screenshots per entry are usually
+  few, but not empirically verified the way draws/calendar chunking was" — and that is still exactly
+  the state. It sits here because the thing at fault would be *our* missing guard, not a Discord
+  limit; leaving it in a constraints file would have implied the opposite.
+  **Cheapest close:** count the components a worst-case real patch-note entry renders, rather than
+  building chunking speculatively. If it is nowhere near 40, this becomes a not-a-real-issue entry in
+  the archive and costs nothing further.
+  ⇄ Also named in the 🧹 Someday "General housekeeping session" item ("decide `/patch notes` carousel
+  component-count chunking"); that line is the horizon, this is the detail.
 
 - `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
   animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
@@ -274,9 +297,62 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **🚀 v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3** `[P1 · XS]`
-  *(filed 2026-08-04 16:23 EDT, replacing the branch reminder this supersedes)*. Trigger: the next
-  session that touches this repo, or any report that a site/bot change "did not land".
+- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]`
+  *(filed 2026-08-06 09:35 EDT, in the same pass that built it.)* Trigger: **the next session that
+  makes a completion claim on a branch with commits** — it should be interrupted with a
+  `COMPLETENESS SWEEP` block. If a session ends claiming done and nothing fires, the wiring is wrong.
+
+  **Why this cannot be self-verified.** The hook is registered in `.claude/settings.json`, which the
+  harness reads at session start, so the session that *added* it is running the previous
+  registration by construction — the identical structural blind spot as the notes hook below. Its
+  logic is proven (17/17 self-tests, both directions of the angle detector, live-tested against this
+  branch), and its wiring is proven valid JSON in the right event. **What is unproven is that the
+  harness invokes it**, and that is exactly the gap that produced two dead gates in this repo.
+  ⚠️ **Do not close this by re-reading the settings file.** Only a fresh session's observed behaviour
+  counts. See [[feedback_verify_before_claiming]].
+
+  **Three stated limits, deliberately accepted rather than engineered around** — reconsider only if
+  one actually bites:
+  1. **The stamp means it fires ONCE per repo state.** Ignore the block, change nothing, re-claim →
+     silence. Matches every other `Stop` gate here and is what keeps it off ordinary messages, but
+     it does mean the gate cannot nag.
+  2. **Broad angle detectors**: searching FOR a string in a Bash command counts as having run that
+     angle (`rg -n 'buildLegalPages'` reads as covered). Deliberate — a false "covered" beats a gate
+     that fires on everything and gets dismissed unread.
+  3. **The `ANGLES` registry is a whitelist of failures that already happened**, so a genuinely new
+     KIND of miss has no entry by construction. Same honest edge `docs-audit` documents about
+     itself. Add an angle by appending one `id|detector|demand` line.
+
+- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
+  *(filed 2026-08-06 08:08 EDT, in the same pass that moved the file.)* Trigger: **the very next fresh
+  session in this repo** — check its startup context for a `NOTES-FILE CHECK:` line naming
+  `docs/ideas/diors-notes.md`. If it is absent while the file still has open items, the hook is broken.
+
+  **Why this is a reminder and not a claim.** The hook command in `.claude/settings.json` was dry-run
+  against the new path in the moving session and produced the correct output (3 open items, the same
+  three the old path reported). That proves the *command* works. It does **not** prove the harness
+  fires it — a `SessionStart` hook is read at session start, so the session that edits it is running
+  the previous version by construction and can never observe its own change. This is the one step of
+  the move's checklist that is structurally unprovable from inside, so it is written down rather than
+  assumed, per [[feedback_verify_before_claiming]].
+  Close it by deleting this entry once a fresh session's startup context has been seen.
+
+- **🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED** `[P1 · XS]`
+  *(filed 2026-08-04 16:23 EDT; **rewritten 2026-08-06 00:36 EDT** because it had gone stale in the
+  worst way — see below)*. Trigger: the next session that touches this repo, or any report that a
+  site/bot change "did not land".
+
+  ⚠️ **This entry previously read "v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running
+  v2.51.3", and by 2026-08-06 `main` was at v2.55.5.** Both numbers were copies of state that nothing
+  updated, so the item quietly understated the gap by several releases while looking precise — the
+  exact failure [[feedback_no_duplicated_state_in_prose]] describes. It is now written so it cannot
+  rot: **`main`'s version is whatever `package.json` says, and the VM's is whatever the VM says.**
+  **Never write either number back into this entry — go and read them.**
+
+  **FIRST STEP IS TO MEASURE, NOT TO DEPLOY.** Nobody has checked what the VM is actually running;
+  `./scripts/vmstatus.sh` reports it. Only once that number is known can anyone judge whether a deploy
+  is wanted — and **several releases since v2.52.0 carried real bot and site code**, not just records,
+  so this is not automatically a docs-only backlog.
 
   Deploy is a separate, optional step and is deliberately NOT implied by a merge — Harkirat asked for
   "commit, push, pr, and merge" and said nothing about deploying, so it was held. On the VM:
@@ -1309,7 +1385,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 ---
 
 ## 🧹 Someday / tech-debt
-*Full context lives in `.claude/rules/*.md` (subsystem detail), `docs/reference/known-issues.md`
+*Full context lives in `.claude/rules/*.md` (subsystem detail), `docs/reference/platform-constraints.md`
 (accepted gaps), and memory. Model tags re-audited 2026-07-18 against the "tier vs. effort" calibration
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
@@ -1445,62 +1521,77 @@ well-specified execution/polish, not novel design.*
   `/status` command + vmstatus overhaul. Nothing decided — just don't lose the list.
 - `[P2 · M · Sonnet5-H]` **Pagination perf hybrid** — single `UPDATE_MESSAGE` for the light string-building
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
-  command) but the design itself is ALREADY decided (see `docs/reference/known-issues.md`) — what's left is
-  careful, well-specified execution across call sites, not open design work.
+  command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
+  across call sites, not open design work.
+
+  **The full investigation and the agreed shape, moved here 2026-08-06 08:13 EDT** from
+  `docs/reference/platform-constraints.md` when it was split and renamed from **known-issues**.
+  It was never a platform constraint — it is our own architecture with a decided fix, and this list is
+  where decided-but-unbuilt work lives. Kept verbatim in substance so nothing is re-derived:
+
+  Pagination/toggle clicks (draws' New/Returning switch, calendar and draw-prices sub-page nav, etc.)
+  have a **structural double network round-trip, not a CPU or DB bug** — investigated 2026-07-14 after
+  Harkirat flagged it "feels slow". Every `await` on the hot path was traced for both `/draws`'
+  view-switch and `/calendar`'s sub-page nav: 1 `deferUpdate()` round-trip, 2 concurrent Mongo reads
+  (`prefs` + `SeasonalData`), then a SEPARATE `rest.patch(Routes.webhookMessage(...))` round-trip to
+  actually update the message. `buildContainer()` itself is pure sync string-building — no image or
+  attachment work happens on this path at all. The View-Colors-incident-style cause was ruled out too:
+  Harkirat's saved `accentColorStyle` is `'preset'`, which returns `presetHex` immediately with no live
+  Discord fetch.
+
+  **The agreed shape is a HYBRID, not a blanket conversion** (Harkirat's call, 2026-07-14), split by
+  what each handler does before it can respond:
+  - Pure string-building paginated commands (draws, calendar, drawprices, settings) → single
+    `UPDATE_MESSAGE`, one hop. They finish well inside Discord's 3s ACK window, so the margin
+    `deferUpdate()` buys isn't needed.
+  - Anything doing heavy work before replying — View Colors (k-means extraction, swatch/gradient PNG
+    generation, the ffmpeg still-frame) and any attachment-generating path → **KEEP** defer-then-patch;
+    blowing the 3s ACK is a real risk there.
+
+  Heuristic: *"does this path do CPU or image/network work before it replies?"* → heavy stays defer,
+  light goes single-hop.
   ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list as "Pagination double round-trip perf fix" (horizon only — the design detail above is canonical).
 - `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, notes L59)* read-only
   check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as
   designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above
-  only if confirmed. Also tracked in `docs/reference/known-issues.md`.
+  only if confirmed. ⚠️ *This used to claim it was also tracked in the file then called
+  **known-issues** — it never was. Found 2026-08-06 08:14 EDT while sweeping that file's rename to
+  `docs/reference/platform-constraints.md`: it held six entries and none of
+  them was about Cloudinary folders. A cross-reference to a file that does not carry the item reads as
+  corroboration and supplies none, so it is removed rather than repointed.*
   ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 - `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** —
   retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B.
   ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
-- `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split below]` **Move + rename the notes file:
-  into `docs/ideas/` as **`diors-notes.md`**, renamed from `docs/diors-builds notes.md`** — ⚠️ *the
-  target does not exist yet; it is the planned end state, not a live pointer, so do not "fix" it.* — *(filed 2026-08-06 00:14 EDT.
-  Harkirat's call: the folder move AND the shorter name, together, since both drag the same sweep.)*
+- `[P1 · S · 🧩needs-design]` **Why did both v2.55.5 defects surface only AFTER the merge — did a gate
+  fail, or is there a coverage hole?** — *(Harkirat's question, 2026-08-06 00:40 EDT. **Deferred to a
+  morning session at his instruction — do NOT investigate inline.** Filed so the question is not lost;
+  the leads below are hypotheses to test, not findings.)*
 
-  ⚠️ **This is NOT a `git mv`. The path is hardcoded in 7 places plus 3 test files**, inventoried
-  2026-08-05 23:58 EDT so the next session does not have to rediscover them:
-  - `.claude/settings.json:22` — the `SessionStart` open-items hook builds the path inline.
-  - `.claude/hooks/records-close-check.sh:32` — `NOTES="$REPO/docs/diors-builds notes.md"`.
-  - **`.claude/hooks/records-close-check.sh:53` — `grep -qx 'docs/diors-builds notes.md'`.** 🔴 **The
-    dangerous one.** It exact-matches the changed-file list. After a move it simply stops matching:
-    the gate keeps running, keeps passing, and **nothing reports that it has died.** A silently dead
-    gate is the exact failure this repo has already paid for twice.
-  - `.claude/hooks/notes-hardwrap-check.sh:29` (a `case` glob) and `:63` (message text).
-  - `.claude/hooks/outstanding-not-filed.sh:31` — `diors-builds notes\.md` inside a grep alternation.
-  - `.claude/hooks/notes-open-items.sh:2` — header comment.
-  - Tests: `records-close-check.test.sh` (×4 fixtures), `notes-hardwrap-check.test.sh:8` (**an
-    absolute path**), plus `.claude/rules/autobuild.md:169`.
+  **The two defects:** the merged DEVLOG entry claimed *"Filed, not done"* about the design-history
+  fold when nothing had been filed; and the deploy reminder carried two hardcoded version numbers that
+  had rotted several releases out of date. Both were caught by the `Stop` outstanding-items gate
+  **after** `gh pr merge` had already run.
 
-  **Do it in this order:** update every reference → run each affected `*.test.sh` individually → run
-  `npm test` → **start a fresh session and confirm the SessionStart notes hook actually fires**, since
-  that one cannot be proven from within the session that changed it.
-  ⚠️ **Renaming also loses the space in the filename**, which is a real win — the space is why every
-  one of those references needs quoting — but it means a literal-string sweep must catch both the
-  old *path* and the old *name*.
-  🔗 Bundle with the `known-issues.md` split/rename below: same class of work, same sweep, one audit.
-- `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move above]` **Split `docs/reference/known-issues.md`,
-  then rename it to `platform-constraints.md`, renamed from `known-issues.md`** — ⚠️ *the new name
-  does not exist yet; it is the planned end state, not a live pointer.* — *(filed 2026-08-06 00:14 EDT,
-  Harkirat's call.)*
+  **Leads to check — each is a guess until measured:**
+  1. **Timing.** `release-ready-check.sh` fires at `PreToolUse` on `gh pr merge`; the outstanding-items
+     gate fires at `Stop`, i.e. per assistant message. If the false claim was written *before* the
+     merge and only *summarised* after it, the two gates would have been looking at different moments,
+     and neither was wrong — they just do not overlap. Verify against the actual turn order.
+  2. **Coverage, not failure.** `release-ready-check.sh` asserts a DEVLOG entry **exists**; nothing
+     asserts its sentences are **true**. That limit is already documented in this file's
+     🧮 docs-audit section: *"Nothing verifies a changelog entry DESCRIBES what shipped."* A claim of
+     "filed" inside a record may simply be outside every gate's reach.
+  3. **Nothing checks a filed item's own accuracy.** `docs-audit`'s `xref` verifies paths resolve; no
+     check asks whether a reminder's *content* is still true. A stale version number inside a correct
+     path is invisible to every gate that exists.
+  4. **Was any gate silently degraded?** Cheapest to rule out first — `npm run test:hooks` and confirm
+     the relevant hooks are still registered and executable in `.claude/settings.json`.
 
-  **Why split before renaming:** the file's 78 lines are mostly **accepted platform constraints**, not
-  open bugs — "View Colors vertical centering is unsolved (Components V2 has no native mechanism)",
-  "Deco renders as a static poster", "`ffmpeg` is a real system dependency, not an npm package". Those
-  are *facts*, not defects. But a minority genuinely are open cosmetic bugs that duplicate this file's
-  own 🐞 section, which is read and written far more often. **Renaming without splitting would put a
-  lie on the tin**, and merging wholesale into 🐞 would invite a future session to "fix" something
-  that is not fixable.
-  - Real open bugs → this file's 🐞 Active Bugs section.
-  - Platform constraints → stay, under the new name.
-  - **The rename needs an internal header note** stating what the file is, what belongs in it, and —
-    Harkirat's explicit point — that these are **not forever-constraints**: a Discord platform update
-    or a feature change may lift any of them, so an entry should be re-tested before being cited as a
-    reason something cannot be done.
-  - Sweep cost, measured 2026-08-05 23:58 EDT: `known-issues` is named in **8 files**.
+  **Do not conclude "the hooks failed" or "the hooks are fine" without running (4) first.** If the
+  answer is a coverage hole rather than a failure, the follow-up question is whether it is *worth*
+  closing — a checker for prose truthfulness may not be buildable, and saying so honestly is a
+  legitimate outcome.
 - `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, notes L34)* a rich but
   noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so
   Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse

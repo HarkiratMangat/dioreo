@@ -16,7 +16,8 @@ UserPreference. The "already decided, here's why" log: seasonal visibility (Opti
 handling, chrono noon default, bulk-import formats, title-casing, All-Season calendar events, patch-note
 title sync, the `/draw prices` data-model rewrite, the nav-order→color map, emoji sourcing. The color
 map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesign NARRATIVE is in
-`docs/reference/design-history.md`.*
+`docs/DEVLOG.md`'s four `2026-07-12` Part A entries (folded in 2026-08-06 08:23 EDT from the former
+**design-history** reference doc, which was deleted).*
 
 - **"Seasonal Content" visibility is one shared toggle (Option A)**, not five
   separate ones. Deliberately chosen over per-command granularity — if you're asked
