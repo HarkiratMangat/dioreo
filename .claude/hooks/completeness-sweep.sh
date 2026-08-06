@@ -52,6 +52,23 @@ MODE="${3:-pr}"          # stop | pr
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
+# ⚠️ TWO BASES EXIST IN THIS REPO and the `Stop` wiring cannot know which one applies — it fires on
+# every message, long before any `--base` flag is typed, so it passes a literal `main`. A v3 branch
+# is cut from `v3-pre-release`, and diffing it against `main` yields the whole v3 delta: every v3
+# file reads as "changed", conservation scans hundreds of irrelevant lines, and the report is noise
+# on the branch type that most needs it. Detected 2026-08-06 09:32 EDT while adversarially testing
+# this hook rather than by hitting it in production.
+# Three cheap git calls: if the merge-base with v3-pre-release is a DESCENDANT of the merge-base with
+# main, the branch was cut from v3 and v3 is the truer base.
+if [ "$BASE" = main ] && git rev-parse --verify -q v3-pre-release >/dev/null 2>&1; then
+  mb_main=$(git merge-base main HEAD 2>/dev/null)
+  mb_v3=$(git merge-base v3-pre-release HEAD 2>/dev/null)
+  if [ -n "$mb_main" ] && [ -n "$mb_v3" ] && [ "$mb_main" != "$mb_v3" ] \
+     && git merge-base --is-ancestor "$mb_main" "$mb_v3" 2>/dev/null; then
+    BASE=v3-pre-release
+  fi
+fi
+
 emit() {
   if [ "$MODE" = stop ]; then
     jq -n --arg f "$1" '{decision:"block", reason:("COMPLETENESS SWEEP -- you are reporting this as done. These are the checks that normally take three prompts to get.\n\nPass 1 (references) is stale-reference-sweep.sh. Below are passes 2 and 3: what the change may have LOST or left FALSE, and which KIND of check never ran.\n" + $f + "\n\nNone of it is a verdict -- it is what nothing has looked at yet. Work through it and report what each turned up, including \"checked, nothing there\". Do not restate the work as done while an item above is unexamined; that sequence is the reason this gate exists.")}'
@@ -152,18 +169,34 @@ fi
 # fires on everything and gets dismissed unread, the failure mode written into four other hooks here.
 # `rg -q` STREAMS the file; nothing is read into memory (COST CONTROL 3).
 ANGLES=(
-"external-trees|config/dior|Sweep the trees OUTSIDE this repo that hardcode paths inside it (~/.config/dior). No in-repo search reaches them — invisible by construction, and how \`dior notes\` broke."
+"external-trees|config/dior|Sweep the surfaces OUTSIDE this repo that name paths inside it: ~/.config/dior (its own git repo — this is how \`dior notes\` broke), /Applications/Claude Code/meta-deferred-list.md, and ~/.claude/settings.json. No in-repo search reaches any of them; they are invisible by construction, not by oversight."
 "memory-store|Claude-Code-Diors-Builds/memory|Sweep the memory store. Memory files never appear in a git diff, so nothing else surfaces them."
 "content-conservation|git show |Ask what MOVED text still ASSERTS, not just that its filename resolves. A fold carries stale claims into a record, where they stop looking stale."
 "hook-selftests|test\\.sh|Run the affected *.test.sh individually. An \`npm test\` total hides which case exercises your change — and whether it can still fail."
 "generated-output|buildLegalPages|If a site source changed, rebuild public/. Nothing else regenerates it and a stale build ships silently."
 )
 
+# 🔴 SCOPED TO BASH COMMANDS — this hook POISONED ITSELF without it, and the failure was total.
+# Measured 2026-08-06 09:31 EDT against the live 4 MB transcript: ALL FIVE angles read as "covered"
+# on a session where most had never run. Two structural leaks, both unavoidable:
+#   · this file's own SOURCE enters the transcript the moment anyone Writes or Reads it, and its
+#     ANGLES array literally contains every detector string;
+#   · the hook's own block message enters the transcript when it fires, and the demands quote
+#     `~/.config/dior`, `git show`, `*.test.sh`, `buildLegalPages` by name.
+# So a naive whole-transcript grep meant the gate SUPPRESSED EVERY ANGLE FOREVER after its first
+# fire — a gate that switches itself off while continuing to run and report success. Exactly the
+# class `records-close-check`'s dead `grep -qx` and the never-invoked self-tests belong to.
+# Restricting to `"name":"Bash"` lines removes both leaks: a Write of this file is `"name":"Write"`,
+# and the block message is not a tool_use at all. Two STREAMING passes, nothing read into memory.
+# ⚠️ Residual, stated: searching FOR a string in a Bash command counts as having run that angle
+# (`rg -n 'buildLegalPages'` reads as covered). That is the deliberate broad-detector trade-off —
+# a false "covered" beats a gate that fires on everything and gets dismissed — and it is bounded
+# noise, not the systematic self-suppression above.
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   untaken=""
   for a in "${ANGLES[@]}"; do
     rest="${a#*|}"; det="${rest%%|*}"; demand="${rest#*|}"; id="${a%%|*}"
-    rg -q -e "$det" "$TRANSCRIPT" 2>/dev/null && continue
+    rg '"name":"Bash"' "$TRANSCRIPT" 2>/dev/null | rg -q -e "$det" 2>/dev/null && continue
     untaken="$untaken
         · [$id] $demand"
   done

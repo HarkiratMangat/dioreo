@@ -98,10 +98,57 @@ a "names the external-trees angle"    "external-trees"   yes "$out_claim"
 # detector matching nothing -- a registry where every angle always reports is a registry nobody reads.
 CLAIM3=$(mkrepo d7 delete)
 tr_ang="$TMP/t-angles.jsonl"
-printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done and verified."}]}}\n{"type":"user","content":"rg over /Users/x/.config/dior/workspace.zsh"}\n' > "$tr_ang"
+# ⚠️ Must be a real `"name":"Bash"` tool_use. This fixture used a plain `"type":"user"` line until
+# 2026-08-06 09:33 EDT, and it passed only because detection was an unscoped whole-transcript grep —
+# the very bug that let the gate suppress every angle after one fire. Once scoping landed, this case
+# correctly began reporting the angle as un-taken and the assertion failed. The test was asserting
+# the defect, which is exactly what the docs-only exemption did in the sibling sweep's suite.
+printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done and verified."},{"type":"tool_use","name":"Bash","input":{"command":"rg -n zsh /Users/x/.config/dior/workspace.zsh"}}]}}\n' > "$tr_ang"
 out_ang=$(run "$CLAIM3" "$tr_ang" stop)
 a "covered angle is NOT reported"     "external-trees"   no  "$out_ang"
 a "other angles still reported"       "memory-store"     yes "$out_ang"
+
+# ---- 🔴 SELF-POISONING: the failure that made this gate switch itself off ----
+# An angle's detector string appearing in PROSE — the hook's own block message, or this file's own
+# source when someone Writes/Reads it — must NOT count as having run the angle. Measured against the
+# live transcript 2026-08-06 09:31 EDT: a whole-transcript grep marked ALL FIVE angles covered on a
+# session where most had never run, i.e. the gate suppressed itself permanently after one fire.
+# Detection is scoped to `"name":"Bash"` lines; these two cases pin both directions of that.
+POISON=$(mkrepo d8 delete)
+tr_poison="$TMP/t-poison.jsonl"
+# The detector string appears ONLY in assistant prose (exactly how the hook's own output arrives).
+printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done. Remember to sweep ~/.config/dior for external references."}]}}\n' > "$tr_poison"
+out_poison=$(run "$POISON" "$tr_poison" stop)
+a "detector in PROSE does not count as run" "external-trees" yes "$out_poison"
+
+POISON2=$(mkrepo d9 delete)
+tr_real="$TMP/t-real.jsonl"
+# Same string, this time inside a real Bash tool_use — that DOES count.
+printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done."},{"type":"tool_use","name":"Bash","input":{"command":"rg -n foo /Users/x/.config/dior/"}}]}}\n' > "$tr_real"
+out_real=$(run "$POISON2" "$tr_real" stop)
+a "detector in a Bash COMMAND does count"   "external-trees" no  "$out_real"
+
+# ---- two bases: a v3 branch must not be diffed against main ----
+# The Stop wiring passes a literal `main` because it fires long before any --base flag is typed. A
+# branch cut from v3-pre-release diffed against main reports the entire v3 delta as "changed".
+V3="$TMP/v3"
+mkdir -p "$V3/docs"; git -C "$V3" init --quiet -b main
+# ⚠️ Must clear the hook's 45-char sampling floor. A 4-char "base" line meant ZERO lines were
+# sampled, so the conservation check correctly found nothing and this assertion failed against a
+# fixture that could never have triggered it — a test that cannot fail for the right reason.
+printf 'a base-branch content line comfortably past the forty-five character sampling floor\n' > "$V3/docs/a.md"
+git -C "$V3" add -A; git -C "$V3" -c user.email=t@t -c user.name=t commit --quiet -m init
+git -C "$V3" checkout --quiet -b v3-pre-release
+printf 'a v3 line long enough to clear the forty-five character sampling floor here\n' > "$V3/docs/v3only.md"
+git -C "$V3" add -A; git -C "$V3" -c user.email=t@t -c user.name=t commit --quiet -m v3
+git -C "$V3" checkout --quiet -b feat/on-v3
+git -C "$V3" rm -q docs/a.md
+git -C "$V3" add -A; git -C "$V3" -c user.email=t@t -c user.name=t commit --quiet -m change
+out_v3=$(run "$V3" "" pr)
+# docs/v3only.md belongs to v3-pre-release, not to this branch. With the base wrongly resolved to
+# main it would appear in the diff; with it correctly resolved to v3-pre-release it must not.
+a "v3 branch is diffed against v3-pre-release" "v3only" no "$out_v3"
+a "v3 branch still reports its OWN deletion"   "docs/a.md" yes "$out_v3"
 
 # ---- fail-safe ----
 mkdir -p "$TMP/plain"
