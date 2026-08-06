@@ -1495,6 +1495,35 @@ well-specified execution/polish, not novel design.*
   one of those references needs quoting — but it means a literal-string sweep must catch both the
   old *path* and the old *name*.
   🔗 Bundle with the `known-issues.md` split/rename below: same class of work, same sweep, one audit.
+- `[P1 · S · 🧩needs-design]` **Why did both v2.55.5 defects surface only AFTER the merge — did a gate
+  fail, or is there a coverage hole?** — *(Harkirat's question, 2026-08-06 00:40 EDT. **Deferred to a
+  morning session at his instruction — do NOT investigate inline.** Filed so the question is not lost;
+  the leads below are hypotheses to test, not findings.)*
+
+  **The two defects:** the merged DEVLOG entry claimed *"Filed, not done"* about the design-history
+  fold when nothing had been filed; and the deploy reminder carried two hardcoded version numbers that
+  had rotted several releases out of date. Both were caught by the `Stop` outstanding-items gate
+  **after** `gh pr merge` had already run.
+
+  **Leads to check — each is a guess until measured:**
+  1. **Timing.** `release-ready-check.sh` fires at `PreToolUse` on `gh pr merge`; the outstanding-items
+     gate fires at `Stop`, i.e. per assistant message. If the false claim was written *before* the
+     merge and only *summarised* after it, the two gates would have been looking at different moments,
+     and neither was wrong — they just do not overlap. Verify against the actual turn order.
+  2. **Coverage, not failure.** `release-ready-check.sh` asserts a DEVLOG entry **exists**; nothing
+     asserts its sentences are **true**. That limit is already documented in this file's
+     🧮 docs-audit section: *"Nothing verifies a changelog entry DESCRIBES what shipped."* A claim of
+     "filed" inside a record may simply be outside every gate's reach.
+  3. **Nothing checks a filed item's own accuracy.** `docs-audit`'s `xref` verifies paths resolve; no
+     check asks whether a reminder's *content* is still true. A stale version number inside a correct
+     path is invisible to every gate that exists.
+  4. **Was any gate silently degraded?** Cheapest to rule out first — `npm run test:hooks` and confirm
+     the relevant hooks are still registered and executable in `.claude/settings.json`.
+
+  **Do not conclude "the hooks failed" or "the hooks are fine" without running (4) first.** If the
+  answer is a coverage hole rather than a failure, the follow-up question is whether it is *worth*
+  closing — a checker for prose truthfulness may not be buildable, and saying so honestly is a
+  legitimate outcome.
 - `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg above]` **Fold `docs/reference/design-history.md`
   into `docs/DEVLOG.md` as its earliest entries, then delete it** — *(filed 2026-08-06 00:37 EDT.)*
 
