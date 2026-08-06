@@ -132,6 +132,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
 - 2026-08-06 10:35 EDT — Three prompts, three kinds of check: building the thing that stops him asking twice (v2.56.0)
 - 2026-08-06 10:53 EDT — The guard that blocked the PR fixing the guard (v2.56.1)
+- 2026-08-06 12:52 EDT — The gate fired, and told me something false (v2.56.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5146,6 +5147,53 @@ caught that too.
 - **The order of events is the whole story:** the release that shipped the audit system was merged,
   and eleven minutes later a different gate blocked real work for a bad reason. Shipping the checker
   is not the end of the work; it is the beginning of finding out what it gets wrong.
+
+
+## 2026-08-06 12:52 EDT — The gate fired, and told me something false (v2.56.3)
+
+The three-pass sweep built this morning fired for the first time in a live session — unprompted, on a
+real completion claim, exactly where it was sited to fire. The filed reminder said this could not be
+proven from inside the session that registered it, and it was proven anyway.
+
+Then it told me all five angles were un-taken, on a session where I had run every one of them.
+
+The instinct is to argue with a gate that contradicts you, and that instinct is usually wrong — this
+session had already spent two rounds learning that the gate is right more often than the memory of
+what you did. So I checked instead of arguing: the detectors match at transcript lines 88, 195, 1409,
+1410 and 2073 of 3902. The evidence was present and was not seen. Running the hook by hand against
+that same file suppressed all five correctly.
+
+**So the gate was wrong, and I could only know that by taking it seriously enough to test it.** If I
+had argued from memory I would have been right for the wrong reason, and if I had accepted it I would
+have re-run five checks for nothing.
+
+I could not find the root cause — what differs between the harness's invocation and mine is not
+observable from here — and I stopped rather than inventing one. What I could fix is the failure mode:
+a transcript with zero Bash entries now says *ANGLE DETECTION COULD NOT RUN* and prints what it saw.
+*"I cannot see the session"* and *"no angle was taken"* are different sentences and had been rendering
+identically, which is the same defect shape as every silently-dead gate this repo has paid for.
+
+Two real bugs fell out of the investigation. `claim-detect.sh` was resolved from `${BASH_SOURCE[0]}`
+after the script `cd`s to `$REPO`, so a relative invocation path re-anchors to the wrong tree —
+`records-close-check.sh` solved this weeks ago and I did not copy it. And the Bash-scoping I had been
+pleased with is weaker than I documented: JSONL puts a whole assistant message on one line, so it
+excludes messages with no tool call at all but cannot separate prose from a command in the same
+message. That one surfaced by breaking my own test fixture, which is the cheapest possible way to
+learn it.
+
+### Lessons
+
+- **A gate's first live fire tests the gate, not the work.** Both gates that fired for the first time
+  today found a defect in themselves or a sibling — this one, and `docs-audit-gate` announcing a false
+  crash on every PR for ten hours. Budget for that instead of treating first-fire output as a verdict.
+- **When a gate contradicts you, test it — don't argue and don't submit.** Both shortcuts produce the
+  same confident wrongness from opposite directions.
+- **"I could not determine the root cause" is a finishable state.** Fixing the failure mode, recording
+  how to reproduce it, and saying plainly that the cause is unknown beats a plausible story. A wrong
+  explanation in a record outlives the bug.
+- **Copy the fix, not just the lesson.** `records-close-check.sh` had already solved the BASH_SOURCE
+  ordering problem correctly; the knowledge existed in this directory and the new hook still shipped
+  without it. Reading a sibling before writing is cheaper than rediscovering it.
 
 
 # Part B — Lessons Ledger (thematic)

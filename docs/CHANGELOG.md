@@ -181,7 +181,37 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.56.2 — 2026-08-06 10:58 EDT (#88) — The DEVLOG entry v2.56.1 should have carried
+## v2.56.3 — 2026-08-06 12:52 EDT (#89) — The sweep's first live fire, and what it got wrong
+
+The three-pass audit shipped in v2.56.0 fired for the first time in a live session, unprompted, on a
+real completion claim. **That answers the "does the harness actually invoke it" question — and it
+immediately failed its own test.**
+
+It reported **all five angles as un-taken** on a session that had demonstrably run every one; measured
+afterwards, the detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the
+hook by hand against that same file suppressed all five correctly, so the matching logic is sound and
+the fault is in what the harness handed it. **Root cause is still unknown and is deliberately not
+guessed at.**
+
+⚠️ **Mitigated, not fixed.** A transcript carrying zero Bash `tool_use` entries now reports
+**ANGLE DETECTION COULD NOT RUN** and prints the path and line count it saw. *"I cannot see the
+session"* and *"no angle was taken"* are different answers, and reporting all five is the
+fires-on-everything behaviour that gets a gate dismissed unread.
+
+**Two real bugs found while investigating, both fixed and pinned:** `claim-detect.sh` was resolved
+from `${BASH_SOURCE[0]}` **after** the script `cd`s to `$REPO`, re-anchoring a relative invocation
+path to the wrong tree — which breaks under a worktree, and which `records-close-check.sh` already
+solved correctly without the pattern being copied. And the Bash-scoping is weaker than it was
+documented to be: JSONL puts a whole assistant message on ONE line, so it excludes messages with no
+tool call at all but **cannot** separate prose from a command inside the same message. That surfaced
+when the property broke this hook's own test fixture.
+
+**Also:** the self-service data-deletion item is re-tagged **P1 → P3, deferred to v4** (Harkirat's
+call — the email route stands). Verified rather than assumed that this leaves `PRIVACY.md` accurate:
+§7.1 already discloses there is no self-service delete, names email as the live mechanism, and calls
+a `/settings` option *"planned"* with no timeline attached.
+
+## v2.56.2 — 2026-08-06 10:58 EDT (#88 · `30348c4`) — The DEVLOG entry v2.56.1 should have carried
 
 Records only. The `release-ready-check` gate fired on v2.56.1 saying its branch changed four
 non-mechanical files with no DEVLOG entry — and it was right; the merge went through anyway because
