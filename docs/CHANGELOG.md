@@ -191,6 +191,23 @@ extra release that gate exists to prevent, paid rather than left as a wrong reco
 The entry itself is worth having: a guard blocking the PR that fixes the guard, a fix that opened a
 worse hole than the one it closed, and the pre-existing adversarial test case that caught it twice.
 
+🔴 **And the gate itself is fixed here, so this stays the LAST release it costs.** It emitted
+`additionalContext` with **no `permissionDecision` at all** — a pure notice that could never stop
+anything. This is the third hook caught at the wrong enforcement level: the force-overwrite and
+squash-trailer gates were both `ask` until 2026-08-02, when it was measured that an `ask` from a
+`PreToolUse` hook is silently auto-approved in this permission mode. Both became `deny` and both now
+work — the trailer gate blocked this very session's first merge attempt, correctly. Nobody re-checked
+this sibling at the time. **When you fix one gate's enforcement level, audit the others the same day.**
+
+It now **denies**, with a deliberate escape: `RELEASE_SKIP="why" gh pr merge …` turns a legitimate
+skip into a recorded decision rather than an omission. A judgement-call gate with no way through is
+one people edit out of the way, which is how a guard becomes decorative.
+
+⚠️ Its own test suite had a case named *"advisory, never a hard block"* that only asserted the
+message contained some text — true whether the hook denied, asked or merely narrated. The property
+that mattered was never tested, which is why this survived. Three real assertions on the decision
+level replace it, verified to fail against the old hook.
+
 ## v2.56.1 — 2026-08-06 10:53 EDT (#87 · `3b9d023`) — A guard that judged the room instead of the request
 
 `main-push-guard.sh` asked one question — *is the project dir on `main`?* — and answered it about the

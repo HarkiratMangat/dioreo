@@ -9,7 +9,13 @@ REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 # without a network call to `gh pr view`.
 r(){ local raw; raw="$(printf '{"tool_input":{"command":"gh pr merge 1 --squash"}}' \
        | RELEASE_CHECK_FILES="$1" RELEASE_CHECK_BASE="${2:-main}" CLAUDE_PROJECT_DIR="$REPO" bash "$HOOK")"
-     [ -z "$raw" ] && { echo SILENT; return; }; printf '%s' "$raw" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; }
+     # Reads BOTH fields: the deny path carries its text in `permissionDecisionReason`, the
+     # explicit-skip path in `additionalContext`. Before 2026-08-06 11:04 EDT this gate only ever
+     # emitted the latter — a pure notice with no decision, which is why it could not stop the
+     # v2.56.1 merge it correctly flagged. Reading one field only would make this suite blind to
+     # which of the two branches ran.
+     [ -z "$raw" ] && { echo SILENT; return; }
+     printf '%s' "$raw" | jq -r '.hookSpecificOutput.permissionDecisionReason // .hookSpecificOutput.additionalContext // "SILENT"'; }
 a(){ local n="$1" needle="$2" want="$3" files="$4" out; out="$(r "$files" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1)); else echo "  FAIL  $n"; echo "        got: $out"; fail=$((fail+1)); fi; }
@@ -35,7 +41,35 @@ a "missing DEVLOG fires"              "docs/DEVLOG.md has no entry" yes "$NODEVL
 a "purely mechanical skips DEVLOG"    "docs/DEVLOG.md has no entry" no  "$MECHANICAL"
 a "missing CHANGELOG fires"           "docs/CHANGELOG.md has no entry" yes "$NOCHANGELOG"
 a "missing SUMMARY fires"             "CHANGELOG-SUMMARY.md has no line" yes "$NOCHANGELOG"
-a "advisory, never a hard block"     "RELEASE NOT READY" yes "$NODEVLOG"
+a "the miss is named in the message"  "RELEASE NOT READY" yes "$NODEVLOG"
+
+# 🔴 THE DECISION LEVEL, which nothing tested until 2026-08-06 11:05 EDT.
+# The case above was called "advisory, never a hard block" and only ever asserted that the message
+# CONTAINED some text — true whether the hook denied, asked, or merely narrated. So the property that
+# actually mattered was untested, and the gate sat emitting `additionalContext` with no
+# permissionDecision at all: a pure notice. It fired correctly on v2.56.1 and the merge went through
+# anyway, costing the extra release its own message warns about. A test whose name claims a
+# behaviour it never checks is worse than no test.
+dec() { local raw; raw=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$2" | jq -Rs .)" \
+          | RELEASE_CHECK_BASE=main RELEASE_CHECK_FILES="$1" bash "$HOOK" 2>/dev/null)
+        # Silence is a valid outcome (a complete release), and `jq` on EMPTY input prints nothing —
+        # which is not "none", it is the absence of an answer. Distinguishing them matters here:
+        # "the hook stayed silent" and "the hook ran and asked for no decision" are both correct, but
+        # "the hook died producing nothing" is not, and only an explicit empty check separates them.
+        [ -z "$raw" ] && { echo none; return; }
+        printf '%s' "$raw" | jq -r '.hookSpecificOutput.permissionDecision // "none"'; }
+d() { local n="$1" want="$2" got="$3"
+  if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
+  else echo "  FAIL  $n (wanted $want, got $got)"; fail=$((fail+1)); fi; }
+
+# Reuses the SAME fixtures as the assertions above rather than rebuilding one — my first attempt
+# hand-rolled a "complete" file list that was subtly different and failed for that reason, not for
+# the behaviour under test.
+d "an unmet release DENIES the merge"    deny "$(dec "$NODEVLOG" 'gh pr merge 88 --squash')"
+# ...and the escape must exist, or a judgement-call gate with no way through gets edited out of the
+# way — the "how a guard becomes decorative" failure named in the filed --delete item.
+d "a NAMED skip is allowed through"      none "$(dec "$NODEVLOG" 'RELEASE_SKIP="purely mechanical" gh pr merge 88 --squash')"
+d "a complete release needs no decision" none "$(dec "$FULL" 'gh pr merge 88 --squash')"
 # --- v3 pre-release: CHANGELOG-only. Demanding a SUMMARY line there would be the gate enforcing a
 #     rule that does not apply, which teaches you to merge past it. Added 2026-08-02 16:49 EDT with
 #     the base-branch fix; before it, every v3 PR was diffed against origin/main.
