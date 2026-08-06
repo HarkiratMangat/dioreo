@@ -62,37 +62,6 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-- `[P2 · M · 🧩needs-design]` **Pagination / nav buttons cost TWO Discord round-trips per click instead
-  of one.** *Filed 2026-08-06 18:14 EDT — Harkirat's report: the left/right buttons "currently send a
-  back n forth request or something instead of 1 combined request."*
-
-  **What the code does today:** a component click is handled as `await interaction.deferUpdate()` and
-  then a separate edit of the original message (`sendV2Payload` → `rest.patch(@original)`). That is two
-  sequential HTTP calls to Discord for every single page turn. `deferUpdate()` exists to buy the
-  15-minute window and dodge the 3-second timeout / 10062 crashes — the comment at `index.js:1014`
-  says so explicitly, and it was added to fix a real crash.
-
-  **The one-call alternative:** Discord's `UPDATE_MESSAGE` (type 7) interaction response carries the new
-  components **in the callback itself**, so a page turn is a single request with no follow-up patch.
-  It is the intended mechanism for exactly this case.
-
-  ⚠️ **Do not just swap them — this is why it is tagged needs-design.** Three things have to hold before
-  the change is safe, and each one is a documented past crash in this repo:
-  1. **The 3-second budget becomes real again.** `UPDATE_MESSAGE` must be sent within ~3s of the click;
-     `deferUpdate()` is what currently removes that constraint. Any paginated view whose render does I/O
-     (a Mongo read, a Cloudinary fetch, accent extraction) can exceed it. **Audit which paginated
-     surfaces actually render synchronously from data already in hand** — those are the safe ones. The
-     rest should keep the defer.
-  2. **`sendV2Payload` exists because discord.js's high-level helpers do not serialize raw Components V2
-     JSON** (`.claude/rules/rendering-and-ui.md`). A one-call path needs the same raw-REST treatment for
-     the callback, not `interaction.update()`.
-  3. **The anti-spam cooldown at `index.js:511` assumes the defer+edit cycle** and swallows a rapid
-     second click with a bare `deferUpdate()`. That interacts directly with any change here.
-
-  **Payoff is latency, not correctness** — nothing is broken today. Worth measuring the actual saving on
-  the dev bot before committing to a wide refactor. 🔗 Bundle-with: the `index.js` → `handlers/*.js`
-  split, since both touch every component branch.
-
 - ✅ **CAUSE FOUND 2026-08-06 15:27 EDT — a GitHub Actions MAJOR OUTAGE, confirmed at githubstatus.com,
   not anything in this repo.** The hypothesis below was recorded as a guess and turned out right, but
   it was *checked* rather than assumed, and the check took one request. What settled it: two runs died
@@ -1225,30 +1194,31 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   and the fix has to address the cap (batching or a second pass), not just the prompt wording.
   Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
 
-  ✅ **UNBLOCKED — corrected 2026-08-06 18:18 EDT. The "need a DMZ screenshot with empty slots" blocker
-  is STALE and was carried forward for two weeks after it stopped being true.** The 2026-07-24 note said
-  the DMZ slot layout was unknown, so a reliable prompt could not be written. **The 2026-07-26 metadata
-  backfill then did exactly that job and proved it works** — recorded in
-  `local/autobuild testing notes.md` (a gitignored file no in-repo search surfaces):
-  *"uncapping the vision prompt to 9 attachments for DMZ (it was truncating DMZ builds at 5). DMZ builds
-  like AK117 now have all 9 slots."* The prompt reads slot labels **off each image**, so no fixed
-  a-priori layout was ever required — which is why the screenshot was never actually the blocker.
+  ⛓️ **STILL BLOCKED ON HARKIRAT'S SCREENSHOT — reaffirmed by him 2026-08-06 18:22 EDT.** I briefly
+  marked this unblocked at 18:18 EDT on the reasoning that the 2026-07-26 backfill had already extracted
+  9-slot DMZ builds, so the layout could be inferred from existing data. **He overruled that
+  explicitly:** *"for the dmz autobuild, still wait on my screenshot instead of guessing at slots based
+  on pre-existing info."* **Do not infer the slot layout from the backfilled data, the DB, or the
+  testing notes.** Wait for one DMZ screenshot with EMPTY slots (so the labels are legible), or a plain
+  top-to-bottom list of the slot positions. Ask at the START of that session.
+  ⚠️ *Why he is right and my inference was not good enough:* the backfill mapped slot labels
+  per-image onto already-stored attachment names, and its own log flags "partial slot coverage" cases.
+  That proves the extraction path can be widened to 9 — it does **not** establish the authoritative
+  DMZ slot roster or its order, which is what the prompt needs to detect and validate a DMZ build.
+  Working from it would be building on a derived artefact instead of ground truth.
 
-  **What is genuinely left, all of it in this repo and none of it needing Harkirat:**
-  1. `utils/visionExtract.js` **already takes `{ maxAttachments }` (default 5)** and was run at 9
-     against real DMZ images. `/autobuild` calls it at `utils/autobuildPipeline.js:148` **without the
-     option**, so it silently truncates at 5. That is the whole "5-attachment cap".
-  2. **`mode: 'MP'` is hardcoded through the pipeline** — `autobuildPipeline.js` lines ~17, 131, 157,
-     186, 241, 263 (sibling lookup, duplicate check, the saved doc). Every one has to become mode-aware.
-  3. **The review card is fixed at 5 slots** (`visionExtract.js:255` pads/truncates to exactly
-     `maxAttachments` "for /autobuild's review card, which always shows 5"). It needs to render up to 9.
-  4. **Choosing the mode:** prefer an explicit `mode` option on the command over auto-detection —
-     cheaper, deterministic, and it removes the "silently treated as MP" failure entirely. Auto-detect
-     can come later if it is actually wanted.
-  ⚠️ **Lesson worth keeping:** the blocker was recorded as "waiting on Harkirat" and nothing ever
-  re-checked it after the capability landed. A blocked item needs a re-test date, not just a reason —
-  and `local/` is invisible to every repo-wide search, so anything filed there has to be read
-  deliberately. See [[feedback_verify_before_claiming]].
+  **What IS settled, and does not need his input** (useful groundwork, safe to record — this is
+  mechanism, not slot layout):
+  1. `utils/visionExtract.js` **already accepts `{ maxAttachments }` (default 5)**; `/autobuild` calls it
+     at `utils/autobuildPipeline.js:148` **without the option**, which is the "5-attachment cap".
+  2. **`mode: 'MP'` is hardcoded** through `autobuildPipeline.js` (~lines 17, 131, 157, 186, 241, 263 —
+     sibling lookup, duplicate check, the saved doc). All of it has to become mode-aware.
+  3. **The review card is fixed at 5 slots** (`visionExtract.js:255`) and needs to render up to 9.
+  4. **Mode selection:** prefer an explicit `mode` option over auto-detection — deterministic, and it
+     removes the "silently treated as MP" failure. Auto-detect can follow later if wanted.
+  ⚠️ **Lesson kept from the wrong turn:** a blocked item still deserves a re-test date rather than an
+  open-ended "waiting on Harkirat" — but re-testing means checking whether the BLOCKER is gone, not
+  substituting a derived guess for the thing that was asked for. See [[feedback_verify_before_claiming]].
 - `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20
   runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run:
   `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
@@ -1573,6 +1543,17 @@ well-specified execution/polish, not novel design.*
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
   across call sites, not open design work.
+  📌 **RE-RAISED by Harkirat 2026-08-06 18:10 EDT and slotted as the SECOND of four agreed sessions**
+  (after the `timestamp-check.sh` fix, before the `index.js` split — which it bundles with, since both
+  touch every component branch). His words: the left/right buttons *"currently send a back n forth
+  request or something instead of 1 combined request."* That is exactly the double round-trip traced
+  below, so **nothing here needs re-deriving and the hybrid design is not up for re-litigation.**
+  ⚠️ **I filed a DUPLICATE of this on 2026-08-06 18:14 EDT** in 🐞 Active Bugs, tagged 🧩needs-design,
+  after searching for "twice / two calls / double-call" and never for **"round-trip"** — the one phrase
+  this entry actually uses. Removed 2026-08-06 18:24 EDT. Two lessons, both live: a duplicate filing is
+  worse than no filing, because mine would have sent a session to re-open a design Harkirat settled on
+  2026-07-14; and **searching a tracker means searching the words the tracker uses**, not the words the
+  reporter used. Check 🧹 Someday and `docs/ROADMAP.md` before filing anything as a new bug.
 
   **The full investigation and the agreed shape, moved here 2026-08-06 08:13 EDT** from
   `docs/reference/platform-constraints.md` when it was split and renamed from **known-issues**.
