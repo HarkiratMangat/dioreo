@@ -4824,6 +4824,17 @@ bare-vs-decorated paragraph heights showed 19.5px → 27.88px — the 8.38px jum
 he'd been looking at a build that already contained the real fix. **Someone reporting a fix is not
 evidence of a fix**, and checking was two minutes.
 
+**Closing this session out shipped as `v2.55.1`, which has no entry of its own** *(recorded here
+2026-08-06 08:39 EDT — `devlog-version-cite` had been warning that the number was un-greppable in this
+file, and it was right)*. It was records-only, and both corrections in it were found *while* closing
+out v2.55.0 rather than by reading the deferred list — which is the part worth remembering. A `[P1]`
+claiming every GitHub link on the live site 404s had **already been fixed** by Harkirat's rename and
+nobody had closed it, so the list was asserting the site was broken while it worked: the actively
+misleading kind of stale, worse than merely old. The other was `main-push-guard.sh` denying
+`git push origin --delete <branch>` — the exact cleanup the release checklist ends with — because the
+matcher sees `git push` plus a remote and stops there. That one was filed rather than patched, since
+touching an enforcement hook drags its own self-test with it.
+
 ## 2026-08-05 21:02 EDT — A bug only one device could see, and three gates that all said fine (v2.55.2, written in v2.55.3)
 
 ⚠️ **This entry is late on purpose-of-record: the work shipped as v2.55.2 and this was written

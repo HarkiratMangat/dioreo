@@ -352,13 +352,33 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `scripts-and-migrations.md` | `scripts/**` | pointer map: which subsystem rule documents each script |
 | `legal-site.md` | `scripts/buildLegalPages.js`, `scripts/lib/chronicle.js`, `public/**`, `docs/legal/**`, `LICENSE`, `NOTICE`, `CONTRIBUTING.md`, `CONTRIBUTORS.md` | the published site: three page families and their voices · the measured nav staging · the metaball constants · the build's gate roster · sticky headings · a11y + contrast |
 
+### 📁 What each `docs/` folder IS — decide by this before filing anything (settled 2026-08-06 08:33 EDT)
+*Three reorganizations in two days all came from files sitting in folders whose purpose they didn't
+match. The test is **what kind of thing is it**, never what it's about — a Discord topic can belong in
+any of these.*
+
+| Folder | It holds | Tense | It is NOT |
+|---|---|---|---|
+| **`docs/reference/`** | **Lookup docs.** "Read this to do the thing correctly." A legend, not a notebook. | Present — kept true | Not narrative, not a list of open work, not a story |
+| **`docs/ideas/`** | **Forward-looking, MAINTAINED.** Proposals, parked ideas, the intake scratchpad. **Edited as thinking changes.** | Future / undecided | Not decided work (that's `db-deferred-list.md`), not published |
+| **`docs/superpowers/specs/`** | **Dated design SNAPSHOTS.** What was decided, and why, on that date. **Superseded, never edited.** | Frozen at its date | Not a live document — a stale spec is *correct*; don't "fix" it |
+| **`docs/archive/`** | **Dead.** Swept intake + closed deferred items. **Don't read by default.** | Past, closed | Not a search target; nothing here is live |
+| **`docs/` root records** | `CHANGELOG` · `CHANGELOG-SUMMARY` · `DEVLOG` · `ROADMAP` · `db-deferred-list` · `README` · `SESSION-START` | Append-only history / live trackers | Records are **never backdated** — an old entry keeps the old name |
+
+⚠️ **`ideas/` vs `specs/` is the pair that gets confused**, and the difference is what you do when it
+goes out of date: an `ideas/` file you **edit**, a `specs/` file you **supersede with a new dated one**.
+⚠️ **Narrative belongs in `DEVLOG.md`, not `reference/`.** That is exactly why **design-history** was
+folded out — it read as a reference doc and was a story. *(Retired names are written without their
+`.md` throughout: `xref` matches path- and record-shaped references and cannot tell a historical
+mention from a live broken link, so spelling one out costs a permanent warning.)*
+
 ### `docs/` — read on demand (planning / ops / history; not code-triggered)
 | File | Covers |
 |---|---|
 | `docs/ROADMAP.md` | **authoritative roadmap** (v2 remaining · v3 · v4 · v5 · housekeeping). The changelog roadmap sections are synced VIEWS of it. The [GitHub Projects board](https://github.com/users/HarkiratMangat/projects/2) (created 2026-07-25 21:35 EDT) is a lightweight visual tracker manually refreshed FROM this file, never the reverse — see docs/README.md's "How they relate" section. |
 | `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dioreo (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
-| `docs/reference/platform-constraints.md` | accepted **platform** limits — Components V2, the Discord client, system deps. Renamed from `known-issues.md` 2026-08-06 08:15 EDT after the genuine open defects were split out to `docs/db-deferred-list.md`. ⚠️ **Not forever-constraints:** re-test an entry before citing it as a reason something can't be done. |
-| *(**design-history** — **deleted from `docs/reference/` 2026-08-06 08:24 EDT**; the old name is written without its path here on purpose, since `xref` matches path-shaped references and cannot tell a historical mention from a live pointer)* | Its narrative of the 2026-07-12 redesign passes and the color-repalette story now lives in **`docs/DEVLOG.md`** as Part A's four earliest (`2026-07-12`) entries. It was never a reference doc by this folder's own test — narrative, not "look this up to do the thing correctly" — and DEVLOG's header had been describing exactly that backfill as outstanding. |
+| `docs/reference/platform-constraints.md` | **Accepted limits imposed from OUTSIDE this codebase** — Components V2, the Discord client, system dependencies. The test is *whose* limitation it is: if a determined session could fix it in this repo it is **work**, and belongs in `docs/db-deferred-list.md` instead. Renamed from `known-issues.md` 2026-08-06 08:15 EDT once the genuine open defects were split out. ⚠️ **NOT forever-constraints — an entry is EVIDENCE, NOT A VERDICT.** It is a snapshot of what the platform allowed on the date written. **Re-test it before citing it as a reason something can't be done, especially before telling Harkirat a request is impossible.** The file's own button-expiry entry is a permanent refutation of a "hard Discord platform wall" claim that was wrong and corrected twice in one day. |
+| *(**design-history** — deleted 2026-08-06 08:24 EDT)* | Redirect only. The 2026-07-12 redesign passes and the color-repalette story are now **`docs/DEVLOG.md`**'s four earliest Part A entries. It was narrative, not "look this up to do the thing correctly", so it failed `docs/reference/`'s own test. |
 | `docs/ideas/` | **forward-looking and MAINTAINED** (edited as thinking changes), vs `docs/superpowers/specs/` whose dated documents are snapshots that get superseded. `design-ideas.md` (parked on TIMING, not merit, each with its revisit condition) · `docs-system.md` (the docs-system guide — explicitly undecided) · `Harkirats-Space.md` (private, gitignored). Not published. Created 2026-08-06 00:12 EDT. |
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (versioned in the file itself, not copied here — see its own metadata block). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. The `privacy-inventory` docs-audit check verifies this for `UserPreference` specifically; `privacy-model-coverage` (added 2026-08-05 12:43 EDT) catches the same drift for any OTHER model that gains a per-user (`discordId`/`userId`) field. |
 
@@ -489,7 +509,8 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
   `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`,
   `ideas/` (added 2026-08-06 00:12 EDT — forward-looking and maintained; holds the central intake
-  scratchpad **`diors-notes.md`**, moved here from `docs/diors-builds notes.md` 2026-08-06 08:00 EDT,
+  scratchpad **`diors-notes.md`**, moved here 2026-08-06 08:00 EDT from the old **diors-builds notes**
+  file at the `docs/` root (the rename also dropped the space every reference had to quote around),
   and the **gitignored** private `docs/ideas/Harkirats-Space.md`), and `archive/`.
   Un-gitignored at Harkirat's explicit request so a
   real `git diff`/`git log` covers their history. ⚠️ **`SessionStart` hooks in `.claude/settings.json` PARSE these

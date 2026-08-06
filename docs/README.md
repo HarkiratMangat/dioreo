@@ -15,6 +15,33 @@ kind of content lives and who's responsible for keeping it current.
 
 ---
 
+## 📁 First: which FOLDER does a thing belong in?
+
+*Settled 2026-08-06 08:33 EDT, after three reorganizations in two days that all had the same cause —
+a file sitting in a folder whose purpose it didn't match. **The test is what KIND of thing it is, never
+what it is about.** A Discord-rendering topic can legitimately belong in any of these.*
+
+| Folder | It holds | Tense | It is NOT | When it goes out of date |
+|---|---|---|---|---|
+| **`reference/`** | **Lookup docs** — "read this to do the thing correctly." A legend, not a notebook. | Present, kept true | Not narrative · not open work · not a story | **Correct it in place.** |
+| **`ideas/`** | **Forward-looking and MAINTAINED** — proposals, parked ideas, and the intake scratchpad. | Future / undecided | Not decided work (→ `db-deferred-list.md`) · never published | **Edit it** — the thinking moved. |
+| **`superpowers/specs/`** | **Dated design SNAPSHOTS** — what was decided and why, on that date. | Frozen at its date | Not a live document | **Write a NEW dated one.** A stale spec is *correct*; don't "fix" it. |
+| **`archive/`** | **Dead** — swept intake, closed deferred items. Don't read by default. | Past, closed | Not a search target | Nothing here goes out of date; it is already history. |
+| **root records** | `CHANGELOG` · `CHANGELOG-SUMMARY` · `DEVLOG` · `ROADMAP` · `db-deferred-list` · `SESSION-START` · this file | Append-only history, or live trackers | — | **Never backdate.** An old entry keeps the old name. |
+
+⚠️ **`ideas/` vs `superpowers/specs/` is the pair that actually gets confused**, and the whole
+difference is the last column: an `ideas/` file you *edit*, a `specs/` file you *supersede*.
+⚠️ **Narrative belongs in `DEVLOG.md`, not `reference/`.** That is precisely why **design-history**
+was folded out on 2026-08-06 — it read as a reference doc and was a story. If a candidate for
+`reference/` cannot be phrased as "read this to do X correctly," it is probably a DEVLOG entry.
+⚠️ **An open bug is never a `reference/` entry.** **known-issues** accumulated both for weeks; the
+split that fixed it is why `platform-constraints.md` has that name.
+*(Both retired names are written without their `.md` on purpose — `xref` cannot distinguish a
+historical mention from a live broken link, so spelling one out costs a permanent audit warning.)* Real defects go to
+`db-deferred-list.md`'s 🐞 section, which is read and written far more often.
+
+---
+
 ## The records at a glance
 
 | File | What it is | When you touch it | Audience |
