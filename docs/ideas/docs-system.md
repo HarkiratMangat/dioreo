@@ -939,16 +939,21 @@ roadmap, and why Phase 0 is scoped to be worth doing even if nothing follows it.
 
 ## Appendix — publishing boundary
 
-**Where this document itself lives.** `docs/superpowers/specs/` is **tracked in git but never
-published** — verified 2026-08-05 23:29 EDT: no part of `docs/reference/` or `docs/superpowers/` is read by
-`scripts/buildLegalPages.js`, so nothing here reaches `dioreo.app`. It is "public" only in the sense
-that the repository is public. That is the right tier for this file: a tracked pointer in
-`docs/db-deferred-list.md` now resolves for anyone with the repo, instead of naming a path only one
+**Where this document itself lives.** `docs/ideas/` — **tracked in git but never published**, verified
+2026-08-06 00:12 EDT: neither `scripts/buildLegalPages.js` nor `scripts/lib/chronicle.js` reads
+anything from it, so nothing here reaches `dioreo.app`. It is "public" only in the sense that the
+repository is public. That is the right tier for this file: a tracked pointer in
+`docs/db-deferred-list.md` resolves for anyone with the repo, instead of naming a path only one
 machine can see.
+
+`docs/ideas/` is the **forward-looking, maintained** area — proposals and parked ideas that get
+*edited* as thinking changes, as opposed to `docs/superpowers/specs/`, whose dated documents are
+snapshots that get *superseded* rather than revised. This file belongs here precisely because its
+opening banner instructs a future session to change it rather than defend it.
 
 `local/` and the memory store at
 `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` are **not publishable**, and
-`docs/Harkirats-Space.md` is private. `.claude/rules/` and `docs/` are already public in a public repo,
+`docs/ideas/Harkirats-Space.md` is private. `.claude/rules/` and `docs/` are already public in a public repo,
 so those are fair game.
 
 When re-shaping any of it for a wider audience, carry the **procedure** and never the account

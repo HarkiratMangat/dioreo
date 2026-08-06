@@ -585,7 +585,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     "what's next", and do not treat its P2 tag or its 🧩 flag as a prompt to suggest it. He is tired
     of it and knows exactly where it is. **This item is READ-WHEN-ASKED.** It stays here so that the
     moment he *does* raise it nothing has to be re-derived — that is its only job. The same applies
-    to its offshoot in `docs/reference/design-ideas.md` and to the parked landing-page ticket-tear
+    to its offshoot in `docs/ideas/design-ideas.md` and to the parked landing-page ticket-tear
     item below, which was already blocked behind this one.
   - ✅ **SETTLED — the structural fork is ANSWERED** (it was the blocking question for two sessions):
     **constellation on desktop, a full-width STACK on mobile.** Harkirat, 2026-08-02 22:42 EDT: *"on
@@ -622,7 +622,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     frozen at 0 in the preview pane**, so animations never advance and elements measure at their
     from-state — strip the intro class to measure settled geometry.
   - The **cross-referenced contributor index** was split out and parked separately in
-    `docs/reference/design-ideas.md` (parked on timing, not merit — one contributor, one release).
+    `docs/ideas/design-ideas.md` (parked on timing, not merit — one contributor, one release).
   - **Approved mockup: `local/site-redesign/mockup-v1.html`** (gitignored, open it directly).
     **Contributing = "The Interchange"** — four ways in (bug report · security · idea · code) on
     tinted lanes, converging on one shared track that ends at *merged & credited*. The route DIAGRAM is
@@ -1436,6 +1436,51 @@ well-specified execution/polish, not novel design.*
 - `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** —
   retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B.
   ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
+- `[P2 · M · Opus5-H · 🔗bundle-with the known-issues split below]` **Move + rename the notes file:
+  into `docs/ideas/` as **`diors-notes.md`**, renamed from `docs/diors-builds notes.md`** — ⚠️ *the
+  target does not exist yet; it is the planned end state, not a live pointer, so do not "fix" it.* — *(filed 2026-08-06 00:14 EDT.
+  Harkirat's call: the folder move AND the shorter name, together, since both drag the same sweep.)*
+
+  ⚠️ **This is NOT a `git mv`. The path is hardcoded in 7 places plus 3 test files**, inventoried
+  2026-08-05 23:58 EDT so the next session does not have to rediscover them:
+  - `.claude/settings.json:22` — the `SessionStart` open-items hook builds the path inline.
+  - `.claude/hooks/records-close-check.sh:32` — `NOTES="$REPO/docs/diors-builds notes.md"`.
+  - **`.claude/hooks/records-close-check.sh:53` — `grep -qx 'docs/diors-builds notes.md'`.** 🔴 **The
+    dangerous one.** It exact-matches the changed-file list. After a move it simply stops matching:
+    the gate keeps running, keeps passing, and **nothing reports that it has died.** A silently dead
+    gate is the exact failure this repo has already paid for twice.
+  - `.claude/hooks/notes-hardwrap-check.sh:29` (a `case` glob) and `:63` (message text).
+  - `.claude/hooks/outstanding-not-filed.sh:31` — `diors-builds notes\.md` inside a grep alternation.
+  - `.claude/hooks/notes-open-items.sh:2` — header comment.
+  - Tests: `records-close-check.test.sh` (×4 fixtures), `notes-hardwrap-check.test.sh:8` (**an
+    absolute path**), plus `.claude/rules/autobuild.md:169`.
+
+  **Do it in this order:** update every reference → run each affected `*.test.sh` individually → run
+  `npm test` → **start a fresh session and confirm the SessionStart notes hook actually fires**, since
+  that one cannot be proven from within the session that changed it.
+  ⚠️ **Renaming also loses the space in the filename**, which is a real win — the space is why every
+  one of those references needs quoting — but it means a literal-string sweep must catch both the
+  old *path* and the old *name*.
+  🔗 Bundle with the `known-issues.md` split/rename below: same class of work, same sweep, one audit.
+- `[P2 · S · Opus5-M · 🔗bundle-with the notes-file move above]` **Split `docs/reference/known-issues.md`,
+  then rename it to `platform-constraints.md`, renamed from `known-issues.md`** — ⚠️ *the new name
+  does not exist yet; it is the planned end state, not a live pointer.* — *(filed 2026-08-06 00:14 EDT,
+  Harkirat's call.)*
+
+  **Why split before renaming:** the file's 78 lines are mostly **accepted platform constraints**, not
+  open bugs — "View Colors vertical centering is unsolved (Components V2 has no native mechanism)",
+  "Deco renders as a static poster", "`ffmpeg` is a real system dependency, not an npm package". Those
+  are *facts*, not defects. But a minority genuinely are open cosmetic bugs that duplicate this file's
+  own 🐞 section, which is read and written far more often. **Renaming without splitting would put a
+  lie on the tin**, and merging wholesale into 🐞 would invite a future session to "fix" something
+  that is not fixable.
+  - Real open bugs → this file's 🐞 Active Bugs section.
+  - Platform constraints → stay, under the new name.
+  - **The rename needs an internal header note** stating what the file is, what belongs in it, and —
+    Harkirat's explicit point — that these are **not forever-constraints**: a Discord platform update
+    or a feature change may lift any of them, so an entry should be re-tested before being cited as a
+    reason something cannot be done.
+  - Sweep cost, measured 2026-08-05 23:58 EDT: `known-issues` is named in **8 files**.
 - `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, notes L34)* a rich but
   noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so
   Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse
@@ -1466,9 +1511,9 @@ well-specified execution/polish, not novel design.*
   can't be generated (quirks, examples, screenshots), with a `docs-audit` coverage check so a new
   undocumented command fails rather than passing silently.
 
-  **Full thinking is in `docs/superpowers/specs/2026-08-05-docs-system-design.md`** (tracked, but not
-  published — nothing in `docs/superpowers/` feeds the site build), with a short pointer entry in
-  `docs/reference/design-ideas.md` — a single numbered guide covering: the five-criterion rubric any docs tool has to
+  **Full thinking is in `docs/ideas/docs-system.md`** (tracked, but not published — nothing in
+  `docs/ideas/` feeds the site build), with a short pointer entry beside it in
+  `docs/ideas/design-ideas.md` — a single numbered guide covering: the five-criterion rubric any docs tool has to
   survive here · why a docs framework is the wrong answer · the two products and their different
   failure modes · the `SlashCommandBuilder` generation design and its coverage gate · the admin
   manual's structure and its public/private fork · tooling by tier, plus MCPs, services and apps ·
@@ -1541,7 +1586,7 @@ its own output on every run. Read `.claude/rules/scripts-and-migrations.md` firs
   posts a PR comment listing the open notes items and whether memory was written since the branch
   point. It cannot *block* on judgement, but it can put the question in front of a human.
 - `[P3 · S]` **`xref`'s bare-filename half is WARN-only, and must stay that way until gitignored files
-  are resolvable.** Gitignored files are working-tree-LOCAL: `docs/Harkirats-Space.md` resolves in the
+  are resolvable.** Gitignored files are working-tree-LOCAL: `docs/ideas/Harkirats-Space.md` resolves in the
   main tree and not in a worktree or fresh clone, so "missing" and "not here right now" are genuinely
   indistinguishable. A tracked manifest of expected-but-ignored paths would let this become an ERROR.
 - `[P3 · S]` **`archive-conservation` traces items by a 6-word fingerprint**, so an item reworded

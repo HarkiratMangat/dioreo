@@ -367,7 +367,7 @@ check(
     // class as the rest of this file exists to catch, committed while writing the fix for it.
     //
     // WARN, because a bare name genuinely cannot be resolved with certainty: gitignored files are
-    // WORKING-TREE-LOCAL, so `docs/Harkirats-Space.md` resolves in the main tree and does not in a
+    // WORKING-TREE-LOCAL, so `docs/ideas/Harkirats-Space.md` resolves in the main tree and does not in a
     // fresh worktree or clone. That ambiguity is real and must be reported, not decided.
     let scanned = 0;
     const ignoredFiles = git("ls-files", "--others", "--ignored", "--exclude-standard")
@@ -1981,7 +1981,7 @@ const accounting = () => {
   if (isLinkedWorktree()) {
     console.log(
       `  · running in a LINKED WORKTREE — gitignored files that exist only in the main working tree ` +
-        `(docs/Harkirats-Space.md, local/*) are absent here, so xref may flag them. Not staleness.`
+        `(docs/ideas/Harkirats-Space.md, local/*) are absent here, so xref may flag them. Not staleness.`
     );
   }
   // Stated on every run, deliberately. This audit is a WHITELIST of failures that have already
