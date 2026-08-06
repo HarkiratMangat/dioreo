@@ -1217,12 +1217,17 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   row** (Harkirat: *"i wouldnt fixate on those dot elements"*) — small repeated glyphs are what a vision
   model miscounts, and a miscount silently flips the mode.
 
-  🔑 **A weapon can RENAME its canonical slots and OMIT others** — the main lesson of the Crossbow, and
-  the one most likely to be missed: `Bowstring` = Muzzle, `Limb` = Barrel, `Bolt` = Ammunition, and it
-  has **no Rear Grip at all**; revolvers show `Trigger Action` where Underbarrel would be. A fixed
-  nine-name allow-list therefore fails twice — it drops the renamed slots AND expects one that does not
-  exist. Take the label verbatim from the image and map to canonical separately; treat an unknown label
-  as a new alias to ask about, never as a parse failure.
+  🔑 **A weapon can RENAME canonical slots, ADD unique ones, OMIT others, and MOVE them in the grid.**
+  Aliases (Harkirat, 2026-08-06 19:10 EDT — "usually the alternatives will fall under these relabels…
+  not always, but VERY likely"): Muzzle←`Bowstring` · Barrel←`Limb` · Underbarrel←`Foregrip`/`Trigger
+  Action` · Ammunition←`Mag`/`Bolt`. **Unique extras with no canonical equivalent:** `Guard` (Shorty),
+  `Smoothbore` (R9-0) — both sit *alongside* that weapon's own Underbarrel, so they are additions, not
+  renames. 🔴 **And position moves even for canonically-named slots:** the Shorty pushes `Ammunition`
+  to the final chip (where Rear Grip lives) and the R9-0 puts it in the **top row** in Stock's place.
+  So a fixed nine-name allow-list fails three ways — drops renames, rejects uniques, expects absent
+  slots — and grid-position mapping fails outright. Take the label verbatim, map to canonical
+  separately, and treat an unknown label as a new alias to ASK about, never a parse failure.
+  *(Rarity wording varies too: R9-0 reads `GOLD`, not `MAX` — don't key on that string.)*
 
   **The build, now fully specified:**
   1. Pass `{ maxAttachments: 9 }` for DMZ — `utils/visionExtract.js` already accepts it;

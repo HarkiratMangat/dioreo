@@ -279,12 +279,15 @@ the AS VAL has no Muzzle at all, and the SVD renders literal gaps. Mode detectio
 instead — `PEN.`/`PEN. MULTI` and `EQUIP`/`CUSTOMIZE` mean DMZ; `SELECT BLUEPRINTS` and a blueprint code
 in the title mean MP — requiring two agreeing signals and returning *unknown* rather than guessing.
 
-And the sharpest trap of all: **a weapon can rename its canonical slots and omit others.** The Crossbow
-labels its Muzzle `Bowstring`, its Barrel `Limb`, its Ammunition `Bolt`, and has **no Rear Grip
-whatsoever**; revolvers show `Trigger Action` in place of Underbarrel. Any fixed nine-name allow-list
-fails twice over — dropping the renamed slots *and* demanding one that does not exist — which is
-precisely the `J358 … Trigger Action wasn't captured (6/7)` miss already paid for in the 2026-07-26
-backfill. Written up as `.claude/rules/autobuild.md`'s **"MP vs DMZ"**
+And the sharpest trap of all: **a weapon can rename its canonical slots, add unique ones, omit others,
+and move them around the grid.** The Crossbow labels Muzzle `Bowstring`, Barrel `Limb`, Ammunition
+`Bolt`, and has no Rear Grip; revolvers show `Trigger Action` for Underbarrel; the Shorty adds a
+`Guard` slot and the R9-0 a `Smoothbore`, each sitting *alongside* that weapon's own Underbarrel rather
+than replacing it. **And position is no anchor either** — the Shorty pushes `Ammunition` to the final
+chip where Rear Grip normally sits, while the R9-0 puts it in the top row in Stock's place. So a fixed
+nine-name allow-list fails three ways over, and grid-position mapping fails outright. This is precisely
+the `J358 … Trigger Action wasn't captured (6/7)` miss already paid for in the 2026-07-26 backfill,
+generalised. Written up as `.claude/rules/autobuild.md`'s **"MP vs DMZ"**
 section, because the screenshots live in gitignored `local/` and the knowledge cannot.
 
 **Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js`

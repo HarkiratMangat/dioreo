@@ -278,13 +278,31 @@ slot is labelled as 'limb'."*
 **A weapon can RENAME its canonical slots and OMIT others.** The label on screen is not the canonical
 slot name, and there is no fixed nine-name roster to validate against:
 
-| Canonical slot | Crossbow shows | Revolvers (J358, MP Dobvra) show |
-|---|---|---|
-| Muzzle | **Bowstring** | Muzzle |
-| Barrel | **Limb** | Barrel |
-| Ammunition | **Bolt** | Ammunition |
-| Underbarrel | Underbarrel | **Trigger Action** |
-| Rear Grip | **— absent entirely —** | Rear Grip |
+**The alias table** (Harkirat, 2026-08-06 19:10 EDT — *"mostly the weapons will use the basic naming
+scheme, usually the alternatives will fall under these relabels (not always, but VERY likely)"*):
+
+| Canonical slot | Also appears as |
+|---|---|
+| Muzzle | **Bowstring** (Crossbow) |
+| Barrel | **Limb** (Crossbow) |
+| Underbarrel | **Foregrip** · **Trigger Action** (revolvers: J358, MP Dobvra) |
+| Ammunition | **Mag** · **Bolt** (Crossbow) |
+
+**Plus genuinely UNIQUE slots with no canonical equivalent** — these are EXTRA, not renames (both
+weapons still show their own `Underbarrel` alongside): **`Guard`** on the Shorty (`IMG_5637`), and
+**`Smoothbore`** on the R9-0 (`IMG_5640`). Treat an unknown label as a **new alias or a new unique slot
+to ask Harkirat about** — never a parse failure, and never a reason to drop the slot.
+
+🔴 **AND THE GRID POSITION MOVES — even for canonically-named slots.** This is the subtlest trap of the
+lot, and both examples come from Harkirat directly:
+- **Shorty:** no Barrel, no Rear Grip. `Guard` sits where Ammunition usually is, and **`Ammunition`
+  is pushed to the final position** where Rear Grip would normally be.
+- **R9-0:** no Stock. **`Ammunition` is in the TOP row**, in Stock's usual place, while `Smoothbore`
+  occupies the bottom row's Ammunition position.
+
+So "the 4th chip is Stock" and "the last chip is Rear Grip" are both false. **Never map a slot by its
+grid coordinates — only ever by its label.** (Rarity wording varies too: the R9-0 reads `GOLD`, not
+`MAX`, so do not key anything on that string either.)
 
 ⚠️ **So a fixed allow-list of nine slot names fails twice over**: it drops `Bowstring`/`Limb`/`Bolt`/
 `Trigger Action` as unrecognised, *and* it expects a `Rear Grip` the Crossbow does not have. That is
