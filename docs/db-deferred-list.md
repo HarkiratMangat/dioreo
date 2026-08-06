@@ -1390,27 +1390,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
 (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
 well-specified execution/polish, not novel design.*
 
-- **🪝 `main-push-guard.sh` blocks a branch DELETION, not just a push of commits** `[P3 · XS]`
-  (filed 2026-08-05 19:08 EDT, hit during the v2.55.0 release cleanup).
-
-  Standing on `main`, `git push origin --delete <branch>` is denied with the guard's
-  "this would push commits directly to main" message. It doesn't — a `--delete` pushes *no* commits
-  and cannot touch `main`; the matcher sees `git push` plus a remote and stops there. It fires on
-  exactly the operation the chore checklist asks for at the end of every release ("a merged branch
-  must never outlive its PR"), so it will recur each time.
-
-  **Not urgent — the workaround is one line and arguably better:**
-  `gh api -X DELETE repos/HarkiratMangat/dioreo/git/refs/heads/<branch>`, which states the intent
-  unambiguously. Filed rather than fixed because touching an enforcement hook is its own change:
-  every script in `.claude/hooks/` must carry a `<name>.test.sh` (see CLAUDE.md's self-test rule), so
-  the fix is a matcher change **plus** a new negative case in `main-push-guard.test.sh` proving a
-  `--delete` is allowed while a real commit push is still denied.
-
-  ⚠️ **Do not "fix" it by broadening the matcher until it stops firing** — that is how a guard becomes
-  decorative. The narrow correct change is to exempt `--delete`/`-d` with no refspec pushing to a
-  branch, and to prove the deny path still works, per the "prove a new gate against broken input"
-  rule that has already caught two blind gates on this project.
-
 - **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
   `[P3 · S]` 🧩 needs-design (filed 2026-08-02 14:43 EDT). The *data* was repaired (see the resolved
   list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the

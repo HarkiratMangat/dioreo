@@ -25,6 +25,39 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🪝 `main-push-guard.sh` blocked a branch DELETION, not just a push of commits — CLOSED
+  2026-08-06 10:48 EDT (v2.56.1, #87).** Filed 2026-08-05 19:08 EDT as `[P3 · XS]`, hit during the
+  v2.55.0 release cleanup.
+
+  Original wording, kept: standing on `main`, `git push origin --delete <branch>` was denied with the
+  guard's "this would push commits directly to main" message. It doesn't — a `--delete` pushes *no*
+  commits and cannot touch `main`; the matcher saw `git push` plus a remote and stopped there. It
+  fired on exactly the operation the chore checklist asks for at the end of every release, so it
+  recurred every time. The filed note warned: **do not "fix" it by broadening the matcher until it
+  stops firing — that is how a guard becomes decorative.** The narrow change asked for was to exempt
+  a `--delete`/`-d` with no refspec, and to prove the deny path still works.
+
+  **What actually shipped was that narrow rule, generalised by one notch because the same defect had
+  a second, worse face.** The guard only ever asked *"is the PROJECT DIR on main?"* — so once a
+  squash-merge with `--delete-branch` left HEAD back on `main`, it denied **every** push: a new
+  feature branch, a deletion, and pushes belonging to a **different repository** (`cd ~/.config/dior
+  && git push -u origin fix/...`), where the project dir's branch says nothing about the operation.
+  It blocked the dior-CLI PR minutes after the guard's own release merged, which is how it surfaced.
+  One rule covers both: **an explicit non-`main` destination ref disclaims main**; a bare `git push`
+  on main still denies, because nothing disclaims it there.
+
+  **Two holes found while fixing it, both caught by the suite's pre-existing cases** — the reason
+  those cases were written:
+  - comparing the whole refspec against a fixed list let **`abc1234:main`** through, i.e. pushing an
+    arbitrary sha straight onto main. It now judges the **destination** (`${ref##*:}`), since only
+    that decides where commits land.
+  - `:` was missing from the ref character class, so the extractor stopped at the colon and read
+    `abc1234:main` as a branch named `abc1234`.
+
+  Verified: the four new cases FAIL against the old guard, and the deny path is re-proven — bare
+  push, `origin main`, `origin HEAD`, `abc1234:main`, `--delete main` and the `rtk`-wrapped forms all
+  still block. 24/24 guard cases, 21/21 hooks.
+
 - **📖 Fold `docs/reference/design-history.md` into `docs/DEVLOG.md` as its earliest entries, then
   delete it — CLOSED 2026-08-06 08:24 EDT.** Filed 2026-08-06 00:37 EDT as
   `[P3 · S · Opus5-M · 🔗bundle-with the docs reorg]`.
