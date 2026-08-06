@@ -94,9 +94,12 @@ active file a given dead item came out of.
      database, because either alone is defeatable by one wrong environment variable, and it
      refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
      prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
-  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT.** The row that instructed
-     `mongodump` from prod is gone; it now points at the seeder and carries the verification
-     query plus the note that `userpreferences` is the only affected collection.
+  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT**, extended 2026-08-06 15:28 EDT. The row
+     that instructed `mongodump` from prod is gone; it carries the verification query plus the note
+     that `userpreferences` is the only affected collection. *(Superseded detail: it pointed at the
+     seeder ALONE when this was written. It now documents **both** scripts and when to reach for each,
+     plus the two traps found on 2026-08-06 — that a script existing is not the data being clean, and
+     that synthetic ids must not be snowflake-shaped or they trip the audit regex forever.)*
 
   **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
   (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command

@@ -62,7 +62,20 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-- `[P1 · S]` **CI was CANCELLED at 15m04s on PR #89 and the cause is unknown — a run that normally
+- ✅ **CAUSE FOUND 2026-08-06 15:27 EDT — a GitHub Actions MAJOR OUTAGE, confirmed at githubstatus.com,
+  not anything in this repo.** The hypothesis below was recorded as a guess and turned out right, but
+  it was *checked* rather than assumed, and the check took one request. What settled it: two runs died
+  at **exactly 15m04s / 15m03s** with **ZERO log bytes** (the job never received a runner — a failing
+  step always leaves output); **`main`'s own CI run failed the same way** at 15:24 EDT, on a branch
+  this work never touched; and the repo is PUBLIC, so Actions minutes are free and unlimited and quota
+  was never a candidate. ⚠️ **Leaving open until a run actually goes green** — the outage is the
+  explanation, not the resolution, and "explained" is not "working". Blocks the **v2.57.0** merge.
+  ⚠️ **Do not merge past a red CI on the grounds that it is only the outage.** There is still no
+  required status check, so a red PR *can* merge; that is a known gap, not permission.
+
+  <details><summary>original item, as filed</summary>
+
+  `[P1 · S]` **CI was CANCELLED at 15m04s on PR #89 and the cause is unknown — a run that normally
   takes ~1m30s.** *Filed 2026-08-06 13:25 EDT, blocking the v2.56.3 merge.*
 
   **Status: `cancelled`, with ZERO failed steps** — so it is not an assertion failure. A rerun then
@@ -81,6 +94,7 @@ scratchpad for 2 days.*
 
   **Next test if it recurs:** whether the *size* of the DEVLOG/CHANGELOG additions in `c3b7546` slows
   a check — push that records commit alone onto a scratch branch and time it.
+  </details>
   ⚠️ **Do not merge on a cancelled CI because branch protection allows it.** There is no required
   status check yet (`syntax-check` is identified but not applied), so a red PR still merges. That is
   a known gap, not permission.
