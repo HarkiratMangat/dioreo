@@ -25,6 +25,30 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]` —
+  **ANSWERED YES, 2026-08-06 12:35 EDT.** *(Heading kept verbatim from the active list, per this
+  file's own rule — and because `archive-conservation` traces a removed item by a six-word
+  fingerprint, so a paraphrase reads to it as a deletion. My first draft paraphrased it and the
+  check was right to reject it.)* Filed 2026-08-06 09:35 EDT in the same pass that built the hook,
+  because the session that registers a `SessionStart`/`Stop` hook is running the PREVIOUS
+  registration by construction and cannot observe its own change.
+
+  Original wording, kept: *"The hook is registered in `.claude/settings.json`, which the harness reads
+  at session start, so the session that added it is running the previous registration — the identical
+  structural blind spot as the notes hook. Its logic is proven (17/17 self-tests, both directions of
+  the angle detector), and its wiring is proven valid JSON in the right event. What is unproven is
+  that the harness invokes it."*
+
+  **It fires.** Unprompted, on a real completion claim, with no nudging. The wiring works and this
+  half of the question is closed.
+
+  ⚠️ **The other half is NOT closed and stays open as `[P1 · S]` in the active list:** on that first
+  live fire it reported **all five angles as un-taken** on a session that had run every one — the
+  detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the hook by hand
+  against the same file suppressed all five correctly, so the fault is in what the harness handed it
+  and the root cause is unknown. Split rather than closed wholesale, because "it fires" and "what it
+  says is true" are different claims and only the first was ever in question here.
+
 - **🪝 `main-push-guard.sh` blocked a branch DELETION, not just a push of commits — CLOSED
   2026-08-06 10:48 EDT (v2.56.1, #87).** Filed 2026-08-05 19:08 EDT as `[P3 · XS]`, hit during the
   v2.55.0 release cleanup.
