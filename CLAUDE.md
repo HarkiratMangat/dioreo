@@ -359,6 +359,7 @@ non-obvious choice, or work around a platform limitation; prefer explaining *rea
 | `docs/reference/deployment-and-ops.md` | Stack · GCP VM / systemd / alerting / monitoring · version tagging · **the local dev bot** (`Dioreo (Dev)`, `.env.dev`, local Mongo, `--watch`, emoji/data cloning) |
 | `docs/reference/known-issues.md` | known open issues (flagged, not silently patched) |
 | `docs/reference/design-history.md` | narrative of the 2026-07-12/13 redesign passes · color-repalette story |
+| `docs/ideas/` | **forward-looking and MAINTAINED** (edited as thinking changes), vs `docs/superpowers/specs/` whose dated documents are snapshots that get superseded. `design-ideas.md` (parked on TIMING, not merit, each with its revisit condition) · `docs-system.md` (the docs-system guide — explicitly undecided) · `Harkirats-Space.md` (private, gitignored). Not published. Created 2026-08-06 00:12 EDT. |
 | `docs/legal/TERMS.md` · `docs/legal/PRIVACY.md` | the bot's **public-facing** Terms of Service + Privacy Policy (versioned in the file itself, not copied here — see its own metadata block). **Discord REQUIRES both to be publicly linked in the Developer Portal.** The privacy policy documents the real `UserPreference` fields — if you add, remove, or repurpose a stored field, update Appendix A and §2 in the SAME change, or the policy becomes a false statement about live data collection. The `privacy-inventory` docs-audit check verifies this for `UserPreference` specifically; `privacy-model-coverage` (added 2026-08-05 12:43 EDT) catches the same drift for any OTHER model that gains a per-user (`discordId`/`userId`) field. |
 
 ### 🌐 `public/` — the built legal site, GENERATED not hand-edited (added 2026-07-29 13:20 EDT)
@@ -480,13 +481,15 @@ all prohibited. `package.json` declares `LicenseRef-Diors-Builds-Source-Availabl
 
 ## Local-only files & the `local/` folder vs. `docs/` (tracked)
 - **`local/`** (repo root, **gitignored**) — Harkirat's personal scratch folder: the `project plan notes.txt`
-  future-planning dump, reference screenshots/PDFs, and anything else he drops in. **his private space file actually lives at `docs/Harkirats-Space.md`** (gitignored there by name — corrected 2026-07-28 22:55 EDT;
+  future-planning dump, reference screenshots/PDFs, and anything else he drops in. **his private space file actually lives at `docs/ideas/Harkirats-Space.md`** (gitignored there by name — corrected 2026-07-28 22:55 EDT;
   this file and the notes file had both said `local/` since the v2.35.3-era move, while `.gitignore` was
   updated and they were not) (private — off-limits unless
   he grants permission that session), and anything else he drops in. Never pushed, never deployed. When he
   references "the plan notes" / a file he "threw in there," check `local/` first.
 - **`docs/`** (repo root, **TRACKED in git**) — the project's own working documents: `CHANGELOG.md`,
-  `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`, and the
+  `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, `SESSION-START.md`, `ROADMAP.md`, `README.md`, `reference/`,
+  `ideas/` (added 2026-08-06 00:12 EDT — forward-looking and maintained; also holds the **gitignored**
+  private `docs/ideas/Harkirats-Space.md`), and the
   central `diors-builds notes.md` (+ `archive/`). Un-gitignored at Harkirat's explicit request so a
   real `git diff`/`git log` covers their history. ⚠️ **`SessionStart` hooks in `.claude/settings.json` PARSE these
   files**, so a rename or a structural edit to either is a code change: one reads `docs/SESSION-START.md`

@@ -9,12 +9,12 @@ shape is not lost and so the same ground is not re-explored from scratch in a ye
 *The backward-looking counterpart is `docs/reference/design-history.md`, which narrates redesigns
 that already happened. This file is the forward-looking one.*
 
-⛔ **THIS FILE IS READ-WHEN-ASKED. Do not pitch its contents.** *(Harkirat's explicit request,
-2026-08-02 23:03 EDT.)* Nothing here goes in a session-opening summary, a "what's next" list, or an
-unprompted suggestion — an idea parked on timing is not a backlog item, and treating it as one turns
-a reference into nagging. Read it when the relevant surface is actually being worked on, or when he
-raises it. Its whole value is that the thinking is waiting when it is wanted, not that it reminds
-anyone it exists.
+📖 **Read this when it's relevant, not as a reminder.** *(Harkirat's preference, 2026-08-02 23:03 EDT;
+wording eased 2026-08-05 23:35 EDT.)* An idea parked on timing isn't a backlog item, so it doesn't
+belong in a session-opening summary or a "what's next" list — the point is that the thinking is here
+waiting when it's wanted. Do reach for it when the relevant surface is actually being worked on, or
+when Harkirat raises it, and it's fine to mention an entry if it genuinely bears on what's in front of
+you. Just don't treat the file as a queue to work through.
 
 **How to use it.** Add an entry when an idea is rejected **for timing rather than on merit** —
 that distinction is the whole filter. An idea rejected on merit belongs in the deferred list's
@@ -22,6 +22,31 @@ that distinction is the whole filter. An idea rejected on merit belongs in the d
 belongs here, with the condition that would make it right written down, because otherwise the
 next session either rebuilds it prematurely or never finds it again. When an entry's condition is
 met, move it into `docs/db-deferred-list.md` as real queued work and delete it from here.
+
+---
+
+## An interactive documentation system
+
+**Status:** explored 2026-08-05 23:30 EDT · **Condition to revisit:** whenever documentation is
+actually wanted — or sooner, if the *search* half alone starts being missed.
+
+**What it is.** A player-facing help system for the bot's commands, plus an admin operations manual
+for `/manage`, `/autobuild` and the backend. From a mini brainstorming side-session; **nothing is
+decided or planned**, and Harkirat is explicitly still open to other shapes entirely.
+
+**Where the thinking lives.** `docs/ideas/docs-system.md` — the full
+guide: the rubric any docs tool has to survive here, why a framework is the wrong answer, the two
+products and their different failure modes, the `SlashCommandBuilder` generation design, distribution,
+tooling by tier, a phased plan, and an honest case for doing nothing.
+
+**The two ideas worth not losing**, if the rest is never read: the command reference should be
+**generated** from the `SlashCommandBuilder` definitions, since Discord renders its own command picker
+from the same object and a generated reference therefore cannot drift; and the same generated spec can
+feed an **in-Discord surface** as well as the website, so one source serves both.
+
+**Why it is parked rather than queued.** Nothing is broken and nobody is blocked — the cost of
+inaction is slow, not sharp. The one piece that would stand alone regardless is static search over the
+~16,400 lines of prose that already exist and cannot currently be searched at all.
 
 ---
 
