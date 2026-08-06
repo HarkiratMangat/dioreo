@@ -62,6 +62,63 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- ⏸️ **`v2.57.0` IS READY, CI IS GREEN, AND IT IS DELIBERATELY NOT MERGED — awaiting Harkirat's word.**
+  *Status 2026-08-06 19:32 EDT.* Harkirat deferred the merge at 19:22 EDT *because* Actions was down
+  (*"no need to merge yet since github actions is still down"*). **Actions has since recovered and
+  `syntax-check` passed on the head commit**, so the blocking reason is gone — but the instruction was
+  explicit, so the merge waits for him rather than being taken on my own judgement. **Approval does not
+  carry over, and a changed premise is a reason to ASK, not to proceed.**
+
+  **Current facts, all verified not assumed:**
+  - PR **#89** — `state=OPEN mergeable=MERGEABLE mergeStateStatus=CLEAN`, `syntax-check=SUCCESS`.
+  - Branch `docs/deprioritize-self-deletion`, 17 commits ahead of `main` (still v2.56.2 / `30348c4`).
+  - CI's exact seven steps also pass locally.
+  - Records complete and aligned: CHANGELOG · CHANGELOG-SUMMARY · DEVLOG all at `v2.57.0`;
+    `package.json` + `package-lock.json` both `2.57.0`.
+
+  **✅ Root cause of the earlier failures is settled and needs no further investigation:** a GitHub
+  Actions **major outage** — two runs died at exactly ~15m04s with **zero log bytes** (no runner was
+  ever assigned), and **`main`'s own run failed identically** on a branch this work never touched.
+  Nothing in this repo was ever at fault.
+
+  **📋 TO FINISH (once Harkirat says go):**
+  1. Confirm a **completed/success** run still matches the PR head (`gh run list --branch
+     docs/deprioritize-self-deletion --limit 3`).
+  2. `gh pr merge 89 --squash --delete-branch`
+  3. **Separate command — never chained with `&&`** (a pipeline can report success while `gh pr merge`
+     failed; that once produced a wrong pushed tag): verify `git log -1` shows this release, then
+     `git tag -a v2.57.0 <squash-sha> -m "v2.57.0"` and `git push origin v2.57.0`.
+  4. `git fetch origin main:main v3-pre-release:v3-pre-release`
+  5. **Deploy is separate and optional** — the VM is on v2.46.0 and far behind. Ask first.
+  ⚠️ **Standing lesson from this episode:** when CI fails in a way that makes no sense (a cancel with no
+  failed step, no log output), **check githubstatus.com before debugging the repo.** It cost real time.
+
+  <details><summary>original item, as filed</summary>
+
+  `[P1 · S]` **CI was CANCELLED at 15m04s on PR #89 and the cause is unknown — a run that normally
+  takes ~1m30s.** *Filed 2026-08-06 13:25 EDT, blocking the v2.56.3 merge.*
+
+  **Status: `cancelled`, with ZERO failed steps** — so it is not an assertion failure. A rerun then
+  sat *queued* for 10+ minutes without starting.
+
+  **Ruled out already, do not re-derive:**
+  - `npm test` passes locally in well under 4 minutes (21/21 hooks, 58 audit checks proven failable).
+  - It also passes with **ripgrep removed from `PATH`**, which is the known CI-vs-local difference —
+    the ubuntu runner has no `rg`. So it is not the rg guard added in that branch.
+  - An earlier run on the same branch (`31121110586`, `7a2cdf0`) **succeeded**. Only the records
+    commit `c3b7546` (CHANGELOG/DEVLOG/SUMMARY/version bump) has failed.
+
+  **Hypothesis, NOT a finding:** runner starvation or a queue timeout, i.e. GitHub infrastructure
+  rather than the change. It is recorded as a guess on purpose — a plausible explanation written down
+  as fact is worse than an open question, and this list already carries that lesson twice.
+
+  **Next test if it recurs:** whether the *size* of the DEVLOG/CHANGELOG additions in `c3b7546` slows
+  a check — push that records commit alone onto a scratch branch and time it.
+  </details>
+  ⚠️ **Do not merge on a cancelled CI because branch protection allows it.** There is no required
+  status check yet (`syntax-check` is identified but not applied), so a red PR still merges. That is
+  a known gap, not permission.
+
 - `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever
   tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md`
   back when it was still called **known-issues** — it was split so the file could honestly take the new
@@ -174,43 +231,6 @@ scratchpad for 2 days.*
   **Verify** on a phone in **dark** mode until the item above is fixed, or the artefact will mask
   whatever the droplets are doing.
 
-- `[P1 · S]` **17 real users' Discord IDs and preferences are sitting in the local dev database, and
-  no document discloses it.** *Filed 2026-08-04 11:06 EDT. Harkirat chose the synthetic-data route in
-  that session; this entry is the unfinished half.*
-
-  `docs/reference/deployment-and-ops.md:298` instructs seeding the dev database with
-  `mongodump` from prod → `mongorestore --nsFrom='test.*' --nsTo='diors-builds-dev.*'`, so production
-  personal data is copied onto a development machine. Confirmed present, not assumed —
-  `mongosh mongodb://localhost:27017/diors-builds-dev --eval 'db.userpreferences.countDocuments({discordId:{$regex:"^[0-9]{17,20}$"}})'`
-  returned **17**, all real snowflake ids.
-
-  Scope is narrower than it first looks, and that was checked: `alertlogs` hold no personal data
-  (`alertId, level, title, detail, pinged, host, rssMb, uptimeSec` — no user ids), and `loadouts`,
-  `seasonaldatas`, `botinstances`, `alertcounters` are the project's own content. **`userpreferences`
-  is the only collection at issue.**
-
-  **Decision taken:** stop using real data in dev rather than disclose the copy — it removes the
-  processing instead of documenting it, and is the standard answer to production personal data in a
-  development environment. Three parts, and **only the first is still open:**
-  1. ⏳ **Purge what is already there — STILL OPEN, and it is the part that actually matters.**
-     Writing the seeder did not delete anything: the 17 real records are still in
-     `diors-builds-dev` as of 2026-08-04 12:31 EDT, confirmed by the script's own dry run. The
-     deletion is destructive and irreversible, so it waits for Harkirat's explicit go-ahead:
-     `node --env-file=.env.dev scripts/seedDevData.js --yes`.
-  2. ✅ **`scripts/seedDevData.js` — DONE 2026-08-04 12:30 EDT.** Clears `userpreferences` and
-     inserts six synthetic records with deliberately non-snowflake ids (`dev-000001`…), safe to
-     re-run. Its guard is the real content: it requires a loopback host **and** a dev-named
-     database, because either alone is defeatable by one wrong environment variable, and it
-     refuses to delete without `--yes`. Both refusals were exercised, not assumed — against a
-     prod-shaped `mongodb+srv://` URI and against a local database named `diors-builds`.
-  3. ✅ **`deployment-and-ops.md` — DONE 2026-08-04 12:32 EDT.** The row that instructed
-     `mongodump` from prod is gone; it now points at the seeder and carries the verification
-     query plus the note that `userpreferences` is the only affected collection.
-
-  **Verify:** re-run the `countDocuments` regex above and require **0**; then boot the dev bot
-  (`node --watch --env-file=.env.dev index.js`) and confirm it still starts and serves a command
-  against the synthetic rows. ⚠️ If the answer is ever "disclose it instead", that is a PRIVACY §5 /
-  §7 / §8 change plus an Appendix A row — not a one-line note.
 
 - `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
   denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
@@ -297,7 +317,34 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]`
+- **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle
+  detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at
+  all" reminder, which is now answered.)*
+
+  **Answered half:** it fired, unprompted, on a real completion claim. The wiring works.
+
+  **Open half, and the reason this stays P1:** it reported **all five angles as un-taken** on a
+  session that had demonstrably run every one — measured afterwards, the detectors match at
+  transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Re-running the hook by hand against that
+  same file suppressed all five correctly, so the matching logic is fine and **the fault is in what
+  the harness handed it**. Root cause UNKNOWN; do not guess at it, reproduce it.
+  **Reproduce like this:** make a completion claim on a branch with changes, capture what the hook
+  reports, then run `bash .claude/hooks/completeness-sweep.sh main <transcript> stop` by hand against
+  the path it names and compare. The hook now prints the transcript path and line count when it sees
+  zero Bash entries, which is the diagnostic that was missing the first time.
+
+  ⚠️ **Mitigated, not fixed.** A transcript with zero Bash tool_use entries now reports "ANGLE
+  DETECTION COULD NOT RUN" instead of listing every angle — because *"I cannot see the session"* and
+  *"no angle was taken"* are different answers, and reporting all five is the fires-on-everything
+  behaviour that gets a gate dismissed unread. That makes the failure visible; it does not explain it.
+
+  **Two real bugs found while investigating, both fixed:** `claim-detect.sh` was resolved from
+  `${BASH_SOURCE[0]}` *after* the script `cd`s to `$REPO`, re-anchoring a relative invocation path to
+  the wrong tree (breaks under a worktree); and the Bash-scoping is weaker than documented — JSONL
+  puts a whole assistant message on ONE line, so prose sharing a message with any Bash call still
+  leaks through.
+
+- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
   *(filed 2026-08-06 09:35 EDT, in the same pass that built it.)* Trigger: **the next session that
   makes a completion claim on a branch with commits** — it should be interrupted with a
   `COMPLETENESS SWEEP` block. If a session ends claiming done and nothing fires, the wiring is wrong.
@@ -853,7 +900,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
     It clones the real landing page and layers the effects on. Sources now live in
     **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full
-    map, build command and per-item diagnosis in **`local/morph-poc-handoff.md`**.
+    map, build command and per-item diagnosis in **`local/handoff/2026-08-03-morph-poc-handoff.md`**.
     ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location
     a later session can find.** The next session had to hunt through
     `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is
@@ -1131,20 +1178,16 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
   means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
   gets its own Active/All toggle like `/calendar`'s or something simpler.
-- `[P2 · M]` **Alert system: make Discord alert messages actually understandable, add a
-  "reconnected successfully" signal.** *Filed 2026-07-31 16:41 EDT — Harkirat hit a real "🔴 Gateway
-  shard error" alert live and had "absolutely no clue what it meant," and separately has no
-  indicator at all when the bot recovers/reconnects successfully after a disruption.* Two related
-  gaps: (1) the shard-error alert's raw stack trace (`Unexpected server response: 503`,
-  `node_modules/ws/lib/websocket.js:930`) means nothing to a non-technical reader — needs a
-  plain-language explanation layer (what a Gateway shard error actually is, whether it self-resolves,
-  what action if any is needed); (2) there's currently no positive "back online"/"reconnected" alert
-  to close the loop after a disruption alert fires, so a one-off blip reads as an open question
-  forever. See `utils/alertStore.js` + the alert-tier design referenced in
-  `reference_vm_bot_commands` memory for the existing mechanism this extends. Harkirat also
-  mentioned "some discuss[ion] around it as well" — worth asking him directly what that refers to
-  before scoping the actual build.
-- `[P1 · M · Sonnet5-M]` **User-data deletion path — the privacy policy now publicly promises it.**
+- `[P3 · M · Sonnet5-M · ⛓️deferred to v4 by Harkirat]` **User-data deletion path (self-service).**
+  ⬇️ **DOWNGRADED P1 → P3 and pushed to v4 on 2026-08-06 12:20 EDT, Harkirat's explicit call:**
+  *"The privacy self deletion isn't a priority. They can email me if needed. That self deletion thing
+  is honestly a v4 feature."* **Do not re-propose it as near-term work.**
+  ⚠️ **This does NOT make the privacy policy inaccurate — checked, not assumed.** `PRIVACY.md` §7.1
+  already discloses that there is no self-service delete, states the email route as the live
+  mechanism, and calls a `/settings` option *"planned"* with **no timeline attached**. Deferring it
+  keeps every sentence in that section true. If that wording ever gains a date, this becomes
+  time-sensitive again.
+  Original framing, kept:
   *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
   automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
   reset — it only overwrites individual values. Only `AlertLog` prunes (30 days, `utils/alertStore.js`).
@@ -1170,6 +1213,59 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap,
   and the fix has to address the cap (batching or a second pass), not just the prompt wording.
   Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
+
+  ✅ **UNBLOCKED 2026-08-06 18:48 EDT — Harkirat supplied the reference screenshots.** They live in
+  `local/Screenshots/` (gitignored), so the **knowledge is written up in `.claude/rules/autobuild.md`'s
+  "MP vs DMZ" section**, which is the authoritative reference for this work. Read it before touching the
+  prompt. *(Earlier in the same session I marked this unblocked by inferring the roster from backfilled
+  DB rows; he overruled that and was right — a derived artefact cannot establish ground truth. This
+  unblock is the real thing: actual in-game UI.)*
+
+  🔴 **Three assumptions the obvious implementation would make, all of them WRONG:**
+  1. **MP is NOT 5 slots.** MP shows up to the same nine slot positions as DMZ; what it has is a 5-attachment
+     **equip cap** (`ATTACHMENTS ● ● ● ● ●`). *That is what "DMZ partials are the 5-attachment prompt
+     cap" actually means — the cap is right for MP and truncates DMZ.*
+  2. **Slot COUNT cannot identify the mode.** `IMG_5643` is a DMZ SVD with **five** slots (low weapon
+     ). Counting slots misclassifies it as MP. **Why the count varies differs by mode:** in **MP** the
+     roster is intrinsic to the weapon and rarity does not affect it; in **DMZ** rarity DOES change the
+     total (max 9) on top of the weapon's own restrictions/uniques/renames — so never hardcode a
+     per-weapon DMZ slot count, and never read a short DMZ build as a failed extraction.
+  3. **Slot POSITION cannot identify the slot.** AS VAL has no Muzzle at all; SVD renders gaps where
+     Barrel/Perk/Laser would be. Read the LABEL, always.
+
+  **Classify by UI chrome instead** (full table in the rule): `PEN.`/`PEN. MULTI` in a full-width bottom
+  stat bar → DMZ · `SELECT BLUEPRINTS` / blueprint code in the title → MP · `EQUIP`/`CUSTOMIZE` tabs →
+  DMZ. Require **two agreeing signals**; on conflict return unknown rather than guessing, since a build
+  filed under the wrong mode is worse than one that asks. ⚠️ **Don't lean on the `ATTACHMENTS ●●●●●` dot
+  row** (Harkirat: *"i wouldnt fixate on those dot elements"*) — small repeated glyphs are what a vision
+  model miscounts, and a miscount silently flips the mode.
+
+  🔑 **A weapon can RENAME canonical slots, ADD unique ones, OMIT others, and MOVE them in the grid.**
+  Aliases (Harkirat, 2026-08-06 19:10 EDT — "usually the alternatives will fall under these relabels…
+  not always, but VERY likely"): Muzzle←`Bowstring` · Barrel←`Limb` · Underbarrel←`Foregrip`/`Trigger
+  Action` · Ammunition←`Mag`/`Bolt`. **Unique extras with no canonical equivalent:** `Guard` (Shorty),
+  `Smoothbore` (R9-0) — both sit *alongside* that weapon's own Underbarrel, so they are additions, not
+  renames. 🔴 **And position moves even for canonically-named slots:** the Shorty pushes `Ammunition`
+  to the final chip (where Rear Grip lives) and the R9-0 puts it in the **top row** in Stock's place.
+  So a fixed nine-name allow-list fails three ways — drops renames, rejects uniques, expects absent
+  slots — and grid-position mapping fails outright. Take the label verbatim, map to canonical
+  separately, and treat an unknown label as a new alias to ASK about, never a parse failure.
+  ⛔ *Ignore the top-right `MAX`/`GOLD` badge — it is an internal weapon LEVELING display, not rarity
+  and not a mode signal (Harkirat, 2026-08-06 19:16 EDT).*
+
+  **The build, now fully specified:**
+  1. Pass `{ maxAttachments: 9 }` for DMZ — `utils/visionExtract.js` already accepts it;
+     `utils/autobuildPipeline.js:148` just never passes it.
+  2. Un-hardcode `mode: 'MP'` through `autobuildPipeline.js` (~lines 17, 131, 157, 186, 241, 263 —
+     sibling lookup, duplicate check, saved doc).
+  3. Widen the review card beyond its fixed 5 slots (`visionExtract.js:255` pads/truncates to exactly
+     `maxAttachments`).
+  4. Add mode detection to the prompt per the table above, and **keep the existing empty/restricted
+     skip wording** — it is what stops a 9-cap from inventing phantom attachments on a 5-slot weapon.
+  5. Handle weapon-specific slot names (`Trigger Action` for revolvers; Crossbow's
+     `Bowstring`/`Limb`/`Bolt`). No fixed nine-name allow-list.
+  ⚠️ **Ask Harkirat for the DMZ equip cap if it matters** — the screenshots show up to 9 equipped and no
+  visible dot-budget, but "9 is the max" is inferred from the widest example, not confirmed.
 - `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20
   runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run:
   `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
@@ -1190,14 +1286,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   it fails CI rather than silently degrading the audit — but read that assertion before trusting it.
   **It self-verifies:** merging to `main` triggers `sync-v3-pre-release.yml`, so both workflows get
   exercised by the PR that changes them. Watch that run rather than assuming it passed.
-- `[P3 · S · Sonnet5-M]` **Re-evaluate Sentry (free tier) — do NOT adopt on the old reasoning.** Carried
-  over from the `vmstatus.sh` overhaul (shipped v2.41.0, 2026-07-28 15:52 EDT), which deliberately did
-  not build it. The 2026-07-26 addendum pitched Sentry for stack traces / breadcrumbs / repeat-error
-  grouping on top of the Discord webhook. **That gap is materially smaller now:** structured Cloud
-  Logging carries real severity plus the running version and commit on every entry, and `vmstatus.sh`
-  surfaces error/alert/noise tiers. So the question is no longer "webhook vs Sentry" but "what does
-  Sentry add over structured Cloud Logging" — answer that before adopting. 🔗 Bundle-with: the deferred
-  admin `/status` command (`getAlertSummary()` can feed it either way).
 - `[P3 · XS · any model]` **GitHub achievement badges — Pull Shark + Pair Extraordinaire.** Added
   2026-07-28 15:52 EDT (Harkirat's ask). **Pull Shark is not showing despite 42 merged PRs because all
   three of his repos are PRIVATE** (`diors-builds`, `dior-cli`, `gif-background-remover`) — verified via
@@ -1502,6 +1590,17 @@ well-specified execution/polish, not novel design.*
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
   across call sites, not open design work.
+  📌 **RE-RAISED by Harkirat 2026-08-06 18:10 EDT and slotted as the SECOND of four agreed sessions**
+  (after the `timestamp-check.sh` fix, before the `index.js` split — which it bundles with, since both
+  touch every component branch). His words: the left/right buttons *"currently send a back n forth
+  request or something instead of 1 combined request."* That is exactly the double round-trip traced
+  below, so **nothing here needs re-deriving and the hybrid design is not up for re-litigation.**
+  ⚠️ **I filed a DUPLICATE of this on 2026-08-06 18:14 EDT** in 🐞 Active Bugs, tagged 🧩needs-design,
+  after searching for "twice / two calls / double-call" and never for **"round-trip"** — the one phrase
+  this entry actually uses. Removed 2026-08-06 18:24 EDT. Two lessons, both live: a duplicate filing is
+  worse than no filing, because mine would have sent a session to re-open a design Harkirat settled on
+  2026-07-14; and **searching a tracker means searching the words the tracker uses**, not the words the
+  reporter used. Check 🧹 Someday and `docs/ROADMAP.md` before filing anything as a new bug.
 
   **The full investigation and the agreed shape, moved here 2026-08-06 08:13 EDT** from
   `docs/reference/platform-constraints.md` when it was split and renamed from **known-issues**.
@@ -1700,14 +1799,56 @@ doesn't re-open them as if they were new.*
   85 offers assessed against the real stack — the adopted three are in the 🔔 claim reminder above,
   and the source table Harkirat extracted is `local/pack_summary.md`)*. Each was considered and
   declined for the stated reason; don't re-raise without new information.
-  - **Sentry, and any third-party error-reporting or analytics SDK** — this is a legal-document
-    decision, not a technical one. `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
+  - **Sentry, and any third-party error-reporting or analytics SDK** — ✅ **re-evaluated 2026-08-06
+    15:49 EDT. Verdict: not now, ON THE TECHNICAL MERITS — and there is a cheaper thing to try FIRST
+    that nobody has enabled.** This also closes the separate `[P3 · S]` "re-evaluate Sentry" item that
+    had been sitting in 🗂️ Queued *contradicting this entry* — the tracker held both the question and
+    its answer.
+    ⚠️ **CORRECTED 2026-08-06 15:49 EDT.** The first version of this verdict rested on the published
+    Privacy Policy ("it names Sentry and says None present, therefore no"). Harkirat rejected that
+    reasoning outright: *"the privacy policy shouldn't be the decision maker when it comes to
+    implementing things or trying things. It's only advisory but I'm open to changing the policy."*
+    He is right, and the argument was circular — the policy says "None present" **because** we chose
+    not to adopt one, so quoting it back is our own past decision wearing an external constraint's
+    clothes. The amendment is a **cost line**, not a wall. See
+    [[feedback_policy_is_advisory_not_a_veto]].
+    **The actual technical case, measured:**
+    · **Diversity, not volume, is what kills it.** Cloud Logging holds **19 ERROR entries over 30 days,
+      and 15 of them are the same `Shard 0 error: Unexpected server response: 503`.** ⚠️ *(An earlier
+      draft of this entry said "2 errors" from the AlertLog store — that number is real but measures
+      something else: `sendAlert` throttles to 1/min per `level:title`, so AlertLog counts what was
+      ANNOUNCED, not what happened. The tiers disagreeing is the finding, not an error in either.)*
+      Sentry's core value is fingerprinting many occurrences of **many distinct** exceptions and
+      tracking regressions across releases. There is essentially **one** recurring error here, and it is
+      a transient network condition rather than a bug. Grouping would show a single row — which is
+      exactly what the free option below already gives.
+    · **The practical want was already delivered.** The reason to want grouping was "I can't tell what
+      an alert means or whether to act". v2.57.0's plain-language layer + paired recovery signal answer
+      that directly, without a vendor.
+    · 🔎 **The real alternative was never named, and it is free and already in the stack: Google Cloud
+      Error Reporting.** It does automatic grouping/dedup and new-error notification, consumes the
+      stack traces `utils/logger.js` ALREADY emits to Cloud Logging, needs **no SDK inside the bot
+      process** (so no RAM on a 969MB e2-micro), no new vendor, and no data leaving the existing
+      processor — which means **no policy amendment either**.
+    ✅ **DONE — Error Reporting was enabled and wired 2026-08-06 15:52 EDT (v2.57.0)**, at Harkirat's
+    instruction, after this evaluation surfaced it. `utils/logger.js` now attaches `serviceContext` to
+    ERROR entries; verified end to end by reporting a test event, seeing it grouped, then deleting it.
+    ⚠️ It stays empty until the VM is deployed past v2.46.0. Setup + traps:
+    `docs/reference/deployment-and-ops.md`.
+    **Recommendation:** live with Error Reporting for a while first. If a real gap survives — breadcrumbs,
+    release-health, crash-free-session rate, none of which Error Reporting does — then Sentry becomes a
+    genuine question again, and the policy amendment is priced in rather than treated as a blocker.
+    **Not a permanent no.**
+    *(The policy consequence, kept as a COST, not a reason:)* `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
     PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises
     *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it.
     Adopting one costs a policy amendment + a new US sub-processor disclosure + a policy version bump
-    + a `public/` rebuild and redeploy. The homegrown three-tier model (errors/alerts/noise) already
-    works and must never be collapsed into or replaced by a vendor. ⚠️ **This applies to ANY
-    third-party SDK, not only Sentry** — check the appendix before adding one.
+    + a `public/` rebuild and redeploy — real work, and the reason to be sure the gain is real first.
+    Whatever gets adopted, the three-tier model (errors/alerts/noise) must keep its three tiers: the
+    standing rule is that they are never collapsed into one number, by a vendor or by anything else —
+    that is about not losing a distinction, not about refusing tools. ⚠️ **The policy check applies to
+    ANY third-party SDK, not only Sentry** — read the appendix before adding one, so the amendment is
+    priced in rather than discovered afterwards.
   - **SimpleAnalytics** — same published-claim problem, and Cloudflare Web Analytics is free,
     cookieless, and already in the stack.
   - **Codecov** — `npm test` is `node --check` + docs-audit + hook tests + one dedup test. Coverage

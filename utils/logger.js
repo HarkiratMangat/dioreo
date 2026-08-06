@@ -83,6 +83,24 @@ if (FILE_SINK_ENABLED) {
 // itself uses, so formatting through it keeps the JSON sink's text byte-identical to the journal's.
 const { format } = require('util');
 
+// Google Cloud Error Reporting (enabled 2026-08-06 15:52 EDT) reads Cloud Logging directly — there is
+// no SDK in this process and no extra network call. It treats a log entry as an error event when the
+// entry is severity ERROR **and** carries a `serviceContext`, and it GROUPS those events by parsing the
+// stack trace out of `message`. Without `serviceContext` the entries are ordinary logs and Error
+// Reporting ignores them entirely, so this object is the whole integration.
+//
+// `service` is the grouping key across restarts and deploys; `version` is what turns the dashboard's
+// "resolved / regressed" and per-release breakdown into something real — it is the package version,
+// which matches the git tag, so an error can be pinned to a release without correlating timestamps.
+//
+// ⚠️ ERROR ONLY, deliberately. Error Reporting acts on severity >= ERROR, so attaching this to INFO and
+// WARNING entries would add bytes to every line of the sink and change nothing. WARNING stays a log.
+// ⚠️ Grouping quality depends on `message` containing a real stack trace. `console.error(err)` gives
+// one (util.format renders an Error as its stack); `console.error('some string')` does not, and those
+// arrive as an un-grouped single-frame event. That is acceptable and expected — it is not a reason to
+// start stringifying errors differently at the ~60 call sites.
+const SERVICE_CONTEXT = { service: 'dioreo-bot', version: VERSION };
+
 function writeStructured(severity, text) {
     if (!fileStream) return;
     try {
@@ -96,6 +114,7 @@ function writeStructured(severity, text) {
             message: text,
             version: VERSION,
             commit: COMMIT,
+            ...(severity === 'ERROR' ? { serviceContext: SERVICE_CONTEXT } : {}),
         }) + '\n');
     } catch { /* best-effort: never let a log write surface */ }
 }

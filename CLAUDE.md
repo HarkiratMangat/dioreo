@@ -176,11 +176,11 @@ equally wrong.
 deletions blocked, linear history required, **0 required approvals** (a solo maintainer cannot approve
 their own PR, and requiring one would deadlock every merge). `enforce_admins` is deliberately OFF so
 Harkirat can still override in a genuine emergency — the retraction of `ebbf196` needed exactly that.
-⚠️ **No required status check yet, so a PR with RED CI still merges** (one did, 2026-08-02 16:05 EDT).
-The old blocker (not knowing the exact context name) is resolved — it is **`syntax-check`**, verified
-2026-08-02 17:16 EDT; ⛔ never also require **`sync`**, which runs only on push to `main` and would
-deadlock every PR. Applying it is OPEN (classifier-blocked): `gh api -X PUT .../branches/main/protection`
-with `required_status_checks:{strict:false,contexts:["syntax-check"]}`, all other fields preserved. `unreleased-on-main` (WARN)
+✅ **`syntax-check` IS a required check** (protection API, verified 2026-08-06 19:06 EDT) — the old "no
+required check, red PRs still merge" warning is **stale, gap closed**. ⛔ Never require **`sync`** (runs
+only on push to `main`; deadlocks every PR). ⚠️ **A PR is now unmergeable until CI runs**: in the
+2026-08-06 outage, dispatch stopped, head had **0 checks**, PR sat `BLOCKED` with nothing wrong in the
+repo (close/reopen did not re-trigger). **BLOCKED + 0 checks → check githubstatus.com first.** `unreleased-on-main` (WARN)
 reports the former for traceability, and `.claude/hooks/main-push-guard.sh` prevents the latter. The bot runs
 on a **GCP Compute Engine VM** (`diors-builds-bot`, e2-micro, `us-east1-b`) under **systemd** (unit
 `diors-bot`, auto-restart on crash + reboot). Lifecycle: branch off `main` (free) → commit checkpoints on

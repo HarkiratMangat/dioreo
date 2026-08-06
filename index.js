@@ -20,6 +20,7 @@ patchConsole();
 logBootBanner();
 
 const { sendAlert } = require('./utils/alertWebhook'); // Discord webhook alerting; reads LOG_WEBHOOK_URL lazily, no-op if unset
+const { createGatewayRecovery } = require('./utils/gatewayRecovery'); // pairs "Back online" to the problem alert that announced an outage
 
 // SAFETY NET: Node crashes the whole process on an unhandled promise rejection by default
 // (since Node 15). The interactionCreate handler's own try/catch already covers most Discord
@@ -164,7 +165,32 @@ client.on('error', (error) => {
 // Each shard-lifecycle event also fires a Discord alert (utils/alertWebhook.js) so gateway trouble is
 // visible in real time, not just in journald. shardReady stays console-only (the initial connect is
 // announced by the "Bot online" alert below); the rest map to warn/error/info by severity.
-client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
+// ⚠️ RECOVERY IS PAIRED TO THE ANNOUNCEMENT (2026-08-06 14:54 EDT). Harkirat: he learns the bot broke
+// and never that it healed — "there is no signal at all when the bot recovers".
+//
+// The naive fix (make 'Gateway resumed' loud) is WRONG and would undo a correct decision: that pair
+// fires every 1-3h as routine churn, and posting it would restore exactly the noise the 2026-07-20
+// `silent` call removed. Noise is not a lesser problem than silence — it is how someone learns to stop
+// reading the channel, and then the loud alerts stop working too.
+//
+// So the rule is symmetry: **a problem that was ANNOUNCED gets a recovery that is ANNOUNCED; a problem
+// that was silent stays silent.** A routine blip is still invisible; the disconnect that pinged his
+// phone at 03:00 now gets an explicit "Back online", with how long it was actually down.
+//
+// ⚠️ BOTH recovery paths must be handled, and the worse one is the easy one to miss. `shardResume`
+// fires when the session is replayed — the GOOD case. When a disconnect is bad enough that the session
+// can't be resumed, discord.js re-identifies from scratch and only `shardReady` fires. Wiring the
+// recovery to `shardResume` alone would therefore leave precisely the WORST outages — the ones most
+// worth closing out — with no recovery signal, which is the bug this is fixing, reintroduced one level
+// down.
+// The state machine itself lives in utils/gatewayRecovery.js so it can be unit-tested — inline here it
+// was reachable only by a real Discord outage. See that file for the full reasoning.
+const { noteTrouble: noteGatewayTrouble, noteRecovered: noteGatewayRecovered } = createGatewayRecovery({ sendAlert });
+
+// shardReady is no longer console-only: it is the re-identify recovery path described above. On the
+// FIRST connect gatewayTroubleAt is null, so noteGatewayRecovered() no-ops and the initial connect is
+// still announced solely by "Bot online" below — no duplicate.
+client.on('shardReady', (id) => { console.log(`🔌 Shard ${id} ready`); noteGatewayRecovered(`shard ${id} reconnected with a fresh session`); });
 // The reconnect→resume PAIR is `silent` (2026-07-20, Harkirat's call): still logged to the alert store
 // (so /alerts + a future /status can print the reconnect history on demand), but NOT posted to the Discord
 // channel. These fire every 1-3h as routine, self-recovering gateway churn (Discord cycling sessions /
@@ -172,15 +198,22 @@ client.on('shardReady', (id) => console.log(`🔌 Shard ${id} ready`));
 // act on, so they're pure channel noise. The GENUINELY-bad case is still loud: a reconnect that FAILS to
 // resume surfaces via 'Gateway disconnected' (shardDisconnect, orange, pings) below — a separate handler,
 // so suppressing the routine pair from Discord doesn't hide a real outage.
-client.on('shardResume', (id, replayed) => { console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`); sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info', { silent: true }); });
+// The silent 'Gateway resumed' is kept for the routine case (it is what /alerts reads back), and is
+// SKIPPED when a loud "Back online" already covered the same recovery — two log rows for one event
+// would make the reconnect history read as twice as much churn as actually happened.
+client.on('shardResume', (id, replayed) => {
+    console.log(`🔌 Shard ${id} resumed (${replayed} events replayed)`);
+    if (noteGatewayRecovered(`shard ${id} resumed and replayed ${replayed} events`)) return;
+    sendAlert('Gateway resumed', `Shard ${id} reconnected and replayed ${replayed} events.`, 'info', { silent: true });
+});
 // 'caution' (yellow), not 'warn' (orange): reconnecting is transient and self-recovering, so it's a
 // lower severity than a full 'Gateway disconnected'. Now silent (logged, not posted) — see the pair note
 // above. "Reconnecting to Discord", NOT "restarting" (2026-07-20): the gateway WEBSOCKET dropped and is
 // re-establishing on its own — the bot PROCESS never died, systemd never fired. Calling it "restarting"
 // would falsely imply a crash.
 client.on('shardReconnecting', (id) => { console.log(`🔌 Shard ${id} reconnecting...`); sendAlert('Reconnecting to Discord', `Shard ${id}'s gateway websocket dropped and is reconnecting. The bot process itself is fine (nothing crashed, systemd didn't fire).`, 'caution', { silent: true }); });
-client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
-client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); sendAlert('Gateway shard error', error, 'error'); });
+client.on('shardDisconnect', (event, id) => { console.log(`🔌 Shard ${id} disconnected (code ${event?.code})`); noteGatewayTrouble(); sendAlert('Gateway disconnected', `Shard ${id} disconnected (close code ${event?.code}).`, 'warn', { ping: true }); });
+client.on('shardError', (error, id) => { console.error(`🔌 Shard ${id} error (bot stays alive):`, error); noteGatewayTrouble(); sendAlert('Gateway shard error', error, 'error'); });
 
 // Initialize command collections and staging cache array
 client.commands = new Collection();

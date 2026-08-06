@@ -16,6 +16,7 @@
 // LOG_WEBHOOK_URL is a SECRET (posts to Harkirat's channel) — .env only, never the repo.
 
 const { formatUptime, recordAlert } = require('./alertStore');
+const { explain, displayTitle } = require('./alertExplain');
 
 // Active-ping target: Harkirat's Discord user id. Notice-worthy alerts (errors, gateway disconnects)
 // include a real <@mention> so he gets a phone/desktop notification; routine info alerts do NOT ping.
@@ -79,18 +80,47 @@ function sendAlert(title, detail = '', level = 'error', opts = {}) {
         // embed footer (footer text is literal), so a `<t:>` there would show as raw text.
         const unixNow = Math.floor(now / 1000);
         const timeLine = `🕐 <t:${unixNow}:F> · <t:${unixNow}:R>`;
-        const description = rawDesc ? `${rawDesc}\n\n${timeLine}` : timeLine;
+
+        // PLAIN LANGUAGE FIRST, STACK TRACE SECOND (2026-08-06 14:54 EDT). The description used to open
+        // with describe()'s output — for an Error, a bare `**Error:** Unexpected server response: 503`
+        // and three `node_modules/ws/...` frames. That is the correct evidence and the wrong LEDE: the
+        // reader's first question is "is the bot down and do I need to do something", and the frames
+        // answer neither. See utils/alertExplain.js for the full reasoning.
+        //
+        // The technical detail is DEMOTED, never dropped — it moves into its own clearly-labelled field
+        // below. When explain() returns null (a title with nothing useful to add, like "Bot online")
+        // the layout falls back to exactly the old one, so an unfamiliar alert can never come out worse
+        // than it did before.
+        const ex = explain(title, rawDesc);
+        const shown = displayTitle(title);
+        const description = ex
+            ? `${ex.what}\n\n${timeLine}`
+            : (rawDesc ? `${rawDesc}\n\n${timeLine}` : timeLine);
+
+        // Discord caps a field value at 1024 chars — shorter than the 1800 the description allows, so
+        // the detail is re-truncated here rather than assuming the earlier slice was enough. Fenced so
+        // a multi-line stack stays readable, and only when there is something to show.
+        const fields = ex
+            ? [
+                { name: 'Does it fix itself?', value: ex.selfFix.slice(0, 1024) },
+                { name: 'What to do', value: ex.action.slice(0, 1024) },
+                ...(rawDesc ? [{ name: 'Technical detail', value: rawDesc.slice(0, 1024) }] : []),
+            ]
+            : undefined;
 
         const body = {
             // Ping puts the mention in `content` AND allow-lists it; non-ping suppresses ALL mentions so an
             // info alert can never accidentally notify (even if a detail string contains a stray <@...>).
             // Include the icon + title in the content itself so the phone/desktop NOTIFICATION PREVIEW says
             // what the ping is about (the embed doesn't show in the notification), not a vague bare @mention.
-            content: shouldPing ? `<@${PING_USER_ID}> ${LEVEL_ICON[level] || LEVEL_ICON.error} **${title}**` : undefined,
+            // `shown`, not `title` — the human label (utils/alertExplain.js DISPLAY_TITLE). The stored
+            // title stays canonical below; only what a person reads is rewritten.
+            content: shouldPing ? `<@${PING_USER_ID}> ${LEVEL_ICON[level] || LEVEL_ICON.error} **${shown}**` : undefined,
             allowed_mentions: shouldPing ? { users: [PING_USER_ID] } : { parse: [] },
             embeds: [{
-                title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${title}`.slice(0, 256),
+                title: `${LEVEL_ICON[level] || LEVEL_ICON.error} ${shown}`.slice(0, 256),
                 description: description || undefined,
+                fields,
                 color: LEVEL_COLOR[level] ?? LEVEL_COLOR.error,
                 footer: { text: `Dioreo · ${host} · RSS ${rss}MB · up ${formatUptime(uptimeSec)}` },
                 timestamp: new Date().toISOString(),

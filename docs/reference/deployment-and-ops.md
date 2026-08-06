@@ -177,6 +177,39 @@ connects in seconds on the VM). Full story: [[project_deployment_migration_rende
     ```
     `logger.js` reads `DIORS_COMMIT`/`DIORS_LOG_FILE` at **require time, before `dotenv.config()`** — they
     must be real environment variables; putting either in `.env` silently does nothing.
+  - **🔎 Cloud Error Reporting — ENABLED 2026-08-06 15:52 EDT.** Automatic grouping, deduplication and
+    regression tracking for errors, reading the Cloud Logging entries above. **There is no SDK and no
+    client in the bot process** — nothing to fail, no RAM on the e2-micro, no new vendor, and no data
+    leaving the GCP project that already processes these logs (so no Privacy Policy change).
+    Console: **Observability → Error Reporting**.
+    - **The whole integration is one object.** Error Reporting treats an entry as a groupable error
+      event only when it is severity `ERROR` **and** carries `serviceContext`; it then groups by parsing
+      the stack trace out of `message`. `logger.js` attaches
+      `serviceContext: { service: 'dioreo-bot', version: <package.json version> }` to ERROR entries only
+      (Error Reporting ignores anything below ERROR, so attaching it to INFO/WARNING would be bytes for
+      nothing). `version` is what makes the per-release view and "resolved → regressed" real, and it
+      matches the git tag.
+    - 🔴 **This is a SILENT integration — delete `serviceContext` and nothing breaks, nothing logs, no
+      request fails; the dashboard just goes quiet forever, and a quiet error dashboard looks exactly
+      like a healthy one.** `scripts/logger.test.js` asserts the contract on the emitted bytes for
+      exactly that reason. Do not "tidy" that object away.
+    - **Grouping quality needs a stack in `message`.** `console.error(err)` provides one (util.format
+      renders an Error as its stack); `console.error('a string')` does not and arrives ungrouped. That
+      is expected, and not a reason to change the ~60 call sites.
+    - **Verified end to end 2026-08-06 15:54 EDT**, not assumed: a test event was POSTed to
+      `events:report`, appeared in `groupStats` with the right service and version, and was then deleted
+      via `DELETE /v1beta1/projects/{p}/events` so the dashboard starts clean. The VM
+      (`diors-builds-bot`) was confirmed to live in the same project as the enabled API
+      (`gen-lang-client-0549308254`) — enabling it on the Vertex project while the bot logged elsewhere
+      would have been a completely invisible no-op.
+    - ⚠️ **Nothing has reached it from the bot yet: the VM runs v2.46.0 and `serviceContext` ships in
+      v2.57.0.** Error Reporting stays empty until this is deployed. That is expected, not a fault.
+    - **What it will pick up, measured 2026-08-06 15:55 EDT:** 19 ERROR entries in 30 days, of which
+      **15 are the same `Shard 0 error: Unexpected server response: 503`** — so grouping collapses them
+      into one row with a count. ⚠️ **AlertLog reports only 2 errors over the same span** because
+      `sendAlert` throttles to 1/min per `level:title`. **The tiers disagree, and the disagreement is
+      the finding** — Cloud Logging is the fuller record; AlertLog is what was actually *announced*.
+      Do not reconcile them into one number (see the three-tier rule in `scripts/vmstatus.sh`).
   - **journald retention is pinned** (`MaxRetentionSec=30d`, `SystemMaxUse=200M`) as of 2026-07-28 15:34 EDT. It
     previously had **no** retention config — the 30-day window everything assumed was incidental, not
     enforced. Volume is tiny (~56 lines/day; 35.7MB after 11 days), so this is a guarantee, not a reclaim.
@@ -295,7 +328,7 @@ node --watch --env-file=.env.dev index.js
 | Thing | Dev | Note |
 |---|---|---|
 | Discord application | `Dioreo (Dev)` `1529636846248919263` | separate app + token; user-install only (`[1]`), same as prod |
-| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). **Seed user preferences with `node --env-file=.env.dev scripts/seedDevData.js --yes`** — see the warning below |
+| Database | `mongodb://localhost:27017/diors-builds-dev` | local `mongod` via `brew services` (`mongodb/brew` tap, a **trusted** third-party tap). **Never seeded from prod — see the two cleanup scripts below** (`seedDevData.js` for a fixed fixture set, `anonymizeDevDb.js` to keep live-shaped data without real identifiers) |
 | Alert webhook | its own `LOG_WEBHOOK_URL`, own channel | must NOT be prod's — see the dotenv trap below |
 | Emojis | its own 72 application-emoji copies | same names, different ids — see below |
 | Cloudinary / Vertex AI (`GCP_*`) | **shared with prod** | deliberate. Vertex needs no new credentials: it uses the local `gcloud` ADC already on Harkirat's Mac |
@@ -306,10 +339,29 @@ used to instruct exactly that — `mongodump` from prod into `diors-builds-dev` 
 second location that the Privacy Policy neither disclosed nor had any reason to. It was found
 2026-08-04 11:55 EDT by counting snowflake-shaped ids in the local database.
 
-Use **`scripts/seedDevData.js`** instead. It refuses to run unless the target is both a loopback
-host and a dev-named database — either alone is defeatable by one wrong environment variable — and
-it refuses to delete anything without `--yes`. Run it without the flag first: that is a dry run
-that reports what is there and changes nothing.
+There are **two** cleanup scripts, and they answer different questions. Both refuse to run unless the
+target is a loopback host **and** a dev-named database — either alone is defeatable by one wrong
+environment variable — and both default to a dry run that reports what is there and changes nothing.
+
+| Script | What it does | Use it when |
+|---|---|---|
+| `scripts/seedDevData.js --yes` | **Replaces** every UserPreference with 6 fixed synthetic people. | You want a known, reproducible fixture set. |
+| `scripts/anonymizeDevDb.js --write` | **Keeps every document**, replacing only the real `discordId` and the real Discord asset hashes. | You want the realistic spread of live-shaped data (17 rows, varied preferences) without it belonging to anyone. |
+
+⚠️ **A script existing is not the data being clean.** `seedDevData.js` was written 2026-08-04 12:07 EDT
+in response to this exact finding — and the 17 real IDs were still sitting in the local database
+**two days later**, on 2026-08-06 15:07 EDT, because nothing ever ran it. The shipped artefact was
+the script and the doc, not the cleanup. **Run the verification below rather than assuming.**
+
+⚠️ **`avatarColorSource` and the `*PaletteSource` fields are personal data too**, which the original
+finding missed: they hold real Discord **avatar/banner asset hashes** (`de36d199…`, `a_27ab8a48…`),
+which address a specific person's image on Discord's CDN. `anonymizeDevDb.js` replaces them;
+`seedDevData.js` deletes the rows that hold them. **Any new per-user cache key belongs on that list.**
+
+⚠️ **Synthetic ids must NOT be snowflake-shaped.** Both scripts use a `dev-` prefix on purpose. An
+all-numeric stand-in — even an obviously fake one like `90000000000001` — matches the audit regex
+below and would report a fully-cleaned database as holding 17 real users, permanently. A check that
+cries wolf is a check that gets ignored on the day it is right.
 
 **Verify a clean database** with the same check that found the problem — it must return `0`:
 

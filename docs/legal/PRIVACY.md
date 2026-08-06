@@ -1,7 +1,7 @@
 # Privacy Policy — Dioreo
 
-**Effective date:** 5 August 2026
-**Version:** 1.9
+**Effective date:** 6 August 2026
+**Version:** 1.10
 **Applies to:** the Dioreo Discord application (the "Bot") and this
 documentation website (the "Site")
 
@@ -139,6 +139,15 @@ verified that no log statement in the Bot deliberately writes a user ID, but an
 error object can carry one. These logs are not indexed by user, are never used to
 analyse or profile users, and are readable only by the administrator.
 
+**Google Cloud Error Reporting** (enabled 6 August 2026) reads those same server
+logs and groups repeated errors together so the administrator can see that one
+fault occurred fifty times rather than scrolling fifty near-identical stack
+traces. It is a **view over the logs already described above** — the same data, in
+the same Google Cloud project, in the same region, processed by the same provider.
+It introduces **no new collection**: nothing is sent to it that was not already
+being logged, and no software from it runs inside the Bot. Error Reporting keeps
+its copy for **30 days**, the same period as the logs it reads.
+
 ### 2.5 If you use GitHub
 
 Filing an issue or pull request on our GitHub repository means GitHub processes
@@ -271,6 +280,7 @@ We have never done so, and we have no plans to.
 | **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, plus the operational alert log described in §2.4** | **🇨🇦 Azure Canada Central (Toronto)** |
 | **Google Cloud Platform** (Google LLC) | Hosts the server the Bot runs on | 🇺🇸 `us-east1` (South Carolina) |
 | **Google Cloud Logging** (Google LLC) | Server logs, 30-day retention | 🇺🇸 United States |
+| **Google Cloud Error Reporting** (Google LLC) | Groups repeated errors from those same server logs — no new data, 30-day retention | 🇺🇸 United States |
 | **Google Cloud Vertex AI** (Google LLC) | Admin-only image extraction — **no end-user data** | 🇺🇸 United States |
 | **Cloudinary Ltd.** | Hosts cached **game images** only | 🇺🇸 United States |
 | **Cloudflare, Inc.** | Serves these legal documents as a public web page | Global edge network |
@@ -382,6 +392,7 @@ of these transfers is low.
 | **Your preference record** | **Kept until you ask us to delete it** — see §9 |
 | **Alert logs** | **30 days**, then automatically deleted |
 | **Server logs (Google Cloud Logging)** | **30 days**, then automatically deleted |
+| **Grouped errors (Google Cloud Error Reporting)** | **30 days**, then automatically deleted |
 | **In-memory caches** | Until the next restart or deploy — hours to days |
 | **Cloudinary game images** | Until the underlying content rolls out of the Bot's history |
 
@@ -581,6 +592,7 @@ change record you can't reach isn't a change record.
 
 | Version | Effective | What changed |
 |---|---|---|
+| 1.10 | 6 August 2026 | **Google Cloud Error Reporting** was enabled and is now named in §2.4a, §5's provider table and §7's retention table. It groups repeated errors out of the server logs §2.4a already described, so the administrator sees one fault with a count instead of fifty near-identical stack traces. **No change to what is collected, why, or how long it is kept** — it reads data that was already being logged, in the same Google Cloud project and region, under the same provider, for the same 30 days, and no software from it runs inside the Bot. It is disclosed because §5 names individual Google *services* rather than only the company, and a service that holds a copy of error data belongs in that list. |
 | 1.9 | 5 August 2026 | §5's MongoDB Atlas row said it stores only "your preference record" — true of `UserPreference`, but MongoDB also backs the operational alert log §2.4 already discloses in prose. The row and §5.1 now say so and cross-reference §2.4; §2.4 itself is unchanged, because the alert log's contents and 30-day retention were already described accurately there. **No change to what is collected, why, or how long it is kept** — this closes a gap in *where the provider table said it lives*, not a change to what MongoDB stores. |
 | 1.8 | 4 August 2026 | **The Bot was renamed from Dior's Builds to Dioreo.** §1 now records the former name and states plainly that the controller did not change. **Nothing else changed at all** — the same individual holds the same data, for the same purposes, on the same legal bases, shared with the same recipients, for the same retention periods. There is no new controller, processor, recipient or purpose, and Appendix A is identical to version 1.7. A request you sent under the old name is handled exactly as one sent under the new one. |
 | 1.7 | 4 August 2026 | Corrected §2.6, which still described the Site as storing **one** item and stated that nothing is written unless you press the light/dark switch. Both had been untrue since `db-booted` was added in version 1.6: that item is written when you open What's New, the Changelog or the Devlog, without being asked for. The consent-banner reasoning was affected too — it argued the strictly-necessary exemption only for a preference you set by pressing a switch, which does not reach `db-booted` at all. Every statement in §2.6 now names which item it applies to, and the exemption is argued for `db-booted` explicitly. **No change to what is stored, why, who receives it, or how long it is kept** — the two items, their values and their lifetimes are exactly as listed in version 1.6. |

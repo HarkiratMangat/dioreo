@@ -132,6 +132,8 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
 - 2026-08-06 10:35 EDT — Three prompts, three kinds of check: building the thing that stops him asking twice (v2.56.0)
 - 2026-08-06 10:53 EDT — The guard that blocked the PR fixing the guard (v2.56.1)
+- 2026-08-06 12:52 EDT — The gate fired, and told me something false (folded into v2.57.0)
+- 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5146,6 +5148,213 @@ caught that too.
 - **The order of events is the whole story:** the release that shipped the audit system was merged,
   and eleven minutes later a different gate blocked real work for a bad reason. Shipping the checker
   is not the end of the work; it is the beginning of finding out what it gets wrong.
+
+
+## 2026-08-06 12:52 EDT — The gate fired, and told me something false (folded into v2.57.0)
+
+The three-pass sweep built this morning fired for the first time in a live session — unprompted, on a
+real completion claim, exactly where it was sited to fire. The filed reminder said this could not be
+proven from inside the session that registered it, and it was proven anyway.
+
+Then it told me all five angles were un-taken, on a session where I had run every one of them.
+
+The instinct is to argue with a gate that contradicts you, and that instinct is usually wrong — this
+session had already spent two rounds learning that the gate is right more often than the memory of
+what you did. So I checked instead of arguing: the detectors match at transcript lines 88, 195, 1409,
+1410 and 2073 of 3902. The evidence was present and was not seen. Running the hook by hand against
+that same file suppressed all five correctly.
+
+**So the gate was wrong, and I could only know that by taking it seriously enough to test it.** If I
+had argued from memory I would have been right for the wrong reason, and if I had accepted it I would
+have re-run five checks for nothing.
+
+I could not find the root cause — what differs between the harness's invocation and mine is not
+observable from here — and I stopped rather than inventing one. What I could fix is the failure mode:
+a transcript with zero Bash entries now says *ANGLE DETECTION COULD NOT RUN* and prints what it saw.
+*"I cannot see the session"* and *"no angle was taken"* are different sentences and had been rendering
+identically, which is the same defect shape as every silently-dead gate this repo has paid for.
+
+Two real bugs fell out of the investigation. `claim-detect.sh` was resolved from `${BASH_SOURCE[0]}`
+after the script `cd`s to `$REPO`, so a relative invocation path re-anchors to the wrong tree —
+`records-close-check.sh` solved this weeks ago and I did not copy it. And the Bash-scoping I had been
+pleased with is weaker than I documented: JSONL puts a whole assistant message on one line, so it
+excludes messages with no tool call at all but cannot separate prose from a command in the same
+message. That one surfaced by breaking my own test fixture, which is the cheapest possible way to
+learn it.
+
+### Lessons
+
+- **A gate's first live fire tests the gate, not the work.** Both gates that fired for the first time
+  today found a defect in themselves or a sibling — this one, and `docs-audit-gate` announcing a false
+  crash on every PR for ten hours. Budget for that instead of treating first-fire output as a verdict.
+- **When a gate contradicts you, test it — don't argue and don't submit.** Both shortcuts produce the
+  same confident wrongness from opposite directions.
+- **"I could not determine the root cause" is a finishable state.** Fixing the failure mode, recording
+  how to reproduce it, and saying plainly that the cause is unknown beats a plausible story. A wrong
+  explanation in a record outlives the bug.
+- **Copy the fix, not just the lesson.** `records-close-check.sh` had already solved the BASH_SOURCE
+  ordering problem correctly; the knowledge existed in this directory and the new hook still shipped
+  without it. Reading a sibling before writing is cheaper than rediscovering it.
+
+
+
+## 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
+
+The alert was correct. That was the problem.
+
+`🔴 Gateway shard error` · `Unexpected server response: 503` · three frames of
+`node_modules/ws/lib/websocket.js`. Every token of that is true, and Harkirat's reaction to receiving
+it was *"absolutely no clue what it meant."* The alert answered a question nobody was asking — *where
+in the websocket library did this surface* — and left the three that actually matter untouched: is the
+bot down, are users affected, do I need to get up right now.
+
+An alert is not a log line. A log line exists to be searched later; an alert exists to interrupt
+someone and drive a decision. Measured against that, a perfect stack trace at 03:00 is a failure.
+
+**The fix was easy. Knowing what NOT to do was the work.**
+
+The recovery half looked like a one-line change. There is no signal when the bot heals, `shardResume`
+already fires, so make it loud. I nearly did — and it would have quietly undone a decision from
+2026-07-20 that was more considered than my fix. That pair fires every 1-3 hours as routine gateway
+churn; the VM logged one ten minutes before this release shipped. Making it loud refills the channel
+with exactly the noise someone deliberately removed.
+
+**Noise is not the lesser failure.** Silence costs you one event. Noise costs you the channel — it
+teaches the reader to skim, and then the alert that matters arrives into a habit of not reading. The
+correct rule was symmetry, not volume: **a problem that was announced gets a recovery that is
+announced; a problem that was silent stays silent.** Routine blips stay invisible. The 03:00
+disconnect that woke him gets an explicit "Back online" and the duration.
+
+Then the second trap, which I only saw by asking which path I had *not* covered. `shardResume` is the
+good case — the session replays. When a disconnect is bad enough that it can't resume, discord.js
+re-identifies and only `shardReady` fires. Wiring recovery to `shardResume` alone would have left the
+**worst** outages, the ones most worth closing out, with no recovery signal at all: the exact bug I was
+fixing, reintroduced one level down, in the fix for it.
+
+**Three things I got wrong, all caught before they shipped, none by re-reading my own code.**
+
+Rendering the embeds is what exposed the first two. `formatUptime` floors to minutes, so a four-second
+outage would have announced itself as *"restored after 0m"*. And my own explanation text pointed the
+reader at an alert called "Discord connection lost" — a name that did not exist, because I had written
+the cross-reference before deciding to humanise the titles. Telling someone to go look for a message
+that isn't there is the same failure I was there to remove.
+
+The third came from writing the test. I asserted every explanation field was longer than ten
+characters, and it failed on `action: 'Nothing.'` — which is the *best* answer a recovery alert can
+give. I had encoded verbosity and called it usefulness. Fixed it, and it failed again on a line ending
+in `?`. Twice wrong in the same direction, on a test whose whole job was judging text quality. The
+assertion now checks the property I actually care about, and carries a comment saying so.
+
+**The tests exist because the obvious verification cannot reach the branch that matters.** Firing
+sample alerts through `sendAlert` and reading the output is how I checked the layout — but `sendAlert`
+throttles per `level:title`, so a second `Gateway disconnected` carrying a *different close code* is
+silently dropped. Transient-1006 versus fatal-4004 is the single most valuable distinction in the
+module, and it was unreachable that way. It looked covered. It wasn't. Only calling `explain()`
+directly proves it.
+
+**Elsewhere: two documents that described a cleanup nobody had run.**
+
+17 real users' Discord IDs were still in the local dev database. A script to fix that was written two
+days ago, the doc was updated to point at it, the finding was recorded as handled — and the script had
+never been executed once. The shipped artefact was the paperwork. Data does not clean itself because a
+script exists to clean it, and every check I ran said so plainly the moment I ran one.
+
+The filed item also undercounted what was there. It named three colour-source fields; two of them do
+not exist in the data at all, while three *palette*-source fields it never mentioned hold real Discord
+avatar and banner hashes — per-user CDN addresses for a specific person's image. The inventory was
+written from the schema, not from the rows.
+
+And mid-implementation I nearly built a permanent false alarm: my synthetic replacement IDs were
+numeric and snowflake-shaped, on the reasoning that preserving the shape preserved the test value. The
+project's canonical audit check is `/^[0-9]{17,20}$/`. A fully-cleaned database would have reported 17
+real users forever — and a check that cries wolf is one that gets ignored on the day it is right.
+
+**Last: a tracker that held both a question and its answer — and a verdict I got wrong.** A `[P3]` item
+asked whether to adopt Sentry. The same file's decided-no section already recorded that we would not.
+Either entry read alone is coherent; together they are a trap, because a session picking up the queued
+item re-opens a settled decision and never learns it was settled. Closing that contradiction was real
+work.
+
+Then I answered the question badly. My reason was the published Privacy Policy: it names Sentry and
+says "None present", so adopting one would make a live legal document false. Harkirat rejected the
+whole shape of that: *"the privacy policy shouldn't be the decision maker when it comes to implementing
+things or trying things. It's only advisory but I'm open to changing the policy."*
+
+He is right, and the error is worth naming precisely, because it did not feel like an error. **The
+argument was circular.** The policy says "None present" *because we chose not to adopt one*. Citing it
+as the reason not to adopt one is quoting our own past decision back as though somebody else had
+imposed it. And a legal-sounding objection carries more apparent weight than a technical one, so it
+closed the discussion while the question I was actually asked went unanswered. Every one of these
+documents — PRIVACY, TERMS, LICENSE, CLAUDE.md, a decided-no entry — belongs to the person asking me
+the question. An amendment is a line in the cost column, not a wall.
+
+Redone on the merits, the answer is still "not now" but for a reason that can actually be checked, and
+the checking moved the number. Cloud Logging holds **19 ERROR entries over 30 days, and 15 of them are
+the same 503 gateway error** — the very one that started this release. (My first pass said "2 errors",
+read off AlertLog. Both figures are real and they measure different things: `sendAlert` throttles to
+1/min per title, so AlertLog counts what was *announced* and Cloud Logging counts what *happened*. The
+tiers disagreeing is the finding, which is exactly what the three-tier rule says to expect.) Sentry
+exists to fingerprint many occurrences of *many distinct* exceptions; here there is essentially one
+recurring error, and it is a network condition rather than a bug.
+
+The more useful finding is the one the original evaluation never reached: **Google Cloud Error
+Reporting** does the grouping-and-dedup half for free, consuming the stack traces the logger already
+emits, with no SDK inside the process and no policy amendment — and it was simply not switched on. I
+had been comparing Sentry against "raw Cloud Logging" when the real comparison was sitting unenabled
+in the same cloud project. **Ruling something out on a document is how you avoid finding that.**
+
+Harkirat's response was to have me turn it on, so this release also ships the wiring. The integration
+is one object — `serviceContext` on ERROR entries — and that is precisely what makes it dangerous:
+delete it and nothing breaks, nothing logs, no request fails. The dashboard just goes quiet, and a
+quiet error dashboard is indistinguishable from a healthy one. That is the third time this project has
+met that shape (six hook self-tests nothing ran; a `-p err` counter structurally stuck at zero), so the
+contract is asserted against the emitted bytes in `scripts/logger.test.js` rather than trusted.
+
+Two checks I nearly skipped and shouldn't have. The API is enabled per-project, and the gcloud default
+project is the *Vertex AI* one — so I verified the VM actually lives in that same project before
+believing any of it. Enabling Error Reporting on a project the bot never logs to would have produced a
+perfectly clean, permanently empty dashboard. And I reported a real test event to confirm the pipeline
+accepts and groups it, then deleted it so his dashboard starts empty rather than with my debris.
+
+### A postscript: the blocker, and being wrong about it twice
+
+The `/autobuild` DMZ item had sat "waiting on Harkirat's screenshot" since 2026-07-24. Late in this
+session I decided the wait was stale — the 2026-07-26 backfill had already pulled 9-slot DMZ builds, so
+surely the roster could be inferred from the stored data. I marked it unblocked and told him so.
+
+He overruled it: *"still wait on my screenshot instead of guessing at slots based on pre-existing
+info."* Then he sent the screenshots, and they proved him right in a way I could not have argued
+against. **Three things I would have built on were false.** MP is not a five-slot mode — it has the same
+nine slot positions as DMZ and a five-attachment *equip cap*, which is what his original note about the
+"5-attachment prompt cap" had meant all along. Slot count cannot identify the mode, because a
+DMZ SVD renders five slots and would have classified as MP. And slot position cannot identify a slot,
+because the AS VAL has no Muzzle and the SVD renders gaps where Barrel and Perk should be.
+
+Every one of those is invisible in the backfilled data, which records what was *extracted*, not what the
+UI *offers*. The derived artefact could only ever have told me about builds that already worked. **The
+cases that break an implementation are the ones absent from the data you derived it from** — which is
+the whole reason ground truth is not substitutable, and why "I can infer this" deserves more suspicion
+the more confident it feels.
+
+### What this cost, and what it taught
+
+- **"Correct" and "useful" are different properties, and only one of them is testable by the author.**
+  Every alert this release rewrote was already correct.
+- **Before making a suppressed thing loud, find out who suppressed it and why.** The `silent` flag had
+  a dated comment explaining itself. Reading it was the difference between a fix and a regression.
+- **Ask which path you did NOT cover.** Both the `shardReady` hole and the throttled close-code branch
+  came from that question, not from re-reading the diff.
+- **A test that judges text will encode your taste unless you make it prove a property.** Mine failed
+  twice on correct content before it checked the right thing.
+- **A script is not an outcome.** Two days of documented cleanliness, zero rows changed.
+- **A derived artefact is not ground truth.** Backfilled data describes the builds that already
+  extracted successfully; the edge cases that break the next implementation are precisely the ones it
+  does not contain. When someone says wait for the real thing, the confident inference is the argument
+  against yourself.
+- **Our own documents do not get a veto.** If a recommendation's load-bearing sentence quotes one of
+  our files, the analysis probably has not happened. Ask what you would recommend if the document did
+  not exist — that is the real answer — then add the amendment back as a cost and see if it changes
+  anything. Here it did not, and the honest reason was better than the one I gave.
 
 
 # Part B — Lessons Ledger (thematic)

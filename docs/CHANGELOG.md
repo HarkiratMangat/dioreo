@@ -181,7 +181,168 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.56.2 — 2026-08-06 10:58 EDT (#88) — The DEVLOG entry v2.56.1 should have carried
+## v2.57.0 — 2026-08-06 15:15 EDT (#89) — Alerts a human can read, and a dev database that isn't anyone's
+
+**A live `🔴 Gateway shard error` alert read, in full: `Unexpected server response: 503` and three
+`node_modules/ws/lib/websocket.js` stack frames.** Harkirat, on receiving it: *"absolutely no clue what
+it meant."* The alert was technically perfect and practically useless — it said WHERE in the websocket
+library the failure surfaced, and nothing about whether the bot was down, whether users were affected,
+or whether he needed to get up. **An alert exists to drive a decision; one that can't be read can't
+drive one.**
+
+Every alert now answers three questions in plain sentences, with the stack trace demoted below them:
+**what happened** · **does it fix itself?** · **what to do**. The middle one is the valuable one — it
+is the difference between "ignore this" and "get up". `utils/alertExplain.js` also reads Discord's
+gateway **close codes**, which is where that distinction actually lives: a 1006 blip and a 4004
+*"your bot token was rejected"* are both rendered as "disconnected, close code NNNN" by the old alert,
+but one clears itself in seconds and the other means the bot is down until someone changes something.
+
+**Titles are humanised at DISPLAY only** — `Gateway shard error` → **Discord connection error**. The
+stored title stays canonical because it is a key (the 1/min throttle and `AlertLog` both use it), so
+history and `/alerts` filtering are untouched. This matters more than it looks: the push-notification
+line is `<@user> 🔴 **<title>**`, which on a phone at 03:00 is the *entire* message — the embed is not
+shown in a notification.
+
+**And the bot now tells you when it RECOVERS.** Harkirat: there is no signal at all when it heals —
+you learn it broke and never that it came back. ⚠️ **The obvious fix was the wrong one.** Making
+`Gateway resumed` loud would have undone a correct 2026-07-20 decision: that pair fires every 1-3h as
+routine churn (the VM logged one 10 minutes before this release), and posting it refills the channel
+with exactly the noise that decision removed. Noise is not the lesser failure — it is how someone
+learns to stop reading the channel, and then the loud alerts stop working too. So the rule is
+**symmetry**: a problem that was announced gets a recovery that is announced; a problem that was silent
+stays silent. Routine blips remain invisible; the 03:00 disconnect that pinged his phone now gets an
+explicit **"Back online"** with how long it was actually down.
+
+⚠️ **Both recovery paths are wired, and the worse one is the easy one to miss.** `shardResume` fires
+when the session replays — the *good* case. When a disconnect is bad enough that the session cannot be
+resumed, discord.js re-identifies from scratch and only `shardReady` fires. Wiring recovery to
+`shardResume` alone would have left precisely the **worst** outages with no recovery signal.
+
+**17 real users' Discord IDs are gone from the local dev database.** They were there because
+`deployment-and-ops.md` used to instruct seeding dev from a prod `mongodump`. ⚠️ **Anonymised, not
+purged** (Harkirat's explicit call — the records stay as realistic test data, they just stop belonging
+to anyone). `scripts/anonymizeDevDb.js` keeps every document and replaces only the identifiers.
+**The filed item undercounted the problem:** it named `discordId` plus three colour-source fields, two
+of which do not exist in the data at all — while `avatarPaletteSource`, `bannerPaletteSource` and
+`decorationPaletteSource` **do**, and hold real Discord avatar/banner asset hashes that address a
+specific person's image on the CDN.
+
+⚠️ **A script existing is not the data being clean.** `scripts/seedDevData.js` was written 2026-08-04
+12:07 EDT in response to this exact finding — and the 17 real IDs were still sitting there two days
+later, because nothing ever ran it. The shipped artefact was the script and the doc, not the cleanup.
+
+⚠️ **Synthetic ids must not be snowflake-shaped**, caught mid-implementation. The first version used
+`90000000000…` on the reasoning that keeping the id snowflake-shaped preserved the data's shape — but
+the project's canonical audit check is `discordId: /^[0-9]{17,20}$/`, so a fully-cleaned database would
+have reported 17 real users **forever**. A check that cries wolf is one that gets ignored on the day it
+is right.
+
+**Sentry: asked, answered, not now — and not for the reason I first gave.** The tracker held a
+`[P3 · S]` *"re-evaluate Sentry"* item in 🗂️ Queued **while the same file's 🚫 Decided-no section
+already recorded the decision not to** — the question and its answer, filed separately, so a session
+picking up the queued item would have re-litigated a settled call without noticing.
+
+⚠️ **My first verdict rested on the published Privacy Policy, and Harkirat threw it out:** *"the privacy
+policy shouldn't be the decision maker when it comes to implementing things or trying things. It's only
+advisory but I'm open to changing the policy."* He is right, and the reasoning was circular — the policy
+says "None present" **because** we previously chose not to adopt one, so quoting it back dresses our own
+past decision up as an external constraint. A policy amendment is a **cost line**, never a veto.
+
+**The real case is diversity, not volume.** Cloud Logging holds **19 ERROR entries over 30 days, and 15
+are the same `Shard 0 error: Unexpected server response: 503`** — the very alert that started this
+release. Sentry exists to fingerprint many occurrences of *many distinct* exceptions and catch
+regressions across releases; here there is essentially one recurring error, and it is a transient
+network condition rather than a bug.
+
+🔎 **And the original evaluation had missed the real alternative entirely: Google Cloud Error
+Reporting — now ENABLED and wired.** It does the grouping and dedup half for free, off the stack traces
+`utils/logger.js` already emits, with **no SDK inside the bot process** (no RAM on the e2-micro, nothing
+that can fail) and no data leaving the GCP project that already handles these logs. `logger.js` now
+attaches `serviceContext` to ERROR entries, which is the entire integration. Verified end to end rather
+than assumed: a test event was reported, appeared correctly grouped with its service and version, and
+was then deleted so the dashboard starts clean — and the VM was confirmed to live in the *same* project
+as the enabled API, since enabling it on the wrong one would have been an invisible no-op.
+⚠️ **It stays empty until the VM is deployed past v2.46.0.**
+
+⚠️ **A number worth keeping straight:** AlertLog reports 2 errors where Cloud Logging reports 19,
+because `sendAlert` throttles to 1/min per `level:title`. Neither is wrong — one counts what *happened*,
+the other what was *announced*. **The disagreement is the finding**, and the three tiers must not be
+reconciled into one figure.
+
+**And the `/autobuild` DMZ blocker is gone — with three of my assumptions killed on the way.** Harkirat
+supplied real in-game screenshots, and they contradict the obvious implementation at every point.
+**MP is not a 5-slot mode**: it shows the *same nine slot positions* as DMZ and applies a 5-attachment
+**equip cap** (`ATTACHMENTS ● ● ● ● ●`) — which is what his original note *"DMZ partials are the
+5-attachment prompt cap"* actually meant. **Slot count cannot identify the mode**, because a DMZ
+SVD renders only five slots and would classify as MP — and the reason a count varies differs by mode:
+in MP the roster is intrinsic to the weapon (rarity is irrelevant), while in DMZ rarity itself changes
+the total, capped at 9. **And slot position cannot identify a slot**:
+the AS VAL has no Muzzle at all, and the SVD renders literal gaps. Mode detection keys on UI chrome
+instead — `PEN.`/`PEN. MULTI` and `EQUIP`/`CUSTOMIZE` mean DMZ; `SELECT BLUEPRINTS` and a blueprint code
+in the title mean MP — requiring two agreeing signals and returning *unknown* rather than guessing.
+
+And the sharpest trap of all: **a weapon can rename its canonical slots, add unique ones, omit others,
+and move them around the grid.** The Crossbow labels Muzzle `Bowstring`, Barrel `Limb`, Ammunition
+`Bolt`, and has no Rear Grip; revolvers show `Trigger Action` for Underbarrel; the Shorty adds a
+`Guard` slot and the R9-0 a `Smoothbore`, each sitting *alongside* that weapon's own Underbarrel rather
+than replacing it. **And position is no anchor either** — the Shorty pushes `Ammunition` to the final
+chip where Rear Grip normally sits, while the R9-0 puts it in the top row in Stock's place. So a fixed
+nine-name allow-list fails three ways over, and grid-position mapping fails outright. This is precisely
+the `J358 … Trigger Action wasn't captured (6/7)` miss already paid for in the 2026-07-26 backfill,
+generalised. Written up as `.claude/rules/autobuild.md`'s **"MP vs DMZ"**
+section, because the screenshots live in gitignored `local/` and the knowledge cannot.
+
+**Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js`
+(13 cases) and `scripts/gatewayRecovery.test.js` (8). They exist because the obvious verification —
+firing sample alerts and reading the embeds — **cannot reach the branch that matters**: `sendAlert`
+throttles per `level:title`, so a second `Gateway disconnected` with a different close code is silently
+dropped. The transient-vs-fatal distinction looked covered and was not. Between them the suites caught
+a `formatUptime` that floors to minutes (a 4-second outage rendering as *"restored after 0m"*), a
+display-title table that had drifted out of step with the explanation table, and an assertion of mine
+that was twice wrong in the same direction — demanding length, then a full stop — on text where
+*"Nothing."* is the correct answer.
+
+**Verified rather than asserted:** the dev bot boots clean against the anonymised data; `shardReady` on
+first connect fires the recovery path and correctly stays silent (no duplicate "Bot online"); and
+Discord returned **HTTP 204** for the new `fields` payload — a console render proves the layout, not
+that Discord accepts it.
+
+---
+
+### Also in this release — the sweep's first live fire, and what it got wrong
+
+*(Prepared as its own release and folded in when GitHub Actions went into a major outage mid-flow,
+blocking the merge. One squash commit gets one version, so it ships here rather than as a second tag.)*
+
+The three-pass audit shipped in v2.56.0 fired for the first time in a live session, unprompted, on a
+real completion claim. **That answers the "does the harness actually invoke it" question — and it
+immediately failed its own test.**
+
+It reported **all five angles as un-taken** on a session that had demonstrably run every one; measured
+afterwards, the detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Running the
+hook by hand against that same file suppressed all five correctly, so the matching logic is sound and
+the fault is in what the harness handed it. **Root cause is still unknown and is deliberately not
+guessed at.**
+
+⚠️ **Mitigated, not fixed.** A transcript carrying zero Bash `tool_use` entries now reports
+**ANGLE DETECTION COULD NOT RUN** and prints the path and line count it saw. *"I cannot see the
+session"* and *"no angle was taken"* are different answers, and reporting all five is the
+fires-on-everything behaviour that gets a gate dismissed unread.
+
+**Two real bugs found while investigating, both fixed and pinned:** `claim-detect.sh` was resolved
+from `${BASH_SOURCE[0]}` **after** the script `cd`s to `$REPO`, re-anchoring a relative invocation
+path to the wrong tree — which breaks under a worktree, and which `records-close-check.sh` already
+solved correctly without the pattern being copied. And the Bash-scoping is weaker than it was
+documented to be: JSONL puts a whole assistant message on ONE line, so it excludes messages with no
+tool call at all but **cannot** separate prose from a command inside the same message. That surfaced
+when the property broke this hook's own test fixture.
+
+**Also:** the self-service data-deletion item is re-tagged **P1 → P3, deferred to v4** (Harkirat's
+call — the email route stands). Verified rather than assumed that this leaves `PRIVACY.md` accurate:
+§7.1 already discloses there is no self-service delete, names email as the live mechanism, and calls
+a `/settings` option *"planned"* with no timeline attached.
+
+## v2.56.2 — 2026-08-06 10:58 EDT (#88 · `30348c4`) — The DEVLOG entry v2.56.1 should have carried
 
 Records only. The `release-ready-check` gate fired on v2.56.1 saying its branch changed four
 non-mechanical files with no DEVLOG entry — and it was right; the merge went through anyway because

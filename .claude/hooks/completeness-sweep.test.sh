@@ -47,6 +47,13 @@ a() { local n="$1" needle="$2" want="$3" out="$4" got
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
   else echo "  FAIL  $n (wanted $want for '$needle')"; echo "        got: [${out:0:220}]"; fail=$((fail+1)); fi; }
 
+# ⚠️ EVERY angle fixture must contain at least ONE Bash tool_use entry that is IRRELEVANT to the
+# angles. Since 2026-08-06 12:37 EDT a transcript with zero Bash entries reports "ANGLE DETECTION
+# COULD NOT RUN" instead of listing angles — because "I cannot see the session" and "no angle was
+# taken" are different answers and must not look alike. A fixture with no Bash calls therefore tests
+# the unreadable path, not the detection path. The filler below is that one irrelevant call.
+FILLER='{"type":"tool_use","name":"Bash","input":{"command":"git status --short"}}'
+
 echo "completeness-sweep.sh — proofs"
 
 # ⚠️ CAPTURE EACH FIXTURE'S OUTPUT ONCE, then assert against the variable — never call run() twice
@@ -85,7 +92,7 @@ a "stop mode, no completion claim -> silent" "CONSERVATION" no "$(run "$CLAIM" "
 
 CLAIM2=$(mkrepo d6 delete)
 tr_claim="$TMP/t-claim.jsonl"
-printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All three jobs done and verified, no gaps remaining."}]}}\n' > "$tr_claim"
+printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All three jobs done and verified, no gaps remaining."},%s]}}\n' "$FILLER" > "$tr_claim"
 out_claim=$(run "$CLAIM2" "$tr_claim" stop)
 a "stop mode, completion claim -> fires"     "CONSERVATION" yes "$out_claim"
 
@@ -117,7 +124,12 @@ a "other angles still reported"       "memory-store"     yes "$out_ang"
 POISON=$(mkrepo d8 delete)
 tr_poison="$TMP/t-poison.jsonl"
 # The detector string appears ONLY in assistant prose (exactly how the hook's own output arrives).
-printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done. Remember to sweep ~/.config/dior for external references."}]}}\n' > "$tr_poison"
+# ⚠️ The filler is a SEPARATE JSONL LINE, not another block in the same message. JSONL puts a whole
+# assistant message on ONE line, so a Bash call sharing a message with the prose makes that line
+# match `"name":"Bash"` and drags the prose through with it — which broke this test's own premise on
+# the first run. Scoping to Bash lines excludes messages containing no tool call at all; it cannot
+# separate prose from a command inside the SAME message. That limit is stated in the hook.
+printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done. Remember to sweep ~/.config/dior for external references."}]}}\n%s\n' "$FILLER" > "$tr_poison"
 out_poison=$(run "$POISON" "$tr_poison" stop)
 a "detector in PROSE does not count as run" "external-trees" yes "$out_poison"
 

@@ -10,6 +10,7 @@
 // alerts_back / alerts_page_N). buildAlertsPanel() is exported so those re-render handlers share ONE
 // render path with the slash command instead of a drifting copy.
 const { SlashCommandBuilder } = require('discord.js');
+const { displayTitle } = require('../utils/alertExplain'); // plain-language label for a stored alert title
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { buildPaginationRow } = require('../utils/paginationRow');
 const { getAlertSummary, getRecentAlerts } = require('../utils/alertStore');
@@ -46,7 +47,12 @@ function buildMainComponents({ summary, recent }) {
 
     if (recent.items.length) {
         const rows = recent.items.map(a =>
-            `\`${a.alertId || '??????'}\` ${LEVEL_ICON[a.level] || '⚪'} **${truncate(a.title, 60)}** · <t:${unix(a.createdAt)}:R>`
+            // displayTitle() (2026-08-06 15:03 EDT): the STORED title is the canonical key — it is what
+            // sendAlert throttles on and what the export must keep — but a human reading this list wants
+            // the same plain-language label the Discord alert showed them, not "Gateway shard error"
+            // again. Applied at render only; nothing about the stored row changes, and historical rows
+            // map correctly because the canonical titles they were written under never changed.
+            `\`${a.alertId || '??????'}\` ${LEVEL_ICON[a.level] || '⚪'} **${truncate(displayTitle(a.title), 60)}** · <t:${unix(a.createdAt)}:R>`
         ).join('\n');
         container.components.push({ type: 10, content: `**Recent alerts** (newest first)\n${rows}` });
     } else {

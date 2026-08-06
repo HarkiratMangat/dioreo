@@ -26,6 +26,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.57.0 — August 6, 2026
+- Alert messages now explain themselves in plain English — what happened, whether it fixes itself, and
+  what (if anything) to do — instead of only showing a stack trace.
+- The bot now tells you when it **recovers**, not just when something breaks, with how long it was down.
+  Routine reconnects stay quiet, so the channel doesn't fill with noise.
+- Nothing about the bot's commands or the site changed.
+
 ## v2.56.2 — August 6, 2026
 - Housekeeping only — nothing about the bot or the site changed.
 

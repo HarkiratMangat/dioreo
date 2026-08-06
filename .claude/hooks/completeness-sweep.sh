@@ -49,6 +49,16 @@ BASE="${1:-main}"
 TRANSCRIPT="${2:-}"
 MODE="${3:-pr}"          # stop | pr
 
+# ⚠️ RESOLVE THIS BEFORE THE `cd` BELOW. `${BASH_SOURCE[0]}` is the path the hook was INVOKED with,
+# which is relative when the harness calls `bash .claude/hooks/completeness-sweep.sh` — so resolving
+# it after `cd "$REPO"` re-anchors it to $REPO instead of to where the script actually lives. Under a
+# worktree, or any CLAUDE_PROJECT_DIR that is not the invoking directory, it then points at a
+# `.claude/hooks` that does not exist and the claim gate reports its own detector as MISSING.
+# records-close-check.sh already resolves its HOOKDIR before cd-ing for exactly this reason; this
+# hook did not, and it took a synthetic-repo test to expose it because the live path happens to
+# coincide. Found 2026-08-06 12:37 EDT.
+HOOKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 cd "$REPO" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
@@ -127,7 +137,7 @@ fi
 # vocabulary; mirroring by hand is what drift looks like before it drifts.
 if [ "$MODE" = stop ]; then
   [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ] || exit 0
-  DETECT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/claim-detect.sh"
+  DETECT="$HOOKDIR/claim-detect.sh"
   # A missing detector must not silently disable the gate: "no claim was made" and "the test for a
   # claim is gone" must never look the same — the failure shape three other hooks here guard against.
   if [ ! -r "$DETECT" ]; then
@@ -239,11 +249,37 @@ ANGLES=(
 # class `records-close-check`'s dead `grep -qx` and the never-invoked self-tests belong to.
 # Restricting to `"name":"Bash"` lines removes both leaks: a Write of this file is `"name":"Write"`,
 # and the block message is not a tool_use at all. Two STREAMING passes, nothing read into memory.
-# ⚠️ Residual, stated: searching FOR a string in a Bash command counts as having run that angle
-# (`rg -n 'buildLegalPages'` reads as covered). That is the deliberate broad-detector trade-off —
-# a false "covered" beats a gate that fires on everything and gets dismissed — and it is bounded
-# noise, not the systematic self-suppression above.
+# ⚠️ TWO residual limits, both measured, both deliberate:
+#   1. Searching FOR a string in a Bash command counts as having run that angle (`rg -n
+#      'buildLegalPages'` reads as covered).
+#   2. JSONL puts a whole assistant message on ONE line, so scoping to `"name":"Bash"` lines excludes
+#      messages containing no tool call at all — it CANNOT separate prose from a command inside the
+#      SAME message. Prose in a message that also runs any Bash call still leaks through. Found
+#      2026-08-06 12:39 EDT when that exact property broke this hook's own test fixture.
+# Both are the deliberate broad-detector trade-off — a false "covered" beats a gate that fires on
+# everything and gets dismissed — and both are bounded noise, not the systematic self-suppression
+# that scoping fixed.
+# 🔴 "I CANNOT SEE THE SESSION" AND "NO ANGLE WAS RUN" MUST NOT LOOK THE SAME.
+# Added 2026-08-06 12:36 EDT after this gate's FIRST live fire reported all five angles as un-taken
+# on a session that had demonstrably run every one of them — measured afterwards, the detectors match
+# at transcript lines 88, 195, 1409, 1410 and 2073 of 3902, so the evidence was present and was not
+# seen. Re-running the hook by hand against the same file suppressed all five correctly, so the fault
+# is in what the harness handed it, not in the matching.
+# Root cause is still UNKNOWN and is deliberately not guessed at here. What IS fixable is the failure
+# MODE: a transcript carrying zero Bash tool_use entries is not a session in which no angle was
+# taken, it is a transcript this hook cannot read — and reporting every angle is precisely the
+# fires-on-everything behaviour that gets a gate dismissed unread, the failure written into four
+# other hooks in this directory. It now says so, and prints what it saw, so the next occurrence is
+# diagnosable instead of noise.
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+  bash_calls=$(rg -c '"name":"Bash"' "$TRANSCRIPT" 2>/dev/null || echo 0)
+  if [ "${bash_calls:-0}" -eq 0 ]; then
+    findings="$findings
+  🧭 ANGLE DETECTION COULD NOT RUN — the transcript it was handed carries ZERO Bash tool_use entries,
+     so no angle can be confirmed either way. This is NOT a clean result and NOT a list of misses.
+     Saw: ${TRANSCRIPT:-<empty>} ($(wc -l < "$TRANSCRIPT" 2>/dev/null | tr -d ' ') lines).
+     Check the angles by hand this once, and report that path — this is a known open defect."
+  else
   untaken=""
   for a in "${ANGLES[@]}"; do
     rest="${a#*|}"; det="${rest%%|*}"; demand="${rest#*|}"; id="${a%%|*}"
@@ -255,6 +291,7 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   🧭 ANGLES NOT TAKEN — no tool call this session carries these checks' signature. This is the third
      prompt you would otherwise be given, computed instead of asked. Run them, or say plainly which
      are not applicable to this change and why:$untaken"
+  fi
 fi
 
 # Stamped AFTER the work, so a crash mid-sweep re-runs instead of marking the state clean.
