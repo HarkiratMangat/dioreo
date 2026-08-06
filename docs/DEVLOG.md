@@ -130,6 +130,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-05 21:02 EDT — A bug only one device could see, and three gates that all said fine (v2.55.2, written in v2.55.3)
 - 2026-08-05 22:27 EDT — A tool chosen for the wrong reason, and a free instrument nobody had reached for (v2.55.4)
 - 2026-08-06 00:26 EDT — A folder's purpose read from its contents, and a warning nobody read any more (v2.55.5)
+- 2026-08-06 10:35 EDT — Three prompts, three kinds of check: building the thing that stops him asking twice (v2.56.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5030,6 +5031,76 @@ written months ago, about a delegation risk documented in prose, caught it on th
   stderr.
 - **Ask what a document does — updated, or superseded?** That single question sorts every doc in the
   tree, and it settled a placement question that two rounds of taste had not.
+
+## 2026-08-06 10:35 EDT — Three prompts, three kinds of check: building the thing that stops him asking twice (v2.56.0)
+
+Three filed reorg items — move the notes file, split-then-rename `known-issues.md`, fold
+`design-history.md` into this file. All three landed. Then Harkirat asked the question he always
+asks: *"do you genuinely think you covered everything?"* Three times, each time from a wider angle.
+He was right all three times, and the third one produced the actual work of the session.
+
+**Pass one was name-based** — grep for the old names, fix what points at them. It found what that
+kind of search can find. Each filed inventory turned out to have undercounted: 14 files not 10, 6+4
+not 8, 11+1 not 12.
+
+**Pass two took a different angle and found what pass one structurally could not.** Two things.
+Content conservation — not *does the filename resolve* but *does the moved sentence still assert
+something true* — caught the fold carrying `/secondaries → /pistols "(still pending)"` into a
+permanent record, three weeks after that idea was dropped. And the surface no in-repo search can
+reach: `~/.config/dior/` is a **different git tree** that hardcodes paths inside this repo.
+`dior notes` was broken outright by the move while four repo-wide sweeps read clean. `rg -uu
+--hidden` does not save you; those flags address hidden and gitignored files, and this was neither.
+
+**The lesson worth keeping from pass two:** completeness inside a boundary tells you nothing about
+the boundary being right.
+
+**Pass three asked what has to be TRUE for a check to run at all**, and that was the richest seam.
+Uncommitted work was invisible to the whole design — `BASE...HEAD` is committed-only, which is the
+default state mid-session and exactly when a premature "done" is most likely. A missing `rg` did not
+degrade to silence, it *inverted*: every sampled line reads as absent, so the conservation check
+would have reported 100% data loss with total confidence.
+
+**The gates found seven defects in themselves.** The worst was self-poisoning: angle detection
+grepped the whole transcript, and the hook's own block message quotes every detector string by name,
+so it suppressed every angle permanently after its first fire — running, reporting success, checking
+nothing. That is the same family as `records-close-check`'s dead `grep -qx` and the six self-tests
+nothing ever invoked, and this repo has now paid for it three times.
+
+**And it caught one in a sibling.** On its first live run the new sweep surfaced that
+`docs-audit-gate.sh` had been announcing "DOCS AUDIT CRASHED: nothing was verified" on *every* PR for
+ten hours — about an audit that ran perfectly. `--json` makes stdout a contract, so the audit
+correctly moved its notices to stderr; the gate captured with `2>&1` and put them back in front of
+the JSON. The discipline was added to protect that consumer, and the consumer was undoing it.
+
+**Separately, and worse than any of the above:** Harkirat pointed out a `※` follow-up he had left
+about five sessions earlier that no session ever mentioned. Every one of them had "read the notes
+file" — truthfully. It was invisible three ways at once: below the open-items scan boundary, not a
+`- [ ]` item, and **no hook anywhere matched the mark**. Three independent misses stacked, so a true
+statement was useless. It had even been *answered* — the reply ended "say the word and I'll rework
+the hook", a question back to him that nobody surfaced. **Answered is not resolved**, and a detector
+reporting only unanswered marks would have stayed silent on the exact case it existed for.
+
+### Lessons
+
+- **"I checked" is a claim about a boundary, not about completeness.** Every miss this session lived
+  just outside one: outside the repo, outside the committed diff, outside the scan window, outside
+  the shape a matcher recognised. Ask what the boundary is before trusting the result.
+- **A gate must fire where the thing is still preventable.** `stale-reference-sweep` fires at
+  `gh pr create`; this session made three completion claims and never opened a PR until the end, so
+  it could not have helped once. The moment is the CLAIM, not the PR.
+- **"What angle didn't I check" is a set difference, not a feeling.** A registry of angles, each with
+  a detector over the session transcript, minus what actually ran. Filing that as un-checkable would
+  have been the third time this project wrote down "not checkable" about something perfectly
+  checkable.
+- **Measure before optimising.** The conservation scan over 9,538 `node_modules` files was going to
+  be my performance fix; it costs 0.022s. The hypothesis was refuted in one `time`, and acting on it
+  would have been pure invented work.
+- **A false alarm is worse than a missed check.** The false crash, the fabricated 100% data loss, the
+  "6 of 6" ratio that was really 10 of 60 — each teaches the reader to skip the gate, and then the
+  one real finding gets skipped too.
+- **Verify the fix discriminates.** Two of my own new tests initially passed against the broken code,
+  and one fixture sat below the sampling floor so it could never fail for the right reason. Running
+  the new test against the old implementation is the only thing that proves it tests anything.
 
 # Part B — Lessons Ledger (thematic)
 

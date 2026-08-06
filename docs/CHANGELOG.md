@@ -181,7 +181,58 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.55.5 — 2026-08-06 00:26 EDT (#85) — A tier for thinking, and a warning that had become noise
+## v2.56.0 — 2026-08-06 10:34 EDT (#86) — Three filed reorgs, and the audit that came out of checking them
+
+Records, docs structure and the enforcement layer. Nothing about the bot or the site changed.
+
+**Three reorg items, all filed before this session started.** The notes scratchpad moved to
+`docs/ideas/diors-notes.md` — which also drops the space every reference had to quote around.
+`docs/reference/known-issues.md` was split and renamed to **`platform-constraints.md`**: of its six
+entries four were accepted platform facts and two were our own open work, so the split had to come
+first or the new name would have been a lie on the tin. `docs/reference/design-history.md` folded
+into `DEVLOG.md` as Part A's four earliest (`2026-07-12`) entries and was deleted — it was narrative,
+not lookup, and DEVLOG's own header had been describing exactly that backfill as outstanding.
+
+**Each filed inventory undercounted its own sweep.** The notes move touched 14 live files, not 10;
+`known-issues` 6 + 4 memory files, not 8; `design-history` 11 + 1, not 12. Records, archives and the
+dated `docs/superpowers/specs/**` were deliberately left alone — they say the old names because that
+is what things were called when they were written.
+
+**`dior notes` was broken outright, and four repo-wide sweeps read clean.** `~/.config/dior/` is a
+different git tree that hardcodes paths inside this repo, so no in-repo search reaches it —
+`rg -uu --hidden` does not help, because the flags address hidden and ignored files, not other
+repositories. The same blind spot had been hiding a **third copy** of the open-items regex, reporting
+29 open items where the hook reported 3, under a comment claiming the two could not drift.
+
+**A three-pass pre-PR audit, timed at the claim rather than the PR.** Harkirat's standing complaint
+was needing three prompts after every long session. Those are three different KINDS of check, and
+naming the kinds is what made them buildable: references, conservation, and *which kind of check
+never ran*. That last one is a set difference over a registry of angles, not a question. The existing
+`stale-reference-sweep.sh` fires at `gh pr create` and **could not have fired this session** — three
+completion claims across six commits, no PR — so `completeness-sweep.sh` runs at `Stop`, claim-gated,
+with the PR hook as backstop.
+
+**A `※` follow-up had sat unsurfaced for about five sessions**, invisible three ways at once: below
+the open-items scan boundary, not a `- [ ]` item, and no hook anywhere matched the mark. It is
+answered now, the pointer section it asked about has moved up next to the Legend, and
+`notes-open-items.sh` closes its scan on an explicit marker so the layout is no longer dictated by a
+scan range. `notes-followups.sh` reports open exchanges every session — **including answered ones
+whose reply still asks something**, which is precisely the case that was missed.
+
+**`docs-audit-gate.sh` had been reporting a FALSE crash on every PR** since 2026-08-06 00:20 EDT,
+caught by the new sweep on its first live run. `--json` makes stdout a contract, so the audit
+correctly puts its notices on stderr; the gate captured with `2>&1` and announced "DOCS AUDIT
+CRASHED: nothing was verified" about an audit that had run perfectly.
+
+⚠️ **The gates found seven defects in themselves.** Angle detection was suppressing every angle after
+its first fire (the hook's own output carries every detector string); uncommitted work was invisible
+(`BASE...HEAD` is committed-only — the default mid-session state); a missing `rg` inverted into
+fabricated 100% data loss; the `.git/` stamp leaked across sessions; a duplicated claim regex was
+consolidated into `claim-detect.sh`; a `for` loop word-split `diors-builds notes` on its space; and
+`rg` parsed a markdown bullet's leading `-` as a flag. Every one is pinned by a test that was
+verified to fail against the old code.
+
+## v2.55.5 — 2026-08-06 00:26 EDT (#85 · `cc06c3d`) — A tier for thinking, and a warning that had become noise
 
 Records and tooling only. Nothing about the bot or the site changed.
 

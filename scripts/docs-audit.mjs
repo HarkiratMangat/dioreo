@@ -716,10 +716,22 @@ check(
     const text = read("docs/ideas/diors-notes.md");
     if (text === null) return [];
     const lines = text.split("\n");
-    // Working sections only: from the first "## Questions" heading to the "## 📍" pointer section.
+    // Working sections only: from the first "## Questions" heading to the explicit end marker.
     // The 🔑 Legend above it documents the markers using the same syntax and must not be scanned.
+    //
+    // ⚠️ THE END ANCHOR MUST BE SEARCHED FOR *AFTER* THE START, and the marker is why.
+    // This used to end at `## 📍`, found by a bare findIndex over the whole file. On 2026-08-06
+    // 10:21 EDT that section moved ABOVE `## Questions` (Harkirat asked for it near the Legend, and
+    // the only reason it had been pinned to the bottom was this very scan range). `e` then came out
+    // LESS than `s`, `slice(s, e)` returned an empty array, and this check reported a VACUOUS PASS —
+    // examining nothing while reading as green. The vacuous-pass detector is the only reason it was
+    // noticed at all; the identical bug in notes-open-items.sh's awk took the live count 3 -> 0.
+    // Two implementations of one scan range, both broken by the same move, exactly as this check's
+    // own error message predicts ("the SessionStart hook scans between the SAME two anchors").
     const s = lines.findIndex((l) => /^## Questions/.test(l));
-    const e = lines.findIndex((l) => /^## 📍/.test(l));
+    const eMarker = lines.findIndex((l, i) => i > s && /^<!-- \/open-items -->/.test(l));
+    const ePin = lines.findIndex((l, i) => i > s && /^## 📍/.test(l));
+    const e = eMarker >= 0 ? eMarker : ePin;
     if (s < 0) {
       return anchorMissing(
         "docs/ideas/diors-notes.md",
