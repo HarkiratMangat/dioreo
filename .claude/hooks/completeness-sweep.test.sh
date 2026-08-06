@@ -150,6 +150,48 @@ out_v3=$(run "$V3" "" pr)
 a "v3 branch is diffed against v3-pre-release" "v3only" no "$out_v3"
 a "v3 branch still reports its OWN deletion"   "docs/a.md" yes "$out_v3"
 
+# ---- 🔴 UNCOMMITTED WORK: the highest-likelihood miss in the whole design ----
+# `$BASE...HEAD` sees committed history only, so a session that edits files and claims "done"
+# WITHOUT COMMITTING produced an empty diff and total silence. That is the default state mid-session
+# and precisely when a premature "done" is most likely. Found 2026-08-06 09:44 EDT by asking what the
+# gate's PRECONDITIONS are, an angle neither earlier pass took.
+UNC="$TMP/uncommitted"
+mkdir -p "$UNC/docs"; git -C "$UNC" init --quiet -b main
+printf 'a content line comfortably past the forty-five character sampling floor here\n' > "$UNC/docs/a.md"
+git -C "$UNC" add -A; git -C "$UNC" -c user.email=t@t -c user.name=t commit --quiet -m init
+git -C "$UNC" checkout --quiet -b feat
+rm "$UNC/docs/a.md"          # deleted, NOT committed
+out_unc=$(run "$UNC" "" pr)
+a "uncommitted deletion is still swept" "CONSERVATION" yes "$out_unc"
+
+# ---- 🔴 MISSING rg: must fail LOUD, never fabricate ----
+# Without rg the conservation loop's `rg -q` fails for EVERY line, so a missing binary would report
+# 100% data loss on every deleted file — a confident FABRICATED alarm, worse than silence because it
+# trains dismissal. The sibling sweep guards this and CI proved it real (the ubuntu runner has no
+# ripgrep); this hook shipped with the inverse of that bug.
+NORG=$(mkrepo r1 delete)
+out_norg=$(PATH="/usr/bin:/bin" CLAUDE_PROJECT_DIR="$NORG" bash "$HOOK" main "" pr 2>/dev/null \
+           | jq -r '.hookSpecificOutput.additionalContext // "SILENT"' 2>/dev/null)
+if command -v rg >/dev/null 2>&1 && ! PATH="/usr/bin:/bin" command -v rg >/dev/null 2>&1; then
+  a "missing rg is REPORTED, not fabricated" "CANNOT RUN" yes "$out_norg"
+  a "and it does NOT claim data loss"        "CONSERVATION" no  "$out_norg"
+else
+  echo "  SKIP  missing-rg case (rg is on the minimal PATH here, so it cannot be simulated)"
+fi
+
+# ---- the stamp must be SESSION-scoped, not repo-state-scoped ----
+# It lives in .git/ and persists across sessions. Without the session in the fingerprint, a NEW
+# session inheriting an unchanged repo got silence on its first claim — exactly when pass 3 is worth
+# most, because a fresh session has taken zero angles.
+SESS=$(mkrepo s1 delete)
+tr_s1="$TMP/sess-one.jsonl"; tr_s2="$TMP/sess-two.jsonl"
+printf '{"type":"assistant","message":{"content":[{"type":"text","text":"All done and verified."}]}}\n' > "$tr_s1"
+cp "$tr_s1" "$tr_s2"
+first_sess=$(run "$SESS" "$tr_s1" stop)
+a "session 1 first claim reports"        "CONSERVATION" yes "$first_sess"
+a "same session, same state -> silent"   "CONSERVATION" no  "$(run "$SESS" "$tr_s1" stop)"
+a "NEW session, same state -> reports"   "CONSERVATION" yes "$(run "$SESS" "$tr_s2" stop)"
+
 # ---- fail-safe ----
 mkdir -p "$TMP/plain"
 a "non-repo directory is silent" "COMPLETENESS SWEEP" no "$(run "$TMP/plain" "" pr)"

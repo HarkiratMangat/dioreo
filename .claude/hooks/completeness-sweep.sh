@@ -81,22 +81,60 @@ emit() {
 # Lives in .git/ deliberately: never committed, never shared between clones or worktrees, discarded
 # with the clone. A stamp in the tree would be state that rots and needs gitignoring.
 STAMP="$(git rev-parse --git-dir)/completeness-sweep.stamp"
-fingerprint=$(printf '%s|%s|%s' "$BASE" "$(git rev-parse HEAD 2>/dev/null)" "$(git status --porcelain 2>/dev/null | cksum)")
+# ⚠️ THE SESSION IS PART OF THE FINGERPRINT — added 2026-08-06 09:44 EDT.
+# The stamp lives in .git/ and therefore PERSISTS ACROSS SESSIONS. Without the session component, a
+# new session inheriting an unchanged repo state got SILENCE on its first completion claim — and a
+# fresh session has taken ZERO angles, which is precisely when pass 3 is worth the most. The stamp
+# is meant to suppress repeats within a session, never to carry "already checked" into a new one.
+fingerprint=$(printf '%s|%s|%s|%s' "$BASE" "${TRANSCRIPT##*/}" \
+  "$(git rev-parse HEAD 2>/dev/null)" "$(git status --porcelain 2>/dev/null | cksum)")
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP" 2>/dev/null)" = "$fingerprint" ]; then
-  exit 0   # nothing changed since this exact state was reported. Silence is correct.
+  exit 0   # nothing changed since this exact state was reported IN THIS SESSION. Silence is correct.
 fi
 
-changed=$(git diff --name-only "$BASE...HEAD" 2>/dev/null)
+# ⚠️ UNCOMMITTED WORK WAS INVISIBLE — the single highest-likelihood miss in the whole design.
+# `$BASE...HEAD` sees COMMITTED work only, so a session that edits twenty files and claims "done"
+# without committing produced an empty diff and total silence. That is not an edge case: it is the
+# default state mid-session, and it is exactly when a premature "done" is most likely. The sweep now
+# unions committed changes with the working tree, so the gate covers the work as it actually exists
+# rather than as git has recorded it so far.
+changed=$(
+  { git diff --name-only "$BASE...HEAD" 2>/dev/null
+    git status --porcelain 2>/dev/null | sed 's/^...//'
+  } | sort -u
+)
 [ -n "$changed" ] || exit 0
 
+# ⚠️ FAIL LOUD IF `rg` IS ABSENT. Without it the conservation loop's `rg -q` returns non-zero for
+# EVERY sampled line, so a missing binary reports 100% data loss on every deleted file — a confident
+# FABRICATED alarm, which is worse than silence because it trains dismissal of the one run that
+# matters. stale-reference-sweep.sh already guards exactly this ("the tool is missing" and "the tool
+# found nothing" must never look the same); CI proved it is not hypothetical, since the ubuntu runner
+# has no ripgrep. This hook shipped without the guard and inherited the inverse of that bug.
+if ! command -v rg >/dev/null 2>&1; then
+  msg="COMPLETENESS SWEEP CANNOT RUN: ripgrep (rg) is not installed, so conservation and angle detection did NOT run. Do NOT read this as a clean sweep — with rg absent the conservation check would report every line as lost, so it is disabled rather than allowed to fabricate findings."
+  if [ "$MODE" = stop ]; then jq -n --arg m "$msg" '{decision:"block",reason:$m}'
+  else jq -n --arg m "$msg" '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:$m}}'; fi
+  exit 0
+fi
+
 # ── COST CONTROL 2: claim gate (stop mode only) ───────────────────────────────────────────────────
-# Mirrors the completion-claim vocabulary the Stop hooks in settings.json already use rather than
-# inventing a second dialect. `tail -c` bounds the read to the last message, not the session.
+# ⚠️ DELEGATES to claim-detect.sh. This carried its OWN copy of the completion-claim regex while the
+# gate in settings.json carried a different one — two dialects for one concept, in the same repo
+# whose `notes-open-items.sh` exists precisely because a duplicated regex drifted and one copy went
+# silently unfixed for weeks. Consolidated 2026-08-06 09:47 EDT, found by asking what this hook
+# DUPLICATES — an angle neither earlier pass took. The comment here used to claim it "mirrors" that
+# vocabulary; mirroring by hand is what drift looks like before it drifts.
 if [ "$MODE" = stop ]; then
   [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ] || exit 0
-  last=$(tail -c 60000 "$TRANSCRIPT" 2>/dev/null | grep '"type":"assistant"' | tail -3)
-  printf '%s' "$last" | grep -qiE '\ball done\b|all (three|four|five|[0-9]+) (jobs|tasks|items)|everything.?s (done|clean|correct|in sync)|fully (done|verified|swept|synced)|(is|are|it.?s) (done|verified|complete|clean|in sync)|no (gaps|issues|stale|misses|residue)|nothing (missed|else|remaining)|audit (done|complete)|sweep (done|complete)|swept clean|ready to (push|merge|open)' \
-    || exit 0
+  DETECT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/claim-detect.sh"
+  # A missing detector must not silently disable the gate: "no claim was made" and "the test for a
+  # claim is gone" must never look the same — the failure shape three other hooks here guard against.
+  if [ ! -r "$DETECT" ]; then
+    jq -n '{decision:"block",reason:"COMPLETENESS SWEEP: .claude/hooks/claim-detect.sh is missing, so the completion-claim gate could not be evaluated and passes 2 and 3 did NOT run. This is not a clean sweep."}'
+    exit 0
+  fi
+  bash "$DETECT" "$TRANSCRIPT" || exit 0
 fi
 
 findings=""
@@ -110,7 +148,16 @@ findings=""
 # Sampling, not exhaustive diffing — the question is "did a chunk vanish?", not a byte audit.
 # Substantial lines only, capped at 40, stopping after 6 misses: past that the answer is already
 # "yes, look at this file" and more scanning buys nothing.
-gone_files=$(git diff --name-status -M "$BASE...HEAD" 2>/dev/null | awk -F'\t' '$1=="D"||$1 ~ /^R/{print $2}')
+# Committed deletes/renames UNION uncommitted ones. Leaving the working tree out here would have
+# made the uncommitted-work fix above half a fix: `changed` would cover the tree while the
+# conservation pass — the only check that can see content vanish — still saw committed history only.
+# `git status --porcelain` reports a delete as `D ` or ` D` and a rename as `R  old -> new`; take the
+# OLD path in both cases, since that is the name whose content has to be accounted for.
+gone_files=$(
+  { git diff --name-status -M "$BASE...HEAD" 2>/dev/null | awk -F'\t' '$1=="D"||$1 ~ /^R/{print $2}'
+    git status --porcelain 2>/dev/null | awk '/^ ?[DR]/{sub(/^.../,""); sub(/ -> .*/,""); print}'
+  } | sort -u
+)
 
 while IFS= read -r f; do
   [ -n "$f" ] || continue
