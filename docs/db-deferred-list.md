@@ -1466,13 +1466,22 @@ well-specified execution/polish, not novel design.*
   can't be generated (quirks, examples, screenshots), with a `docs-audit` coverage check so a new
   undocumented command fails rather than passing silently.
 
-  **Full thinking is parked in `local/docs-system-guide.md`** (gitignored, so it does not clutter the
-  tracked records) — a single ~670-line guide covering: the five-criterion rubric any docs tool has to
+  **Full thinking is in `docs/superpowers/specs/2026-08-05-docs-system-design.md`** (tracked, but not
+  published — nothing in `docs/superpowers/` feeds the site build), with a short pointer entry in
+  `docs/reference/design-ideas.md` — a single numbered guide covering: the five-criterion rubric any docs tool has to
   survive here · why a docs framework is the wrong answer · the two products and their different
   failure modes · the `SlashCommandBuilder` generation design and its coverage gate · the admin
   manual's structure and its public/private fork · tooling by tier, plus MCPs, services and apps ·
-  information architecture and the build pipeline · what it touches in existing CI/deploy machinery ·
-  a six-phase plan · a risk register · and an honest case for doing nothing.
+  a full examination of hosted platforms (Mintlify specifically, including the one capability this
+  plan cannot match) · information architecture and the build pipeline · what it touches in existing
+  CI/deploy machinery · a phased plan · a risk register · and an honest case for doing nothing.
+
+  ⚠️ **That guide is NOT the definitive answer and NOT the end of the discussion**, and it says so in
+  its own opening banner. Harkirat is explicitly still open to other ideas, other tools and other
+  shapes entirely; Claude should keep looking rather than treat the file as settled. **Nothing has
+  been concretely planned or outlined** — its phases are a sketch of *an* order, not a chosen one, and
+  its "settled" decisions are reasoning open to being overturned by a better argument or a tool nobody
+  checked. If a future session finds something better, **change the guide rather than defend it.**
 
   ⚠️ **Two live constraints any version of this must survive**, both already paid for elsewhere:
   `docs/legal/PRIVACY.md` §2.6 promises *"no analytics, no third-party scripts"*, which disqualifies

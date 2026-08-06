@@ -25,6 +25,31 @@ met, move it into `docs/db-deferred-list.md` as real queued work and delete it f
 
 ---
 
+## An interactive documentation system
+
+**Status:** explored 2026-08-05 23:30 EDT · **Condition to revisit:** whenever documentation is
+actually wanted — or sooner, if the *search* half alone starts being missed.
+
+**What it is.** A player-facing help system for the bot's commands, plus an admin operations manual
+for `/manage`, `/autobuild` and the backend. From a mini brainstorming side-session; **nothing is
+decided or planned**, and Harkirat is explicitly still open to other shapes entirely.
+
+**Where the thinking lives.** `docs/superpowers/specs/2026-08-05-docs-system-design.md` — the full
+guide: the rubric any docs tool has to survive here, why a framework is the wrong answer, the two
+products and their different failure modes, the `SlashCommandBuilder` generation design, distribution,
+tooling by tier, a phased plan, and an honest case for doing nothing.
+
+**The two ideas worth not losing**, if the rest is never read: the command reference should be
+**generated** from the `SlashCommandBuilder` definitions, since Discord renders its own command picker
+from the same object and a generated reference therefore cannot drift; and the same generated spec can
+feed an **in-Discord surface** as well as the website, so one source serves both.
+
+**Why it is parked rather than queued.** Nothing is broken and nobody is blocked — the cost of
+inaction is slow, not sharp. The one piece that would stand alone regardless is static search over the
+~16,400 lines of prose that already exist and cannot currently be searched at all.
+
+---
+
 ## The cross-referenced contributor index
 
 **Status:** parked 2026-08-02 22:46 EDT · **Condition to revisit:** more than one contributor, or
