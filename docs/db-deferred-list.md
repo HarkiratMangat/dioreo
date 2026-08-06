@@ -1441,6 +1441,52 @@ well-specified execution/polish, not novel design.*
   Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse
   `reference_vm_bot_commands` card. ("Not anytime soon.")
   ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
+
+  **📚 Widened 2026-08-05 23:10 EDT — this item is one half of a larger docs system Harkirat
+  described in a mini brainstorming side-session.** Nothing is decided; the notes below exist so the
+  thinking isn't lost, **not** as an agreed design. Treat the whole thing as still open to discussion,
+  including whether to do it at all.
+
+  **What he actually wants**, in his words: a *detailed interactive help doc for the bot and its
+  commands* — how each one works, what it does, the quirks — **and** a *detailed guide for the
+  admin-based commands*: maintaining the data, using every aspect of `/manage` and `/autobuild`, and
+  how the backend is handled (Cloudinary caching, the Gemini/Vertex extraction, and so on).
+
+  That is **two products, not one**: a player-facing command reference, and an admin operations
+  manual. This filed item is the *infrastructure* half of the second one. **Open question: do they
+  merge into a single manual with two parts, or stay separate?** Writing them independently risks two
+  half-guides, which is the main reason this note exists at all.
+
+  **The one structural idea worth not losing** — every `commands/*.js` exports
+  `data: new SlashCommandBuilder()` with names, descriptions, typed options, and `addChoices()`, and
+  those option descriptions are *already written in player-facing voice*. Discord renders its own
+  command picker from that same object, so a reference **generated** from `.data.toJSON()` cannot drift
+  from what a user sees in the client. Hand-written command docs always drift; generation removes the
+  failure mode structurally rather than by discipline. Hand-written overlays then carry the part that
+  can't be generated (quirks, examples, screenshots), with a `docs-audit` coverage check so a new
+  undocumented command fails rather than passing silently.
+
+  **Full thinking is parked in `local/` (gitignored, so it does not clutter the tracked records):**
+  - `local/docs-system-recommendations.md` — tooling landscape: the five-criterion rubric, why a docs
+    framework is the wrong answer here, Pagefind as the highest-value addition, and every tool
+    considered including the rejected ones.
+  - `local/docs-help-system-scope.md` — the two products: audiences, voices, content, and how each
+    document dies if built carelessly.
+  - `local/docs-system-master-plan.md` — the synthesis: information architecture, the unified build
+    pipeline, what it touches in existing CI/deploy machinery, a phased plan, and a risk register.
+
+  ⚠️ **Two live constraints any version of this must survive**, both already paid for elsewhere:
+  `docs/legal/PRIVACY.md` §2.6 promises *"no analytics, no third-party scripts"*, which disqualifies
+  Algolia, Mermaid's runtime renderer and every hosted docs service; and a troubleshooting section must
+  never tell anyone to paste a **raw** Cloudinary error, because that object carries the live API key
+  and secret (see the hard invariant in CLAUDE.md).
+
+  **If only one piece is ever done: Pagefind.** Static search over the existing site, no decisions
+  required, no third-party requests, benefits all 10 live pages — and it is a cheap honest test of
+  whether extending a 10,037-line generator is as comfortable as the plan assumes.
+
+  📌 **The `[P3 · M]` tag covers the original ops-guide scope only.** The full system is plainly larger
+  — re-tag once the scope question above is actually answered, rather than inflating it on speculation.
 - `[P3 · M · Opus5-M]` **Ship the redesigned changelog artifact** — the "Armory Terminal" visual, paused.
   ⇄ Also on `docs/ROADMAP.md`'s **v3** list (version horizon).
 - `[P3 · XS · Sonnet5-L · 🔗bundle-with next VM/ops touch]` **Guest disk-usage peaks in `scripts/vmpeaks.sh`**
