@@ -10,7 +10,7 @@
     "docs:audit": "node scripts/docs-audit.mjs",
     "docs:audit:test": "node scripts/docs-audit.test.mjs",
     "test:hooks": "bash .claude/hooks/run-all-tests.sh",
-    "test": "npm run check && npm run docs:audit:test && node scripts/calendarDedup.test.js && node scripts/alertExplain.test.js && node scripts/gatewayRecovery.test.js && npm run test:hooks"
+    "test": "npm run check && npm run docs:audit:test && node scripts/calendarDedup.test.js && node scripts/alertExplain.test.js && node scripts/gatewayRecovery.test.js && node scripts/logger.test.js && npm run test:hooks"
   },
   "engines": {
     "node": ">=24"

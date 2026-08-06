@@ -5288,17 +5288,33 @@ closed the discussion while the question I was actually asked went unanswered. E
 documents — PRIVACY, TERMS, LICENSE, CLAUDE.md, a decided-no entry — belongs to the person asking me
 the question. An amendment is a line in the cost column, not a wall.
 
-Redone on the merits, the answer is still "not now" but for a reason that can actually be checked:
-**of 409 stored alerts, 2 are errors across 1 distinct title.** Sentry exists to fingerprint many
-occurrences of many distinct exceptions and catch regressions across releases; at that volume the
-grouping view holds one row. And the thing that made him want it — not being able to tell what an alert
-meant — is what the rest of this release fixed directly.
+Redone on the merits, the answer is still "not now" but for a reason that can actually be checked, and
+the checking moved the number. Cloud Logging holds **19 ERROR entries over 30 days, and 15 of them are
+the same 503 gateway error** — the very one that started this release. (My first pass said "2 errors",
+read off AlertLog. Both figures are real and they measure different things: `sendAlert` throttles to
+1/min per title, so AlertLog counts what was *announced* and Cloud Logging counts what *happened*. The
+tiers disagreeing is the finding, which is exactly what the three-tier rule says to expect.) Sentry
+exists to fingerprint many occurrences of *many distinct* exceptions; here there is essentially one
+recurring error, and it is a network condition rather than a bug.
 
 The more useful finding is the one the original evaluation never reached: **Google Cloud Error
 Reporting** does the grouping-and-dedup half for free, consuming the stack traces the logger already
-emits, with no SDK inside the process and no policy amendment — and it is simply not switched on. I
+emits, with no SDK inside the process and no policy amendment — and it was simply not switched on. I
 had been comparing Sentry against "raw Cloud Logging" when the real comparison was sitting unenabled
 in the same cloud project. **Ruling something out on a document is how you avoid finding that.**
+
+Harkirat's response was to have me turn it on, so this release also ships the wiring. The integration
+is one object — `serviceContext` on ERROR entries — and that is precisely what makes it dangerous:
+delete it and nothing breaks, nothing logs, no request fails. The dashboard just goes quiet, and a
+quiet error dashboard is indistinguishable from a healthy one. That is the third time this project has
+met that shape (six hook self-tests nothing ran; a `-p err` counter structurally stuck at zero), so the
+contract is asserted against the emitted bytes in `scripts/logger.test.js` rather than trusted.
+
+Two checks I nearly skipped and shouldn't have. The API is enabled per-project, and the gcloud default
+project is the *Vertex AI* one — so I verified the VM actually lives in that same project before
+believing any of it. Enabling Error Reporting on a project the bot never logs to would have produced a
+perfectly clean, permanently empty dashboard. And I reported a real test event to confirm the pipeline
+accepts and groups it, then deleted it so his dashboard starts empty rather than with my debris.
 
 ### What this cost, and what it taught
 

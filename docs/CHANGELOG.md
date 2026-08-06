@@ -248,15 +248,26 @@ advisory but I'm open to changing the policy."* He is right, and the reasoning w
 says "None present" **because** we previously chose not to adopt one, so quoting it back dresses our own
 past decision up as an external constraint. A policy amendment is a **cost line**, never a veto.
 
-**The real case is volume.** Of 409 stored alerts, **2 are errors, across 1 distinct error title.**
-Sentry's core value is fingerprinting many occurrences of many distinct exceptions and tracking
-regressions across releases; at this rate that view holds a single row. And the practical want behind
-it — *"I can't tell what this means or whether to act"* — is what the rest of this release fixes
-directly. 🔎 **What the original evaluation missed entirely: Google Cloud Error Reporting**, which does
-the grouping and dedup half for free, off the stack traces `utils/logger.js` already emits, with no SDK
-inside the bot process and no policy amendment at all — and **it is not enabled**
-(`gcloud services list --enabled` returns only `logging.googleapis.com`, checked live). Try that first.
-**Nothing was built, and this is explicitly not a permanent no.**
+**The real case is diversity, not volume.** Cloud Logging holds **19 ERROR entries over 30 days, and 15
+are the same `Shard 0 error: Unexpected server response: 503`** — the very alert that started this
+release. Sentry exists to fingerprint many occurrences of *many distinct* exceptions and catch
+regressions across releases; here there is essentially one recurring error, and it is a transient
+network condition rather than a bug.
+
+🔎 **And the original evaluation had missed the real alternative entirely: Google Cloud Error
+Reporting — now ENABLED and wired.** It does the grouping and dedup half for free, off the stack traces
+`utils/logger.js` already emits, with **no SDK inside the bot process** (no RAM on the e2-micro, nothing
+that can fail) and no data leaving the GCP project that already handles these logs. `logger.js` now
+attaches `serviceContext` to ERROR entries, which is the entire integration. Verified end to end rather
+than assumed: a test event was reported, appeared correctly grouped with its service and version, and
+was then deleted so the dashboard starts clean — and the VM was confirmed to live in the *same* project
+as the enabled API, since enabling it on the wrong one would have been an invisible no-op.
+⚠️ **It stays empty until the VM is deployed past v2.46.0.**
+
+⚠️ **A number worth keeping straight:** AlertLog reports 2 errors where Cloud Logging reports 19,
+because `sendAlert` throttles to 1/min per `level:title`. Neither is wrong — one counts what *happened*,
+the other what was *announced*. **The disagreement is the finding**, and the three tiers must not be
+reconciled into one figure.
 
 **Two new test suites**, both wired into `npm test` (so CI runs them): `scripts/alertExplain.test.js`
 (13 cases) and `scripts/gatewayRecovery.test.js` (8). They exist because the obvious verification —

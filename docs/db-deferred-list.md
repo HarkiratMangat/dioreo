@@ -1729,10 +1729,15 @@ doesn't re-open them as if they were new.*
     clothes. The amendment is a **cost line**, not a wall. See
     [[feedback_policy_is_advisory_not_a_veto]].
     **The actual technical case, measured:**
-    · **Volume kills it.** Of 409 alerts in the store, **2 are errors, across 1 distinct error title.**
-      Sentry's core value — fingerprinting many occurrences of many distinct exceptions, deduplicating
-      them, tracking regressions across releases — is a solution to a volume problem this bot does not
-      have. At this rate the grouping view would hold a single row.
+    · **Diversity, not volume, is what kills it.** Cloud Logging holds **19 ERROR entries over 30 days,
+      and 15 of them are the same `Shard 0 error: Unexpected server response: 503`.** ⚠️ *(An earlier
+      draft of this entry said "2 errors" from the AlertLog store — that number is real but measures
+      something else: `sendAlert` throttles to 1/min per `level:title`, so AlertLog counts what was
+      ANNOUNCED, not what happened. The tiers disagreeing is the finding, not an error in either.)*
+      Sentry's core value is fingerprinting many occurrences of **many distinct** exceptions and
+      tracking regressions across releases. There is essentially **one** recurring error here, and it is
+      a transient network condition rather than a bug. Grouping would show a single row — which is
+      exactly what the free option below already gives.
     · **The practical want was already delivered.** The reason to want grouping was "I can't tell what
       an alert means or whether to act". v2.57.0's plain-language layer + paired recovery signal answer
       that directly, without a vendor.
@@ -1740,14 +1745,16 @@ doesn't re-open them as if they were new.*
       Error Reporting.** It does automatic grouping/dedup and new-error notification, consumes the
       stack traces `utils/logger.js` ALREADY emits to Cloud Logging, needs **no SDK inside the bot
       process** (so no RAM on a 969MB e2-micro), no new vendor, and no data leaving the existing
-      processor — which means **no policy amendment either**. Checked live 2026-08-06 15:46 EDT:
-      `gcloud services list --enabled` shows only `logging.googleapis.com`, so
-      **`clouderrorreporting.googleapis.com` is NOT enabled.** Turning it on is one API enable and zero
-      code.
-    **Recommendation:** enable Cloud Error Reporting first and live with it. If a real gap survives —
-    breadcrumbs, release-health, crash-free-session rate, none of which Error Reporting does — then
-    Sentry becomes a genuine question again, and the policy amendment is priced in rather than
-    treated as a blocker. **Not a permanent no.**
+      processor — which means **no policy amendment either**.
+    ✅ **DONE — Error Reporting was enabled and wired 2026-08-06 15:52 EDT (v2.57.0)**, at Harkirat's
+    instruction, after this evaluation surfaced it. `utils/logger.js` now attaches `serviceContext` to
+    ERROR entries; verified end to end by reporting a test event, seeing it grouped, then deleting it.
+    ⚠️ It stays empty until the VM is deployed past v2.46.0. Setup + traps:
+    `docs/reference/deployment-and-ops.md`.
+    **Recommendation:** live with Error Reporting for a while first. If a real gap survives — breadcrumbs,
+    release-health, crash-free-session rate, none of which Error Reporting does — then Sentry becomes a
+    genuine question again, and the policy amendment is priced in rather than treated as a blocker.
+    **Not a permanent no.**
     *(The policy consequence, kept as a COST, not a reason:)* `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
     PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises
     *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it.
