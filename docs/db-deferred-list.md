@@ -62,39 +62,36 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
-- ⏸️ **`v2.57.0` IS READY TO MERGE AND IS DELIBERATELY NOT MERGED — waiting on GitHub Actions.**
-  *Status as of 2026-08-06 19:24 EDT. Harkirat's call: "no need to merge yet since github actions is
-  still down. just push and pr and leave a note for future sessions to check."*
+- ⏸️ **`v2.57.0` IS READY, CI IS GREEN, AND IT IS DELIBERATELY NOT MERGED — awaiting Harkirat's word.**
+  *Status 2026-08-06 19:32 EDT.* Harkirat deferred the merge at 19:22 EDT *because* Actions was down
+  (*"no need to merge yet since github actions is still down"*). **Actions has since recovered and
+  `syntax-check` passed on the head commit**, so the blocking reason is gone — but the instruction was
+  explicit, so the merge waits for him rather than being taken on my own judgement. **Approval does not
+  carry over, and a changed premise is a reason to ASK, not to proceed.**
 
-  **✅ Cause of the earlier CI failures is settled: a GitHub Actions MAJOR OUTAGE**, confirmed at
-  githubstatus.com — not anything in this repo. Two runs died at **exactly 15m04s / 15m03s with ZERO log
-  bytes** (the job never got a runner; a failing step always leaves output), and **`main`'s own run
-  failed identically** on a branch this work never touched. The repo is PUBLIC, so Actions minutes are
-  free and quota was never a candidate.
+  **Current facts, all verified not assumed:**
+  - PR **#89** — `state=OPEN mergeable=MERGEABLE mergeStateStatus=CLEAN`, `syntax-check=SUCCESS`.
+  - Branch `docs/deprioritize-self-deletion`, 17 commits ahead of `main` (still v2.56.2 / `30348c4`).
+  - CI's exact seven steps also pass locally.
+  - Records complete and aligned: CHANGELOG · CHANGELOG-SUMMARY · DEVLOG all at `v2.57.0`;
+    `package.json` + `package-lock.json` both `2.57.0`.
 
-  **⚠️ WHY IT CANNOT SIMPLY BE MERGED ANYWAY:** `syntax-check` **is now a required status check**
-  (verified against the protection API 2026-08-06 19:06 EDT — CLAUDE.md previously claimed no required
-  check existed; that was stale and is corrected). With Actions not dispatching, the head commit has
-  **0 checks** and the PR sits `BLOCKED` with nothing wrong in the repo. Closing and reopening the PR
-  did **not** force a dispatch. Actions began recovering ~18:56 EDT (a run went green for an earlier
-  commit on this branch), so this should clear on its own.
+  **✅ Root cause of the earlier failures is settled and needs no further investigation:** a GitHub
+  Actions **major outage** — two runs died at exactly ~15m04s with **zero log bytes** (no runner was
+  ever assigned), and **`main`'s own run failed identically** on a branch this work never touched.
+  Nothing in this repo was ever at fault.
 
-  **✅ VERIFIED LOCALLY INSTEAD — CI's exact seven steps, all green on `8fbbdb8`:** `npm ci` ·
-  `npm test` · `npm run docs:audit:test` · `npm run docs:audit` · `node scripts/checkEmojiCaptures.js` ·
-  `npm run site` · `public/` not stale outside `public/changelog/`. So the work is verified, just
-  not CI-attested.
-
-  **📋 NEXT SESSION — do this first, then carry on:**
-  1. `gh run list --branch docs/deprioritize-self-deletion --limit 3` — is there a **completed/success**
-     run whose `headSha` matches the PR head? If not, check githubstatus.com before debugging anything.
-  2. Green on the head commit → `gh pr merge 89 --squash --delete-branch`
-  3. **Then, as a SEPARATE command** (never chain with `&&` — `gh pr merge` can fail while a pipeline
-     still reports success, which once produced a wrong pushed tag): verify `git log -1` shows the
-     release, then `git tag -a v2.57.0 <squash-sha> -m "v2.57.0"` and `git push origin v2.57.0`.
-  4. `git fetch origin main:main v3-pre-release:v3-pre-release` to refresh local refs.
-  5. Deploy is **separate and optional** — the VM is on v2.46.0 and far behind. Ask before deploying.
-  ⛔ **Do NOT merge past a red or check-less CI on the grounds that "it's just the outage."**
-  `enforce_admins` is off, so an override is possible — it is Harkirat's call, never an automatic one.
+  **📋 TO FINISH (once Harkirat says go):**
+  1. Confirm a **completed/success** run still matches the PR head (`gh run list --branch
+     docs/deprioritize-self-deletion --limit 3`).
+  2. `gh pr merge 89 --squash --delete-branch`
+  3. **Separate command — never chained with `&&`** (a pipeline can report success while `gh pr merge`
+     failed; that once produced a wrong pushed tag): verify `git log -1` shows this release, then
+     `git tag -a v2.57.0 <squash-sha> -m "v2.57.0"` and `git push origin v2.57.0`.
+  4. `git fetch origin main:main v3-pre-release:v3-pre-release`
+  5. **Deploy is separate and optional** — the VM is on v2.46.0 and far behind. Ask first.
+  ⚠️ **Standing lesson from this episode:** when CI fails in a way that makes no sense (a cancel with no
+  failed step, no log output), **check githubstatus.com before debugging the repo.** It cost real time.
 
   <details><summary>original item, as filed</summary>
 
@@ -903,7 +900,7 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
     (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
     It clones the real landing page and layers the effects on. Sources now live in
     **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full
-    map, build command and per-item diagnosis in **`local/morph-poc-handoff.md`**.
+    map, build command and per-item diagnosis in **`local/handoff/morph-poc-handoff.md`**.
     ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location
     a later session can find.** The next session had to hunt through
     `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is
