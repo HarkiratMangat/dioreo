@@ -297,7 +297,34 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **🔎 Confirm `completeness-sweep.sh` actually fires at `Stop` in a real session** `[P1 · XS]`
+- **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle
+  detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at
+  all" reminder, which is now answered.)*
+
+  **Answered half:** it fired, unprompted, on a real completion claim. The wiring works.
+
+  **Open half, and the reason this stays P1:** it reported **all five angles as un-taken** on a
+  session that had demonstrably run every one — measured afterwards, the detectors match at
+  transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Re-running the hook by hand against that
+  same file suppressed all five correctly, so the matching logic is fine and **the fault is in what
+  the harness handed it**. Root cause UNKNOWN; do not guess at it, reproduce it.
+  **Reproduce like this:** make a completion claim on a branch with changes, capture what the hook
+  reports, then run `bash .claude/hooks/completeness-sweep.sh main <transcript> stop` by hand against
+  the path it names and compare. The hook now prints the transcript path and line count when it sees
+  zero Bash entries, which is the diagnostic that was missing the first time.
+
+  ⚠️ **Mitigated, not fixed.** A transcript with zero Bash tool_use entries now reports "ANGLE
+  DETECTION COULD NOT RUN" instead of listing every angle — because *"I cannot see the session"* and
+  *"no angle was taken"* are different answers, and reporting all five is the fires-on-everything
+  behaviour that gets a gate dismissed unread. That makes the failure visible; it does not explain it.
+
+  **Two real bugs found while investigating, both fixed:** `claim-detect.sh` was resolved from
+  `${BASH_SOURCE[0]}` *after* the script `cd`s to `$REPO`, re-anchoring a relative invocation path to
+  the wrong tree (breaks under a worktree); and the Bash-scoping is weaker than documented — JSONL
+  puts a whole assistant message on ONE line, so prose sharing a message with any Bash call still
+  leaks through.
+
+- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
   *(filed 2026-08-06 09:35 EDT, in the same pass that built it.)* Trigger: **the next session that
   makes a completion claim on a branch with commits** — it should be interrupted with a
   `COMPLETENESS SWEEP` block. If a session ends claiming done and nothing fires, the wiring is wrong.
