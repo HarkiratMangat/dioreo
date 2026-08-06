@@ -8331,7 +8331,7 @@ function indexPage(built) {
     return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dioreo — Call of Duty: Mobile, in Discord</title>
+<title>Dioreo — COD:M Companion Bot</title>
 <meta name="description" content="Dioreo is a COD:M companion Discord bot for lucky draws, CP costs, loadouts, the seasonal calendar, and so much more. Install it once and it works in any server or DM.">
 <meta name="color-scheme" content="dark light">
 ${THEME_BOOT}
