@@ -50,8 +50,14 @@ a "the miss is named in the message"  "RELEASE NOT READY" yes "$NODEVLOG"
 # permissionDecision at all: a pure notice. It fired correctly on v2.56.1 and the merge went through
 # anyway, costing the extra release its own message warns about. A test whose name claims a
 # behaviour it never checks is worse than no test.
+# ⚠️ CLAUDE_PROJECT_DIR="$REPO" IS MANDATORY — exactly as this file's own header warns, and I omitted
+# it here anyway. Without it the hook cd's to an absolute Mac path that does not exist on a runner,
+# exits 0, and every assertion reads SILENT: green locally, failing only in CI. That warning was
+# written on 2026-08-02 after six cases "passed" by not running, and it is at the top of the very
+# file this helper was added to. A hazard documented in the file you are editing still has to be
+# read.
 dec() { local raw; raw=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$2" | jq -Rs .)" \
-          | RELEASE_CHECK_BASE=main RELEASE_CHECK_FILES="$1" bash "$HOOK" 2>/dev/null)
+          | RELEASE_CHECK_BASE=main RELEASE_CHECK_FILES="$1" CLAUDE_PROJECT_DIR="$REPO" bash "$HOOK" 2>/dev/null)
         # Silence is a valid outcome (a complete release), and `jq` on EMPTY input prints nothing —
         # which is not "none", it is the absence of an answer. Distinguishing them matters here:
         # "the hook stayed silent" and "the hook ran and asked for no decision" are both correct, but
