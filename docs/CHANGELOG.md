@@ -181,7 +181,17 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.56.1 — 2026-08-06 10:53 EDT (#87) — A guard that judged the room instead of the request
+## v2.56.2 — 2026-08-06 10:58 EDT (#88) — The DEVLOG entry v2.56.1 should have carried
+
+Records only. The `release-ready-check` gate fired on v2.56.1 saying its branch changed four
+non-mechanical files with no DEVLOG entry — and it was right; the merge went through anyway because
+an `ask` from a `PreToolUse` hook is silently auto-approved in this permission mode. This is the
+extra release that gate exists to prevent, paid rather than left as a wrong record.
+
+The entry itself is worth having: a guard blocking the PR that fixes the guard, a fix that opened a
+worse hole than the one it closed, and the pre-existing adversarial test case that caught it twice.
+
+## v2.56.1 — 2026-08-06 10:53 EDT (#87 · `3b9d023`) — A guard that judged the room instead of the request
 
 `main-push-guard.sh` asked one question — *is the project dir on `main`?* — and answered it about the
 ambient repository rather than about the command in front of it. A squash-merge with
