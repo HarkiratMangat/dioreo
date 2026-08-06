@@ -118,6 +118,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-05 14:53 EDT — The asymmetry a symmetric-looking refactor was hiding (v2.54.0)
 - 2026-08-05 18:51 EDT — A measurement that measured the wrong thing, and a filter list hiding our own button (v2.55.0)
 - 2026-08-05 21:02 EDT — A bug only one device could see, and three gates that all said fine (v2.55.2, written in v2.55.3)
+- 2026-08-05 22:27 EDT — A tool chosen for the wrong reason, and a free instrument nobody had reached for (v2.55.4)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -4535,6 +4536,61 @@ descriptions afterwards instead of trusting the build's verdict.
 - **The gate that fires before a merge is the last moment anything can be fixed cheaply.** Overriding
   it because "the information exists elsewhere" cost an extra release — this one.
 
+## 2026-08-05 22:27 EDT — A tool chosen for the wrong reason, and a free instrument nobody had reached for (v2.55.4)
+
+Harkirat was approved for the GitHub Student Developer Pack and asked a deliberately sceptical
+question: which offers are genuinely worth adopting here, and which are traps. He supplied the current
+listing himself rather than letting it be recited from memory, and pre-emptively ruled out the obvious
+bad answer — migrating working infrastructure for credits, after this project has already been through
+Render → Railway → GCP.
+
+**The nominated highest-value candidate was real-device testing, and the reasoning behind it was
+sound.** The `[P2 · M]` mobile-nav liquid-indicator bug reproduces only on iOS, has swallowed four
+fixes, and its own deferred-list entry says it *"needs a real device or CDP against a WebKit build"*.
+The pack contains BrowserStack and LambdaTest. The conclusion writes itself.
+
+It was wrong, and the interesting part is *where*. The entry is right that Chrome cannot see this bug.
+It is wrong about what closes it. The artefact is `.mtint` — a **sibling** of the filtered element —
+coming out inverted, which means the light chain is composited wrongly rather than blended wrongly;
+fix 4 had already ruled out the filter chain as sole cause. A bug like that is not solved by looking
+at it harder. It is solved by reading the **layer tree**. And the instrument that produces one, on the
+exact device that reproduces the fault, is Safari's Web Inspector attached over USB — free, sitting on
+the same desk as the phone, and the one capability a remote-device vendor structurally cannot supply,
+because BrowserStack and LambdaTest both give you a screen rather than an inspector.
+
+**The lesson is not "the free option won".** It is that a blocked item's stated tooling requirement is
+itself a claim, written at a moment when the goal was to stop and defer rather than to solve, and it
+inherits whatever the author believed then. Four spent fixes are exactly the condition under which
+nobody re-reads the premise. The pack still earns a place here — LambdaTest buys iteration speed and
+iOS-version breadth, and every one of those four fixes cost a round trip through Harkirat's phone —
+but that is a much narrower claim than "this unblocks the bug", and the ladder is now recorded with
+**NOT YET RUN** against it, so the next session measures before it spends.
+
+**The second finding came from asking what a "free" tool actually costs.** Sentry reads as a pure
+addition: stack traces and grouping layered over the homegrown three-tier model. But `PRIVACY.md`'s
+verification appendix names Sentry, PostHog, Mixpanel and Google Analytics **explicitly** and states
+"None present", and §2.6 promises no third-party scripts. That is a published, binding document that
+Discord requires to be linked. Adopting any of them costs a policy amendment, a sub-processor
+disclosure, a version bump and a site rebuild before any code is written. The constraint generalises
+to every third-party SDK, and it had never been written down anywhere a future session would trip over
+it. It is now.
+
+**A smaller correction worth recording, because it was mine.** Two branches were open, and I asked
+Harkirat which order to merge them in — when the better question, once his hold on the first one
+lifted, was whether they should be one release at all. Two records-only releases twenty minutes apart
+is churn that a single question would have avoided. The constraint that justified a separate branch
+was real when the branch was created; I just never revisited it when it stopped being true.
+
+### Lesson
+
+- **A deferred item's stated tooling requirement is a claim, not a specification.** It was written to
+  stop work, not to solve the problem, and it carries the author's beliefs from that moment. Re-derive
+  what the bug class actually needs before buying an instrument to satisfy it.
+- **Ask what a free tool costs in documents, not just in dollars.** A published privacy policy that
+  enumerates the SDKs it does not use turns "add Sentry" into a legal amendment.
+- **When a constraint lifts, revisit the decisions it caused.** A separate branch was correct while the
+  other PR was held; nothing re-examined it the moment the hold came off.
+
 # Part B — Lessons Ledger (thematic)
 
 Durable, reusable takeaways. Each is a compressed version of a story in Part A.
@@ -4671,6 +4727,16 @@ Durable, reusable takeaways. Each is a compressed version of a story in Part A.
 - **Test the degenerate input, not just the populated one.** Absent/null/zero fields are where parsing
   bugs live. A status line whose happy path is perfect but which misreports the model when one field is
   missing is worse than no status line — it's confidently wrong about the exact thing it exists to show.
+- **A deferred item's stated requirement is a claim, not a specification.** It was written to stop
+  work, not to solve the problem. The iOS indicator bug's entry said it needed "a real device or CDP
+  against a WebKit build"; what it actually needed was a layer tree, which a free inspector on hardware
+  already owned provides and a paid remote-device service structurally cannot. Re-derive the need
+  before buying the instrument — especially after several failed fixes, which is exactly when nobody
+  re-reads the premise.
+- **Ask what a free tool costs in *documents*.** A published privacy policy that enumerates the SDKs it
+  does not use turns "just add Sentry" into a policy amendment plus a sub-processor disclosure.
+- **When a constraint lifts, revisit the decisions it caused.** A separate branch was right while the
+  other PR was on hold, and stopped being right the moment the hold came off; nothing re-examined it.
 - **Verify the fix actually *works*** — boot-test, and for a live interaction get a real repro or add a
   cheap trace point before theorizing.
 - **Check sibling/reference code before guessing** from prose or screenshots — the pattern is usually
