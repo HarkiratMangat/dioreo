@@ -62,6 +62,58 @@ chk "git status on main is fine"          silent "$(bash_ "$MAIN" "git status")"
 chk "'commit' in prose is fine"           silent "$(bash_ "$MAIN" "echo we should commit later")"
 chk "git commit-tree is not a commit"     silent "$(bash_ "$MAIN" "git commit-tree abc")"
 
+# --- the deny must carry a remedy that FITS the case (2026-08-06) ---
+# The block was always right; the remedy was not. Writing only to gitignored paths needs no commit at
+# all, yet the message said "git switch -c" — which produces a branch for an empty commit and reads as
+# "you needed a branch". A guard whose suggested fix is wrong for your situation teaches the wrong
+# lesson, which is the same failure class as a guard that fires on correct input.
+# `bash_` normalises to deny/silent via decide(); the MESSAGE needs the raw payload, so call the
+# hook directly and pull permissionDecisionReason out of it.
+remedy=$(printf '{"tool_name":"Bash","tool_input":{"command":"git commit -m x"}}' \
+  | CLAUDE_PROJECT_DIR="$MAIN" bash "$HOOK" \
+  | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')
+case "$remedy" in *"nothing TRACKED changed"*) r=yes;; *) r=no;; esac
+if [ "$r" = yes ]; then echo "  PASS  deny names the gitignored-only escape"; pass=$((pass+1))
+else echo "  FAIL  deny names the gitignored-only escape"; echo "        got: $remedy"; fail=$((fail+1)); fi
+case "$remedy" in *"git status --porcelain"*) r=yes;; *) r=no;; esac
+if [ "$r" = yes ]; then echo "  PASS  deny names the command that settles it"; pass=$((pass+1))
+else echo "  FAIL  deny names the command that settles it"; fail=$((fail+1)); fi
+
+# --- FALSE POSITIVES fixed 2026-08-06 21:32 EDT. Every "silent" here was a DENY before the fix. ---
+# A bundled branch switch already puts the commit on a feature branch, so PreToolUse reading HEAD
+# beforehand was answering the wrong question.
+chk "switch -c then commit is fine"       silent "$(bash_ "$MAIN" "git switch -c fix/x && git commit -m y")"
+chk "checkout -b then commit is fine"     silent "$(bash_ "$MAIN" "git checkout -b fix/x && git commit -m y")"
+chk "switch to a feature branch is fine"  silent "$(bash_ "$MAIN" "git switch fix/existing && git commit -m y")"
+# ...but a switch back ONTO a protected branch must still be caught — the TARGET is what matters.
+chk "switch to main then commit denied"   deny   "$(bash_ "$MAIN" "git switch main && git commit -m y")"
+chk "switch to master then commit denied" deny   "$(bash_ "$MAIN" "git switch master && git commit -m y")"
+# ...and a commit BEFORE the switch is still a commit on the protected branch.
+chk "commit before the switch denied"     deny   "$(bash_ "$MAIN" "git commit -m y && git switch -c fix/x")"
+
+# A heredoc body is an argument to another program, not a command. This guard denied a python heredoc
+# that was WRITING this very test file, because the fixture text contained the words.
+HD='python3 - <<PY
+text = "git add -A && git commit -m x"
+PY'
+chk "commit inside a heredoc is fine"     silent "$(bash_ "$MAIN" "$HD")"
+HDQ="python3 - <<'"'"'PY'"'"'
+s = 'git commit -m x'
+PY"
+chk "quoted-heredoc commit is fine"       silent "$(bash_ "$MAIN" "$HDQ")"
+# ...but the guard must NOT have gone blind: a real commit AFTER a heredoc still denies.
+HDR='cat <<EOF > /tmp/f
+some text
+EOF
+git commit -m y'
+chk "real commit after heredoc denied"    deny   "$(bash_ "$MAIN" "$HDR")"
+# ⚠️ KNOWN GAP, recorded rather than asserted away. `bash -c "git commit"` is NOT caught and never
+# was: the matcher requires `^` or `;&|` before `git`, and there it is preceded by a quote. This test
+# pins the CURRENT behaviour so a future fix has something to flip, and so nobody re-derives the same
+# wrong assumption. (I first wrote this case as `deny`, which failed and exposed my own false claim in
+# the hook's comment — the test was right and the belief was wrong.)
+chk "bash -c quoted commit NOT caught"    silent "$(bash_ "$MAIN" "bash -c \"git commit -m x\"")"
+
 # --- tools this guard must ignore entirely ---
 chk "Read is never blocked"               silent "$(raw "$(printf '{"tool_name":"Read","tool_input":{"file_path":"%s"}}' "$MAIN/tracked.md")")"
 
