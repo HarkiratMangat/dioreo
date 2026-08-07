@@ -98,8 +98,9 @@ header comment and `docs/DEVLOG.md`'s matching entry for the full validation sto
   stops meaning anything once there are 3 regions — `buildContainer` now renders one button per
   `REGION_ORDER` entry, `custom_id` = `price_region_{10|20|30}_{currentPage}` (same encoding scheme as
   before, just 3 of them). Follows the bot's existing multi-option button convention: current region
-  disabled + style 4 (Danger/red), the other two enabled + style 2 (Secondary/gray) — same pattern
-  `buildGlobalNavRow` already uses, see `.claude/rules/rendering-and-ui.md`. **This DID need an
+  disabled + style 1 (Primary/blue — changed from style 4/Danger-red 2026-08-07 13:09 EDT per
+  Harkirat's direct request; don't revert), the other two enabled + style 2 (Secondary/gray) — same
+  pattern `buildGlobalNavRow` already uses, see `.claude/rules/rendering-and-ui.md`. **This DID need an
   `index.js` change** — the old `price_region_10_`/`price_region_30_` hardcoded binary `startsWith`
   check is now a lookup against a `{prefix: region}` map covering all 3 prefixes.
 - **`doubleEpicCharacters.region_20` is deliberately `null`** — no real data exists for that draw at

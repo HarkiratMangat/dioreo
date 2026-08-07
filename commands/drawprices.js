@@ -487,15 +487,16 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                 // encoding scheme the old toggle button used) so index.js's handler needs no changes
                 // beyond recognizing a 3rd prefix. Follows the bot's own established multi-option
                 // button-row convention (see `.claude/rules/rendering-and-ui.md`'s Components V2
-                // notes and buildGlobalNavRow): the CURRENT region's button is disabled + style 4
-                // (Danger/red) to show it as the active selection, the other two are enabled + style
+                // notes and buildGlobalNavRow): the CURRENT region's button is disabled + style 1
+                // (Primary/blue, changed from style 4/Danger-red 2026-08-07 13:09 EDT per Harkirat's
+                // request) to show it as the active selection, the other two are enabled + style
                 // 2 (Secondary/gray). Labels shortened to "N CP" (rather than "View N CP Region
                 // Prices" x3) since three full labels side by side in one row would be visually
                 // cramped; same `emojis.regions` emoji kept on all three for consistency with what
                 // the single button used to carry.
                 components: REGION_ORDER.map(key => ({
                     type: 2,
-                    style: key === regionKey ? 4 : 2,
+                    style: key === regionKey ? 1 : 2,
                     disabled: key === regionKey,
                     custom_id: `price_region_${key.split('_')[1]}_${currentPage}`,
                     label: `${key.split('_')[1]} CP`,

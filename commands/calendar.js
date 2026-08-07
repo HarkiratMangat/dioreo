@@ -157,10 +157,13 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
 // are Secondary and clickable.
 // Button label "Gamemodes" is intentionally shorter than the page 2 heading text "Playlists &
 // Modes" -- Harkirat's explicit call (2026-07-31 16:55 EDT), a button reads better short.
+// Emoji added to each button 2026-08-07 13:10 EDT per Harkirat's request -- Draws reuses the SAME
+// `newDraws` emoji /draws' own New Draws heading uses (his explicit call, rather than a separate
+// generic "draw" icon), Events/Gamemodes use emojiMap's own `events`/`modes` icons.
 const PAGE_DEFS = [
-    { page: 0, label: 'Draws' },
-    { page: 1, label: 'Events' },
-    { page: 2, label: 'Gamemodes' }
+    { page: 0, label: 'Draws', emoji: emojis.newDraws },
+    { page: 1, label: 'Events', emoji: emojis.events },
+    { page: 2, label: 'Gamemodes', emoji: emojis.modes }
 ];
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- indexed by the same
@@ -174,6 +177,7 @@ function buildSectionToggleRow(currentPage) {
             type: 2,
             style: d.page === currentPage ? 1 : 2,
             label: d.label,
+            emoji: emojis.parseEmoji(d.emoji),
             custom_id: `calpage_${d.page}`,
             disabled: d.page === currentPage
         }))
