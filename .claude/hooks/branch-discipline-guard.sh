@@ -64,7 +64,16 @@ case "$tool" in
     printf '%s' "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_][A-Za-z0-9_]*=[^ ]*)*) +)*git +commit([^[:alnum:]-]|$)' || exit 0
     dir="${CLAUDE_PROJECT_DIR:-$PWD}"
     br=$(protected_branch_for "$dir") || exit 0
-    deny "BRANCH DISCIPLINE (deny): you are on \`$br\` and this would commit straight onto it. Every commit on \`$br\` must arrive through a squashed PR — a direct commit skips review and CI, and belongs to no release. Run: git switch -c <type>/<kebab-description> (staged and unstaged changes come with you), commit there, then open the PR. If commits are ALREADY on \`$br\`: git branch <type>/<name> && git reset --hard origin/$br && git switch <type>/<name>."
+    # ⚠️ DELIBERATELY does not check whether anything is staged. This is PreToolUse, so there is nothing
+    # to inspect yet — but even if there were, matching the COMMAND PATTERN rather than the outcome is
+    # the point: a version that waved a commit through whenever the index happened to be empty would let
+    # the reflex form, and the next time something tracked IS staged it lands on a protected branch.
+    # ⚠️ The REMEDY carries the gitignored-only escape (added 2026-08-06 21:24 EDT). The block was right
+    # and the suggested fix was wrong for the case that triggered it: writing two handoffs into
+    # gitignored `local/` needed no commit AT ALL, yet the message said "git switch -c", which would
+    # have produced a branch for an empty commit. The Write/Edit branch above already states this
+    # exemption; this one did not, and that asymmetry taught the wrong lesson.
+    deny "BRANCH DISCIPLINE (deny): you are on \`$br\` and this would commit straight onto it. Every commit on \`$br\` must arrive through a squashed PR — a direct commit skips review and CI, and belongs to no release. Run: git switch -c <type>/<kebab-description> (staged and unstaged changes come with you), commit there, then open the PR. If commits are ALREADY on \`$br\`: git branch <type>/<name> && git reset --hard origin/$br && git switch <type>/<name>. AND FIRST, CHECK WHETHER YOU NEED A COMMIT AT ALL: if nothing TRACKED changed — you only wrote to \`local/\`, a scratch file, or another gitignored path — there is nothing to commit and nothing to branch. Skip it entirely rather than creating a branch for an empty commit. \`git status --porcelain\` settles it."
     ;;
 esac
 exit 0

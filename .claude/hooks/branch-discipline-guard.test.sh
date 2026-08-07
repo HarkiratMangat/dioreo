@@ -62,6 +62,23 @@ chk "git status on main is fine"          silent "$(bash_ "$MAIN" "git status")"
 chk "'commit' in prose is fine"           silent "$(bash_ "$MAIN" "echo we should commit later")"
 chk "git commit-tree is not a commit"     silent "$(bash_ "$MAIN" "git commit-tree abc")"
 
+# --- the deny must carry a remedy that FITS the case (2026-08-06) ---
+# The block was always right; the remedy was not. Writing only to gitignored paths needs no commit at
+# all, yet the message said "git switch -c" — which produces a branch for an empty commit and reads as
+# "you needed a branch". A guard whose suggested fix is wrong for your situation teaches the wrong
+# lesson, which is the same failure class as a guard that fires on correct input.
+# `bash_` normalises to deny/silent via decide(); the MESSAGE needs the raw payload, so call the
+# hook directly and pull permissionDecisionReason out of it.
+remedy=$(printf '{"tool_name":"Bash","tool_input":{"command":"git commit -m x"}}' \
+  | CLAUDE_PROJECT_DIR="$MAIN" bash "$HOOK" \
+  | jq -r '.hookSpecificOutput.permissionDecisionReason // ""')
+case "$remedy" in *"nothing TRACKED changed"*) r=yes;; *) r=no;; esac
+if [ "$r" = yes ]; then echo "  PASS  deny names the gitignored-only escape"; pass=$((pass+1))
+else echo "  FAIL  deny names the gitignored-only escape"; echo "        got: $remedy"; fail=$((fail+1)); fi
+case "$remedy" in *"git status --porcelain"*) r=yes;; *) r=no;; esac
+if [ "$r" = yes ]; then echo "  PASS  deny names the command that settles it"; pass=$((pass+1))
+else echo "  FAIL  deny names the command that settles it"; fail=$((fail+1)); fi
+
 # --- tools this guard must ignore entirely ---
 chk "Read is never blocked"               silent "$(raw "$(printf '{"tool_name":"Read","tool_input":{"file_path":"%s"}}' "$MAIN/tracked.md")")"
 
