@@ -40,8 +40,29 @@ Every OPEN item carries `[Priority · Effort]` (+ optional flags). Two axes: one
 one for *what can be bundled cheaply*. Resolved items don't need one.
 - **Priority** (urgency + impact + risk + blocking): **P0** now (broken+user-facing / blocking / due) ·
   **P1** soon (clear value, no reason to wait) · **P2** eventually (real, not pressing) · **P3** someday/parked.
-- **Effort** (scope; carries model+effort for real builds): **XS** minutes · **S** part of a session ·
-  **M** a session · **L** its own big/multi-session job.
+- **Effort** (scope ONLY — ⚠️ it does NOT carry the model choice; see the grid below): **XS** minutes ·
+  **S** part of a session · **M** a session · **L** its own big/multi-session job.
+  ⚠️ **No `XL` tier, deliberately.** Measured 2026-08-06: completion is **S 35% · M 28% · XS 14% ·
+  L 11%** (1 of 9, and that one was retired). L is already a parking label, so a bigger bucket would
+  make parking easier. ✅ **Rule instead: an `L` item carries a named FIRST SLICE (an S or M) or a
+  decomposition, or it is not schedulable.**
+- **Model + reasoning effort** — a **separate axis**, chosen from task properties, never from the
+  effort tier. Rows = *premise risk* (are the facts given and checkable?), columns = *deliberation
+  load* (one place → whole system):
+
+  | | Delib Low | Med | High | Very high |
+  |---|---|---|---|---|
+  | **Premise Low** | `Sonnet5-Low` | `Sonnet5-Medium` | `Sonnet5-High` | `Sonnet5-XHigh` |
+  | **Premise Med** | `Sonnet5-Medium` | `Sonnet5-High` | `Sonnet5-XHigh` | `Opus5-High` |
+  | **Premise High** | `Opus5-Medium` | `Opus5-High` | `Opus5-XHigh` | `Opus5-Max` |
+
+  Effort buys **breadth**; model buys **judgement/self-correction**. Every cell is exactly ONE combo —
+  if torn, take the lower and say why. Off-grid only by naming a trigger: `Sonnet5-Max` (exhaustive
+  sweep, costly miss — usually beaten by writing a script) · `Opus5-Low` (downshift for high-volume
+  triage). Escalate on EVENTS: two wrong hypotheses → +1 effort · a false premise → Sonnet→Opus ·
+  silent-failure surface → Sonnet→Opus · 🔻 **scope turned out mechanical → step DOWN.**
+  ⚠️ **Never calibrate on past usage** — `max`/`low` never used, `xhigh` once; Harkirat built this
+  system so Claude would choose, so his history is downstream of that advice, not evidence.
 - **Flags:** 🔗 bundle-with:\<what\> · 🧩 needs-design · ⛓️ blocked-by/blocks:\<what\>.
 - **Combos:** P0/P1+XS/S = quick win (do now / bundle) · P1+L = schedule its own session · P2+XS/S =
   bundle-only · P3 = ignore till relevant.

@@ -181,7 +181,59 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.57.1 — 2026-08-06 19:48 EDT (#90) — Closing out the outage
+## v2.57.2 — 2026-08-06 21:08 EDT (#91) — Choosing the model is a grid, not a ladder
+
+Records and internal judgement only; no behaviour changed.
+
+**Harkirat: *"noticed you over-spec the model recommendation quite often."*** He was right, and
+measuring it made the shape precise rather than vague. The **filed** effort tags are well calibrated —
+`XS → Sonnet5-L`, `S → Sonnet5-M`, `L → Opus5-H`, and 9 Opus vs 10 Sonnet overall. It is the **fresh,
+in-the-moment** recommendations that drift upward: both handoffs written that day reached for Opus,
+one of them for work described in the same paragraph as *"specified, not novel design."*
+
+**The mechanism, which is the only part that generalises: under-speccing fails visibly in front of me,
+over-speccing fails invisibly and Harkirat pays for it.** So I drift toward the cost I never have to
+look at, and it feels like caution. It is not caution — a recommendation that is always one tier up
+carries no information.
+
+**The root cause was a category error:** effort tier answers *how much work*, model+effort answers
+*how hard the thinking is*, and I had been treating the first as a proxy for the second. They are now
+separate axes. **Reasoning effort buys breadth; the model buys judgement and self-correction.** That is
+also why `Sonnet5-XHigh ≈ Opus5-Medium` in quality yet they are not interchangeable — equal on breadth
+with clear criteria, unequal the moment something requires noticing a premise is false.
+
+Selection is now a **12-cell grid** (premise risk × deliberation load) in `reference_priority_tier_system`,
+mirrored into both deferred-list legends. ⚠️ **Every cell names exactly ONE combo.** An earlier draft
+wrote cells as `Sonnet5-Low/Medium`; a lookup table whose cells say "one of these two" re-creates the
+wobble the rule exists to remove — and there is a `Stop` hook that blocks effort ranges outright.
+
+**No `XL` effort tier — considered and rejected on the data.** Completion rates: **S 35% · M 28% ·
+XS 14% · L 11%** (1 of 9, and that one was *retired*, not shipped). `L` is already where work goes to
+not happen, so a bigger bucket would make parking easier. **The rule instead: an `L` item carries a
+named first slice or a decomposition, or it is not schedulable.**
+
+**The `Max` criterion was keyed on the wrong property.** It required *irreversible*; Harkirat's memory
+of reaching for the top tier on the CLAUDE.md modularization exposed the flaw — that work was fully
+git-revertible, yet a mistake there means **a safety rule silently stops loading and nobody notices for
+weeks**. The trigger is **detection**, not undo. `Max` now also covers work that *defines the system
+governing all future work*. *(Measured aside: that session actually ran Opus **4.8** at `high`→`xhigh`
+— Opus 5 did not exist yet.)*
+
+⚠️ **And a trap worth naming, because it caught me three times in one evening: self-referential
+evidence.** I cited `PRIVACY.md` against Sentry (it says "none present" *because we chose none*),
+inferred a tag convention from tags I had written myself, and read Harkirat's model-usage history as
+evidence that unused tiers were unneeded — when he is self-described new to this and **built this
+system so that Claude would choose**. All three read identically whether or not the conclusion is
+true, which means none of them is evidence. `CLAUDE.md` already documented this exact trap for
+sequential-thinking usage counts. Knowing the pattern abstractly did not make me recognise an instance.
+
+**Two real defects fixed in the `Stop` gate that polices this**, both found by it firing on me:
+it read `tail -8`, so a single stray phrase **re-fired every turn for eight turns**; and it stripped
+backticked *spans*, which made `` `xhigh`/`max` `` invisible to it while leaving `high/max` exposed by
+luck. Now `tail -2` and it strips backtick *characters* — verified against the exact phrase that
+slipped through.
+
+## v2.57.1 — 2026-08-06 19:48 EDT (#90 · `8da2d47`) — Closing out the outage
 
 Records only; no behaviour changed.
 
