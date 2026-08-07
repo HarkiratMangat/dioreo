@@ -59,9 +59,52 @@ case "$tool" in
   Bash)
     cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
     [ -z "$cmd" ] && exit 0
+
+    # ⚠️ FALSE POSITIVE #1 — HEREDOC BODIES ARE DATA, NOT COMMANDS (fixed 2026-08-06 21:30 EDT).
+    # This guard denied a `python3 - <<'PY' … PY` call whose heredoc *wrote a test fixture* containing
+    # the literal string `git add -A && git commit -m x`. Nothing was being committed; text describing
+    # a commit was being written to a file. Caught live while editing this very guard's own test.
+    # A heredoc body is an argument to another program, so strip it before matching. The delimiter is
+    # taken from the `<<`/`<<-` line and matched literally, quoted or not.
+    # ⚠️ Deliberately NOT stripping double-quoted spans — but NOT for the reason first written here.
+    # The original comment claimed `bash -c "git commit -m x"` "must still be caught". It never was:
+    # the matcher requires `^` or `;&|` before `git`, and there the verb is preceded by a quote. That
+    # is a PRE-EXISTING blind spot, not something this change introduced, and the test now records it
+    # honestly rather than asserting a capability that does not exist. Quotes stay unstripped because
+    # stripping them would widen that hole, not close it. Filed for a real fix.
+    scan=$(printf '%s' "$cmd" | awk '
+      $0 ~ /<<-?[[:space:]]*[\x27"]?[A-Za-z_][A-Za-z0-9_]*[\x27"]?/ && !inheredoc {
+        line=$0
+        if (match(line, /<<-?[[:space:]]*[\x27"]?[A-Za-z_][A-Za-z0-9_]*/)) {
+          d=substr(line, RSTART, RLENGTH); gsub(/^<<-?[[:space:]]*[\x27"]?/, "", d)
+          delim=d; inheredoc=1
+        }
+        print; next
+      }
+      inheredoc { if ($0 ~ "^[[:space:]]*" delim "[[:space:]]*$") inheredoc=0; next }
+      { print }
+    ')
+
+    # ⚠️ FALSE POSITIVE #2 — A BUNDLED BRANCH SWITCH ALREADY FIXED IT (fixed 2026-08-06 21:30 EDT).
+    # PreToolUse reads HEAD *before* the command runs, so `git switch -c fix/x && git commit -m y` was
+    # denied for being "on main" even though the commit lands on `fix/x`. The deny was factually wrong
+    # about where the commit would go, and the remedy it printed was the very command already present.
+    # So: if the LAST branch-change in the chain before the commit targets a NON-protected branch, the
+    # commit cannot land on a protected one — allow it.
+    # ⚠️ `git switch main && git commit` must still DENY, which is why the TARGET is inspected rather
+    # than merely the presence of a switch.
+    commit_pos=$(printf '%s' "$scan" | grep -boE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_][A-Za-z0-9_]*=[^ ]*)*) +)*git +commit([^[:alnum:]-]|$)' | head -1 | cut -d: -f1)
+    if [ -n "$commit_pos" ] && [ "$commit_pos" -gt 0 ]; then
+      before=$(printf '%s' "$scan" | cut -c1-"$commit_pos")
+      target=$(printf '%s' "$before" | grep -oE 'git +(switch|checkout) +(-c|-b|-C|-B)? *[A-Za-z0-9._/-]+' | tail -1 | awk '{print $NF}')
+      case "$target" in
+        ""|main|master) : ;;                      # no switch, or a switch back ONTO a protected branch
+        *) exit 0 ;;                              # lands on a feature branch — nothing to guard
+      esac
+    fi
     # Wrapper prefixes for the same reason as main-push-guard.sh: `rtk git commit` is a documented
     # normal spelling, and an anchor that only accepts a bare `git` silently passes it.
-    printf '%s' "$cmd" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_][A-Za-z0-9_]*=[^ ]*)*) +)*git +commit([^[:alnum:]-]|$)' || exit 0
+    printf '%s' "$scan" | grep -qE '(^|[;&|] *)((rtk|sudo|command|nohup|time|env( +[A-Za-z_][A-Za-z0-9_]*=[^ ]*)*) +)*git +commit([^[:alnum:]-]|$)' || exit 0
     dir="${CLAUDE_PROJECT_DIR:-$PWD}"
     br=$(protected_branch_for "$dir") || exit 0
     # ⚠️ DELIBERATELY does not check whether anything is staged. This is PreToolUse, so there is nothing

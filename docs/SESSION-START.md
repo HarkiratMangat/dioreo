@@ -4,7 +4,9 @@
 > **Do not write task content, exploration, tool calls, or a greeting before this.** Your literal first
 > lines of output this session MUST be: **(1)** a ready-to-paste `/rename` string in the format
 > `Model<Ver>-<Effort> · <Title> · <Mon DD>` (e.g. `Opus5-H · Webhook alerts · Jul 20`), and **(2)** a
-> one-line best **model + single effort level** recommendation for this session's work — and on a large
+> one-line best **model + single effort level** recommendation for this session's work — **picked from
+> the grid in `reference_priority_tier_system`, not from a feeling about importance** (rows = premise
+> risk, columns = deliberation load; effort buys breadth, the model buys judgement) — and on a large
 > opening batch, a short "defer these to their own session" list (each with its own model+effort). This is
 > a standing non-negotiable (`feedback_suggest_model_switch` memory) that **degraded repeatedly across
 > sessions** (including on Opus 4.8-High — see `feedback_docs_at_push_time`'s compliance-drift note)
@@ -158,7 +160,12 @@ New session on Dioreo. Before anything else:
      / 3-8 per session" default — that kind of range is exactly what hardened into a cap
      before (I re-pinned 12 by hand in a session Claude marked 2). Mark as you START a
      subject. The hook only nudges; marking is on you, and you can't read them back.
-   • Proactively recommend ONE model + ONE effort level (never a range). On a big session-
+   • Proactively recommend ONE model + ONE effort level (never a range). **HOW to pick: the
+     premise-risk × deliberation-load grid in `reference_priority_tier_system` — every cell names
+     exactly one combo. Effort buys BREADTH; the model buys JUDGEMENT/self-correction. If torn, take
+     the LOWER cell and say why in one clause.** ⚠️ Over-spec is the standing bias here: under-speccing
+     fails visibly in front of you, over-speccing fails invisibly and Harkirat pays — so the tell is
+     writing "small/specified/mechanical" and then reaching upward in the next sentence. On a big session-
      opening batch: recommend the single best setup for the session as a whole, then list any
      tasks to DEFER to their own session, each with its own model+effort (that's my
      work-weight estimate). Hand me a ready-to-paste rename string, formatted
