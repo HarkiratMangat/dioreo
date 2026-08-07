@@ -314,31 +314,6 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
-- **🏷️ `v2.58.0`'s git tag was never pushed to GitHub** `[P0 · XS]` *(filed 2026-08-07 08:06 EDT as
-  P1, ESCALATED to P0 at 08:12 EDT the same session — see below.)* PR #94 squash-merged clean to
-  `main` as `570187dd8af8f7f437873d567ad9657b073f2d92` and that commit's `package.json` correctly
-  reads `2.58.0` (re-verified 2026-08-07 12:06 UTC, not assumed) — but `git push origin v2.58.0` hit
-  a 403 from that session's proxy (`/root/.ccr/README.md`: an explicit organization egress/policy
-  denial, not transient — retried once, same result, and its own guidance says report rather than
-  route around it). `mcp__github__get_tag` for `v2.58.0` confirms **still 404 on GitHub**.
-
-  ⚠️ **Escalated to P0 because it is now BLOCKING, repo-wide, not just an untidy record.**
-  Discovered live: the very next PR (#95, filing this exact reminder) failed its own
-  `syntax-check` — `docs-audit`'s `tag-coverage` check now reports
-  `v2.58.0 has a changelog entry but NO git tag` as an **ERROR**, and `syntax-check` is a required
-  branch-protection check. **This means EVERY PR's `syntax-check` will fail — including PRs with
-  nothing to do with this — until `v2.58.0` is tagged.** No MCP tool available to any session
-  (searched twice) can create a git ref/tag via the GitHub API either, so this cannot be fixed by an
-  agent session at all — it needs Harkirat, directly, as soon as reasonably possible, not "next
-  session with tag-push permission." **Trigger: immediately — this is not a someday item.** **Do:**
-  ```
-  git fetch origin main
-  git tag -a v2.58.0 570187dd8af8f7f437873d567ad9657b073f2d92 -m "v2.58.0 — A third region, sourced instead of guessed"
-  git push origin v2.58.0
-  ```
-  **Verify:** `mcp__github__get_tag` (or `git ls-remote --tags origin v2.58.0`) returns the commit
-  above, not a 404.
-
 - **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle
   detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at
   all" reminder, which is now answered.)*
