@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.58.1 — August 7, 2026
+- Housekeeping only — nothing about the bot or the site changed.
+
 ## v2.58.0 — August 7, 2026
 - **`/draw prices` now has a 20 CP region**, with real pricing for every draw — switch between 10 CP,
   20 CP, and 30 CP with the new 3-button switcher.
