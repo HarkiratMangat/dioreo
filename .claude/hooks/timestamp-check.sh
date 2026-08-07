@@ -114,6 +114,13 @@ localtz=$(date '+%Z')
 # Kept as a separate token from TS-EXAMPLE rather than folded into it: they mean different things,
 # and a reviewer grepping `rg TS-EXAMPLE` to audit for hidden fabrications should not have to wade
 # through scheduled deadlines. Both are per-line and must be typed deliberately.
+#
+# ⚠️ PORTABLE EPOCH PARSE — added 2026-08-07 10:05 EDT, CI (ubuntu-latest, GNU date) vs. this project's own
+# Darwin dev machine (BSD date). `date -j -f '%Y-%m-%d %H:%M' ... ` is BSD-only syntax; on GNU date
+# it's an unrecognized-option error. That error was being swallowed by `2>/dev/null`, so every parse
+# silently failed in CI, `future` was always empty, and the whole gate went permanently silent there
+# — 46 of 47 test-suite assertions failed on PR #93 while all 47 passed locally on this Mac. Try BSD
+# syntax first (this is still the primary dev environment), fall back to GNU `date -d` on failure.
 TOLERANCE_SECS=180
 now_epoch=$(date +%s)
 future=$(printf '%s' "$joined" \
@@ -122,7 +129,9 @@ future=$(printf '%s' "$joined" \
   | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}( [A-Z]{2,5})?' \
   | while read -r d hm tz; do
       [ -n "$tz" ] && [ "$tz" != "$localtz" ] && continue
-      stamp_epoch=$(date -j -f '%Y-%m-%d %H:%M' "$d $hm" +%s 2>/dev/null) || continue
+      stamp_epoch=$(date -j -f '%Y-%m-%d %H:%M' "$d $hm" +%s 2>/dev/null) \
+        || stamp_epoch=$(date -d "$d $hm" +%s 2>/dev/null) \
+        || continue
       diff=$(( stamp_epoch - now_epoch ))
       [ "$diff" -gt "$TOLERANCE_SECS" ] && echo "$d $hm"
     done \
