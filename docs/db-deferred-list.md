@@ -66,6 +66,15 @@ one for *what can be bundled cheaply*. Resolved items don't need one.
 - **Flags:** 🔗 bundle-with:\<what\> · 🧩 needs-design · ⛓️ blocked-by/blocks:\<what\>.
 - **Combos:** P0/P1+XS/S = quick win (do now / bundle) · P1+L = schedule its own session · P2+XS/S =
   bundle-only · P3 = ignore till relevant.
+- ⚠️ **STANDING RULE, not optional (Harkirat's explicit ask, 2026-08-07 10:22 EDT):** every item gets a
+  model+effort tag from the grid above (`[P· E · Model<ver>-<eff>]`), not just the ones that "feel like"
+  a real build. It's a REFERENCE for whichever session picks the item up, not a binding order — that
+  session judges the model for real once the actual task and its current context are in hand, and may
+  supersede it. **Keep it updated**: if an item's scope, details, or premise change while editing it,
+  re-run the grid and update the tag in the same edit — a stale model tag next to fresh scope is worse
+  than no tag, because it reads as considered when it no longer is. Earlier entries in this file
+  written before this rule (plain `[P0 · S]` with no model) are not retroactively wrong; add the tag
+  the next time that item is touched, don't do a blanket sweep just to backfill it.
 
 Full spec: `reference_priority_tier_system` memory. Canonical copy of this legend:
 `/Applications/Claude Code/meta-deferred-list.md`.
