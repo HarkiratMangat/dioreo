@@ -160,10 +160,15 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
 // Emoji added to each button 2026-08-07 13:10 EDT per Harkirat's request -- Draws reuses the SAME
 // `newDraws` emoji /draws' own New Draws heading uses (his explicit call, rather than a separate
 // generic "draw" icon), Events/Gamemodes use emojiMap's own `events`/`modes` icons.
+// `emojiKey` (a STRING NAME, not the emoji value itself) fixed 2026-08-07 13:59 EDT after CI's
+// checkEmojiCaptures.js caught it: this table is module-level, so storing `emojis.newDraws` directly
+// here would capture the PROD id at require() time, before `refreshEmojiIds()` ever runs on boot --
+// stale/broken on the dev bot exactly like the Guide emoji this same session already fixed elsewhere.
+// `buildSectionToggleRow` looks the key up in `emojis` fresh on every render instead.
 const PAGE_DEFS = [
-    { page: 0, label: 'Draws', emoji: emojis.newDraws },
-    { page: 1, label: 'Events', emoji: emojis.events },
-    { page: 2, label: 'Gamemodes', emoji: emojis.modes }
+    { page: 0, label: 'Draws', emojiKey: 'newDraws' },
+    { page: 1, label: 'Events', emojiKey: 'events' },
+    { page: 2, label: 'Gamemodes', emojiKey: 'modes' }
 ];
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- indexed by the same
@@ -177,7 +182,7 @@ function buildSectionToggleRow(currentPage) {
             type: 2,
             style: d.page === currentPage ? 1 : 2,
             label: d.label,
-            emoji: emojis.parseEmoji(d.emoji),
+            emoji: emojis.parseEmoji(emojis[d.emojiKey]),
             custom_id: `calpage_${d.page}`,
             disabled: d.page === currentPage
         }))
