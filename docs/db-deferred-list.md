@@ -533,8 +533,14 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
-- **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)** `[P2 · S]`
-  *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next session.)*
+- **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)**
+  `[P2 · S · Sonnet5-High]` *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next
+  session.)* **Model pick reasoning (grid, not a feeling):** premise Med — the technical claims about
+  rg/diff/wc behavior are checkable and mostly true, but "which policy is actually right for THIS repo"
+  is a real judgment call, not given · deliberation Med-High — weighing one policy against a convention
+  used consistently across dozens of files, plus scoping whether/how `dior text unwrap` gets applied.
+  Tie-break: wrong here more likely from missing a consideration (breadth) than believing something
+  false (premise) → stays Sonnet, effort raised to High rather than jumping to Opus.
   A separate Claude session surfaced a real, technically-sound problem: hard-wrapping prose at a fixed
   column width (this repo's convention is ~100–120 chars) breaks the assumption line-oriented tools
   rely on — one line = one logical unit. Concretely: `rg`/`grep` miss a phrase split across a wrap
