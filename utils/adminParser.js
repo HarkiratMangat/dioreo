@@ -230,7 +230,10 @@ const CALENDAR_CATEGORY_TO_PREFIX = { draw: 'd', playlist: 'p', event: 'e' };
 const DRAW_KEYWORDS = [
     /\bdraws?\b/i,             // Draw, Draws
     /\barmor(?:y|ies|ed)?\b/i, // Armory, Armories, Armored
-    /\bit goes two\b/i,
+    // Matches BOTH the spelled-out word and the numeral -- fixed 2026-08-07 12:48 EDT after "Judgment
+    // Day: It Goes 2" (the numeral, the real in-game title format) silently missed this and fell
+    // through to the 'event' default, because the regex only ever matched "two" spelled out.
+    /\bit goes (?:two|2)\b/i,
     /\bredux\b/i,
     /\bmythic drops?\b/i       // Mythic Drop, Mythic Drops
 ];
