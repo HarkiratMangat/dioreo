@@ -1598,6 +1598,27 @@ well-specified execution/polish, not novel design.*
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
   across call sites, not open design work.
+  ✅ **IMPLEMENTED 2026-08-06 22:19 EDT, on `docs/timestamp-check-tolerance-fix` (folded in at
+  Harkirat's request — branch keeps its original name, renamed by whichever session merges it).**
+  `sendV2Payload()` now goes single-hop on its own: if the interaction isn't yet acked
+  (`!interaction.deferred && !interaction.replied`) it POSTs the real content straight to the
+  interaction-callback endpoint (`type:7` UPDATE_MESSAGE) instead of ack-then-patch; already-deferred
+  paths (initial slash invocation, View Colors and every other heavy path) are unaffected — they still
+  patch, unchanged. All 7 light call sites in `index.js` converted: draws pagination + sub-page,
+  calendar page toggle, settings page-nav + binary-toggle, drawprices region + subpage. Fixed one
+  latent bug found while removing the settings toggle's `deferUpdate()`: it used to pass the REAL
+  interaction straight through when `actingUser === interaction.user`, relying on `deferUpdate()`
+  having already run to make settings.js's own deferral guard a no-op — with that call gone it would
+  have fired a genuine `deferReply()` (a NEW message) instead of staying single-hop. Now always
+  synthetic with a no-op override, matching every other branch. `node --check` clean, `npm test`
+  21/21, dev bot boots clean and registers commands with no errors. **Not yet click-tested live in
+  Discord** — needs Harkirat (or the next session) to actually click Prev/Next on each of the four
+  commands and confirm the panel updates instantly with no double-flicker.
+  ⚠️ **Left out on purpose, same heuristic, worth a follow-up:** `/alerts`' own `alerts_explain`/
+  `alerts_back`/`alerts_page_` pagination (pure `buildAlertsPanel()` string-building, zero DB/network)
+  and the settings `set_` dropdown handler (region-mode etc., index.js ~line 1151) — not named in the
+  original design, left untouched to keep this change scoped to what was agreed.
+
   📌 **RE-RAISED by Harkirat 2026-08-06 18:10 EDT and slotted as the SECOND of four agreed sessions**
   (after the `timestamp-check.sh` fix, before the `index.js` split — which it bundles with, since both
   touch every component branch). His words: the left/right buttons *"currently send a back n forth
