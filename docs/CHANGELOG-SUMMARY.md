@@ -26,6 +26,11 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.58.2 — August 7, 2026
+- **Buttons feel snappier**: draws, calendar, draw prices, and settings pagination/toggles now update
+  in one step instead of two, so the response lands faster.
+- Everything else this release is internal housekeeping.
+
 ## v2.58.1 — August 7, 2026
 - Housekeeping only — nothing about the bot or the site changed.
 
