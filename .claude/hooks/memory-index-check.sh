@@ -93,20 +93,39 @@ fi
 printf '%s' "$total" > "$STATE"
 
 # --- budget -------------------------------------------------------------------------------------
+# TWO tiers, not one - added 2026-08-07 10:53 EDT. The over-budget check alone reported a clean "ok"
+# at 15,691/16,000 (98% full) right up until the byte that tipped it over, because ">BUDGET" is false
+# at 98%. A session reasonably reads "ok" as "nothing to do" and only gets a real signal once the
+# NEXT index-line addition already doesn't fit - too late to act on with any room to think about it.
+# THRESHOLD_PCT (default 90%) fires an advisory early, while there's still slack to consolidate/
+# archive something deliberately instead of being forced into it mid-edit. Distinct wording from
+# "over budget" so the two states are never conflated in a status line or a test assertion.
+THRESHOLD_PCT="${MEMCHECK_THRESHOLD_PCT:-90}"
+threshold=$(( BUDGET * THRESHOLD_PCT / 100 ))
+
 warn=""
 if [ "$size" -gt "$BUDGET" ]; then
   warn="  BUDGET: MEMORY.md is ${size}B, over the ${BUDGET}B budget. Consolidate near-duplicate lessons
     into one entry with a case list, or archive what is finished - do NOT just trim the lines, that
     lever is already spent. New lessons default to a CASE inside an existing memory (see the memory
     project_memory_index_scaling for the three tests that earn a file)."
+elif [ "$size" -gt "$threshold" ]; then
+  pct=$(( size * 100 / BUDGET ))
+  warn="  APPROACHING BUDGET: MEMORY.md is ${size}B/${BUDGET}B (${pct}%, over the ${THRESHOLD_PCT}%
+    advisory line). Still under budget, but the NEXT new index line may not fit - look for a
+    retirement/merge candidate now, while there's room to choose one deliberately, rather than being
+    forced into it mid-edit. See project_memory_index_scaling for the retirement criteria."
 fi
 
 if [ -n "$err" ]; then
   status="MEMORY INDEX: ERRORS FOUND$err"
   [ -n "$warn" ] && status="$status
 $warn"
-elif [ -n "$warn" ]; then
+elif [ "$size" -gt "$BUDGET" ]; then
   status="MEMORY INDEX: over budget
+$warn"
+elif [ -n "$warn" ]; then
+  status="MEMORY INDEX: ok, approaching budget
 $warn"
 else
   status="MEMORY INDEX: ok - ${n_active} active + ${n_arch} archived, ${n_links} links resolve, MEMORY.md ${size}B/${BUDGET}B."

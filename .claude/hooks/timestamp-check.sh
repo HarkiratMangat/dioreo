@@ -50,6 +50,21 @@
 # accident. This has to be typed next to the stamp, shows up in the diff, and greps in one command
 # (`rg TS-EXAMPLE`) if it is ever suspected of hiding a real fabrication.
 
+# WHY IT CHANGED AGAIN (2026-08-06 21:59 EDT) — a correct stamp was denied twice in one day.
+# Filed 2026-08-03 10:35 EDT from the morph-PoC session, then hit for real again 2026-08-06: the clock
+# is read once at the START of a turn (the `[clock]` hook message), and the bytes land a minute or two
+# later after intervening tool calls and model latency. `[ "$d $hm" \> "$now" ]` was a zero-tolerance
+# lexicographic compare, so a write carrying `10:33` while `$now` still read `10:32` was denied as
+# "invented" — it wasn't; it was normal turn latency. A gate that fires on its own latency is exactly
+# the kind that gets routed around, per this file's own reasoning about the bare-date branch below.
+#
+# FIX: compare epoch seconds with a small grace window (TOLERANCE_SECS, 3 min) instead of raw strings.
+# This still catches the incident the gate exists for — 30 stamps drifting 4.5 HOURS into the future —
+# while no longer denying single-digit-minute drift from ordinary turn latency. `date -j -f` is
+# BSD/macOS date syntax (this project's own dev environment is Darwin); a stamp that fails to parse is
+# skipped rather than guessed at, same "out of scope, not guessed at" stance already taken for foreign
+# timezones below.
+
 # WHY IT CHANGED AGAIN (2026-08-03 18:12 EDT) — a placeholder time slipped past every existing check.
 # Wrote `2026-08-03 18:xx EDT` mid-comment (genuinely meaning to fill in the real minute later and
 # then forgetting to), in the SAME session that had already been corrected once for a bare date with
@@ -99,18 +114,31 @@ localtz=$(date '+%Z')
 # Kept as a separate token from TS-EXAMPLE rather than folded into it: they mean different things,
 # and a reviewer grepping `rg TS-EXAMPLE` to audit for hidden fabrications should not have to wade
 # through scheduled deadlines. Both are per-line and must be typed deliberately.
+#
+# ⚠️ PORTABLE EPOCH PARSE — added 2026-08-07 10:05 EDT, CI (ubuntu-latest, GNU date) vs. this project's own
+# Darwin dev machine (BSD date). `date -j -f '%Y-%m-%d %H:%M' ... ` is BSD-only syntax; on GNU date
+# it's an unrecognized-option error. That error was being swallowed by `2>/dev/null`, so every parse
+# silently failed in CI, `future` was always empty, and the whole gate went permanently silent there
+# — 46 of 47 test-suite assertions failed on PR #93 while all 47 passed locally on this Mac. Try BSD
+# syntax first (this is still the primary dev environment), fall back to GNU `date -d` on failure.
+TOLERANCE_SECS=180
+now_epoch=$(date +%s)
 future=$(printf '%s' "$joined" \
   | grep -v 'TS-EXAMPLE' \
   | grep -v 'TS-DEADLINE' \
   | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}( [A-Z]{2,5})?' \
   | while read -r d hm tz; do
       [ -n "$tz" ] && [ "$tz" != "$localtz" ] && continue
-      [ "$d $hm" \> "$now" ] && echo "$d $hm"
+      stamp_epoch=$(date -j -f '%Y-%m-%d %H:%M' "$d $hm" +%s 2>/dev/null) \
+        || stamp_epoch=$(date -d "$d $hm" +%s 2>/dev/null) \
+        || continue
+      diff=$(( stamp_epoch - now_epoch ))
+      [ "$diff" -gt "$TOLERANCE_SECS" ] && echo "$d $hm"
     done \
   | sort -u | tr '\n' ' ')
 
 if [ -n "$future" ]; then
-  msg="IMPOSSIBLE TIMESTAMP — this write contains ${future}but the clock reads ${now}. A time later than now cannot have been observed, so it was invented. On 2026-08-02 exactly this put 30 fabricated stamps into docs, memory, a released CHANGELOG and a git tag, every one of them well-formed. Run \`date\` and use what it returns. If you mean a genuine FUTURE deadline, write the date with NO clock time (that form is deliberately allowed), or say plainly that it is a target."
+  msg="IMPOSSIBLE TIMESTAMP — this write contains ${future}but the clock reads ${now}, more than ${TOLERANCE_SECS}s ahead. A time that far past now cannot have been observed, so it was invented. On 2026-08-02 exactly this put 30 fabricated stamps into docs, memory, a released CHANGELOG and a git tag, every one of them well-formed. Run \`date\` and use what it returns. If you mean a genuine FUTURE deadline, write the date with NO clock time (that form is deliberately allowed), or say plainly that it is a target."
   if [ "$mode" = "pre" ]; then
     jq -n --arg r "$msg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
     exit 0

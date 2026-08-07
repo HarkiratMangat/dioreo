@@ -147,8 +147,7 @@ of sync the way the `/timestamp` duplication already had (see `.claude/rules/com
   (`seasonalVisibility` vs `loadoutVisibility`). One place to change the priority rule
   itself, instead of 7.
 - `sendV2Payload(interaction, components, { content, flags, embeds, allowedMentions })` —
-  the raw `rest.patch(Routes.webhookMessage(interaction.applicationId, interaction.token,
-  '@original'))` bypass every Components V2 command needs (discord.js's high-level
+  the raw Components V2 JSON bypass every V2 command needs (discord.js's high-level
   reply/followUp/update don't reliably serialize raw V2 JSON — no builder class exists
   for a type-17 Container), previously repeated verbatim at ~10 send sites. `flags`
   defaults to `32768` (Components V2) since that's the common case; pass an explicit
@@ -158,6 +157,18 @@ of sync the way the `/timestamp` duplication already had (see `.claude/rules/com
   stripping the ephemeral bit from an existing message). `/timestamp`'s plain-text
   parse-error fallback (no components at all) is left as a raw call rather than forced
   through this helper — genuinely a different shape, not more duplication to collapse.
+  - ⚠️ **DUAL-MODE since the "pagination perf hybrid" (2026-08-06 22:17 EDT).** If the interaction is
+    NOT yet acked (`!interaction.deferred && !interaction.replied`), this POSTs straight to the
+    interaction-callback endpoint (`type:7` UPDATE_MESSAGE) as the interaction's first and only
+    response — one Discord round-trip instead of the old ack-then-`rest.patch('@original')` two.
+    Already-deferred paths (the initial slash-command invocation, or a heavy path like View Colors
+    that still defers on purpose) are unaffected and keep patching exactly as before. Every light
+    pagination/toggle branch in `index.js` (draws, calendar, drawprices, settings) now deliberately
+    skips its `deferUpdate()`/`deferReply()` call so this branch triggers — see `sendV2Payload.js`'s
+    own header comment and `docs/db-deferred-list.md`'s "Pagination perf hybrid" entry for the full
+    traced investigation. **If you add a new light nav branch, don't defer first** — pass a synthetic
+    interaction with a no-op `deferReply` override (matching the existing branches) so it goes
+    single-hop too; deferring first silently falls back to the old two-hop patch path.
 
 
 ## "Show Everyone" (`utils/shareButton.js`, formerly "Share Publicly")

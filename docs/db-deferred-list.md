@@ -66,6 +66,15 @@ one for *what can be bundled cheaply*. Resolved items don't need one.
 - **Flags:** 🔗 bundle-with:\<what\> · 🧩 needs-design · ⛓️ blocked-by/blocks:\<what\>.
 - **Combos:** P0/P1+XS/S = quick win (do now / bundle) · P1+L = schedule its own session · P2+XS/S =
   bundle-only · P3 = ignore till relevant.
+- ⚠️ **STANDING RULE, not optional (Harkirat's explicit ask, 2026-08-07 10:22 EDT):** every item gets a
+  model+effort tag from the grid above (`[P· E · Model<ver>-<eff>]`), not just the ones that "feel like"
+  a real build. It's a REFERENCE for whichever session picks the item up, not a binding order — that
+  session judges the model for real once the actual task and its current context are in hand, and may
+  supersede it. **Keep it updated**: if an item's scope, details, or premise change while editing it,
+  re-run the grid and update the tag in the same edit — a stale model tag next to fresh scope is worse
+  than no tag, because it reads as considered when it no longer is. Earlier entries in this file
+  written before this rule (plain `[P0 · S]` with no model) are not retroactively wrong; add the tag
+  the next time that item is touched, don't do a blanket sweep just to backfill it.
 
 Full spec: `reference_priority_tier_system` memory. Canonical copy of this legend:
 `/Applications/Claude Code/meta-deferred-list.md`.
@@ -532,6 +541,41 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+- **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)**
+  `[P2 · S · Sonnet5-High]` *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next
+  session.)* **Model pick reasoning (grid, not a feeling):** premise Med — the technical claims about
+  rg/diff/wc behavior are checkable and mostly true, but "which policy is actually right for THIS repo"
+  is a real judgment call, not given · deliberation Med-High — weighing one policy against a convention
+  used consistently across dozens of files, plus scoping whether/how `dior text unwrap` gets applied.
+  Tie-break: wrong here more likely from missing a consideration (breadth) than believing something
+  false (premise) → stays Sonnet, effort raised to High rather than jumping to Opus.
+  A separate Claude session surfaced a real, technically-sound problem: hard-wrapping prose at a fixed
+  column width (this repo's convention is ~100–120 chars) breaks the assumption line-oriented tools
+  rely on — one line = one logical unit. Concretely: `rg`/`grep` miss a phrase split across a wrap
+  boundary (it never appears on one line, even though it's one sentence to a human); `git diff` shows
+  a whole reflowed paragraph as changed when only a few words moved, because shifting the wrap point
+  cascades through every later line; `wc -l` overcounts a single sentence as 2–3 lines, skewing any
+  size heuristic built on line counts. `fd`/`find` are unaffected (filename/metadata only, not content).
+
+  **The tension:** this is the OPPOSITE of current practice. Every file in this repo written by past
+  sessions — `CLAUDE.md`, every memory file, `docs/CHANGELOG.md`, `docs/DEVLOG.md`, every `.claude/rules/*.md`
+  — is deliberately hard-wrapped at ~100–120 chars, consistently, for a long time. That's not an
+  oversight to silently reverse mid-session.
+
+  **Already-built tooling that's directly relevant, not a gap to fill from scratch:** `dior text unwrap
+  <file> [--out <dir>|--in-place]` (`~/.config/dior/text.zsh`, added 2026-08-03 21:24 EDT) rejoins
+  hard-wrapped lines back into flowing paragraphs, respecting code fences/tables/front matter — it's a
+  CLI port of the MarkEdit extension `markedit-dior-unwrap.js` ("Hard-Break Fixer"). So this isn't
+  "build a reflow tool," it's a policy decision plus (if adopted) running tooling that already exists.
+
+  **What actually needs deciding:** (1) going forward, should NEW prose I write — comments, memory,
+  CHANGELOG entries — be soft-wrapped (one logical line per sentence/paragraph, let the editor/terminal
+  wrap for display) instead of hard-wrapped? (2) if yes, does existing content get reflowed too (via
+  `dior text unwrap`, presumably file-by-file or a scripted sweep), or does it stay as-is and only new
+  writing changes? (3) does this apply repo-wide uniformly, or differently for code comments vs.
+  markdown docs vs. commit messages? No implementation has started — this is scoped as a decision
+  session, not a coding task.
 
 - **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent + mascot twinkle/float** `[P2 · M]`
   (filed 2026-08-04 22:07 EDT; merged with the standalone mascot-animation item 2026-08-05 09:32 EDT
@@ -1470,6 +1514,14 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   entries are currently far richer than a generator would produce, so that part is a genuine tradeoff, not
   a free win.
 
+- **🎨 Rebuild the Priority·Effort artifact around the new model-selection grid** `[P3 · M · Sonnet5-High]`
+  *(filed 2026-08-06 21:58 EDT — Harkirat's call, "not right now, maybe in a few days or when we have
+  nothing else important to do.")* Full handoff already written, ready to paste into a fresh session:
+  `local/handoff/2026-08-06-tier-system-artifact-handoff.md`. Update the existing artifact **in place**
+  (pass its URL to the Artifact tool — a fresh conversation otherwise mints a new link) to reflect the
+  v2.57.2 grid: effort tier and model choice are separate axes, model comes from the premise-risk ×
+  deliberation-load grid, not from a feeling about importance.
+
 ---
 
 ## 🧹 Someday / tech-debt
@@ -1590,6 +1642,27 @@ well-specified execution/polish, not novel design.*
   commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
   command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
   across call sites, not open design work.
+  ✅ **IMPLEMENTED 2026-08-06 22:19 EDT, on `docs/timestamp-check-tolerance-fix` (folded in at
+  Harkirat's request — branch keeps its original name, renamed by whichever session merges it).**
+  `sendV2Payload()` now goes single-hop on its own: if the interaction isn't yet acked
+  (`!interaction.deferred && !interaction.replied`) it POSTs the real content straight to the
+  interaction-callback endpoint (`type:7` UPDATE_MESSAGE) instead of ack-then-patch; already-deferred
+  paths (initial slash invocation, View Colors and every other heavy path) are unaffected — they still
+  patch, unchanged. All 7 light call sites in `index.js` converted: draws pagination + sub-page,
+  calendar page toggle, settings page-nav + binary-toggle, drawprices region + subpage. Fixed one
+  latent bug found while removing the settings toggle's `deferUpdate()`: it used to pass the REAL
+  interaction straight through when `actingUser === interaction.user`, relying on `deferUpdate()`
+  having already run to make settings.js's own deferral guard a no-op — with that call gone it would
+  have fired a genuine `deferReply()` (a NEW message) instead of staying single-hop. Now always
+  synthetic with a no-op override, matching every other branch. `node --check` clean, `npm test`
+  21/21, dev bot boots clean and registers commands with no errors. **Not yet click-tested live in
+  Discord** — needs Harkirat (or the next session) to actually click Prev/Next on each of the four
+  commands and confirm the panel updates instantly with no double-flicker.
+  ⚠️ **Left out on purpose, same heuristic, worth a follow-up:** `/alerts`' own `alerts_explain`/
+  `alerts_back`/`alerts_page_` pagination (pure `buildAlertsPanel()` string-building, zero DB/network)
+  and the settings `set_` dropdown handler (region-mode etc., index.js ~line 1151) — not named in the
+  original design, left untouched to keep this change scoped to what was agreed.
+
   📌 **RE-RAISED by Harkirat 2026-08-06 18:10 EDT and slotted as the SECOND of four agreed sessions**
   (after the `timestamp-check.sh` fix, before the `index.js` split — which it bundles with, since both
   touch every component branch). His words: the left/right buttons *"currently send a back n forth

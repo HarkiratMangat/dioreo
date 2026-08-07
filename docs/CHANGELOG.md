@@ -181,7 +181,42 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.58.1 — 2026-08-07 08:10 EDT (#95) — Filing what the last release only said in chat
+## v2.58.2 — 2026-08-07 11:22 EDT (#93) — A tolerance window, a round-trip cut, and a CI-only bug hiding in both
+
+**`timestamp-check.sh`'s future-stamp gate went from a zero-tolerance string compare to an epoch-second
+compare with a 3-minute grace window.** The old `[ "$d $hm" \> "$now" ]` check denied a perfectly honest
+write the moment ordinary turn latency (a minute or two between reading the clock and the bytes landing)
+put it a few minutes ahead of a stale `$now`. Still catches what the gate exists for — the original
+incident was stamps drifting 4.5 hours into the future — while no longer denying single-digit-minute
+drift from normal operation.
+
+**That fix's own `date -j -f` parse was BSD/macOS-only, and silently went dead on CI.** `ubuntu-latest`
+runs GNU date, which rejects `-j`; the parse error was piped to `/dev/null` and treated as "unparseable,
+skip," so the whole future-stamp gate parsed nothing and denied nothing in CI — 46 of 47 test-suite
+assertions failed there while all 47 passed locally on the Mac dev machine, because the Mac path never
+exercised the failure branch. Found by reading a failed CI log, not by re-running the suite locally
+(which stayed green the entire time). Fixed with a BSD-first, GNU-fallback parse.
+
+**Draws/calendar/drawprices/settings pagination and settings toggles now cost ONE Discord round-trip
+instead of two.** These paths are pure string-building — no image or network work before responding —
+so the `deferUpdate()` ack that used to run before every click bought nothing but latency.
+`sendV2Payload()` now POSTs directly to the interaction-callback endpoint as the first and only response
+when the interaction hasn't already been acked; any path that still defers first (the initial slash
+invocation, heavy paths like View Colors) is unaffected. One latent bug fixed while removing the
+settings toggle's `deferUpdate()`: it used to pass the real interaction straight through when
+`actingUser === interaction.user`, relying on that removed call to make `settings.js`'s own deferral
+guard a no-op — now always synthetic with a no-op override, matching every other branch.
+
+**`memory-index-check.sh`'s budget guard only ever warned once ALREADY over budget** — a session reading
+its "ok" status at 98% full had no signal anything needed attention before the next line simply didn't
+fit. Added a 90%-threshold advisory tier, distinct from the hard over-budget error, with tests proving
+both fire independently.
+
+Also: every `docs/db-deferred-list.md` item now carries a model+effort recommendation from the
+priority-tier grid (Harkirat's standing ask — a reference for whichever session picks it up, not a
+binding order), synced to the canonical copy of that legend in the cross-project tracker.
+
+## v2.58.1 — 2026-08-07 08:10 EDT (#95 · `a695964`) — Filing what the last release only said in chat
 
 Two things from the v2.58.0 merge session had only ever been stated to Harkirat directly, not
 recorded anywhere a future session would find them: the `v2.58.0` git tag never actually reached

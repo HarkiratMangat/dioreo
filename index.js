@@ -1435,7 +1435,8 @@ client.on('interactionCreate', async interaction => {
         const PRICE_REGION_PREFIXES = { 'price_region_10_': 'region_10', 'price_region_20_': 'region_20', 'price_region_30_': 'region_30' };
         const priceRegionPrefix = Object.keys(PRICE_REGION_PREFIXES).find(prefix => interaction.customId.startsWith(prefix));
         if (priceRegionPrefix) {
-            await interaction.deferUpdate();
+            // No deferUpdate() here -- pure string-building, single-hop UPDATE_MESSAGE via
+            // sendV2Payload (see its header comment, "pagination perf hybrid", 2026-08-06 22:17 EDT).
             const selectedRegion = PRICE_REGION_PREFIXES[priceRegionPrefix];
             const currentSubpage = parseInt(interaction.customId.split('_').pop(), 10) || 0;
 
@@ -1457,7 +1458,7 @@ client.on('interactionCreate', async interaction => {
         // `price_subpage_{region}_{targetPage}` -- region doesn't change here, only which entries
         // are shown. Not persisted anywhere (unlike region), just carried through the click itself.
         if (interaction.customId.startsWith('price_subpage_') && interaction.customId !== 'price_subpage_indicator') {
-            await interaction.deferUpdate();
+            // No deferUpdate() -- single-hop, see the price_region_ branch above.
             const rest = interaction.customId.replace('price_subpage_', '');
             const lastUnderscore = rest.lastIndexOf('_');
             const region = rest.slice(0, lastUnderscore);
@@ -1515,7 +1516,11 @@ client.on('interactionCreate', async interaction => {
 
         // A. SETTINGS BINARY TOGGLE BUTTONS (Public/Private & Region defaults)
         if (interaction.customId.startsWith('toggle_')) {
-            await interaction.deferUpdate(); // Defer to permanently safeguard against API 10062 timeouts
+            // No deferUpdate() -- single-hop UPDATE_MESSAGE (2026-08-06 22:17 EDT, pagination perf
+            // hybrid). The old comment here ("Defer to permanently safeguard against API 10062
+            // timeouts") was blanket boilerplate from the 2026-07-06 Components V2 rewrite, not a
+            // documented incident specific to this branch -- one Mongo find + one save() is well
+            // inside the traced 3s-ACK margin the rest of this design already measured.
             // (A 3rd `|{expiresAt}` segment used to live here for the old reactive 15-min expiry
             // check -- removed 2026-07-18, see utils/passiveExpiry.js.)
             const [actionStr, targetUserId] = interaction.customId.split('|');
@@ -1568,14 +1573,21 @@ client.on('interactionCreate', async interaction => {
             // Renders via actingUser (see the D. handler's matching comment above) so an admin
             // override never swaps in Harkirat's own data. settings.js's own execute() reschedules
             // the passive idle-timeout using THIS interaction's fresh token at the end of its render.
+            // ⚠️ ALWAYS synthetic, even when actingUser === interaction.user (fixed 2026-08-06 22:18
+            // EDT while removing this branch's deferUpdate() above) -- settings.js's execute() guards
+            // its deferReply() with `if (!interaction.deferred && !interaction.replied)`, which used
+            // to be false here only because deferUpdate() had already run at the top of this branch.
+            // With that call gone, passing the REAL interaction straight through would let settings.js
+            // fire a genuine deferReply() -- type 5, a NEW reply -- instead of staying single-hop.
+            // The no-op override keeps this branch on the same single-hop path as set_page_ above.
             const settingsCommand = client.commands.get('settings');
-            const renderInteraction = actingUser === interaction.user ? interaction : buildSyntheticInteraction(interaction, { user: actingUser });
+            const renderInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
             return await settingsCommand.execute(renderInteraction, targetPage);
         }
 
         // B. DRAWS PAGINATION (New vs Returning)
         if (interaction.customId === 'page_returning_draws' || interaction.customId === 'page_new_draws') {
-            await interaction.deferUpdate();
+            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
             const targetPage = interaction.customId === 'page_returning_draws' ? 'returning' : 'new';
             const drawsCommand = client.commands.get('draws');
 
@@ -1587,7 +1599,7 @@ client.on('interactionCreate', async interaction => {
         // B.2 DRAWS SUB-PAGE PAGINATION (Prev/Next within a category, once it exceeds CHUNK_SIZE)
         // custom_id format: subpage_<new|returning>_<targetIndex>, e.g. "subpage_new_2"
         if (interaction.customId.startsWith('subpage_new_') || interaction.customId.startsWith('subpage_returning_')) {
-            await interaction.deferUpdate();
+            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
             const isNewCategory = interaction.customId.startsWith('subpage_new_');
             const targetPage = isNewCategory ? 'new' : 'returning';
             const targetSubPage = parseInt(interaction.customId.replace(isNewCategory ? 'subpage_new_' : 'subpage_returning_', ''), 10) || 0;
@@ -1601,7 +1613,7 @@ client.on('interactionCreate', async interaction => {
         // sub-page pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request for named
         // section-toggle buttons instead of arrows). custom_id format: calpage_<0|1|2>.
         if (interaction.customId.startsWith('calpage_')) {
-            await interaction.deferUpdate();
+            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
             const targetPage = parseInt(interaction.customId.replace('calpage_', ''), 10) || 0;
             const calendarCommand = client.commands.get('calendar');
 
@@ -1619,7 +1631,7 @@ client.on('interactionCreate', async interaction => {
         // same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section
         // stays identical on both pages (re-rendered each time, not truly "shared" state).
         if (interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
-            await interaction.deferUpdate();
+            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
             // custom_id shape: `set_page_{targetPage}|{userId}` -- this button previously carried NO
             // author-lock at all (a real gap; every other settings component already embedded
             // |userId). Page number lives before the first pipe since the action verb itself encodes
@@ -1641,7 +1653,8 @@ client.on('interactionCreate', async interaction => {
             }
 
             // Renders via actingUser (see the D. handler's matching comment above) -- deferReply is
-            // still no-op'd since deferUpdate() already ran on the real interaction above.
+            // no-op'd here too, since this is the single-hop path (no deferUpdate() ran above either;
+            // sendV2Payload's own callback POST is this interaction's one and only response).
             const settingsCommand = client.commands.get('settings');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
             return await settingsCommand.execute(syntheticInteraction, targetPage);
