@@ -533,6 +533,35 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)** `[P2 · S]`
+  *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next session.)*
+  A separate Claude session surfaced a real, technically-sound problem: hard-wrapping prose at a fixed
+  column width (this repo's convention is ~100–120 chars) breaks the assumption line-oriented tools
+  rely on — one line = one logical unit. Concretely: `rg`/`grep` miss a phrase split across a wrap
+  boundary (it never appears on one line, even though it's one sentence to a human); `git diff` shows
+  a whole reflowed paragraph as changed when only a few words moved, because shifting the wrap point
+  cascades through every later line; `wc -l` overcounts a single sentence as 2–3 lines, skewing any
+  size heuristic built on line counts. `fd`/`find` are unaffected (filename/metadata only, not content).
+
+  **The tension:** this is the OPPOSITE of current practice. Every file in this repo written by past
+  sessions — `CLAUDE.md`, every memory file, `docs/CHANGELOG.md`, `docs/DEVLOG.md`, every `.claude/rules/*.md`
+  — is deliberately hard-wrapped at ~100–120 chars, consistently, for a long time. That's not an
+  oversight to silently reverse mid-session.
+
+  **Already-built tooling that's directly relevant, not a gap to fill from scratch:** `dior text unwrap
+  <file> [--out <dir>|--in-place]` (`~/.config/dior/text.zsh`, added 2026-08-03 21:24 EDT) rejoins
+  hard-wrapped lines back into flowing paragraphs, respecting code fences/tables/front matter — it's a
+  CLI port of the MarkEdit extension `markedit-dior-unwrap.js` ("Hard-Break Fixer"). So this isn't
+  "build a reflow tool," it's a policy decision plus (if adopted) running tooling that already exists.
+
+  **What actually needs deciding:** (1) going forward, should NEW prose I write — comments, memory,
+  CHANGELOG entries — be soft-wrapped (one logical line per sentence/paragraph, let the editor/terminal
+  wrap for display) instead of hard-wrapped? (2) if yes, does existing content get reflowed too (via
+  `dior text unwrap`, presumably file-by-file or a scripted sweep), or does it stay as-is and only new
+  writing changes? (3) does this apply repo-wide uniformly, or differently for code comments vs.
+  markdown docs vs. commit messages? No implementation has started — this is scoped as a decision
+  session, not a coding task.
+
 - **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent + mascot twinkle/float** `[P2 · M]`
   (filed 2026-08-04 22:07 EDT; merged with the standalone mascot-animation item 2026-08-05 09:32 EDT
   — Harkirat's call, one Opus-5 session covers the whole hero area rather than two separate ones).
