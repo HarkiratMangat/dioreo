@@ -181,7 +181,18 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.58.0 — 2026-08-07 07:00 EDT (#94) — A third region, sourced instead of guessed
+## v2.58.1 — 2026-08-07 08:10 EDT (#95) — Filing what the last release only said in chat
+
+Two things from the v2.58.0 merge session had only ever been stated to Harkirat directly, not
+recorded anywhere a future session would find them: the `v2.58.0` git tag never actually reached
+GitHub (the push hit a genuine 403 from that session's proxy — an organization policy denial, not a
+transient failure, confirmed by retrying once with no change), and the local `git tag -a`
+invariant-check hook hard-errors instead of skipping whenever its hardcoded Mac-only path doesn't
+exist, which will hit every future non-Mac session the same way. Both are now filed in
+`docs/db-deferred-list.md` (a Reminder with the exact commands + a verify step for the tag, an
+Active Bug for the hook) instead of living only in a chat transcript.
+
+## v2.58.0 — 2026-08-07 07:00 EDT (#94 · `570187d`) — A third region, sourced instead of guessed
 
 **Harkirat provided real screenshots of a 20 CP region for `/draw prices`** that had never existed in
 the bot — 10 CP and 30 CP were the only two regions coded. Before touching any code, the real data was

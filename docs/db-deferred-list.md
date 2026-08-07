@@ -83,6 +83,27 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P1 · XS]` **The `git tag -a` release-tag-invariant `PreToolUse` hook hard-errors instead of
+  skipping on any non-Mac session.** *Filed 2026-08-07 08:06 EDT, hit live tagging v2.58.0.*
+
+  The hook (matches `git tag +-a +v[0-9]`) unconditionally `cd`s to `/Applications/Claude Code/
+  Diors-Builds` — Harkirat's own Mac path — before it can cross-check the tag commit's
+  `package.json` version. In any remote/Linux sandbox that path doesn't exist, the `cd` fails, the
+  `&&` chain short-circuits, and instead of the intended silent pass-through it surfaces as
+  `PreToolUse:Bash hook error: ... No stderr output` — **every retry of the identical command fails
+  the same way**, deterministically blocking the tool call.
+
+  **Workaround used that session (not a fix):** `git tag --annotate v2.58.0 -m "..." <sha>` instead
+  of `-a` — mechanically identical annotated tag, just doesn't match the hook's trigger regex. Only
+  reached for after independently re-verifying the exact invariant the hook protects (`git show
+  <sha>:package.json` matched the tag name) — a workaround for a non-functional check, not a bypass
+  of a working one.
+
+  **Real fix:** give the hook a graceful missing-path fallback (skip silently / report SKIPPED),
+  the same pattern `docs-audit.mjs`'s `external-anchors`/`memory-slug` checks already use correctly
+  when Harkirat's local paths aren't present. Will hit **every** future remote/non-Mac session that
+  tries to tag a release, not just this one.
+
 - `[P3 · XS]` **`branch-discipline-guard.sh` does not catch a commit whose verb sits inside quotes** —
   e.g. `bash -c "git commit -m x"`, `sh -c '… git commit …'`. *Filed 2026-08-06 21:44 EDT.*
   The matcher requires `^` or `;&|` immediately before `git`, and in these forms a quote precedes it.

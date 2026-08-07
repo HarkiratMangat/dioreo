@@ -25,6 +25,18 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ✅ **`v2.58.0`'s git tag was never pushed to GitHub — RESOLVED 2026-08-07 10:12 EDT.** `[P0 · XS]`
+  Filed 2026-08-07 08:06 EDT, escalated to P0 at 08:12 EDT the same session when PR #95 discovered it
+  was blocking `syntax-check` (via `docs-audit`'s `tag-coverage` ERROR) on **every** PR, not just ones
+  touching drawprices. Two remote sandbox sessions both hit a real, unfixable-from-there 403 pushing
+  the tag (an explicit org egress/proxy policy denial — see `local/handoff/v2.58.0-merge-handoff.md`
+  for the full repro) and correctly escalated rather than routing around it. A session with real push
+  access ran exactly the commands both handoffs specified: `git tag -a v2.58.0
+  570187dd8af8f7f437873d567ad9657b073f2d92 -m "v2.58.0 — A third region, sourced instead of guessed"`
+  then `git push origin v2.58.0`. Verified after: `git ls-remote --tags origin v2.58.0` resolves to the
+  right commit, `docs-audit`'s `tag-coverage` check no longer errors, and PR #95's `syntax-check`
+  (which was failing on exactly this) passed clean on re-run with no other changes.
+
 - ✅ **CI cancelled at 15m04s on PR #89 — RESOLVED 2026-08-06 19:45 EDT: it was a GitHub Actions major
   outage, never this repo.** Two runs died at *exactly* 15m04s / 15m03s with **zero log bytes** (no
   runner was ever assigned — a failing step always leaves output), and **`main`'s own run failed
