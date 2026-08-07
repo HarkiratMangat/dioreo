@@ -72,7 +72,57 @@ and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildD
   canonical mixed-case source of truth; only the rendered heading is uppercased. Applies to the
   tier-emoji heading lines only, NOT the Upgrade sub-heading or the Strategy heading (neither has a tier
   emoji prefix).
-- **No index.js changes were needed** — the `price_subpage_*`/`price_region_*` handlers already parse the
-  page number generically and pass it through; the command clamps. Both regions have full data, so a
-  region switch preserves the Advanced page.
+- **No index.js changes were needed** for this page's own pagination — the `price_subpage_*` handler
+  already parses the page number generically and passes it through; the command clamps. ⚠️ This
+  no-longer applies to `price_region_*` as a blanket statement — see the 2026-08-07 section below,
+  which DID need an `index.js` change once a 3rd region existed.
+
+## `/draw prices` gains a 3rd region + a 4th page: the Advanced Double Legendary Character Draw (2026-08-07)
+
+Harkirat provided real screenshots of a 20 CP region breakdown that had never existed in the bot (only
+`region_10`/`region_30` were coded), plus a draw type — an Advanced/Regular purchase split on the
+Legendary Character draw — that didn't exist in the codebase at all. Both were added as real, sourced
+data, not derived guesses (a prior arithmetic-mean derivation model was validated against the real data
+first, then kept only as a documented fallback method for the one remaining gap — see `DRAW_DATA`'s own
+header comment and `docs/DEVLOG.md`'s matching entry for the full validation story).
+
+- **`REGION_ORDER = ['region_10', 'region_20', 'region_30']`** is now the single place that enumerates
+  "all regions in order" — both the 3-way region switcher and `execute()`'s `defaultRegionMode`
+  resolution read from it, so a hypothetical 4th region only needs to change this one array plus its
+  `DRAW_DATA`/`ADVANCED_DOUBLE_LEGENDARY` keys.
+- **The region switcher is no longer a binary toggle.** A single "switch to the OTHER region" button
+  stops meaning anything once there are 3 regions — `buildContainer` now renders one button per
+  `REGION_ORDER` entry, `custom_id` = `price_region_{10|20|30}_{currentPage}` (same encoding scheme as
+  before, just 3 of them). Follows the bot's existing multi-option button convention: current region
+  disabled + style 4 (Danger/red), the other two enabled + style 2 (Secondary/gray) — same pattern
+  `buildGlobalNavRow` already uses, see `.claude/rules/rendering-and-ui.md`. **This DID need an
+  `index.js` change** — the old `price_region_10_`/`price_region_30_` hardcoded binary `startsWith`
+  check is now a lookup against a `{prefix: region}` map covering all 3 prefixes.
+- **`doubleEpicCharacters.region_20` is deliberately `null`** — no real data exists for that draw at
+  ANY region beyond 10 CP (not even 30 CP), so there's no second data point to interpolate from even if
+  a guess were wanted. Harkirat's explicit call: leave it null (renders the existing "haven't done the
+  research yet" placeholder) rather than ship a speculative estimate as real pricing.
+- **`mythicWeapon`/`mythicCharacter` have no `upgrade` field at `region_20`** — the source screenshots
+  only gave per-pull draw totals, not the separate Upgrade cost, so there's no real number for it yet.
+  `buildDrawEntries`' `if (entry.upgrade)` check means the Upgrade line just doesn't render for these
+  two entries in the 20 CP region until real data turns up.
+- **New 4th page: the Advanced Double Legendary CHARACTER Draw**, via
+  `buildAdvancedDoubleLegendaryCharacterEntry` at `CHARACTER_ADVANCED_PAGE_INDEX` (=
+  `ADVANCED_PAGE_INDEX + 1`). Mirrors `buildAdvancedDoubleLegendaryEntry` exactly in structure/
+  rendering (same 3-purchase-mode + THE TRAP + 3-strategy-line shape, no internal dividers). Two real
+  differences from a naive copy:
+  - **`reg` is NOT stored a second time.** `ADVANCED_DOUBLE_LEGENDARY_CHARACTER` holds only `adv` per
+    region — its Regular-purchase array is byte-identical to
+    `DRAW_DATA[region].legendaryCharacterWeapon.draws` (verified across all 3 regions), so the builder
+    reads it from there at render time instead of hand-typing a second copy.
+  - **The reward framing is genuinely different, not a Weapon→Character find/replace.** Harkirat
+    clarified (2026-08-07) this draw's two prize pairs are BOTH Legendary tier — 2 Legendary Characters
+    (this banner's own headline reward) and 2 Legendary Weapons (the secondary Advanced-purchase
+    reward) — unlike the Weapon page, whose secondary reward is 2 EPIC characters. The 3 strategy
+    lines were written to match that, not mechanically swapped from the Weapon page's wording.
+  - THE TRAP callout text is purely about purchase mechanics (not reward tiers), so it carries over
+    verbatim from the Weapon page.
+- **If you add a 5th page later**, push a new key-driven page to `SUBPAGES` (re-derives
+  `ADVANCED_PAGE_INDEX`/`CHARACTER_ADVANCED_PAGE_INDEX`/`TOTAL_PAGES` automatically), or add another
+  dedicated builder + its own `*_PAGE_INDEX` constant the same way this page and the Weapon page did.
 
