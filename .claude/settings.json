@@ -59,6 +59,15 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/dev-bot-instance-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else printf 'DEV BOT INSTANCE CHECK DID NOT RUN -- %s is missing or unreadable. Multiple independently-launched dev-bot processes on the same token were NOT checked for this session.' \"$S\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}}'; fi",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
