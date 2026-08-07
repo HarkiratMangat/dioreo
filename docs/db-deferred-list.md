@@ -1470,6 +1470,14 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   entries are currently far richer than a generator would produce, so that part is a genuine tradeoff, not
   a free win.
 
+- **🎨 Rebuild the Priority·Effort artifact around the new model-selection grid** `[P3 · M · Sonnet5-High]`
+  *(filed 2026-08-06 21:58 EDT — Harkirat's call, "not right now, maybe in a few days or when we have
+  nothing else important to do.")* Full handoff already written, ready to paste into a fresh session:
+  `local/handoff/2026-08-06-tier-system-artifact-handoff.md`. Update the existing artifact **in place**
+  (pass its URL to the Artifact tool — a fresh conversation otherwise mints a new link) to reflect the
+  v2.57.2 grid: effort tier and model choice are separate axes, model comes from the premise-risk ×
+  deliberation-load grid, not from a feeling about importance.
+
 ---
 
 ## 🧹 Someday / tech-debt

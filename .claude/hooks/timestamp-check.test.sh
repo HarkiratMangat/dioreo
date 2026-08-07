@@ -20,9 +20,9 @@ pass=0; fail=0
 # tests, one root cause: two halves of a timestamp read from two different moments.
 #
 # `when()` shifts once and formats once, on either BSD or GNU date, so the pair can never disagree.
-when() { # $1 = offset like '+3H' / '-2H' / '+1d'  -> "YYYY-MM-DD HH:MM"
+when() { # $1 = offset like '+3H' / '-2H' / '+1d' / '+2M'  -> "YYYY-MM-DD HH:MM"
   date -v"$1" '+%Y-%m-%d %H:%M' 2>/dev/null && return
-  local gnu="${1#+}"; gnu="${gnu/H/ hours}"; gnu="${gnu/d/ days}"
+  local gnu="${1#+}"; gnu="${gnu/H/ hours}"; gnu="${gnu/d/ days}"; gnu="${gnu/M/ minutes}"
   case "$1" in -*) date -d "${gnu#-} ago" '+%Y-%m-%d %H:%M';; *) date -d "$gnu" '+%Y-%m-%d %H:%M';; esac
 }
 TODAY=$(date +%Y-%m-%d)
@@ -30,6 +30,12 @@ LOCALTZ=$(date '+%Z')
 FUTSTAMP=$(when '+3H')            # a genuinely future date+time, whatever the zone or hour
 PASTSTAMP=$(when '-2H')           # genuinely past, same guarantee
 TOMORROWSTAMP="$(when '+1d' | cut -d' ' -f1) 09:00"
+# TOLERANCE_SECS in the hook is 180s (3 min). +1M (~60s ahead) sits well inside that grace window —
+# ordinary turn latency, not fabrication. +4M (~240s ahead) sits well past it — a healthy margin on
+# both sides of the boundary so second-level jitter between this script and the hook's own `date`
+# call can't flip either result.
+NEARFUTSTAMP=$(when '+1M')        # inside the tolerance window — must NOT deny
+FARFUTSTAMP=$(when '+4M')         # past the tolerance window — must still deny
 
 # A hook that decides nothing prints nothing; jq on empty stdin also prints nothing. Catch empty
 # BEFORE jq or every silent case reads as "" and the suite lies about which way it failed.
@@ -51,6 +57,8 @@ a "future time today denied"        pre "deny:"             yes "Measured $FUTST
 a "TOMORROW's stamp denied"         pre "deny:"             yes "Filed $TOMORROWSTAMP $LOCALTZ."
 a "future stamp in BACKTICKS denied" pre "deny:"            yes "Shipped \`$FUTSTAMP $LOCALTZ\` per the log."
 a "past time not denied"            pre "deny:"             no  "Measured $PASTSTAMP $LOCALTZ during the run."
+a "just-inside tolerance not denied" pre "deny:"            no  "Filed $NEARFUTSTAMP $LOCALTZ during the run."
+a "just-outside tolerance denied"    pre "deny:"            yes "Filed $FARFUTSTAMP $LOCALTZ during the run."
 a "bare date never denied"          pre "deny:"             no  "Corrected on $TODAY after review."
 a "TS-EXAMPLE line is exempt"       pre "deny:"             no  "Illustration only: $TOMORROWSTAMP $LOCALTZ (TS-EXAMPLE)."
 # A REAL scheduled deadline carries a clock time on purpose — the window closes at an hour, not on a
