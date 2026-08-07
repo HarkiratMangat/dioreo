@@ -137,6 +137,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 19:58 EDT — Fifteen minutes, no log, no cause (v2.57.1)
 - 2026-08-06 21:10 EDT — The recommendation that was always one tier up (v2.57.2)
 - 2026-08-06 21:45 EDT — The rule was everywhere, the method was nowhere (v2.57.3)
+- 2026-08-07 07:00 EDT — A region built from screenshots, not guesses (v2.58.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5564,6 +5565,66 @@ code.
   fix produces a confident, wrong lesson.
 - **Write the test even for the line you are certain about.** Both of tonight's real discoveries came
   from tests written to confirm something obvious.
+
+## 2026-08-07 07:00 EDT — A region built from screenshots, not guesses (v2.58.0)
+
+Harkirat asked for a pure data-analysis pass on `/draw prices`' 10 CP and 30 CP region data — could a
+20 CP region be calculated from the two that already existed, without him manually sourcing and typing
+in a full third set of prices. The honest answer, worked out before any code was touched: not a clean
+closed-form multiplier tied to the CP label (the ratio isn't a flat 3x despite what the labels imply —
+it's ~3x on the very first pull, dips to ~2.4x by the third, then flattens to almost exactly 2.5x
+through the middle of every draw, with the last 1-2 pulls the noisiest). An arithmetic mean of the two
+known regions turned out to be the least assumption-laden estimator with only two data points, and was
+recorded as such in a scratch analysis file — not committed, since it was pure inference with nothing
+to verify it against yet.
+
+**Then the premise changed mid-session.** Harkirat sent five screenshots of a real 10/20/30 CP
+breakdown from another source. The 20 CP numbers in them weren't something to derive — they were
+already real. Checking the earlier arithmetic-mean model against them anyway (rather than discarding
+it) turned out to be worth doing: it matched almost every pull within 0-3%, and the two real deviations
+that showed up were the last pull of two different draws, both landing about 9% below what the model
+predicted — a consistent enough pattern that it's now the flagged confidence caveat for the one draw
+that still has no real 20 CP data at all (`doubleEpicCharacters`), rather than a discarded guess.
+
+**Cross-checking the screenshots against the codebase's own data caught two likely typos — in the
+screenshots, not the code.** Two of the screenshot's inline per-pull arrays disagreed with
+`drawprices.js` by one value each (`mythicWeapon` pull 6, `legendaryGunReactive` pull 9). Both
+screenshots' own printed running totals only reconciled against the codebase's existing values, not
+the screenshot's own listed numbers — a small, free consistency check that would have gone unnoticed
+without deriving the totals independently first.
+
+**The screenshots also contained a draw type the bot's code never had at all**: an Advanced/Regular
+purchase split for the Legendary Character draw, structurally identical to the existing Advanced
+Double Legendary *Weapon* page but with real pricing data of its own. Its Regular-purchase numbers
+turned out to be byte-identical to the existing `legendaryCharacterWeapon` draw already in
+`DRAW_DATA` — confirmed across all three regions — so the new page's data object stores only the
+genuinely new `adv` arrays and reads `reg` from the existing draw at render time, rather than
+hand-typing a second copy of numbers already sitting in the file. Its reward framing needed a real
+correction, not a mechanical Weapon→Character swap: Harkirat clarified this draw's two prize pairs are
+**both** Legendary tier (2 Legendary Characters as the headline reward, 2 Legendary Weapons as the
+secondary Advanced-purchase reward) — a different shape than the Weapon page, whose secondary reward
+is 2 Epic characters. Guessing the wording from the Weapon page's pattern alone would have been wrong.
+
+**What shipped**: `region_20` across `DRAW_DATA` and `ADVANCED_DOUBLE_LEGENDARY` with the real
+screenshot numbers; a 4th pagination page for the new Character-draw Advanced mode; and the old binary
+10⇄30 CP toggle button replaced with a 3-way switcher, since a "switch to the other region" button
+stops meaning anything once there's a third option. `doubleEpicCharacters.region_20` was deliberately
+left `null` rather than filled with the earlier speculative estimate — Harkirat's explicit call,
+matching the existing "no data yet" convention this draw's `region_30` already uses.
+
+### What this cost, and what it taught
+
+- **A validated fallback model earns its keep even after real data arrives** — it didn't get thrown
+  away when the premise changed, it became the confidence caveat for the one gap real data still
+  didn't cover.
+- **Re-deriving a total independently is a free typo detector.** Both source discrepancies this
+  session were caught by a total that only reconciled one way, not by eyeballing the arrays.
+- **"A wrong number can only ever exist in one place" is worth re-deriving data for, not just an old
+  file's own promise to itself.** The new draw's Regular-purchase array could have been hand-typed
+  again from the screenshot; reading it from the existing draw instead means it can never drift.
+- **Don't swap terms and call it done.** The Character draw's reward structure genuinely differs from
+  the Weapon draw's — asking, rather than assuming symmetry, avoided shipping wrong wording about what
+  players are actually paying for.
 
 
 # Part B — Lessons Ledger (thematic)

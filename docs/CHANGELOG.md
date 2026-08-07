@@ -181,7 +181,45 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.57.3 — 2026-08-06 21:44 EDT (#92) — The rule was everywhere, the method was nowhere
+## v2.58.0 — 2026-08-07 07:00 EDT (#94) — A third region, sourced instead of guessed
+
+**Harkirat provided real screenshots of a 20 CP region for `/draw prices`** that had never existed in
+the bot — 10 CP and 30 CP were the only two regions coded. Before touching any code, the real data was
+cross-checked against an arithmetic-mean-of-region_10/region_30 model: the model matched almost every
+pull within 0-3%, with the last 1-2 "chase" pulls in a draw sometimes running ~9% below what the model
+predicted. That validation mattered because it turned "guess the missing region" into "confirm the real
+numbers, then note where a future estimate would and wouldn't be trustworthy" — the model is recorded
+in code comments as a fallback method, never as a substitute for real data that already exists.
+
+**`DRAW_DATA.region_20` and `ADVANCED_DOUBLE_LEGENDARY.region_20`** now hold the real, sourced numbers
+for every draw type that has them. `doubleEpicCharacters.region_20` stays `null` — no real data exists
+for that draw beyond its 10 CP array (not even at 30 CP), and Harkirat's explicit call was to leave it
+null rather than ship an unverified guess as real pricing, matching the existing missing-data
+convention already used for that same draw's `region_30`.
+
+**The binary 10⇄30 CP toggle button is now a 3-way switcher.** A single "switch to the other region"
+button stopped making sense once a 3rd region existed, so it's now three buttons (10/20/30 CP), one per
+region, following the bot's own established multi-option button convention: the current region's
+button is disabled + Danger/red, the other two are Secondary/gray. `/settings`' region dropdown and the
+slash command's `region` option both gained the 20 CP choice too.
+
+**A draw type the codebase never had: the Advanced Double Legendary Character Draw.** Harkirat's
+screenshots also surfaced a Regular/Advanced purchase split for the Legendary Character draw that
+mirrors the existing Advanced Double Legendary *Weapon* page but was never coded. Its own 4th
+pagination page reuses that page's exact structure and rendering, but its reward framing is genuinely
+different — Harkirat clarified this draw's two pairs are both Legendary tier (2 Legendary Characters as
+the headline reward, 2 Legendary Weapons as the secondary Advanced-purchase reward), unlike the Weapon
+page's Legendary-weapons-plus-Epic-characters mix — so the strategy wording was written to match, not
+copied and swapped. Its Regular-purchase array is read directly from the existing
+`legendaryCharacterWeapon` data rather than duplicated, per this file's own "a wrong number can only
+ever exist in one place" rule.
+
+No live Discord testing was possible in the session that built this (no dev bot credentials in that
+remote environment) — verified instead by rendering `buildContainer()` for all 3 regions × 4 pages in
+isolation (no exceptions, max ~35 components against the 40 cap) and by hand-checking every new array's
+sum against its real sourced total.
+
+## v2.57.3 — 2026-08-06 21:44 EDT (#92 · `323a4bd`) — The rule was everywhere, the method was nowhere
 
 **Harkirat asked whether v2.57.2's model-selection change had actually reached the surfaces that
 *prescribe* the recommendation.** It had not, and the gap was the instructive kind: the **obligation**
