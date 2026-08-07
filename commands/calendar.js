@@ -45,12 +45,23 @@ const SECTION_CHAR_BUDGET = 3800;
 // (see the rangeText logic below), so an ongoing event only counts as "ended" once bpEnd has both
 // been set AND passed. TBD (added 2026-07-31 14:00 EDT, notes follow-up) means the admin explicitly
 // doesn't know the end date yet -- treated as running INDEFINITELY (never "ended"), distinct from
-// "not set yet" (still falls back to the old bpEnd-unset behavior). A `dateOnly` entry (a draw
-// auto-merged in from newDraws/returningDraws with no explicit calendar row -- see
-// getDrawSectionEntries below) has no range at all, so it's simply "ended" once its own release date
-// has passed.
+// "not set yet" (still falls back to the old bpEnd-unset behavior).
+//
+// A `dateOnly` entry (a draw auto-merged in from newDraws/returningDraws with no explicit calendar
+// row -- see getDrawSectionEntries below) NEVER counts as "ended" (fixed 2026-08-07 13:03 EDT). It
+// used to return `released date <= now`, which conflates RELEASED with ENDED -- a draw released
+// TODAY reads as "ended" the instant its UTC-midnight release timestamp passes, which for any
+// US-timezone viewer is almost immediately. Found live: "Judgment Day - It Goes Two" (released
+// 2026-08-07T00:00:00Z) correctly showed on `/draws` (no filtering there) but silently vanished from
+// `/calendar`'s Draws page under Harkirat's saved `calendarEventFilter: 'active'` preference, even
+// though the data was correct in every array and the synthesis/dedup logic worked exactly as
+// designed -- the filter itself was applying the wrong test. A draw only ever disappears from here
+// when it's actually removed from `newDraws`/`returningDraws` (normally a season rollover), same as
+// `/draws` already behaves with no end-date concept at all -- there is no real "ended" state to
+// detect for a dateOnly entry until the season-expiry feature (`docs/db-deferred-list.md`'s Queued
+// "draws/calendar auto-expire on season end", filed from notes L112) gets built on purpose.
 function isEventEnded(event, seasonalDoc, nowMs) {
-    if (event.dateOnly) return new Date(event.date).getTime() <= nowMs;
+    if (event.dateOnly) return false;
     if (event.isOngoing) {
         if (seasonalDoc.bpEndTBD) return false;
         return Boolean(seasonalDoc.bpEnd) && new Date(seasonalDoc.bpEnd).getTime() <= nowMs;
