@@ -92,6 +92,101 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P1 · M · Sonnet5-High]` **✅ ROOT CAUSE CONFIRMED 2026-08-07 16:43 EDT via A/B test: the
+  single-hop "pagination perf hybrid" (2026-08-06 22:17 EDT) IS what's causing a button's animated
+  emoji to go permanently blank after a re-render.** *Filed 2026-08-07 16:40 EDT from Harkirat's
+  live testing across `/calendar` and `/draw prices`.* **Model pick reasoning:** premise now
+  LOW (confirmed, not theorized) but the FIX still needs Harkirat's call — see below · deliberation
+  High — this touches a deliberate, documented, already-shipped perf optimization
+  (`utils/sendV2Payload.js`'s single-hop path) spanning draws/calendar/drawprices/settings
+  pagination; any fix trades back some of the latency win. Tie-break: wrong-but-confident on the FIX
+  choice costs a lot → stays Sonnet, High.
+
+  **A/B test result (confirms the theory cleanly):** temporarily reverted `calpage_`,
+  `price_region_`, and `price_subpage_` in `index.js` back to `await interaction.deferUpdate()` +
+  the old two-hop flow, dev bot only, not committed. Per Harkirat: **"calendar buttons r working
+  fine now"** after reverting just `calpage_` (while drawprices, still single-hop at that point,
+  still failed) — then **"draw prices fine as well now"** after reverting `price_region_`/
+  `price_subpage_` too. Bug fully absent with two-hop, present with single-hop, isolated one route
+  at a time. This is as close to a controlled experiment as this bug family gets.
+
+  **✅ CLOSED OUT 2026-08-07 17:37 EDT — fix is: revert `calpage_`/`price_region_`/`price_subpage_`
+  to two-hop, real cost measured, no compromise exists.** Full investigation trail below; skip to
+  "Decision" at the bottom if you just want the outcome.
+
+  **Repro, confirmed live on both bots:** `/calendar`'s Draws/Events/Modes toggle row
+  (`buildSectionToggleRow`, `calendar.js`) — clicking one button makes a DIFFERENT (not the one
+  clicked) button's emoji go blank, sometimes recovering on a later render, sometimes staying blank
+  indefinitely (12+ seconds observed with zero further interaction, plus a screenshot taken well
+  after). `/draw prices`' region-switch row — tapping the *subpage pagination* arrow (a DIFFERENT
+  button) made the 10 CP region button's emoji vanish. `/settings`' Prev/Next pagination row — see
+  below, initially looked clean, was NOT. **Every place this has been observed goes through the
+  exact same code path:** `calpage_`, `price_region_`, `price_subpage_`, and `set_page_` in
+  `index.js` are ALL commented "No deferUpdate() — single-hop" and render via `sendV2Payload`'s
+  `!interaction.deferred && !interaction.replied` branch (a `type:7` UPDATE_MESSAGE posted as the
+  interaction's first and only response) — this specific delivery mechanism did not exist before
+  2026-08-06 22:17 EDT, and per Harkirat: "this didn't happen before, which makes me wonder if it
+  actually is linked to the perf update."
+
+  **Ruled out — the JSON payload itself.** `sendV2Payload` always sends a complete component tree
+  with the correct `emoji: {id, name, animated}` on every button, every render — confirmed by
+  reading the code directly, no conditional path omits it.
+
+  **Ruled out — timing/lead-time race.** Delayed the single-hop `type:7` POST (still ONE round
+  trip, still the same response type, just held before sending) at 200/400/600/800/2000ms —
+  ALL failed, bug reproduced identically at every delay including 2 full seconds (deliberately
+  chosen as roughly what two-hop's own round trip costs). If lead-time were the mechanism, 2s
+  should have been more than enough. It wasn't. Timing is not the variable.
+
+  **Ruled out — animated-vs-static emoji.** `/settings`' Prev/Next arrows (`left`/`right` in
+  `emojiMap.js`) are STATIC, not animated — only its separate "View Colors" button (`eyedropper`)
+  is animated. First test: clicked through `/settings` repeatedly, nothing broke — looked like
+  confirmation that animation specifically was required. **That result was contaminated**: two
+  dev-bot auto-restarts (from unrelated file saves for the next test) landed mid-session, and a
+  click during a restart window can look exactly like a dropped button. Re-tested clean (bot
+  confirmed stable, zero restarts) clicking ONLY the two static Prev/Next arrows, no animated
+  emoji touched at all — **it still broke after a few clicks.** Static emoji are equally
+  susceptible; animation was never the variable, just a coincidentally-lower hit rate on a
+  2-button row versus a 3-button row.
+
+  **Ruled out — button/emoji count.** `/settings`' pagination row has 2 relevant buttons;
+  calendar/drawprices have 3. Both break. Count doesn't gate the bug, though it may affect
+  *probability* (untested/unquantified — the settings row took "a few clicks" to reproduce where
+  calendar/drawprices often broke faster, but no rigorous click-count comparison was run).
+
+  **What's actually confirmed:** the bug is tied purely to the `type:7` interaction-callback
+  response mechanism itself — independent of timing, of whether the emoji is animated or static,
+  and of how many emoji-bearing buttons are in the row. Two-hop (`deferUpdate()` + `PATCH
+  @original`) never reproduces it, on any of the three commands tested. The deeper WHY (client
+  internals) stays a documented theory, not fact — see below.
+
+  **Real cost of two-hop, measured live (not estimated):** instrumented both paths with actual
+  wall-clock timing in this environment — two-hop (`calpage_`) averaged **~517ms** (excluding one
+  1342ms cold-start outlier; ~635ms including it) across 7 clicks; single-hop (`price_subpage_`)
+  averaged **~302ms** across 4 clicks. **Real difference: ~200-300ms per click**, not the ~100-150ms
+  originally assumed.
+
+  **Leading theory for the WHY (not proven, no way to verify further from our side — Discord's
+  client is closed-source):** the client likely has two separate code paths for "this message
+  changed" — one for a genuine `MESSAGE_UPDATE` gateway event (what a PATCH produces; the SAME
+  path used for editing any message anywhere on Discord, extremely mature) vs. directly rendering
+  a `type:7` interaction-callback response as the new UI state (a narrower, component-specific
+  path). Plausible that the second path has a rendering bug the first doesn't. Explicitly labeled
+  as inference, not confirmed fact.
+
+  **Decision (Harkirat, 17:25 EDT): accept the two-hop cost.** No compromise was found despite
+  systematically testing every variable that could plausibly matter (delay from 200ms to 2000ms,
+  animated vs static emoji, button/emoji count). **Implemented for real, all 4 confirmed-affected
+  handlers (17:38-17:44 EDT):** `calpage_`, `price_region_`, `price_subpage_`, AND `set_page_`
+  (`/settings`) in `index.js` all now `await interaction.deferUpdate()` + two-hop, permanent and
+  committed (not the temporary dev-only scaffolding used throughout the investigation above).
+  `set_page_` was never part of the original ask — it surfaced mid-investigation, was directly
+  confirmed to exhibit the identical bug (the "clean" first test was a restart-timing artifact;
+  the real re-test broke it), and got the same already-decided fix rather than being left on a
+  known-broken path pending a separate conversation. `draws`' own sub-page nav (`subpage_new_`/
+  `subpage_returning_`) is the one single-hop branch left completely untouched — never directly
+  tested for this bug either way during this investigation.
+
 - `[P1 · XS]` **The `git tag -a` release-tag-invariant `PreToolUse` hook hard-errors instead of
   skipping on any non-Mac session.** *Filed 2026-08-07 08:06 EDT, hit live tagging v2.58.0.*
 
@@ -542,6 +637,19 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **🚨 CI/lint gate for over-100-char `setPlaceholder()` calls** `[P2 · S · Sonnet5-Medium]` *(filed
+  2026-08-07 15:52 EDT from the calendar bulk-modal placeholder incident.)* **Model pick reasoning:**
+  premise Low — the constraint itself is settled fact (Discord's discord.js hard-throws
+  `ExpectedConstraintError` past 100 chars, verified live) · deliberation Med — writing a static
+  AST/regex scan of every `.setPlaceholder(...)` call across `commands/*.js` (same shape as
+  `scripts/checkEmojiCaptures.js`'s existing proxy-based scan) is mechanical, but wiring it into
+  `npm test`/CI the same way needs care not to false-positive on template-literal placeholders. Tie-break
+  n/a, straightforward build → Sonnet, Medium.
+  A real production incident (`commands/manage.js`'s `buildCalendarBulkModal()`, 181 chars, shipped in
+  v2.59.0) crashed the modal-builder before `showModal()` ever ran — both bulk add/replace buttons
+  looked completely dead in prod, indistinguishable from a `deferReply()` timeout bug fixed in the SAME
+  release. Nothing currently catches this class of bug before it ships. See
+  `docs/reference/platform-constraints.md`'s new entry for the full incident writeup.
 - **📖 Rework `docs/ideas/diors-notes.md`'s upper section (lines 1–59) + expand the comment-convention
   leading-verb list** `[P2 · M · Sonnet5-High]` *(filed 2026-08-07 12:10 EDT from notes L14 — Harkirat's
   ask.)* **Model pick reasoning:** premise Med — what to fold where is mostly clear from his ask, but the

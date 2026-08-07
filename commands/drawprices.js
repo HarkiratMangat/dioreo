@@ -114,6 +114,11 @@ const DRAW_DATA = {
 // regions in order" reads from, so a future 4th region only ever needs to change this one array.
 const REGION_ORDER = ['region_10', 'region_20', 'region_30'];
 
+// Maps a REGION_ORDER key to its emojiMap.js key -- the single place the 3-way region-switch button
+// row (buildContainer, below) looks up which per-region icon a button gets. Added 2026-08-07 15:46 EDT
+// alongside the region10Cp/region20Cp/region30Cp emoji themselves.
+const REGION_EMOJI_KEY = { region_10: 'region10Cp', region_20: 'region20Cp', region_30: 'region30Cp' };
+
 // `region_20` added 2026-08-07, same source as DRAW_DATA.region_20 above (Harkirat's real screenshot
 // data) — `adv = reg × 1.6` holds exactly here too, with zero deviation, across all three regions now.
 const ADVANCED_DOUBLE_LEGENDARY = {
@@ -492,15 +497,17 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                 // request) to show it as the active selection, the other two are enabled + style
                 // 2 (Secondary/gray). Labels shortened to "N CP" (rather than "View N CP Region
                 // Prices" x3) since three full labels side by side in one row would be visually
-                // cramped; same `emojis.regions` emoji kept on all three for consistency with what
-                // the single button used to carry.
+                // cramped. Each button carries its OWN region-specific icon (2026-08-07 15:45 EDT,
+                // `region10Cp`/`region20Cp`/`region30Cp` in emojiMap.js) instead of the one shared
+                // `regions` icon all three used to carry -- `REGION_EMOJI_KEY` below is the single
+                // place mapping a region key to its emojiMap.js key.
                 components: REGION_ORDER.map(key => ({
                     type: 2,
                     style: key === regionKey ? 1 : 2,
                     disabled: key === regionKey,
                     custom_id: `price_region_${key.split('_')[1]}_${currentPage}`,
                     label: `${key.split('_')[1]} CP`,
-                    emoji: emojis.parseEmoji(emojis.regions)
+                    emoji: emojis.parseEmoji(emojis[REGION_EMOJI_KEY[key]])
                 }))
             }
         ]

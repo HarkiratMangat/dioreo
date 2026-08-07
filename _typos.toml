@@ -16,6 +16,10 @@ cpy = "cpy"
 # port. Same reasoning as `mis` and `cpy` above: the checker is right about English and wrong about
 # this repo's code vocabulary.
 ba = "ba"
+# `pn` fires as a misspelling of "on" when it's really the PNG image-format abbreviation inside
+# "PNGs" (plural) — flagged 2026-08-07 19:52 EDT writing DEVLOG's v2.60.0 entry ("static PNGs").
+# Same reasoning as `mis`/`cpy`/`ba` above: a real, correctly-spelled term the checker doesn't know.
+pn = "pn"
 
 # Hook self-tests carry DELIBERATE misspellings as fixtures — typos-check.test.sh has to feed the
 # checker a real typo to prove it still fires. Without this exclusion the spellchecker reports the

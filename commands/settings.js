@@ -232,15 +232,27 @@ module.exports = {
             // HELPER: Generates the clean Type 9 Accessory layout you designed
             // Internal stored state is still 'PUBLIC'/'EPHEMERAL' (unchanged, matches the DB field
             // values everywhere else). Button labels reworded 2026-07-12 (same day, follow-up
-            // correction) from all-caps "PUBLIC"/"HIDDEN" to plain "Show"/"Hide". Descriptive text
-            // partially italicized per the same follow-up -- "Visible to *everyone in chat*" /
-            // "Visible *only to me*" -- the whole line is still wrapped in ** below (unchanged).
+            // correction) from all-caps "PUBLIC"/"HIDDEN" to plain "Show"/"Hide".
+            // Reformatted 2026-08-07 17:55 EDT, Harkirat's direct request -- was `` `• Label` =
+            // **Visible to *everyone in chat*** `` (the LABEL in inline code with a leading bullet,
+            // the VALUE in bold+italic markdown). Backwards: inline code reads as a literal value,
+            // and a label isn't one. First pass put only the state word in code (`everyone in
+            // chat`); a follow-up (19:21 EDT) put the WHOLE phrase in the code span instead:
+            // **Label** = `Visible to everyone in chat`. Label is bold plain text (no backticks, no
+            // bullet); the entire "Visible to ..."/"Visible only to me" phrase is one inline-code
+            // span. "in chat" DROPPED entirely (19:36 EDT, Harkirat's follow-up) -- "Visible to
+            // everyone" already says what it means without it. This obsoletes the non-breaking-space
+            // wrap fix from earlier (removed per Harkirat's prior follow-up) -- inline code renders
+            // monospace, wrapping differently than the italic markdown span that had the
+            // orphan-word problem. Discord does NOT parse markdown inside a single-backtick span, so
+            // italic on the value is gone entirely, not just moved -- keeping it would have shown
+            // literal asterisks.
             const buildToggleRow = (label, currentState, publicId, ephemeralId) => {
                 const isPub = currentState === 'PUBLIC';
-                const displayText = isPub ? 'Visible to *everyone in chat*' : 'Visible *only to me*';
+                const displayText = isPub ? '`Visible to everyone`' : '`Visible only to me`';
                 return {
                     type: 9,
-                    components: [{ type: 10, content: `\`• ${label}\` = **${displayText}**` }],
+                    components: [{ type: 10, content: `**${label}** = ${displayText}` }],
                     accessory: {
                         type: 2, style: 2,
                         label: isPub ? "Hide" : "Show",
@@ -272,7 +284,7 @@ module.exports = {
                 region_20: '20 CP Region Pricing',
                 region_30: '30 CP Region Pricing'
             };
-            containerComponents.push({ type: 10, content: `\`• Draw Prices Region\` = **${regionModeLabelMap[regionMode] || regionModeLabelMap.last_viewed}**` });
+            containerComponents.push({ type: 10, content: `**Draw Prices Region** = \`${regionModeLabelMap[regionMode] || regionModeLabelMap.last_viewed}\`` });
             containerComponents.push({
                 type: 1,
                 components: [{
@@ -286,7 +298,7 @@ module.exports = {
                 }]
             });
 
-            containerComponents.push({ type: 10, content: `\`• Timezone\` = **${currentTzLabel}**` });
+            containerComponents.push({ type: 10, content: `**Timezone** = \`${currentTzLabel}\`` });
             // NOTE (redesigned during review): moved inside the container, directly under its summary
             // line, instead of living as a separate action row below/outside the embed.
             containerComponents.push({
@@ -297,7 +309,7 @@ module.exports = {
                 }]
             });
 
-            containerComponents.push({ type: 10, content: `\`• Timestamp Style\` = **${currentStyleLabel}**` });
+            containerComponents.push({ type: 10, content: `**Timestamp Style** = \`${currentStyleLabel}\`` });
             containerComponents.push({
                 type: 1,
                 components: [{
@@ -331,7 +343,14 @@ module.exports = {
             // already-cached avatarColorHex/bannerColorHex fields, no new lookup needed. Formatted
             // as a 6-digit uppercase hex string; `#` + the value's hex representation, zero-padded.
             const hexSuffix = (hexNum) => hexNum != null ? ` \`(#${hexNum.toString(16).padStart(6, '0').toUpperCase()})\`` : '';
-            let accentDisplay = accentStyleDisplayMap[accentStyle] || 'Avatar Color';
+            // Reformatted 2026-08-07 19:37 EDT to match page 1's **Label** = `Value` style -- only
+            // the CORE label text (the accentStyleDisplayMap lookup) goes in backticks here, not the
+            // whole accentDisplay string, since the hex-code suffixes below (hexSuffix, the
+            // displayName gradient stops, the dynamicProfile hex) already wrap THEMSELVES in their
+            // own separate backtick spans -- nesting one code span inside another isn't valid
+            // markdown (the first inner backtick would prematurely close the outer span), so this
+            // stays as adjacent same-styled spans instead of one merged span.
+            let accentDisplay = `\`${accentStyleDisplayMap[accentStyle] || 'Avatar Color'}\``;
             if (accentStyle === 'avatar') accentDisplay += hexSuffix(prefs.avatarColorHex);
             if (accentStyle === 'banner') accentDisplay += hexSuffix(prefs.bannerColorHex);
             // 'displayName' shows BOTH real gradient stops (not just the blended hex actually applied
@@ -346,7 +365,7 @@ module.exports = {
                     const [c1, c2] = displayNameColors;
                     accentDisplay += ` \`(#${c1.toString(16).padStart(6, '0').toUpperCase()} → #${c2.toString(16).padStart(6, '0').toUpperCase()})\``;
                 } else {
-                    accentDisplay = `${accentStyleDisplayMap.avatar}${hexSuffix(prefs.avatarColorHex)} *(Display Name Colors not set up)*`;
+                    accentDisplay = `\`${accentStyleDisplayMap.avatar}\`${hexSuffix(prefs.avatarColorHex)} *(Display Name Colors not set up)*`;
                 }
             }
             // 'dynamicProfile' shows the hex ACTUALLY picked for this render (panelColorHex,
@@ -357,7 +376,7 @@ module.exports = {
             if (accentStyle === 'dynamicProfile') {
                 accentDisplay += ` \`(#${panelColorHex.toString(16).padStart(6, '0').toUpperCase()})\`\n-# Randomly picks from your Avatar, Banner, Display Name, Decoration & Nameplate colors — new pick on every command, held steady while paging/toggling`;
             }
-            containerComponents.push({ type: 10, content: `\`• Accent Color Style\` = **${accentDisplay}**` });
+            containerComponents.push({ type: 10, content: `**Accent Color Style** = ${accentDisplay}` });
             containerComponents.push({
                 type: 1,
                 components: [{
@@ -381,7 +400,7 @@ module.exports = {
             const isActiveOnly = eventFilter === 'active';
             containerComponents.push({
                 type: 9,
-                components: [{ type: 10, content: `\`• Calendar Events\` = **${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}**` }],
+                components: [{ type: 10, content: `**Calendar Events** = \`${isActiveOnly ? 'Active/Upcoming Only' : 'All Events'}\`` }],
                 accessory: {
                     type: 2, style: 2,
                     label: isActiveOnly ? 'Show All' : 'Show Active Only',

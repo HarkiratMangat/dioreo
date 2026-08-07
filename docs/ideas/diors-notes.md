@@ -113,6 +113,8 @@ next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
 
 - [ ] v4 or maybe v5 feature ideas: We could implement a stateless MCP into the discord bot or the website/admin docs. Here’s an example I was thinking of for the bot: `Imagine if someone wanted to naturally search the lucky draws pricing breakdown and searched “I've done 3 pulls of the Mythic Fennec draw, how much more do I need to spend to finish it?”` and the MCP could use our data / backend and respond `"You have 7 pulls left, which will cost x CP total (around $x USD). Pull #4 will cost x CP.”` or something. Feel like it might help and be a future expansion for the draw prices calculator or searching up loadouts or something, or for the admin help docs?
 
+- [x] add these emojis to the 10/20/30 cp region switch buttons in the draw prices command: <a:10CpRegion:1535356505614852237> <a:20CpRegion:1535357376369139752> <a:30CpRegion:1535357851352965240> <!-- DONE 2026-08-07 15:47 EDT (Claude): region10Cp/region20Cp/region30Cp added to emojiMap.js, wired per-button in drawprices.js's REGION_EMOJI_KEY map, synced to the dev Discord app, verified 0 unmatched on boot. -->
+
 ---
 
 ## General / Meta

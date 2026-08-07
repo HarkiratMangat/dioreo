@@ -157,18 +157,26 @@ of sync the way the `/timestamp` duplication already had (see `.claude/rules/com
   stripping the ephemeral bit from an existing message). `/timestamp`'s plain-text
   parse-error fallback (no components at all) is left as a raw call rather than forced
   through this helper — genuinely a different shape, not more duplication to collapse.
-  - ⚠️ **DUAL-MODE since the "pagination perf hybrid" (2026-08-06 22:17 EDT).** If the interaction is
-    NOT yet acked (`!interaction.deferred && !interaction.replied`), this POSTs straight to the
-    interaction-callback endpoint (`type:7` UPDATE_MESSAGE) as the interaction's first and only
-    response — one Discord round-trip instead of the old ack-then-`rest.patch('@original')` two.
-    Already-deferred paths (the initial slash-command invocation, or a heavy path like View Colors
-    that still defers on purpose) are unaffected and keep patching exactly as before. Every light
-    pagination/toggle branch in `index.js` (draws, calendar, drawprices, settings) now deliberately
-    skips its `deferUpdate()`/`deferReply()` call so this branch triggers — see `sendV2Payload.js`'s
-    own header comment and `docs/db-deferred-list.md`'s "Pagination perf hybrid" entry for the full
-    traced investigation. **If you add a new light nav branch, don't defer first** — pass a synthetic
-    interaction with a no-op `deferReply` override (matching the existing branches) so it goes
-    single-hop too; deferring first silently falls back to the old two-hop patch path.
+  - ⚠️ **DUAL-MODE since the "pagination perf hybrid" (2026-08-06 22:17 EDT), PARTIALLY REVERTED
+    2026-08-07 17:38 EDT (v2.60.0).** If the interaction is NOT yet acked
+    (`!interaction.deferred && !interaction.replied`), this POSTs straight to the interaction-callback
+    endpoint (`type:7` UPDATE_MESSAGE) as the interaction's first and only response — one Discord
+    round-trip instead of the old ack-then-`rest.patch('@original')` two. Already-deferred paths (the
+    initial slash-command invocation, or a heavy path like View Colors that still defers on purpose)
+    are unaffected and keep patching exactly as before.
+    **⚠️ The single-hop path causes a real, confirmed Discord CLIENT bug** — a re-rendered button's
+    custom emoji can go blank and sometimes never recover. Reproduced live on every command tested;
+    ruled out our own payload (always correct), timing (200ms-2000ms artificial delays all failed),
+    animated-vs-static emoji, and button/emoji count as the cause — only reverting to two-hop avoids
+    it. `calpage_` (calendar), `price_region_`/`price_subpage_` (draw prices), and `set_page_`
+    (`/settings`, found mid-investigation to have the same bug) now all defer first again, accepting
+    a real measured ~200-300ms extra cost per click. `draws`' own sub-page nav
+    (`subpage_new_`/`subpage_returning_`) is the one branch left single-hop — untested for this bug
+    either way, not confirmed safe just because it wasn't flagged.
+    Full investigation: `docs/db-deferred-list.md`'s "button emoji goes blank after a single-hop
+    re-render" entry. **If you add a new light nav branch, don't reflexively make it single-hop** —
+    given this bug, defaulting a NEW branch to two-hop (`deferUpdate()` first) is the safer starting
+    point unless you have a specific reason to risk the single-hop path.
 
 
 ## "Show Everyone" (`utils/shareButton.js`, formerly "Share Publicly")

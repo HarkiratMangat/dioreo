@@ -1435,8 +1435,17 @@ client.on('interactionCreate', async interaction => {
         const PRICE_REGION_PREFIXES = { 'price_region_10_': 'region_10', 'price_region_20_': 'region_20', 'price_region_30_': 'region_30' };
         const priceRegionPrefix = Object.keys(PRICE_REGION_PREFIXES).find(prefix => interaction.customId.startsWith(prefix));
         if (priceRegionPrefix) {
-            // No deferUpdate() here -- pure string-building, single-hop UPDATE_MESSAGE via
-            // sendV2Payload (see its header comment, "pagination perf hybrid", 2026-08-06 22:17 EDT).
+            // REVERTED to two-hop 2026-08-07 17:38 EDT (v2.60.0) -- the "pagination perf hybrid"
+            // single-hop UPDATE_MESSAGE (2026-08-06 22:17 EDT) causes a real, confirmed Discord
+            // client bug: a button's custom emoji (this row's region icons) can go blank after a
+            // re-render and sometimes never recover. Extensively investigated live (see
+            // docs/db-deferred-list.md's "button emoji goes blank" entry) -- ruled out our own
+            // payload (always correct), timing/lead-time (tested 200ms-2000ms delays on the
+            // single-hop path, all failed), animated-vs-static emoji, and button/emoji count. Only
+            // two-hop (deferUpdate() + PATCH @original) avoids it, on every command tested. Real
+            // measured cost: ~200-300ms extra per click -- accepted by Harkirat over losing the
+            // emoji or living with the bug.
+            await interaction.deferUpdate();
             const selectedRegion = PRICE_REGION_PREFIXES[priceRegionPrefix];
             const currentSubpage = parseInt(interaction.customId.split('_').pop(), 10) || 0;
 
@@ -1458,7 +1467,9 @@ client.on('interactionCreate', async interaction => {
         // `price_subpage_{region}_{targetPage}` -- region doesn't change here, only which entries
         // are shown. Not persisted anywhere (unlike region), just carried through the click itself.
         if (interaction.customId.startsWith('price_subpage_') && interaction.customId !== 'price_subpage_indicator') {
-            // No deferUpdate() -- single-hop, see the price_region_ branch above.
+            // REVERTED to two-hop 2026-08-07 17:38 EDT (v2.60.0) -- see the price_region_ branch
+            // above for the full reasoning (the emoji-blank bug + investigation).
+            await interaction.deferUpdate();
             const rest = interaction.customId.replace('price_subpage_', '');
             const lastUnderscore = rest.lastIndexOf('_');
             const region = rest.slice(0, lastUnderscore);
@@ -1613,7 +1624,9 @@ client.on('interactionCreate', async interaction => {
         // sub-page pagination, 2026-07-31 14:00 EDT, per Harkirat's explicit request for named
         // section-toggle buttons instead of arrows). custom_id format: calpage_<0|1|2>.
         if (interaction.customId.startsWith('calpage_')) {
-            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
+            // REVERTED to two-hop 2026-08-07 17:38 EDT (v2.60.0) -- see the price_region_ branch's
+            // comment above for the full reasoning (the emoji-blank bug + investigation).
+            await interaction.deferUpdate();
             const targetPage = parseInt(interaction.customId.replace('calpage_', ''), 10) || 0;
             const calendarCommand = client.commands.get('calendar');
 
@@ -1631,7 +1644,13 @@ client.on('interactionCreate', async interaction => {
         // same Prev/Next pattern as calendar/draws sub-pages -- the banner/profile header section
         // stays identical on both pages (re-rendered each time, not truly "shared" state).
         if (interaction.customId.startsWith('set_page_') && interaction.customId !== 'set_page_indicator') {
-            // No deferUpdate() -- single-hop, see sendV2Payload.js's header comment.
+            // REVERTED to two-hop 2026-08-07 17:44 EDT (v2.60.0) -- same emoji-blank bug as
+            // calpage_/price_region_/price_subpage_ above, directly confirmed on THIS handler during
+            // that investigation (docs/db-deferred-list.md's "button emoji goes blank after a
+            // single-hop re-render" entry) even though it was found mid-investigation rather than
+            // part of the original report. Applying the same already-decided fix rather than leaving
+            // a confirmed-broken path in place.
+            await interaction.deferUpdate();
             // custom_id shape: `set_page_{targetPage}|{userId}` -- this button previously carried NO
             // author-lock at all (a real gap; every other settings component already embedded
             // |userId). Page number lives before the first pipe since the action verb itself encodes
@@ -1653,8 +1672,8 @@ client.on('interactionCreate', async interaction => {
             }
 
             // Renders via actingUser (see the D. handler's matching comment above) -- deferReply is
-            // no-op'd here too, since this is the single-hop path (no deferUpdate() ran above either;
-            // sendV2Payload's own callback POST is this interaction's one and only response).
+            // no-op'd on the synthetic interaction since the REAL interaction was already deferred
+            // above (two-hop); settingsCommand.execute() must not try to ack it a second time.
             const settingsCommand = client.commands.get('settings');
             const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { }, user: actingUser });
             return await settingsCommand.execute(syntheticInteraction, targetPage);
