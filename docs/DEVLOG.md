@@ -136,6 +136,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
 - 2026-08-06 19:58 EDT — Fifteen minutes, no log, no cause (v2.57.1)
 - 2026-08-06 21:10 EDT — The recommendation that was always one tier up (v2.57.2)
+- 2026-08-06 21:45 EDT — The rule was everywhere, the method was nowhere (v2.57.3)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5485,6 +5486,84 @@ had slipped through.
   tags, and usage counts on anything gated, defaulted, or never recommended.
 - **A gate firing at you is data about the gate too.** Both of its bugs were only findable from the
   receiving end.
+
+
+## 2026-08-06 21:45 EDT — The rule was everywhere, the method was nowhere (v2.57.3)
+
+Harkirat, after the model-selection grid shipped: *"did you update that logic to the session start
+hook, the user agreement, the memory.md, claude.md, meta deferred list, or anywhere else it might be
+needed?"*
+
+I had not, and the shape of what was missing is worth more than the fix. The **obligation** to
+recommend a model and an effort level was written down in three separate places — the hard gate at the
+top of `SESSION-START.md`, the working agreement, and the per-turn self-check that fires on every
+prompt. All three were enforced. None of them said **how to choose**.
+
+So the rule had been doing its job perfectly for months while the thing it enforced was a coin flip.
+That is a different failure from a rule nobody follows, and a more comfortable one to miss: every
+signal says the system is working. The gate fires, the recommendation appears, the format is right. It
+is only wrong in the one dimension nothing was checking.
+
+The last surface I found was `ROADMAP.md`'s legend, still reading *"Effort XS→L (with model+effort for
+real builds)"* — the exact conflation the whole change removed, sitting in a file I had not thought to
+sweep because it is a roadmap, not a rules file. My earlier sweep covered memory and the two deferred
+lists and stopped, because those were the places I had edited. **Searching where you worked is not the
+same as searching where the idea lives.**
+
+One surface needed nothing: `~/.config/dior/CLAUDE.md` only *points at* `SESSION-START.md`. A reference
+instead of a copy, so it updated itself. That is the argument for pointers over duplication, made
+concretely by a file in a repo no in-repo search can even see.
+
+### The guard that kept convicting me
+
+The same session, `branch-discipline-guard.sh` blocked me three times, and it was right every time —
+about the block. It was wrong twice about everything else.
+
+It denied `git switch -c fix/x && git commit`, on the grounds that HEAD was on `main`. `PreToolUse`
+reads HEAD before the command runs, so the guard was answering a question about a state the command
+was about to change. The commit would have landed on `fix/x`. Worse, the remedy it printed — "run
+`git switch -c`" — was already the first half of the line it had just refused.
+
+Then it denied a `python3 - <<'PY'` heredoc that was **writing this guard's own test file**, because
+the fixture text contained the words "git commit". Nothing was being committed. Text describing a
+commit was being written to disk.
+
+And earlier, when it correctly blocked a reflexive commit on `main`, its remedy told me to branch —
+when the honest answer was that I needed **no commit at all**, because everything I had written was in
+gitignored `local/`. I took the wrong lesson from a correct block and wrote it down as "after a merge,
+branch before the next unit". Harkirat caught it: *"i dont see the need for a branch when you writing
+to something that's gitignored."*
+
+**A guard whose suggested fix is wrong for your situation fails the same way as one that fires on
+correct input.** Both teach you to route around it, and the second one teaches you something false on
+the way out.
+
+### The test that was right and the comment that was wrong
+
+While fixing the heredoc case I wrote a comment claiming `bash -c "git commit"` "must still be
+caught", and then — because every hook here needs a test — wrote a case asserting exactly that.
+
+It failed. The matcher requires `^` or `;&|` before `git`, and in that form a quote precedes it. It has
+never been caught. I had stated a capability of a script I was actively editing, confidently, in a
+comment intended to stop someone else weakening it, and the only reason I found out is that this
+project's convention made me prove it.
+
+The test now pins the real behaviour and says why, and the gap is filed rather than dissolved into a
+changelog sentence. Second time this evening a test I wrote convicted my own belief instead of the
+code.
+
+### What this cost, and what it taught
+
+- **An enforced rule with no criteria is not a working system**, and it is hard to notice precisely
+  because enforcement looks like health.
+- **Sweep where the IDEA lives, not where you edited.** The last stale copy was in a roadmap legend,
+  three surfaces away from anything I had touched.
+- **A pointer beats a copy** — proved by the one file that needed no update, in a repo nothing here can
+  search.
+- **A guard's remedy is part of its correctness.** Blocking the right thing while suggesting the wrong
+  fix produces a confident, wrong lesson.
+- **Write the test even for the line you are certain about.** Both of tonight's real discoveries came
+  from tests written to confirm something obvious.
 
 
 # Part B — Lessons Ledger (thematic)

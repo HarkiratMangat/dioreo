@@ -181,7 +181,57 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.57.2 — 2026-08-06 21:08 EDT (#91) — Choosing the model is a grid, not a ladder
+## v2.57.3 — 2026-08-06 21:44 EDT (#92) — The rule was everywhere, the method was nowhere
+
+**Harkirat asked whether v2.57.2's model-selection change had actually reached the surfaces that
+*prescribe* the recommendation.** It had not, and the gap was the instructive kind: the **obligation**
+was written in three places — `SESSION-START.md`'s hard gate, the working agreement, and the
+per-turn self-check — and the **method** in none of them. A session was told to recommend one model
+and one effort level, with no criteria attached. That is how the over-spec bias survived for months:
+the rule was enforced the whole time; there was simply nothing to enforce it *against*.
+
+Now every prescriptive surface points at the grid: both mention points in `SESSION-START.md`, both in
+the working agreement, `MEMORY.md`'s index line, and **`docs/ROADMAP.md`'s legend, which still read
+"Effort XS→L (with model+effort for real builds)"** — the exact conflation v2.57.2 removed. *(That last
+one would have been missed; the earlier sweep only covered memory and the two deferred lists.)*
+⚠️ `~/.config/dior/CLAUDE.md` needed no edit — it only *points at* `SESSION-START.md`, so it is correct
+by reference. Checked rather than assumed, since that repo is invisible to every in-repo search.
+
+**Two real false positives fixed in `branch-discipline-guard.sh`, both hit live while editing the guard
+itself.** It denied `git switch -c fix/x && git commit` for being "on main" — but `PreToolUse` reads
+HEAD *before* the command runs, and that commit lands on `fix/x`. The deny was factually wrong about
+where the commit would go, and the remedy it printed was the very command already in the line. Now the
+**target** of the last switch decides, so `git switch main && git commit` still denies. It also denied
+a `python3 - <<'PY'` call whose heredoc was *writing a test fixture* containing the words "git commit" —
+nothing was being committed. Heredoc bodies are stripped before matching now, and a real commit after a
+heredoc still denies. Plus a `cut -c1-0` crash when the commit sits at position 0.
+
+**And the remedy text itself was wrong for the case that triggered it.** Writing two handoffs into
+gitignored `local/` needed **no commit at all**, yet the message said `git switch -c` — which would
+produce a branch for an empty commit, and reads as "you needed a branch". The Write/Edit half of the
+same guard already stated the gitignored exemption; the commit half did not. **A guard whose suggested
+fix is wrong for your situation is the same failure class as one that fires on correct input** — both
+teach you to route around it.
+
+⚠️ **A correction to my own work, because the test caught the belief rather than the code.** I wrote a
+comment asserting `bash -c "git commit"` *"must still be caught"*, then wrote a test to prove it — and
+the test **failed**. It was never caught: the matcher requires `^` or `;&|` before `git`, and there a
+quote precedes it. A pre-existing blind spot, not a regression. The test now pins the real behaviour
+instead of asserting a capability that does not exist, and the gap is **filed** rather than buried in a
+changelog line. Second time in one evening a test I wrote convicted my own belief.
+
+10 new test cases on that guard; 31/31 pass.
+
+**Also written down: the assert-before-write heredoc**, after Harkirat noticed it working and asked
+whether it was a script future sessions inherit. It is not — it was an inline pattern, undocumented,
+reinvented each time. Now in `feedback_token_conscious_tool_routing`. The value is one line,
+`assert old in s` before the write: `sed` **exits 0 on no match**, so an edit "succeeds" having changed
+nothing, which is exactly how a stale line survives a sweep and then gets reported as swept. ⚠️ Recorded
+honestly as a TURN trade, not an upgrade over the `Edit` tool: `Edit` is one edit per call and the
+harness verifies each one; the heredoc is N per call and **the assert is the verification, written by
+me**. No assert, no heredoc.
+
+## v2.57.2 — 2026-08-06 21:08 EDT (#91 · `02ec50c`) — Choosing the model is a grid, not a ladder
 
 Records and internal judgement only; no behaviour changed.
 

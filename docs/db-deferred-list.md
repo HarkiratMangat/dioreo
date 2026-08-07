@@ -83,6 +83,18 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P3 · XS]` **`branch-discipline-guard.sh` does not catch a commit whose verb sits inside quotes** —
+  e.g. `bash -c "git commit -m x"`, `sh -c '… git commit …'`. *Filed 2026-08-06 21:44 EDT.*
+  The matcher requires `^` or `;&|` immediately before `git`, and in these forms a quote precedes it.
+  **Pre-existing, not a regression** — it has never been caught. Found by writing a test that ASSERTED
+  it was caught; the test failed and the belief was wrong, not the code. `branch-discipline-guard.test.sh`
+  now pins the current behaviour (`"bash -c quoted commit NOT caught"`) so a fix has something to flip.
+  ⚠️ **Do NOT "fix" this by stripping double-quoted spans** — that widens the hole rather than closing
+  it, because `-m "message"` text would stop being scanned too. The real fix is to also match `git
+  commit` after a quote character, without matching prose. **Low priority:** every real commit path in
+  this project is a bare `git commit`, and the Write/Edit half of the guard still blocks the edits that
+  would precede one.
+
 - `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever
   tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md`
   back when it was still called **known-issues** — it was split so the file could honestly take the new
