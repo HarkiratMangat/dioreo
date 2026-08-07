@@ -181,7 +181,45 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.58.2 — 2026-08-07 11:22 EDT (#93) — A tolerance window, a round-trip cut, and a CI-only bug hiding in both
+## v2.59.0 — 2026-08-07 13:49 EDT (#96) — A purge that looked like data loss, and wasn't
+
+**`/manage` calendar bulk add/replace could time out with no visible confirmation.** The handler never
+called `deferReply()` before its DB fetch + parse + (replace-mode) fuzzy-match + `save()` — all inside
+Discord's 3-second interaction-ack window, unlike the sibling draws bulk handler a few lines up which
+already deferred. Once the window was blown, `interaction.reply()` failed on a dead token ("Dior's
+Builds didn't respond in time") even though the save had already gone through — so data landed with no
+confirmation, which is what made this look broken rather than just slow.
+
+**A real draw went missing from `/calendar`'s Draws page after a calendar-events purge, and the data
+was never actually the problem.** Traced end-to-end against the live production database (an earlier
+pass wrongly diagnosed this against the dev database instead — see DEVLOG): the draw was correctly in
+`newDraws`, correctly synthesized by `getDrawSectionEntries()`, and correctly deduped against an
+explicit calendar row. The actual bug was `isEventEnded()` treating a same-day-released draw as
+"ended" the instant its UTC-midnight release timestamp passed — for any US-timezone viewer, that's
+almost immediately. Combined with an Active-Only calendar filter preference, a draw released today
+would silently disappear from the filtered view within hours while `/draws` (no such filter) kept
+showing it fine. `dateOnly` entries now never count as "ended" — they only disappear when actually
+removed from `newDraws`/`returningDraws`, matching `/draws`' own behavior, until the already-queued
+season-expiry feature gets built on purpose. Also fixed: `guessCalendarCategory()`'s draw-keyword
+regex only matched the spelled-out "two", never the numeral a real title might use.
+
+**The Guide emoji wasn't broken code — the dev Discord application was just missing the asset.**
+`refreshEmojiIds()` re-points an existing same-named emoji to whichever app is booting; it can't
+create one that was never uploaded. Confirmed directly against Discord's API (not assumed) that the
+dev app had 76 emojis and no "Guide." Synced via the existing `scripts/syncMissingDevEmojis.js` — a
+duplicate script was built first and caught before merge (see DEVLOG).
+
+**Two visual asks:** `/draw prices`' region-switch buttons changed from red to blue; `/calendar`'s
+three section-toggle buttons (Draws/Events/Gamemodes) now carry emoji.
+
+**New: an unconditional dev-bot duplicate-instance check at SessionStart.** The existing guidance
+("suspect multiple instances if the bot behaves erratically") was reactive and memory-dependent — it
+missed a real collision this session where repeated `git switch` calls restarted the `--watch`
+dev-bot child mid-session. The new hook distinguishes a normal `--watch` supervisor+child pair (same
+parent/child PID relationship) from a genuine second, independently-launched instance on the same
+token, and only speaks up for the latter.
+
+## v2.58.2 — 2026-08-07 11:22 EDT (#93 · `ed0225f`) — A tolerance window, a round-trip cut, and a CI-only bug hiding in both
 
 **`timestamp-check.sh`'s future-stamp gate went from a zero-tolerance string compare to an epoch-second
 compare with a 3-minute grace window.** The old `[ "$d $hm" \> "$now" ]` check denied a perfectly honest
