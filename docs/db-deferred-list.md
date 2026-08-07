@@ -83,6 +83,27 @@ leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A s
 buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
 scratchpad for 2 days.*
 
+- `[P1 · XS]` **The `git tag -a` release-tag-invariant `PreToolUse` hook hard-errors instead of
+  skipping on any non-Mac session.** *Filed 2026-08-07 08:06 EDT, hit live tagging v2.58.0.*
+
+  The hook (matches `git tag +-a +v[0-9]`) unconditionally `cd`s to `/Applications/Claude Code/
+  Diors-Builds` — Harkirat's own Mac path — before it can cross-check the tag commit's
+  `package.json` version. In any remote/Linux sandbox that path doesn't exist, the `cd` fails, the
+  `&&` chain short-circuits, and instead of the intended silent pass-through it surfaces as
+  `PreToolUse:Bash hook error: ... No stderr output` — **every retry of the identical command fails
+  the same way**, deterministically blocking the tool call.
+
+  **Workaround used that session (not a fix):** `git tag --annotate v2.58.0 -m "..." <sha>` instead
+  of `-a` — mechanically identical annotated tag, just doesn't match the hook's trigger regex. Only
+  reached for after independently re-verifying the exact invariant the hook protects (`git show
+  <sha>:package.json` matched the tag name) — a workaround for a non-functional check, not a bypass
+  of a working one.
+
+  **Real fix:** give the hook a graceful missing-path fallback (skip silently / report SKIPPED),
+  the same pattern `docs-audit.mjs`'s `external-anchors`/`memory-slug` checks already use correctly
+  when Harkirat's local paths aren't present. Will hit **every** future remote/non-Mac session that
+  tries to tag a release, not just this one.
+
 - `[P3 · XS]` **`branch-discipline-guard.sh` does not catch a commit whose verb sits inside quotes** —
   e.g. `bash -c "git commit -m x"`, `sh -c '… git commit …'`. *Filed 2026-08-06 21:44 EDT.*
   The matcher requires `^` or `;&|` immediately before `git`, and in these forms a quote precedes it.
@@ -292,6 +313,22 @@ though the Return-key one only reproduces in this repo's notes file.*
 *Time- or condition-based — not "do this now," but things not to forget when the trigger hits. Tagged
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
+
+- **🏷️ `v2.58.0`'s git tag was never pushed to GitHub** `[P1 · XS]` *(filed 2026-08-07 08:06 EDT,
+  merge session for PR #94.)* PR #94 squash-merged clean to `main` as `570187dd8af8f7f
+  437873d567ad9657b073f2d92` and that commit's `package.json` correctly reads `2.58.0` (both
+  re-verified 2026-08-07 12:06 UTC, not assumed) — but `git push origin v2.58.0` hit a 403 from
+  this session's proxy (`/root/.ccr/README.md`: an explicit organization egress/policy denial, not
+  transient — retried once, same result, and its own guidance says report rather than route around
+  it). `mcp__github__get_tag` for `v2.58.0` confirms **still 404 on GitHub** as of the same
+  re-check. **Trigger:** next session with real tag-push permission (or Harkirat directly). **Do:**
+  ```
+  git fetch origin main
+  git tag -a v2.58.0 570187dd8af8f7f437873d567ad9657b073f2d92 -m "v2.58.0 — A third region, sourced instead of guessed"
+  git push origin v2.58.0
+  ```
+  **Verify:** `mcp__github__get_tag` (or `git ls-remote --tags origin v2.58.0`) returns the commit
+  above, not a 404.
 
 - **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle
   detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at
