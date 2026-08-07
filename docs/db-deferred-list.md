@@ -542,6 +542,23 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **📖 Rework `docs/ideas/diors-notes.md`'s upper section (lines 1–59) + expand the comment-convention
+  leading-verb list** `[P2 · M · Sonnet5-High]` *(filed 2026-08-07 12:10 EDT from notes L14 — Harkirat's
+  ask.)* **Model pick reasoning:** premise Med — what to fold where is mostly clear from his ask, but the
+  exact resulting structure is a judgment call · deliberation Med-High — this file has `SessionStart`
+  hooks (`notes-open-items.sh`, `notes-followups.sh`) that scan by explicit heading/marker position, and a
+  2026-08-06 attempt to reorganize this exact file silently zeroed the open-item count by moving a
+  boundary the hook relied on (see notes L63's own history) — so a restructure here carries real blast
+  radius, not just prose cleanup. Tie-break: a wrong move fails *silently* (a hook miscounts, nobody
+  notices) rather than loudly → stays Sonnet, effort raised to High.
+  Harkirat's ask: the long chain of HTML comments at the top of the file (lines 7–13, "HOW THIS FILE
+  WORKS") reads as a raw dump rather than a proper section — fold it into a structured section, possibly
+  renamed "How this file works" or "Claude readme," or folded into the 🔑 Legend section instead. As part
+  of the same session, expand the comment-writing lead-verb conventions (notes L45–54:
+  FIXED/IMPLEMENTED/SHIPPED/ANSWERED/etc.) with clearer guidance on word choice. **Whatever the new
+  structure, re-verify `notes-open-items.sh` and `notes-followups.sh` against it in the same change** —
+  dry-run the open-item count before and after, the same check that caught the 2026-08-06 near-miss.
+
 - **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)**
   `[P2 · S · Sonnet5-High]` *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next
   session.)* **Model pick reasoning (grid, not a feeling):** premise Med — the technical claims about
