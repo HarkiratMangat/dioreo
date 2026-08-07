@@ -141,6 +141,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 08:10 EDT — A tag two sandboxes couldn't push, and the hook that couldn't tell them why (v2.58.1)
 - 2026-08-07 11:22 EDT — A fix whose own fix needed fixing, caught by the fix's own gate (v2.58.2)
 - 2026-08-07 13:49 EDT — Wrong database, wrong script, right bug eventually (v2.59.0)
+- 2026-08-07 19:49 EDT — The bug behind the bug, and the fix that traded speed for correctness (v2.60.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5800,6 +5801,74 @@ that a same-session content move had silently broken.
 - **A reactive rule ("if X, suspect Y") is not the same as an unconditional check**, and the gap
   between them is exactly where this session's own actions caused the very thing the reactive rule
   was written to catch.
+
+## 2026-08-07 19:49 EDT — The bug behind the bug, and the fix that traded speed for correctness (v2.60.0)
+
+v2.59.0 had just shipped, supposedly fixing `/manage`'s calendar bulk add/replace timeout. Harkirat
+came back within the hour: "So the manage calendar bulk add replace buttons still don't work on the
+live bot." Same symptom, freshly deployed fix, still broken — worth taking at face value rather than
+assuming the fix hadn't landed.
+
+**The real bug was one layer earlier than the one just fixed.** `buildCalendarBulkModal()`'s
+placeholder string was 181 characters against Discord's hard 100-character cap on modal `TextInput`
+placeholders — discord.js throws synchronously, so the modal-builder crashed before `showModal()`
+could even run. Both bulk buttons looked exactly as dead as the `deferReply()` timeout bug from the
+previous release, because this crash happens one step earlier, before an interaction ack is even
+possible. A quick VM log check (`sudo journalctl -u diors-bot`) showed the real error immediately —
+`ExpectedConstraintError: Invalid string length` — rather than continuing to reason about the fix that
+had just shipped. Fixed by trimming the placeholder to 98 chars, and the 100-char cap itself — already
+known in passing for one other field, never written down as a real constraint — got a proper entry in
+`docs/reference/platform-constraints.md`.
+
+**Then Harkirat asked for two small tweaks — region emoji on `/draw prices`, a label fix on
+`/calendar` — and one of them surfaced a much bigger bug.** After watching three screen recordings and
+initially misreading which showed which bot (a live-vs-dev mixup corrected directly by Harkirat: "I
+made the recording using the live bots buttons but it's the same on the dev bot buttons"), the actual
+pattern emerged: a button's custom emoji could go blank after a DIFFERENT button was clicked — not the
+one you clicked. First read as a transient client artifact that self-corrected. Wrong, and Harkirat
+caught it with hard evidence: a 12-second recording of the exact same symptom staying blank the entire
+time, plus a follow-up screenshot taken well after with zero further interaction. That correction is
+now filed in `feedback_verify_before_claiming`'s case table — a claim generalized from three short
+clips that all happened to resolve within their own runtime, never tested against a longer sample.
+
+**The investigation from there was almost entirely Harkirat's own instincts, tested one variable at a
+time.** He noticed `/draw prices`' region buttons initially seemed unaffected, then found tapping the
+*pagination* arrow broke them too — narrowing the bug to something shared across commands rather than
+calendar-specific. He asked directly: "why don't we just try a compromise — keep the emoji AND keep the
+speed?" That led to a real, disciplined timing experiment: 200ms, then 400ms, 600ms, 800ms, and finally
+a full 2 seconds — his own suggestion, reasoning that 2s was roughly what the old two-hop round trip
+would have cost anyway, so if that didn't fix it, timing wasn't the variable at all. It didn't. Static
+vs. animated emoji got the same treatment: `/settings`' Prev/Next arrows are static PNGs, and an
+apparently-clean first test turned out to be contaminated by a dev-bot auto-restart landing mid-click —
+Harkirat caught that too, re-tested clean, and broke it with zero animated emoji touched at all. Every
+candidate explanation — timing, animation, button count — got tested and ruled out in turn, narrowing
+the cause down to the single-hop delivery mechanism itself (`type:7` UPDATE_MESSAGE as an interaction's
+first and only response, the "pagination perf hybrid" from v2.58.2) rather than anything about content.
+
+**Once the mechanism was confirmed via a controlled A/B (`calpage_` reverted to two-hop while
+`price_region_`/`price_subpage_` stayed single-hop — Harkirat: "calendar buttons r working fine now"
+while drawprices still failed, then fine too once reverted), real numbers replaced the guesswork.**
+Direct wall-clock instrumentation on both paths, not an assumption: two-hop averaged ~517-635ms,
+single-hop ~302ms — a real ~200-300ms difference, smaller than the "~100-150ms" figure that had been
+assumed going in. Harkirat: "honestly, they feel about the same" after testing live. `calpage_`,
+`price_region_`, `price_subpage_`, and `set_page_` (found affected mid-investigation, well outside the
+original ask, fixed anyway once proven — leaving it broken after already knowing the fix would have
+been indefensible) all defer first again.
+
+**A real tool-reliability trap surfaced along the way and nearly produced a false finding.**
+Comparing prod vs. dev Discord emoji assets via `ctx_execute` returned IDENTICAL results for both
+sides — same app id, same emoji id, same byte count — because its dotenv handling silently picked up
+the wrong token in that sandbox. A plain `node script.js` run gave the correct, different values. The
+dangerous part wasn't the failure itself; it was that nothing about the wrong result looked wrong.
+
+**What this cost, and what it taught:** the placeholder bug was found and fixed in minutes once the VM
+logs were actually read. The emoji-blank investigation ran long — five delay values, three commands,
+one restart-timing false negative, one overclaimed "self-corrects" — but every wrong turn in it was
+caught by Harkirat asking the next sharper question, not by the investigation getting smarter on its
+own. The lesson worth keeping isn't about the bug; it's that a user who keeps pushing back with
+concrete counter-evidence, rather than accepting "seems fixed," is how a shallow diagnosis turns into a
+real root cause. Full record: `docs/db-deferred-list.md`'s now-closed "button emoji goes blank"
+entry.
 
 # Part B — Lessons Ledger (thematic)
 

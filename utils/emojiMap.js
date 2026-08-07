@@ -36,8 +36,16 @@ const emojis = {
     // asked to switch over to the new icon.
     cp2: '<:CP_CODM2:1523190111460786318>',
     // Animated icon for the draw-prices region-toggle button (drawPrices_ui.json) -- lives in the
-    // button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md).
+    // button's `emoji` field, not its `label` (see Components V2 point 4 in CLAUDE.md). Superseded
+    // as the 3-way region switcher's per-button icon 2026-08-07 15:45 EDT by the three region-specific
+    // emoji below (Harkirat provided them via diors-notes.md); kept defined since nothing else references it.
     regions: '<a:Regions:1525705441072382052>',
+    // Per-region icons for the 3-way region-switch button row (drawprices.js's buildContainer),
+    // added 2026-08-07 15:45 EDT from Harkirat's diors-notes.md request -- one distinct icon per CP
+    // tier instead of the single generic `regions` icon shared across all three buttons.
+    region10Cp: '<a:10CpRegion:1535356505614852237>',
+    region20Cp: '<a:20CpRegion:1535357376369139752>',
+    region30Cp: '<a:30CpRegion:1535357851352965240>',
     // Added for the command heading redesign (calendar/draws/patchnotes/settings)
     // /manage panel redesign (2026-07-12, per the 4 mockup JSONs in Downloads) -- these are the
     // panel's own header/action icons, distinct from the public-command-header set above.

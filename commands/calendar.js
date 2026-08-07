@@ -155,11 +155,21 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
 // sections, not a variable chunk count. The current page's button is styled Primary+disabled
 // (matches the "active/current page" convention documented in rendering-and-ui.md); the other two
 // are Secondary and clickable.
-// Button label "Gamemodes" is intentionally shorter than the page 2 heading text "Playlists &
-// Modes" -- Harkirat's explicit call (2026-07-31 16:55 EDT), a button reads better short.
+// Button label shortened "Gamemodes" -> "Modes" (2026-08-07 15:48 EDT, Harkirat's direct follow-up
+// to the emoji addition below) -- the 3 buttons + their new emoji no longer fit on one row on
+// mobile with "Gamemodes" spelled out (wrapped to its own 2nd row), and Harkirat wanted them to
+// stay a single row.
+// The footer hint line and the page-2 section heading both went "Playlists & Modes" -> "Gamemodes"
+// -> "Game Modes" (2026-08-07 15:48-16:16 EDT, Harkirat's own correction -- "Gamemodes" isn't a real
+// word; CODM's actual in-game terminology is the two-word "Game Modes"). The button label itself
+// stays the shorter "Modes" (unaffected by this correction either way -- it's an abbreviation, not
+// the fused misspelling). **The slash-command `data_for`-style choice list (`{ name: 'Playlists &
+// Modes', value: 'playlists' }` below) is the ONE place still reading "Playlists & Modes" --
+// deliberately left alone, Harkirat's asks so far have named the button/hint/heading specifically,
+// not that choice list.**
 // Emoji added to each button 2026-08-07 13:10 EDT per Harkirat's request -- Draws reuses the SAME
 // `newDraws` emoji /draws' own New Draws heading uses (his explicit call, rather than a separate
-// generic "draw" icon), Events/Gamemodes use emojiMap's own `events`/`modes` icons.
+// generic "draw" icon), Events/Modes use emojiMap's own `events`/`modes` icons.
 // `emojiKey` (a STRING NAME, not the emoji value itself) fixed 2026-08-07 13:59 EDT after CI's
 // checkEmojiCaptures.js caught it: this table is module-level, so storing `emojis.newDraws` directly
 // here would capture the PROD id at require() time, before `refreshEmojiIds()` ever runs on boot --
@@ -168,7 +178,7 @@ function buildSectionComponent(headingLine, entries, seasonalDoc) {
 const PAGE_DEFS = [
     { page: 0, label: 'Draws', emojiKey: 'newDraws' },
     { page: 1, label: 'Events', emojiKey: 'events' },
-    { page: 2, label: 'Gamemodes', emojiKey: 'modes' }
+    { page: 2, label: 'Modes', emojiKey: 'modes' }
 ];
 
 // Per-page banner fields (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- indexed by the same
@@ -250,7 +260,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
         const eventSection = buildSectionComponent(sectionHeading(emojis.events, 'Events'), eventEntries, seasonalDoc);
         calendarComponents.push(eventSection || { type: 10, content: noneScheduledText });
     } else {
-        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Playlists & Modes'), playlistEntries, seasonalDoc);
+        const playlistSection = buildSectionComponent(sectionHeading(emojis.modes, 'Game Modes'), playlistEntries, seasonalDoc);
         calendarComponents.push(playlistSection || { type: 10, content: noneScheduledText });
     }
 
@@ -259,7 +269,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     // toggle row below it, and only ONE divider total separating the section content above from
     // this whole nav block.
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
-    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Playlists & Modes**. (Tip: check out \`/settings\`)` });
+    calendarComponents.push({ type: 10, content: `-# Switch between this season's **Draws**, **Events**, and **Game Modes**. (Tip: check out \`/settings\`)` });
     calendarComponents.push(buildSectionToggleRow(safePage));
 
     const containerPayload = {

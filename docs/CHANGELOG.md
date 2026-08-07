@@ -181,7 +181,42 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.59.0 — 2026-08-07 13:49 EDT (#96) — A purge that looked like data loss, and wasn't
+## v2.60.0 — 2026-08-07 19:49 EDT (#97) — The bug that looked fixed, and the fix that traded speed for correctness
+
+**The ACTUAL live bug behind "`/manage`'s calendar bulk buttons still don't work" — a different, earlier
+failure than the one v2.59.0 fixed.** `buildCalendarBulkModal()`'s placeholder text was 181 characters
+against Discord's HARD 100-character cap on modal `TextInput` placeholders — discord.js throws
+synchronously, crashing the modal-builder before `showModal()` can even run. Both bulk add/replace
+buttons looked completely dead in prod, indistinguishable from the `deferReply()` timeout bug fixed one
+release earlier, because this crash happens ONE step earlier, before an interaction ack is even
+possible. Fixed by shortening the placeholder to 98 chars; the 100-char cap itself was already known in
+passing (Patch Notes' Additional Info field respects it) but undocumented as a real constraint — now
+recorded in `docs/reference/platform-constraints.md`.
+
+**A button's custom emoji could go blank after a click on a DIFFERENT button, sometimes permanently —
+root-caused to the single-hop "pagination perf hybrid" from v2.58.2, and reverted for the affected
+handlers.** Investigated live across `/calendar`'s section-toggle row, `/draw prices`' region-switch
+row, and `/settings`' pagination — every reproduction traced to the exact same code path: a `type:7`
+UPDATE_MESSAGE posted as an interaction's first and only response, the single-hop delivery mechanism
+`sendV2Payload.js` added to cut pagination clicks from two Discord round-trips to one. Systematically
+ruled out every other candidate cause before accepting the mechanism itself: the JSON payload (always
+correct, verified directly against the code), timing (artificial delays from 200ms up to a full 2
+seconds on the single-hop path all failed to fix it), animated-vs-static emoji (a static-only repro on
+`/settings` disproved this), and button/emoji count (broke on a 2-button row same as a 3-button row). No
+compromise preserving both single-hop speed and correct rendering was found. `calpage_`, `price_region_`,
+`price_subpage_`, and `set_page_` now defer first again (two-hop) — a real, measured ~200-300ms extra
+cost per click, accepted over the alternative of dropping the emoji or living with the bug. `draws`' own
+sub-page nav is the one branch left single-hop, untested for this bug either way.
+
+**Three visual asks.** `/draw prices`' three CP-region buttons now carry their own per-region icon
+(previously one shared generic icon). `/calendar`'s "Gamemodes" button label shortened to "Modes" so
+all three toggle buttons fit one row on mobile; the footer hint and page-2 heading corrected from
+"Gamemodes" to the real two-word "Game Modes." `/settings`' Default Visibility and Default Preferences
+rows reformatted — the setting's own value now lives in an inline-code span (a literal-value styling)
+instead of the label; the label is bold plain text instead of inline code with a leading bullet;
+"in chat" dropped from the visibility phrasing as redundant.
+
+## v2.59.0 — 2026-08-07 13:49 EDT (#96 · `cee3180`) — A purge that looked like data loss, and wasn't
 
 **`/manage` calendar bulk add/replace could time out with no visible confirmation.** The handler never
 called `deferReply()` before its DB fetch + parse + (replace-mode) fuzzy-match + `save()` — all inside

@@ -26,6 +26,14 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.60.0 — August 7, 2026
+- **Fixed the real cause of `/manage`'s calendar bulk add/replace buttons not working** — a text field
+  was quietly too long for Discord to accept, crashing the popup before it could even open.
+- **Fixed buttons occasionally losing their icon** on `/calendar`, `/draw prices`, and `/settings` —
+  those pages will feel a touch slower on page-switches/toggles now, but the icons stay put.
+- `/draw prices`' 10/20/30 CP buttons now each have their own icon; `/calendar`'s "Gamemodes" button is
+  now just "Modes" so all three fit on one row; `/settings` got a cleaner, more readable layout.
+
 ## v2.59.0 — August 7, 2026
 - **Fixed a bug where a newly-released draw could disappear from `/calendar`'s Draws page** if you had
   Active-Only filtering on — it was being read as "already over" the moment it released.

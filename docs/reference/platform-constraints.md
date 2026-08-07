@@ -53,6 +53,28 @@ on the tin: most of what it held were facts, not defects. Originally moved out o
   per-render latency for a cosmetic nicety Harkirat said he's fine leaving static. Nameplate's own
   animated `.webm` was tried in its place for the same reason and reverted for the same tap-to-play
   limitation; that plumbing (`nameplateAnimatedUrl`) was removed rather than left dead.
+- **The "Events" emoji specifically flashes/glitches noticeably on the DEV bot but not on live —
+  a real, confirmed asset-level cause, not just a rendering artifact.** *(Split out 2026-08-07
+  16:37 EDT from a broader entry that turned out to be OUR bug, not a platform constraint — see
+  `docs/db-deferred-list.md`'s 🐞 Active Bugs, "button emoji goes blank after a single-hop
+  re-render," for that one.)* Queried both apps' `/applications/{id}/emojis` + downloaded both
+  actual GIF assets: PROD's `Events` emoji (id `1532830530108653659`) is 445,816 bytes; DEV's
+  re-uploaded copy (id `1532834707010748638`, uploaded by `scripts/syncMissingDevEmojis.js`
+  fetching PROD's CDN bytes and re-POSTing them to DEV's application) is 228,174 bytes — roughly
+  HALF the size, despite `ffprobe` confirming IDENTICAL dimensions (128×115), frame count (124),
+  and frame rate (50fps) on both. Discord's own upload pipeline re-encodes/re-compresses a GIF on
+  ingest, and round-tripping an already-lossy GIF through that pipeline a second time
+  (fetch-then-reupload, as the sync script does) lands on a different, more-compressed encoding
+  than the original upload — plausibly explaining the more visible playback artifacts on DEV
+  specifically. There's no code fix: we don't control Discord's encode step, and a byte-identical
+  re-upload isn't achievable through the public API. **⚠️ Caught a real tool-reliability trap while
+  investigating this:** an initial check via `ctx_execute` (context-mode's sandboxed subprocess)
+  returned IDENTICAL results for "prod" and "dev" — same app id, same app name, same emoji id, same
+  byte count — because its dotenv/env handling silently failed to pick up `.env.dev`'s distinct
+  token in that sandbox, falling through to the prod token both times. A plain `node script.js` run
+  (not `ctx_execute`, not `node -e` inline — see the tool-routing note below) gave the correct,
+  DIFFERENT app identities. Don't trust `ctx_execute` for this repo's dual-token (`.env`/`.env.dev`)
+  pattern without cross-checking against a real run.
 - **`ffmpeg` is a real system dependency** (not an npm package — must be on `PATH`) for
   `utils/stillFrame.js`: View Colors' decoration extraction and `'dynamicProfile'`'s decoration source.
   **Largely RESOLVED — updated 2026-07-28 01:41 EDT.** This entry used to warn it was "not guaranteed on
@@ -62,6 +84,21 @@ on the tin: most of what it held were facts, not defects. Originally moved out o
   `docs/reference/deployment-and-ops.md`). Kept as a flagged dependency only because it is still a
   *system* binary that a VM rebuild could omit: if decoration color extraction ever works locally but
   not live, check `ffmpeg` on the VM before assuming a code bug.
+- **A modal `TextInput`'s `setPlaceholder()` has a HARD 100-character cap, enforced client-side by
+  discord.js before the request ever reaches Discord.** Not a soft truncation — `djs` throws
+  `ExpectedConstraintError` (`Invalid string length`) synchronously, which crashes the modal-builder
+  function itself before `showModal()` ever runs. **Real production incident, found live 2026-08-07
+  15:40 EDT:** `commands/manage.js`'s `buildCalendarBulkModal()` had a 181-char placeholder (a 4-line
+  bulk-import example), shipped in v2.59.0 same day. Both bulk add/replace buttons appeared totally
+  dead in prod ("didn't respond in time") — indistinguishable from the actual `deferReply()` timeout
+  bug fixed in that same release, because the crash happens ONE STEP EARLIER (at modal-build time,
+  before any interaction ack is even possible) and produces the identical user-visible symptom. Fixed
+  by shortening the placeholder to 98 chars. **`.claude/rules/design-decisions.md` already knew about
+  this cap in passing** ("the 100-char Discord cap ruled out a real example there" — Patch Notes'
+  Additional Info field) but nothing enforced it, so it silently shipped again on a different field.
+  If you add or edit a `setPlaceholder()` call anywhere, check its length — there is no lint/CI gate
+  for this the way `checkEmojiCaptures.js` gates the frozen-emoji class of bug; a future one is filed
+  in `docs/db-deferred-list.md`.
 - **NOT a constraint — the standing refutation of one.** **CORRECTED 2026-07-18 (was wrong in an
   earlier same-day pass, caught when Harkirat pushed back):**
   physically disabling expired buttons IS achievable — do not reintroduce the earlier wrong claim that

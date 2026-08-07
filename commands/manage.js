@@ -644,8 +644,15 @@ function buildCalendarBulkModal(mode) {
         // prefix auto-detects from the title's own wording (adminParser.js's
         // guessCalendarCategory) -- only needed to override an ambiguous title (e.g. a bare map
         // name with no "mode"/"playlist" in it).
+        // Fixed 2026-08-07 15:41 EDT: this placeholder was 181 chars against Discord's HARD 100-char
+        // cap on modal TextInput placeholders (djs throws ExpectedConstraintError, not a soft
+        // truncation) -- buildCalendarBulkModal() crashed before showModal() ever ran, so BOTH bulk
+        // add/replace buttons appeared totally dead in prod ("didn't respond in time") even after the
+        // real deferReply() fix landed same-day, because the crash happens one step earlier at modal-
+        // build time. The dev bot never caught this because dev testing that session never actually
+        // clicked these two buttons post-fix (see DEVLOG "Wrong database, wrong script..." entry).
         new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bulk_text').setLabel('Bulleted List (UTC-0 dates)').setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder("7/2 - 8/5 | Throwable Frenzy MP Mode\n7/6 - 7/19 | Nuketown Dedicated Playlist\n7/10 - All Season | Shadow and Shade Mythic Drop\np• 8/6 - 8/19 | Krai BR (prefix to override the guess)").setRequired(true))
+            .setPlaceholder("7/2 - 8/5 | Throwable Frenzy MP Mode\n7/6 - 7/19 | Nuketown Playlist\np• 8/6-8/19 | Krai BR (prefix)").setRequired(true))
     );
     return modal;
 }

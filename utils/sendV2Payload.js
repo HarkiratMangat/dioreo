@@ -11,19 +11,29 @@ const { Routes } = require('discord.js');
 // re-OR in the ephemeral bit since that path doesn't go through a normal deferReply).
 //
 // SINGLE-HOP PAGINATION (added 2026-08-06 22:16 EDT, the "pagination perf hybrid" design agreed 2026-07-14)
-// -- pure string-building nav (draws/calendar/drawprices/settings pagination + toggles) used to cost
-// TWO Discord round-trips per click: index.js's router called `interaction.deferUpdate()` (hop 1,
-// just an ack) BEFORE the command's execute() ever ran, then this function's `rest.patch('@original')`
-// (hop 2) delivered the actual content once building finished. For a path with no image/network work,
-// hop 1 buys nothing but latency -- Discord's interaction-callback endpoint can deliver the real
-// UPDATE_MESSAGE as the FIRST and ONLY response. So: if the interaction hasn't been acked yet
-// (`!interaction.deferred && !interaction.replied` -- true exactly when the router skipped
-// deferUpdate/deferReply for a light path), POST straight to the callback endpoint instead of
-// patching. Any path that DID defer first (the initial slash-command invocation, or a heavy path like
-// View Colors that still defers to protect its image/ffmpeg work) is completely unaffected -- it still
-// patches, same as before. See `.claude/rules/rendering-and-ui.md` and `docs/db-deferred-list.md`'s
-// "Pagination perf hybrid" entry for the full traced investigation and the heuristic for which paths
-// qualify (CPU/string-building only, no image or network work before responding).
+// -- pure string-building nav used to cost TWO Discord round-trips per click: index.js's router
+// called `interaction.deferUpdate()` (hop 1, just an ack) BEFORE the command's execute() ever ran,
+// then this function's `rest.patch('@original')` (hop 2) delivered the actual content once building
+// finished. For a path with no image/network work, hop 1 buys nothing but latency -- Discord's
+// interaction-callback endpoint can deliver the real UPDATE_MESSAGE as the FIRST and ONLY response.
+// So: if the interaction hasn't been acked yet (`!interaction.deferred && !interaction.replied` --
+// true exactly when the router skipped deferUpdate/deferReply for a light path), POST straight to
+// the callback endpoint instead of patching. Any path that DID defer first (the initial slash-command
+// invocation, or a heavy path like View Colors that still defers to protect its image/ffmpeg work) is
+// completely unaffected -- it still patches, same as before.
+// ⚠️ PARTIALLY REVERTED 2026-08-07 17:38 EDT (v2.60.0) -- this single-hop path causes a real,
+// confirmed Discord CLIENT bug: a re-rendered button's custom emoji can go blank and sometimes never
+// recover, reproduced live on every command tested, ruled out as a bug in our own payload (always
+// correct), timing (200ms-2000ms artificial delays on this exact path all failed to fix it),
+// animated-vs-static emoji, and button/emoji count -- see docs/db-deferred-list.md's "button emoji
+// goes blank after a single-hop re-render" entry for the full investigation. `calpage_`
+// (calendar), `price_region_`/`price_subpage_` (draw prices), AND `set_page_` (`/settings`, found
+// mid-investigation to have the same bug) now defer first again (real measured cost: ~200-300ms
+// extra per click, accepted by Harkirat over the bug). `draws`' own sub-page nav
+// (`subpage_new_`/`subpage_returning_`) is the one branch left single-hop, untested for this bug
+// either way -- don't assume it's safe just because it wasn't flagged. See
+// `.claude/rules/rendering-and-ui.md` and `docs/db-deferred-list.md`'s "Pagination perf hybrid" entry
+// for the ORIGINAL design rationale and the heuristic this partial revert now qualifies.
 function sendV2Payload(interaction, components, { content = '', flags = 32768, embeds, allowedMentions, files } = {}) {
     const body = { content, components, flags };
     if (embeds !== undefined) body.embeds = embeds;

@@ -103,6 +103,11 @@ header comment and `docs/DEVLOG.md`'s matching entry for the full validation sto
   pattern `buildGlobalNavRow` already uses, see `.claude/rules/rendering-and-ui.md`. **This DID need an
   `index.js` change** — the old `price_region_10_`/`price_region_30_` hardcoded binary `startsWith`
   check is now a lookup against a `{prefix: region}` map covering all 3 prefixes.
+  - **Each button carries its own per-region icon** (2026-08-07 15:46 EDT, from Harkirat's own
+    notes-file request) — `region10Cp`/`region20Cp`/`region30Cp` in `emojiMap.js`, looked up per
+    render via `REGION_EMOJI_KEY[key]` (a `{region_10: 'region10Cp', ...}` map right below
+    `REGION_ORDER`). Replaces the single shared `regions` icon all three buttons used to carry
+    identically; `regions` itself is left defined since nothing else in the codebase references it.
 - **`doubleEpicCharacters.region_20` is deliberately `null`** — no real data exists for that draw at
   ANY region beyond 10 CP (not even 30 CP), so there's no second data point to interpolate from even if
   a guess were wanted. Harkirat's explicit call: leave it null (renders the existing "haven't done the
