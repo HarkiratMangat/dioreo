@@ -25,6 +25,16 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ✅ **`/calendar`: replace Prev/Next pagination with section-toggle buttons — RESOLVED 2026-08-07
+  13:56 EDT (found stale, not built this pass).** `[P2 · M]` Filed 2026-07-31 12:10 EDT during the
+  3-section calendar redesign (notes L195), describing the pagination as still Prev/Next with named
+  section buttons wanted "eventually." It never should have stayed queued — `.claude/rules/
+  design-decisions.md`'s own text from the SAME session (2026-07-31 14:00 EDT) says outright: "the
+  section-toggle-buttons item originally filed to db-deferred-list.md was built immediately instead
+  of deferred, per Harkirat's direct follow-up." `commands/calendar.js`'s `calpage_0/1/2` buttons
+  (Draws/Events/Gamemodes) have been live since that same day. Caught by the stale-reference sweep on
+  an unrelated PR (v2.59.0) that happened to touch this exact file for a different item — a targeted
+  grep for the claim itself, not just the filename, is what surfaced it.
 - ✅ **`v2.58.0`'s git tag was never pushed to GitHub — RESOLVED 2026-08-07 10:12 EDT.** `[P0 · XS]`
   Filed 2026-08-07 08:06 EDT, escalated to P0 at 08:12 EDT the same session when PR #95 discovered it
   was blocking `syntax-check` (via `docs-audit`'s `tag-coverage` ERROR) on **every** PR, not just ones

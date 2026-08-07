@@ -140,6 +140,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 07:00 EDT — A region built from screenshots, not guesses (v2.58.0)
 - 2026-08-07 08:10 EDT — A tag two sandboxes couldn't push, and the hook that couldn't tell them why (v2.58.1)
 - 2026-08-07 11:22 EDT — A fix whose own fix needed fixing, caught by the fix's own gate (v2.58.2)
+- 2026-08-07 13:49 EDT — Wrong database, wrong script, right bug eventually (v2.59.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5732,6 +5733,73 @@ about the number.
   region-switcher buttons and this branch's single-hop pagination change both touched the same
   `index.js` block; resolving it meant keeping PR #94's 3-way region logic AND dropping the
   now-obsolete `deferUpdate()` call, not picking one side wholesale.
+
+## 2026-08-07 13:49 EDT — Wrong database, wrong script, right bug eventually (v2.59.0)
+
+Harkirat opened with three reports: `/manage`'s calendar bulk add/replace timing out, a draw that
+disappeared from `/calendar` after a purge, and a new Guide emoji not rendering on the dev bot. The
+first was fast — the calendar bulk handler was missing the `deferReply()` its sibling draws handler
+already had, so a slow save could blow the 3-second ack window and fail visibly while the data saved
+anyway. Fixed and moved on.
+
+**The draw investigation took two wrong turns before the real one.** First wrong turn: read the code,
+theorized the draw had only ever existed as a miscategorized calendar row, never in `newDraws` at all
+— stated as fact, never checked. Harkirat pushed back with a screenshot showing it plainly in New
+Draws. Second wrong turn, worse: queried MongoDB to verify — the DEV database, not live, because
+nothing in the investigation ever named which environment was being read. Dev's copy looked perfectly
+correct (it had simply never experienced the purge Harkirat described), which produced a second
+confident wrong conclusion built on real data from the wrong place. Only querying the actual
+production database settled it: `newDraws` had the draw, an explicit calendar row existed and
+correctly deduped against it, the synthesis logic worked exactly as designed — and the real bug was
+`isEventEnded()` reading "released today" as "already ended" the instant UTC midnight passed, which
+for anyone in a US timezone is within hours of release. Combined with Harkirat's own saved
+Active-Only filter preference (also confirmed from the live database, not assumed), a brand-new draw
+would vanish from the filtered view almost immediately while `/draws` — no such filter — kept showing
+it fine. Fixed by having `dateOnly` entries never count as ended.
+
+**Separately, three process complaints landed mid-session and were worth fixing on the spot rather
+than acknowledging and moving on:** new deferred-list entries were missing the model+effort tag a
+prior session had just made a standing rule (fixed, and a case-tagging mismatch — "MarkEdit ext"
+sitting inside the priority bracket, redundant with the bold scope tag right after it — got cleaned
+up across the whole file, not just the new entries); three separate branches had been created for
+what were, in aggregate, minor edits (consolidated into one, merged cleanly, and renamed off an
+initial `chore/` — wrong, since it touched real source files, `chore` is source-free by definition);
+and a real question about whether a documented "check for running instances" rule was actually
+unconditional (it wasn't — it was reactive, "if the bot behaves erratically" — which meant it never
+caught this session's own `git switch` calls restarting the dev bot's `--watch` child mid-session,
+confirmed by an exact-second match between `git reflog` and the child process's start time). Built an
+unconditional SessionStart hook for the last one rather than just noting the gap.
+
+**The emoji fix nearly shipped a duplicate.** Diagnosis was clean: `refreshEmojiIds()` only re-points
+an *existing* same-named emoji, it can't create one, and the dev Discord application was confirmed
+(via its own API, not assumed) to have 76 emojis and no "Guide" — added 2026-07-31, after whatever
+point the dev app's emoji list was last cloned. Wrote a sync script from scratch to fix it. Only while
+looking up where to document the new script — a `docs:audit` warning, not proactive checking — did
+`scripts/syncMissingDevEmojis.js` turn up, already built 2026-07-31, already doing the same job, and
+doing it better (reads source names from `emojiMap.js` directly, needs only the dev token, never
+prod's). Deleted the duplicate and used the real one. The same completeness sweep that caught the
+duplicate also caught an unrelated, pre-existing `docs:audit` ERROR — an ℋ-confirmed notes item never
+swept to the graveyard since 2026-08-03 — and two dangling "see the entry above" cross-references
+that a same-session content move had silently broken.
+
+### What this cost, and what it taught
+
+- **Name the environment before trusting a query's result.** "The data looks correct" from the wrong
+  database is not evidence of anything — it produced a second wrong, confident claim in the same
+  investigation, immediately after the first one had already been caught and corrected.
+- **A claim survives contact with a screenshot for exactly as long as it takes to check.** "Never
+  actually in `newDraws`" was asserted, not verified, and a single screenshot disproved it in one
+  message.
+- **Check for existing sibling code before writing new code — not just for UI patterns.** A whole
+  script got built and nearly shipped before a docs-audit warning (not a deliberate check) surfaced
+  the one that already existed and already did it better.
+- **A completeness sweep run seriously catches real things, repeatedly, in the same session.** Three
+  separate passes this session each found something genuine: a missing model tag on a just-touched
+  line, two SHIPPED items sitting in the wrong section, dangling cross-references from a same-session
+  move, an overdue notes sweep, and the duplicate script. None were hypothetical.
+- **A reactive rule ("if X, suspect Y") is not the same as an unconditional check**, and the gap
+  between them is exactly where this session's own actions caused the very thing the reactive rule
+  was written to catch.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -63,6 +63,10 @@ and its own dedicated page rather than being shoehorned into `DRAW_DATA`/`buildD
     the headline and the footer divider below, both added by `buildContainer`, not the entry builder.
     (2) the strategy heading was `### **The Strategy, If You Want...**`; Harkirat's exact correction is a
     plain bold line with a period: **`**The Strategy. If You Want...**`** (no `### `, comma → period).
+    **⚠️ SUPERSEDED 2026-08-07 12:21 EDT** — Harkirat asked for the opposite: the heading is now a real
+    `### The Strategy` (no bold, no "If You Want..." — each strategy line's own bold label already states
+    the condition). Applies to both the Weapon and Character pages. Don't "correct" it back to the plain
+    bold form; that was the v2.30.1 call, this reverses it deliberately.
   - The mockup only drew the 10 CP region — the 30 CP region is the same design fed its own derived
     numbers. Re-verified via a `buildContainer()` JSON dump after the correction: the container has exactly
     2 dividers (title + footer), every total re-sums correctly, and every page/region stays well under the
@@ -94,8 +98,9 @@ header comment and `docs/DEVLOG.md`'s matching entry for the full validation sto
   stops meaning anything once there are 3 regions — `buildContainer` now renders one button per
   `REGION_ORDER` entry, `custom_id` = `price_region_{10|20|30}_{currentPage}` (same encoding scheme as
   before, just 3 of them). Follows the bot's existing multi-option button convention: current region
-  disabled + style 4 (Danger/red), the other two enabled + style 2 (Secondary/gray) — same pattern
-  `buildGlobalNavRow` already uses, see `.claude/rules/rendering-and-ui.md`. **This DID need an
+  disabled + style 1 (Primary/blue — changed from style 4/Danger-red 2026-08-07 13:09 EDT per
+  Harkirat's direct request; don't revert), the other two enabled + style 2 (Secondary/gray) — same
+  pattern `buildGlobalNavRow` already uses, see `.claude/rules/rendering-and-ui.md`. **This DID need an
   `index.js` change** — the old `price_region_10_`/`price_region_30_` hardcoded binary `startsWith`
   check is now a lookup against a `{prefix: region}` map covering all 3 prefixes.
 - **`doubleEpicCharacters.region_20` is deliberately `null`** — no real data exists for that draw at
@@ -122,6 +127,19 @@ header comment and `docs/DEVLOG.md`'s matching entry for the full validation sto
     lines were written to match that, not mechanically swapped from the Weapon page's wording.
   - THE TRAP callout text is purely about purchase mechanics (not reward tiers), so it carries over
     verbatim from the Weapon page.
+  - **Strategy labels reworded 2026-08-07 12:22 EDT** ("Legendary" dropped from the two middle labels,
+    Harkirat's exact spec): `Both Legendary Characters & Weapons` / `Both Characters + 1 Random Weapon` /
+    `1 Random Character + 1 Random Weapon`. **A 4th tier was scoped the same session and then
+    deliberately dropped** — "1 Random Character + Both Weapons" (Reg 1-8 → Adv 9 → Reg 10 =
+    `sumRange(reg,8) + adv[8] + reg[9]`, verified at region_10 to cost 6,650 CP, correctly sitting between
+    the 7,070 CP and 5,750 CP tiers) — Harkirat's own reasoning for the sequence: characters are this
+    draw's highest-reward/lowest-odds tier, so guaranteeing the weapon side needs only ONE off-cycle
+    Advanced pull (position 9) while the Regular pulls before AND after it (1-8, then 10) preserve the
+    "assume no lucky pull" framing on the harder character side. Don't re-derive this from scratch if it
+    comes back up — the formula above is already correct, just unused. Never guess a strategy tier's
+    pull sequence from cost alone; this one required Harkirat to specify the exact reg/adv split, because
+    "regular first, then switch to advanced" doesn't cover every real spend pattern (this one splits
+    regular before AND after a single advanced pull).
 - **If you add a 5th page later**, push a new key-driven page to `SUBPAGES` (re-derives
   `ADVANCED_PAGE_INDEX`/`CHARACTER_ADVANCED_PAGE_INDEX`/`TOTAL_PAGES` automatically), or add another
   dedicated builder + its own `*_PAGE_INDEX` constant the same way this page and the Weapon page did.

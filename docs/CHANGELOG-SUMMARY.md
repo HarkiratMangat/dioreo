@@ -26,6 +26,13 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.59.0 — August 7, 2026
+- **Fixed a bug where a newly-released draw could disappear from `/calendar`'s Draws page** if you had
+  Active-Only filtering on — it was being read as "already over" the moment it released.
+- **Fixed `/manage`'s bulk calendar add/replace** occasionally showing "didn't respond in time" even
+  though the data saved fine.
+- `/draw prices`' region buttons are now blue instead of red; `/calendar`'s section buttons got icons.
+
 ## v2.58.2 — August 7, 2026
 - **Buttons feel snappier**: draws, calendar, draw prices, and settings pagination/toggles now update
   in one step instead of two, so the response lands faster.

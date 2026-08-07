@@ -542,6 +542,23 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **📖 Rework `docs/ideas/diors-notes.md`'s upper section (lines 1–59) + expand the comment-convention
+  leading-verb list** `[P2 · M · Sonnet5-High]` *(filed 2026-08-07 12:10 EDT from notes L14 — Harkirat's
+  ask.)* **Model pick reasoning:** premise Med — what to fold where is mostly clear from his ask, but the
+  exact resulting structure is a judgment call · deliberation Med-High — this file has `SessionStart`
+  hooks (`notes-open-items.sh`, `notes-followups.sh`) that scan by explicit heading/marker position, and a
+  2026-08-06 attempt to reorganize this exact file silently zeroed the open-item count by moving a
+  boundary the hook relied on (see notes L63's own history) — so a restructure here carries real blast
+  radius, not just prose cleanup. Tie-break: a wrong move fails *silently* (a hook miscounts, nobody
+  notices) rather than loudly → stays Sonnet, effort raised to High.
+  Harkirat's ask: the long chain of HTML comments at the top of the file (lines 7–13, "HOW THIS FILE
+  WORKS") reads as a raw dump rather than a proper section — fold it into a structured section, possibly
+  renamed "How this file works" or "Claude readme," or folded into the 🔑 Legend section instead. As part
+  of the same session, expand the comment-writing lead-verb conventions (notes L45–54:
+  FIXED/IMPLEMENTED/SHIPPED/ANSWERED/etc.) with clearer guidance on word choice. **Whatever the new
+  structure, re-verify `notes-open-items.sh` and `notes-followups.sh` against it in the same change** —
+  dry-run the open-item count before and after, the same check that caught the 2026-08-06 near-miss.
+
 - **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)**
   `[P2 · S · Sonnet5-High]` *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next
   session.)* **Model pick reasoning (grid, not a feeling):** premise Med — the technical claims about
@@ -1239,12 +1256,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records
   untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** —
   they currently describe the manual process as the only route.
-- `[P2 · M]` **`/calendar`: replace Prev/Next pagination with section-toggle buttons.** *Filed
-  2026-07-31 12:10 EDT during the 3-section calendar redesign (notes L195).* Harkirat explicitly asked
-  for left/right pagination to stay for now (page 1 = Draws+Events, page 2 = Playlists/Modes) but wants
-  buttons that jump straight to a named section eventually, since that's more discoverable than
-  Prev/Next once there are 3 real sections. Needs a mockup/UI pass before building — not just a wiring
-  change.
 - `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
   from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
   sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a

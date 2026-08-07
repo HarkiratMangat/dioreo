@@ -2940,6 +2940,14 @@ client.on('interactionCreate', async interaction => {
         // bullet-separated paste — "M/D - M/D | Title" or "M/D - All Season | Title" — into
         // { title, startDate, endDate, isOngoing } objects via parseBulkEvents either way.
         if (customId === 'modal_calendar_bulk_add' || customId === 'modal_calendar_bulk_replace') {
+            // Fixed 2026-08-07 12:24 EDT: this branch did the seasonalDoc fetch (shared, above) + parse
+            // + fuzzy-match (replace mode) + save() entirely inside Discord's 3-second interaction-ack
+            // window with no deferReply -- the sibling "BULK ADD/REPLACE BOTH DRAW CATEGORIES" branch a
+            // few lines up (line ~2785) already defers first for exactly this reason. Once the window
+            // was blown, `interaction.reply()` below would fail on a dead token (Discord shows "didn't
+            // respond in time") even though `seasonalDoc.save()` had already succeeded -- so the data
+            // WAS saved, just with no visible confirmation, which is the trap that made this look broken.
+            await interaction.deferReply({ ephemeral: true });
             const mode = customId === 'modal_calendar_bulk_add' ? 'add' : 'replace';
             const bulkText = interaction.fields.getTextInputValue('bulk_text');
             const parsedEvents = parseBulkEvents(bulkText);
@@ -2974,10 +2982,9 @@ client.on('interactionCreate', async interaction => {
             const summary = mode === 'add'
                 ? `Added ${insertedCount} event(s) (now **${finalArray.length}** total).`
                 : `Updated ${updatedCount}, added ${insertedCount} (now **${finalArray.length}** total).`;
-            return interaction.reply({
+            return interaction.editReply({
                 content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.`,
-                components: [undoButtonRow(undoToken)],
-                ephemeral: true
+                components: [undoButtonRow(undoToken)]
             });
         }
 

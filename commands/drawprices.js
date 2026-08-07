@@ -323,10 +323,10 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
         // 4: THE TRAP callout (the NOTE callout was removed entirely per Harkirat's request 2026-07-25)
         `> **THE TRAP:** Buying 'Regular Purchase', then paying for the 2nd remaining item afterwards costs **25% MORE** than just buying 'Advanced Purchase' upfront. **Commit before spinning!** Otherwise you essentially just did 2 'Regular Purchases' and wasted money.`,
         // 5-7: the Strategy, as three separate Text Displays (heading rides on the first block).
-        // Heading is a PLAIN BOLD line (not a `### ` heading) with a period after "Strategy" -- exact
-        // wording confirmed by Harkirat 2026-07-21 via a marked-up screenshot (the mockup's `### `+comma
-        // was wrong).
-        `**The Strategy. If You Want...**\n**Both Weapons & Characters**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
+        // Heading is a REAL `### ` heading, "### The Strategy" -- reverses the 2026-07-21 "plain bold
+        // line" call per Harkirat's 2026-08-07 12:21 EDT request; "If You Want..." dropped since each
+        // strategy line's own bold label ("Both Weapons & Characters" etc.) already states the condition.
+        `### The Strategy\n**Both Weapons & Characters**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
         `**Both Weapons + 1 Random Character**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
         `**1 Random Weapon + 1 Random Character**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
     ];
@@ -389,10 +389,14 @@ function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
         // 4: THE TRAP callout -- purely about purchase mechanics, not reward tiers, so carries over verbatim
         `> **THE TRAP:** Buying 'Regular Purchase', then paying for the 2nd remaining item afterwards costs **25% MORE** than just buying 'Advanced Purchase' upfront. **Commit before spinning!** Otherwise you essentially just did 2 'Regular Purchases' and wasted money.`,
         // 5-7: the Strategy, three separate Text Displays -- reward pairs swapped per Harkirat's
-        // 2026-08-07 clarification (both Legendary tier here, unlike the Weapon page's Legendary+Epic mix)
-        `**The Strategy. If You Want...**\n**Both Legendary Characters & Legendary Weapons**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
-        `**Both Legendary Characters + 1 Random Weapon**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
-        `**1 Random Legendary Character + 1 Random Weapon**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
+        // 2026-08-07 clarification (both Legendary tier here, unlike the Weapon page's Legendary+Epic mix).
+        // Heading + labels re-worded 2026-08-07 12:21 EDT (real `### ` heading, "Legendary" dropped from
+        // the two middle words per Harkirat's exact spec) -- a 4th tier ("1 Random Character + Both
+        // Weapons", Reg 1-8 → Adv 9 → Reg 10) was scoped and its math worked out, then deliberately
+        // dropped by Harkirat's own follow-up before it shipped; not present here on purpose.
+        `### The Strategy\n**Both Legendary Characters & Weapons**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
+        `**Both Characters + 1 Random Weapon**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
+        `**1 Random Character + 1 Random Weapon**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
     ];
 
     return blocks.map(content => ({ type: 10, content }));
@@ -483,15 +487,16 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
                 // encoding scheme the old toggle button used) so index.js's handler needs no changes
                 // beyond recognizing a 3rd prefix. Follows the bot's own established multi-option
                 // button-row convention (see `.claude/rules/rendering-and-ui.md`'s Components V2
-                // notes and buildGlobalNavRow): the CURRENT region's button is disabled + style 4
-                // (Danger/red) to show it as the active selection, the other two are enabled + style
+                // notes and buildGlobalNavRow): the CURRENT region's button is disabled + style 1
+                // (Primary/blue, changed from style 4/Danger-red 2026-08-07 13:09 EDT per Harkirat's
+                // request) to show it as the active selection, the other two are enabled + style
                 // 2 (Secondary/gray). Labels shortened to "N CP" (rather than "View N CP Region
                 // Prices" x3) since three full labels side by side in one row would be visually
                 // cramped; same `emojis.regions` emoji kept on all three for consistency with what
                 // the single button used to carry.
                 components: REGION_ORDER.map(key => ({
                     type: 2,
-                    style: key === regionKey ? 4 : 2,
+                    style: key === regionKey ? 1 : 2,
                     disabled: key === regionKey,
                     custom_id: `price_region_${key.split('_')[1]}_${currentPage}`,
                     label: `${key.split('_')[1]} CP`,
