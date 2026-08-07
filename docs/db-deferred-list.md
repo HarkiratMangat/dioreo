@@ -1256,12 +1256,6 @@ tags are the source of truth instead — see `feedback_no_duplicated_state_in_pr
   (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records
   untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** —
   they currently describe the manual process as the only route.
-- `[P2 · M]` **`/calendar`: replace Prev/Next pagination with section-toggle buttons.** *Filed
-  2026-07-31 12:10 EDT during the 3-section calendar redesign (notes L195).* Harkirat explicitly asked
-  for left/right pagination to stay for now (page 1 = Draws+Events, page 2 = Playlists/Modes) but wants
-  buttons that jump straight to a named section eventually, since that's more discoverable than
-  Prev/Next once there are 3 real sections. Needs a mockup/UI pass before building — not just a wiring
-  change.
 - `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
   from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
   sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a
