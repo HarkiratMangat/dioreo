@@ -135,6 +135,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 12:52 EDT — The gate fired, and told me something false (folded into v2.57.0)
 - 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
 - 2026-08-06 19:58 EDT — Fifteen minutes, no log, no cause (v2.57.1)
+- 2026-08-06 21:10 EDT — The recommendation that was always one tier up (v2.57.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5398,6 +5399,92 @@ not explain, and from not accepting the first explanation that fit.
 - **The cheap confirmation is the one that goes unrun.** A prior session had already written down
   "runner starvation, hypothesis NOT a finding" — the right call, honestly labelled, and correct. What
   was missing was never analysis; it was one HTTP request nobody made for six hours.
+
+
+## 2026-08-06 21:10 EDT — The recommendation that was always one tier up (v2.57.2)
+
+Harkirat, after I corrected a model recommendation for the second time in an hour: *"noticed you
+over-spec the model recommendation quite often…"*
+
+The useful thing was that he said *often*. A single wrong call is a mistake; a consistent direction is
+a bias, and a bias has a mechanism worth finding. So I measured instead of agreeing, and the
+measurement disproved the sloppy version of the story while confirming the sharp one. The **filed**
+effort tags are well calibrated — a real gradient from `XS → Sonnet5-Low` up to `L → Opus5-High`, and
+nine Opus tags against ten Sonnet. I do not over-spec everywhere. I over-spec **when nothing anchors
+me**: both handoffs written that day reached for Opus, and one of them did it for work I had described,
+in the same paragraph, as "specified, not novel design."
+
+Writing out why a task is simple and then reaching for the heavier model in the next sentence is not a
+judgement error. It is a tell.
+
+**The mechanism is asymmetric visibility.** Under-speccing fails in front of me — bad work, a missed
+subtlety, a correction. Over-speccing fails invisibly, and Harkirat pays for it. So I drift toward the
+cost I never have to look at, and it arrives dressed as caution. It is not caution. A recommendation
+that is always one tier up carries no information; it is a refusal to judge, with the bill sent
+elsewhere.
+
+Underneath that sat a category error. Effort tier answers *how much work*. Model and reasoning effort
+answer *how hard the thinking is*. I had been using the first as a proxy for the second, which is how
+"this is large and important" became "use Opus". They are independent: a rename across forty files is
+enormous in scope and trivial per decision, and a one-line fix that turns on a race condition is the
+reverse.
+
+Separating them gave the two knobs distinct jobs — **effort buys breadth, the model buys judgement and
+self-correction** — and that immediately explained something I had noticed and then thrown away.
+`Sonnet5-XHigh` and `Opus5-Medium` cost about the same and produce about the same quality on breadth
+work with clear criteria. They are not interchangeable. They diverge exactly when a task requires
+someone to notice that a premise is false.
+
+I had put that in a footnote. Harkirat caught it: *"you didn't really specify it in your 6 classes,
+which makes me think that you actually considered more scenarios but chose to simplify for an easier
+presentation."* He was right, and the reason mattered — **I had built a ladder, and a ladder forces
+equal-cost alternatives to merge.** On a grid they sit side by side and cannot be dropped. The
+structure I chose for presentation had eaten the distinction I needed for judgement.
+
+### Three times in one evening, the same bad argument
+
+The part I would most like to have back is not the over-spec. It is that I reached three separate times
+for evidence that could not support the claim, because in each case the evidence **was a record of a
+decision we had already made**.
+
+I argued against Sentry by citing the Privacy Policy, which says "none present" *because we chose to
+have none*. I justified a tag convention from tags I had written myself. And I read Harkirat's model
+usage — `max` never used, `xhigh` once — as evidence those tiers were not needed, when he is
+self-described new to this and **built the recommendation system precisely so that I would choose**.
+His history is downstream of my advice. Citing it back is a closed loop.
+
+All three read identically whether or not the conclusion is true. That is the test, and it is now
+written down: *would this evidence look different if the answer were the opposite?*
+
+**`CLAUDE.md` already documented this exact trap** — for sequential-thinking usage counts, in almost
+these words: the tool has never existed unrestricted, so low usage measures the rule, not the tool. I
+have read that paragraph many times. Knowing a pattern abstractly did not make me recognise a single
+instance of it in front of me.
+
+### The gate that caught me, and was itself broken
+
+The `Stop` hook that blocks effort ranges fired on me twice. Both times it was right that I had written
+one — and it turned out to have two defects of its own, visible only because it fired. It read the last
+**eight** assistant messages, so one stray phrase re-fires every turn for eight turns, long after the
+conversation has moved on. And it stripped backticked *spans*, which made `` `xhigh`/`max` ``
+completely invisible to it while leaving `high/max` exposed in a partially-backticked variant purely by
+luck. A gate that both nags about the past and misses the present is one you learn to read past.
+
+Fixed to `tail -2` and to stripping backtick *characters*, and verified against the exact phrase that
+had slipped through.
+
+### What this cost, and what it taught
+
+- **"Often" is a more useful complaint than "wrong."** A direction has a mechanism; an instance does
+  not. Measuring turned a vague concession into a specific, fixable bias.
+- **Ask what the failure costs and WHO SEES IT.** When one direction of error is invisible to me and
+  visible to him, I will drift that way without noticing, and it will feel responsible.
+- **Structure chosen for presentation can destroy the content.** The ladder did not simplify the
+  taxonomy; it deleted a distinction I had already made and needed.
+- **Evidence that reads the same either way is not evidence.** Especially our own documents, our own
+  tags, and usage counts on anything gated, defaulted, or never recommended.
+- **A gate firing at you is data about the gate too.** Both of its bugs were only findable from the
+  receiving end.
 
 
 # Part B — Lessons Ledger (thematic)
