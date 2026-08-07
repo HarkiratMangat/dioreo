@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.57.1 — August 6, 2026
+- Housekeeping only — nothing about the bot or the site changed.
+
 ## v2.57.0 — August 6, 2026
 - Alert messages now explain themselves in plain English — what happened, whether it fixes itself, and
   what (if anything) to do — instead of only showing a stack trace.

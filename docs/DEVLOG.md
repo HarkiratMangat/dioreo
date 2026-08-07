@@ -134,6 +134,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-06 10:53 EDT — The guard that blocked the PR fixing the guard (v2.56.1)
 - 2026-08-06 12:52 EDT — The gate fired, and told me something false (folded into v2.57.0)
 - 2026-08-06 15:16 EDT — The alert that said everything except what it meant (v2.57.0)
+- 2026-08-06 19:58 EDT — Fifteen minutes, no log, no cause (v2.57.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5355,6 +5356,48 @@ the more confident it feels.
   our files, the analysis probably has not happened. Ask what you would recommend if the document did
   not exist — that is the real answer — then add the amendment back as a cost and see if it changes
   anything. Here it did not, and the honest reason was better than the one I gave.
+
+
+## 2026-08-06 19:58 EDT — Fifteen minutes, no log, no cause (v2.57.1)
+
+CI cancelled at fifteen minutes and four seconds. The usual run is ninety seconds. No failed step, no
+assertion, no output at all — the job simply stopped.
+
+I did what the failure invited: I looked at the change. The branch had added a ripgrep guard, so I
+removed ripgrep from PATH and ran the suite; it passed. It had added a large records commit, so I
+considered whether document size could slow a check. Every one of those was a plausible story about my
+own diff, and every one was wrong, because the cause was never in this repo.
+
+The tell was there from the first run and I read past it twice: **zero log bytes.** A step that fails
+leaves output. A job with no output never started — no runner was ever assigned. That is not a
+symptom of anything a commit can do. The second tell arrived shortly after and was even louder:
+`main`'s own CI failed the same way, on a branch this work had never touched.
+
+One request to githubstatus.com settled it — **Actions was in a major outage.** The whole investigation
+was a search for a bug that did not exist, on the assumption that a red check is a statement about my
+code. It usually is. It is not always, and the failure shape says which.
+
+There is a second finding I only reached because the outage forced me to look: `syntax-check` **is** a
+required status check, while `CLAUDE.md` still said none existed and warned that a red PR could
+therefore merge. Both halves were stale, and the consequence was live — with Actions not dispatching,
+the head commit had **zero checks** and the PR was genuinely unmergeable, with nothing wrong in it.
+Closing and reopening the PR did not help. That is a strictly better state than the one the file
+described, but a session trusting the file would have concluded the opposite and possibly forced the
+merge.
+
+Neither of those was the task I sat down to do. Both came from a check that failed for a reason I could
+not explain, and from not accepting the first explanation that fit.
+
+### What this cost, and what it taught
+
+- **A red check is not automatically a statement about your code.** Before debugging the diff, ask
+  whether the failure SHAPE is even one a commit can produce. A cancel with no failed step and no log
+  output cannot be.
+- **Check the provider's status page before the repo.** It is one request, and it terminates an entire
+  class of investigation that would otherwise be plausible all the way down.
+- **The cheap confirmation is the one that goes unrun.** A prior session had already written down
+  "runner starvation, hypothesis NOT a finding" — the right call, honestly labelled, and correct. What
+  was missing was never analysis; it was one HTTP request nobody made for six hours.
 
 
 # Part B — Lessons Ledger (thematic)
