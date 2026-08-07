@@ -42,6 +42,20 @@ const PRESET_ACCENT = 2067038; // CP Emerald (#1F8A5E) — 3rd nav button (Draw 
 // mockup himself rather than us generating it, its absence is read as deliberate rather than an
 // oversight. Its old `altLast` mechanism (a Reactive/Non-Reactive split on the final pull) went with
 // it — nothing else ever used that field.
+//
+// `region_20` added 2026-08-07 from Harkirat's own screenshots of the real 10/20/30 CP breakdown —
+// REAL data, not derived. (An earlier pass this same session validated an arithmetic-mean-of-
+// region_10/region_30 model against this exact data before it existed in code: the model matched
+// almost every pull within 0-3%, with the last 1-2 "chase" pulls sometimes running ~9% lower than
+// the model predicted — useful context if a FUTURE draw's 20 CP data is ever missing and needs a
+// stand-in estimate, but every number below is the real sourced value, not that estimate.)
+// `doubleEpicCharacters.region_20` stays `null` — no real data exists for it at any region beyond
+// 10 CP (same "no data yet" convention as `doubleEpicCharacters.region_30` below; a speculative
+// guess was deliberately left out rather than shipped as real pricing).
+// `mythicWeapon`/`mythicCharacter` have NO `upgrade` field at region_20 — the screenshots only gave
+// the per-pull draw totals, not the separate Upgrade cost, so there's no real number to put there
+// yet. buildDrawEntries' `if (entry.upgrade)` check means the Upgrade line simply doesn't render for
+// these two entries in the 20 CP region until real data shows up — not a bug, just unavailable.
 const DRAW_DATA = {
     region_10: {
         label: '10 CP Region',
@@ -54,6 +68,18 @@ const DRAW_DATA = {
         sevenSpinLegendaryWeapon: { draws: [10, 50, 140, 300, 600, 1100, 1600] },
         pickYourRewardCard: { draws: [60, 60, 90, 90, 150, 600, 2190] },
         doubleEpicCharacters: { draws: [10, 25, 40, 100, 160, 280, 560, 640, 1000, 1200] }
+    },
+    region_20: {
+        label: '20 CP Region',
+        mythicWeapon: { draws: [20, 55, 80, 210, 350, 560, 900, 1600, 2300, 4000] },
+        mythicCharacter: { draws: [35, 90, 155, 280, 490, 770, 1200, 2000, 2900, 4700] },
+        legendaryGunReactive: { draws: [20, 55, 80, 210, 350, 560, 900, 1400, 1900, 3200] },
+        legendaryGunNonReactive: { draws: [20, 55, 80, 210, 350, 560, 900, 1400, 1900, 2400] },
+        doubleLegendaryWeapons: { draws: [20, 55, 80, 210, 350, 560, 900, 1900, 2400, 2900] },
+        legendaryCharacterWeapon: { draws: [20, 55, 80, 210, 350, 560, 900, 1400, 2700, 3800] },
+        sevenSpinLegendaryWeapon: { draws: [20, 60, 180, 400, 800, 1500, 2300] },
+        pickYourRewardCard: { draws: [90, 120, 120, 180, 240, 1050, 3870] },
+        doubleEpicCharacters: null
     },
     region_30: {
         label: '30 CP Region',
@@ -83,15 +109,41 @@ const DRAW_DATA = {
 //   • Reg/Adv/Trap totals = the sum of each array.
 //   • The three Strategy costs = cumulative slices of Regular then Advanced (Reg 1-8 + Adv 9-10, etc).
 // So a wrong number can only ever exist in one place, and nothing can silently drift from its source.
+// Canonical low-to-high region order, added 2026-08-07 alongside region_20 -- the single place the
+// 3-way region switcher (buildContainer, below) and anything else that needs to enumerate "all
+// regions in order" reads from, so a future 4th region only ever needs to change this one array.
+const REGION_ORDER = ['region_10', 'region_20', 'region_30'];
+
+// `region_20` added 2026-08-07, same source as DRAW_DATA.region_20 above (Harkirat's real screenshot
+// data) — `adv = reg × 1.6` holds exactly here too, with zero deviation, across all three regions now.
 const ADVANCED_DOUBLE_LEGENDARY = {
     region_10: {
         reg: [10, 30, 50, 120, 200, 320, 480, 680, 950, 1400],
         adv: [16, 48, 80, 192, 320, 512, 768, 1088, 1520, 2240]
     },
+    region_20: {
+        reg: [20, 55, 80, 210, 350, 560, 830, 1190, 1630, 2400],
+        adv: [32, 88, 128, 336, 560, 896, 1328, 1904, 2608, 3840]
+    },
     region_30: {
         reg: [30, 80, 120, 300, 500, 800, 1200, 1700, 2400, 3900],
         adv: [48, 128, 192, 480, 800, 1280, 1920, 2720, 3840, 6240]
     }
+};
+
+// ADVANCED DOUBLE LEGENDARY CHARACTER DRAW (added 2026-08-07, same screenshot source as above). The
+// Character counterpart to ADVANCED_DOUBLE_LEGENDARY: same three-purchase-mode shape, but this
+// banner's own headline reward pair is 2 Legendary Characters (not weapons), with 2 Legendary
+// Weapons as the secondary Advanced-purchase reward (unlike the Weapon draw, where the secondary
+// reward is 2 EPIC characters — both this draw's pairs are Legendary tier).
+// Deliberately stores ONLY `adv` — this draw's Regular-purchase array is byte-identical to
+// DRAW_DATA[region].legendaryCharacterWeapon.draws (verified across all three regions), so `reg` is
+// read from there at render time instead of being hand-typed a second time. Same "a wrong number can
+// only ever exist in one place" rule as everything else in this file.
+const ADVANCED_DOUBLE_LEGENDARY_CHARACTER = {
+    region_10: { adv: [15, 45, 80, 190, 320, 510, 830, 1280, 2400, 3520] },
+    region_20: { adv: [30, 85, 130, 340, 560, 900, 1440, 2240, 4320, 6080] },
+    region_30: { adv: [45, 130, 190, 480, 800, 1280, 2080, 3200, 6240, 8800] }
 };
 
 // Display name + tier (for the emoji prefix) per draw type — same across both regions, so this
@@ -126,7 +178,13 @@ const SUBPAGES = [PAGE_1_KEYS, PAGE_2_KEYS];
 // built by its own function (buildAdvancedDoubleLegendaryEntry) and is intentionally NOT part of
 // SUBPAGES. TOTAL_PAGES is what the pagination row + page clamp use, so it must include this page.
 const ADVANCED_PAGE_INDEX = SUBPAGES.length; // = 2 (the 3rd page)
-const TOTAL_PAGES = SUBPAGES.length + 1;      // 2 key pages + the Advanced page
+// The Advanced Double Legendary CHARACTER Draw (2026-08-07) gets its own page right after the Weapon
+// Advanced page, same "doesn't fit SUBPAGES' model" reasoning -- built by
+// buildAdvancedDoubleLegendaryCharacterEntry. If you add more key-driven pages, push to SUBPAGES;
+// both ADVANCED_PAGE_INDEX/CHARACTER_ADVANCED_PAGE_INDEX/TOTAL_PAGES re-derive automatically and
+// this page stays last.
+const CHARACTER_ADVANCED_PAGE_INDEX = ADVANCED_PAGE_INDEX + 1; // = 3 (the 4th page)
+const TOTAL_PAGES = SUBPAGES.length + 2;      // 2 key pages + the 2 Advanced pages
 
 // Mythic-tier draws are the only ones with a separate Upgrade step, and each needs its own noun
 // ("Weapon"/"Character") in the "### {X} Upgrade" sub-heading per drawPrices_ui.json.
@@ -283,6 +341,63 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
     return blocks.map(content => ({ type: 10, content }));
 }
 
+// Builds the Advanced Double Legendary CHARACTER Draw's page (added 2026-08-07), mirroring
+// buildAdvancedDoubleLegendaryEntry above exactly in structure and rendering conventions -- the only
+// real difference is which reward pair each purchase mode/strategy line is working toward. `reg` is
+// read from DRAW_DATA[regionKey].legendaryCharacterWeapon.draws (see ADVANCED_DOUBLE_LEGENDARY_
+// CHARACTER's comment for why it isn't duplicated here), `adv` from the new data object; `trap` is
+// still always 2x Regular, same reasoning as the Weapon page.
+//
+// Reward framing (confirmed by Harkirat, 2026-08-07): this draw's two pairs are BOTH Legendary tier
+// -- 2 Legendary Characters (this banner's own headline reward, reliably worked toward by Regular
+// spend, same role "weapons" plays on the Weapon page) and 2 Legendary Weapons (the secondary reward
+// unlocked via Advanced purchase). This is a different reward shape than the Weapon page, whose
+// secondary reward is 2 EPIC characters -- so the strategy wording below is adapted, not just a
+// find/replace of "Weapon"<->"Character" on the Weapon page's lines.
+function buildAdvancedDoubleLegendaryCharacterEntry(regionKey) {
+    const region = DRAW_DATA[regionKey] || DRAW_DATA.region_10;
+    const charData = ADVANCED_DOUBLE_LEGENDARY_CHARACTER[regionKey] || ADVANCED_DOUBLE_LEGENDARY_CHARACTER.region_10;
+    const reg = region.legendaryCharacterWeapon.draws;
+    const adv = charData.adv;
+    // Trap = 2x Regular per pull, same reasoning as the Weapon page's own Trap.
+    const trap = reg.map(n => n * 2);
+
+    const sum = arr => arr.reduce((a, b) => a + b, 0);
+    const sumRange = (arr, n) => arr.slice(0, n).reduce((a, b) => a + b, 0);
+    const regTotal = sum(reg);
+    const advTotal = sum(adv);
+    const trapTotal = sum(trap);
+
+    // Strategy costs, all derived -- same Reg 1-8 + Adv 9-10 / Reg 1-9 + Adv 10 / Reg 1-10 slicing
+    // as the Weapon page, assuming no lucky early pull.
+    const costAll4 = sumRange(reg, 8) + adv[8] + adv[9];
+    const cost2Leg = sumRange(reg, 9) + adv[9];
+    const cost1Leg = regTotal;
+
+    // Shim so the existing boldDrawSequence/cumulativeSequence (which read `.draws`) work here.
+    const seqTotal = (arr, total) => `${boldDrawSequence({ draws: arr })} ⌇ **\`${formatCP(total)} CP\`**\n-# **CP Spent:** ${cumulativeSequence({ draws: arr })}`;
+
+    // Same flat run of Text Displays, NO internal dividers, as the Weapon page -- matching its style
+    // exactly per Harkirat's request.
+    const blocks = [
+        // 0: FULL-CAPS heading + both headline totals (quote-blocked, cp2 icon)
+        `**${emojis.legendary} ADVANCED DOUBLE LEGENDARY CHARACTER DRAW**\n> ${emojis.cp2} **\`Reg: ${formatCP(regTotal)} CP\`** / **\`Adv: ${formatCP(advTotal)} CP\`** (See **The Strategy** below)`,
+        // 1-3: the three purchase modes
+        `**'Regular Purchase' Only**\n${seqTotal(reg, regTotal)}`,
+        `**'Advanced Purchase' Only**\n${seqTotal(adv, advTotal)}`,
+        `**'Regular Purchase' + Remaining Item Separately**\n${seqTotal(trap, trapTotal)}`,
+        // 4: THE TRAP callout -- purely about purchase mechanics, not reward tiers, so carries over verbatim
+        `> **THE TRAP:** Buying 'Regular Purchase', then paying for the 2nd remaining item afterwards costs **25% MORE** than just buying 'Advanced Purchase' upfront. **Commit before spinning!** Otherwise you essentially just did 2 'Regular Purchases' and wasted money.`,
+        // 5-7: the Strategy, three separate Text Displays -- reward pairs swapped per Harkirat's
+        // 2026-08-07 clarification (both Legendary tier here, unlike the Weapon page's Legendary+Epic mix)
+        `**The Strategy. If You Want...**\n**Both Legendary Characters & Legendary Weapons**\nReg 1-8 → Adv 9-10 ⌇ ${emojis.cp2} **\`${formatCP(costAll4)} CP\`**`,
+        `**Both Legendary Characters + 1 Random Weapon**\nReg 1-9 → Adv 10 ⌇ ${emojis.cp2} **\`${formatCP(cost2Leg)} CP\`**`,
+        `**1 Random Legendary Character + 1 Random Weapon**\nReg only 1-10 ⌇ ${emojis.cp2} **\`${formatCP(cost1Leg)} CP\`**\n-# Note: These strategies assume that you didn't get lucky.`
+    ];
+
+    return blocks.map(content => ({ type: 10, content }));
+}
+
 /**
  * UI BUILDER: Constructs the V2 JSON Payload
  * Separated into its own function so the index.js dropdown/button router can call it directly
@@ -290,8 +405,6 @@ function buildAdvancedDoubleLegendaryEntry(regionKey) {
  */
 function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = false, subpage = 0) {
     const region = DRAW_DATA[regionKey] || DRAW_DATA.region_10;
-    const otherRegionKey = regionKey === 'region_10' ? 'region_30' : 'region_10';
-    const otherRegionLabel = DRAW_DATA[otherRegionKey].label;
     // Clamp rather than reject an out-of-range page (matches the "build N of M" clamping convention
     // used elsewhere, e.g. loadout pagination) -- defensive, not expected to trigger in practice
     // since the pagination row's own disabled state already prevents going out of bounds.
@@ -308,10 +421,12 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // "title divider stays spacing 1" exception was dropped the same day per Harkirat's "large
     // spacing across the board" follow-up.
     const innerDividerSpacing = 2;
-    // The Advanced Double Legendary page (the 3rd page) is rendered by its own builder since it
-    // doesn't fit the shared key/`draws: []` model; every other page goes through buildDrawEntries.
+    // The two Advanced pages (3rd and 4th) are each rendered by their own builder since neither fits
+    // the shared key/`draws: []` model; every other page goes through buildDrawEntries.
     const entrySections = currentPage === ADVANCED_PAGE_INDEX
         ? buildAdvancedDoubleLegendaryEntry(regionKey)
+        : currentPage === CHARACTER_ADVANCED_PAGE_INDEX
+        ? buildAdvancedDoubleLegendaryCharacterEntry(regionKey)
         : withInnerDividers(buildDrawEntries(regionKey, SUBPAGES[currentPage]), innerDividerSpacing);
 
     // Prev/Next between the 2 entry pages, same region -- shared pagination row helper (see
@@ -356,30 +471,32 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
             // repeated correction) -- pagination sits directly under the entries with no separator.
             ...(paginationRow ? [paginationRow] : []),
             { type: 14, spacing: 2, divider: true },
-            // One-line footer (was two `-#` lines) per example_reformat.json.
-            { type: 10, content: `-# Switch between viewing 10 CP or 30 CP region prices. (Tip: check out \`/settings\`)` },
+            // One-line footer (was two `-#` lines) per example_reformat.json. Updated 2026-08-07 for
+            // the 3rd region.
+            { type: 10, content: `-# Switch between viewing 10 CP, 20 CP, or 30 CP region prices. (Tip: check out \`/settings\`)` },
             {
                 type: 1,
-                components: [
-                    {
-                        // Single toggle button replaces the old select-menu region switcher (per
-                        // Harkirat's own drawPrices_ui.json redesign) -- always labeled with the
-                        // region you'd switch TO, and its custom_id encodes that same target region
-                        // directly so index.js's handler doesn't need to re-derive it. Deliberately
-                        // NOT prefixed `toggle_` -- that prefix is claimed by /settings' generic
-                        // binary-toggle button handler in index.js, which expects a `|{userId}`
-                        // suffix this button doesn't have (a real bug caught during review, before
-                        // ever being pushed -- see index.js's matching comment). Preserves the
-                        // CURRENT subpage across a region switch (encoded in its own custom_id) so
-                        // flipping region doesn't reset which page of entries you were looking at.
-                        // Style 2 (gray/Secondary), not 3 (green) -- 2026-07-12, matches the
-                        // Secondary+sentence-case convention now used bot-wide for this class of
-                        // "switch view" button (see draws.js's category-toggle buttons).
-                        type: 2, style: 2, custom_id: `price_region_${otherRegionKey === 'region_10' ? '10' : '30'}_${currentPage}`,
-                        label: `View ${otherRegionLabel} Prices`,
-                        emoji: emojis.parseEmoji(emojis.regions)
-                    }
-                ]
+                // 3-way region switcher (replaced the old single "switch to the other region" toggle
+                // button 2026-08-07, now that a 3rd region exists -- a binary toggle has no meaning
+                // once there are 3 options). Always renders all 3 region buttons, in REGION_ORDER,
+                // each `custom_id` encoding the region it JUMPS TO plus the current subpage (same
+                // encoding scheme the old toggle button used) so index.js's handler needs no changes
+                // beyond recognizing a 3rd prefix. Follows the bot's own established multi-option
+                // button-row convention (see `.claude/rules/rendering-and-ui.md`'s Components V2
+                // notes and buildGlobalNavRow): the CURRENT region's button is disabled + style 4
+                // (Danger/red) to show it as the active selection, the other two are enabled + style
+                // 2 (Secondary/gray). Labels shortened to "N CP" (rather than "View N CP Region
+                // Prices" x3) since three full labels side by side in one row would be visually
+                // cramped; same `emojis.regions` emoji kept on all three for consistency with what
+                // the single button used to carry.
+                components: REGION_ORDER.map(key => ({
+                    type: 2,
+                    style: key === regionKey ? 4 : 2,
+                    disabled: key === regionKey,
+                    custom_id: `price_region_${key.split('_')[1]}_${currentPage}`,
+                    label: `${key.split('_')[1]} CP`,
+                    emoji: emojis.parseEmoji(emojis.regions)
+                }))
             }
         ]
     };
@@ -399,7 +516,7 @@ module.exports = {
             .setName('prices')
             .setDescription('View the CP cost breakdown for Lucky Draws')
             // Optional direct-jump flag
-            .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '30 CP Region', value: 'region_30' }))
+            .addStringOption(option => option.setName('region').setDescription('Jump directly to a specific CP region').addChoices({ name: '10 CP Region', value: 'region_10' }, { name: '20 CP Region', value: 'region_20' }, { name: '30 CP Region', value: 'region_30' }))
             .addBooleanOption(option => option.setName('hidden').setDescription('True = only you can see this response. False = everyone in the chat can see it.')))
         .setIntegrationTypes([1]).setContexts([0, 1, 2]), // User-install app + DM support
 
@@ -422,7 +539,7 @@ module.exports = {
         // (2026-07-12, /settings' new 3-option region dropdown -- 'region_10'/'region_30' PIN the
         // opening view regardless of what's last been toggled) > last-viewed defaultRegion > region_10.
         let targetRegion = 'region_10';
-        if (prefs?.defaultRegionMode === 'region_10' || prefs?.defaultRegionMode === 'region_30') {
+        if (REGION_ORDER.includes(prefs?.defaultRegionMode)) {
             targetRegion = prefs.defaultRegionMode;
         } else if (prefs?.defaultRegion) {
             targetRegion = prefs.defaultRegion;

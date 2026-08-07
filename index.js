@@ -1418,21 +1418,25 @@ client.on('interactionCreate', async interaction => {
             return await interaction.showModal(buildEditModal(token, data));
         }
 
-        // DRAW PRICES REGION TOGGLE BUTTON -- replaced the old select-menu ('select_price_region')
-        // with a single toggle button per Harkirat's drawPrices_ui.json redesign. custom_id encodes
-        // the region to SWITCH TO directly (drawprices.js always labels/IDs the button with the
-        // other region) plus the CURRENT subpage (added 2026-07-12 once entries got split across 2
-        // pages -- e.g. `price_region_30_1` -- so flipping region doesn't reset which page of
-        // entries you were on). Deliberately NOT prefixed `toggle_` -- that prefix is claimed by the
-        // generic /settings binary-toggle handler further down (`customId.startsWith('toggle_')`),
-        // which expects a `|{userId}` suffix; a bare `toggle_price_region_10` would have matched
-        // that check first, found no userId to compare against, and always hit its "Action Blocked"
+        // DRAW PRICES REGION SWITCHER -- was a single "switch to the other region" toggle button
+        // (per Harkirat's drawPrices_ui.json redesign) until the 20 CP region was added 2026-08-07,
+        // at which point a binary toggle stopped making sense (see drawprices.js's REGION_ORDER
+        // note) and it became a 3-way button row, one button per region. custom_id encodes the
+        // region to JUMP TO directly (same scheme as before, just generalized past 2 regions) plus
+        // the CURRENT subpage (added 2026-07-12 once entries got split across 2 pages -- e.g.
+        // `price_region_30_1` -- so switching region doesn't reset which page of entries you were
+        // on). Deliberately NOT prefixed `toggle_` -- that prefix is claimed by the generic
+        // /settings binary-toggle handler further down (`customId.startsWith('toggle_')`), which
+        // expects a `|{userId}` suffix; a bare `toggle_price_region_10` would have matched that
+        // check first, found no userId to compare against, and always hit its "Action Blocked"
         // branch (caught during a bug-check pass before ever being pushed, not found live). Persists
         // to prefs.defaultRegion same as calendar's active/all filter toggle -- the picked region
         // becomes the new default every subsequent /draw prices lands on until changed again.
-        if (interaction.customId.startsWith('price_region_10_') || interaction.customId.startsWith('price_region_30_')) {
+        const PRICE_REGION_PREFIXES = { 'price_region_10_': 'region_10', 'price_region_20_': 'region_20', 'price_region_30_': 'region_30' };
+        const priceRegionPrefix = Object.keys(PRICE_REGION_PREFIXES).find(prefix => interaction.customId.startsWith(prefix));
+        if (priceRegionPrefix) {
             await interaction.deferUpdate();
-            const selectedRegion = interaction.customId.startsWith('price_region_10_') ? 'region_10' : 'region_30';
+            const selectedRegion = PRICE_REGION_PREFIXES[priceRegionPrefix];
             const currentSubpage = parseInt(interaction.customId.split('_').pop(), 10) || 0;
 
             const UserPreference = require('./models/UserPreference');

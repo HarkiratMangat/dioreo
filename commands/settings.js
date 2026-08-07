@@ -261,13 +261,15 @@ module.exports = {
             // Draw Prices region: converted from a binary toggle button to a 3-option dropdown
             // (2026-07-12) -- "Show Last Viewed Region" (new default, `defaultRegionMode:
             // 'last_viewed'`) behaves exactly like the old toggle always did (whatever was last
-            // clicked in /draw prices itself); "10 CP"/"30 CP" now PIN the opening view to that
-            // region regardless of what gets toggled elsewhere. See models/UserPreference.js and
+            // clicked in /draw prices itself); "10 CP"/"20 CP"/"30 CP" now PIN the opening view to
+            // that region regardless of what gets toggled elsewhere. Gained the 20 CP option
+            // 2026-08-07 alongside drawprices.js's new region. See models/UserPreference.js and
             // drawprices.js's execute() for the resolution priority.
             const regionMode = prefs.defaultRegionMode || 'last_viewed';
             const regionModeLabelMap = {
                 last_viewed: 'Show Last Viewed Region',
                 region_10: '10 CP Region Pricing',
+                region_20: '20 CP Region Pricing',
                 region_30: '30 CP Region Pricing'
             };
             containerComponents.push({ type: 10, content: `\`• Draw Prices Region\` = **${regionModeLabelMap[regionMode] || regionModeLabelMap.last_viewed}**` });
@@ -278,6 +280,7 @@ module.exports = {
                     options: [
                         { label: "Show Last Viewed Region", value: "last_viewed", description: "Opens on whichever region you last viewed/toggled", default: regionMode === 'last_viewed' },
                         { label: "10 CP Region Pricing", value: "region_10", description: "Always opens on the 10 CP region", default: regionMode === 'region_10' },
+                        { label: "20 CP Region Pricing", value: "region_20", description: "Always opens on the 20 CP region", default: regionMode === 'region_20' },
                         { label: "30 CP Region Pricing", value: "region_30", description: "Always opens on the 30 CP region", default: regionMode === 'region_30' }
                     ]
                 }]
