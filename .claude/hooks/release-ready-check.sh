@@ -84,6 +84,22 @@ if ! echo "$changed" | grep -qx 'docs/DEVLOG.md'; then
     unless the change is genuinely mechanical — and if you are skipping it, SAY SO OUT LOUD and why."
 fi
 
+# ADDED HERE 2026-08-07 22:25 EDT — the PostToolUse hook in settings.json's "RELEASE DOC CHECK" has
+# checked this since 2026-07-28 (predates this file by 5 days), but only ever AFTER the merge, which
+# is the exact wrong-moment bug this whole file's header describes, caught live a second time here:
+# it flagged design-decisions.md needing an update for the v2.61.0 merge, but only after that merge
+# was done, forcing a whole extra release (v2.61.1) to fix it. Same diff-based shape as the DEVLOG
+# check above, now ALSO checked at the moment it can still be fixed for free.
+# ⚠️ NOT removed from the PostToolUse hook — it stays there deliberately, same role items (1)
+# package.json and (3) CHANGELOG-SUMMARY already play: RELEASE_SKIP below bypasses this gate's WHOLE
+# miss-list, so a skipped merge needs an unconditional post-merge check as a safety net, not just a
+# pre-merge one that a skip can wave through.
+if echo "$changed" | grep -qE '^(commands|utils|models|scripts)/' && ! echo "$changed" | grep -qE '^(CLAUDE\.md|\.claude/rules/)'; then
+  miss="$miss
+  · code changed under commands/utils/models/scripts but no CLAUDE.md or .claude/rules/*.md note.
+    Update the design/why note in the SAME change, or it goes stale the moment this merges."
+fi
+
 [ -z "$miss" ] && exit 0
 
 # 🔴 THIS MUST **DENY**, NOT NARRATE — changed 2026-08-06 11:02 EDT, and it cost a release to learn.

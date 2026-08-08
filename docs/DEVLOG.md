@@ -143,6 +143,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 13:49 EDT — Wrong database, wrong script, right bug eventually (v2.59.0)
 - 2026-08-07 19:49 EDT — The bug behind the bug, and the fix that traded speed for correctness (v2.60.0)
 - 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
+- 2026-08-07 22:31 EDT — A hook that could only ever report the problem after it was too late to fix (v2.61.2)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5919,6 +5920,49 @@ ran clean against both dev and prod (25 URLs each, spot-verified live).
 None of these four fixes were the thing originally asked for. The pattern worth keeping: a visual
 complaint that produces no visible change is a signal to measure the actual mechanism, not to guess a
 smaller number next.
+
+## 2026-08-07 22:31 EDT — A hook that could only ever report the problem after it was too late to fix (v2.61.2)
+
+v2.61.1 existed only because a hook told Claude, right after merging v2.61.0, that
+`design-decisions.md` still described the banner behavior that release had just reversed. The fix got
+made, but as a whole second branch/PR/tag cycle — and when told, Harkirat didn't accept "that's just
+how the hook works" as an answer. *"dont just assume, investigate and verify. why was it even
+originally implemented as a PostToolUse hook? are u breaking anything? are u making anything stale?
+creating gaps?"*
+
+The investigation, not the assumption: `git log -S` on both files showed the PostToolUse "RELEASE DOC
+CHECK" hook has run this exact check — code under `commands/utils/models/scripts` needs a matching
+`CLAUDE.md`/`.claude/rules` note — since 2026-07-28. `release-ready-check.sh`, the pre-merge
+equivalent that checks the BRANCH before it merges instead of `origin/main` after, was built five days
+later, 2026-08-02, for the explicit purpose of fixing this exact class of bug (its own header cites an
+earlier incident: a missing DEVLOG entry that could only be fixed by shipping v2.56.2 to patch what
+v2.56.1 had already missed). That migration moved CHANGELOG, CHANGELOG-SUMMARY, package.json, and
+DEVLOG into the pre-merge gate. It did not move this one. Not a design decision to keep it post-merge
+— just a check the migration missed, and the exact same bug it existed to prevent reproduced itself
+five days later on the one item left behind.
+
+The first instinct was to just delete it from the old hook once it lived in the new one. That would
+have been wrong, and would not have survived the same question asked a second time: `RELEASE_SKIP` on
+the pre-merge gate bypasses its *entire* miss-list, not just the item being skipped. package.json and
+CHANGELOG-SUMMARY already stay duplicated in the post-merge hook specifically as the safety net for
+that case — deleting only the new arrival while leaving its two siblings in place would have been
+inconsistent for no reason, and would have quietly reopened the exact gap a `RELEASE_SKIP`'d merge is
+supposed to still catch. It stays in both places, each doing a different job: pre-merge to catch it
+free, post-merge as the net under an explicit skip.
+
+Same investigation, smaller finding: Harkirat separately caught `completeness-sweep.sh`'s
+`generated-output` angle asserting a blanket "rebuild `public/` if a site source changed," with no
+carve-out for the changelog/devlog-only case — even though `deploy-site.yml` has excluded exactly that
+case since the pages were withdrawn from the site nav. The earlier turn in this same session had
+treated a changelog-only diff as a real gap and rebuilt the site for it, which was needless work the
+hook's own prose should have known not to demand. Corrected to name the exemption explicitly rather
+than silently keep asserting a rule that isn't true anymore.
+
+The lesson isn't new, but it earned a second confirmation the same session it was first written down:
+when a "wrong moment" bug gets fixed by building an earlier-timed version of a check, the fix has to
+audit every check the old one did, not just the one the triggering incident happened to be about. An
+incomplete migration doesn't avoid the bug it exists to fix — it just relocates which check still has
+it.
 
 # Part B — Lessons Ledger (thematic)
 

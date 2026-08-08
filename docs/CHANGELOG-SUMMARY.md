@@ -26,6 +26,11 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.61.2 — August 7, 2026
+- **Nothing changed in the bot.** Fixed one of the project's own internal release checks so it
+  catches a missing design note *before* a merge instead of after — the exact gap that made the
+  previous release (v2.61.1) necessary in the first place.
+
 ## v2.61.1 — August 7, 2026
 - **Nothing changed in the bot.** Corrected an internal design note that still described the old
   (now-reversed) calendar-banner behavior from v2.61.0.

@@ -234,7 +234,7 @@ ANGLES=(
 "memory-store|Claude-Code-Diors-Builds/memory|Sweep the memory store. Memory files never appear in a git diff, so nothing else surfaces them."
 "content-conservation|git show |Ask what MOVED text still ASSERTS, not just that its filename resolves. A fold carries stale claims into a record, where they stop looking stale."
 "hook-selftests|test\\.sh|Run the affected *.test.sh individually. An \`npm test\` total hides which case exercises your change — and whether it can still fail."
-"generated-output|buildLegalPages|If a site source changed, rebuild public/. Nothing else regenerates it and a stale build ships silently."
+"generated-output|buildLegalPages|If a site source changed AND it's not changelog/devlog-only, rebuild public/ (nothing else regenerates it and a stale build ships silently). Changelog/DEVLOG-only changes are the one exception -- those three pages are withdrawn from the site nav (same exemption deploy-site.yml already codes for), so a stale local build there is not a live gap."
 )
 
 # 🔴 SCOPED TO BASH COMMANDS — this hook POISONED ITSELF without it, and the failure was total.
