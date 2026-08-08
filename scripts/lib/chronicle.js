@@ -668,7 +668,7 @@ const VOICES = {
 const labelOf = headInner => headInner
     .replace(/<a\b[^>]*class="[^"]*\banchor\b[^"]*"[\s\S]*?<\/a>/g, '')
     .replace(/<[^>]*>/g, '')
-    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/[<>]/g, c => (c === '<' ? '&lt;' : '&gt;'))
     .trim();
 
 function liftLessons(html) {

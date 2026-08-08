@@ -5610,7 +5610,8 @@ const warmHit = k => { WARM_HITS[k] = (WARM_HITS[k] || 0) + 1; };
 // trailing </>-escape is defense in depth for a malformed/unbalanced tag the
 // strip regex missed, since the legend at the CONTRIBUTORS call site below
 // re-embeds this result unescaped.
-const stripTags = s => s.replace(/<[^>]*>/g, '').replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
+const stripTags = s => s.replace(/<[^>]*>/g, '')
+    .replace(/[<>]/g, c => (c === '<' ? '&lt;' : '&gt;')).trim();
 const headingInner = h => (h.match(/<span class="ht">([\s\S]*?)<\/span>/) || [, ''])[1];
 const headingText = h => stripTags(headingInner(h)).toLowerCase();
 
