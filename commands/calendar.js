@@ -17,14 +17,17 @@ const { buildGlobalNavRow } = require('../utils/globalNav');
 const { resolveEphemeral } = require('../utils/ephemeral');
 const { sendV2Payload } = require('../utils/sendV2Payload');
 const { isSameDrawTitle } = require('../utils/search');
-const { capBannerPreviewWidth } = require('../utils/calendarBannerCache');
-
-// Desktop-width fix (2026-07-31 17:20 EDT, direct follow-up) -- an uncapped banner was making the
-// whole container render unnecessarily wide on desktop. See capBannerPreviewWidth()'s own header --
-// a Discord CDN-hosted banner gets a genuine small-preview/full-resolution-on-click pairing via
-// Discord's own resize proxy; a Cloudinary-hosted one (a non-Discord source that got re-hosted for
-// durability) is capped everywhere, inline and on zoom alike, since that path has no equivalent.
-const BANNER_MAX_WIDTH = 512;
+// ⚠️ REVERTED 2026-08-07 21:30 EDT -- the width-cap fix below (2026-07-31 17:20 EDT, "an uncapped
+// banner was making the whole container render unnecessarily wide on desktop") was built on the
+// assumption that a Discord CDN-hosted banner gets a genuine small-preview/full-resolution-on-click
+// pairing via Discord's own resize proxy. Now that every banner is re-hosted to Cloudinary (see
+// utils/calendarBannerCache.js's 2026-08-07 21:25 EDT fix for why -- Discord CDN links expire), that
+// pairing no longer exists: a Cloudinary-transformed derivative is a genuinely separate, smaller
+// file with no path back to the original, so the cap now also shrinks the ZOOMED view, not just the
+// inline preview. Verified live on the dev bot -- confirmed by Harkirat: "it does work but it has
+// that initial issue we discussed where it will remain in that small size even if someone taps on
+// it. So I'd rather not do the resize." Full width now shows both inline and on zoom; the desktop-
+// width nuisance this was fixing is the smaller cost of the two.
 
 // Repalette (2026-07-12, Section 5 of the batch) -- replaces the old flat 5-color nav-order
 // gradient (Police Blue/Chinese Violet/China Rose/Light Coral/Tumbleweed) with a color chosen per
@@ -226,7 +229,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     // omitted entirely (no placeholder) when unset.
     const bannerUrl = seasonalDoc[BANNER_FIELDS_BY_PAGE[safePage]];
     if (bannerUrl) {
-        calendarComponents.push({ type: 12, items: [{ media: { url: capBannerPreviewWidth(bannerUrl, BANNER_MAX_WIDTH) } }] });
+        calendarComponents.push({ type: 12, items: [{ media: { url: bannerUrl } }] });
     }
 
     // Two-line title (season title on top, command header below) — shared pattern, see

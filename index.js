@@ -3001,8 +3001,27 @@ client.on('interactionCreate', async interaction => {
             const summary = mode === 'add'
                 ? `Added ${insertedCount} event(s) (now **${finalArray.length}** total).`
                 : `Updated ${updatedCount}, added ${insertedCount} (now **${finalArray.length}** total).`;
+            // Per-category breakdown of THIS submission's own titles (added 2026-08-07 21:06 EDT,
+            // Harkirat's direct request after a mis-typed source paste silently landed 7 "MP
+            // Mode"/"BR" titles in Events -- the classifier itself was correct, but the confirmation
+            // message gave no way to catch a bad source paste without opening /calendar and
+            // cross-checking by eye). Grouped from `newEventDocs` (not the full `finalArray`) so a
+            // Replace submission only reports what THIS paste actually classified, not the whole
+            // season's calendar. Capped so one giant bulk paste can't blow Discord's 2000-char content
+            // limit on the reply itself.
+            const CATEGORY_LABELS = { draw: 'Draws', event: 'Events', playlist: 'Playlists' };
+            const byCategory = { draw: [], event: [], playlist: [] };
+            for (const e of newEventDocs) (byCategory[e.category] || byCategory.event).push(e.title);
+            const breakdownLines = ['draw', 'event', 'playlist']
+                .filter(cat => byCategory[cat].length > 0)
+                .map(cat => {
+                    const titles = byCategory[cat];
+                    const joined = titles.join(', ');
+                    const line = `**${CATEGORY_LABELS[cat]} (${titles.length}):** ${joined}`;
+                    return line.length > 400 ? `${line.slice(0, 397)}...` : line;
+                });
             return interaction.editReply({
-                content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.`,
+                content: `✅ **Bulk Calendar ${mode === 'add' ? 'Add' : 'Replace'} Complete!**\n${summary} Sorted chronologically.\n${breakdownLines.join('\n')}`,
                 components: [undoButtonRow(undoToken)]
             });
         }

@@ -637,6 +637,34 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **⏱️ Git-workflow efficiency: audit the hook ecosystem + fix real execution-bundling waste**
+  `[P2 · M · Opus5-High]` *(filed 2026-08-07 20:27 EDT after Harkirat's direct pushback on a
+  ~20-minute, ~65-tool-call v2.60.0 merge flow — "is your handoff checking prior hooks... does it
+  actually consider tackling a core issue or is it just relying on more hooks."; **model pick
+  revised 20:28 EDT**, same session, after he pushed back on the FIRST pick too — "it clearly also
+  shows from this very handoff creation phase of this session of how close minded you can be.")*
+  **Model pick reasoning:** the first pick (Sonnet5-Medium) rated this a checklist-shaped task and
+  read that as low premise-risk. Wrong basis — the actual demonstrated failure mode during THIS
+  session's handoff-writing was interpretive narrowness on self-reflective "what am I missing" work,
+  caught twice by Harkirat directly (first the hook-density-audit angle, then the step-count-vs-
+  call-count distinction), not a knowledge gap or mechanical difficulty. Premise risk is HIGH because
+  my own first-pass judgment on this exact category of task is demonstrated unreliable, not
+  hypothetically risky · deliberation High to match — this needs genuinely broad consideration across
+  ~22 scripts plus the meta-question of what's still being missed, not a bounded checklist run →
+  Opus, High. Effort tier buys breadth; model is the judgment lever, and the judgment lever is what
+  failed twice here.
+  **Full detail + worked examples:** `local/handoff/2026-08-07-git-workflow-efficiency-hooks-
+  handoff.md` (gitignored — this pointer is the only tracked reference to it). **What to do:**
+  (1) audit all ~22 non-test `.claude/hooks/*.sh` scripts for redundancy/dead-weight/consolidation
+  opportunity, report findings before touching `settings.json`; (2) surface the "is the 3-file-
+  changelog ritual still the right size" question to Harkirat directly rather than deciding it;
+  (3) apply the concrete execution-bundling fixes already identified (version bump should be 1 Bash
+  call not 3; independent changelog-family file edits should batch in one message; `git tag` +
+  `git push origin <tag>` should chain; don't re-run `docs:audit` after every single small fix); this
+  one (item 0 in the handoff) needs no new hook and no dedicated session to start — it should already
+  be standing practice. **How to verify:** re-run a comparable merge flow and count actual tool calls
+  against this session's ~65-call baseline.
+
 - **🚨 CI/lint gate for over-100-char `setPlaceholder()` calls** `[P2 · S · Sonnet5-Medium]` *(filed
   2026-08-07 15:52 EDT from the calendar bulk-modal placeholder incident.)* **Model pick reasoning:**
   premise Low — the constraint itself is settled fact (Discord's discord.js hard-throws

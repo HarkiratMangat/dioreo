@@ -25,6 +25,7 @@ if (!process.env.CLOUDINARY_URL) {
 }
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'temp_draws';
 const EXPIRY_DAYS = 45;
@@ -90,7 +91,7 @@ async function cacheThumbnail(title, sourceUrl) {
             invalidate: true,
             resource_type: 'image'
         });
-        return { url: result.secure_url, cached: true, error: null };
+        return { url: withDeliveryDefaults(result.secure_url), cached: true, error: null };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary cache upload failed for "${title}" (${sourceUrl}): ${message}`);
@@ -106,7 +107,7 @@ async function cacheThumbnail(title, sourceUrl) {
 async function getCachedUrl(title) {
     try {
         const result = await cloudinary.api.resource(publicIdFor(title));
-        return result.secure_url;
+        return withDeliveryDefaults(result.secure_url);
     } catch (err) {
         // NOTE (fixed during review): the Admin API's error nests http_code under `.error`, not on
         // the caught object directly -- `err.http_code` is always undefined here, so an unguarded
@@ -205,7 +206,7 @@ async function getCachedUrlFuzzy(title) {
         }
         if (best && bestScore >= FUZZY_SIMILARITY_THRESHOLD) {
             return {
-                url: best.secure_url,
+                url: withDeliveryDefaults(best.secure_url),
                 matchedTitle: best.public_id.slice(FOLDER.length + 1).replace(/-/g, ' '),
                 exact: false,
                 score: bestScore

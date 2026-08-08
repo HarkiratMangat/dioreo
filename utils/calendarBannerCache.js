@@ -15,6 +15,7 @@ if (!process.env.CLOUDINARY_URL) {
 }
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'calendar_banners';
 const VALID_PAGES = ['draws', 'events', 'playlists'];
@@ -31,10 +32,15 @@ function publicIdFor(page) {
     return `${FOLDER}/${page}`;
 }
 
-// A real Discord CDN link doesn't expire the way an external host (Facebook, etc.) can -- that's
-// the whole reason cloudinaryCache.js/patchNotesCache.js re-host in the first place, and it doesn't
-// apply to a URL that's already on Discord's own CDN. (Harkirat's direct follow-up, 2026-07-31
-// 17:20 EDT.)
+// ⚠️ CORRECTED 2026-08-07 21:23 EDT -- this used to say "a real Discord CDN link doesn't expire the
+// way an external host can," which is FALSE for the URLs this bot actually receives. A
+// `media.discordapp.net` link (the "Copy Link" a user gets from Discord's own image viewer) is
+// SIGNED (`?ex=`/`is=`/`hm=`), and the `ex=` param is a real expiry -- decoding it on a banner set
+// 2026-07-29 (exact time unknown -- an admin-set field, not a logged event) showed an expiry of
+// 2026-08-01, confirmed dead (404) 2026-08-07 21:25 EDT. Forging a later `ex=` doesn't
+// work either (`hm=` is a real signature over `ex`+`is`+path -- tested, still 404). Kept here only
+// to distinguish a Discord CDN host for logging/diagnostics; NOT used to skip Cloudinary re-hosting
+// anymore -- see cacheBannerImage() below, which now re-hosts every source unconditionally.
 function isDiscordCdnUrl(url) {
     try {
         const { hostname } = new URL(url);
@@ -48,15 +54,18 @@ function isDiscordCdnUrl(url) {
 // image itself) -- never throws, a Cloudinary hiccup falls back to the raw URL rather than
 // blocking the admin's save, same philosophy as cacheThumbnail()/cachePatchImage().
 //
-// A Discord CDN source URL skips the Cloudinary upload entirely -- re-hosting it would be pure
-// downside: an extra copy of an already-durable asset, AND it would throw away Discord's own
-// dynamic resize proxy (see capBannerPreviewWidth below), which is the one mechanism that actually
-// gives a real small-preview/full-resolution-on-click pairing. A Cloudinary-transformed derivative
-// can never do that (see capBannerPreviewWidth's Cloudinary branch) -- it's a genuinely separate,
-// smaller file with no path back to anything larger.
+// ⚠️ Discord CDN sources used to skip this upload entirely, on the theory that re-hosting was pure
+// downside (an extra copy of an "already-durable" asset). REVERTED 2026-08-07 21:25 EDT -- that
+// premise was wrong (see isDiscordCdnUrl's comment: Discord CDN links are signed and expire), so a
+// banner set from a Discord link was silently going dead within ~24-48h with no way to detect or
+// repair it from the stored URL alone. Every source now re-hosts unconditionally, same as every
+// other cached image in this bot. Verified live 2026-08-07: uploading a real Discord CDN banner URL
+// to Cloudinary and capping it via capBannerPreviewWidth's Cloudinary branch (c_limit,w_N) correctly
+// returned an aspect-preserved 256x144 derivative from a 2048x1152 source -- that branch also
+// sidesteps capBannerPreviewWidth's Discord-CDN-branch bug (below) for free, since Cloudinary's
+// `c_limit` only ever needs ONE dimension to preserve aspect ratio, unlike Discord's proxy.
 async function cacheBannerImage(page, sourceUrl) {
     if (!VALID_PAGES.includes(page)) throw new Error(`Invalid calendar banner page: ${page}`);
-    if (isDiscordCdnUrl(sourceUrl)) return { url: sourceUrl, cached: true, error: null };
     if (isCloudinaryWriteBlocked('upload', publicIdFor(page))) {
         return { url: sourceUrl, cached: false, error: 'blocked: dev bot may not write to the live Cloudinary account' };
     }
@@ -71,7 +80,7 @@ async function cacheBannerImage(page, sourceUrl) {
             invalidate: true,
             resource_type: 'image'
         });
-        return { url: result.secure_url, cached: true, error: null };
+        return { url: withDeliveryDefaults(result.secure_url), cached: true, error: null };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary cache upload failed for calendar banner "${page}" (${sourceUrl}): ${message}`);
@@ -94,23 +103,27 @@ async function clearBannerImage(page) {
 
 // Caps the DISPLAYED width of a banner image for the inline preview, without touching whatever's
 // actually stored (Harkirat's direct follow-up, 2026-07-31 17:20 EDT: the raw banner rendered
-// unnecessarily wide on desktop; further follow-up same session: use Discord's own CDN instead of
-// Cloudinary where possible, for a REAL small-preview/full-res-on-click pairing). Two branches:
+// unnecessarily wide on desktop).
 //
-// - **Discord CDN source (the good path):** `media.discordapp.net` is Discord's own dynamic resize
-//   proxy for its CDN assets -- `?width=N` requests a resized derivative while the ORIGINAL asset
-//   stays fully reachable (Discord's own image viewer loads the true source when you click through
-//   to zoom, not this resized proxy URL). `cdn.discordapp.com` doesn't accept these query params, so
-//   a cdn.discordapp.com URL is rewritten onto the media.discordapp.net host (same path) first.
-//   ⚠️ NOT live-verified against a real Discord attachment as of this build (no real banner had been
-//   uploaded through this path yet) -- if the preview doesn't visibly shrink once a real Discord CDN
-//   banner URL is set, this is the first thing to check.
-// - **Cloudinary source (the fallback path, e.g. a non-Discord URL that got re-hosted):** splices a
-//   `c_limit,w_N` transform into the delivery URL (`.../upload/{transform}/v.../public_id`). This
-//   path has the real platform limitation the Discord path avoids: Discord shows exactly the URL
-//   it's given, both inline and on zoom, so the zoomed view here is ALSO capped to this same width --
-//   a Cloudinary-transformed derivative is a genuinely separate, smaller file with no path back to
-//   anything larger, unlike Discord's own proxy.
+// - **Cloudinary source (the only path every banner takes as of 2026-08-07 21:25 EDT):** splices a
+//   `c_limit,w_N` transform into the delivery URL (`.../upload/{transform}/v.../public_id`) --
+//   verified live to correctly aspect-preserve from a SINGLE dimension (a 2048x1152 source capped to
+//   w_256 came back an exact 256x144). Discord shows exactly the URL it's given, both inline and on
+//   zoom, so the zoomed view is ALSO capped to this same width -- a Cloudinary-transformed derivative
+//   is a genuinely separate, smaller file with no path back to anything larger.
+// - **Discord CDN source (LEGACY/DEAD PATH -- do not extend, only exists for pre-2026-08-07 DB rows
+//   that haven't been re-saved yet):** `cacheBannerImage()` used to skip re-hosting for a Discord CDN
+//   source and rely on `media.discordapp.net`'s own `?width=N` resize proxy instead. Two real bugs
+//   found testing this branch, neither worth fixing since the branch itself is being phased out:
+//   (1) `?width=N` ALONE is silently ignored by Discord's proxy -- it requires `width` AND `height`
+//   together, confirmed via curl (`width=256` alone returned the full-size original; `width=256&
+//   height=144` together correctly returned 256x144). This function never sent `height`, so this
+//   branch has never actually resized anything. (2) Even fixed, a mismatched box isn't aspect-fit --
+//   `width=256&height=256` on the 16:9 source came back a hard-cropped 256x256, not letterboxed --
+//   so a correct fix would need the source's real aspect ratio, which this function doesn't have.
+//   Moot either way: the underlying URLs are Discord-signed and expire in ~24-48h (see
+//   isDiscordCdnUrl's comment), so any DB row still hitting this branch is almost certainly already a
+//   dead link regardless of what this does to it.
 function capBannerPreviewWidth(url, maxWidth) {
     if (!url) return url;
     if (isDiscordCdnUrl(url)) {
