@@ -38,15 +38,16 @@ Discord-provided color value at all, so those four are extracted ourselves:
   `jimp`, samples ~2500 pixels, and picks a representative hex value — see "Accent color
   extraction algorithm" below for exactly how (it's gone through 3 real revisions, not a
   simple average).
-- **Avatar-matching is the actual default** (`accentColorStyle` schema default is
-  `'avatar'`, not a "keep everything as-is" option) — Harkirat wanted every embed to
-  match a user's avatar out of the box, not just `/settings`. `'preset'` (labeled
-  "Pre-Designed Palette" in the `/settings` dropdown) is the opt-out that restores each
-  command's own fixed brand color; `/settings` itself has no brand color of its own so
-  it falls back to avatar even under `'preset'`. **Re-confirmed 2026-07-18** — Harkirat's
-  own mental model had been "defaults to the pre-made palette unless changed," which is
-  the OPPOSITE of the real default; noting this here in case he wants to reconsider
-  flipping the default to `'preset'` later. Leaving as `'avatar'` for now — no action taken.
+- **`'preset'` (Pre-Designed Palette) is the actual default again** (`accentColorStyle` schema
+  default flipped back to `'preset'` 2026-08-08 00:25 EDT, per Harkirat's direct request — this
+  reverses the 2026-07-13 flip to `'avatar'` below). Applies to new users and anyone who hasn't
+  explicitly saved a style preference yet; anyone with an existing saved `'avatar'`/`'banner'`/etc.
+  doc is completely unaffected, since a schema default only ever fills in a value that was never
+  set. `/settings` itself has no brand color of its own so it still falls back to avatar even under
+  `'preset'`. ~~Avatar-matching is the actual default (Harkirat wanted every embed to match a user's
+  avatar out of the box, not just `/settings`)~~ — **superseded.** Re-confirmed 2026-07-18 that this
+  was the OPPOSITE of Harkirat's own mental model ("defaults to the pre-made palette unless
+  changed"); left as `'avatar'` at the time with no action taken, then actually flipped this session.
 - `accentColor.js`'s `resolveAccentColor()` resolves `prefs.accentColorStyle` accordingly,
   and `getAccentColorForCommand()` is what the 5 preset-color commands (calendar/draws/
   patchnotes/drawprices/seasonend) call. **It now creates-and-saves a `UserPreference`

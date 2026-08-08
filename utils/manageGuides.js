@@ -132,11 +132,11 @@ function patchnotesSections() {
         section('🔗 URLs 1 / URLs 2',
             'Each is 5 separate fields (image 1-5 / image 6-10), not one big paste. Blank = no image in that slot. Every submitted URL is auto re-hosted to Cloudinary so a dead source link never breaks the carousel later.'),
         section('⚔️ Additional Info — one weapon per line, comma-separated',
-            'Typing `b:`/`n:` ANYWHERE always swaps in the buff/nerf icon -- that part always worked.\n' +
-            '**The structured "Additional Changes" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b: text` -- ONE weapon per line, a NEW LINE for the next weapon:\n' +
+            'Typing `b:`/`n:`/`f:` ANYWHERE always swaps in the buff/nerf/fix icon -- that part always worked.\n' +
+            '**The structured "ADDITIONAL CHANGES" layout is a SEPARATE, opt-in thing** that only turns on once a line starts with `#`. Same comma-delimited feel as the Draws/Calendar bulk formats: `#, then Weapon, then Attachment, then n:/b:/f: text` -- ONE weapon per line, a NEW LINE for the next weapon:\n' +
             '```\n# Fennec (DMZ only), Ultra Extended Mag, n: Ammo capacity reduced from 40 Rounds to 20 Rounds\n```\n' +
-            `Renders as:\n### Additional Changes\n__**Fennec (DMZ only)**__\nUltra Extended Mag\n> ${emojis.nerf} Ammo capacity reduced from 40 Rounds to 20 Rounds\n` +
-            '-# How it\'s read: the first thing after `#` is the WEAPON name. Every comma-separated thing after that is a new ATTACHMENT — UNLESS it starts with `b:`/`n:`, in which case it\'s a CHANGE under whichever attachment came right before it. A weapon can carry as many attachments/changes as you want on its one line; the NEXT weapon just needs its own new line.'),
+            `Renders as:\n### ADDITIONAL CHANGES\n__**Fennec (DMZ only)**__\nUltra Extended Mag\n> ${emojis.nerf} Ammo capacity reduced from 40 Rounds to 20 Rounds\n` +
+            '-# How it\'s read: the first thing after `#` is the WEAPON name. Every comma-separated thing after that is a new ATTACHMENT — UNLESS it starts with `b:`/`n:`/`f:`, in which case it\'s a CHANGE under whichever attachment came right before it. A weapon can carry as many attachments/changes as you want on its one line; the NEXT weapon just needs its own new line.'),
         section('💡 Tip',
             'Not writing structured changes this patch? Just type a normal sentence -- no `#` needed, nothing forces the structured layout on you.')
     ];

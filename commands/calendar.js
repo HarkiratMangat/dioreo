@@ -236,7 +236,7 @@ function buildContainer(seasonalDoc, page = 0, accentColor = PRESET_ACCENT, isEp
     // utils/titleBlock.js. headingLevel 2 (`## `, was `# `) for design consistency with /draw
     // prices' own drop -- 2026-07-12, Harkirat's request to keep all seasonal command titles at the
     // same size.
-    calendarComponents.push(buildTitleBlock(seasonTitle, emojis.calendar, 'Events Calendar', 2));
+    calendarComponents.push(buildTitleBlock(seasonTitle, emojis.calendar, 'Season Calendar', 2));
     calendarComponents.push({ type: 14, spacing: 2, divider: true });
 
     const noneScheduledText = filterMode === 'active' && totalEntryCount > 0
