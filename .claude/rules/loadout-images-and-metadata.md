@@ -8,12 +8,20 @@ paths:
 # Loadout & patch-notes images — Cloudinary caching + structured metadata
 
 *Loads when you touch the Cloudinary cache/upload utils. Draw-thumbnail caching, patch-notes image
-caching, the loadout image workflow, and Cloudinary structured-metadata fields. The loadout system
-itself is in `.claude/rules/loadouts.md`; `/autobuild` (which drives some uploads) in
-`.claude/rules/autobuild.md`.*
+caching, calendar-banner caching, the loadout image workflow, and Cloudinary structured-metadata
+fields. The loadout system itself is in `.claude/rules/loadouts.md`; `/autobuild` (which drives some
+uploads) in `.claude/rules/autobuild.md`.*
 *⚠️ SECURITY: never log a raw Cloudinary error object — the Admin API's rejected promise carries the
 account's plaintext API key+secret in `request_options.auth`. Use each module's `safeErrorMessage()`.
 (Also stated in root CLAUDE.md's invariants.)*
+*📐 CONVENTION (added 2026-08-07 22:04 EDT, v2.61.0): every Cloudinary delivery URL this bot
+produces bakes in `f_auto,q_auto` (adaptive format + quality) unless a site has an explicit reason
+not to — `utils/cloudinaryDeliveryUrl.js`'s `withDeliveryDefaults()`, idempotent, applied on every
+upload/lookup in `cloudinaryCache.js` (draws), `patchNotesCache.js`, and `calendarBannerCache.js`.
+Only loadout images (`loadoutRender.js`'s `buildImageUrl()`, below) had this before — found live
+while debugging an unrelated calendar-banner issue. A new Cloudinary-uploading module should call
+this helper on whatever URL it stores/returns, same as the three above; existing stored URLs were
+retroactively fixed via `scripts/backfillCloudinaryDeliveryDefaults.js` (safe to re-run).*
 
 ### The Cloudinary image workflow, finally documented (2026-07-18, `/manage` loadout UX overhaul)
 This was a real, standing mystery — even to Harkirat, who built it: he had to rename the FSS

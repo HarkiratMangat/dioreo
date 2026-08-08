@@ -226,22 +226,23 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   the old `ll` token, since it's purely an admin-typed input shorthand with no stored data depending
   on it (the DB always stores the full word `"legacy"`). If you ever see `ll` referenced as the
   legacy shorthand anywhere (a stale comment, an old screenshot), it's out of date.
-- **`/calendar` banner images prefer Discord's own CDN over Cloudinary when the source already is
-  one (added 2026-07-31 17:20 EDT, direct follow-up to the banner feature above).** A
-  `cdn.discordapp.com`/`media.discordapp.net` source URL skips Cloudinary re-hosting entirely
-  (`utils/calendarBannerCache.js`'s `isDiscordCdnUrl()`) — re-hosting it would be pure downside: an
-  extra copy of an already-durable asset, AND it throws away Discord's own dynamic resize proxy
-  (`media.discordapp.net?width=N`), which is the one mechanism that gives a REAL small-preview/
-  full-resolution-on-click pairing (Discord's own image viewer loads the true original when you
-  click through, not the resized proxy URL). A Cloudinary-hosted banner (from a non-Discord source
-  that got re-hosted for durability) doesn't have this — `capBannerPreviewWidth()`'s Cloudinary
-  branch caps the SAME width everywhere, inline and on zoom alike, since a Cloudinary-transformed
-  derivative is a genuinely separate, smaller file with no path back to anything larger. Practical
-  upshot for Harkirat: pasting a `cdn.discordapp.com` link (from posting the image in any real
-  Discord channel/DM first) is the BETTER path for a banner now, not just an accepted fallback.
-  ⚠️ The Discord-CDN resize-proxy path is NOT live-verified against a real uploaded banner as of this
-  build — if a Discord-CDN banner's preview doesn't visibly shrink to `BANNER_MAX_WIDTH` (512),
-  check `capBannerPreviewWidth()` in `utils/calendarBannerCache.js` first.
+- **`/calendar` banner images REVERSED to always re-host through Cloudinary (2026-08-07 22:04 EDT,
+  v2.61.0) — the original 2026-07-31 "prefer Discord's own CDN" decision below is superseded, kept
+  struck-through for the reasoning trail rather than deleted.** ~~A `cdn.discordapp.com`/
+  `media.discordapp.net` source URL skips Cloudinary re-hosting entirely, since re-hosting an
+  already-durable Discord asset would be pure downside and throws away Discord's own resize proxy~~
+  — **the "already-durable" premise was false.** `media.discordapp.net` links are signed
+  (`ex=`/`is=`/`hm=` params) and expire in roughly a day; decoding a live banner's `ex=` timestamp
+  confirmed one had already died. The resize-proxy premise was also never actually verified and
+  turned out wrong too: `?width=N` alone is silently ignored by Discord's proxy (confirmed via
+  direct `curl` — needs `width` AND `height` together, and even then crops rather than aspect-fits a
+  mismatched box). `utils/calendarBannerCache.js`'s `cacheBannerImage()` now re-hosts every source
+  to Cloudinary unconditionally; `isDiscordCdnUrl()` is kept only for diagnostics. **The width-cap
+  feature itself (`capBannerPreviewWidth`, `BANNER_MAX_WIDTH`) was dropped entirely, not just
+  fixed** — Harkirat live-tested a working Cloudinary-based cap and rejected it anyway, since a
+  Cloudinary derivative has no path back to the original, so the cap also shrank the zoomed view.
+  `commands/calendar.js` renders the raw Cloudinary URL at full resolution now, inline and on zoom.
+  Full investigation: `docs/archive/resolved-list.md`'s "page banners" entry.
 - **`/manage`'s bulk-import guides rebuilt into a rich, structured Components V2 view with a
   topic-switching dropdown (2026-07-31 17:20 EDT, same-day follow-up — was a plain-text ephemeral
   reply from earlier the same session).** `utils/manageGuides.js` — one shared render function
