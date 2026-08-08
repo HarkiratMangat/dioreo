@@ -62,6 +62,11 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "n
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+// Static, NOT a dynamic import inside the check. The runner calls `c.run()` SYNCHRONOUSLY
+// (`out = c.run() || []`), so an async check body returns an unawaited Promise and the check
+// verifies NOTHING while reporting a clean pass — the vacuous-pass failure this file warns about,
+// caught here on its first run by reading the ledger instead of the verdict.
+import { reflow } from "./reflow-prose.mjs";
 
 // DOCS_AUDIT_ROOT exists so scripts/docs-audit.test.mjs can point the whole audit at a fixture tree
 // and PROVE each check fires. That matters more than usual here: this repo has already shipped a
@@ -1076,6 +1081,59 @@ check(
               `the field is stale or the page was dropped from the site.`,
           });
         }
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
+/* -------------------------- memory-softwrap ------------------------- */
+// Added 2026-08-08 12:56 EDT, Harkirat: "github ci can't check outside the repo, BUT WE CAN, no? so
+// why not implement it in one of the checks you conduct locally?" — answering my own claim that the
+// memory store could not be covered, which was me letting the WEAKEST consumer set the bar. This
+// audit runs locally before every PR; CI is not the only reader.
+//
+// The memory store was reflowed to soft-wrapped prose alongside the repo (v2.63.0). Nothing stopped
+// it drifting back, and drift there is invisible: memory files never appear in a git diff, so the one
+// signal that surfaces everything else in this repo does not exist for them.
+//
+// ⚠️ It DIFFERS from its sibling memory checks on purpose. They skip outright under DOCS_AUDIT_ROOT
+// ("the memory store is machine-global, not part of this tree"), which also means they can never be
+// proven by the self-test and live on the exempt list. This one resolves to `<root>/memory` under a
+// fixture instead, so `proves()` exercises the real logic. A proven check beats an exempt one.
+//
+// Severity is WARN, not ERROR: hard-wrapped memory is a searchability loss, not a correctness defect,
+// and it is unreachable from CI — an ERROR that can only ever fire on one machine would block merges
+// for a reason the runner cannot even see.
+const MEMORY_WRAP_DIR = process.env.DOCS_AUDIT_ROOT ? join(REPO, "memory") : MEMORY_DIR;
+
+check(
+  "memory-softwrap",
+  "WARN",
+  "memory files are soft-wrapped, the same as the repo's prose",
+  () => {
+    if (!existsSync(MEMORY_WRAP_DIR)) {
+      return {
+        findings: [],
+        skipped: `no memory store at ${MEMORY_WRAP_DIR} — expected on CI, where it is machine-global and absent. NOT a pass.`,
+      };
+    }
+    const out = [];
+    let examined = 0;
+    for (const name of readdirSync(MEMORY_WRAP_DIR)) {
+      if (!name.endsWith(".md")) continue;
+      const p = join(MEMORY_WRAP_DIR, name);
+      let text;
+      try { text = readFileSync(p, "utf8"); } catch { continue; }
+      examined++;
+      // Same rule the repo uses: if reflowing would change it, it is not soft-wrapped. Reusing the
+      // real implementation rather than a second heuristic keeps the two from disagreeing.
+      if (reflow(text) !== text) {
+        out.push({
+          msg: `${name} is hard-wrapped. Memory is prose and is searched with \`rg\`, so a phrase ` +
+            `split across a wrap boundary cannot be found. Fix: ` +
+            `node scripts/reflow-prose.mjs --write "${MEMORY_WRAP_DIR}"/*.md`,
+        });
       }
     }
     return { findings: out, examined };

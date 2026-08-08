@@ -424,6 +424,17 @@ proves("a doc claiming published: true that the generator does not render", "doc
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
+proves("a hard-wrapped memory file", "memory-softwrap", (root) => {
+  // Under DOCS_AUDIT_ROOT the check resolves to <root>/memory precisely so this is provable —
+  // its sibling memory checks skip on a fixture tree and sit on the exempt list instead.
+  writeRaw(
+    root,
+    "memory/feedback_example.md",
+    "---\nname: feedback_example\n---\n\nThis sentence is deliberately hard-wrapped across\ntwo physical lines so a phrase search cannot match it.\n"
+  );
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
 proves("a live doc citing the notes scratchpad by line number", "notes-line-refs", (root) => {
   write(root, "docs/reference/breadcrumb.md", "# R\n\nAdded per the notes L184 follow-up.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });

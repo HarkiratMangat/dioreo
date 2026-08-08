@@ -138,7 +138,24 @@ future=$(printf '%s' "$joined" \
   | sort -u | tr '\n' ' ')
 
 if [ -n "$future" ]; then
-  msg="IMPOSSIBLE TIMESTAMP — this write contains ${future}but the clock reads ${now}, more than ${TOLERANCE_SECS}s ahead. A time that far past now cannot have been observed, so it was invented. On 2026-08-02 exactly this put 30 fabricated stamps into docs, memory, a released CHANGELOG and a git tag, every one of them well-formed. Run \`date\` and use what it returns. If you mean a genuine FUTURE deadline, write the date with NO clock time (that form is deliberately allowed), or say plainly that it is a target."
+  # ⚠️ THE MESSAGE MUST NAME THE ESCAPES, OR THEY DO NOT EXIST (fixed 2026-08-08 12:55 EDT).
+  # `TS-EXAMPLE` and `TS-DEADLINE` are both implemented above and both were added because this gate
+  # denied legitimate writes. Neither was mentioned in the deny text — so the only person who could
+  # use them was someone who already knew, and the person being blocked is by definition someone who
+  # does not. Live proof, this session: a comment quoting the observation window's documented closing
+  # time was denied twice; TS-DEADLINE was the right answer, sitting unused thirty lines up, and the
+  # message instead advised dropping the clock time — advice its own header calls "simply wrong for
+  # scheduled events". Harkirat had to remember the token existed.
+  #
+  # An escape hatch nobody is told about is not an escape hatch; it is a trap with a workaround.
+  # The DETECTION is untouched — it caught a real 30-stamp incident, and the first instinct here
+  # (grep the tree and excuse anything already written down) would have excused a genuine fabrication
+  # the moment it appeared anywhere else. Surfacing the existing tokens is the whole fix.
+  msg="IMPOSSIBLE TIMESTAMP — this write contains ${future}but the clock reads ${now}, more than ${TOLERANCE_SECS}s ahead. A time that far past now cannot have been OBSERVED as the current time. On 2026-08-02 exactly this put 30 fabricated stamps into docs, memory, a released CHANGELOG and a git tag, every one of them well-formed. Use the injected clock value for anything you are asserting as NOW.
+  ⚠️ IF THIS IS LEGITIMATE, TWO PER-LINE ESCAPE TOKENS ALREADY EXIST — use them rather than reworking the sentence:
+    · TS-DEADLINE — a real SCHEDULED event where the clock time is the content (a window that closes at an hour, a cron, a meeting).
+    · TS-EXAMPLE  — quoting a stamp as an example or as evidence, including quoting a fabricated one while writing about it.
+  Both are typed deliberately, per line, and stay greppable so a reviewer can audit them. A bare date with no clock time also passes, but that is wrong for a scheduled event and should not be your first move."
   if [ "$mode" = "pre" ]; then
     jq -n --arg r "$msg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
     exit 0

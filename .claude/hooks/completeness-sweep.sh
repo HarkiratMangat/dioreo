@@ -294,6 +294,128 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   fi
 fi
 
+# ══ PASS 4 — CHANGE-SHAPED DEMANDS ════════════════════════════════════════════════════════════════
+# Added 2026-08-08 12:50 EDT, Harkirat: *"your current hook is way too mechanical and restricted...
+# it's too hard of a guide-rail. like a train on tracks."*
+#
+# WHY PASS 3 WAS NOT ENOUGH, stated concretely rather than as a feeling. Pass 3 asks "which of my five
+# registered angles has no signature in this session?" — a question that is IDENTICAL whether you
+# renamed one variable or reflowed 44 files. It can only ever catch pre-enumerated classes. Both real
+# misses of the v2.63.0 session were outside it:
+#   · A deferred item's own scope read "comments, memory, CHANGELOG/DEVLOG, docs". Docs were done and
+#     memory was dropped with NO textual trace anywhere. No registry angle covers "account for every
+#     noun in the scope of the item you just closed", and no grep can find an omission that was never
+#     written down. Harkirat found it by asking.
+#   · Changing wrap width invalidated every downstream heuristic built on line counts. No registry
+#     angle covers "what else measured the property you just changed?"
+#
+# Both ARE derivable — but only from the SHAPE of this change. So these demands are computed from the
+# diff, and each fires only when its property actually holds. They are not a longer registry: a
+# registry asks the same question every time, which is exactly how it decays into a checkbox.
+demand() { findings="$findings
+  $1"; }
+
+diff_all=$( { git diff "$BASE...HEAD" 2>/dev/null; git diff HEAD 2>/dev/null; } )
+n_changed=$(printf '%s\n' "$changed" | grep -c . 2>/dev/null || echo 0)
+
+# ── an item LEFT a tracking list ⇒ account for its whole ORIGINAL scope.
+# This is the memory-skip detector. Closing an item is where scope silently shrinks, because the
+# item's own wording is the only record of what "done" was supposed to mean — and it is being deleted
+# in the same diff.
+closed_lines=$(printf '%s\n' "$changed" | grep -cE 'db-deferred-list|meta-deferred-list' 2>/dev/null || echo 0)
+if [ "${closed_lines:-0}" -gt 0 ]; then
+  demand "🎯 SCOPE CONSERVATION — a tracking list changed, so an item was probably closed. For EACH one:
+     re-read its ORIGINAL wording and enumerate every noun in its stated scope, then say where each
+     was addressed. An item that listed four things and shipped three leaves NO trace — the wording
+     that would have exposed it is deleted by the same diff, and no reference or conservation check
+     can see an omission that was never written down. This exact miss shipped on 2026-08-08: a scope
+     reading 'comments, memory, CHANGELOG/DEVLOG, docs' had memory dropped silently."
+fi
+
+# ── a BULK or MECHANICAL transform ⇒ what measured the property you just changed?
+if [ "${n_changed:-0}" -ge 15 ] || printf '%s\n' "$changed" | grep -qE '^scripts/.*(migrat|reflow|backfill|normali)'; then
+  demand "🔁 DOWNSTREAM HEURISTICS — this is a bulk or mechanical transform ($n_changed paths). Name every
+     heuristic, threshold, hook or doc that MEASURED the property you just changed, and re-derive each.
+     A uniform transform keeps content identical while silently invalidating anything that counted it:
+     the 2026-08-08 soft-wrap reflow took the tree from ~31k lines to ~12k with no words removed, which
+     quietly broke a 400-LINE read threshold, every quoted file size, and 22 line-number breadcrumbs.
+     None of that appears in a diff as a defect. Check outside this repo too."
+fi
+
+# ── new ENFORCEMENT added ⇒ prove it can fail, and check it against its own artifacts.
+if printf '%s\n' "$changed" | grep -qE '^\.claude/hooks/.*\.sh$' \
+   || printf '%s\n' "$diff_all" | grep -qE '^\+check\('; then
+  demand "🧪 NEW ENFORCEMENT — a hook or audit check changed. Prove it can FAIL (feed it the real broken
+     input, not a fixture you designed to pass), and check whether it fires on its OWN artifacts —
+     a check whose test file contains the offending pattern will flag itself, and a hook whose block
+     message quotes its own detector will suppress itself forever. Both have happened here."
+fi
+
+# ── a file that something PARSES changed ⇒ run that parser across the change.
+parsed=$(printf '%s\n' "$changed" | grep -E 'diors-notes\.md|SESSION-START\.md|docs/legal/|CHANGELOG|DEVLOG' | head -3 | tr '\n' ' ')
+if [ -n "${parsed// /}" ]; then
+  demand "🔍 PARSED BY SOMETHING — you changed a file that code reads by position or shape ($parsed).
+     Run that consumer BEFORE and AFTER and compare its numbers; do not read a plausible output as a
+     pass. A notes restructure once took the open-item count 3 -> 0, which is indistinguishable from a
+     tidy file, and a metadata block read one-line-per-field was corrupted by a reflow that every
+     general parser called identical."
+fi
+
+# ══ PASS 5 — DERIVE THE ANGLES NOBODY REGISTERED ══════════════════════════════════════════════════
+# The layers above are still finite. This one asks for what none of them can enumerate, and it is the
+# direct answer to "make it actually figure out the angles you should be verifying".
+#
+# ⚠️ AUTHORISATION, so a future session does not "fix" an apparent conflict by deleting this.
+# ~/.claude/CLAUDE.md restricts sequential-thinking to EXPLICIT REQUEST ONLY once the measurement
+# window closes at 2026-08-09 17:00 EDT (TS-DEADLINE). Harkirat proposing this gate on
+# 2026-08-08 12:45 EDT — "why not make it trigger sequential thinking for a run or two and make it
+# actually figure out the angles" — IS that explicit request, standing, and it survives the window's
+# close. Do not remove this on the grounds that it conflicts with that rule; it is the carve-out.
+#
+# Scaled deliberately: a one-file typo fix must not trigger it, or this becomes the gate everyone
+# disables — the fires-on-everything failure written into four other hooks in this directory.
+derive_needed=0
+[ "${n_changed:-0}" -ge 8 ] && derive_needed=1
+[ "${closed_lines:-0}" -gt 0 ] && derive_needed=1
+
+if [ "$derive_needed" -eq 1 ] && [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+  # ⚠️ SELF-POISONING GUARD, the same trap pass 3 documents at length. This file's own source contains
+  # the detector string, so a Write/Edit of this hook puts it in the transcript inside a tool_use whose
+  # NAME is Write — which a naive match would read as "a derivation happened". Excluding file-writing
+  # tools removes that leak; the block message below deliberately never spells the tool id out.
+  st=$(rg '"type":"tool_use"' "$TRANSCRIPT" 2>/dev/null \
+       | rg -v '"name":"(Write|Edit|Read|NotebookEdit)"' \
+       | rg -c 'sequential-thinking__sequentialthinking' 2>/dev/null || echo 0)
+  if [ "${st:-0}" -eq 0 ]; then
+    DERIVE_STAMP="$STAMP.derive"
+    fires=$(cat "$DERIVE_STAMP" 2>/dev/null || echo 0)
+    case "$fires" in ''|*[!0-9]*) fires=0;; esac
+    fires=$((fires+1))
+    printf '%s' "$fires" > "$DERIVE_STAMP" 2>/dev/null
+    extra=""
+    [ "$fires" -gt 1 ] && extra="
+     ⚠️ This is ask #$fires. The previous one was not acted on."
+    demand "🧠 DERIVE THE ANGLES — the checks above are a finite list; this asks for what is NOT on it.
+     Run sequential-thinking (2+ thoughts) over THIS change specifically and work out what could be
+     wrong that nothing above would reveal. Ground it in the facts already computed here — $n_changed
+     paths, the demands listed above — not in generic diligence.
+     Report, per angle: what could be wrong · how you checked · the evidence — or 'not applicable
+     because X'. Then TWO things that make this un-tickable:
+       · at least ONE angle no automated check in this repo can see;
+       · an explicit list of what you did NOT check, and why that is acceptable.
+     You cannot satisfy the first by running checks, which is the point.$extra"
+    # Withhold the stamp so this re-fires rather than being waited out — but release after two asks,
+    # because a gate that cannot be exhausted is a lock, and a lock gets disabled.
+    if [ "$fires" -le 2 ]; then
+      emit "$findings"
+      exit 0
+    fi
+    demand "     (Released after $fires asks — recorded here rather than blocking further.)"
+  else
+    rm -f "$STAMP.derive" 2>/dev/null
+  fi
+fi
+
 # Stamped AFTER the work, so a crash mid-sweep re-runs instead of marking the state clean.
 printf '%s' "$fingerprint" > "$STAMP" 2>/dev/null
 
