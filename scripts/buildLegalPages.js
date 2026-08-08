@@ -309,7 +309,12 @@ const hrefTo = (target, from) => {
 
 /* ─────────────────────────── inline formatting ─────────────────────────── */
 
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Escapes quotes too, not just tag delimiters — esc() is used inside
+// double-quoted attributes (meta content, data-lang, download) as well as text
+// nodes, and an unescaped `"` in the source there would close the attribute
+// early. Escaping it in text nodes is a no-op visually (&quot; renders as ").
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 // Exactly what the deployed site contains, relative to a page at the site root.
 // Keep this in step with build()/buildCompanions() — if a new file starts being
@@ -5600,7 +5605,12 @@ const LEDGER_DIRS = [
 let WARM_HITS = {};
 const warmHit = k => { WARM_HITS[k] = (WARM_HITS[k] || 0) + 1; };
 
-const stripTags = s => s.replace(/<[^>]*>/g, '').trim();
+// s here is already-rendered HTML (its text runs went through esc() when the
+// page was first built), so re-escaping `&` would double-encode entities. The
+// trailing </>-escape is defense in depth for a malformed/unbalanced tag the
+// strip regex missed, since the legend at the CONTRIBUTORS call site below
+// re-embeds this result unescaped.
+const stripTags = s => s.replace(/<[^>]*>/g, '').replace(/</g, '&lt;').replace(/>/g, '&gt;').trim();
 const headingInner = h => (h.match(/<span class="ht">([\s\S]*?)<\/span>/) || [, ''])[1];
 const headingText = h => stripTags(headingInner(h)).toLowerCase();
 
