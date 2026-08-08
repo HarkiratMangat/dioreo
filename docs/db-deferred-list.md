@@ -638,14 +638,21 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 ## 🗂️ Queued — worth its own dedicated session
 
 - **⏱️ Git-workflow efficiency: audit the hook ecosystem + fix real execution-bundling waste**
-  `[P2 · M · Sonnet5-Medium]` *(filed 2026-08-07 20:27 EDT after Harkirat's direct pushback on a
+  `[P2 · M · Opus5-High]` *(filed 2026-08-07 20:27 EDT after Harkirat's direct pushback on a
   ~20-minute, ~65-tool-call v2.60.0 merge flow — "is your handoff checking prior hooks... does it
-  actually consider tackling a core issue or is it just relying on more hooks.")* **Model pick
-  reasoning:** premise Med — the specific waste patterns are directly observed and itemized (see
-  handoff), but whether individual hooks are redundant/dead-weight needs real per-hook verification,
-  not assumption · deliberation Med — bounded investigative work (~22 scripts to classify, a few
-  concrete bundling fixes to apply), not an open-ended redesign → Sonnet, Medium (picking the lower
-  tier since nothing here is irreversible or expensive to get slightly wrong on a first pass).
+  actually consider tackling a core issue or is it just relying on more hooks."; **model pick
+  revised 20:28 EDT**, same session, after he pushed back on the FIRST pick too — "it clearly also
+  shows from this very handoff creation phase of this session of how close minded you can be.")*
+  **Model pick reasoning:** the first pick (Sonnet5-Medium) rated this a checklist-shaped task and
+  read that as low premise-risk. Wrong basis — the actual demonstrated failure mode during THIS
+  session's handoff-writing was interpretive narrowness on self-reflective "what am I missing" work,
+  caught twice by Harkirat directly (first the hook-density-audit angle, then the step-count-vs-
+  call-count distinction), not a knowledge gap or mechanical difficulty. Premise risk is HIGH because
+  my own first-pass judgment on this exact category of task is demonstrated unreliable, not
+  hypothetically risky · deliberation High to match — this needs genuinely broad consideration across
+  ~22 scripts plus the meta-question of what's still being missed, not a bounded checklist run →
+  Opus, High. Effort tier buys breadth; model is the judgment lever, and the judgment lever is what
+  failed twice here.
   **Full detail + worked examples:** `local/handoff/2026-08-07-git-workflow-efficiency-hooks-
   handoff.md` (gitignored — this pointer is the only tracked reference to it). **What to do:**
   (1) audit all ~22 non-test `.claude/hooks/*.sh` scripts for redundancy/dead-weight/consolidation
