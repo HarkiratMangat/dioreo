@@ -141,8 +141,8 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 08:10 EDT — A tag two sandboxes couldn't push, and the hook that couldn't tell them why (v2.58.1)
 - 2026-08-07 11:22 EDT — A fix whose own fix needed fixing, caught by the fix's own gate (v2.58.2)
 - 2026-08-07 13:49 EDT — Wrong database, wrong script, right bug eventually (v2.59.0)
-- 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
 - 2026-08-07 19:49 EDT — The bug behind the bug, and the fix that traded speed for correctness (v2.60.0)
+- 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
