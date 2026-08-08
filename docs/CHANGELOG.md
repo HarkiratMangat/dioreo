@@ -1,6 +1,7 @@
 ---
 kind: record
 status: live
+published: true
 ---
 
 # Changelog (Detailed)

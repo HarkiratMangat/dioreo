@@ -410,6 +410,20 @@ proves("a superseded_by pointing at a file that does not exist", "doc-frontmatte
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
+proves("a site-published doc that does not declare published: true", "doc-frontmatter", (root) => {
+  // The generator says it renders pub.md; the doc itself gives no hint it is publicly visible.
+  writeRaw(root, "scripts/buildLegalPages.js", "const SOURCES = [{ file: 'pub.md', kind: 'md' }];\n");
+  writeRaw(root, "docs/reference/pub.md", "---\nkind: reference\nstatus: live\n---\n\n# Public page\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a doc claiming published: true that the generator does not render", "doc-frontmatter", (root) => {
+  writeRaw(root, "scripts/buildLegalPages.js", "const SOURCES = [{ file: 'other.md', kind: 'md' }];\n");
+  writeRaw(root, "docs/reference/other.md", "---\nkind: reference\nstatus: live\npublished: true\n---\n\n# a\n");
+  writeRaw(root, "docs/reference/stale.md", "---\nkind: reference\nstatus: live\npublished: true\n---\n\n# Not rendered\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
 proves("a doc pointing at a path that does not exist", "xref", (root) => {
   write(root, "CLAUDE.md", "# Fixture\n\nSee `docs/moved-away/gone.md` for detail.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });

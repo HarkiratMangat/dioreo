@@ -1,6 +1,7 @@
 ---
 kind: legal
 status: live
+published: true
 ---
 
 # Terms of Service — Dioreo

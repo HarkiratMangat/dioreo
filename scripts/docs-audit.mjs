@@ -978,6 +978,7 @@ check(
   () => {
     const out = [];
     let examined = 0;
+    const declaredPublished = new Map();
     for (const f of tracked()) {
       if (!f.endsWith(".md")) continue;
       // Plugin-owned, on someone else's schema — not ours to annotate.
@@ -1031,6 +1032,49 @@ check(
         }
         if (!fs.existsSync(path.join(ROOT, supersededBy))) {
           out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+        }
+      }
+      declaredPublished.set(f, /^published:\s*true\b/m.test(fm));
+    }
+
+    // `published: true` marks a doc that renders to the live dioreo.app site. It exists so a session
+    // editing CONTRIBUTING.md or the Privacy Policy can see, at the top of the file, that the change
+    // is publicly visible — that fact previously lived only inside buildLegalPages.js.
+    //
+    // ⚠️ It is CROSS-CHECKED against the generator's own page tables rather than against a list kept
+    // here, so the field cannot quietly disagree with what actually publishes. A second hand-kept
+    // copy of the roster would be precisely the duplicated state this schema avoids elsewhere.
+    // A tree with no generator (a fixture) legitimately has nothing to cross-check, so its absence
+    // is not a finding here — the build, `scripts-documented` and `ci-wiring` all fail loudly if it
+    // vanishes from the real repo. The vacuous-pass risk that DOES matter is a generator that exists
+    // but yields no sources, which is caught explicitly below.
+    const gen = read("scripts/buildLegalPages.js");
+    if (gen !== null) {
+      const declaredInGenerator = new Set();
+      for (const m of gen.matchAll(/file:\s*'([^']+\.md)'/g)) {
+        const bare = m[1];
+        const full = [...declaredPublished.keys()].find((t) => t === bare || t.endsWith("/" + bare));
+        if (full) declaredInGenerator.add(full);
+      }
+      if (declaredInGenerator.size === 0) {
+        out.push({
+          msg: `no published Markdown sources could be read out of scripts/buildLegalPages.js, so ` +
+            `the published: field verified NOTHING this run. Its page tables were probably ` +
+            `reshaped — update this check in the same change rather than leaving it vacuous.`,
+        });
+      }
+      for (const [f, isPublished] of declaredPublished) {
+        const shouldBe = declaredInGenerator.has(f);
+        if (shouldBe && !isPublished) {
+          out.push({
+            msg: `${f} is rendered to the live site by buildLegalPages.js but does not declare ` +
+              `published: true. Anyone editing it cannot tell the change is publicly visible.`,
+          });
+        } else if (!shouldBe && isPublished) {
+          out.push({
+            msg: `${f} declares published: true but buildLegalPages.js does not render it. Either ` +
+              `the field is stale or the page was dropped from the site.`,
+          });
         }
       }
     }

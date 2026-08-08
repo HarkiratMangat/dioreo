@@ -1,6 +1,7 @@
 ---
 kind: record
 status: live
+published: true
 ---
 
 # What's New — Dior's Builds
