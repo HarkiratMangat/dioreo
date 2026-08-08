@@ -181,7 +181,7 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.62.0 — 2026-08-08 00:46 EDT (#101) — Patch notes get a Fix icon, palette defaults back to preset, /calendar's title reads "Season Calendar"
+## v2.62.0 — 2026-08-08 00:46 EDT (#101 · `4c00432`) — Patch notes get a Fix icon, palette defaults back to preset, /calendar's title reads "Season Calendar"
 
 A batch of small, Harkirat-requested tweaks. **Patch notes' Additional Info field gains a third
 shorthand alongside the existing `b:`/`n:` buff/nerf icons**: `f:` swaps in a new

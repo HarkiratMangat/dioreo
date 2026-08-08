@@ -2032,6 +2032,38 @@ its own output on every run. Read `.claude/rules/scripts-and-migrations.md` firs
 *Standing calls that stay VISIBLE here (rather than moving to the archive) precisely so a future session
 doesn't re-open them as if they were new.*
 
+- **8 of the 24 GitHub Advanced Security code-scanning alerts opened 2026-08-06 23:53 EDT on
+  `scripts/buildLegalPages.js` / `scripts/lib/chronicle.js` — dismissed as false positives, not fixed**
+  *(triaged 2026-08-08 01:30 EDT; the other 16 alerts WERE real and fixed on
+  `fix/codeql-alert-remediation`, #3–15 and #19 by the esc()/stripTags/labelOf escaping fix, #1–2 by
+  the workflow-permissions fix — one branch, one PR, since both were the same triage pass)*.
+  Each of these 8 is
+  a `js/bad-tag-filter` or `js/incomplete-multi-character-sanitization` finding inside one of the
+  generator's build-time **audit/gate functions** — `structureAudit()`, `crossRefAudit()`,
+  `scriptSyntaxAudit()` (buildLegalPages.js), and the text-classification helpers in `liftLessons()`/
+  `foldIndex()` (chronicle.js). All eight share one property that makes them non-issues: the
+  tag-stripped/case-sensitive-matched string is used **only to compare against or classify already-
+  rendered, self-authored HTML** (`Set.has()`, a `.test()` against `/^lessons?\b/` or
+  `/table of contents/`, or a syntax-check of a script block written to a throwaway temp file) — it is
+  **never re-embedded into any page actually served to a reader**. There is no flow from these
+  functions back into `public/`. Verified by reading each call site's full function body before
+  dismissing, not by reading the CodeQL summary alone:
+  - **`js/bad-tag-filter`** (alerts #22–24, `<script` regex missing the `i` flag) — `scriptSyntaxAudit()`
+    line ~9199/9315 extract already-built page text for the content-verification gates, and line ~9754
+    extracts `<script>` blocks from our own output to run `node --check` on them for a syntax gate. A
+    case-mismatch here would at worst make an audit slightly less thorough against content this
+    generator itself produced — not an injection path, since the source is never attacker-controlled.
+  - **`js/incomplete-multi-character-sanitization`** (alerts #16, #17 in chronicle.js; #18, #20, #21 in
+    buildLegalPages.js) — same shape: `line 670`/`698` (chronicle.js) strip tags only to run a boolean
+    `.test()` against the resulting text, never to emit it; `structureAudit()` (line ~9519) and
+    `crossRefAudit()` (line ~9567) strip tags/comments from already-built HTML or source Markdown purely
+    to build comparison `Set`s; and the `<!--...-->` strip in `parseBlocks()` (line ~529) feeds text
+    that still passes through `esc()` in `inline()` before it ever reaches an HTML sink, so even an
+    incomplete strip there is neutralized downstream.
+  Real-world exploitability was already low across the board (every source Markdown file is this repo's
+  own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records — never user-submitted), and
+  these 8 specifically have no code path back to served output at all. Don't re-open without a genuine
+  new flow into these functions (e.g. if any of them ever starts taking untrusted input).
 - **Dependabot vulnerabilities** — tracked, decided not worth acting on. Rationale:
   `project_dependabot_vulnerabilities_deferred` memory.
 - **A maintained ToC for `CHANGELOG.md` / `DEVLOG.md`** — Harkirat's explicit call: their headers are
