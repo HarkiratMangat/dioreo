@@ -144,6 +144,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 19:49 EDT — The bug behind the bug, and the fix that traded speed for correctness (v2.60.0)
 - 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
 - 2026-08-07 22:31 EDT — A hook that could only ever report the problem after it was too late to fix (v2.61.2)
+- 2026-08-08 00:46 EDT — A small batch of tweaks, and a completeness sweep that earned its keep (v2.62.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5963,6 +5964,32 @@ when a "wrong moment" bug gets fixed by building an earlier-timed version of a c
 audit every check the old one did, not just the one the triggering incident happened to be about. An
 incomplete migration doesn't avoid the bug it exists to fix — it just relocates which check still has
 it.
+
+## 2026-08-08 00:46 EDT — A small batch of tweaks, and a completeness sweep that earned its keep (v2.62.0)
+
+A minor-tweak session: a `f:` fix-emoji alias alongside patch notes' existing `b:`/`n:` shorthand, an
+all-caps "ADDITIONAL CHANGES" heading, `accentColorStyle`'s schema default flipped back from
+`'avatar'` to `'preset'`, `/calendar`'s title renamed to "Season Calendar", and a re-uploaded Modes
+emoji ID. Small, but the accent-default flip is a real reversal: it was made `'avatar'` on 2026-07-13,
+re-confirmed as live on 2026-07-18 with a note that Harkirat's own mental model was the opposite —
+and left unchanged at the time. This session he asked directly to flip it back.
+
+The `Stop` hook's completeness sweep ran after the code changes were already committed and reported
+"done," and it earned its keep: two rule files had gone stale on exactly the two behaviors this branch
+changed. `.claude/rules/models.md` still documented `accentColorStyle`'s default as `'avatar'` — a
+direct, checkable claim this branch made false. `.claude/rules/design-decisions.md` still described
+the old lowercase "Additional Changes" heading and the `b:`/`n:`-only grammar. Neither was caught by
+the earlier targeted greps (which searched for the exact old strings — "Events Calendar", the old
+emoji ID) because these two assertions used different wording than what changed in code; the sweep's
+broader "does anything still assert the OLD behavior" framing is what surfaced them. Both fixed on the
+same branch before the PR was opened, per the standing rule that docs land in the same PR as the code
+they describe.
+
+Also flagged, correctly not fixed: the sweep's blanket cross-reference list turned up dozens of files
+that merely *mention* `UserPreference`/`calendar`/`emojiMap`/etc. by name for unrelated reasons —
+opening all of them would have been disproportionate to a five-line tweak session. The useful signal
+was the two files making a *specific, now-false claim* about the exact behavior that changed, not
+every file that happens to reference the module.
 
 # Part B — Lessons Ledger (thematic)
 
