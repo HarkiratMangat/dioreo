@@ -637,6 +637,27 @@ with the priority they'll BE at when the trigger fires. Moved in from the cross-
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **⏱️ Git-workflow efficiency: audit the hook ecosystem + fix real execution-bundling waste**
+  `[P2 · M · Sonnet5-Medium]` *(filed 2026-08-07 20:27 EDT after Harkirat's direct pushback on a
+  ~20-minute, ~65-tool-call v2.60.0 merge flow — "is your handoff checking prior hooks... does it
+  actually consider tackling a core issue or is it just relying on more hooks.")* **Model pick
+  reasoning:** premise Med — the specific waste patterns are directly observed and itemized (see
+  handoff), but whether individual hooks are redundant/dead-weight needs real per-hook verification,
+  not assumption · deliberation Med — bounded investigative work (~22 scripts to classify, a few
+  concrete bundling fixes to apply), not an open-ended redesign → Sonnet, Medium (picking the lower
+  tier since nothing here is irreversible or expensive to get slightly wrong on a first pass).
+  **Full detail + worked examples:** `local/handoff/2026-08-07-git-workflow-efficiency-hooks-
+  handoff.md` (gitignored — this pointer is the only tracked reference to it). **What to do:**
+  (1) audit all ~22 non-test `.claude/hooks/*.sh` scripts for redundancy/dead-weight/consolidation
+  opportunity, report findings before touching `settings.json`; (2) surface the "is the 3-file-
+  changelog ritual still the right size" question to Harkirat directly rather than deciding it;
+  (3) apply the concrete execution-bundling fixes already identified (version bump should be 1 Bash
+  call not 3; independent changelog-family file edits should batch in one message; `git tag` +
+  `git push origin <tag>` should chain; don't re-run `docs:audit` after every single small fix); this
+  one (item 0 in the handoff) needs no new hook and no dedicated session to start — it should already
+  be standing practice. **How to verify:** re-run a comparable merge flow and count actual tool calls
+  against this session's ~65-call baseline.
+
 - **🚨 CI/lint gate for over-100-char `setPlaceholder()` calls** `[P2 · S · Sonnet5-Medium]` *(filed
   2026-08-07 15:52 EDT from the calendar bulk-modal placeholder incident.)* **Model pick reasoning:**
   premise Low — the constraint itself is settled fact (Discord's discord.js hard-throws
