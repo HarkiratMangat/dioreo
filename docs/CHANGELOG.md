@@ -181,7 +181,46 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.62.0 — 2026-08-08 00:46 EDT (#101) — Patch notes get a Fix icon, palette defaults back to preset, /calendar's title reads "Season Calendar"
+## v2.62.1 — 2026-08-08 09:49 EDT (#102) — Remediate 16 of 24 GitHub code-scanning alerts on the legal-site generator
+
+GitHub Advanced Security opened 24 code-scanning alerts on 2026-08-06 across
+`scripts/buildLegalPages.js`, `scripts/lib/chronicle.js`, and both `.github/workflows/*.yml` files.
+Triaged individually rather than batched or dismissed wholesale — read each flagged function's
+full body and traced where the flagged string actually flows, not just the CodeQL summary text.
+
+**16 were real, fixed here.** `esc()` (buildLegalPages.js) only escaped `& < >`, not quotes,
+despite being used inside double-quoted HTML attributes (meta `content`, `data-lang`,
+`data-label`, `download`) as well as text nodes — an unescaped `"` there could close an attribute
+early (`js/incomplete-html-attribute-sanitization`, 12 alerts). `stripTags()`
+(buildLegalPages.js) and `labelOf()` (chronicle.js) strip real tags from already-rendered HTML and
+re-embed the result unescaped — the CONTRIBUTORS page legend and the devlog's Lessons/TOC labels
+— so both now also escape any stray `<`/`>` an imperfect strip regex missed, deliberately without
+touching `&` (the input is already-escaped, and re-escaping it would double-encode legitimate
+entities like `&amp;`) (`js/incomplete-multi-character-sanitization`, 2 more alerts). Both
+workflow YAML files gained an explicit `permissions: contents: read` — neither ever writes with
+`GITHUB_TOKEN` (`actions/missing-workflow-permissions`, 2 alerts). `public/` was rebuilt and
+committed alongside — visually identical (`&#39;`/`&quot;` render the same as the literal
+characters), confirmed by the build's own 100%-content self-verifier plus a manual grep for
+double-escape artifacts across every published page.
+
+**8 were false positives, dismissed with documented reasoning rather than silenced** — see
+`docs/db-deferred-list.md` → 🚫 Decided-no. All eight sit inside build-time audit/gate functions
+(`structureAudit()`, `crossRefAudit()`, `scriptSyntaxAudit()`, chronicle's heading classifiers)
+where the flagged string is only ever compared or `.test()`-ed against internally — it never
+reaches a page actually served to a reader.
+
+**A 9th false positive turned up from CodeQL's own re-scan of this PR**, on the `stripTags()` fix
+itself: its dataflow model evaluates the tag-strip regex in isolation and doesn't credit the
+unconditional character-class escape immediately after it, even after matching the tool's own
+advisory-recommended fix shape exactly. Since that escape runs on every code path with no branch
+around it, no residual `<`/`>` can survive — a provable false positive, suppressed inline with
+`// lgtm[...]` rather than chased through further rewrites. Also documented in `docs/db-deferred-list.md`.
+
+Real-world exploitability was already low throughout (every source Markdown this generator
+renders is this repo's own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records —
+never user-submitted), but the escaping gaps were genuine and the fix was free.
+
+## v2.62.0 — 2026-08-08 00:46 EDT (#101 · `4c00432`) — Patch notes get a Fix icon, palette defaults back to preset, /calendar's title reads "Season Calendar"
 
 A batch of small, Harkirat-requested tweaks. **Patch notes' Additional Info field gains a third
 shorthand alongside the existing `b:`/`n:` buff/nerf icons**: `f:` swaps in a new

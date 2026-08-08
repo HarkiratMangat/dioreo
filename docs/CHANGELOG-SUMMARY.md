@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.62.1 — August 8, 2026
+- **Nothing changed in the bot.** Closed out a batch of automated security scanner findings on
+  the legal/docs site's page generator and its build pipeline — all internal, nothing you'd notice.
+
 ## v2.62.0 — August 8, 2026
 - **Patch notes have a new "Fix" icon** — typing `f:` in the Additional Info field now shows a
   dedicated fix icon, alongside the existing buff/nerf shorthand.

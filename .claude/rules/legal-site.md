@@ -44,6 +44,28 @@ skips the upload with a visible warning rather than going red.
 generator, re-run the build, commit both. `public/` is committed on purpose: Cloudflare Pages serves
 it directly with an empty build command, so nothing has to run on their side.
 
+⚠️ **`esc()` (buildLegalPages.js) escapes `"`/`'` too, not just `& < >`** (v2.62.1, 2026-08-08 10:08 EDT) —
+it's interpolated inside double-quoted attributes (`content="${esc(x)}"`, `data-lang="${esc(x)}"`) as
+well as text nodes, and GitHub's code scanner correctly flagged the quote gap as a real, if
+low-severity, injection vector across 12 call sites. Escaping quotes in text-node contexts is a no-op
+visually (`&quot;`/`&#39;` render as the literal characters). `stripTags()` and chronicle.js's
+`labelOf()` — which strip real tags from already-rendered HTML and re-embed the result unescaped (the
+CONTRIBUTORS legend, the devlog Lessons/TOC labels) — got the same defense-in-depth treatment: an
+UNCONDITIONAL trailing `.replace(/[<>]/g, ...)` that escapes any stray `<`/`>` an imperfect strip
+missed, deliberately never touching `&` (the input already passed through `esc()` once; re-escaping it
+would double-encode `&amp;` into `&amp;amp;`).
+⚠️ **CodeQL's `js/incomplete-multi-character-sanitization` still flags `stripTags()`'s FIRST
+`.replace(/<[^>]*>/g, '')` call even with that trailing escape in place, and this is the tool's
+limitation, not a code defect — a `// codeql[...]` suppression comment plus a direct alert dismissal
+were needed to close it.** Its dataflow model evaluates that first call in isolation and doesn't credit
+whatever runs after it, no matter how the trailing escape is shaped — confirmed by trying the rule's own
+advisory-recommended fix (`.replace(/[<>]/g, callback)`) and watching it re-trigger under a new alert
+number anyway. The trailing replace is a mathematical guarantee (every remaining `<`/`>` is escaped on
+every code path, unconditionally), so this really is safe; CodeQL just can't prove it across two chained
+`.replace()` calls. If you touch `stripTags()`/`labelOf()` again and a *new* multi-character-sanitization
+alert shows up on the SAME shape, it's the same limitation — don't spend a cycle chasing another
+rewrite. Full incident + the dismissed alert numbers: `docs/db-deferred-list.md` → 🚫 Decided-no.
+
 ---
 
 - 🏠 **`indexPage()` IS THE SITE'S FRONT DOOR, NOT A LEGAL INDEX** (changed 2026-08-04 14:36 EDT). It

@@ -657,9 +657,18 @@ const VOICES = {
  * "TABLE OF CONTENTS¶" and each debrief "Lessons¶". A stray glyph, and also a
  * fabricated character in a place the source never put one.
  */
+// headInner is already-rendered HTML (its text runs went through C.esc() when
+// the page was first built), so re-escaping here would double-encode entities
+// like &amp;. The tag-strip below removes real markup; the trailing </>-escape
+// is defense in depth for a malformed/unbalanced tag the strip regex missed —
+// it never touches `&`, so it can't corrupt an already-escaped entity, and it
+// closes the injection class CodeQL's incomplete-multi-character-sanitization
+// check flags (a residual `<script`-shaped fragment reaching the HTML sink
+// below unescaped).
 const labelOf = headInner => headInner
     .replace(/<a\b[^>]*class="[^"]*\banchor\b[^"]*"[\s\S]*?<\/a>/g, '')
     .replace(/<[^>]*>/g, '')
+    .replace(/[<>]/g, c => (c === '<' ? '&lt;' : '&gt;'))
     .trim();
 
 function liftLessons(html) {

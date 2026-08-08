@@ -145,6 +145,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
 - 2026-08-07 22:31 EDT — A hook that could only ever report the problem after it was too late to fix (v2.61.2)
 - 2026-08-08 00:46 EDT — A small batch of tweaks, and a completeness sweep that earned its keep (v2.62.0)
+- 2026-08-08 09:49 EDT — Twenty-four alerts, one root cause and eight non-issues (v2.62.1)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories /
@@ -5990,6 +5991,70 @@ that merely *mention* `UserPreference`/`calendar`/`emojiMap`/etc. by name for un
 opening all of them would have been disproportionate to a five-line tweak session. The useful signal
 was the two files making a *specific, now-false claim* about the exact behavior that changed, not
 every file that happens to reference the module.
+
+## 2026-08-08 09:49 EDT — Twenty-four alerts, one root cause and eight non-issues (v2.62.1)
+
+GitHub Advanced Security opened 24 code-scanning alerts on the legal-site generator overnight
+(2026-08-06 23:53 EDT): a cluster of `js/incomplete-html-attribute-sanitization`,
+`js/incomplete-multi-character-sanitization`, `js/bad-tag-filter` findings on
+`buildLegalPages.js`/`chronicle.js`, plus two `actions/missing-workflow-permissions` on the CI/deploy
+workflows. Harkirat's ask was explicit about the shape of the work: triage each one individually, group
+fixes by whether they're mechanical or need real review, and don't batch all 24 into one PR blindly.
+
+The temptation with 24 alerts from a single scanner run is to treat them as 24 separate problems. They
+weren't. Reading the actual flagged code — not just the alert summary text — showed 12 of the 14
+`js/incomplete-html-attribute-sanitization` alerts traced back to one function: `esc()`, the generator's
+only HTML escaper, which handled `& < >` but never quotes, despite being interpolated into
+double-quoted attributes (`content="${esc(x)}"`, `data-lang="${esc(x)}"`) throughout the file. One
+function, one missing case, twelve alerts — the kind of finding that looks like a sweeping cleanup and
+is actually a single line.
+
+The other half of the work was harder and more interesting: figuring out which alerts were real. CodeQL
+flags a tag-stripping regex (`<[^>]*>`) as incomplete sanitization regardless of what the stripped
+string is used FOR — it can't see that. This codebase has two completely different uses of that exact
+pattern. `stripTags()` and `labelOf()` strip tags from already-rendered HTML and then re-embed the
+result, unescaped, directly into a page (the CONTRIBUTORS legend, the devlog's Lessons/TOC labels) —
+that's a real gap, a residual `<`/`>` an imperfect strip missed would land in served HTML. But
+`structureAudit()`, `crossRefAudit()`, `scriptSyntaxAudit()`, and chronicle's own heading classifiers
+use the identical pattern purely to build an internal comparison `Set` or run a boolean `.test()` — the
+stripped string never leaves the function, let alone reaches a page. Same regex, same CodeQL rule, one
+is a real vulnerability class and the other is structurally incapable of being one. The only way to tell
+them apart is reading each function's full body and following where the string actually goes — the
+alert text alone gives no signal.
+
+Fixing the real sink meant a decision the alert itself couldn't make: the input to `stripTags()`/
+`labelOf()` is HTML that already passed through `esc()` once (so it may contain `&amp;`), which rules
+out just re-running the full escaper on the output — that would double-encode to `&amp;amp;`. The fix
+escapes only stray `<`/`>` left behind by the strip, never `&`. Verified by rebuilding and grepping the
+entire `public/` tree for `&amp;(amp|lt|gt|quot|#39);` — zero hits, confirming no entity got
+double-encoded anywhere across nine pages.
+
+Two decisions from Harkirat mid-session, both instructive. First: "let's possibly combine the 2
+branches into 1... it was more or less the same topic of fixes" — the workflow-permissions fix and the
+generator-escaping fix had been split onto separate branches because they touched unrelated files with
+different review shapes (one is a two-line YAML addition, the other is a security-sensitive change to
+shared escaping logic). Splitting by file/review-shape was the right call for reviewability; but shipped
+as one *release*, since both came from the same triage pass and there was no reason to burn two version
+numbers and two release cycles on it. Combined by cherry-picking both commits onto a fresh branch off
+`main` rather than merging one branch into the other, which kept the history linear. Second, the
+dismissed alerts went into `docs/db-deferred-list.md` with the same per-alert reasoning that would have
+gone into a PR review comment — a dismissal without a reason is just a suppressed warning, and the next
+person (or the next scan) to see these alert numbers needs to know why they're not bugs, not just that
+someone decided they weren't.
+
+The PR's own CodeQL re-scan then produced a small, useful loop: the fix for `stripTags()`
+(`.replace(/</g,'&lt;').replace(/>/g,'&gt;')`) tripped a brand-new HIGH-severity alert on the exact
+line it was supposed to close, because CodeQL's dataflow model doesn't compose two chained single-
+character replaces into "provably safe." Switched to the tool's OWN advisory-recommended shape — a
+single combined-character-class replace (`.replace(/[<>]/g, ...)`) — and it re-triggered again, on the
+same line, just under a new alert number. That second failure was the useful signal: the flagged span
+wasn't the hardening line at all, it was the ORIGINAL tag-strip regex a few characters earlier, meaning
+CodeQL evaluates that first `.replace()` call in isolation and doesn't credit whatever runs after it,
+no matter how it's shaped. Since the second call is an unconditional character-class replace with no
+branch around it — every remaining `<`/`>` becomes an entity on every code path, full stop — this is a
+provable false positive from the tool's own dataflow-composition limit, not a code defect, and got
+suppressed inline with a `// lgtm[...]` comment and a written reason rather than chased through a third
+rewrite that would have hit the same wall.
 
 # Part B — Lessons Ledger (thematic)
 
