@@ -95,10 +95,14 @@ const emojis = {
     // applyInfoAliases()). Harkirat-uploaded, not animated.
     buff: '<:Buff:1532771212172984401>',
     nerf: '<:Nerf:1532771213271892089>',
+    // "f:" alias added 2026-08-08 00:22 EDT alongside buff/nerf, same word-boundary-guarded swap in
+    // patchnotes.js's applyInfoAliases()/formatAdditionalInfo().
+    fix: '<:Fix:1535479788007985172>',
     // Section heading icons for the 3-section calendar redesign's Events/Playlists pages
     // (2026-07-31 14:00 EDT) -- Draws reuses the existing newDraws/returningDraws emojis above.
     events: '<a:Events:1532830530108653659>',
-    modes: '<a:Modes:1532809521305489610>',
+    // Re-uploaded 2026-08-08 00:22 EDT (Harkirat deleted the old id from the portal) -- new id only, same key.
+    modes: '<a:Modes:1535502470086664252>',
     // /manage's Bulk Format Guide headings (added 2026-07-31 17:20 EDT) -- both the rich guide
     // panel's own top header (utils/manageGuides.js) and every page's "Guide" section heading text.
     guide: '<a:Guide:1532894836301238477>',

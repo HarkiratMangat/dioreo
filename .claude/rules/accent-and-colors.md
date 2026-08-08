@@ -38,15 +38,16 @@ Discord-provided color value at all, so those four are extracted ourselves:
   `jimp`, samples ~2500 pixels, and picks a representative hex value — see "Accent color
   extraction algorithm" below for exactly how (it's gone through 3 real revisions, not a
   simple average).
-- **Avatar-matching is the actual default** (`accentColorStyle` schema default is
-  `'avatar'`, not a "keep everything as-is" option) — Harkirat wanted every embed to
-  match a user's avatar out of the box, not just `/settings`. `'preset'` (labeled
-  "Pre-Designed Palette" in the `/settings` dropdown) is the opt-out that restores each
-  command's own fixed brand color; `/settings` itself has no brand color of its own so
-  it falls back to avatar even under `'preset'`. **Re-confirmed 2026-07-18** — Harkirat's
-  own mental model had been "defaults to the pre-made palette unless changed," which is
-  the OPPOSITE of the real default; noting this here in case he wants to reconsider
-  flipping the default to `'preset'` later. Leaving as `'avatar'` for now — no action taken.
+- **`'preset'` (Pre-Designed Palette) is the actual default again** (`accentColorStyle` schema
+  default flipped back to `'preset'` 2026-08-08 00:25 EDT, per Harkirat's direct request — this
+  reverses the 2026-07-13 flip to `'avatar'` below). Applies to new users and anyone who hasn't
+  explicitly saved a style preference yet; anyone with an existing saved `'avatar'`/`'banner'`/etc.
+  doc is completely unaffected, since a schema default only ever fills in a value that was never
+  set. `/settings` itself has no brand color of its own so it still falls back to avatar even under
+  `'preset'`. ~~Avatar-matching is the actual default (Harkirat wanted every embed to match a user's
+  avatar out of the box, not just `/settings`)~~ — **superseded.** Re-confirmed 2026-07-18 that this
+  was the OPPOSITE of Harkirat's own mental model ("defaults to the pre-made palette unless
+  changed"); left as `'avatar'` at the time with no action taken, then actually flipped this session.
 - `accentColor.js`'s `resolveAccentColor()` resolves `prefs.accentColorStyle` accordingly,
   and `getAccentColorForCommand()` is what the 5 preset-color commands (calendar/draws/
   patchnotes/drawprices/seasonend) call. **It now creates-and-saves a `UserPreference`
@@ -116,8 +117,9 @@ and its content actually updating, traced to `getAccentColorForCommand()` uncond
 calling `interaction.client.users.fetch(id, { force: true })` on every single call — a
 forced Discord REST round-trip on every pagination/toggle click regardless of whether the
 color cache was about to hit. Fixed: only `'banner'` style still force-fetches (banner data
-genuinely isn't in the lightweight interaction payload); the default `'avatar'` style now
-reuses `interaction.user` directly. **Confirmed safe via discord.js source itself**
+genuinely isn't in the lightweight interaction payload); `'avatar'` style (the default at the
+time this fix shipped — see the flip back to `'preset'` above) reuses `interaction.user`
+directly. **Confirmed safe via discord.js source itself**
 (`BaseInteraction.js`/`CachedManager.js`/`User.js`): Discord sends the clicking user's live
 avatar hash with every interaction, and `_patch()` always overwrites `.avatar` from that
 payload, so a different user clicking a shared message, or the same user changing their

@@ -102,7 +102,7 @@ function blendGradientColors([first, second]) {
 // independently on UserPreference so switching styles back and forth doesn't re-hit the Discord
 // CDN/API or re-run pixel averaging/blending unless the underlying source actually changed.
 async function resolveAccentColor({ prefs, userFetch, presetHex, defaultBehavior = 'preset', displayNameColors = null }) {
-    const rawStyle = prefs.accentColorStyle || 'avatar';
+    const rawStyle = prefs.accentColorStyle || 'preset';
     const effectiveStyle = (rawStyle === 'default' || rawStyle === 'preset') ? defaultBehavior : rawStyle;
 
     if (effectiveStyle === 'preset') return presetHex;
@@ -280,14 +280,15 @@ async function resolveDynamicProfileColor(interaction, prefs, presetHex) {
 }
 
 // Convenience wrapper for the preset-brand-color commands (calendar/draws/patchnotes/drawprices/
-// seasonend). Avatar-matching is the real default now (see resolveAccentColor above), so most
-// users DO need their avatar color resolved+cached here -- this only skips the Discord API fetch
-// for the minority who've explicitly picked "Pre-Designed Palette" in /settings.
+// seasonend). Pre-Designed Palette is the real default again (flipped back 2026-08-08 00:25 EDT,
+// see resolveAccentColor above), so most users hit the cheap presetHex return below without ever
+// needing avatar color resolved+cached -- that path is now the minority, for whoever's explicitly
+// picked "Avatar Color" in /settings.
 async function getAccentColorForCommand(interaction, prefs, presetHex) {
     const UserPreference = require('../models/UserPreference');
 
     // A user's very first interaction with the bot (any command, not just /settings) has no saved
-    // prefs doc yet at all -- create one now so the accentColorStyle schema default ('avatar') can
+    // prefs doc yet at all -- create one now so the accentColorStyle schema default ('preset') can
     // actually be read AND its computed color cached. Without this, `prefs` would just be null and
     // the whole accent-color system would silently never engage until the user happened to run
     // /settings first (the only command that used to create this doc).
@@ -312,7 +313,7 @@ async function getAccentColorForCommand(interaction, prefs, presetHex) {
     // unconditionally on every call for banner -- a real Discord REST round-trip on every single
     // pagination/button click regardless of whether the color cache was about to hit -- which showed
     // up as a noticeable hesitation between a button's defer-ack and its actual content update.
-    const rawStyle = prefs.accentColorStyle || 'avatar';
+    const rawStyle = prefs.accentColorStyle || 'preset';
     let userFetch = interaction.user;
     let displayNameColors = null;
     const isChatInputCommand = interaction.isChatInputCommand();

@@ -18,7 +18,12 @@
 # Nothing in normal operation sets these; the defaults are the real store.
 MEM="${MEMCHECK_DIR:-$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory}"
 STATE="${MEMCHECK_STATE:-$HOME/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory-index-state}"
-BUDGET="${MEMCHECK_BUDGET:-16000}"
+# TEMPORARILY bumped 16000 -> 20000 on 2026-08-08 00:52 EDT, Harkirat's direct request: the index's
+# points were judged genuinely worth keeping and not easily trimmable on a quick look, and 98 lines
+# isn't worth a real compaction pass over. The real fix (docs/db-deferred-list.md's P2 "MEMORY.md
+# compaction pass" item) is still open -- this just buys headroom until that session happens. Revert
+# to 16000 once that item lands, don't let this drift into the new permanent value by default.
+BUDGET="${MEMCHECK_BUDGET:-20000}"
 
 [ -d "$MEM" ] || exit 0
 [ -f "$MEM/MEMORY.md" ] || {

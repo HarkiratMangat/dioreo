@@ -181,7 +181,39 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.61.2 — 2026-08-07 22:31 EDT (#100) — Fixing the hook that made v2.61.1 necessary
+## v2.62.0 — 2026-08-08 00:46 EDT (#101) — Patch notes get a Fix icon, palette defaults back to preset, /calendar's title reads "Season Calendar"
+
+A batch of small, Harkirat-requested tweaks. **Patch notes' Additional Info field gains a third
+shorthand alongside the existing `b:`/`n:` buff/nerf icons**: `f:` swaps in a new
+`<:Fix:1535479788007985172>` icon, in both the plain inline form and the structured
+`# Weapon, Attachment, f: text` grammar (`commands/patchnotes.js`'s `applyInfoAliases()`/
+`formatAdditionalInfo()`); the `/manage` placeholder and rich Guide text were updated to match,
+staying under Discord's 100-char placeholder cap (97 chars). **The "Additional Changes" heading is
+now all-caps** (`### ADDITIONAL CHANGES`), per Harkirat's direct request. **`accentColorStyle`'s
+schema default flipped back from `'avatar'` to `'preset'`** (Pre-Designed Palette) — only affects
+new users and anyone who's never explicitly saved a preference; see memory
+`project_accent_default_flip` for the full history of this reversal. **`/calendar`'s title caption
+renamed** from "Events Calendar" to "Season Calendar" (the slash command itself stays `/calendar` —
+Discord doesn't allow spaces in command names). **The Modes emoji was re-uploaded** with a new ID
+after Harkirat deleted the old one from the Discord portal.
+
+A completeness sweep after the code changes caught two rule-file docs that had gone stale on exactly
+these points: `.claude/rules/models.md` still documented `accentColorStyle`'s default as `'avatar'`,
+and `.claude/rules/design-decisions.md` still described the old lowercase heading and `b:`/`n:`-only
+grammar — both corrected in the same branch. Verified via `node --check` on every edited file,
+`scripts/checkEmojiCaptures.js` (zero module-level emoji reads), a direct test of
+`formatAdditionalInfo()` confirming the new alias and heading render correctly, and the full
+`npm test` suite (22/22 hook self-tests, docs audit) staying green.
+
+**Also bundled: `MEMORY.md`'s enforced byte budget was TEMPORARILY raised from 16,000 to 20,000
+bytes** (`.claude/hooks/memory-index-check.sh`), per Harkirat's direct request after a quick look at
+the index found its points genuinely worth keeping and not easily trimmable — 98 lines didn't
+justify forcing a full compaction session over a few hundred bytes. The real fix stays open in
+`docs/db-deferred-list.md`'s P2 "MEMORY.md compaction pass" item; this is a stopgap, not a revised
+target. `memory-index-check.test.sh`'s 14 fixtures are unaffected (they always pass an explicit
+`MEMCHECK_BUDGET` override).
+
+## v2.61.2 — 2026-08-07 22:31 EDT (#100 · `10917b4`) — Fixing the hook that made v2.61.1 necessary
 
 Harkirat asked directly why the release-doc-check hook flagged the missing `design-decisions.md`
 update only *after* v2.61.0 had already merged, forcing v2.61.1 to exist at all. Investigated rather

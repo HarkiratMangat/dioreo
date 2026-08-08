@@ -324,13 +324,14 @@ module.exports = {
             });
 
             // ACCENT COLOR STYLE: controls what color every embed's container accent uses — see
-            // utils/accentColor.js. Renamed 'default' -> 'preset' / "Pre-Designed Palette" since
-            // avatar-matching is now the ACTUAL default (see UserPreference.js's schema default and
-            // accentColor.js's resolveAccentColor, which still treats the legacy 'default' value the
-            // same way for any pre-existing saved docs). "Pre-Designed Palette" keeps each command's
-            // own themed color (Settings still falls back to avatar since it has no theme color of
-            // its own); "Avatar"/"Banner" override every command's accent to match that image instead.
-            const accentStyle = prefs.accentColorStyle || 'avatar';
+            // utils/accentColor.js. Renamed 'default' -> 'preset' / "Pre-Designed Palette", which is
+            // now the ACTUAL default again (flipped back 2026-08-08 00:24 EDT, per Harkirat's direct
+            // request -- see UserPreference.js's schema default and accentColor.js's
+            // resolveAccentColor, which still treats the legacy 'default' value the same way for any
+            // pre-existing saved docs). "Pre-Designed Palette" keeps each command's own themed color
+            // (Settings still falls back to avatar since it has no theme color of its own);
+            // "Avatar"/"Banner" override every command's accent to match that image instead.
+            const accentStyle = prefs.accentColorStyle || 'preset';
             const accentStyleDisplayMap = {
                 default: 'Pre-Designed Palette',
                 preset: 'Pre-Designed Palette',

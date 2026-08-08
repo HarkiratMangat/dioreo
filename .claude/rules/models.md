@@ -46,8 +46,9 @@ the same change**, or it will not actually save.
   entirely 2026-07-31 14:00 EDT** (reverses the original "deliberately NOT exposed in /settings"
   call from the same session's earlier 3-section redesign); `/calendar` just reads it, `/settings`'
   toggle is the only place it's ever written now. `accentColorStyle`
-  (`'avatar'|'banner'|'preset'`, default `'avatar'`; `'default'` is the old value name
-  for `'preset'`, still treated identically) plus the independently-cached
+  (`'avatar'|'banner'|'preset'`, default `'preset'` — flipped back from `'avatar'`
+  2026-08-08 00:24 EDT, see `.claude/rules/accent-and-colors.md`; `'default'` is the old
+  value name for `'preset'`, still treated identically) plus the independently-cached
   `avatarColorHex`/`avatarColorSource` and `bannerColorHex`/`bannerColorSource` pairs
   back the accent color system — see `.claude/rules/accent-and-colors.md`.
 - `Loadout.js` — weapon loadouts, `mode: 'MP' | 'DMZ'` (MP max 5 attachments, DMZ max 9).

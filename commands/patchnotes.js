@@ -38,24 +38,27 @@ function displayTitle(patch) {
     return cleanPatchTitle(patch.titleOverride || patch.title);
 }
 
-// Buff/nerf shorthand for the additional-info field (2026-07-30 22:24 EDT, per Harkirat's request) --
-// typing a standalone "b:" or "n:" token gets swapped for the buff/nerf emoji. Read INSIDE this
-// function (render time), not captured into a module-level string -- emojiMap's ids get rewritten
-// in place by refreshEmojiIds() on the dev bot, and anything that reads emojis.x at require time
-// freezes the pre-sync prod id (see rendering-and-ui.md's emoji-capture rule).
+// Buff/nerf/fix shorthand for the additional-info field (2026-07-30 22:24 EDT, per Harkirat's
+// request; "f:" fix alias added 2026-08-08 00:22 EDT) -- typing a standalone "b:"/"n:"/"f:" token
+// gets swapped for the buff/nerf/fix emoji. Read INSIDE this function (render time), not captured
+// into a module-level string -- emojiMap's ids get rewritten in place by refreshEmojiIds() on the
+// dev bot, and anything that reads emojis.x at require time freezes the pre-sync prod id (see
+// rendering-and-ui.md's emoji-capture rule).
 // Word-boundary guarded (start-of-line/whitespace before, nothing glued on after the colon) so this
-// only fires on the alias itself, not on a URL or some other "b:"/"n:" substring inside real prose.
+// only fires on the alias itself, not on a URL or some other "b:"/"n:"/"f:" substring inside real prose.
 function applyInfoAliases(text) {
     return text
         .replace(/(^|[\s\n])b:/gi, (_, pre) => `${pre}${emojis.buff}`)
-        .replace(/(^|[\s\n])n:/gi, (_, pre) => `${pre}${emojis.nerf}`);
+        .replace(/(^|[\s\n])n:/gi, (_, pre) => `${pre}${emojis.nerf}`)
+        .replace(/(^|[\s\n])f:/gi, (_, pre) => `${pre}${emojis.fix}`);
 }
 
 // Additional Info auto-formatting (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply;
 // PARSER REWRITTEN same day, direct correction) -- renders into Harkirat's decided output structure
 // (his own reference screenshot, `local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): a
-// `### Additional Changes` heading, `__**Weapon**__` per weapon, its attachment name(s) as plain
-// lines, and each change as `> {buff/nerf emoji} details`.
+// `### ADDITIONAL CHANGES` heading (all-caps, added 2026-08-08 00:23 EDT per Harkirat's request),
+// `__**Weapon**__` per weapon, its attachment name(s) as plain lines, and each change as
+// `> {buff/nerf/fix emoji} details`.
 //
 // The FIRST version of this parser required every weapon/attachment/change on its OWN physical
 // line -- which directly caused a real submission mistake (a comma-separated one-liner got read as
@@ -64,16 +67,16 @@ function applyInfoAliases(text) {
 // separated; only a NEW weapon needs its own line.
 //
 // OPT-IN, not a format change to every entry -- only triggers when the admin actually uses the new
-// `# Weapon Name` line marker. With no `#` line anywhere, this is a no-op beyond the existing b:/n:
-// alias, so every pre-existing free-typed entry (most of them are just a one-line blurb) keeps
-// rendering exactly as it always has.
+// `# Weapon Name` line marker. With no `#` line anywhere, this is a no-op beyond the existing
+// b:/n:/f: alias, so every pre-existing free-typed entry (most of them are just a one-line blurb)
+// keeps rendering exactly as it always has.
 //
 // Grammar, once at least one `#` line is present:
-//   `# Weapon, Attachment, n:/b: text, n:/b: text2, Attachment2, n:/b: text3` -- ONE line, comma-
-//   separated. First segment (after `#`) is the weapon name. Every segment after that is EITHER a
-//   new attachment name, or -- if it starts with `b:`/`n:` -- a change line under whichever
-//   attachment came most recently in THIS line. A new plain (non-b:/n:) segment always starts a new
-//   attachment, so any number of attachments/changes can ride on one weapon's line.
+//   `# Weapon, Attachment, n:/b:/f: text, n:/b:/f: text2, Attachment2, n:/b:/f: text3` -- ONE line,
+//   comma-separated. First segment (after `#`) is the weapon name. Every segment after that is
+//   EITHER a new attachment name, or -- if it starts with `b:`/`n:`/`f:` -- a change line under
+//   whichever attachment came most recently in THIS line. A new plain (non-b:/n:/f:) segment always
+//   starts a new attachment, so any number of attachments/changes can ride on one weapon's line.
 //   A plain NEWLINE (a new `# ` line) starts the next weapon -- weapons are never comma-joined with
 //   each other. Lines typed BEFORE the first `#` marker are kept as free prose above the structured
 //   block, not discarded.
@@ -107,9 +110,10 @@ function formatAdditionalInfo(text) {
         const attachments = []; // { name, changes: [] }
         let currentAttachment = null;
         for (const seg of segments) {
-            const changeMatch = seg.match(/^(b|n):\s*(.+)$/i);
+            const changeMatch = seg.match(/^(b|n|f):\s*(.+)$/i);
             if (changeMatch && currentAttachment) {
-                const emoji = changeMatch[1].toLowerCase() === 'b' ? emojis.buff : emojis.nerf;
+                const prefix = changeMatch[1].toLowerCase();
+                const emoji = prefix === 'b' ? emojis.buff : prefix === 'n' ? emojis.nerf : emojis.fix;
                 currentAttachment.changes.push(`> ${emoji} ${changeMatch[2].trim()}`);
                 continue;
             }
@@ -126,7 +130,7 @@ function formatAdditionalInfo(text) {
 
     const parts = [];
     if (preambleLines.length) parts.push(applyInfoAliases(preambleLines.join('\n')));
-    parts.push(`### Additional Changes\n${weaponBlocks.join('\n')}`);
+    parts.push(`### ADDITIONAL CHANGES\n${weaponBlocks.join('\n')}`);
     return parts.join('\n\n');
 }
 

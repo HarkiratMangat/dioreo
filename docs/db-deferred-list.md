@@ -1706,13 +1706,23 @@ well-specified execution/polish, not novel design.*
   the changelog-site work. Measured then: **21.1KB against a 24.4KB read limit** — so it is not a
   tidiness item, it is an approaching failure. Past the limit the index stops loading in full and a
   session silently starts with an incomplete map of memory, which is exactly the class of failure
-  `project_memory_slug_migration` exists to prevent.
+  `project_memory_slug_migration` exists to prevent. **(That 24.4KB figure was later found not to
+  reproduce — see CLAUDE.md's canonical-memory-path note; the enforced budget is a deliberate safety
+  margin, not a measured platform limit.)**
   The fix is mechanical but must not lose anything: **one line per entry in the index**, detail pushed
   down into the topic files themselves, and genuinely stale or superseded entries merged or deleted
-  (several already carry "SUPERSEDED"/"PARKED" markers). Target under 17.1KB.
+  (several already carry "SUPERSEDED"/"PARKED" markers). Target under 17.1KB (superseded by the note
+  below — re-derive the target from whatever the live budget is when this session actually happens).
   ⚠️ **Do not do this as a side-quest inside another task.** It rewrites the file every future session
   reads first; it wants its own session with Harkirat able to see the before/after, and the working
   agreement's no-half-measures rule applies — every pointer that moves has to still resolve.
+  ⚠️ **The enforced budget was TEMPORARILY bumped 16,000 → 20,000 bytes on 2026-08-08 00:52 EDT**
+  (Harkirat's direct request — `.claude/hooks/memory-index-check.sh`, memory
+  `project_memory_index_scaling`, CLAUDE.md's canonical-memory-path note) rather than trimmed, since a
+  quick look found the index's points genuinely worth keeping and not easily trimmable, and 98 lines
+  didn't justify forcing a full compaction session right then. **This item is still the real fix** —
+  when it happens, revert the hook's default back to 16,000 (or pick a fresh number honestly, don't
+  just keep 20,000 by default) as part of the same pass.
 - `[P2 · S · any model]` **`docs/DEVLOG.md`: a run of dated Part A entries physically sits AFTER the
   Part B ledger.** Found 2026-07-29 11:44 EDT while appending the v2.42.1 entry — I anchored on
   `# Part B — Lessons Ledger` believing it marked the end of Part A, and the TOC check failed on

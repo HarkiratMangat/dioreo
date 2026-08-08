@@ -199,27 +199,28 @@ map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesi
   line on its own read as visually pointless (Harkirat's own call).
 - **Additional Info auto-formats into a real weapon/attachment/change structure, OPT-IN via a `#`
   line marker (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply; PARSER REWRITTEN twice
-  same day).** Output structure decided from Harkirat's own reference screenshot and never changed:
-  a `### Additional Changes` heading, `__**Weapon**__` per weapon, its attachments as plain lines,
-  each change as `> {buff/nerf emoji} details`. The INPUT grammar went through two shapes before
-  landing:
+  same day; heading capitalized + `f:`/fix alias added 2026-08-08 00:23 EDT).** Output structure
+  decided from Harkirat's own reference screenshot: a `### ADDITIONAL CHANGES` heading (all-caps
+  since 2026-08-08), `__**Weapon**__` per weapon, its attachments as plain lines, each change as
+  `> {buff/nerf/fix emoji} details`. The INPUT grammar went through two shapes before landing:
   1. First build: every weapon/attachment/change needed its OWN physical line. This directly caused
      a real submission mistake — Harkirat typed the whole thing as one comma-separated line (the
      same mental model draws/calendar bulk imports already use), which got read as a single weapon
      named that entire sentence and printed back bold+underlined verbatim.
   2. **Final shape, per Harkirat's direct correction:** one weapon's ENTIRE block is ONE line,
-     comma-delimited — `# Weapon, Attachment, n:/b: text, n:/b: text2, Attachment2, n:/b: text3`.
+     comma-delimited — `# Weapon, Attachment, n:/b:/f: text, n:/b:/f: text2, Attachment2, n:/b:/f: text3`.
      The first segment after `#` is the weapon name; every segment after that is a NEW ATTACHMENT
-     unless it starts with `b:`/`n:`, in which case it's a CHANGE under whichever attachment came
-     right before it in that same line. Only a NEW WEAPON needs its own new line — this is now
+     unless it starts with `b:`/`n:`/`f:`, in which case it's a CHANGE under whichever attachment
+     came right before it in that same line. Only a NEW WEAPON needs its own new line — this is now
      genuinely the same mental model as the draws/calendar bulk formats, not a different one.
-  `commands/patchnotes.js`'s `formatAdditionalInfo()` implements this; `b:`/`n:` reuses the existing
-  `applyInfoAliases()` emoji lookup. **With no `#` line anywhere in the field, this is a pure no-op
-  beyond the pre-existing b:/n: alias** — every pre-existing free-typed entry (most are a one-line
-  blurb) keeps rendering exactly as before; the whole `### Additional Changes` heading only appears
-  once the admin actually opts in. Any lines typed before the first `#` marker are kept as free
-  prose above the structured block, not discarded. The `/manage` placeholder (100-char Discord cap
-  ruled out a real example there) and the rich Guide's Patch Notes topic (`utils/manageGuides.js`)
+  `commands/patchnotes.js`'s `formatAdditionalInfo()` implements this; `b:`/`n:`/`f:` reuses the
+  existing `applyInfoAliases()` emoji lookup. **With no `#` line anywhere in the field, this is a
+  pure no-op beyond the pre-existing b:/n:/f: alias** — every pre-existing free-typed entry (most
+  are a one-line blurb) keeps rendering exactly as before; the whole `### ADDITIONAL CHANGES`
+  heading only appears once the admin actually opts in. Any lines typed before the first `#` marker
+  are kept as free prose above the structured block, not discarded. The `/manage` placeholder
+  (100-char Discord cap ruled out a real example there) and the rich Guide's Patch Notes topic
+  (`utils/manageGuides.js`)
   both document the FINAL comma-delimited grammar, not the abandoned one-line-per-thing version.
 - **Tier shorthand `ll` → `lg` for Legacy (changed 2026-07-31 17:20 EDT, Harkirat's direct
   request).** `utils/adminParser.js`'s `resolveTier()`/`TIER_SHORTHAND` — no back-compat kept for

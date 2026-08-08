@@ -26,6 +26,15 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.62.0 — August 8, 2026
+- **Patch notes have a new "Fix" icon** — typing `f:` in the Additional Info field now shows a
+  dedicated fix icon, alongside the existing buff/nerf shorthand.
+- **The "Additional Changes" section heading is now all-caps.**
+- **Your accent color now defaults to the Pre-Designed Palette again** — new accounts, or anyone
+  who's never picked an accent style in `/settings`, see each command's own themed color by default.
+  If you've already chosen a style, nothing changes for you.
+- **`/calendar`'s header now reads "Season Calendar"** instead of "Events Calendar."
+
 ## v2.61.2 — August 7, 2026
 - **Nothing changed in the bot.** Fixed one of the project's own internal release checks so it
   catches a missing design note *before* a merge instead of after — the exact gap that made the

@@ -33,10 +33,11 @@ const UserPreferenceSchema = new mongoose.Schema({
     // Defaults to 'all' until the user has explicitly toggled it at least once.
     calendarEventFilter: { type: String, default: 'all' },
 
-    // ACCENT COLOR SYSTEM (utils/accentColor.js): 'avatar' is the default (avatar-matching is meant
-    // to be what a brand-new user sees everywhere, per Harkirat's request) -- 'preset' keeps each
-    // command's own preset brand color instead (Police Blue, Chinese Violet, etc.) except /settings
-    // itself, which has none of its own and falls back to avatar even under 'preset'; 'banner'
+    // ACCENT COLOR SYSTEM (utils/accentColor.js): 'preset' is the default (changed 2026-08-08 00:24
+    // EDT, per Harkirat's direct request -- was 'avatar', when avatar-matching was meant to be what
+    // a brand-new user sees everywhere; that call is reversed) -- 'preset' keeps each command's own
+    // preset brand color (Police Blue, Chinese Violet, etc.) except /settings itself, which has none
+    // of its own and falls back to avatar even under 'preset'; 'banner'
     // overrides every command's accent to match the banner instead. ('default' is the old value name
     // for 'preset', from before avatar-matching became the schema default — resolveAccentColor()
     // still treats it identically so pre-existing saved docs don't change behavior.) Avatar and
@@ -60,7 +61,7 @@ const UserPreferenceSchema = new mongoose.Schema({
     // nameplate colors are extracted the exact same way avatar/banner are (utils/colorExtract.js's
     // getDominantColor against their own CDN image) -- decorationColorSource/nameplateColorSource
     // store the asset hash they were computed from, same invalidation pattern as avatar/banner.
-    accentColorStyle: { type: String, default: 'avatar' },
+    accentColorStyle: { type: String, default: 'preset' },
     avatarColorHex: { type: Number },
     avatarColorSource: { type: String },
     bannerColorHex: { type: Number },

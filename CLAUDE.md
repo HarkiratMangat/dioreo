@@ -93,9 +93,13 @@ never reads, bridged only by a redirect note in this file.
   and runs the notes-file check — different files, neither of which native auto-load covers. Only the
   claim about `MEMORY.md` changed.
 - ⚠️ **`MEMORY.md` is the ONLY auto-loaded file; the other memories are on-demand.** So its size is a
-  tax on every session, and it grows with the file count. It is budgeted at **under 16,000 bytes** and
-  a `SessionStart` check warns past that. Design + migration plan:
-  `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md`. Note that a previously-assumed
+  tax on every session, and it grows with the file count. It is budgeted at **under 20,000 bytes**
+  (TEMPORARILY bumped from 16,000 on 2026-08-08 00:52 EDT, Harkirat's direct request — see memory
+  `project_memory_index_scaling` for why, and `docs/db-deferred-list.md`'s P2 "MEMORY.md compaction
+  pass" item for the real fix this is standing in for) and a `SessionStart` check warns past that.
+  Design + migration plan: `docs/superpowers/specs/2026-08-02-memory-index-scaling-design.md` (still
+  cites the original 16,000 figure — specs are frozen snapshots, not edited after the fact; the memory
+  file above is the live source of truth for the current number). Note that a previously-assumed
   "24.4KB hard read limit" **does not reproduce** (a 33,530-byte memory file reads in full) — the budget
   is a deliberate safety margin, not that number.
 
