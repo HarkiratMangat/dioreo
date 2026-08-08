@@ -117,8 +117,9 @@ and its content actually updating, traced to `getAccentColorForCommand()` uncond
 calling `interaction.client.users.fetch(id, { force: true })` on every single call — a
 forced Discord REST round-trip on every pagination/toggle click regardless of whether the
 color cache was about to hit. Fixed: only `'banner'` style still force-fetches (banner data
-genuinely isn't in the lightweight interaction payload); the default `'avatar'` style now
-reuses `interaction.user` directly. **Confirmed safe via discord.js source itself**
+genuinely isn't in the lightweight interaction payload); `'avatar'` style (the default at the
+time this fix shipped — see the flip back to `'preset'` above) reuses `interaction.user`
+directly. **Confirmed safe via discord.js source itself**
 (`BaseInteraction.js`/`CachedManager.js`/`User.js`): Discord sends the clicking user's live
 avatar hash with every interaction, and `_patch()` always overwrites `.avatar` from that
 payload, so a different user clicking a shared message, or the same user changing their
