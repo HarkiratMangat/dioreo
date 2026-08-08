@@ -181,7 +181,26 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.61.1 — 2026-08-07 22:17 EDT (#99) — Design-notes correction, no code change
+## v2.61.2 — 2026-08-07 22:31 EDT (#100) — Fixing the hook that made v2.61.1 necessary
+
+Harkirat asked directly why the release-doc-check hook flagged the missing `design-decisions.md`
+update only *after* v2.61.0 had already merged, forcing v2.61.1 to exist at all. Investigated rather
+than assumed: `git log -S` on both files confirmed the PostToolUse "RELEASE DOC CHECK" hook (checks
+`origin/main`, after `gh pr merge`) has run this exact check since 2026-07-28, five days before
+`release-ready-check.sh` (the PreToolUse, pre-merge equivalent) was built specifically to fix this
+class of wrong-moment bug. That 2026-08-02 fix migrated the CHANGELOG/CHANGELOG-SUMMARY/package.json/
+DEVLOG checks but not this one — an incomplete migration, not a deliberate choice. The check now also
+runs pre-merge, catching the gap while it can still be fixed for free; it was deliberately NOT removed
+from the post-merge hook, since `RELEASE_SKIP` bypasses that pre-merge gate's whole miss-list and the
+post-merge copy is the unconditional safety net for exactly that case (same role package.json/
+CHANGELOG-SUMMARY already play there). Also corrected `.claude/hooks/completeness-sweep.sh`'s
+`generated-output` angle text, which asserted a blanket "rebuild public/ if any site source changed"
+with no exception for changelog/devlog-only changes — those three pages are withdrawn from the site
+nav (the same exemption `deploy-site.yml` already codes for), so demanding a rebuild for them was a
+false gap, not a real one. 4 new test cases added to `release-ready-check.test.sh`; full 22-hook suite
+still green.
+
+## v2.61.1 — 2026-08-07 22:17 EDT (#99 · `c592fef`) — Design-notes correction, no code change
 
 `.claude/rules/design-decisions.md`'s calendar-banner entry still asserted the reversed 2026-07-31
 call ("prefer Discord's own CDN, it doesn't expire") after v2.61.0 shipped the opposite behavior —

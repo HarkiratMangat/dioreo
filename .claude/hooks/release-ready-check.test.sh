@@ -85,4 +85,29 @@ src/x.js'
 a "v3 base: no SUMMARY demanded"      "CHANGELOG-SUMMARY.md has no line" no  "$V3OK" v3-pre-release
 a "v3 base: CHANGELOG still demanded" "docs/CHANGELOG.md has no entry"   yes "$NOCHANGELOG" v3-pre-release
 a "main base: SUMMARY still demanded" "CHANGELOG-SUMMARY.md has no line" yes "$V3OK" main
+
+# 🔴 MOVED HERE 2026-08-07 22:26 EDT from a PostToolUse hook that checked `origin/main` AFTER the
+# merge landed -- too late to ever prevent what it reported (cost v2.61.0 a follow-up v2.61.1 to
+# fix). Same diff-based shape, now checked at the only moment it can still be fixed for free.
+CODE_NO_NOTE='docs/CHANGELOG.md
+docs/CHANGELOG-SUMMARY.md
+docs/DEVLOG.md
+package.json
+utils/calendarBannerCache.js'
+CODE_WITH_NOTE='docs/CHANGELOG.md
+docs/CHANGELOG-SUMMARY.md
+docs/DEVLOG.md
+package.json
+utils/calendarBannerCache.js
+.claude/rules/loadout-images-and-metadata.md'
+CODE_WITH_CLAUDEMD='docs/CHANGELOG.md
+docs/CHANGELOG-SUMMARY.md
+docs/DEVLOG.md
+package.json
+commands/calendar.js
+CLAUDE.md'
+a "code w/o a rules note fires"       "no CLAUDE.md or .claude/rules" yes "$CODE_NO_NOTE"
+a "code w/ a rules note is silent"    "no CLAUDE.md or .claude/rules" no  "$CODE_WITH_NOTE"
+a "code w/ CLAUDE.md itself is silent" "no CLAUDE.md or .claude/rules" no "$CODE_WITH_CLAUDEMD"
+a "docs-only change never fires it"   "no CLAUDE.md or .claude/rules" no  "$FULL"
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1
