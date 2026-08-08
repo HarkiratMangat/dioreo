@@ -1,3 +1,8 @@
+---
+kind: reference
+status: live
+---
+
 # Platform constraints — things the platform will not currently let us do
 
 *Read on demand, and before concluding that something "can't be done."*

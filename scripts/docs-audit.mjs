@@ -923,6 +923,121 @@ check(
   }
 );
 
+/* --------------------------- doc-frontmatter ------------------------ */
+// Added 2026-08-08 11:39 EDT with the front-matter rollout.
+//
+// WHY A KIND FIELD IS NOT REDUNDANT WITH THE FOLDER. At rest it is: `kind` must equal what the path
+// already says, so it carries no information while a file sits still. Its whole value is at MOVE
+// time. CLAUDE.md's own doc-taxonomy section opens by noting that "three reorganizations in two days
+// all came from files sitting in folders whose purpose they didn't match" — and a half-finished move
+// is precisely [[feedback_no_half_measures_on_reorgs]]. A declared kind turns that silent
+// misclassification into a failing check: move the file and forget the field, and CI says so.
+//
+// It also does a second, quieter job — a file opened cold states its own TENSE CONTRACT. `frozen`
+// on a spec is the word that stops a session "helpfully" updating a dated snapshot, which the repo
+// currently prevents with a paragraph of prose in CLAUDE.md that nothing enforces.
+//
+// DELIBERATELY ABSENT: `description`. docs/README.md already carries one line per doc and
+// `readme-map` enforces that it exists. A second copy would be duplicated state that nothing keeps
+// in sync — exactly the failure recorded in [[feedback_no_duplicated_state_in_prose]].
+const FM_KINDS = {
+  rule: ["live"],
+  guide: ["live"],
+  record: ["live"],
+  reference: ["live"],
+  idea: ["live"],
+  legal: ["live"],
+  spec: ["frozen", "superseded"],
+  plan: ["frozen", "superseded"],
+  archive: ["dead"],
+};
+// The location→kind rule. Kept as ordered prefixes so the first match wins, mirroring the taxonomy
+// table in CLAUDE.md. A new docs/ subdirectory MUST be added here, and that is intentional: an
+// unclassifiable doc is a doc whose purpose nobody has decided.
+const FM_RULE = [
+  [".claude/rules/", "rule"],
+  ["docs/archive/", "archive"],
+  ["docs/superpowers/specs/", "spec"],
+  ["docs/superpowers/plans/", "plan"],
+  ["docs/reference/", "reference"],
+  ["docs/ideas/", "idea"],
+  ["docs/legal/", "legal"],
+];
+const fmExpected = (f) => {
+  for (const [prefix, kind] of FM_RULE) if (f.startsWith(prefix)) return kind;
+  if (["CONTRIBUTING.md", "CONTRIBUTORS.md", "SECURITY.md"].includes(f)) return "legal";
+  if (f === "CLAUDE.md") return "guide";
+  if (/^docs\/[^/]+\.md$/.test(f)) return "record";
+  return null;
+};
+
+check(
+  "doc-frontmatter",
+  "ERROR",
+  "every tracked Markdown doc declares a kind/status that matches where it lives",
+  () => {
+    const out = [];
+    let examined = 0;
+    for (const f of tracked()) {
+      if (!f.endsWith(".md")) continue;
+      // Plugin-owned, on someone else's schema — not ours to annotate.
+      if (f.includes("hookify")) continue;
+      const expected = fmExpected(f);
+      if (expected === null) {
+        out.push({
+          msg: `${f} sits somewhere the doc taxonomy does not describe, so its kind cannot be ` +
+            `checked. Add its location to FM_RULE in scripts/docs-audit.mjs and to CLAUDE.md's ` +
+            `doc-taxonomy table — an unclassifiable doc is one whose purpose was never decided.`,
+        });
+        continue;
+      }
+      const text = read(f);
+      if (text === null) continue;
+      examined++;
+      if (!text.startsWith("---\n")) {
+        out.push({ msg: `${f} has no YAML front matter; it must declare kind: ${expected}.` });
+        continue;
+      }
+      const end = text.indexOf("\n---", 3);
+      const fm = end === -1 ? "" : text.slice(4, end + 1);
+      const kind = (fm.match(/^kind:\s*(\S+)/m) || [])[1];
+      const status = (fm.match(/^status:\s*(\S+)/m) || [])[1];
+      const supersededBy = (fm.match(/^superseded_by:\s*(\S+)/m) || [])[1];
+
+      if (!kind) out.push({ msg: `${f} front matter declares no kind: (expected ${expected}).` });
+      else if (kind !== expected) {
+        out.push({
+          msg: `${f} declares kind: ${kind} but its location says ${expected}. Either the file was ` +
+            `moved without updating its front matter — a half-finished reorganization — or it is ` +
+            `filed in the wrong folder. Both are real; fix whichever it is.`,
+        });
+      }
+      const allowed = FM_KINDS[kind] || [];
+      if (!status) out.push({ msg: `${f} front matter declares no status:.` });
+      else if (kind && FM_KINDS[kind] && !allowed.includes(status)) {
+        out.push({
+          msg: `${f} declares status: ${status}, which is not valid for kind: ${kind} ` +
+            `(allowed: ${allowed.join(", ")}).`,
+        });
+      }
+      // A superseded document must say what replaced it, and that target must exist — otherwise
+      // "superseded" is a dead end telling a reader to go somewhere unnamed.
+      if (status === "superseded" && !supersededBy) {
+        out.push({ msg: `${f} is status: superseded but names no superseded_by: target.` });
+      }
+      if (supersededBy) {
+        if (status !== "superseded") {
+          out.push({ msg: `${f} names superseded_by: but its status is ${status}, not superseded.` });
+        }
+        if (!fs.existsSync(path.join(ROOT, supersededBy))) {
+          out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+        }
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
 /* ----------------------------- rule-globs --------------------------- */
 check(
   "rule-globs",

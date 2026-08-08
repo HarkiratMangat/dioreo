@@ -1,3 +1,8 @@
+---
+kind: idea
+status: live
+---
+
 # Design ideas — held for later
 
 *Ideas that are **good and not yet buildable**, usually because the content they need does not exist yet. This is deliberately **not** `docs/db-deferred-list.md`: that file tracks work with an outcome (a bug to fix, a chore to do, a decision to make). An entry here has no outcome pending — nobody is waiting on it, nothing is blocked by it, and it may never be built. It exists so the shape is not lost and so the same ground is not re-explored from scratch in a year.*

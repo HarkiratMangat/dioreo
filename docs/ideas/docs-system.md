@@ -1,3 +1,8 @@
+---
+kind: idea
+status: live
+---
+
 # Dioreo — a documentation system
 
 **A guide and a proposal.** Written 2026-08-05 23:13 EDT out of a mini brainstorming side-session.

@@ -1,3 +1,8 @@
+---
+kind: legal
+status: live
+---
+
 # Privacy Policy — Dioreo
 
 **Effective date:** 6 August 2026

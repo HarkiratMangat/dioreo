@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "utils/adminParser.js"
   - "utils/timestampHelper.js"

@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "utils/sendV2Payload.js"
   - "utils/titleBlock.js"

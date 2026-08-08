@@ -74,6 +74,28 @@ assert "naming the list file passes"        pass
 mk "That one is still outstanding; I'll file it later."
 assert "'I'll file it later' still BLOCKS"  block
 
+# 5d. A PROMISE to write a record is a deferral too (added 2026-08-08 11:37 EDT). These are the two
+#     sentences I actually wrote before Harkirat had to ask "did you add the memory you stated?".
+mk "Noted — that's a genuinely useful standing permission; I'll record it in memory so future sessions don't re-litigate it."
+assert "'I'll record it in memory' BLOCKS"        block
+mk "I'll strengthen that memory at the end of this session."
+assert "'strengthen that memory' later BLOCKS"    block
+mk "I will update the CHANGELOG once the branch is ready."
+assert "'I will update the CHANGELOG' BLOCKS"     block
+
+# 5e. …but the promise is DISCHARGED when a record file was actually written this turn.
+mk "I'll record it in memory so this is not re-litigated." "/Users/harkirat/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/feedback_policy_is_advisory_not_a_veto.md"
+assert "promise + memory file written passes"     pass
+mk "I'll update CLAUDE.md with the new wrap policy." "/Applications/Claude Code/Diors-Builds/CLAUDE.md"
+assert "promise + CLAUDE.md written passes"       pass
+
+# 5f. FALSE-POSITIVE GUARD — ordinary task planning must never fire. The tell requires the promise
+#     verb to land on a named RECORD artifact; plans about code, docs generally, or the site do not.
+mk "I'll add the frontmatter to the remaining files and rerun the audit."
+assert "ordinary task planning passes"            pass
+mk "I'll write the reflow script next, then verify it against the site build."
+assert "'I'll write the script' passes"           pass
+
 # 6. An ordinary completion message must never trip it.
 mk "Merged and tagged v2.48.0. Memory index clean, docs:audit exit 0."
 assert "benign completion message passes" pass

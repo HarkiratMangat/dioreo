@@ -1,3 +1,8 @@
+---
+kind: archive
+status: dead
+---
+
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
 **Archive. Not active content. Do not read this file by default.**

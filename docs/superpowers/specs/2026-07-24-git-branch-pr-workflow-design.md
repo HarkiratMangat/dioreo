@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # Design — Git branching / PR / versioning workflow overhaul
 
 > **Amendment 2026-07-26 13:45 EDT — a `Test` step now sits between Commit and Push.** The local dev bot (`Dio (Dev)`) did not exist when this spec was written, so the whole design assumed testing could only happen after a deploy. See §2's table + the amended draft-PR note. Setup: `docs/reference/deployment-and-ops.md`.

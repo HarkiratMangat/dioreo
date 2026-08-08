@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # Design: Modularizing CLAUDE.md into path-scoped rules
 
 **Date:** 2026-07-22 13:27 EDT · **Author:** Claude (Opus 4.8, extra-high) · **Status:** approved, executing

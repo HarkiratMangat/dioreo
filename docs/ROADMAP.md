@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # 🔮 Dioreo — Roadmap (Next Planned Work)
 
 *The authoritative roadmap for the project — moved here from CLAUDE.md's "Next planned work" section on 2026-07-22 13:27 EDT as part of the CLAUDE.md modularization (see `docs/superpowers/specs/2026-07-22-claude-md-modularization-design.md`). The `🔮 Planned & Upcoming` section in `docs/CHANGELOG.md` and the `🔜 Coming soon` section in `docs/CHANGELOG-SUMMARY.md` are synced VIEWS of THIS file — update all three together, or they drift.*

@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # 📚 Dioreo — Documentation Map
 
 **Read this if you're unsure which doc file does what, when to touch it, or how they relate.** This is the front door to the project's records. It doesn't hold project content itself — it points at where each kind of content lives and who's responsible for keeping it current.

@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # `vmstatus.sh` overhaul — design
 
 **Date:** 2026-07-28 15:34 EDT

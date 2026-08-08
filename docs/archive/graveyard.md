@@ -1,3 +1,8 @@
+---
+kind: archive
+status: dead
+---
+
 # 🪦 Graveyard — resolved & filed intake from the notes scratchpad
 
 **Archive. Not active content. Do not read this file by default.**

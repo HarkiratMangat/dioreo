@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "commands/manage.js"
 ---

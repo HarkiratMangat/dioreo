@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "scripts/**"
 ---
@@ -47,6 +49,20 @@ If you touch it:
 ⚠️ **`--json` mode means STDOUT IS A CONTRACT — never `console.log` from inside a check body** (learned the hard way 2026-08-06 00:23 EDT, within two minutes of writing the offending line). The whole report goes to stdout as one JSON document and the two delegating hooks parse it, so a single prose line printed from a check prepends itself to that document and both hooks report **"DOCS AUDIT CRASHED: it did not return valid JSON"** — the script itself was fine. Check bodies run in **both** modes; the summary notes near the bottom of the file run only in the human path, which is why `console.log` is safe there and not here. **Anything printed from inside a check goes to `console.error`.** This is the delegation cost the paragraph above describes, in its concrete form.
 
 ⚠️ **A SUPPRESSED check is a third state beside pass and fail, and it has three requirements.** `SUPPRESS_CHRONICLE_DRIFT` (added 2026-08-06 00:20 EDT, Harkirat's call — the chronicle pages are withdrawn from the nav, so that meter reported the same expected drift on every run and was training everyone to read past the whole WARN block). A suppression is only legitimate when: **(1)** the check still runs and still examines its items, so the vacuous-pass detector keeps watching it; **(2)** it still prints its state every run, so the information is withheld from the *findings*, never from the *reader*; and **(3)** it is gated on `DOCS_AUDIT_ROOT` being absent, so the fixture tree is untouched and `docs-audit.test.mjs`'s `proves()` keeps exercising the real logic. Miss (3) and the suppression disables its own failure test — the silently-dead gate this whole file exists to prevent. Every suppression also needs a **filed lift-trigger** (`docs/db-deferred-list.md`), because an exemption with no removal condition is permanent by accident.
+
+## `reflow-prose.mjs` + `reflow-prose.test.mjs` — the soft-wrap migration and its guard (added 2026-08-08 11:45 EDT, Harkirat's call)
+
+`npm run docs:reflow` · `npm run docs:reflow:test`, both wired into `npm test`. Not a migration and not quite a checker — it did a one-time job and then stayed as the gate that keeps it done. **Prose in this repo is soft-wrapped**: one logical line per paragraph, list item or quoted paragraph, with the editor wrapping for display. Measured at decision time — 13,582 of 21,020 prose lines (64.6%) continued a sentence onto the next line, so most multi-word phrases physically did not exist on any single line and `rg` could not match them.
+
+⚠️ **This deliberately does NOT use `dior text unwrap`**, and that is not a preference. Verified against this repo before writing a line: its `flushQuote()` emits `"> " + parts.join(" ")`, collapsing an N-line quote to ONE `>` — which destroys the bare `>` that separates quoted paragraphs. It merged two distinct paragraphs in `docs/legal/TERMS.md` and dropped that file's `## PLEASE READ` heading into the body. The CLI is still right for one-off pasted text; it is not right for this tree.
+
+**It is verified rather than trusted, at three independent levels** — token conservation (quote markers counted as structure, not content), structural counts (headings, table rows, HTML lines, quote breaks, list markers, byte-identical fenced blocks), and an independent **CommonMark oracle** via the `markdown-it` devDependency. The oracle exists because the hand-written invariants share assumptions with the reflow code itself; a real parser does not.
+
+⚠️ **Render-equivalence is NECESSARY, NOT SUFFICIENT — the lesson this script paid for.** `docs/legal/TERMS.md` and `PRIVACY.md` open with a metadata block that `buildLegalPages.js` reads **one line per field**. Joining it folded `Version` and `Applies to` into the rendered `Effective` value on the live site. CommonMark calls both forms identical, so the oracle passed it and every structural invariant passed it too — it was caught **only** by rebuilding the site and diffing `public/`. Hence `isFieldLine`. **Any consumer that reads LINE STRUCTURE is invisible to a general parser; rebuild and diff the real output.**
+
+Three other traps already paid for, all preserved as tests: `/^\s*</` classed prose as HTML and tore `…`git show` ⏎ `<sha>:package.json`…` out of its paragraph (now keyed on real HTML element names); unindented lines were absorbed into list items, which CommonMark renders identically but which destroys an authored block boundary *irreversibly*; and the CLI ran on `import`, so a test importing `verify()` executed it and `process.exit()`ed before any assertion ran, while printing a confident "0 failed".
+
+If you touch it: the test file's job is mostly proving the VERIFIER can fail, not that reflow works — feed it known-corrupt output and assert it says so. It is idempotent, so a second run is a no-op rather than progressive damage.
 
 ## `mcp-observation-metrics.mjs` — the measurement instrument (added 2026-08-02 14:59 EDT)
 Not a migration and not a checker — an **instrument**. Read-only over `~/.claude/projects/*.jsonl`; writes nothing and touches no project state. It measures the 7-day MCP observation window opened 2026-08-02 14:43 EDT (protocol + pre-registered baseline: `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`; close-out is a dated reminder in `docs/db-deferred-list.md`).

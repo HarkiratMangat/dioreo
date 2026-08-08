@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # Session-start prompt — Dioreo
 
 > ## ⚡ FIRST ACTION THIS SESSION — HARD GATE, before ANY other content in your opening message

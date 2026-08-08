@@ -1,3 +1,8 @@
+---
+kind: reference
+status: live
+---
+
 # Deployment, Ops & Stack — reference
 
 *Read on demand (ops/deploy sessions, or when touching deploy scripts). Moved from CLAUDE.md's Stack / Deployment & Ops (GCP) / Version-tagging sections on 2026-07-22 13:27 EDT. Root CLAUDE.md keeps a 2-line deploy summary + a stack pointer. Quick command card: memory `reference_vm_bot_commands`.*

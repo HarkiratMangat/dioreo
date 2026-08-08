@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "utils/cloudinaryCache.js"
   - "utils/patchNotesCache.js"

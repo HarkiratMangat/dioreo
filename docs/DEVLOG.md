@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # DEVLOG — Dior's Builds
 
 The **story** behind the bot: discoveries, bugs and their real root causes, the things we tried and walked back, the reasoning behind decisions, platform gotchas, concerns, and tips for our future selves.

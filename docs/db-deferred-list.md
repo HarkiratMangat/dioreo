@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # Deferred list — Dioreo (`db-deferred-list.md`)
 
 **Dioreo's own deferred work**: confirmed bugs, time/condition reminders, the maintenance / tech-debt long-tail, and the handful of features big enough to warrant their own dedicated session. If a session working *only* in this repo would need to know it, it belongs here.

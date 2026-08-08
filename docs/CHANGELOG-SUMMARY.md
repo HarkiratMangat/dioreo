@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # What's New — Dior's Builds
 
 The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG.md).

@@ -52,10 +52,49 @@ const idsReported = (root, extraArgs) => {
   }
 };
 
-const write = (root, rel, body) => {
+// Mirrors FM_RULE / fmExpected in docs-audit.mjs. Duplicated ON PURPOSE and kept tiny: the fixture
+// must be built by something INDEPENDENT of the code under test, or `doc-frontmatter` would be
+// checking its own assumptions against itself and would pass no matter what either side said.
+const fixtureKind = (rel) => {
+  if (rel.startsWith(".claude/rules/")) return ["rule", "live"];
+  if (rel.startsWith("docs/archive/")) return ["archive", "dead"];
+  if (rel.startsWith("docs/superpowers/specs/")) return ["spec", "frozen"];
+  if (rel.startsWith("docs/superpowers/plans/")) return ["plan", "frozen"];
+  if (rel.startsWith("docs/reference/")) return ["reference", "live"];
+  if (rel.startsWith("docs/ideas/")) return ["idea", "live"];
+  if (rel.startsWith("docs/legal/")) return ["legal", "live"];
+  if (["CONTRIBUTING.md", "CONTRIBUTORS.md", "SECURITY.md"].includes(rel)) return ["legal", "live"];
+  if (rel === "CLAUDE.md") return ["guide", "live"];
+  if (/^docs\/[^/]+\.md$/.test(rel)) return ["record", "live"];
+  return null;
+};
+
+// Writes EXACTLY the given bytes, with no front-matter assistance. The doc-frontmatter proofs need
+// this: they are deliberately writing invalid front matter, and write()'s helpfulness would repair
+// the very defect under test.
+const writeRaw = (root, rel, body) => {
   const p = join(root, rel);
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, body);
+};
+
+const write = (root, rel, body) => {
+  const p = join(root, rel);
+  mkdirSync(dirname(p), { recursive: true });
+  // Markdown docs in the fixture get valid front matter automatically, so the BASELINE stays clean
+  // for doc-frontmatter without every existing call site having to be rewritten. A test that opts
+  // out passes its own `---` block and this leaves it alone.
+  let out = body;
+  const km = rel.endsWith(".md") ? fixtureKind(rel) : null;
+  if (km && !/^kind:/m.test(body)) {
+    // A rule fixture already opens with its own `paths:` block, so the fields are MERGED into it
+    // rather than a second block being prepended. Missing this left .claude/rules/example.md
+    // without a kind and the whole baseline dirty.
+    out = body.startsWith("---\n")
+      ? body.replace(/^---\n/, `---\nkind: ${km[0]}\nstatus: ${km[1]}\n`)
+      : `---\nkind: ${km[0]}\nstatus: ${km[1]}\n---\n\n${body}`;
+  }
+  writeFileSync(p, out);
 };
 
 /**
@@ -337,6 +376,37 @@ provesBaselineClean();
 
 proves("a tracked docs/ file nothing in the README names", "readme-map", (root) => {
   write(root, "docs/orphan-record.md", "# Nobody maps me\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a doc with no front matter at all", "doc-frontmatter", (root) => {
+  writeRaw(root, "docs/reference/bare.md",
+    "# No front matter here\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a doc whose kind contradicts its folder (a half-finished move)", "doc-frontmatter", (root) => {
+  // The case the field exists for: the file moved, the front matter did not follow.
+  writeRaw(
+    root, "docs/reference/moved.md",
+    "---\nkind: spec\nstatus: frozen\n---\n\n# Was a spec, now filed as reference\n"
+  );
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a status that is not valid for its kind", "doc-frontmatter", (root) => {
+  writeRaw(
+    root, "docs/reference/odd.md",
+    "---\nkind: reference\nstatus: frozen\n---\n\n# Reference docs are kept true, never frozen\n"
+  );
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a superseded_by pointing at a file that does not exist", "doc-frontmatter", (root) => {
+  writeRaw(
+    root, "docs/superpowers/specs/2026-01-01-old.md",
+    "---\nkind: spec\nstatus: superseded\nsuperseded_by: docs/superpowers/specs/never-written.md\n---\n\n# Old\n"
+  );
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 

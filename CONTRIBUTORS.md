@@ -1,3 +1,8 @@
+---
+kind: legal
+status: live
+---
+
 # Contributors
 
 The people who have worked on Dioreo. Each one is listed under the name or handle they asked for.

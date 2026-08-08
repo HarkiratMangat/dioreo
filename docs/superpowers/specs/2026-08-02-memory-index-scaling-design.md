@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # MEMORY.md index scaling — design
 
 **Status:** DESIGN — awaiting Harkirat's approval. Nothing migrated yet.

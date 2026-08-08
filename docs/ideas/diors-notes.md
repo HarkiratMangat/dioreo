@@ -1,3 +1,8 @@
+---
+kind: idea
+status: live
+---
+
 # A dynamic scratchpad for Harkirat's thoughts and notes for the diors-builds discord bot project.
 ***Note Purpose:** This note is a personal scratchpad used to jot down thoughts and ideas freely.
 **Note Organization:** The note may contain duplicate or overlapping thoughts, and points might not strictly adhere to the provided sub-sections.

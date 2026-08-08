@@ -1,3 +1,8 @@
+---
+kind: guide
+status: live
+---
+
 # Dioreo — CODM Discord Bot
 
 ## What this is

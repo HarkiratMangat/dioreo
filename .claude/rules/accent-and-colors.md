@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "utils/accentColor.js"
   - "utils/colorExtract.js"

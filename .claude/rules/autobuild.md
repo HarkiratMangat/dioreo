@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "commands/autobuild.js"
   - "utils/autobuildPipeline.js"

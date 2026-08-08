@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # v3 development structure — design
 
 **Status:** approved by Harkirat 2026-07-27 17:45 EDT · **Supersedes** the branch/versioning half of the 2026-07-14 v3 directive recorded in memory `project_dior_builds_changelog_system.md`.

@@ -1,3 +1,8 @@
+---
+kind: record
+status: live
+---
+
 # Changelog (Detailed)
 
 Dior's Builds' own "release notes" — tracks what shipped, when, and why. See [CHANGELOG-SUMMARY.md](CHANGELOG-SUMMARY.md) for a plain-language version of the same timeline.

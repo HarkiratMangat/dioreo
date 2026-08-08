@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # 7-day MCP observation window — protocol
 
 **Status:** ▶️ RUNNING. Opened 2026-08-02 14:43 EDT. **Closes 2026-08-09 17:00 EDT.**

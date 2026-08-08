@@ -1,3 +1,8 @@
+---
+kind: spec
+status: frozen
+---
+
 # Loadout Automation PoC — `/autobuild` (screenshot → live MP loadout)
 
 **Status:** Approved 2026-07-19, not yet implemented.

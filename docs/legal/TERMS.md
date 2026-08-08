@@ -1,3 +1,8 @@
+---
+kind: legal
+status: live
+---
+
 # Terms of Service — Dioreo
 
 **Effective date:** 4 August 2026

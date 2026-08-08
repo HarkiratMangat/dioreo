@@ -1,3 +1,8 @@
+---
+kind: legal
+status: live
+---
+
 # Security Policy
 
 ## Reporting a vulnerability

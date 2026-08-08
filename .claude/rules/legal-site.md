@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "scripts/buildLegalPages.js"
   - "scripts/lib/chronicle.js"

@@ -1,3 +1,8 @@
+---
+kind: reference
+status: live
+---
+
 # Commit & branch naming — the house convention
 
 **Adopted 2026-07-26 15:20 EDT** (Harkirat's call). Single source of truth for how commit subjects, branch names, and PR titles are written in this repo.
