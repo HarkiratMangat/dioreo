@@ -9033,6 +9033,25 @@ const sourcePath = page => page.root
         ? path.join(ROOT, 'docs', page.file)
         : path.join(SRC, page.file);
 
+// YAML front matter is METADATA for tooling (docs-audit's doc-frontmatter check, and a reader
+// opening the file cold) — it is never page content. Every source read goes through here so it is
+// stripped exactly once, at the boundary.
+//
+// ⚠️ This must apply to ALL source reads, not just the parsers. verify() and structureAudit() read
+// the source back to compare it against the rendered HTML, so a read that skipped the strip would
+// report the front-matter lines as "source content missing from the page" and fail the build for a
+// correct page. Added 2026-08-08 11:37 EDT with the front-matter rollout; measured beforehand, an
+// unstripped block rendered `kind: legal` / `status: live` as visible body text on terms.html plus a
+// stray <hr>, and every existing gate still passed — content presence is not correctness.
+const stripFrontMatter = text => {
+    if (!text.startsWith('---\n')) return text;
+    const end = text.indexOf('\n---', 3);
+    if (end === -1) return text;                    // unterminated: treat as ordinary content
+    return text.slice(text.indexOf('\n', end + 1) + 1).replace(/^\n+/, '');
+};
+
+const readSource = page => stripFrontMatter(fs.readFileSync(sourcePath(page), 'utf8'));
+
 // Two output locations now: the site root (public/) and public/changelog/.
 // Everything that reads a built page goes through this rather than joining OUT
 // directly, so a page in the changelog directory cannot be silently skipped by
@@ -9104,7 +9123,7 @@ function build() {
     const built = [];
 
     for (const page of PAGES) {
-        const raw = fs.readFileSync(sourcePath(page), 'utf8');
+        const raw = readSource(page);
         // Always '' now: every page renders at the site root since the 2026-08-05
         // 14:42 EDT flattening, the same depth every root-authored source (LICENSE,
         // NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md) already links from. LINK_BASE
@@ -9176,7 +9195,7 @@ function build() {
     // are appended to `built` so the verifier covers them exactly like the rest.
     // An unverified page is the one that quietly rots.
     for (const page of EXTRA_PAGES) {
-        const md = fs.readFileSync(sourcePath(page), 'utf8');
+        const md = readSource(page);
         LINK_BASE = ''; // see the note on the same line in the PAGES loop above
         const parsed = parseBlocks(stripMdHead(md));
         const ids = new Set(parsed.toc.map(t => t.id));
@@ -9199,7 +9218,7 @@ function build() {
     // rest — an unverified page is the one that quietly rots.
     fs.mkdirSync(path.join(ROOT, 'public', 'changelog'), { recursive: true });
     for (const page of CHRONICLE_PAGES) {
-        const md = fs.readFileSync(sourcePath(page), 'utf8');
+        const md = readSource(page);
         LINK_BASE = '';
         const parsed = parseChronicle(stripMdHead(md), CHROME);
         const stats = `${parsed.entries.length} entries` +
@@ -9375,7 +9394,7 @@ function verify(built) {
 
         // Mirror build()'s own removals: the H1 and the metadata block are moved
         // into the masthead by design, so they are not expected in the body.
-        const rawSrc = fs.readFileSync(sourcePath(page), 'utf8');
+        const rawSrc = readSource(page);
         let cleaned = page.kind === 'text' ? stripTextHead(rawSrc) : stripMdHead(rawSrc);
 
         // ORDER MATTERS, and getting it wrong is silent. The Markdown link unwrap
@@ -9544,7 +9563,7 @@ function structureAudit(built) {
         const inDep = [...html.matchAll(/<div class="dep">([\s\S]*?)<\/div>/g)]
             .map(m => norm(m[1].replace(/<[^>]+>/g, ' ')));
 
-        const aligned = fs.readFileSync(sourcePath(page), 'utf8')
+        const aligned = readSource(page)
             .split('\n').filter(l => /\S {2,}\S/.test(l));
         const lost = aligned.filter(l => {
             const n = norm(l);
@@ -9582,7 +9601,7 @@ function crossRefAudit(built) {
     let examined = 0;
 
     for (const page of built.filter(p => p.kind === 'md')) {
-        const src = fs.readFileSync(sourcePath(page), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+        const src = readSource(page).replace(/<!--[\s\S]*?-->/g, '');
         const html = fs.readFileSync(outPath(page), 'utf8');
         const pageOut = outDirFor(page);
 

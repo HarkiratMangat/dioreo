@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "utils/adminParser.js"
   - "utils/timestampHelper.js"
@@ -11,387 +13,49 @@ paths:
 
 # Design decisions — don't re-litigate these
 
-*Loads when you touch the parser, timestamp helper, calendar/patchnotes/seasonend/draws commands, or
-UserPreference. The "already decided, here's why" log: seasonal visibility (Option A), admin-date UTC
-handling, chrono noon default, bulk-import formats, title-casing, All-Season calendar events, patch-note
-title sync, the `/draw prices` data-model rewrite, the nav-order→color map, emoji sourcing. The color
-map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesign NARRATIVE is in
-`docs/DEVLOG.md`'s four `2026-07-12` Part A entries (folded in 2026-08-06 08:23 EDT from the former
-**design-history** reference doc, which was deleted).*
+*Loads when you touch the parser, timestamp helper, calendar/patchnotes/seasonend/draws commands, or UserPreference. The "already decided, here's why" log: seasonal visibility (Option A), admin-date UTC handling, chrono noon default, bulk-import formats, title-casing, All-Season calendar events, patch-note title sync, the `/draw prices` data-model rewrite, the nav-order→color map, emoji sourcing. The color map's LIVE hexes are mirrored in `.claude/rules/rendering-and-ui.md`; the redesign NARRATIVE is in `docs/DEVLOG.md`'s four `2026-07-12` Part A entries (folded in 2026-08-06 08:23 EDT from the former **design-history** reference doc, which was deleted).*
 
-- **"Seasonal Content" visibility is one shared toggle (Option A)**, not five
-  separate ones. Deliberately chosen over per-command granularity — if you're asked
-  to add a 6th seasonal command, wire it to `prefs.seasonalVisibility` too, don't add
-  a new field.
-- **Admin dates are always UTC-0 — except patch notes' release date/time, which is the one
-  deliberate exception.** `adminParser.js`'s `parseAdminDate` (draws/calendar/season-end deadlines)
-  forces `chrono.parseDate(str, new Date(), { timezone: 0 })` specifically to avoid depending on the
-  host machine's local timezone/DST — a past bug (DMZ season-end showing 1 hour off) was traced to
-  exactly this kind of local-timezone dependency. Don't reintroduce ambient-timezone parsing for
-  those fields.
-  - **Patch notes' release date (`adminParser.js`'s `parseReleaseDateTime`, used only by the 3
-    `modal_patch_*` handlers in index.js) is smarter, per Harkirat's explicit call (2026-07-27
-    08:02 EDT):** a
-    bare date with no time-of-day still means UTC-0 midnight (same convention as everywhere else,
-    falls straight through to `parseAdminDate`), but the moment a time is also typed
-    ("2026-07-22, 7:20 AM"), that time is treated as Harkirat's own local clock (his
-    `UserPreference.timezone`, same field `/settings`/`/timestamp` already use, default
-    `America/Toronto`) and converted to the real UTC instant — chrono's `isCertain('hour')` decides
-    which case applies, same check `timestampHelper.js`'s `generateTimestamps()` already uses. Root
-    cause this fixed: `parseAdminDate` used to unconditionally discard any typed time and normalize
-    to midnight UTC regardless — a real time typed alongside the date was silently thrown away, and
-    since `commands/patchnotes.js` displays the release date with a Discord `<t:X:f>` (date+time)
-    timestamp, that discarded-then-midnight-UTC value rendered as a confusing wrong-day/wrong-time
-    string in the viewer's own local timezone (e.g. midnight UTC showing as "8:00 PM the previous
-    day" for a UTC-4 viewer). `adminParser.js`'s `formatReleaseDateTime` is the reverse — it
-    pre-fills the "Date & Info" / "Edit Past Season" modals with the time included whenever the
-    stored instant isn't exact UTC midnight, so reopening either modal to tweak something unrelated
-    (e.g. the description) doesn't silently wipe a previously-set release time back to midnight on
-    the next submit. If you add a 4th patch-notes-date call site, use `parseReleaseDateTime`/
-    `formatReleaseDateTime`, not `parseAdminDate`/`formatAdminDate` — every other admin date field
-    (draws/calendar/season-end) is unaffected and keeps the plain UTC-0 functions.
-- **chrono-node defaults a bare date (no time-of-day given) to NOON, not midnight.**
-  `timestampHelper.js`'s `generateTimestamps` (used by `/timestamp`) checks
-  `parsedComponents.isCertain('hour')` and manually zeroes the time back to midnight
-  in the target timezone when the user's input had no explicit time — otherwise
-  something like `/timestamp datetime:july 17 timezone:UTC` silently came out as
-  July 17 **noon** UTC. `adminParser.js`'s `parseAdminDate` was never affected by this
-  (it already force-normalizes everything to midnight UTC unconditionally), so this
-  was isolated to the user-facing command.
-- **Bulk-import text formats are bullet/comma-delimited, not one-per-line JSON**,
-  because Harkirat pastes from a notes app export. See `parseBulkDrawList` (comma-
-  separated) and `parseBulkEvents` (bullet-separated, `M/D - M/D | Title` or
-  `M/D - All Season | Title`) in `adminParser.js`. Titles in bulk imports are
-  preserved verbatim (no auto title-casing) because CODM content is full of
-  acronyms (MP/BR/DMZ) that naive title-casing mangles into "Mp"/"Br"/"Dmz".
-  Because the whole line is comma-delimited, a date containing its own comma (e.g.
-  "July 16, 2026") used to fracture across two fields and silently drop the year —
-  `parseBulkDrawList` now re-merges a trailing bare-4-digit-year field back onto the
-  previous field before parsing it as a date. Keep that in mind if you touch this
-  parser: any fix here needs to stay comma-in-date-safe, not just comma-delimiter-safe.
-  Per-item parsing (`[tier] Item Name` -> `{tier, name}`) is factored into
-  `adminParser.js`'s exported `parseItemLine()`, shared by `parseBulkDrawList` and
-  `index.js`'s single add-draw/edit-draw modal handlers — previously copy-pasted
-  identically in all three places.
-- **`/manage draws`'s bulk import is split into two independent flows — New and
-  Returning each have their own modal** (`modal_draws_bulk_new` /
-  `modal_draws_bulk_returning` in index.js, `parseBulkDrawList` in `adminParser.js`
-  returns a flat array for whichever one category was submitted). This used to be ONE
-  modal covering both, distinguished per-line by a leading `n `/`r ` prefix token, and
-  a single submit replaced BOTH `newDraws` and `returningDraws` together — re-running
-  the import to fix one typo in New Draws silently re-wrote Returning Draws too (even
-  if unchanged content-wise, it reordered/re-saved it). Splitting means each submit
-  only ever touches its own array. If you add a third draws-like category in the
-  future, give it its own modal/custom_id rather than reintroducing a type-prefix line.
-  `bulk-both` (added 2026-07-09) is NOT a reintroduction of that old combined flow — it's
-  one modal with two independently-optional fields, and each field still only ever
-  writes to its own array (a blank field leaves that array completely untouched), for
-  the common case of wanting to update both categories without two round-trips.
-- **Bulk imports REPLACE, they don't append.** `modal_draws_bulk_new`/
-  `modal_draws_bulk_returning` each overwrite only their own array
-  (`newDraws`/`returningDraws`), and `modal_calendar_bulk` (index.js) overwrites
-  `calendar` wholesale rather than pushing onto the existing array. A bulk paste
-  represents the complete current list for that category/season, so re-running it
-  (e.g. to fix a typo) replaces the old entries instead of duplicating on top of them.
-- **`toTitleCase` (`adminParser.js`) preserves already-uppercase acronyms, skips
-  leading punctuation, AND capitalizes each side of a hyphen independently** rather than
-  blanket-lowercasing the whole string first. The old implementation did
-  `str.toLowerCase()` on the entire string, then re-capitalized only the character
-  immediately after whitespace — that mangled "FSS Hurricane" into "Fss Hurricane"
-  (acronym torn down), "(Operator)" into "(operator)" (the char after the space was "(",
-  not a letter, so nothing got recapitalized), and "Blood-Red" into "Blood-red" (a
-  hyphenated word is one whitespace-delimited token, so only its very first letter ever
-  got capitalized). Now: each whitespace-delimited word is further split on its own
-  hyphens, and each hyphen segment independently either gets preserved verbatim (if
-  already fully uppercase, 2+ letters — an acronym like "FSS") or has its first actual
-  *letter* capitalized, skipping over leading punctuation like `(`. Applies to draw/item
-  titles in both the bulk parser and the single-add/edit modals in index.js.
-- **`toTitleCase` also splits on `/`, not just `-` (fixed 2026-07-30 22:24 EDT).** "Jupiter
-  Cannon/Void Implosion Draw" was rendering as "...Cannon/void..." — a whitespace-delimited token with
-  a `/` but no `-` (e.g. "Cannon/Void") went through `capitalizeSegment()` as one atomic unit, which
-  only capitalizes the token's first letter and lowercases everything after it. Same fix shape as the
-  existing hyphen handling: each word is now split on `/([-/])/` and both separators are treated
-  identically (preserved verbatim, segments on either side capitalized independently).
-- **Draw items can be a `-# comment` instead of a tiered weapon/character** (added 2026-07-30 22:24
-  EDT) — typing `-# some note` in the Items field (single add/edit or bulk) is parsed by
-  `adminParser.js`'s `parseItemLine` into `{ tier: 'comment', name: '...' }` BEFORE the generic
-  tier-shorthand parse runs (otherwise `-#` falls through as an unrecognized tier and the note text
-  gets title-cased like a weapon name, which mangles free text). Deliberately NOT run through
-  `toTitleCase` — it's a note, not a game item name. `draws.js`'s `buildDrawSections` renders it as
-  plain `-# text` subtext, no tier emoji/bold. `TIER_SHORTHAND['comment']` = `'-#'` so it round-trips
-  correctly through Edit Draw's pre-fill and the bulk export format.
-- **"All Season" calendar events resolve their end date to `bpEnd`, not a literal
-  "Ongoing" label.** The Battle Pass ending is what actually closes out an all-season
-  event; `calendar.js` only falls back to showing "Ongoing" text if `bpEnd` hasn't been
-  set yet.
-- **`parseAdminDate` returns `null` on unparseable input, never a "now" fallback (fixed 2026-07-31
-  12:10 EDT).** It used to silently return `new Date()` when chrono couldn't parse the text — a typo
-  like "TDB" for "TBD" became the literal current instant, which read as a real, intentional date
-  (and on 2026-07-31 landed almost exactly on Aug 1 00:00 UTC, corrupting all 3 season-end dates in
-  one submit). Every caller now treats `null` as "not a valid date": the season titles/deadlines
-  modals (live + draft) leave that field untouched and report which one was skipped; calendar/draw
-  add/edit modals reject the submission outright; both bulk parsers (`parseBulkDrawList`/
-  `parseBulkEvents`) skip just the malformed line instead of importing a wrong date.
-- **`/calendar` is a 3-section page (Draws/Events/Playlists), not a flat event list (redesigned
-  2026-07-31 12:10 EDT).** Each `calendar[]` entry carries a `category` (see `.claude/rules/models.md`),
-  set via the bulk parser's `d•`/`p•`/`e•` prefix (Harkirat's own `calendar_bulk.txt` convention —
-  `adminParser.js`'s `parseBulkEvents`, rewritten with a lookahead regex since the prefix letter sits
-  BEFORE the bullet it belongs to and a naive `.split('•')` left it dangling on the wrong entry) or the
-  single add/edit modal's Category field (`normalizeCalendarCategory`, accepts a letter or full word,
-  blank defaults to `'event'`). **The Draws section auto-merges in anything from `newDraws`/
-  `returningDraws` that has no explicit `category: 'draw'` calendar entry**, fuzzy-matched by title
-  (`utils/search.js`'s `fuzzyMatch`) so a draw someone ALSO typed as a `d•` bulk line doesn't double up
-  — an auto-merged entry is tagged `dateOnly: true` and renders as a single "Releases \<date\>" line
-  instead of a false date range. **Category no longer has to be typed by hand (added 12:40 EDT the
-  same session, per Harkirat's explicit follow-up):** with no `d•`/`p•`/`e•` prefix (or a blank
-  Category field on the single modal), `adminParser.js`'s `guessCalendarCategory()` keyword-matches
-  the title itself — `DRAW_KEYWORDS` (`draw`/`armory`/`it goes two`/`redux`/`mythic drop`, word-form
-  aware: plurals, "Armories", the fused "Gamemode" spelling) checked before `PLAYLIST_KEYWORDS`
-  (`mode`/`playlist`/`gamemode`/`map`/standalone `MP`/`BR`), defaulting to `'event'` when neither
-  hits, per Harkirat's own stated rule. **Standalone `MP`/`BR` were a direct correction** (2026-07-31
-  13:05 EDT) — "Krai BR"/"Rebirth Island BR" have no "mode"/"playlist" word at all but are
-  unambiguous mode names to him; both are word-boundaried (`\bmp\b`/`\bbr\b`) since they're 2-letter
-  tokens that would otherwise match constantly as substrings of unrelated words. **The explicit prefix still wins when present** —
-  it's the override for a genuinely ambiguous title (his own `calendar_bulk.txt` prefixes bare map
-  names like "Krai BR" for exactly this, since neither keyword list matches them). Navigation stays the pre-existing left/right pagination on Harkirat's
-  explicit call (page 1 = Draws + Events, page 2 = Playlists/Modes) rather than switching to
-  section-toggle buttons — that's filed in `docs/db-deferred-list.md`'s Queued section for its own pass
-  since it's new UI worth seeing first, not a wiring change. Section heading is `### `.
-- **Season-end deadlines support an explicit TBD state (added 2026-07-31 14:00 EDT, direct
-  follow-up).** Typing the literal word "TBD" (case-insensitive) into a deadline field now sets a
-  `${field}TBD` boolean (`bpEndTBD`/`rankEndTBD`/`dmzEndTBD`, live + draft) and nulls the Date field,
-  instead of being unparseable text that gets skipped. Distinct from "not set yet" — `seasonend.js`
-  shows *"TBD — date not yet announced"* rather than *"Date has not been set yet."* Anything checking
-  whether a deadline (or an "All Season" calendar event riding on `bpEnd`) has ended treats TBD as
-  running **indefinitely** — `calendar.js`'s `isEventEnded()` returns `false` immediately when
-  `bpEndTBD` is set, before ever comparing against the (null) date. The Promote-to-Live handler
-  (`index.js`'s `mng_draftpromoteconfirm`) has to check the TBD flag BEFORE the date — a plain
-  `if (draft.bpEnd)` truthy check would silently skip promoting a TBD deadline, since TBD leaves
-  `draft.bpEnd` explicitly `null`.
-- **`/calendar` is 3 separate PAGES now, not 2 combined ones (redesigned again 2026-07-31 14:00 EDT,
-  same-session follow-up to the initial 3-section build below).** Draws / Events / Playlists-Modes
-  each get their own page, switched via 3 named toggle buttons (`calpage_0/1/2`) instead of Prev/Next
-  arrows — the section-toggle-buttons item originally filed to `db-deferred-list.md` was built
-  immediately instead of deferred, per Harkirat's direct follow-up. Current page's button is
-  Primary+disabled, the other two Secondary+enabled (same convention as any other "active page"
-  button elsewhere in the bot). The Draws page itself further soft-splits into two sub-sections —
-  `### {newDraws emoji} __**NEW DRAWS**__` / `### {returningDraws emoji} __**RETURNING DRAWS**__`
-  (full caps + underline, per Harkirat's explicit heading-style request applied to every section
-  heading) — replacing the single "Draws" heading entirely. An entry's new/returning split is a
-  property of `getDrawSectionEntries()`'s tagging: a synthetic entry (from `newDraws`/
-  `returningDraws`, no explicit calendar row) knows its type directly; an EXPLICIT `category: 'draw'`
-  calendar entry has no stored new/returning distinction of its own, so it's inferred via
-  `isSameDrawTitle` against both arrays — an "orphan" match-neither entry defaults to 'new'.
-  Events/Playlists pages use the same full-caps+underline heading treatment with their own new
-  emojis (`emojiMap.js`'s `events`/`modes`).
-  **The Active/All Events filter moved to `/settings`' Preferences page entirely** (a binary toggle,
-  `toggle_calfilter_active`/`toggle_calfilter_all` in `index.js`'s generic `toggle_` handler,
-  re-rendering page 1 specifically rather than the page-0 default every other toggle there uses) —
-  `/calendar` no longer has an in-page way to change it, just reads `prefs.calendarEventFilter`
-  fresh on every render. This directly reverses the ORIGINAL 3-section build's explicit call ("NOT a
-  /settings toggle, Harkirat's request") — his own follow-up call this session.
-- **Patch notes' layout reordered (2026-07-31 12:10 EDT, notes L181):** the release-timestamp line
-  moved from directly under the title to directly under the image carousel (same visual "section" as
-  the images now), and a permanent `-# NOTE: Final patch notes are subject to change` disclaimer was
-  added to the Additional Info block. The divider between the title and Additional Info is
-  CONDITIONAL — it only appears when `description` actually has content; with nothing typed, the
-  disclaimer rides directly under the title with no divider, since dividing up just one disclaimer
-  line on its own read as visually pointless (Harkirat's own call).
-- **Additional Info auto-formats into a real weapon/attachment/change structure, OPT-IN via a `#`
-  line marker (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply; PARSER REWRITTEN twice
-  same day; heading capitalized + `f:`/fix alias added 2026-08-08 00:23 EDT).** Output structure
-  decided from Harkirat's own reference screenshot: a `### ADDITIONAL CHANGES` heading (all-caps
-  since 2026-08-08), `__**Weapon**__` per weapon, its attachments as plain lines, each change as
-  `> {buff/nerf/fix emoji} details`. The INPUT grammar went through two shapes before landing:
-  1. First build: every weapon/attachment/change needed its OWN physical line. This directly caused
-     a real submission mistake — Harkirat typed the whole thing as one comma-separated line (the
-     same mental model draws/calendar bulk imports already use), which got read as a single weapon
-     named that entire sentence and printed back bold+underlined verbatim.
-  2. **Final shape, per Harkirat's direct correction:** one weapon's ENTIRE block is ONE line,
-     comma-delimited — `# Weapon, Attachment, n:/b:/f: text, n:/b:/f: text2, Attachment2, n:/b:/f: text3`.
-     The first segment after `#` is the weapon name; every segment after that is a NEW ATTACHMENT
-     unless it starts with `b:`/`n:`/`f:`, in which case it's a CHANGE under whichever attachment
-     came right before it in that same line. Only a NEW WEAPON needs its own new line — this is now
-     genuinely the same mental model as the draws/calendar bulk formats, not a different one.
-  `commands/patchnotes.js`'s `formatAdditionalInfo()` implements this; `b:`/`n:`/`f:` reuses the
-  existing `applyInfoAliases()` emoji lookup. **With no `#` line anywhere in the field, this is a
-  pure no-op beyond the pre-existing b:/n:/f: alias** — every pre-existing free-typed entry (most
-  are a one-line blurb) keeps rendering exactly as before; the whole `### ADDITIONAL CHANGES`
-  heading only appears once the admin actually opts in. Any lines typed before the first `#` marker
-  are kept as free prose above the structured block, not discarded. The `/manage` placeholder
-  (100-char Discord cap ruled out a real example there) and the rich Guide's Patch Notes topic
-  (`utils/manageGuides.js`)
-  both document the FINAL comma-delimited grammar, not the abandoned one-line-per-thing version.
-- **Tier shorthand `ll` → `lg` for Legacy (changed 2026-07-31 17:20 EDT, Harkirat's direct
-  request).** `utils/adminParser.js`'s `resolveTier()`/`TIER_SHORTHAND` — no back-compat kept for
-  the old `ll` token, since it's purely an admin-typed input shorthand with no stored data depending
-  on it (the DB always stores the full word `"legacy"`). If you ever see `ll` referenced as the
-  legacy shorthand anywhere (a stale comment, an old screenshot), it's out of date.
-- **`/calendar` banner images REVERSED to always re-host through Cloudinary (2026-08-07 22:04 EDT,
-  v2.61.0) — the original 2026-07-31 "prefer Discord's own CDN" decision below is superseded, kept
-  struck-through for the reasoning trail rather than deleted.** ~~A `cdn.discordapp.com`/
-  `media.discordapp.net` source URL skips Cloudinary re-hosting entirely, since re-hosting an
-  already-durable Discord asset would be pure downside and throws away Discord's own resize proxy~~
-  — **the "already-durable" premise was false.** `media.discordapp.net` links are signed
-  (`ex=`/`is=`/`hm=` params) and expire in roughly a day; decoding a live banner's `ex=` timestamp
-  confirmed one had already died. The resize-proxy premise was also never actually verified and
-  turned out wrong too: `?width=N` alone is silently ignored by Discord's proxy (confirmed via
-  direct `curl` — needs `width` AND `height` together, and even then crops rather than aspect-fits a
-  mismatched box). `utils/calendarBannerCache.js`'s `cacheBannerImage()` now re-hosts every source
-  to Cloudinary unconditionally; `isDiscordCdnUrl()` is kept only for diagnostics. **The width-cap
-  feature itself (`capBannerPreviewWidth`, `BANNER_MAX_WIDTH`) was dropped entirely, not just
-  fixed** — Harkirat live-tested a working Cloudinary-based cap and rejected it anyway, since a
-  Cloudinary derivative has no path back to the original, so the cap also shrank the zoomed view.
-  `commands/calendar.js` renders the raw Cloudinary URL at full resolution now, inline and on zoom.
-  Full investigation: `docs/archive/resolved-list.md`'s "page banners" entry.
-- **`/manage`'s bulk-import guides rebuilt into a rich, structured Components V2 view with a
-  topic-switching dropdown (2026-07-31 17:20 EDT, same-day follow-up — was a plain-text ephemeral
-  reply from earlier the same session).** `utils/manageGuides.js` — one shared render function
-  (`buildGuideContainer(topicKey)`) covering 5 topics (Draws/Calendar/Loadouts/Patch Notes/Next
-  Season Draft — the last two are NEW, they had no guide at all before), each with a paste skeleton,
-  a field-by-field breakdown of what's literal vs. auto-formatted, a real before/after example, and
-  tips. A `mng_guide_pick` select menu (index.js) re-renders the SAME message to any other topic
-  without closing the guide — same `deferUpdate()` + `sendV2Payload()` shape `mng_pagesel` already
-  uses for the main panel. **Every page's Guide button now lives in the LAST section, matching a
-  fixed ordering convention across every `/manage` page: single-item management → bulk management →
-  purge → export → guide** (Harkirat's direct correction — it was scattered mid-page before). The
-  Draws example in the old plain-text version was literal filler nonsense (`Jupiter Cannon Draw, m
-  Jupiter Cannon, l Void Blade...`) — replaced with a real one (`Void Implosion Draw, l M4 - Void
-  Implosion, e Dusk - Otherworld Ensemble, -# Girls Frontline Collab, July 15, URL.com/image.png`).
-  Calendar's "Page Banners" button, previously its own separate inline group, is folded into the
-  "Add Multiple Events" bulk group as a 4th button — it had no reason to sit apart from Guide's own
-  inline placement. Calendar's Export/Purge order was also swapped to match the fixed convention
-  above (Purge now comes before Export, it had been the other way around). (so a past season's
-  patch notes don't get renamed retroactively), but the entry representing the
-  currently-live season needs to track the live season title — see index.js's
-  `modal_season_titles_deadlines` handler (formerly `edit_season_titles`, merged with the old
-  deadlines modal on 2026-07-09), which updates both when the admin renames a season.
-  Separately, some entries created before the heading redesign still have the full
-  legacy sentence ("Balance Changes for Season 6...") baked into their stored title
-  instead of just the bare season name — `patchnotes.js`'s exported `cleanPatchTitle()`
-  strips that prefix at every display site (heading, history dropdown, autocomplete in
-  index.js) rather than requiring old DB entries to be edited by hand.
-- **`/calendar`'s active/all events toggle button only appears if at least one event has
-  actually ended.** Computed fresh on every render (not cached/stored) via
-  `calendar.js`'s `isEventEnded()`/`hasEndedEvents` — if every event this season still
-  ends in the future, "Active Only" and "All" would render an identical list, so the
-  toggle (and its description line) are omitted entirely rather than shown doing
-  visibly nothing. This was a real point of confusion during testing before the check
-  existed — Harkirat toggled it, saw no change, and reasonably assumed it was broken,
-  when actually the underlying filter logic was correct and there just wasn't anything
-  to filter yet. Defaults to `'all'` for anyone without a saved preference. An "All
-  Season" event only counts as ended once `bpEnd` is BOTH set AND passed (it has no
-  fixed end of its own — see the next bullet); if `bpEnd` hasn't been configured yet,
-  it's treated as still active rather than guessed at. The persisted choice lives in
-  `UserPreference.calendarEventFilter` (see above).
-- **`/season end`'s per-deadline heading went `## ` → `### ` → back to `## `.** It was
-  originally one line combining emoji + season title + " ends..." at H2, which wrapped
-  awkwardly on mobile; that got fixed by dropping to H3, which then felt visually
-  smaller than the rest of the bot's uniform heading sizes. The real fix was moving
-  "ends.../that's..." OFF the heading line entirely and onto the timestamp lines below
-  it (`✦ **Ends...** <t:X:F>` / `✦ **That's...** <t:X:R>`) — the heading is now just
-  `## {emoji} **{title}**`, short enough to never wrap, so it was safe to go back to the
-  bigger H2 size without reintroducing the original wrapping bug.
-- **`/draw prices` was rewritten (2026-07-11) to compute totals from raw pull arrays instead of
-  hand-typing them** — the old `REGION_DATA`/`COMBO_NOTES` had repeated real math mistakes (found by
-  cross-referencing against Harkirat's raw combo-notes export: a displayed total not matching its
-  own draws curve, a wrong draw value, a typo'd draw value). Rather than keep fixing hand-typed
-  totals one at a time, `commands/drawprices.js`'s `DRAW_DATA` now stores ONLY the per-pull CP
-  numbers (`draws: [10, 30, 50, ...]`, optional `upgrade: {perDraw, count}`); `formatCP`/
-  `arrowSequence`/`cumulativeSequence`/`buildDrawEntries` derive every total, arrow-joined sequence,
-  and the "CP spent" running-cost line straight from that array at render time. A wrong number can
-  now only ever exist in one place, and a total can never silently drift from its own draws again —
-  verify this by re-running `buildContainer()` directly via `node -e` (dump the JSON, cross-check
-  each total against its own `draws` sum) rather than hand-summing, if you touch this data again.
-  - Expanded from 5 draw types to 10 (later 9 — see below) using a fresh verified data export from
-    Harkirat (`drawprices2.txt`) — these used to live only as terse one-line `COMBO_NOTES` entries;
-    now every draw type gets the same full per-pull breakdown.
-  - The refreshed source itself had one arithmetic typo (`legendaryGunNonReactive.region_10` stated
-    a total of 4,540 CP, but its own listed draws sum to 4,550 — matching what this file already had
-    before the refresh) — kept the computed-correct 4,550 rather than trusting the source's typed
-    total, per the same "always sum, never trust a hand-typed total" rule above.
-  - "Mythic Character + Legendary Weapon Draw" and "Legendary Character + Legendary Weapon Draw" are
-    each a single named in-game banner (not a bundle of two separate draws) — kept exactly as
-    Harkirat named them rather than "simplifying," since that's the banner's real in-game name.
-  - `doubleEpicCharacters.region_30` has no data yet (Harkirat's source explicitly says "pending
-    data") — `buildDrawEntries` renders a "not yet available" placeholder for a missing region entry
-    rather than fabricating a number.
-  - **Second pass (2026-07-12, per `drawPrices_ui.json` — Harkirat's own hand-adjusted mockup):**
-    dropped the two group headers (Mythic-Tier / Legendary & Epic-Tier) for one flat
-    divider-separated sequence, each entry down to a single tier emoji (`tierIcon()` — a module-level
-    `TIER_ICON` const until 2026-07-26 16:04 EDT, when it was made per-render because the const froze
-    pre-sync emoji ids; not the old tier+Epic combo). "Legendary BR Vehicle Draw" removed entirely (absent from Harkirat's own
-    hand-built mockup, read as deliberate) — its `altLast` mechanism went with it, nothing else ever
-    used that field. Region switcher became a toggle button instead of a select-menu, persisting to
-    `UserPreference.defaultRegion` on click.
-  - **Third pass (2026-07-12, per `example_reformat.json` + several direct follow-up requests the
-    same session) — this is the CURRENT final state:**
-    - Command title (`buildTitleBlock`) down to `## ` (was `# `) with an extra `**bold**` wrap around
-      the caption on top of its existing bold-italic-unicode styling — both via new optional params
-      (`headingLevel`, `boldCaption`) on the shared helper, defaulting to the old behavior so
-      calendar/patchnotes/draws (which separately also moved to `## `, see below) and seasonend
-      (already `## `) didn't silently change unless explicitly opted in.
-    - Each entry now renders as up to 3 SEPARATE Text Displays — `[**icon name** \n > total line]`,
-      `[bold pull sequence + cumulative]`, and (mythic entries only) `[**Upgrade** \n formula line]`
-      — deliberately NOT merged back into fewer components; Harkirat wants the real gap BETWEEN
-      Discord components for the spacing, not blank lines inside one. Entry headers are `**bold**`
-      with no heading markup at all (was `### `). The `> ` quote block on the CP total line came
-      back (was briefly removed, then restored). Upgrade sub-heading is `**bold**`, not `### ` (was
-      briefly a real heading, then flattened to match the reference file). Pull-sequence numbers are
-      individually bold, joined by ` / ` (was a plain arrow-joined sequence); the cumulative line
-      uses `›` (U+203A) as its separator and is prefixed `-# **CP Spent:**`; the pull-sequence line
-      ends with `⌇` (U+2307) `**\`X CP\`**` instead of `= \`X CP\``. Copy these two unicode
-      characters verbatim from a known-good source if you ever touch this again — a
-      visually-similar-but-wrong glyph is an easy, hard-to-notice typo here.
-    - **Entries are now paginated across 2 pages** (`PAGE_1_KEYS`/`PAGE_2_KEYS`/`SUBPAGES` in
-      `drawprices.js`) purely because rendering every entry as up to 3 real Text Displays pushed the
-      full 9-entry, single-page container to 41 recursive components — over Discord's 40 cap, which
-      would have failed to send outright. Page 1: Mythic Weapon, Mythic Character, Legendary Weapon
-      (Reactive/Non-Reactive), Legendary Character + Legendary Weapon. Page 2: Double Legendary
-      Weapons, 7 Spins Legendary Weapon, Pick Your Reward Card, Double Epic Characters — exact split
-      Harkirat specified, not a size-balancing choice. `buildContainer(regionKey, accentColor,
-      isEphemeral, subpage)` takes a 4th param; `execute(interaction, regionOverride, subpageOverride)`
-      threads it through. **Subpage is NEVER persisted anywhere** (unlike region) — a fresh `/draw
-      prices` invocation always starts at page 1 regardless of what page anyone last viewed; it only
-      travels through a button click's own `custom_id` for that one re-render.
-    - Region toggle button: `price_region_{10|30}_{currentSubpage}` (not `toggle_price_region_*` —
-      that prefix collides with `/settings`' generic binary-toggle handler, which expects a
-      `|{userId}` suffix this button doesn't have; a real bug caught during review before ever
-      shipping). Encodes the current subpage too so switching region doesn't reset which page of
-      entries you were on. Region choice persists to `UserPreference.defaultRegion`; subpage does not.
-    - Page nav (`price_subpage_{region}_{targetPage}`, via the shared `buildPaginationRow` helper) is
-      positioned directly under the entries themselves (own divider on both sides), NOT next to the
-      region-switch footer/button below — it originally sat right beside the "Switch between viewing
-      10 CP or 30 CP region prices" text, which read as if the page arrows were also part of
-      switching region. Moved per Harkirat's explicit fix request.
-    - Footer collapsed to one `-#` line: `Switch between viewing 10 CP or 30 CP region prices. (Tip:
-      check out \`/settings\`)` (was two separate lines).
-    - `emojis.drawPrices` updated to a new emoji ID (`<a:DrawPrices:1525864071776305163>`) — only
-      used by this command, no other call sites to update.
-    - **`## ` title sizing applied to calendar/draws/patchnotes too** (their `buildTitleBlock` calls
-      now pass `2` as the 4th arg), "to keep consistency of design" across all seasonal commands —
-      `seasonend.js` didn't need touching, its own hand-rolled heading was already `## `.
-    - The large-divider-spacing test between entries (spacing 2, region_10 only, region_30 stays
-      spacing 1 for comparison) from the prior round is UNCHANGED and still region_10-only — not yet
-      decided whether to keep, drop, or apply everywhere.
-    - Component counts per page, verified directly via `buildContainer()`: region_10 page 1 = 34,
-      page 2 = ~28ish; region_30 similar minus a few for the shorter entries. All safely under 40.
-      Re-verify the same way (dump JSON, count recursively) if entries are ever added back or
-      un-merged.
-- **Color palette assignment follows nav button order** (Calendar, Draws, Draw Prices,
-  Patch Notes, Season End — see the `globalNavigationRow` in any command), exact hex →
-  decimal for `accent_color`: Police Blue `#355070` (3494000, **Calendar**, 1st) ·
-  Chinese Violet `#6D597A` (7166330, **Draws**, 2nd) · China Rose `#B56576` (11887990,
-  **Draw Prices**, 3rd) · Light Coral `#E56B6F` (15035247, **Patch Notes**, 4th) ·
-  Tumbleweed `#EAAC8B` (15379595, **Season End**, 5th). These are each command's
-  `PRESET_ACCENT` constant — see `.claude/rules/accent-and-colors.md` for when they're actually
-  used vs. overridden. This mapping got rotated out of sync with the nav buttons once
-  already (after the buttons themselves were reordered in an earlier session) — if the
-  nav button order ever changes again, re-derive this mapping from scratch rather than
-  assuming the existing `PRESET_ACCENT` values are still aligned to it.
-- **`emojiMap.js`** is the single source of truth for emoji IDs (tiers, BP/rank/DMZ/CP
-  icons, and the animated command-header icons). Reuse from there rather than
-  hardcoding emoji strings inline in new code. Also exports `parseEmoji()` for
-  converting a mention string into the `{id, name, animated}` shape a button's `emoji`
-  field needs (see the Components V2 rules in root CLAUDE.md).
+- **"Seasonal Content" visibility is one shared toggle (Option A)**, not five separate ones. Deliberately chosen over per-command granularity — if you're asked to add a 6th seasonal command, wire it to `prefs.seasonalVisibility` too, don't add a new field.
+- **Admin dates are always UTC-0 — except patch notes' release date/time, which is the one deliberate exception.** `adminParser.js`'s `parseAdminDate` (draws/calendar/season-end deadlines) forces `chrono.parseDate(str, new Date(), { timezone: 0 })` specifically to avoid depending on the host machine's local timezone/DST — a past bug (DMZ season-end showing 1 hour off) was traced to exactly this kind of local-timezone dependency. Don't reintroduce ambient-timezone parsing for those fields.
+  - **Patch notes' release date (`adminParser.js`'s `parseReleaseDateTime`, used only by the 3 `modal_patch_*` handlers in index.js) is smarter, per Harkirat's explicit call (2026-07-27 08:02 EDT):** a bare date with no time-of-day still means UTC-0 midnight (same convention as everywhere else, falls straight through to `parseAdminDate`), but the moment a time is also typed ("2026-07-22, 7:20 AM"), that time is treated as Harkirat's own local clock (his `UserPreference.timezone`, same field `/settings`/`/timestamp` already use, default `America/Toronto`) and converted to the real UTC instant — chrono's `isCertain('hour')` decides which case applies, same check `timestampHelper.js`'s `generateTimestamps()` already uses. Root cause this fixed: `parseAdminDate` used to unconditionally discard any typed time and normalize to midnight UTC regardless — a real time typed alongside the date was silently thrown away, and since `commands/patchnotes.js` displays the release date with a Discord `<t:X:f>` (date+time) timestamp, that discarded-then-midnight-UTC value rendered as a confusing wrong-day/wrong-time string in the viewer's own local timezone (e.g. midnight UTC showing as "8:00 PM the previous day" for a UTC-4 viewer). `adminParser.js`'s `formatReleaseDateTime` is the reverse — it pre-fills the "Date & Info" / "Edit Past Season" modals with the time included whenever the stored instant isn't exact UTC midnight, so reopening either modal to tweak something unrelated (e.g. the description) doesn't silently wipe a previously-set release time back to midnight on the next submit. If you add a 4th patch-notes-date call site, use `parseReleaseDateTime`/ `formatReleaseDateTime`, not `parseAdminDate`/`formatAdminDate` — every other admin date field (draws/calendar/season-end) is unaffected and keeps the plain UTC-0 functions.
+- **chrono-node defaults a bare date (no time-of-day given) to NOON, not midnight.** `timestampHelper.js`'s `generateTimestamps` (used by `/timestamp`) checks `parsedComponents.isCertain('hour')` and manually zeroes the time back to midnight in the target timezone when the user's input had no explicit time — otherwise something like `/timestamp datetime:july 17 timezone:UTC` silently came out as July 17 **noon** UTC. `adminParser.js`'s `parseAdminDate` was never affected by this (it already force-normalizes everything to midnight UTC unconditionally), so this was isolated to the user-facing command.
+- **Bulk-import text formats are bullet/comma-delimited, not one-per-line JSON**, because Harkirat pastes from a notes app export. See `parseBulkDrawList` (comma- separated) and `parseBulkEvents` (bullet-separated, `M/D - M/D | Title` or `M/D - All Season | Title`) in `adminParser.js`. Titles in bulk imports are preserved verbatim (no auto title-casing) because CODM content is full of acronyms (MP/BR/DMZ) that naive title-casing mangles into "Mp"/"Br"/"Dmz". Because the whole line is comma-delimited, a date containing its own comma (e.g. "July 16, 2026") used to fracture across two fields and silently drop the year — `parseBulkDrawList` now re-merges a trailing bare-4-digit-year field back onto the previous field before parsing it as a date. Keep that in mind if you touch this parser: any fix here needs to stay comma-in-date-safe, not just comma-delimiter-safe. Per-item parsing (`[tier] Item Name` -> `{tier, name}`) is factored into `adminParser.js`'s exported `parseItemLine()`, shared by `parseBulkDrawList` and `index.js`'s single add-draw/edit-draw modal handlers — previously copy-pasted identically in all three places.
+- **`/manage draws`'s bulk import is split into two independent flows — New and Returning each have their own modal** (`modal_draws_bulk_new` / `modal_draws_bulk_returning` in index.js, `parseBulkDrawList` in `adminParser.js` returns a flat array for whichever one category was submitted). This used to be ONE modal covering both, distinguished per-line by a leading `n `/`r ` prefix token, and a single submit replaced BOTH `newDraws` and `returningDraws` together — re-running the import to fix one typo in New Draws silently re-wrote Returning Draws too (even if unchanged content-wise, it reordered/re-saved it). Splitting means each submit only ever touches its own array. If you add a third draws-like category in the future, give it its own modal/custom_id rather than reintroducing a type-prefix line. `bulk-both` (added 2026-07-09) is NOT a reintroduction of that old combined flow — it's one modal with two independently-optional fields, and each field still only ever writes to its own array (a blank field leaves that array completely untouched), for the common case of wanting to update both categories without two round-trips.
+- **Bulk imports REPLACE, they don't append.** `modal_draws_bulk_new`/ `modal_draws_bulk_returning` each overwrite only their own array (`newDraws`/`returningDraws`), and `modal_calendar_bulk` (index.js) overwrites `calendar` wholesale rather than pushing onto the existing array. A bulk paste represents the complete current list for that category/season, so re-running it (e.g. to fix a typo) replaces the old entries instead of duplicating on top of them.
+- **`toTitleCase` (`adminParser.js`) preserves already-uppercase acronyms, skips leading punctuation, AND capitalizes each side of a hyphen independently** rather than blanket-lowercasing the whole string first. The old implementation did `str.toLowerCase()` on the entire string, then re-capitalized only the character immediately after whitespace — that mangled "FSS Hurricane" into "Fss Hurricane" (acronym torn down), "(Operator)" into "(operator)" (the char after the space was "(", not a letter, so nothing got recapitalized), and "Blood-Red" into "Blood-red" (a hyphenated word is one whitespace-delimited token, so only its very first letter ever got capitalized). Now: each whitespace-delimited word is further split on its own hyphens, and each hyphen segment independently either gets preserved verbatim (if already fully uppercase, 2+ letters — an acronym like "FSS") or has its first actual *letter* capitalized, skipping over leading punctuation like `(`. Applies to draw/item titles in both the bulk parser and the single-add/edit modals in index.js.
+- **`toTitleCase` also splits on `/`, not just `-` (fixed 2026-07-30 22:24 EDT).** "Jupiter Cannon/Void Implosion Draw" was rendering as "...Cannon/void..." — a whitespace-delimited token with a `/` but no `-` (e.g. "Cannon/Void") went through `capitalizeSegment()` as one atomic unit, which only capitalizes the token's first letter and lowercases everything after it. Same fix shape as the existing hyphen handling: each word is now split on `/([-/])/` and both separators are treated identically (preserved verbatim, segments on either side capitalized independently).
+- **Draw items can be a `-# comment` instead of a tiered weapon/character** (added 2026-07-30 22:24 EDT) — typing `-# some note` in the Items field (single add/edit or bulk) is parsed by `adminParser.js`'s `parseItemLine` into `{ tier: 'comment', name: '...' }` BEFORE the generic tier-shorthand parse runs (otherwise `-#` falls through as an unrecognized tier and the note text gets title-cased like a weapon name, which mangles free text). Deliberately NOT run through `toTitleCase` — it's a note, not a game item name. `draws.js`'s `buildDrawSections` renders it as plain `-# text` subtext, no tier emoji/bold. `TIER_SHORTHAND['comment']` = `'-#'` so it round-trips correctly through Edit Draw's pre-fill and the bulk export format.
+- **"All Season" calendar events resolve their end date to `bpEnd`, not a literal "Ongoing" label.** The Battle Pass ending is what actually closes out an all-season event; `calendar.js` only falls back to showing "Ongoing" text if `bpEnd` hasn't been set yet.
+- **`parseAdminDate` returns `null` on unparseable input, never a "now" fallback (fixed 2026-07-31 12:10 EDT).** It used to silently return `new Date()` when chrono couldn't parse the text — a typo like "TDB" for "TBD" became the literal current instant, which read as a real, intentional date (and on 2026-07-31 landed almost exactly on Aug 1 00:00 UTC, corrupting all 3 season-end dates in one submit). Every caller now treats `null` as "not a valid date": the season titles/deadlines modals (live + draft) leave that field untouched and report which one was skipped; calendar/draw add/edit modals reject the submission outright; both bulk parsers (`parseBulkDrawList`/ `parseBulkEvents`) skip just the malformed line instead of importing a wrong date.
+- **`/calendar` is a 3-section page (Draws/Events/Playlists), not a flat event list (redesigned 2026-07-31 12:10 EDT).** Each `calendar[]` entry carries a `category` (see `.claude/rules/models.md`), set via the bulk parser's `d•`/`p•`/`e•` prefix (Harkirat's own `calendar_bulk.txt` convention — `adminParser.js`'s `parseBulkEvents`, rewritten with a lookahead regex since the prefix letter sits BEFORE the bullet it belongs to and a naive `.split('•')` left it dangling on the wrong entry) or the single add/edit modal's Category field (`normalizeCalendarCategory`, accepts a letter or full word, blank defaults to `'event'`). **The Draws section auto-merges in anything from `newDraws`/ `returningDraws` that has no explicit `category: 'draw'` calendar entry**, fuzzy-matched by title (`utils/search.js`'s `fuzzyMatch`) so a draw someone ALSO typed as a `d•` bulk line doesn't double up — an auto-merged entry is tagged `dateOnly: true` and renders as a single "Releases \<date\>" line instead of a false date range. **Category no longer has to be typed by hand (added 12:40 EDT the same session, per Harkirat's explicit follow-up):** with no `d•`/`p•`/`e•` prefix (or a blank Category field on the single modal), `adminParser.js`'s `guessCalendarCategory()` keyword-matches the title itself — `DRAW_KEYWORDS` (`draw`/`armory`/`it goes two`/`redux`/`mythic drop`, word-form aware: plurals, "Armories", the fused "Gamemode" spelling) checked before `PLAYLIST_KEYWORDS` (`mode`/`playlist`/`gamemode`/`map`/standalone `MP`/`BR`), defaulting to `'event'` when neither hits, per Harkirat's own stated rule. **Standalone `MP`/`BR` were a direct correction** (2026-07-31 13:05 EDT) — "Krai BR"/"Rebirth Island BR" have no "mode"/"playlist" word at all but are unambiguous mode names to him; both are word-boundaried (`\bmp\b`/`\bbr\b`) since they're 2-letter tokens that would otherwise match constantly as substrings of unrelated words. **The explicit prefix still wins when present** — it's the override for a genuinely ambiguous title (his own `calendar_bulk.txt` prefixes bare map names like "Krai BR" for exactly this, since neither keyword list matches them). Navigation stays the pre-existing left/right pagination on Harkirat's explicit call (page 1 = Draws + Events, page 2 = Playlists/Modes) rather than switching to section-toggle buttons — that's filed in `docs/db-deferred-list.md`'s Queued section for its own pass since it's new UI worth seeing first, not a wiring change. Section heading is `### `.
+- **Season-end deadlines support an explicit TBD state (added 2026-07-31 14:00 EDT, direct follow-up).** Typing the literal word "TBD" (case-insensitive) into a deadline field now sets a `${field}TBD` boolean (`bpEndTBD`/`rankEndTBD`/`dmzEndTBD`, live + draft) and nulls the Date field, instead of being unparseable text that gets skipped. Distinct from "not set yet" — `seasonend.js` shows *"TBD — date not yet announced"* rather than *"Date has not been set yet."* Anything checking whether a deadline (or an "All Season" calendar event riding on `bpEnd`) has ended treats TBD as running **indefinitely** — `calendar.js`'s `isEventEnded()` returns `false` immediately when `bpEndTBD` is set, before ever comparing against the (null) date. The Promote-to-Live handler (`index.js`'s `mng_draftpromoteconfirm`) has to check the TBD flag BEFORE the date — a plain `if (draft.bpEnd)` truthy check would silently skip promoting a TBD deadline, since TBD leaves `draft.bpEnd` explicitly `null`.
+- **`/calendar` is 3 separate PAGES now, not 2 combined ones (redesigned again 2026-07-31 14:00 EDT, same-session follow-up to the initial 3-section build below).** Draws / Events / Playlists-Modes each get their own page, switched via 3 named toggle buttons (`calpage_0/1/2`) instead of Prev/Next arrows — the section-toggle-buttons item originally filed to `db-deferred-list.md` was built immediately instead of deferred, per Harkirat's direct follow-up. Current page's button is Primary+disabled, the other two Secondary+enabled (same convention as any other "active page" button elsewhere in the bot). The Draws page itself further soft-splits into two sub-sections — `### {newDraws emoji} __**NEW DRAWS**__` / `### {returningDraws emoji} __**RETURNING DRAWS**__` (full caps + underline, per Harkirat's explicit heading-style request applied to every section heading) — replacing the single "Draws" heading entirely. An entry's new/returning split is a property of `getDrawSectionEntries()`'s tagging: a synthetic entry (from `newDraws`/ `returningDraws`, no explicit calendar row) knows its type directly; an EXPLICIT `category: 'draw'` calendar entry has no stored new/returning distinction of its own, so it's inferred via `isSameDrawTitle` against both arrays — an "orphan" match-neither entry defaults to 'new'. Events/Playlists pages use the same full-caps+underline heading treatment with their own new emojis (`emojiMap.js`'s `events`/`modes`). **The Active/All Events filter moved to `/settings`' Preferences page entirely** (a binary toggle, `toggle_calfilter_active`/`toggle_calfilter_all` in `index.js`'s generic `toggle_` handler, re-rendering page 1 specifically rather than the page-0 default every other toggle there uses) — `/calendar` no longer has an in-page way to change it, just reads `prefs.calendarEventFilter` fresh on every render. This directly reverses the ORIGINAL 3-section build's explicit call ("NOT a /settings toggle, Harkirat's request") — his own follow-up call this session.
+- **Patch notes' layout reordered (2026-07-31 12:10 EDT, the notes file):** the release-timestamp line moved from directly under the title to directly under the image carousel (same visual "section" as the images now), and a permanent `-# NOTE: Final patch notes are subject to change` disclaimer was added to the Additional Info block. The divider between the title and Additional Info is CONDITIONAL — it only appears when `description` actually has content; with nothing typed, the disclaimer rides directly under the title with no divider, since dividing up just one disclaimer line on its own read as visually pointless (Harkirat's own call).
+- **Additional Info auto-formats into a real weapon/attachment/change structure, OPT-IN via a `#` line marker (added 2026-07-31 17:20 EDT, the notes file's ∴ follow-up reply; PARSER REWRITTEN twice same day; heading capitalized + `f:`/fix alias added 2026-08-08 00:23 EDT).** Output structure decided from Harkirat's own reference screenshot: a `### ADDITIONAL CHANGES` heading (all-caps since 2026-08-08), `__**Weapon**__` per weapon, its attachments as plain lines, each change as `> {buff/nerf/fix emoji} details`. The INPUT grammar went through two shapes before landing:
+  1. First build: every weapon/attachment/change needed its OWN physical line. This directly caused a real submission mistake — Harkirat typed the whole thing as one comma-separated line (the same mental model draws/calendar bulk imports already use), which got read as a single weapon named that entire sentence and printed back bold+underlined verbatim.
+  2. **Final shape, per Harkirat's direct correction:** one weapon's ENTIRE block is ONE line, comma-delimited — `# Weapon, Attachment, n:/b:/f: text, n:/b:/f: text2, Attachment2, n:/b:/f: text3`. The first segment after `#` is the weapon name; every segment after that is a NEW ATTACHMENT unless it starts with `b:`/`n:`/`f:`, in which case it's a CHANGE under whichever attachment came right before it in that same line. Only a NEW WEAPON needs its own new line — this is now genuinely the same mental model as the draws/calendar bulk formats, not a different one. `commands/patchnotes.js`'s `formatAdditionalInfo()` implements this; `b:`/`n:`/`f:` reuses the existing `applyInfoAliases()` emoji lookup. **With no `#` line anywhere in the field, this is a pure no-op beyond the pre-existing b:/n:/f: alias** — every pre-existing free-typed entry (most are a one-line blurb) keeps rendering exactly as before; the whole `### ADDITIONAL CHANGES` heading only appears once the admin actually opts in. Any lines typed before the first `#` marker are kept as free prose above the structured block, not discarded. The `/manage` placeholder (100-char Discord cap ruled out a real example there) and the rich Guide's Patch Notes topic (`utils/manageGuides.js`) both document the FINAL comma-delimited grammar, not the abandoned one-line-per-thing version.
+- **Tier shorthand `ll` → `lg` for Legacy (changed 2026-07-31 17:20 EDT, Harkirat's direct request).** `utils/adminParser.js`'s `resolveTier()`/`TIER_SHORTHAND` — no back-compat kept for the old `ll` token, since it's purely an admin-typed input shorthand with no stored data depending on it (the DB always stores the full word `"legacy"`). If you ever see `ll` referenced as the legacy shorthand anywhere (a stale comment, an old screenshot), it's out of date.
+- **`/calendar` banner images REVERSED to always re-host through Cloudinary (2026-08-07 22:04 EDT, v2.61.0) — the original 2026-07-31 "prefer Discord's own CDN" decision below is superseded, kept struck-through for the reasoning trail rather than deleted.** ~~A `cdn.discordapp.com`/ `media.discordapp.net` source URL skips Cloudinary re-hosting entirely, since re-hosting an already-durable Discord asset would be pure downside and throws away Discord's own resize proxy~~ — **the "already-durable" premise was false.** `media.discordapp.net` links are signed (`ex=`/`is=`/`hm=` params) and expire in roughly a day; decoding a live banner's `ex=` timestamp confirmed one had already died. The resize-proxy premise was also never actually verified and turned out wrong too: `?width=N` alone is silently ignored by Discord's proxy (confirmed via direct `curl` — needs `width` AND `height` together, and even then crops rather than aspect-fits a mismatched box). `utils/calendarBannerCache.js`'s `cacheBannerImage()` now re-hosts every source to Cloudinary unconditionally; `isDiscordCdnUrl()` is kept only for diagnostics. **The width-cap feature itself (`capBannerPreviewWidth`, `BANNER_MAX_WIDTH`) was dropped entirely, not just fixed** — Harkirat live-tested a working Cloudinary-based cap and rejected it anyway, since a Cloudinary derivative has no path back to the original, so the cap also shrank the zoomed view. `commands/calendar.js` renders the raw Cloudinary URL at full resolution now, inline and on zoom. Full investigation: `docs/archive/resolved-list.md`'s "page banners" entry.
+- **`/manage`'s bulk-import guides rebuilt into a rich, structured Components V2 view with a topic-switching dropdown (2026-07-31 17:20 EDT, same-day follow-up — was a plain-text ephemeral reply from earlier the same session).** `utils/manageGuides.js` — one shared render function (`buildGuideContainer(topicKey)`) covering 5 topics (Draws/Calendar/Loadouts/Patch Notes/Next Season Draft — the last two are NEW, they had no guide at all before), each with a paste skeleton, a field-by-field breakdown of what's literal vs. auto-formatted, a real before/after example, and tips. A `mng_guide_pick` select menu (index.js) re-renders the SAME message to any other topic without closing the guide — same `deferUpdate()` + `sendV2Payload()` shape `mng_pagesel` already uses for the main panel. **Every page's Guide button now lives in the LAST section, matching a fixed ordering convention across every `/manage` page: single-item management → bulk management → purge → export → guide** (Harkirat's direct correction — it was scattered mid-page before). The Draws example in the old plain-text version was literal filler nonsense (`Jupiter Cannon Draw, m Jupiter Cannon, l Void Blade...`) — replaced with a real one (`Void Implosion Draw, l M4 - Void Implosion, e Dusk - Otherworld Ensemble, -# Girls Frontline Collab, July 15, URL.com/image.png`). Calendar's "Page Banners" button, previously its own separate inline group, is folded into the "Add Multiple Events" bulk group as a 4th button — it had no reason to sit apart from Guide's own inline placement. Calendar's Export/Purge order was also swapped to match the fixed convention above (Purge now comes before Export, it had been the other way around). (so a past season's patch notes don't get renamed retroactively), but the entry representing the currently-live season needs to track the live season title — see index.js's `modal_season_titles_deadlines` handler (formerly `edit_season_titles`, merged with the old deadlines modal on 2026-07-09), which updates both when the admin renames a season. Separately, some entries created before the heading redesign still have the full legacy sentence ("Balance Changes for Season 6...") baked into their stored title instead of just the bare season name — `patchnotes.js`'s exported `cleanPatchTitle()` strips that prefix at every display site (heading, history dropdown, autocomplete in index.js) rather than requiring old DB entries to be edited by hand.
+- **`/calendar`'s active/all events toggle button only appears if at least one event has actually ended.** Computed fresh on every render (not cached/stored) via `calendar.js`'s `isEventEnded()`/`hasEndedEvents` — if every event this season still ends in the future, "Active Only" and "All" would render an identical list, so the toggle (and its description line) are omitted entirely rather than shown doing visibly nothing. This was a real point of confusion during testing before the check existed — Harkirat toggled it, saw no change, and reasonably assumed it was broken, when actually the underlying filter logic was correct and there just wasn't anything to filter yet. Defaults to `'all'` for anyone without a saved preference. An "All Season" event only counts as ended once `bpEnd` is BOTH set AND passed (it has no fixed end of its own — see the next bullet); if `bpEnd` hasn't been configured yet, it's treated as still active rather than guessed at. The persisted choice lives in `UserPreference.calendarEventFilter` (see above).
+- **`/season end`'s per-deadline heading went `## ` → `### ` → back to `## `.** It was originally one line combining emoji + season title + " ends..." at H2, which wrapped awkwardly on mobile; that got fixed by dropping to H3, which then felt visually smaller than the rest of the bot's uniform heading sizes. The real fix was moving "ends.../that's..." OFF the heading line entirely and onto the timestamp lines below it (`✦ **Ends...** <t:X:F>` / `✦ **That's...** <t:X:R>`) — the heading is now just `## {emoji} **{title}**`, short enough to never wrap, so it was safe to go back to the bigger H2 size without reintroducing the original wrapping bug.
+- **`/draw prices` was rewritten (2026-07-11) to compute totals from raw pull arrays instead of hand-typing them** — the old `REGION_DATA`/`COMBO_NOTES` had repeated real math mistakes (found by cross-referencing against Harkirat's raw combo-notes export: a displayed total not matching its own draws curve, a wrong draw value, a typo'd draw value). Rather than keep fixing hand-typed totals one at a time, `commands/drawprices.js`'s `DRAW_DATA` now stores ONLY the per-pull CP numbers (`draws: [10, 30, 50, ...]`, optional `upgrade: {perDraw, count}`); `formatCP`/ `arrowSequence`/`cumulativeSequence`/`buildDrawEntries` derive every total, arrow-joined sequence, and the "CP spent" running-cost line straight from that array at render time. A wrong number can now only ever exist in one place, and a total can never silently drift from its own draws again — verify this by re-running `buildContainer()` directly via `node -e` (dump the JSON, cross-check each total against its own `draws` sum) rather than hand-summing, if you touch this data again.
+  - Expanded from 5 draw types to 10 (later 9 — see below) using a fresh verified data export from Harkirat (`drawprices2.txt`) — these used to live only as terse one-line `COMBO_NOTES` entries; now every draw type gets the same full per-pull breakdown.
+  - The refreshed source itself had one arithmetic typo (`legendaryGunNonReactive.region_10` stated a total of 4,540 CP, but its own listed draws sum to 4,550 — matching what this file already had before the refresh) — kept the computed-correct 4,550 rather than trusting the source's typed total, per the same "always sum, never trust a hand-typed total" rule above.
+  - "Mythic Character + Legendary Weapon Draw" and "Legendary Character + Legendary Weapon Draw" are each a single named in-game banner (not a bundle of two separate draws) — kept exactly as Harkirat named them rather than "simplifying," since that's the banner's real in-game name.
+  - `doubleEpicCharacters.region_30` has no data yet (Harkirat's source explicitly says "pending data") — `buildDrawEntries` renders a "not yet available" placeholder for a missing region entry rather than fabricating a number.
+  - **Second pass (2026-07-12, per `drawPrices_ui.json` — Harkirat's own hand-adjusted mockup):** dropped the two group headers (Mythic-Tier / Legendary & Epic-Tier) for one flat divider-separated sequence, each entry down to a single tier emoji (`tierIcon()` — a module-level `TIER_ICON` const until 2026-07-26 16:04 EDT, when it was made per-render because the const froze pre-sync emoji ids; not the old tier+Epic combo). "Legendary BR Vehicle Draw" removed entirely (absent from Harkirat's own hand-built mockup, read as deliberate) — its `altLast` mechanism went with it, nothing else ever used that field. Region switcher became a toggle button instead of a select-menu, persisting to `UserPreference.defaultRegion` on click.
+  - **Third pass (2026-07-12, per `example_reformat.json` + several direct follow-up requests the same session) — this is the CURRENT final state:**
+    - Command title (`buildTitleBlock`) down to `## ` (was `# `) with an extra `**bold**` wrap around the caption on top of its existing bold-italic-unicode styling — both via new optional params (`headingLevel`, `boldCaption`) on the shared helper, defaulting to the old behavior so calendar/patchnotes/draws (which separately also moved to `## `, see below) and seasonend (already `## `) didn't silently change unless explicitly opted in.
+    - Each entry now renders as up to 3 SEPARATE Text Displays — `[**icon name** \n > total line]`, `[bold pull sequence + cumulative]`, and (mythic entries only) `[**Upgrade** \n formula line]` — deliberately NOT merged back into fewer components; Harkirat wants the real gap BETWEEN Discord components for the spacing, not blank lines inside one. Entry headers are `**bold**` with no heading markup at all (was `### `). The `> ` quote block on the CP total line came back (was briefly removed, then restored). Upgrade sub-heading is `**bold**`, not `### ` (was briefly a real heading, then flattened to match the reference file). Pull-sequence numbers are individually bold, joined by ` / ` (was a plain arrow-joined sequence); the cumulative line uses `›` (U+203A) as its separator and is prefixed `-# **CP Spent:**`; the pull-sequence line ends with `⌇` (U+2307) `**\`X CP\`**` instead of `= \`X CP\``. Copy these two unicode characters verbatim from a known-good source if you ever touch this again — a visually-similar-but-wrong glyph is an easy, hard-to-notice typo here.
+    - **Entries are now paginated across 2 pages** (`PAGE_1_KEYS`/`PAGE_2_KEYS`/`SUBPAGES` in `drawprices.js`) purely because rendering every entry as up to 3 real Text Displays pushed the full 9-entry, single-page container to 41 recursive components — over Discord's 40 cap, which would have failed to send outright. Page 1: Mythic Weapon, Mythic Character, Legendary Weapon (Reactive/Non-Reactive), Legendary Character + Legendary Weapon. Page 2: Double Legendary Weapons, 7 Spins Legendary Weapon, Pick Your Reward Card, Double Epic Characters — exact split Harkirat specified, not a size-balancing choice. `buildContainer(regionKey, accentColor, isEphemeral, subpage)` takes a 4th param; `execute(interaction, regionOverride, subpageOverride)` threads it through. **Subpage is NEVER persisted anywhere** (unlike region) — a fresh `/draw prices` invocation always starts at page 1 regardless of what page anyone last viewed; it only travels through a button click's own `custom_id` for that one re-render.
+    - Region toggle button: `price_region_{10|30}_{currentSubpage}` (not `toggle_price_region_*` — that prefix collides with `/settings`' generic binary-toggle handler, which expects a `|{userId}` suffix this button doesn't have; a real bug caught during review before ever shipping). Encodes the current subpage too so switching region doesn't reset which page of entries you were on. Region choice persists to `UserPreference.defaultRegion`; subpage does not.
+    - Page nav (`price_subpage_{region}_{targetPage}`, via the shared `buildPaginationRow` helper) is positioned directly under the entries themselves (own divider on both sides), NOT next to the region-switch footer/button below — it originally sat right beside the "Switch between viewing 10 CP or 30 CP region prices" text, which read as if the page arrows were also part of switching region. Moved per Harkirat's explicit fix request.
+    - Footer collapsed to one `-#` line: `Switch between viewing 10 CP or 30 CP region prices. (Tip: check out \`/settings\`)` (was two separate lines).
+    - `emojis.drawPrices` updated to a new emoji ID (`<a:DrawPrices:1525864071776305163>`) — only used by this command, no other call sites to update.
+    - **`## ` title sizing applied to calendar/draws/patchnotes too** (their `buildTitleBlock` calls now pass `2` as the 4th arg), "to keep consistency of design" across all seasonal commands — `seasonend.js` didn't need touching, its own hand-rolled heading was already `## `.
+    - The large-divider-spacing test between entries (spacing 2, region_10 only, region_30 stays spacing 1 for comparison) from the prior round is UNCHANGED and still region_10-only — not yet decided whether to keep, drop, or apply everywhere.
+    - Component counts per page, verified directly via `buildContainer()`: region_10 page 1 = 34, page 2 = ~28ish; region_30 similar minus a few for the shorter entries. All safely under 40. Re-verify the same way (dump JSON, count recursively) if entries are ever added back or un-merged.
+- **Color palette assignment follows nav button order** (Calendar, Draws, Draw Prices, Patch Notes, Season End — see the `globalNavigationRow` in any command), exact hex → decimal for `accent_color`: Police Blue `#355070` (3494000, **Calendar**, 1st) · Chinese Violet `#6D597A` (7166330, **Draws**, 2nd) · China Rose `#B56576` (11887990, **Draw Prices**, 3rd) · Light Coral `#E56B6F` (15035247, **Patch Notes**, 4th) · Tumbleweed `#EAAC8B` (15379595, **Season End**, 5th). These are each command's `PRESET_ACCENT` constant — see `.claude/rules/accent-and-colors.md` for when they're actually used vs. overridden. This mapping got rotated out of sync with the nav buttons once already (after the buttons themselves were reordered in an earlier session) — if the nav button order ever changes again, re-derive this mapping from scratch rather than assuming the existing `PRESET_ACCENT` values are still aligned to it.
+- **`emojiMap.js`** is the single source of truth for emoji IDs (tiers, BP/rank/DMZ/CP icons, and the animated command-header icons). Reuse from there rather than hardcoding emoji strings inline in new code. Also exports `parseEmoji()` for converting a mention string into the `{id, name, animated}` shape a button's `emoji` field needs (see the Components V2 rules in root CLAUDE.md).
 

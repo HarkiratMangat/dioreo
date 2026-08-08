@@ -1,87 +1,73 @@
+---
+kind: record
+status: live
+published: true
+---
+
 # What's New — Dior's Builds
 
 The short version. For the full technical write-up, see [CHANGELOG.md](CHANGELOG.md).
 
 ## 🔜 Coming soon
 A peek at what's planned (not built yet):
-- **Faster, safer bulk editing** in the admin panel — search for items and pick them from a list
-  instead of pasting names.
+- **Faster, safer bulk editing** in the admin panel — search for items and pick them from a list instead of pasting names.
 - **Reliability polish** so the bot never double-responds or drops a click.
 - **Snappier page-switching** in busier commands (like flipping between New/Returning draws).
-- **Richer colour extraction** — more variety pulled from your avatar, so a standout colour doesn't
-  get missed.
+- **Richer colour extraction** — more variety pulled from your avatar, so a standout colour doesn't get missed.
 
 ### Further out
-- **A `/help` command** explaining everything the bot can do, with a way to reach Dior directly for
-  bug reports or requests.
+- **A `/help` command** explaining everything the bot can do, with a way to reach Dior directly for bug reports or requests.
 - **`/meta`** — see every weapon currently marked Meta, in one place.
-- **A draw cost calculator** — tells you what it'll cost to finish a draw from where you are, and
-  which top-up you'd need.
-- **In-bot announcements** — a heads-up message (e.g. "sorry the bot was down — we've moved to a better
-  host") shown once the next time you use any command.
+- **A draw cost calculator** — tells you what it'll cost to finish a draw from where you are, and which top-up you'd need.
+- **In-bot announcements** — a heads-up message (e.g. "sorry the bot was down — we've moved to a better host") shown once the next time you use any command.
 - **An easier way to add & share the bot**, including where user-installed apps are blocked.
 - **A `/define` command** (Urban Dictionary lookup) — just for fun.
-- Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your
-  own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
+- Eventually: **text commands** (like `d b ak117`) with a custom prefix per server, **submitting your own loadouts** for review, and further out still, **building your own gunsmith right in the bot**.
 
 ---
 
+## v2.63.0 — August 8, 2026
+- **Nothing changed in the bot.** A documentation-only release: the project's own notes and reference files were reformatted so they're easier to search, and each one now says at the top what kind of document it is and whether it's published to the website. Purely internal housekeeping — no command, screen or behaviour is different.
+
 ## v2.62.1 — August 8, 2026
-- **Nothing changed in the bot.** Closed out a batch of automated security scanner findings on
-  the legal/docs site's page generator and its build pipeline — all internal, nothing you'd notice.
+- **Nothing changed in the bot.** Closed out a batch of automated security scanner findings on the legal/docs site's page generator and its build pipeline — all internal, nothing you'd notice.
 
 ## v2.62.0 — August 8, 2026
-- **Patch notes have a new "Fix" icon** — typing `f:` in the Additional Info field now shows a
-  dedicated fix icon, alongside the existing buff/nerf shorthand.
+- **Patch notes have a new "Fix" icon** — typing `f:` in the Additional Info field now shows a dedicated fix icon, alongside the existing buff/nerf shorthand.
 - **The "Additional Changes" section heading is now all-caps.**
-- **Your accent color now defaults to the Pre-Designed Palette again** — new accounts, or anyone
-  who's never picked an accent style in `/settings`, see each command's own themed color by default.
-  If you've already chosen a style, nothing changes for you.
+- **Your accent color now defaults to the Pre-Designed Palette again** — new accounts, or anyone who's never picked an accent style in `/settings`, see each command's own themed color by default. If you've already chosen a style, nothing changes for you.
 - **`/calendar`'s header now reads "Season Calendar"** instead of "Events Calendar."
 
 ## v2.61.2 — August 7, 2026
-- **Nothing changed in the bot.** Fixed one of the project's own internal release checks so it
-  catches a missing design note *before* a merge instead of after — the exact gap that made the
-  previous release (v2.61.1) necessary in the first place.
+- **Nothing changed in the bot.** Fixed one of the project's own internal release checks so it catches a missing design note *before* a merge instead of after — the exact gap that made the previous release (v2.61.1) necessary in the first place.
 
 ## v2.61.1 — August 7, 2026
-- **Nothing changed in the bot.** Corrected an internal design note that still described the old
-  (now-reversed) calendar-banner behavior from v2.61.0.
+- **Nothing changed in the bot.** Corrected an internal design note that still described the old (now-reversed) calendar-banner behavior from v2.61.0.
 
 ## v2.61.0 — August 7, 2026
-- **`/manage`'s bulk calendar add/replace now shows exactly which category each event landed in** —
-  no more guessing whether something got filed under the wrong section.
-- **`/calendar` page banners no longer quietly break after a day or two** — they're stored more
-  durably now and always show at full quality/resolution.
+- **`/manage`'s bulk calendar add/replace now shows exactly which category each event landed in** — no more guessing whether something got filed under the wrong section.
+- **`/calendar` page banners no longer quietly break after a day or two** — they're stored more durably now and always show at full quality/resolution.
 
 ## v2.60.0 — August 7, 2026
-- **Fixed the real cause of `/manage`'s calendar bulk add/replace buttons not working** — a text field
-  was quietly too long for Discord to accept, crashing the popup before it could even open.
-- **Fixed buttons occasionally losing their icon** on `/calendar`, `/draw prices`, and `/settings` —
-  those pages will feel a touch slower on page-switches/toggles now, but the icons stay put.
-- `/draw prices`' 10/20/30 CP buttons now each have their own icon; `/calendar`'s "Gamemodes" button is
-  now just "Modes" so all three fit on one row; `/settings` got a cleaner, more readable layout.
+- **Fixed the real cause of `/manage`'s calendar bulk add/replace buttons not working** — a text field was quietly too long for Discord to accept, crashing the popup before it could even open.
+- **Fixed buttons occasionally losing their icon** on `/calendar`, `/draw prices`, and `/settings` — those pages will feel a touch slower on page-switches/toggles now, but the icons stay put.
+- `/draw prices`' 10/20/30 CP buttons now each have their own icon; `/calendar`'s "Gamemodes" button is now just "Modes" so all three fit on one row; `/settings` got a cleaner, more readable layout.
 
 ## v2.59.0 — August 7, 2026
-- **Fixed a bug where a newly-released draw could disappear from `/calendar`'s Draws page** if you had
-  Active-Only filtering on — it was being read as "already over" the moment it released.
-- **Fixed `/manage`'s bulk calendar add/replace** occasionally showing "didn't respond in time" even
-  though the data saved fine.
+- **Fixed a bug where a newly-released draw could disappear from `/calendar`'s Draws page** if you had Active-Only filtering on — it was being read as "already over" the moment it released.
+- **Fixed `/manage`'s bulk calendar add/replace** occasionally showing "didn't respond in time" even though the data saved fine.
 - `/draw prices`' region buttons are now blue instead of red; `/calendar`'s section buttons got icons.
 
 ## v2.58.2 — August 7, 2026
-- **Buttons feel snappier**: draws, calendar, draw prices, and settings pagination/toggles now update
-  in one step instead of two, so the response lands faster.
+- **Buttons feel snappier**: draws, calendar, draw prices, and settings pagination/toggles now update in one step instead of two, so the response lands faster.
 - Everything else this release is internal housekeeping.
 
 ## v2.58.1 — August 7, 2026
 - Housekeeping only — nothing about the bot or the site changed.
 
 ## v2.58.0 — August 7, 2026
-- **`/draw prices` now has a 20 CP region**, with real pricing for every draw — switch between 10 CP,
-  20 CP, and 30 CP with the new 3-button switcher.
-- **New draw type added**: the Advanced Double Legendary Character Draw, on its own page, showing
-  Regular/Advanced purchase pricing and strategy costs the same way the Weapon version already does.
+- **`/draw prices` now has a 20 CP region**, with real pricing for every draw — switch between 10 CP, 20 CP, and 30 CP with the new 3-button switcher.
+- **New draw type added**: the Advanced Double Legendary Character Draw, on its own page, showing Regular/Advanced purchase pricing and strategy costs the same way the Weapon version already does.
 
 ## v2.57.3 — August 6, 2026
 - Housekeeping only — nothing about the bot or the site changed.
@@ -93,10 +79,8 @@ A peek at what's planned (not built yet):
 - Housekeeping only — nothing about the bot or the site changed.
 
 ## v2.57.0 — August 6, 2026
-- Alert messages now explain themselves in plain English — what happened, whether it fixes itself, and
-  what (if anything) to do — instead of only showing a stack trace.
-- The bot now tells you when it **recovers**, not just when something breaks, with how long it was down.
-  Routine reconnects stay quiet, so the channel doesn't fill with noise.
+- Alert messages now explain themselves in plain English — what happened, whether it fixes itself, and what (if anything) to do — instead of only showing a stack trace.
+- The bot now tells you when it **recovers**, not just when something breaks, with how long it was down. Routine reconnects stay quiet, so the channel doesn't fill with noise.
 - Nothing about the bot's commands or the site changed.
 
 ## v2.56.2 — August 6, 2026
@@ -119,259 +103,153 @@ A peek at what's planned (not built yet):
 
 ## v2.55.2 — August 5, 2026
 - **The two boxes on the homepage's command line no longer show a gap between them on iPhone.**
-- **Sharing a link to the site now shows a proper preview** — the homepage was missing its share
-  info entirely, and the Terms, Privacy, License and Notice pages each have a real description now
-  instead of the same generic line.
+- **Sharing a link to the site now shows a proper preview** — the homepage was missing its share info entirely, and the Terms, Privacy, License and Notice pages each have a real description now instead of the same generic line.
 - The homepage's browser-tab name is now "Dioreo — COD:M Companion Bot".
 
 ## v2.55.1 — August 5, 2026
 - Housekeeping only — nothing about the bot or the site changed.
 
 ## v2.55.0 — August 5, 2026
-- **The homepage types out commands now.** The `/` under the headline cycles through real commands
-  you can actually use — `/draws`, `/patch notes`, `/ar weapon AK117`, `/calendar page Events` and
-  a dozen more — picking a different order and different options every visit.
-- **The command, the option, and what you picked are shown separately**, the same way Discord shows
-  them, so it's clear which part is which rather than reading as one long name.
-- **The back-to-top button was invisible if you use uBlock Origin.** A filter list meant for hiding
-  ads was hiding our button too. Fixed — no change to how it looks or works.
-- **The download button in the mobile section menu no longer cuts text off mid-word** as you scroll
-  past it, and no longer sits flush against the edge of the menu.
+- **The homepage types out commands now.** The `/` under the headline cycles through real commands you can actually use — `/draws`, `/patch notes`, `/ar weapon AK117`, `/calendar page Events` and a dozen more — picking a different order and different options every visit.
+- **The command, the option, and what you picked are shown separately**, the same way Discord shows them, so it's clear which part is which rather than reading as one long name.
+- **The back-to-top button was invisible if you use uBlock Origin.** A filter list meant for hiding ads was hiding our button too. Fixed — no change to how it looks or works.
+- **The download button in the mobile section menu no longer cuts text off mid-word** as you scroll past it, and no longer sits flush against the edge of the menu.
 
 ## v2.54.0 — August 5, 2026
 - **The website has a real domain now: dioreo.app.**
-- **Cleaner links.** The Terms, Privacy Policy, License, and Notice pages moved from
-  `dioreo.app/legal/terms` to just `dioreo.app/terms` (same for the other pages). Old links still
-  work — they redirect to the new address.
+- **Cleaner links.** The Terms, Privacy Policy, License, and Notice pages moved from `dioreo.app/legal/terms` to just `dioreo.app/terms` (same for the other pages). Old links still work — they redirect to the new address.
 
 ## v2.53.0 — August 5, 2026
-- **The "link to this section" button now actually shows "Copied."** It was copying the link the
-  whole time, just never telling you — fixed.
-- **The section download menu got a real redesign** instead of a button that covered up whatever you
-  were reading.
-- **The Notice page's dependency list is easier to read on a phone** — each entry is now its own
-  card instead of a squeezed table.
-- **The tooltip that pops up near buttons no longer fires from a scroll or swipe** — only from an
-  actual hover or keyboard focus.
-- **The Privacy Policy now mentions that the alert log lives in the same database as your
-  preferences**, not just a separate provider — no change to what's collected or for how long.
+- **The "link to this section" button now actually shows "Copied."** It was copying the link the whole time, just never telling you — fixed.
+- **The section download menu got a real redesign** instead of a button that covered up whatever you were reading.
+- **The Notice page's dependency list is easier to read on a phone** — each entry is now its own card instead of a squeezed table.
+- **The tooltip that pops up near buttons no longer fires from a scroll or swipe** — only from an actual hover or keyboard focus.
+- **The Privacy Policy now mentions that the alert log lives in the same database as your preferences**, not just a separate provider — no change to what's collected or for how long.
 - New logo colors: the mascot and wordmark switched to the coral palette.
 
 ## v2.52.0 — August 4, 2026
-- **The bot is now called Dioreo.** Same bot, same person running it, same everything it remembers
-  about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored.
-  The Terms and Privacy Policy both spell this out, and every mention of the old name still counts as
-  a mention of the new one.
-- **The website has a proper front page.** It used to open by introducing the legal documents; now it
-  introduces the bot, with the legal documents still one tap away underneath.
-- **Easier to read on a phone.** Code examples got a cleaner layout with a copy button that actually
-  sits where you'd expect and tells you when it's copied, the footer spacing was evened out, and the
-  Contributing and Contributors pages got a back-to-top button.
-- **You can download the licence and notice files directly** from the menu on those pages, wherever
-  you happen to be scrolled to.
+- **The bot is now called Dioreo.** Same bot, same person running it, same everything it remembers about you — just a new name. Nothing you agreed to has changed, and nothing new is being stored. The Terms and Privacy Policy both spell this out, and every mention of the old name still counts as a mention of the new one.
+- **The website has a proper front page.** It used to open by introducing the legal documents; now it introduces the bot, with the legal documents still one tap away underneath.
+- **Easier to read on a phone.** Code examples got a cleaner layout with a copy button that actually sits where you'd expect and tells you when it's copied, the footer spacing was evened out, and the Contributing and Contributors pages got a back-to-top button.
+- **You can download the licence and notice files directly** from the menu on those pages, wherever you happen to be scrolled to.
 
 ## v2.51.3 — August 4, 2026
 - **Nothing changed in the bot.** Made the project's own release tooling a bit safer and smarter.
 
 ## v2.51.2 — August 3, 2026
-- **Nothing changed in the bot.** Internal housekeeping: tidied up the project's own working notes
-  and to-do list, and fixed a bug in one of the automated checks that made sure open items in those
-  lists don't get forgotten.
+- **Nothing changed in the bot.** Internal housekeeping: tidied up the project's own working notes and to-do list, and fixed a bug in one of the automated checks that made sure open items in those lists don't get forgotten.
 
 
 ## v2.51.1 — August 3, 2026
-- **Nothing changed in the bot.** Fixed a MarkEdit note-taking editor bug where pressing Return once
-  could add two blank lines instead of one, and added a standalone timestamp shortcut to the same
-  editor. Also tightened one of the project's own internal writing checks so a placeholder time
-  (like typing "xx" meaning to fill in the real minute later) gets caught immediately instead of
-  slipping through.
+- **Nothing changed in the bot.** Fixed a MarkEdit note-taking editor bug where pressing Return once could add two blank lines instead of one, and added a standalone timestamp shortcut to the same editor. Also tightened one of the project's own internal writing checks so a placeholder time (like typing "xx" meaning to fill in the real minute later) gets caught immediately instead of slipping through.
 
 
 ## v2.51.0 — August 3, 2026
 
-The site's nav indicator now stirs two colours together. Point at a tab and the
-pill picks up your cursor's colour — the page's own accent — and mixes it into
-that tab's, in a slow field that keeps moving while you hover.
+The site's nav indicator now stirs two colours together. Point at a tab and the pill picks up your cursor's colour — the page's own accent — and mixes it into that tab's, in a slow field that keeps moving while you hover.
 
 - The landing page has its own coral accent instead of borrowing the Terms page's.
-- The pointer becomes a proper text cursor over writing, and only over writing —
-  it used to go thin anywhere inside a paragraph's box, including the empty space
-  past the end of a line.
+- The pointer becomes a proper text cursor over writing, and only over writing — it used to go thin anywhere inside a paragraph's box, including the empty space past the end of a line.
 - Hovering a control now shows a small label saying what it does, on 57 of them.
-- The dark blob the pointer makes over the Install button now happens in dark mode
-  too, not just light.
+- The dark blob the pointer makes over the Install button now happens in dark mode too, not just light.
 
 ## v2.50.4 — August 2, 2026
-- **Nothing changed in the bot.** A spellchecking tool kept flagging one of the project's own
-  internal names as a mistake. It now knows the word.
+- **Nothing changed in the bot.** A spellchecking tool kept flagging one of the project's own internal names as a mistake. It now knows the word.
 
 
 ## v2.50.3 — August 2, 2026
-- **Nothing changed in the bot, or on the website.** A planned redesign of the Contributing and
-  Contributors pages is on hold, so those pages stay exactly as they are. The ideas from it are
-  written down properly so nothing has to be worked out twice.
+- **Nothing changed in the bot, or on the website.** A planned redesign of the Contributing and Contributors pages is on hold, so those pages stay exactly as they are. The ideas from it are written down properly so nothing has to be worked out twice.
 
 
 ## v2.50.2 — August 2, 2026
-- **Nothing changed in the bot.** One of the project's internal writing checks was complaining far
-  more often than it was right — roughly four times out of five it was flagging ordinary sentences
-  that simply mentioned a date. It now only speaks up for the cases it was actually meant to catch.
+- **Nothing changed in the bot.** One of the project's internal writing checks was complaining far more often than it was right — roughly four times out of five it was flagging ordinary sentences that simply mentioned a date. It now only speaks up for the cases it was actually meant to catch.
 
 
 ## v2.50.1 — August 2, 2026
-- **Nothing changed in the bot.** One of the new safety checks was refusing a legitimate edit — it
-  treated a genuine future deadline as an impossible date. It now understands the difference, and
-  two open questions that had only ever been raised in conversation are written down properly.
+- **Nothing changed in the bot.** One of the new safety checks was refusing a legitimate edit — it treated a genuine future deadline as an impossible date. It now understands the difference, and two open questions that had only ever been raised in conversation are written down properly.
 
 
 ## v2.50.0 — August 2, 2026
-- **Nothing changed in the bot.** A maintenance release about the project's own safety checks. It
-  turned out the tests written to prove those checks work were never actually being run by anything —
-  so they always looked like they were passing. They now run automatically on every change.
-- Running them for the first time uncovered two safety checks that had never worked at all, plus a
-  few that were warning about problems that weren't real. All fixed, and every check now has a test
-  that runs with the rest.
+- **Nothing changed in the bot.** A maintenance release about the project's own safety checks. It turned out the tests written to prove those checks work were never actually being run by anything — so they always looked like they were passing. They now run automatically on every change.
+- Running them for the first time uncovered two safety checks that had never worked at all, plus a few that were warning about problems that weren't real. All fixed, and every check now has a test that runs with the rest.
 
 
 ## v2.49.2 — August 2, 2026
-- **Nothing changed in the bot.** An internal safety check was running at the wrong time — it only
-  noticed a missing piece of paperwork *after* the work had already been filed, which meant the only
-  way to fix it was to file everything again. It now runs beforehand, so the problem gets caught while
-  it can still be fixed in place.
+- **Nothing changed in the bot.** An internal safety check was running at the wrong time — it only noticed a missing piece of paperwork *after* the work had already been filed, which meant the only way to fix it was to file everything again. It now runs beforehand, so the problem gets caught while it can still be fixed in place.
 
 
 ## v2.49.1 — August 2, 2026
-- **Nothing user-facing changed.** A maintenance release: one of the automatic checks was reporting a
-  problem when there wasn't one, and an internal rule about version numbering was out of date.
+- **Nothing user-facing changed.** A maintenance release: one of the automatic checks was reporting a problem when there wasn't one, and an internal rule about version numbering was out of date.
 
 ## v2.49.0 — August 2, 2026
-- **Nothing in the bot changed.** Another behind-the-scenes release — this one about the safety checks
-  that run while the bot is being worked on, so nothing you use in Discord is affected.
-- **A batch of automatic checks was added** that catch mistakes as they happen rather than after,
-  including one that spots an impossible date being written down and one that catches typos in new
-  text before it is saved.
+- **Nothing in the bot changed.** Another behind-the-scenes release — this one about the safety checks that run while the bot is being worked on, so nothing you use in Discord is affected.
+- **A batch of automatic checks was added** that catch mistakes as they happen rather than after, including one that spots an impossible date being written down and one that catches typos in new text before it is saved.
 
 ## v2.48.0 — August 2, 2026
-- **Nothing in the bot changed this release.** All of this was behind-the-scenes work on how the
-  project's own notes and history are stored, so nothing you use in Discord looks or behaves any
-  differently.
-- **The project's memory got a size limit and a tidy-up.** The file that lists everything the project
-  remembers had grown close to unreadable; it now has a ceiling, a place to retire finished notes, and
-  an automatic check that nothing goes missing.
-- **A filing problem was found and fixed.** About a third of the project's saved notes had been filed
-  under the wrong labels — including the entire session that wrote the licence and privacy policy — so
-  searching for them quietly turned up nothing. All of it was recovered, with nothing lost.
+- **Nothing in the bot changed this release.** All of this was behind-the-scenes work on how the project's own notes and history are stored, so nothing you use in Discord looks or behaves any differently.
+- **The project's memory got a size limit and a tidy-up.** The file that lists everything the project remembers had grown close to unreadable; it now has a ceiling, a place to retire finished notes, and an automatic check that nothing goes missing.
+- **A filing problem was found and fixed.** About a third of the project's saved notes had been filed under the wrong labels — including the entire session that wrote the licence and privacy policy — so searching for them quietly turned up nothing. All of it was recovered, with nothing lost.
 
 ## v2.47.1 — August 2, 2026
-- **The website now updates itself.** It was still showing an older version of a page even after the
-  change had been finished and released — publishing was a manual step somebody had to remember. It
-  happens automatically now, and it checks that the live site really is the new version afterwards
-  rather than assuming.
-- **It skips pointless republishes.** Writing a changelog entry no longer republishes the whole site,
-  since those pages aren't linked from anywhere yet.
+- **The website now updates itself.** It was still showing an older version of a page even after the change had been finished and released — publishing was a manual step somebody had to remember. It happens automatically now, and it checks that the live site really is the new version afterwards rather than assuming.
+- **It skips pointless republishes.** Writing a changelog entry no longer republishes the whole site, since those pages aren't linked from anywhere yet.
 
 ## v2.47.0 — August 2, 2026
-- **The legal site's navigation buttons often did nothing when you clicked them.** Fixed — a leftover
-  drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.
-- **The menu on phones is a swipeable row of tabs** — every page on one line, the one you are reading
-  always visible, and no menu to open first. Tapping one makes the highlight assemble itself out of a
-  swarm of droplets. Buttons no longer get stuck looking "pressed" after you tap them.
-- **The header on phones stopped overlapping itself.** "Dior's Builds" was being drawn straight across
-  the buttons beside it; there is room for everything now, and the Discord button says INSTALL rather
-  than being a bare circle that looked like a sign-in.
-- **The section list beside long documents no longer has its own scrollbar.** It follows the page as
-  you read, so you never have to scroll it separately.
-- **The menu label stopped going unreadable while you hover.** The word turned dark up to half a
-  second before the highlight arrived underneath it, leaving dark text on a dark bar.
+- **The legal site's navigation buttons often did nothing when you clicked them.** Fixed — a leftover drag gesture was cancelling the click whenever your hand moved a few pixels, which is most clicks.
+- **The menu on phones is a swipeable row of tabs** — every page on one line, the one you are reading always visible, and no menu to open first. Tapping one makes the highlight assemble itself out of a swarm of droplets. Buttons no longer get stuck looking "pressed" after you tap them.
+- **The header on phones stopped overlapping itself.** "Dior's Builds" was being drawn straight across the buttons beside it; there is room for everything now, and the Discord button says INSTALL rather than being a bare circle that looked like a sign-in.
+- **The section list beside long documents no longer has its own scrollbar.** It follows the page as you read, so you never have to scroll it separately.
+- **The menu label stopped going unreadable while you hover.** The word turned dark up to half a second before the highlight arrived underneath it, leaving dark text on a dark bar.
 - **The opening line on Terms and Privacy read like a sentence cut in half.** It was — fixed.
 - **A "back to top" button** on the long documents, with a ring showing how far through you are.
 - **Download buttons** for the plain-text licence and notice.
 - **Copy buttons** on every code block in the contributing guide.
 - **The home page was off centre.** Fixed, along with a pass over its hover effects and spacing.
-- **The highlight behind the menu now breaks apart and rebuilds itself** when you move between pages,
-  instead of sliding along as one piece.
+- **The highlight behind the menu now breaks apart and rebuilds itself** when you move between pages, instead of sliding along as one piece.
 - **The moon on the dark/light switch is a proper thin crescent** — it used to be an almost-full moon.
-- **The highlight keeps its colour properly now.** Each page has its own accent, and on phones the
-  effect that draws it was washing every one of them out.
-- **The menu label was hard to read whenever you pointed at it.** The word went pale on top of the
-  bright pill it was sitting on, and only turned dark again once you moved away. Fixed, along with the
-  page you are on losing its colour, and the first tab of the other group not lighting up at all.
-- **The highlight now builds itself when a page loads**, out of droplets that fly inward and join —
-  the same effect the phone menu already had. It plays once, on arrival.
-- **Headings stay pinned as you scroll a long document**, so you always know which section you are in,
-  and slide away as the next one arrives.
-- **The Contributing and Contributors pages carry the same closing notice as the legal documents**, so
-  the site no longer says the same thing twice in two different ways at the bottom of a page.
-- **You can reach the maintainer on Discord from the site** — the handle on the home page and the name
-  in every footer now link to a profile, and the Terms and Privacy Policy list it beside the email.
-- **The privacy policy's list of what is stored was incomplete.** Two fields were being stored and not
-  listed, under a heading that said "That's the whole list." Both are listed now. **Nothing about what
-  is collected changed** — the fields were already stored and already described elsewhere in the
-  policy; the list itself was short.
-- **The install button's arrow, the email reveal, the ticket cards and the footer** all got a pass:
-  a properly aligned arrow, a subtler highlight, a real tearing animation, and the sign-off lined up
-  with the links instead of hanging below them.
+- **The highlight keeps its colour properly now.** Each page has its own accent, and on phones the effect that draws it was washing every one of them out.
+- **The menu label was hard to read whenever you pointed at it.** The word went pale on top of the bright pill it was sitting on, and only turned dark again once you moved away. Fixed, along with the page you are on losing its colour, and the first tab of the other group not lighting up at all.
+- **The highlight now builds itself when a page loads**, out of droplets that fly inward and join — the same effect the phone menu already had. It plays once, on arrival.
+- **Headings stay pinned as you scroll a long document**, so you always know which section you are in, and slide away as the next one arrives.
+- **The Contributing and Contributors pages carry the same closing notice as the legal documents**, so the site no longer says the same thing twice in two different ways at the bottom of a page.
+- **You can reach the maintainer on Discord from the site** — the handle on the home page and the name in every footer now link to a profile, and the Terms and Privacy Policy list it beside the email.
+- **The privacy policy's list of what is stored was incomplete.** Two fields were being stored and not listed, under a heading that said "That's the whole list." Both are listed now. **Nothing about what is collected changed** — the fields were already stored and already described elsewhere in the policy; the list itself was short.
+- **The install button's arrow, the email reveal, the ticket cards and the footer** all got a pass: a properly aligned arrow, a subtler highlight, a real tearing animation, and the sign-off lined up with the links instead of hanging below them.
 
 ## v2.46.0 — July 31, 2026
-- **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch
-  between them, and Draws is further split into New/Returning sections.
-- **A season-end date typo could corrupt every other date on the page.** Fixed — a bad date is now
-  rejected instead of silently guessing "right now."
+- **`/calendar` is now 3 pages — Draws, Events, and Playlists & Modes** — with buttons to switch between them, and Draws is further split into New/Returning sections.
+- **A season-end date typo could corrupt every other date on the page.** Fixed — a bad date is now rejected instead of silently guessing "right now."
 - **Calendar pages can show a banner image**, set per page. Admin-side.
-- **Draws admin panel is smarter about thumbnails** — if you leave the image blank, it'll now reuse a
-  cached one even from a slightly different or typo'd title, not just an exact match.
-- **Patch notes' "Additional Info" can auto-format into a real weapons/attachments/changes layout** —
-  admin-side, opt-in, doesn't change anything for existing notes.
-- **Behind the scenes: the admin panel's bulk-paste help got a real rewrite** — a proper reference
-  guide instead of a plain-text reply, reachable from every relevant page.
+- **Draws admin panel is smarter about thumbnails** — if you leave the image blank, it'll now reuse a cached one even from a slightly different or typo'd title, not just an exact match.
+- **Patch notes' "Additional Info" can auto-format into a real weapons/attachments/changes layout** — admin-side, opt-in, doesn't change anything for existing notes.
+- **Behind the scenes: the admin panel's bulk-paste help got a real rewrite** — a proper reference guide instead of a plain-text reply, reachable from every relevant page.
 
 ## v2.45.0 — July 30, 2026
-- **A draw title with a "/" in it no longer gets half-lowercased.** "Jupiter Cannon/Void Implosion
-  Draw" was showing up as "Jupiter Cannon/void Implosion Draw" — fixed.
-- **Draws can now carry a short note.** Admin-side only — lets a "-# comment" line be added to a
-  draw's item list without it getting mistaken for an actual weapon or character name.
-- **Patch notes' extra info can now show buff/nerf icons.** Admin-side — typing `b:` or `n:` swaps in
-  the buff/nerf icon automatically.
-- **Behind the scenes: a proper way to prep next season ahead of time**, so it's not stuck sharing the
-  same live data as the season that's still running.
+- **A draw title with a "/" in it no longer gets half-lowercased.** "Jupiter Cannon/Void Implosion Draw" was showing up as "Jupiter Cannon/void Implosion Draw" — fixed.
+- **Draws can now carry a short note.** Admin-side only — lets a "-# comment" line be added to a draw's item list without it getting mistaken for an actual weapon or character name.
+- **Patch notes' extra info can now show buff/nerf icons.** Admin-side — typing `b:` or `n:` swaps in the buff/nerf icon automatically.
+- **Behind the scenes: a proper way to prep next season ahead of time**, so it's not stuck sharing the same live data as the season that's still running.
 
 ## v2.44.0 — July 30, 2026
-- **The "Contributing" and "Contributors" pages on the public site got a proper redesign.** They used to
-  be plain walls of text in a box. Now the contributing guide reads as a path you follow, the line you
-  need to agree to the contributor terms has its own copy button, and the credits page shows a real
-  nameplate — with an empty one beside it waiting for the next person's name.
-- **The site briefly went down and is back up.** A publish step silently uploaded nothing; the pages kept
-  answering for a while from a cached copy, so it looked fine from the outside. It's fixed, and the
-  checker now tests the front page too, which is what caught it.
+- **The "Contributing" and "Contributors" pages on the public site got a proper redesign.** They used to be plain walls of text in a box. Now the contributing guide reads as a path you follow, the line you need to agree to the contributor terms has its own copy button, and the credits page shows a real nameplate — with an empty one beside it waiting for the next person's name.
+- **The site briefly went down and is back up.** A publish step silently uploaded nothing; the pages kept answering for a while from a cached copy, so it looked fine from the outside. It's fixed, and the checker now tests the front page too, which is what caught it.
 - *No changes to the bot itself.*
 
 ## v2.43.2 — July 29, 2026
-- *Internal only — notes for Dior's own future reference about how the legal-page builder works and one
-  lesson learned from it. Nothing players see, and no change to the bot.*
+- *Internal only — notes for Dior's own future reference about how the legal-page builder works and one lesson learned from it. Nothing players see, and no change to the bot.*
 
 ## v2.43.1 — July 29, 2026
-- **The Terms and Privacy pages are now live and public**, at
-  [diors-builds-legal.pages.dev](https://diors-builds-legal.pages.dev). You can read them any time — no
-  Discord account, no GitHub, nothing to sign in to.
-- Fixed a batch of links inside those pages that pointed nowhere. If a document says "see the licence,"
-  that link should actually take you to the licence — so the licence is published too now.
+- **The Terms and Privacy pages are now live and public**, at [diors-builds-legal.pages.dev](https://diors-builds-legal.pages.dev). You can read them any time — no Discord account, no GitHub, nothing to sign in to.
+- Fixed a batch of links inside those pages that pointed nowhere. If a document says "see the licence," that link should actually take you to the licence — so the licence is published too now.
 - *Everything else here is internal tooling. No changes to the bot itself.*
 
 ## v2.43.0 — July 29, 2026
-- **The bot now has a Terms of Service and a Privacy Policy**, and you can read both as proper web
-  pages. The privacy policy lists *every single thing* the bot stores about you — field by field — where
-  it's kept, and how long for. Short version: your timestamp preference, your region, your colour
-  settings, and a few counters. **The bot cannot read your messages**; it isn't technically able to.
+- **The bot now has a Terms of Service and a Privacy Policy**, and you can read both as proper web pages. The privacy policy lists *every single thing* the bot stores about you — field by field — where it's kept, and how long for. Short version: your timestamp preference, your region, your colour settings, and a few counters. **The bot cannot read your messages**; it isn't technically able to.
 - **Your data is stored in Canada.** Nothing about you is sent to any AI system.
-- **Want your data deleted?** Email harkirat117@gmail.com and it'll be done. Honest note: there's no
-  self-serve button for this yet — it's a manual request for now, and building the automatic version is
-  already on the to-do list.
-- **The bot's source code now has a proper licence.** You're welcome to read it, study it, audit it for
-  security problems, and run it locally for yourself. You can't deploy your own copy for other people to
-  use, or use it commercially.
+- **Want your data deleted?** Email harkirat117@gmail.com and it'll be done. Honest note: there's no self-serve button for this yet — it's a manual request for now, and building the automatic version is already on the to-do list.
+- **The bot's source code now has a proper licence.** You're welcome to read it, study it, audit it for security problems, and run it locally for yourself. You can't deploy your own copy for other people to use, or use it commercially.
 - Credit where it's due: some of the custom emoji you see come from **tofooo** on emoji.gg.
-- *Nothing about the bot itself changed in this release — no new commands, no fixes, no behaviour
-  differences. It's paperwork, and it's the kind you should be able to actually read.*
+- *Nothing about the bot itself changed in this release — no new commands, no fixes, no behaviour differences. It's paperwork, and it's the kind you should be able to actually read.*
 
 ## v2.42.2 — July 29, 2026
 - *Internal only — fixed a filing mistake in Dior's own development journal (some entries had ended up in the wrong section) and added an automatic check so it can't happen again quietly. Nothing players see.*
@@ -407,8 +285,7 @@ that tab's, in a slow field that keeps moving while you hover.
 - *Internal only — fixed two out-of-date notes in Dior's own documentation. Nothing players see.*
 
 ## v2.39.0 — July 28, 2026
-- *Internal only — the safety checks that keep Dior's build process honest are now saved with the
-  project itself, so they can't get lost. Nothing players see.*
+- *Internal only — the safety checks that keep Dior's build process honest are now saved with the project itself, so they can't get lost. Nothing players see.*
 
 ## v2.38.3 — July 28, 2026
 - *Internal only — wrote up the behind-the-scenes notes for the two previous updates. Nothing players see.*
@@ -420,13 +297,10 @@ that tab's, in a slow field that keeps moving while you hover.
 - *Internal only — removed a stray empty file. Nothing players see.*
 
 ## v2.38.0 — July 28, 2026
-- *Internal only — Dior's project notes were being kept in a folder the tools had stopped looking in,
-  and were found only because a reminder pointed the way each time. They've been moved to the folder
-  that gets checked automatically. Nothing players see.*
+- *Internal only — Dior's project notes were being kept in a folder the tools had stopped looking in, and were found only because a reminder pointed the way each time. They've been moved to the folder that gets checked automatically. Nothing players see.*
 
 ## v2.37.0 — July 27, 2026
-- *Internal tooling-only — the groundwork branch for the bot's next big version now keeps itself up to
-  date automatically. Nothing players see.*
+- *Internal tooling-only — the groundwork branch for the bot's next big version now keeps itself up to date automatically. Nothing players see.*
 
 ## v2.36.3 — July 27, 2026
 - *Internal docs-only — added an automatic safety check to Dior's own release tooling. Nothing players see.*
@@ -438,62 +312,47 @@ that tab's, in a slow field that keeps moving while you hover.
 - *Internal docs-only — housekeeping on Dior's own code branches. Nothing players see.*
 
 ## v2.36.0 — July 27, 2026
-- *Internal docs-only — tidied up how Dior's own release history is recorded, so each update is now a
-  single clean entry in the project's history instead of two. Nothing players see.*
+- *Internal docs-only — tidied up how Dior's own release history is recorded, so each update is now a single clean entry in the project's history instead of two. Nothing players see.*
 
 ## v2.35.15 — July 27, 2026
-- *Internal docs-only — automated a check over Dior's own project records and fixed an instruction that
-  had never matched what actually happens. Nothing players see.*
+- *Internal docs-only — automated a check over Dior's own project records and fixed an instruction that had never matched what actually happens. Nothing players see.*
 
 ## v2.35.14 — July 27, 2026
 Behind-the-scenes only — nothing changes for you.
 
-The bot's old backup host (which it moved off of back on July 17) has now been shut down for good,
-after checking the current server had been running cleanly. The bot itself wasn't touched or
-restarted — it kept running the whole time.
+The bot's old backup host (which it moved off of back on July 17) has now been shut down for good, after checking the current server had been running cleanly. The bot itself wasn't touched or restarted — it kept running the whole time.
 
 ---
 
 ## v2.35.13 — July 27, 2026
-- *Internal ops-only — checked the server hosting the bot is healthy and worked out exactly what a
-  pending bit of housekeeping needs. Nothing players see; the bot was not restarted.*
+- *Internal ops-only — checked the server hosting the bot is healthy and worked out exactly what a pending bit of housekeeping needs. Nothing players see; the bot was not restarted.*
 
 ## v2.35.12 — July 27, 2026
-- *Internal docs-only — tidied Dior's own planning notes so the same to-do can't quietly exist in two
-  places with two different answers. Nothing players see.*
+- *Internal docs-only — tidied Dior's own planning notes so the same to-do can't quietly exist in two places with two different answers. Nothing players see.*
 
 ## v2.35.11 — July 27, 2026
-- *Internal docs-only — a developer note that had gone out of date the same day it was written.
-  Nothing players see.*
+- *Internal docs-only — a developer note that had gone out of date the same day it was written. Nothing players see.*
 
 ## v2.35.10 — July 27, 2026
-- *Internal docs-only — developer notes brought in line with how the next big version will be built.
-  Nothing players see.*
+- *Internal docs-only — developer notes brought in line with how the next big version will be built. Nothing players see.*
 
 ## v2.35.9 — July 27, 2026
-- *Internal safety fix — Dior's test copy of the bot could accidentally change or delete the real
-  bot's saved images. It can't anymore. Nothing changes for you, but your loadout and patch-note
-  images are safer.*
+- *Internal safety fix — Dior's test copy of the bot could accidentally change or delete the real bot's saved images. It can't anymore. Nothing changes for you, but your loadout and patch-note images are safer.*
 
 ## v2.35.8 — July 27, 2026
-- *Internal tooling-only — the bot's code now gets automatically checked for errors every time a change
-  is proposed. Nothing players see, but it makes broken updates less likely to reach you.*
+- *Internal tooling-only — the bot's code now gets automatically checked for errors every time a change is proposed. Nothing players see, but it makes broken updates less likely to reach you.*
 
 ## v2.35.7 — July 27, 2026
-- *Internal docs-only — a note-to-self about finishing setup on Dior's private planning board.
-  Nothing players see.*
+- *Internal docs-only — a note-to-self about finishing setup on Dior's private planning board. Nothing players see.*
 
 ## v2.35.6 — July 27, 2026
-- *Internal planning-only — wrote down how the next big version of the bot will be built without
-  disturbing the one you're using. Nothing players see.*
+- *Internal planning-only — wrote down how the next big version of the bot will be built without disturbing the one you're using. Nothing players see.*
 
 ## v2.35.5 — July 27, 2026
-- *Internal docs-only — corrected a wrong file count in the developer notes and wrote down a
-  cosmetic GitHub issue to look at later. Nothing players see.*
+- *Internal docs-only — corrected a wrong file count in the developer notes and wrote down a cosmetic GitHub issue to look at later. Nothing players see.*
 
 ## v2.35.4 — July 27, 2026
-- Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered
-  — it now correctly reflects the time you typed.
+- Fixed patch notes' release date/time showing the wrong day/time when a specific time was entered — it now correctly reflects the time you typed.
 
 ## v2.35.3 — July 26, 2026
 - *Internal tooling-only — a maintenance script for Dior's test copy of the bot. Nothing players see.*
@@ -501,8 +360,7 @@ restarted — it kept running the whole time.
 ## v2.35.2 — July 26, 2026
 Behind-the-scenes only — nothing changes for you.
 
-Tidied up the bot's startup messages and trimmed a tool it only needs for maintenance out of what it
-installs to run.
+Tidied up the bot's startup messages and trimmed a tool it only needs for maintenance out of what it installs to run.
 
 ---
 
@@ -512,39 +370,31 @@ installs to run.
 ## v2.35.0 — July 26, 2026
 Behind-the-scenes only — nothing changes for you.
 
-The bot now refuses to start a second copy of itself by accident, so a leftover test run can't sneak in
-and cause the bot to act inconsistently.
+The bot now refuses to start a second copy of itself by accident, so a leftover test run can't sneak in and cause the bot to act inconsistently.
 
 ---
 
 ## v2.34.1 — July 26, 2026
-- *Internal docs-only — kept Dior's own developer notes pointing at the right bits of code after the
-  last update renamed a couple of them. Nothing players see.*
+- *Internal docs-only — kept Dior's own developer notes pointing at the right bits of code after the last update renamed a couple of them. Nothing players see.*
 
 ## v2.34.0 — July 26, 2026
 Behind-the-scenes only — nothing changes for you.
 
-Dior's Builds now has a **private test copy of itself** that runs on Dior's own computer. Changes can be
-tried out there first, instead of going straight to the bot you use. Fewer surprises, faster fixes.
+Dior's Builds now has a **private test copy of itself** that runs on Dior's own computer. Changes can be tried out there first, instead of going straight to the bot you use. Fewer surprises, faster fixes.
 
 ---
 
 ## v2.33.6 — July 26, 2026
-- *Internal docs-only — wrote down how Dior's own code changes get labelled, so the project's history
-  stays consistent and machine-readable. Nothing players see.*
+- *Internal docs-only — wrote down how Dior's own code changes get labelled, so the project's history stays consistent and machine-readable. Nothing players see.*
 
 ## v2.33.5 — July 26, 2026
-- **`/draw prices` — the Advanced Double Legendary page is a little cleaner.** The NOTE about Regular
-  purchases being cheaper than a Normal Draw is gone; the important warning (THE TRAP) stays exactly
-  where it was.
+- **`/draw prices` — the Advanced Double Legendary page is a little cleaner.** The NOTE about Regular purchases being cheaper than a Normal Draw is gone; the important warning (THE TRAP) stays exactly where it was.
 
 ## v2.33.4 — July 26, 2026
-- *Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed
-  a few stale references left over from the last reorg. Nothing players see.*
+- *Internal docs-only — built a lightweight GitHub project board for tracking Dior's roadmap, and fixed a few stale references left over from the last reorg. Nothing players see.*
 
 ## v2.33.3 — July 26, 2026
-- *Internal docs-only — finished the to-do-list reorganization v2.33.2 started, and moved the old
-  archives out of the way. Nothing players see.*
+- *Internal docs-only — finished the to-do-list reorganization v2.33.2 started, and moved the old archives out of the way. Nothing players see.*
 
 ## v2.33.2 — July 25, 2026
 - *Internal docs-only — reorganized where Dior's own to-do/tech-debt list lives. Nothing players see.*
@@ -555,198 +405,128 @@ tried out there first, instead of going straight to the bot you use. Fewer surpr
 ---
 
 ## v2.33.0 — July 24, 2026
-- *Internal only — nothing players see or interact with changed.* Switched how updates get built and
-  released (proper git branches + review before anything goes live), and fixed a behind-the-scenes data
-  gap in how admin loadout edits sync to Cloudinary.
+- *Internal only — nothing players see or interact with changed.* Switched how updates get built and released (proper git branches + review before anything goes live), and fixed a behind-the-scenes data gap in how admin loadout edits sync to Cloudinary.
 
 ---
 
 ## v2.32.0 — July 24, 2026
-- **Patch notes now span multiple seasons.** Dior can start a fresh season's patch notes (with past
-  seasons kept editable) and set a placeholder season title when notes go out before the new season's
-  name is announced — so the patch notes you see always show a sensible title. *(Mostly an admin-side
-  tool; the player-visible effect is simply correctly-titled, up-to-date patch notes.)*
+- **Patch notes now span multiple seasons.** Dior can start a fresh season's patch notes (with past seasons kept editable) and set a placeholder season title when notes go out before the new season's name is announced — so the patch notes you see always show a sensible title. *(Mostly an admin-side tool; the player-visible effect is simply correctly-titled, up-to-date patch notes.)*
 
 ---
 
 ## v2.31.0 — July 22, 2026
-- *Internal only — nothing players see or interact with changed.* Reorganized the project's own developer
-  documentation (the giant `CLAUDE.md` was split into focused, on-demand files) so future work stays fast
-  and well-organized. Also added behind-the-scenes cost tracking for the AI image-reading used by
-  `/autobuild` (a log line per call, so spend is easy to audit) — invisible to players; no commands, draws,
-  loadouts, or on-screen behaviour changed.
+- *Internal only — nothing players see or interact with changed.* Reorganized the project's own developer documentation (the giant `CLAUDE.md` was split into focused, on-demand files) so future work stays fast and well-organized. Also added behind-the-scenes cost tracking for the AI image-reading used by `/autobuild` (a log line per call, so spend is easy to audit) — invisible to players; no commands, draws, loadouts, or on-screen behaviour changed.
 
 ---
 
 ## v2.30.2 — July 21, 2026
-- **Fixed a crash that could break whole commands.** On pages with exactly two sub-pages, the ◀ ▶ arrows
-  could make Discord reject the entire message — so `/settings`, `/draws`, `/calendar`, the colour panel and
-  `/alerts` could fail to open. They work again (on a 2-page view the arrows simply grey out at the ends).
+- **Fixed a crash that could break whole commands.** On pages with exactly two sub-pages, the ◀ ▶ arrows could make Discord reject the entire message — so `/settings`, `/draws`, `/calendar`, the colour panel and `/alerts` could fail to open. They work again (on a 2-page view the arrows simply grey out at the ends).
 
 ---
 
 ## v2.30.1 — July 21, 2026
-- **Small `/draw prices` fix.** Tidied the Advanced Double Legendary page to match the intended layout —
-  removed a few extra divider lines and corrected the "Strategy" heading.
+- **Small `/draw prices` fix.** Tidied the Advanced Double Legendary page to match the intended layout — removed a few extra divider lines and corrected the "Strategy" heading.
 
 ---
 
 ## v2.30.0 — July 21, 2026
-- **`/draw prices` got a visual refresh.** The Advanced Double Legendary Weapon Draw page is redesigned
-  to a cleaner layout — three clearly-labelled purchase modes, the "note" and "trap" tips called out, and
-  the strategy guide broken into its own easy-to-read lines (both CP regions).
-- **Every draw's heading is now in FULL CAPS** (the lines with the legendary/mythic icon), so the whole
-  `/draw prices` list reads consistently.
+- **`/draw prices` got a visual refresh.** The Advanced Double Legendary Weapon Draw page is redesigned to a cleaner layout — three clearly-labelled purchase modes, the "note" and "trap" tips called out, and the strategy guide broken into its own easy-to-read lines (both CP regions).
+- **Every draw's heading is now in FULL CAPS** (the lines with the legendary/mythic icon), so the whole `/draw prices` list reads consistently.
 
 ---
 
 ## v2.29.0 — July 21, 2026
-- **Fixed swapped loadout pictures** — the L-CAR 9 and Crossbow builds were showing each other's
-  screenshots; they now show the right ones.
-- Behind the scenes: another round of fixes to the admin `/autobuild` tool (reads the weapon name and
-  attachments more accurately) and some loadout data tidy-up. Nothing else players interact with directly.
+- **Fixed swapped loadout pictures** — the L-CAR 9 and Crossbow builds were showing each other's screenshots; they now show the right ones.
+- Behind the scenes: another round of fixes to the admin `/autobuild` tool (reads the weapon name and attachments more accurately) and some loadout data tidy-up. Nothing else players interact with directly.
 
 ---
 
 ## v2.28.0 — July 21, 2026
-- **New in `/draw prices`: the Advanced Double Legendary Weapon Draw.** A full breakdown for both CP
-  regions of the three ways to spin it — **Regular Purchase**, **Advanced Purchase**, and the "Trap" — with
-  per-pull costs, running totals, and a strategy guide for getting all 4 items, just the 2 Legendaries, or
-  1 random Legendary at the lowest CP. It's on its own page — page through with the ◀ ▶ arrows.
-- **Pagination arrows now loop.** Anywhere the bot has ◀ ▶ page arrows (draws, calendar, draw prices,
-  settings, colours, loadout builds), pressing Next on the last page now wraps around to the first instead
-  of doing nothing — and Prev on the first page jumps to the last.
-- Behind the scenes: a round of fixes to the admin `/autobuild` tool and richer Cloudinary image
-  organisation (nothing players interact with directly).
+- **New in `/draw prices`: the Advanced Double Legendary Weapon Draw.** A full breakdown for both CP regions of the three ways to spin it — **Regular Purchase**, **Advanced Purchase**, and the "Trap" — with per-pull costs, running totals, and a strategy guide for getting all 4 items, just the 2 Legendaries, or 1 random Legendary at the lowest CP. It's on its own page — page through with the ◀ ▶ arrows.
+- **Pagination arrows now loop.** Anywhere the bot has ◀ ▶ page arrows (draws, calendar, draw prices, settings, colours, loadout builds), pressing Next on the last page now wraps around to the first instead of doing nothing — and Prev on the first page jumps to the last.
+- Behind the scenes: a round of fixes to the admin `/autobuild` tool and richer Cloudinary image organisation (nothing players interact with directly).
 
 ---
 
 ## v2.27.0 — July 21, 2026
-- Backend/ops only — nothing changes for players. Quieted the routine "reconnecting to Discord" status
-  pings in Dior's private alert channel (they still get logged, just no longer posted) so a real problem
-  stands out. Listed here only so no version number is skipped.
+- Backend/ops only — nothing changes for players. Quieted the routine "reconnecting to Discord" status pings in Dior's private alert channel (they still get logged, just no longer posted) so a real problem stands out. Listed here only so no version number is skipped.
 
 ---
 
 ## v2.26.0 — July 20, 2026
-- **New admin tool: `/alerts`.** The bot already messages Dior privately when something goes wrong (a
-  crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a
-  short ID (like `Jul20-03`), and `/alerts` lets Dior browse recent ones, download the full log as a file,
-  and read a plain-language guide to what each colour (🟢🟡🟠🔴) means.
-- **Clearer alerts.** "Bot online" now says whether it was a deliberate deploy/restart or an automatic
-  recovery; the "reconnecting" alert makes clear the bot didn't crash (just the connection blipped); and
-  how-long-it's-been-running reads naturally now (e.g. `2D 22H` instead of a raw minute count).
+- **New admin tool: `/alerts`.** The bot already messages Dior privately when something goes wrong (a crash, losing the Discord connection, a database hiccup). Now every one of those alerts is saved with a short ID (like `Jul20-03`), and `/alerts` lets Dior browse recent ones, download the full log as a file, and read a plain-language guide to what each colour (🟢🟡🟠🔴) means.
+- **Clearer alerts.** "Bot online" now says whether it was a deliberate deploy/restart or an automatic recovery; the "reconnecting" alert makes clear the bot didn't crash (just the connection blipped); and how-long-it's-been-running reads naturally now (e.g. `2D 22H` instead of a raw minute count).
 - Admin-only — nothing changes for players.
 
 ---
 
 ## v2.25.0 — July 20, 2026
-- **New admin tool: near-1-click loadout adding.** Submit a build screenshot and the bot reads off the
-  weapon name, Gunsmith code, and attachments automatically instead of typing each one by hand — shows
-  a review screen first (edit or cancel before anything saves), then uploads the image and creates the
-  real loadout entry. Built, deployed, and live — Dior hasn't run the real end-to-end test in Discord
-  yet, so treat this as "should work" rather than "confirmed working" until he has.
-- Behind the scenes: switched the image-reading AI from a separate paid Google AI Studio balance (which
-  ran dry) to billing against the same Google Cloud account that already runs the bot's hosting — no
-  visible change, just a billing fix so the feature can actually run.
+- **New admin tool: near-1-click loadout adding.** Submit a build screenshot and the bot reads off the weapon name, Gunsmith code, and attachments automatically instead of typing each one by hand — shows a review screen first (edit or cancel before anything saves), then uploads the image and creates the real loadout entry. Built, deployed, and live — Dior hasn't run the real end-to-end test in Discord yet, so treat this as "should work" rather than "confirmed working" until he has.
+- Behind the scenes: switched the image-reading AI from a separate paid Google AI Studio balance (which ran dry) to billing against the same Google Cloud account that already runs the bot's hosting — no visible change, just a billing fix so the feature can actually run.
 
 ---
 
 ## v2.24.0 — July 20, 2026
-- **Fixed `/patch notes`' broken images.** The current season's screenshots had gone dark (the
-  original hosting link expired) — replaced with fresh, permanently-hosted copies, so they display
-  reliably for everyone instead of only looking fine to whoever happened to still have cached access.
-- Behind-the-scenes Cloudinary cleanup — tidied up file organization so everything shows up properly
-  grouped in the admin dashboard.
+- **Fixed `/patch notes`' broken images.** The current season's screenshots had gone dark (the original hosting link expired) — replaced with fresh, permanently-hosted copies, so they display reliably for everyone instead of only looking fine to whoever happened to still have cached access.
+- Behind-the-scenes Cloudinary cleanup — tidied up file organization so everything shows up properly grouped in the admin dashboard.
 
 ## v2.23.0 — July 18, 2026
-- **The admin panel's weapon-build page is finally clear about images.** It now explains right there
-  that build screenshots have to be uploaded to Cloudinary separately (not through the bot), and that
-  whatever name Cloudinary gives the file has to be typed in exactly. Adding or editing a build now
-  also warns right away if that image can't be found yet, instead of silently saving a broken picture
-  you'd only discover later.
+- **The admin panel's weapon-build page is finally clear about images.** It now explains right there that build screenshots have to be uploaded to Cloudinary separately (not through the bot), and that whatever name Cloudinary gives the file has to be typed in exactly. Adding or editing a build now also warns right away if that image can't be found yet, instead of silently saving a broken picture you'd only discover later.
 
 ## v2.22.0 & v2.22.1 — July 18, 2026
-- **`/settings` now goes quietly inactive after 10 minutes of no use** — leave the panel open and
-  forget about it, and its buttons/dropdowns just stop responding on their own (no error message,
-  nothing to click). Actively using it — clicking around, changing a setting — keeps it alive
-  indefinitely; it's only a full 10 minutes of silence that puts it to sleep. Just run `/settings`
-  again for a fresh one.
+- **`/settings` now goes quietly inactive after 10 minutes of no use** — leave the panel open and forget about it, and its buttons/dropdowns just stop responding on their own (no error message, nothing to click). Actively using it — clicking around, changing a setting — keeps it alive indefinitely; it's only a full 10 minutes of silence that puts it to sleep. Just run `/settings` again for a fresh one.
 - *(v2.22.1 was a docs-only point release — no bot changes.)*
 
 ## v2.21.0 & v2.21.1 — July 18, 2026
-- **`/settings` finally has a hide option** — just like every other command, so you can keep your
-  settings panel private if you want.
-- **Better weapon search** — typing a short or partial name (like `loc`) now works instead of just
-  failing; if it could mean more than one weapon, the bot tells you which ones instead of guessing.
+- **`/settings` finally has a hide option** — just like every other command, so you can keep your settings panel private if you want.
+- **Better weapon search** — typing a short or partial name (like `loc`) now works instead of just failing; if it could mean more than one weapon, the bot tells you which ones instead of guessing.
 - **Command descriptions are tidier** so they don't get cut off on mobile anymore.
-- **Download your avatar or banner in full resolution** straight from the color menu, right next to
-  the Refresh Colors button.
-- **Dior can no longer get accidentally locked out** of someone else's settings/color panel while
-  helping out — without ever seeing or changing that person's own data.
+- **Download your avatar or banner in full resolution** straight from the color menu, right next to the Refresh Colors button.
+- **Dior can no longer get accidentally locked out** of someone else's settings/color panel while helping out — without ever seeing or changing that person's own data.
 - Friendlier, clearer messages when an action gets blocked.
 - `/timestamp`'s `format` option renamed to `view` — clearer about what it actually controls.
-- **Smarter weapon search** — typing a weapon-class word like "pistol", "smg", or "assault rifle" now
-  shows every matching weapon in that category, not just ones whose own name happens to contain that
-  word. (`/secondaries` stays exactly as its own command — we just made it easier to find.)
+- **Smarter weapon search** — typing a weapon-class word like "pistol", "smg", or "assault rifle" now shows every matching weapon in that category, not just ones whose own name happens to contain that word. (`/secondaries` stays exactly as its own command — we just made it easier to find.)
 - *(v2.21.1 was a docs/ops-only point release — no bot changes.)*
 
 ## v2.20.0 — July 17, 2026
-- **Fixed the admin Edit tool.** Editing an existing loadout (or draw/calendar entry) from the `/manage`
-  panel was silently failing with a "didn't respond in time" error — now it opens the edit form correctly.
-- **The bot keeps a closer eye on itself.** On top of the instant crash/outage alerts, it now sends a
-  quiet daily "still healthy" check-in (uptime, servers, latency, memory), and its new-home server now
-  tracks memory usage over time — so a slow problem gets noticed early, not just a sudden one.
-- **Clearer health alerts** (admin-side): colour-coded by real severity and timestamped, so a routine
-  self-recovering blip is easy to tell apart from an actual problem.
+- **Fixed the admin Edit tool.** Editing an existing loadout (or draw/calendar entry) from the `/manage` panel was silently failing with a "didn't respond in time" error — now it opens the edit form correctly.
+- **The bot keeps a closer eye on itself.** On top of the instant crash/outage alerts, it now sends a quiet daily "still healthy" check-in (uptime, servers, latency, memory), and its new-home server now tracks memory usage over time — so a slow problem gets noticed early, not just a sudden one.
+- **Clearer health alerts** (admin-side): colour-coded by real severity and timestamped, so a routine self-recovering blip is easy to tell apart from an actual problem.
 
 ## v2.19.0 — July 17, 2026
-- **The bot is much more reliable now.** It moved to a new, always-on home (Google Cloud) after the old
-  free host kept dropping its connection to Discord — which is what caused those "application did not
-  respond" errors. On the new host it connects in seconds and stays up.
-- Behind the scenes: the bot now watches its own health and alerts Dior instantly if anything goes wrong,
-  so outages get caught fast instead of going unnoticed.
+- **The bot is much more reliable now.** It moved to a new, always-on home (Google Cloud) after the old free host kept dropping its connection to Discord — which is what caused those "application did not respond" errors. On the new host it connects in seconds and stays up.
+- Behind the scenes: the bot now watches its own health and alerts Dior instantly if anything goes wrong, so outages get caught fast instead of going unnoticed.
 
 ## v2.18.0–v2.18.3 — July 14–16, 2026
-- **The admin panel (`/manage`) is now locked down to Dior only** — no one else can press its buttons
-  anymore, even if the panel ends up visible to others.
-- **`/settings` is now locked to whoever ran it**, and the panel now expires after 15 minutes so an
-  old, forgotten-about settings screen can't be clicked later.
+- **The admin panel (`/manage`) is now locked down to Dior only** — no one else can press its buttons anymore, even if the panel ends up visible to others.
+- **`/settings` is now locked to whoever ran it**, and the panel now expires after 15 minutes so an old, forgotten-about settings screen can't be clicked later.
 - The **"Share Publicly" button is now "Show Everyone"**, with a new custom icon.
-- **`/timestamp` can now show plain, copyable text** instead of the usual styled panel — add
-  `format: Text` when using the command.
-- *(v2.18.1–v2.18.2 were docs/tooling point releases; v2.18.3 added admin-side connection diagnostics —
-  nothing players interact with directly.)*
+- **`/timestamp` can now show plain, copyable text** instead of the usual styled panel — add `format: Text` when using the command.
+- *(v2.18.1–v2.18.2 were docs/tooling point releases; v2.18.3 added admin-side connection diagnostics — nothing players interact with directly.)*
 
 ## v2.17.0–v2.17.3 — July 13, 2026
-- Fixed "This interaction failed" errors that could hit any command — the new color panel was
-  overloading the bot's free hosting and making unrelated commands time out. It's now much lighter.
+- Fixed "This interaction failed" errors that could hit any command — the new color panel was overloading the bot's free hosting and making unrelated commands time out. It's now much lighter.
 - The color panel's Banner, Display Name, and Nameplate previews are now sized consistently.
 - *(v2.17.2 was a small memory optimization; v2.17.3 was docs-only.)*
 
 ## v2.16.0 — July 13, 2026
-- **New `/colors` command** (and a "View Colors" button in `/settings`): see the real colors pulled
-  from your avatar, banner, display name, nameplate, and decoration, each with a tap-to-copy hex code.
-- Two new accent-color styles you can pick in `/settings`: your Nitro **display-name gradient**, or
-  a **random one** from your profile each time.
+- **New `/colors` command** (and a "View Colors" button in `/settings`): see the real colors pulled from your avatar, banner, display name, nameplate, and decoration, each with a tap-to-copy hex code.
+- Two new accent-color styles you can pick in `/settings`: your Nitro **display-name gradient**, or a **random one** from your profile each time.
 
 ## v2.14.0–v2.15.0 — July 13, 2026
 - Patch-notes screenshots no longer break when the original image link dies — they're backed up now.
 - Accent colors pulled from your avatar/banner look richer and truer to the image.
 
 ## v2.13.0 — July 13, 2026
-- Loadout cards got a **"Browse other builds"** dropdown so you can jump between weapons without
-  re-running the command.
+- Loadout cards got a **"Browse other builds"** dropdown so you can jump between weapons without re-running the command.
 - `/all` now lists weapons in alphabetical order.
 
 ## v2.12.0–v2.12.1 — July 12, 2026
-- Fresh color scheme across the seasonal commands (Calendar, Draws, Draw Prices, Patch Notes,
-  Season End) and clearer, more consistent command wording.
+- Fresh color scheme across the seasonal commands (Calendar, Draws, Draw Prices, Patch Notes, Season End) and clearer, more consistent command wording.
 - Fixed a crash when editing an item in the admin panel.
 
 ## v2.10.0–v2.11.1 — July 12, 2026
-- Big redesign of **`/draw prices`** (cleaner per-draw breakdowns, 2 pages), the **`/manage`** admin
-  panel (safer edits with confirm/undo steps), and **`/settings`** (2 pages, more preferences).
+- Big redesign of **`/draw prices`** (cleaner per-draw breakdowns, 2 pages), the **`/manage`** admin panel (safer edits with confirm/undo steps), and **`/settings`** (2 pages, more preferences).
 - Draw images are now backed up so they don't break when the original link dies.
 - *(v2.11.1 was a follow-up polish pass across those same commands.)*
 
@@ -759,16 +539,12 @@ tried out there first, instead of going straight to the bot you use. Fewer surpr
 
 ## v2.7.0 & v2.7.1 — July 9, 2026
 - Fixed DMZ loadouts showing a fake "Gunsmith Code" that couldn't actually be used in-game.
-- Added a big batch of real weapon data: full DMZ builds for the first time ever (SO-14, Type 19,
-  AS VAL, AK117, Fennec, J358, Outlaw), extra builds for PKM and SKS, and several new Secondaries
-  (Machine Pistol, Crossbow, Dobvra, Shorty) plus a new Shotgun (R9-0).
-- Fixed two weapons that had the wrong name saved: "GS50" is actually **.50 GS**, and "LCAR" is
-  actually **L-CAR 9**.
+- Added a big batch of real weapon data: full DMZ builds for the first time ever (SO-14, Type 19, AS VAL, AK117, Fennec, J358, Outlaw), extra builds for PKM and SKS, and several new Secondaries (Machine Pistol, Crossbow, Dobvra, Shorty) plus a new Shotgun (R9-0).
+- Fixed two weapons that had the wrong name saved: "GS50" is actually **.50 GS**, and "LCAR" is actually **L-CAR 9**.
 - *(v2.7.1 was an internal repo change only.)*
 
 ## v2.6.0 — July 8, 2026
-- 7 weapons that only had a badge (no real build yet) now show up in the bot with a "Coming Soon"
-  placeholder instead of not appearing at all.
+- 7 weapons that only had a badge (no real build yet) now show up in the bot with a "Coming Soon" placeholder instead of not appearing at all.
 - Added this very changelog system.
 
 ## v2.5.1 — July 8, 2026
@@ -781,15 +557,13 @@ tried out there first, instead of going straight to the bot you use. Fewer surpr
 ## v2.4.0 — July 8, 2026
 - Badge system got smarter — categories aren't stuck at "Top 3" anymore, some can go up to Top 5+.
 - Editing a weapon's badges now updates ALL builds of that weapon, not just one.
-- Search got more forgiving — typos and missing spaces (like "dlq" for "DL Q33") now still find
-  the right weapon.
+- Search got more forgiving — typos and missing spaces (like "dlq" for "DL Q33") now still find the right weapon.
 
 ## v2.3.1 — July 7, 2026
 - Wrote up the previous update's design decisions for the record. No user-facing change.
 
 ## v2.3.0 — July 7, 2026
-- Big redesign of the weapon loadout card: weapon name front and center, new badges shown under
-  it, a new "Copy Attachments" button, and cleaner section headings.
+- Big redesign of the weapon loadout card: weapon name front and center, new badges shown under it, a new "Copy Attachments" button, and cleaner section headings.
 
 ## v2.2.1 — July 7, 2026
 - Weapon categories (AR, SMG, Sniper, etc.) each got their own accent color.
@@ -801,8 +575,7 @@ tried out there first, instead of going straight to the bot you use. Fewer surpr
 - General visual cleanup across several commands.
 
 ## v2.1.0 — July 7, 2026
-- Fixed the bot not showing up at all when DMed directly or added as a personal app — it now works
-  everywhere it's supposed to.
+- Fixed the bot not showing up at all when DMed directly or added as a personal app — it now works everywhere it's supposed to.
 
 ## v2.0.0 — July 6, 2026
 - Complete visual overhaul of the entire bot using Discord's newest UI system.
@@ -822,8 +595,7 @@ tried out there first, instead of going straight to the bot you use. Fewer surpr
 - Added screenshots for weapon loadouts.
 
 ## v1.4.0 — April 8, 2026
-- Big bug-fix pass, plus fuzzy search, inline fields, and a green Copy button. The point the bot
-  felt like a real, usable release.
+- Big bug-fix pass, plus fuzzy search, inline fields, and a green Copy button. The point the bot felt like a real, usable release.
 
 ## v1.3.0 — April 8, 2026
 - Built out the original embed-design system the bot used before Components V2 existed.

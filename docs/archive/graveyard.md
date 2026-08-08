@@ -1,34 +1,25 @@
+---
+kind: archive
+status: dead
+---
+
 # 🪦 Graveyard — resolved & filed intake from the notes scratchpad
 
 **Archive. Not active content. Do not read this file by default.**
 
-Where resolved and filed intake from **`docs/diors-builds notes.md`** comes to rest. Split out of that
-file into `docs/archive/` on **2026-07-25 21:43 EDT** (Harkirat's ask) — it used to be a `# Graveyard`
-section living at the bottom of the notes file, where it was pure context bloat: a dead archive riding
-along in every read of an active scratchpad. The notes file now ends at its working sections and points
-here instead.
+Where resolved and filed intake from **`docs/diors-builds notes.md`** comes to rest. Split out of that file into `docs/archive/` on **2026-07-25 21:43 EDT** (Harkirat's ask) — it used to be a `# Graveyard` section living at the bottom of the notes file, where it was pure context bloat: a dead archive riding along in every read of an active scratchpad. The notes file now ends at its working sections and points here instead.
 
 ## The sweep rule (unchanged, only the destination moved)
-- An item is swept out of the notes file's working sections once it is **marked** (`[x] ✓` shipped /
-  `[x] ✗` abandoned) **AND** carries **Harkirat's own confirmation mark**. Claude's ✓/✗ alone is not
-  proof he has seen the answer — without his mark an item stays in the working sections indefinitely,
-  however many sessions pass. (His rule, 2026-07-18.)
-- Sweep on the **next** session's read, never the same session an item was marked — marks stay visible
-  in-context for one cycle first.
+- An item is swept out of the notes file's working sections once it is **marked** (`[x] ✓` shipped / `[x] ✗` abandoned) **AND** carries **Harkirat's own confirmation mark**. Claude's ✓/✗ alone is not proof he has seen the answer — without his mark an item stays in the working sections indefinitely, however many sessions pass. (His rule, 2026-07-18.)
+- Sweep on the **next** session's read, never the same session an item was marked — marks stay visible in-context for one cycle first.
 - Don't run the sweep more than once per session.
-- Items moved here keep their original wording, marks, dates, and comments verbatim. **Never delete —
-  always move.** Append new sweeps as a dated `### 🗂️ YYYY-MM-DD sweep` block, newest at the bottom.
-- Feature ideas that got **filed** into their real home (`docs/ROADMAP.md`, a `.claude/rules/*.md`,
-  `docs/db-deferred-list.md`) simply leave the notes file — the destination is their home now, not here.
-  Only a *filing ledger* recording where they went belongs here.
+- Items moved here keep their original wording, marks, dates, and comments verbatim. **Never delete — always move.** Append new sweeps as a dated `### 🗂️ YYYY-MM-DD sweep` block, newest at the bottom.
+- Feature ideas that got **filed** into their real home (`docs/ROADMAP.md`, a `.claude/rules/*.md`, `docs/db-deferred-list.md`) simply leave the notes file — the destination is their home now, not here. Only a *filing ledger* recording where they went belongs here.
 
 ## Its sibling in this folder
-`docs/archive/resolved-list.md` — the same idea for **`docs/db-deferred-list.md`**: resolved, shipped,
-and dropped deferred-list entries move there. Two archives, deliberately separate, so it stays obvious
-which active file a given dead item came out of.
+`docs/archive/resolved-list.md` — the same idea for **`docs/db-deferred-list.md`**: resolved, shipped, and dropped deferred-list entries move there. Two archives, deliberately separate, so it stays obvious which active file a given dead item came out of.
 
-*Also in this folder: `diors-builds notes 2026-07-18 (pre-tidy).md`, a dated pre-tidy snapshot from
-before the notes file was tracked in git. Largely superseded by `git log` now.*
+*Also in this folder: `diors-builds notes 2026-07-18 (pre-tidy).md`, a dated pre-tidy snapshot from before the notes file was tracked in git. Largely superseded by `git log` now.*
 
 ---
 
@@ -41,24 +32,14 @@ before the notes file was tracked in git. Largely superseded by `git log` now.*
   <!-- RESOLVED 2026-07-18 (Claude): went through several rounds against a growing artifact (7→9→15 candidate symbols/colors, with size/contrast/hue-sorted views) before landing on the final set now live in the 🔑 Legend above and in the real MarkEdit menu: 4 shortlisted symbols (✴︎ ✦ ◆ ℋ), 8 final colors. All switchable, not narrowed to one fixed pick — matches how the extension was actually built (a live Default Symbol / Default Color menu, not hardcoded values). -->
 
 ### 🗂️ 2026-07-18 filing ledger (moved out of the working sections into their real homes — nothing lost)
-- **Filed to CLAUDE.md "Next planned work" + both CHANGELOG roadmaps:** `/manage` loadout data-entry UX
-  overhaul (old L55/L73 + image-naming half of L59) · reword `/manage` `section`→`data for` (L56) · richer
-  in-bot diagnostic logging (L57) · admin `/status` command (L60) · `/manage` per-page accent colors (L61) ·
-  announcement feature (L64, v3) · easy bot sharing / `/invite` (L58, v3) · user-friendly bot/ops guide (L34,
-  someday) · verify Cloudinary folder organization (L59, Known-issues) · webhook alerting heavy-half added to
-  the changelog roadmap for parity (L72 — already in deferred-items + the Deployment section).
-- **Already-synced roadmap items that used to be duplicated here** (v2 batch 1&2, all of v3/v4/v5): removed
-  from this file — they were already in CLAUDE.md, so keeping a second copy here was pure drift risk.
-- The full pre-tidy file (including every one of the above in its original wording) is preserved at
-  `docs/archive/diors-builds notes 2026-07-18 (pre-tidy).md` — written here as `local/notes-archive/…`
-  at the time; the notes file and its snapshots moved to tracked `docs/` on 2026-07-18, and
-  `docs/notes-archive/` was renamed `docs/archive/` on 2026-07-25 21:43 EDT.
+- **Filed to CLAUDE.md "Next planned work" + both CHANGELOG roadmaps:** `/manage` loadout data-entry UX overhaul (old L55/L73 + image-naming half of L59) · reword `/manage` `section`→`data for` (L56) · richer in-bot diagnostic logging (L57) · admin `/status` command (L60) · `/manage` per-page accent colors (L61) · announcement feature (L64, v3) · easy bot sharing / `/invite` (L58, v3) · user-friendly bot/ops guide (L34, someday) · verify Cloudinary folder organization (L59, Known-issues) · webhook alerting heavy-half added to the changelog roadmap for parity (L72 — already in deferred-items + the Deployment section).
+- **Already-synced roadmap items that used to be duplicated here** (v2 batch 1&2, all of v3/v4/v5): removed from this file — they were already in CLAUDE.md, so keeping a second copy here was pure drift risk.
+- The full pre-tidy file (including every one of the above in its original wording) is preserved at `docs/archive/diors-builds notes 2026-07-18 (pre-tidy).md` — written here as `local/notes-archive/…` at the time; the notes file and its snapshots moved to tracked `docs/` on 2026-07-18, and `docs/notes-archive/` was renamed `docs/archive/` on 2026-07-25 21:43 EDT.
 
 ---
 
 ## 📦 Earliest swept intake (pre-2026-07-18, grouped by the notes section it came out of)
-*Swept before the dated-sweep convention existed, so these carry no sweep block of their own. Their
-own inline dates (2026-07-15 → 2026-07-17) are the real record.*
+*Swept before the dated-sweep convention existed, so these carry no sweep block of their own. Their own inline dates (2026-07-15 → 2026-07-17) are the real record.*
 
 ### Questions/Notes for Claude
 

@@ -53,7 +53,7 @@ function applyInfoAliases(text) {
         .replace(/(^|[\s\n])f:/gi, (_, pre) => `${pre}${emojis.fix}`);
 }
 
-// Additional Info auto-formatting (added 2026-07-31 17:20 EDT, notes L182's ∴ follow-up reply;
+// Additional Info auto-formatting (added 2026-07-31 17:20 EDT, the notes file's ∴ follow-up reply;
 // PARSER REWRITTEN same day, direct correction) -- renders into Harkirat's decided output structure
 // (his own reference screenshot, `local/Screenshots/CleanShot 2026-07-31 at 11.38.34@2x.png`): a
 // `### ADDITIONAL CHANGES` heading (all-caps, added 2026-08-08 00:23 EDT per Harkirat's request),
@@ -155,7 +155,7 @@ function buildContainer(seasonalDoc, patchId = null, accentColor = PRESET_ACCENT
     // the full legacy sentence stored get it stripped by cleanPatchTitle() rather than rendering
     // "Balance Changes — Balance Changes for...".
     const cleanTitle = displayTitle(activePatch);
-    // Layout reordered per notes L181 (2026-07-31 12:10 EDT): the release-timestamp line moved from
+    // Layout reordered per the notes file (2026-07-31 12:10 EDT): the release-timestamp line moved from
     // right under the title to right under the images (same "section" as the carousel now), and a
     // permanent "subject to change" disclaimer was added to the Additional Info section. Dividing up
     // JUST that disclaimer alone when nothing else was typed felt wrong (Harkirat's own call), so the

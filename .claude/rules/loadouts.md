@@ -1,4 +1,6 @@
 ---
+kind: rule
+status: live
 paths:
   - "utils/loadoutRender.js"
   - "utils/search.js"
@@ -8,317 +10,64 @@ paths:
 
 # Loadouts (MP + DMZ) — system, badges, search, browse
 
-*Loads when you touch loadout rendering/search, `/dmz`, or the Loadout model. The MP/DMZ loadout
-system, per-category accent colors, badges, autocomplete + category-synonym search, and the
-Browse-other-builds dropdown. Cloudinary image workflow + structured metadata:
-`.claude/rules/loadout-images-and-metadata.md`. `/autobuild` automation: `.claude/rules/autobuild.md`.
-The MP `/all` + auto-generated `/<category>` commands are registered in `index.js` — see
-`.claude/rules/interaction-router.md`.*
+*Loads when you touch loadout rendering/search, `/dmz`, or the Loadout model. The MP/DMZ loadout system, per-category accent colors, badges, autocomplete + category-synonym search, and the Browse-other-builds dropdown. Cloudinary image workflow + structured metadata: `.claude/rules/loadout-images-and-metadata.md`. `/autobuild` automation: `.claude/rules/autobuild.md`. The MP `/all` + auto-generated `/<category>` commands are registered in `index.js` — see `.claude/rules/interaction-router.md`.*
 
 ## MP loadout accent colors are per-weapon-category, not one fixed color
-`utils/loadoutRender.js`'s `MP_CATEGORY_ACCENT` maps each `Loadout.category` value
-(`AR`/`SMG`/`LMG`/`MARKSMAN`/`SNIPER`/`SHOTGUN`/`SECONDARIES`) to a color from the "Custom Class"
-palette — a curated mix Harkirat picked across several palette proposals (see the palette spec
-sheet artifact from that session; not a file in this repo). `getMpCategoryAccent(category)` looks
-it up (case-insensitive, falls back to a neutral default `#2b2d31` if a category is ever
-unrecognized). This is what makes `/all`'s accent color change depending on which weapon was
-searched (e.g. a CX-9 result renders in SMG's color, an LK24 result in AR's) — `/all` isn't locked
-to one category the way `/ar`/`/smg`/etc. are, so it resolves the color from the query result
-itself (`mpBuilds[0].category`) rather than a fixed value. `/<category>` commands hit the exact
-same lookup in the exact same shared handler (they're the same dynamically-generated fallback
-route in index.js) — they just always land on the same entry since every result they can ever
-return already shares one category. Applied at BOTH render sites: the initial slash-command
-response AND the Prev/Next pagination re-render (`index.js`'s `dmz`/`mp`-prefixed button handler) —
-missing the second one would have made paging between builds silently revert to the old flat
-color. `/dmz` keeps its own separate fixed identity color (`#1c1c1c`), intentionally NOT part of
-this MP-specific category mapping.
+`utils/loadoutRender.js`'s `MP_CATEGORY_ACCENT` maps each `Loadout.category` value (`AR`/`SMG`/`LMG`/`MARKSMAN`/`SNIPER`/`SHOTGUN`/`SECONDARIES`) to a color from the "Custom Class" palette — a curated mix Harkirat picked across several palette proposals (see the palette spec sheet artifact from that session; not a file in this repo). `getMpCategoryAccent(category)` looks it up (case-insensitive, falls back to a neutral default `#2b2d31` if a category is ever unrecognized). This is what makes `/all`'s accent color change depending on which weapon was searched (e.g. a CX-9 result renders in SMG's color, an LK24 result in AR's) — `/all` isn't locked to one category the way `/ar`/`/smg`/etc. are, so it resolves the color from the query result itself (`mpBuilds[0].category`) rather than a fixed value. `/<category>` commands hit the exact same lookup in the exact same shared handler (they're the same dynamically-generated fallback route in index.js) — they just always land on the same entry since every result they can ever return already shares one category. Applied at BOTH render sites: the initial slash-command response AND the Prev/Next pagination re-render (`index.js`'s `dmz`/`mp`-prefixed button handler) — missing the second one would have made paging between builds silently revert to the old flat color. `/dmz` keeps its own separate fixed identity color (`#1c1c1c`), intentionally NOT part of this MP-specific category mapping.
 
-**`SECONDARIES` has no loadouts saved yet, but `/secondaries` is already registered as a command.**
-`handleBotReady()`'s category-registration loop used to derive its command list purely from
-`Loadout.distinct('category', {mode:'MP'})` — a category with zero entries would just never get a
-command. Since Harkirat wants `/secondaries` ready to go the moment he starts adding those
-loadouts (rather than it silently appearing only after the first one is saved), that distinct-query
-result is now merged with a hardcoded `'SECONDARIES'` before the registration loop runs. If you add
-another category ahead of its data existing, extend that same merge rather than waiting on real
-loadouts to exist first.
+**`SECONDARIES` has no loadouts saved yet, but `/secondaries` is already registered as a command.** `handleBotReady()`'s category-registration loop used to derive its command list purely from `Loadout.distinct('category', {mode:'MP'})` — a category with zero entries would just never get a command. Since Harkirat wants `/secondaries` ready to go the moment he starts adding those loadouts (rather than it silently appearing only after the first one is saved), that distinct-query result is now merged with a hardcoded `'SECONDARIES'` before the registration loop runs. If you add another category ahead of its data existing, extend that same merge rather than waiting on real loadouts to exist first.
 
-**`SECONDARIES` (the stored enum/command name) vs `SECONDARY` (a display-only relabel, 2026-07-18)**
-— `utils/loadoutRender.js`'s `displayCategoryLabel()` relabels `SECONDARIES` to the singular
-"SECONDARY" ONLY in the rank-badge line ("Best SECONDARY") and `/all`'s autocomplete category tag
-(`[SECONDARY] weaponName`), where the plural reads oddly for a single weapon. The footer line, the
-`/secondaries` command name, and its own description all still show the real `SECONDARIES` value
-unchanged — this is cosmetic, not a rename of the category/command (see the `/secondaries` decision
-in `docs/ROADMAP.md` for the full reasoning).
+**`SECONDARIES` (the stored enum/command name) vs `SECONDARY` (a display-only relabel, 2026-07-18)** — `utils/loadoutRender.js`'s `displayCategoryLabel()` relabels `SECONDARIES` to the singular "SECONDARY" ONLY in the rank-badge line ("Best SECONDARY") and `/all`'s autocomplete category tag (`[SECONDARY] weaponName`), where the plural reads oddly for a single weapon. The footer line, the `/secondaries` command name, and its own description all still show the real `SECONDARIES` value unchanged — this is cosmetic, not a rename of the category/command (see the `/secondaries` decision in `docs/ROADMAP.md` for the full reasoning).
 
 
 ## MP loadout system (`utils/loadoutRender.js`, `scripts/migrateBuildsToMongo.js`)
-`builds.xlsx` used to be the sole source of truth for MP loadouts: a `loadBuildsFromExcel()` in
-`index.js` parsed it into an in-memory object at boot, and `/all` + auto-generated `/<category>`
-commands (`/ar`, `/lmg`, etc.) read from it directly. At some point autocomplete for those same
-commands got rewired to query MongoDB's `Loadout` collection (`mode: 'MP'`) instead — but the data
-itself was never migrated, and the actual render still read the old Excel object. Net effect: the
-autocomplete dropdown (Mongo-backed, empty collection) showed nothing, and even a manually-typed
-weapon name would have hit the still-Excel-backed render with an incompatible key scheme. Fixed by:
-- Running `scripts/migrateBuildsToMongo.js` once to import all 106 rows / 58 unique weapons from
-  `builds.xlsx` into `Loadout` (mode `'MP'`), grouping duplicate weapon-name rows into separate
-  `buildName: "Build 1"/"Build 2"/...` documents. Safe to re-run (clears existing `mode:'MP'` docs
-  first) if the spreadsheet is ever updated and needs re-importing.
-- Removing `loadBuildsFromExcel()`/the in-memory `builds` object/`createBuildEmbed()` from
-  `index.js` entirely — MP now reads from Mongo exclusively, same as DMZ.
-- Moving the `/all`+`/<category>` command *registration* (not just autocomplete) into
-  `handleBotReady()`, querying `Loadout.distinct('category', {mode:'MP'})` — this can't happen at
-  module-load time anymore since it needs a DB round-trip. Safe even before the Mongo connection
-  fully establishes: Mongoose buffers queries by default until connected, it doesn't throw.
-- Extracting `buildImageUrl()`/`buildLoadoutCard()` into `utils/loadoutRender.js`, shared by
-  `/dmz` and the new MP handler — `buildImageUrl` handles `imageKey` being EITHER a bare Cloudinary
-  key (the original admin-added-loadout design, and what `migrateBuildsToMongo.js` extracts for
-  104 of builds.xlsx's 106 rows — same Cloudinary account already used by `draws.js`) OR a full
-  external URL. At the time of that migration, 2 rows (both LOCUS builds) were still imgur-hosted
-  and needed this fallback; both were since re-uploaded to Cloudinary directly (2026-07-09) and
-  their `imageKey`s updated to bare keys (`LOCUS-1`/`LOCUS-2`), so no current loadout actually
-  exercises the full-URL path anymore — but `buildImageUrl()` still supports it, since `builds.xlsx`
-  (and any future re-run of the migration script against it) could reintroduce an external-URL row.
-  Don't assume every row is one or the other — check `ImageURL.startsWith(CLOUDINARY_BASE)` per row
-  like the migration script does, rather than treating the whole sheet as one format.
-- Discovering along the way that `buildName` was doing double duty as both the display label AND
-  the "Copy Share Code" button's payload — which meant admin-added loadouts never had a real code,
-  just whatever label was typed. Added a separate `shareCode` field (populated from the
-  spreadsheet's actual `Code` column during migration) that the copy button now prefers, falling
-  back to `buildName` for loadouts that don't have one.
-- Discovering a second half-wired preference along the way: `/settings`' single "Weapon Builds"
-  toggle writes to `prefs.loadoutVisibility`, but `/dmz` was checking a completely different field
-  (`prefs.dmzVisibility`) that was never exposed in the `/settings` UI at all — so that toggle did
-  nothing for `/dmz`, ever. Fixed `/dmz` to read `loadoutVisibility` (now shared with the new MP
-  commands too, one toggle covering every loadout lookup, same Option A pattern as
-  `seasonalVisibility`) and removed the dead `dmzVisibility` field entirely rather than leaving it
-  as unreachable state.
+`builds.xlsx` used to be the sole source of truth for MP loadouts: a `loadBuildsFromExcel()` in `index.js` parsed it into an in-memory object at boot, and `/all` + auto-generated `/<category>` commands (`/ar`, `/lmg`, etc.) read from it directly. At some point autocomplete for those same commands got rewired to query MongoDB's `Loadout` collection (`mode: 'MP'`) instead — but the data itself was never migrated, and the actual render still read the old Excel object. Net effect: the autocomplete dropdown (Mongo-backed, empty collection) showed nothing, and even a manually-typed weapon name would have hit the still-Excel-backed render with an incompatible key scheme. Fixed by:
+- Running `scripts/migrateBuildsToMongo.js` once to import all 106 rows / 58 unique weapons from `builds.xlsx` into `Loadout` (mode `'MP'`), grouping duplicate weapon-name rows into separate `buildName: "Build 1"/"Build 2"/...` documents. Safe to re-run (clears existing `mode:'MP'` docs first) if the spreadsheet is ever updated and needs re-importing.
+- Removing `loadBuildsFromExcel()`/the in-memory `builds` object/`createBuildEmbed()` from `index.js` entirely — MP now reads from Mongo exclusively, same as DMZ.
+- Moving the `/all`+`/<category>` command *registration* (not just autocomplete) into `handleBotReady()`, querying `Loadout.distinct('category', {mode:'MP'})` — this can't happen at module-load time anymore since it needs a DB round-trip. Safe even before the Mongo connection fully establishes: Mongoose buffers queries by default until connected, it doesn't throw.
+- Extracting `buildImageUrl()`/`buildLoadoutCard()` into `utils/loadoutRender.js`, shared by `/dmz` and the new MP handler — `buildImageUrl` handles `imageKey` being EITHER a bare Cloudinary key (the original admin-added-loadout design, and what `migrateBuildsToMongo.js` extracts for 104 of builds.xlsx's 106 rows — same Cloudinary account already used by `draws.js`) OR a full external URL. At the time of that migration, 2 rows (both LOCUS builds) were still imgur-hosted and needed this fallback; both were since re-uploaded to Cloudinary directly (2026-07-09) and their `imageKey`s updated to bare keys (`LOCUS-1`/`LOCUS-2`), so no current loadout actually exercises the full-URL path anymore — but `buildImageUrl()` still supports it, since `builds.xlsx` (and any future re-run of the migration script against it) could reintroduce an external-URL row. Don't assume every row is one or the other — check `ImageURL.startsWith(CLOUDINARY_BASE)` per row like the migration script does, rather than treating the whole sheet as one format.
+- Discovering along the way that `buildName` was doing double duty as both the display label AND the "Copy Share Code" button's payload — which meant admin-added loadouts never had a real code, just whatever label was typed. Added a separate `shareCode` field (populated from the spreadsheet's actual `Code` column during migration) that the copy button now prefers, falling back to `buildName` for loadouts that don't have one.
+- Discovering a second half-wired preference along the way: `/settings`' single "Weapon Builds" toggle writes to `prefs.loadoutVisibility`, but `/dmz` was checking a completely different field (`prefs.dmzVisibility`) that was never exposed in the `/settings` UI at all — so that toggle did nothing for `/dmz`, ever. Fixed `/dmz` to read `loadoutVisibility` (now shared with the new MP commands too, one toggle covering every loadout lookup, same Option A pattern as `seasonalVisibility`) and removed the dead `dmzVisibility` field entirely rather than leaving it as unreachable state.
 
-`buildLoadoutCard()` was originally a legacy `EmbedBuilder` card (Harkirat's actual, older design —
-category overline, bold weapon title, side-by-side "Attachments"/"Gunsmith Code" embed fields,
-image, "Build N of M | Last updated" footer, Back/Next/Copy Code buttons). It got flattened into a
-generic V2-styled card during the Mongo migration above, which was a real visual regression, not an
-intentional redesign — rebuilt to match that original identity as closely as Components V2 allows.
-**V2 has no equivalent to an embed's inline fields** — "Attachments" and "Gunsmith Code" stack
-vertically now instead of sitting side-by-side; everything else (heading hierarchy, image, footer
-line, button labels/order) matches. Since this card moved off `EmbedBuilder` entirely, its send
-sites (`dmz.js`, the MP fallback and pagination handler in `index.js`) had to switch from
-`interaction.followUp()`/`interaction.update()` to the same raw `rest.patch('@original')` bypass
-every other V2 command already uses — discord.js's high-level methods don't reliably serialize raw
-V2 JSON (there's no builder class for a type-17 Container). If you touch this card again, remember
-`accent_color` needs a **decimal**, not a hex string like `EmbedBuilder.setColor()` took.
+`buildLoadoutCard()` was originally a legacy `EmbedBuilder` card (Harkirat's actual, older design — category overline, bold weapon title, side-by-side "Attachments"/"Gunsmith Code" embed fields, image, "Build N of M | Last updated" footer, Back/Next/Copy Code buttons). It got flattened into a generic V2-styled card during the Mongo migration above, which was a real visual regression, not an intentional redesign — rebuilt to match that original identity as closely as Components V2 allows. **V2 has no equivalent to an embed's inline fields** — "Attachments" and "Gunsmith Code" stack vertically now instead of sitting side-by-side; everything else (heading hierarchy, image, footer line, button labels/order) matches. Since this card moved off `EmbedBuilder` entirely, its send sites (`dmz.js`, the MP fallback and pagination handler in `index.js`) had to switch from `interaction.followUp()`/`interaction.update()` to the same raw `rest.patch('@original')` bypass every other V2 command already uses — discord.js's high-level methods don't reliably serialize raw V2 JSON (there's no builder class for a type-17 Container). If you touch this card again, remember `accent_color` needs a **decimal**, not a hex string like `EmbedBuilder.setColor()` took.
 
-Buttons (pagination + Copy Attachments + Copy Code) live INSIDE the container now, not as a sibling
-row — with a divider between them and the image/caption above, per Harkirat's request. Prev/Next
-also switched to the shared Left/Right-emoji pagination style (`utils/paginationRow.js`) instead of
-plain "Back"/"Next" text buttons, matching `/calendar` and `/draws`. Pagination + Copy Attachments +
-Copy Code all share one row instead of separate ones — exactly 5 buttons in the worst case
-(Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap, so don't add a 6th
-button here without splitting the row. "Share Publicly" is still its own row OUTSIDE the container
-(unlike the other buttons), consistent with every other command.
+Buttons (pagination + Copy Attachments + Copy Code) live INSIDE the container now, not as a sibling row — with a divider between them and the image/caption above, per Harkirat's request. Prev/Next also switched to the shared Left/Right-emoji pagination style (`utils/paginationRow.js`) instead of plain "Back"/"Next" text buttons, matching `/calendar` and `/draws`. Pagination + Copy Attachments + Copy Code all share one row instead of separate ones — exactly 5 buttons in the worst case (Left/counter/Right/Copy Attachments/Copy Code), right at Discord's per-row cap, so don't add a 6th button here without splitting the row. "Share Publicly" is still its own row OUTSIDE the container (unlike the other buttons), consistent with every other command.
 
-**Card layout, second pass (per `loadouts_ui.json`):** weapon name is now the top `# ` heading, with
-optional Meta/Best-in-category/Top-N-in-category "badges" directly below it as one bold line (see
-`buildBadgesLine()`) — the category label that used to sit as a small overline above the weapon name
-moved down into the footer instead (`{category} • Build N of M • Last updated <t:X:D>`).
-"Attachments"/"Gunsmith Code" are real `### ` H3 headings now (not bold text), each attachment line
-is backtick-wrapped, and the divider that used to sit between Gunsmith Code and the image was
-removed entirely — the image now sits directly under whichever text block precedes it. Divider
-`spacing` on this specific card is `1`, not the `2` used elsewhere in the bot (calendar/draws/etc.) —
-intentional per this reference file, not an oversight. The optional flavor-text `description` sits
-right below the top divider (above Attachments, was above the divider before) as a real Discord
-blockquote (`> `) instead of italic text, run through `toSentenceCase()` first since admin-typed
-descriptions aren't always capitalized correctly.
-- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` free-form string + `Loadout.isToxic`
-  boolean) only render when actually granted — `buildBadgesLine()` returns `null` (nothing shown) if
-  none are set. `categoryRank` is intentionally NOT a fixed `'best'|'top3'` enum — not every category
-  tops out at exactly 3, so it stores `'best'` or `'top{N}'` (`'top3'`, `'top4'`, `'top5'`, ...), one
-  field not two independent booleans, because "Best in category" and "Top N in category" are
-  mutually exclusive tiers of the same ranking. `isToxic` ("Toxic" — Harkirat's term for an
-  unbalanced/cheese pick) is a fully separate, independent flag — a build can be Toxic regardless of
-  its Meta status or category rank (e.g. NA-45 is Toxic-only with no Meta/rank; Striker is
-  Meta+Best+Toxic all at once), added after badges already existed once real data needed it. "Best",
-  "Top N", and "Toxic" each use a DIFFERENT emoji (`emojiMap.js`'s `best`/`top`/`toxic`) — don't reuse
-  one for another. Badges are joined with the `blank` spacer emoji between each granted badge,
-  matching the reference file's exact spacing (no space before `blank`, one space after it).
-- **`Loadout.dmzRangeRank` is the ONLY rank badge field DMZ builds ever use — `categoryRank` is
-  never set for `mode: 'DMZ'`**, added 2026-07-09 once real DMZ badge data existed. `/dmz` has no
-  per-category commands the way MP does (`/ar`, `/smg`, etc.), so a "Best AR"-style badge doesn't
-  read as meaningfully there. `dmzRangeRank` stores either a bare `'best'`/`'top{N}'` (renders as
-  "Best DMZ"/"Top N DMZ" when no combat range role applies — e.g. Type 19, SO-14) or a range-role-
-  qualified `'best-close'`/`'best-midlong'`/`'top{N}-close'`/`'top{N}-midlong'` (e.g. Fennec is
-  "Best Close Range", AS VAL is "Best Mid-Long Range") — same non-enum, parser-validated pattern as
-  `categoryRank`. `buildBadgesLine()` branches entirely on `mode === 'DMZ'`: DMZ builds only ever
-  read `dmzRangeRank`, MP builds only ever read `categoryRank`, reusing the same Best/Top emojis
-  either way — no new emoji assets needed. In `index.js`'s add/edit-loadout handlers, a plain
-  `best`/`topN` admin input still parses into `categoryRank` first (the parser doesn't know mode),
-  then gets rerouted into `dmzRangeRank` (and `categoryRank` cleared) if the loadout's mode is DMZ.
-  Admin input tokens: `best`, `top3`, `bestclose`, `bestmidlong`, `top3close`, `top5midlong` (no
-  space before "close"/"midlong", unlike `topN`'s optional space).
-- **Admin input for badges rides along on the existing "Category | Badges" modal field** as a 2nd
-  pipe-delimited segment (`"AR | meta,best"`, `"AR | meta,top5"`, or `"AR | meta,best,toxic"`)
-  rather than getting its own field — `/manage`'s add/edit-loadout modals already use all 5 of
-  Discord's per-modal field slots, so there was no room for a dedicated badges input. This field
-  used to be "Category | Mode | Badges" (3 segments) before the 2026-07-12 redesign split MP/DMZ
-  into separate pages — Mode no longer needs its own segment since the button itself is already
-  mode-scoped (add reads it from which page you clicked; edit reads it straight off the existing
-  document, since there's no "move this loadout to the other mode" action). `adminParser.js`'s
-  `parseLoadoutBadges()` parses comma-separated, case-insensitive
-  tokens (`meta`, `best`, `toxic`, `topN` in any spacing like `top 5`) and returns any tokens it
-  didn't recognize (e.g. a typo like `bset`) so the admin gets told exactly what didn't apply,
-  instead of a badge silently failing to save with no feedback. The edit modal reconstructs the
-  current badges token list from the DB so re-opening it to change something unrelated doesn't
-  silently clear existing badges.
-- **Badges are a weapon-level property, not a per-build one.** Editing one build's badges via
-  `edit_loadout_` now propagates the same `isMeta`/`categoryRank`/`isToxic` to every OTHER build
-  sharing that weaponKey+mode (`Loadout.updateMany(...)`) — setting "Meta" while editing Build 1 used
-  to leave Build 2/3 of the same weapon showing no badge at all. This propagation only happens on
-  **edit**, not on **add** — the add-loadout modal has nothing pre-filled, so a blank badges field
-  there (the common case when just adding another build variant) would silently wipe existing
-  siblings' badges. Re-editing an existing build is the supported way to (re)sync badges across a
-  weapon's builds; adding a new build doesn't currently inherit them automatically.
-- **`scripts/applyBadgesBulk.js`** is a one-off/re-runnable bulk badge importer — Harkirat pastes a
-  full weapon→badge list (grouped by category) instead of editing every loadout individually via
-  `/manage`. Matches each entry as a fuzzy substring of the stored `weaponKey` (scoped to the
-  category it's listed under, via `utils/search.js`'s `normalizeForSearch`), and propagates to every
-  build of that weapon the same way the `edit_loadout_` handler does. Weapons with no loadout saved
-  yet (e.g. Bal-27, FSS Hurricane, Pharo, and everything under SECONDARIES as of 2026-07-08) are
-  reported as unmatched rather than silently skipped — re-run once those loadouts actually exist.
-- **Loadouts bulk-add's text format is one loadout per block, blocks separated by a blank line**,
-  header line `Weapon | Category | Mode | Build Name | ImageKey | ShareCode | Badges` followed by
-  attachment lines (see `adminParser.js`'s `parseBulkLoadoutList()`). Only Weapon/Category/Mode are
-  required — the rest are optional trailing pipe segments. Mode is STILL a header field here (unlike
-  the single-add modal, which dropped its own Mode segment) purely so `parseBulkLoadoutList()`
-  didn't need touching in the 2026-07-12 MP/DMZ page split — `index.js`'s submit handler
-  force-overrides every parsed entry's `mode` to match whichever page (MP or DMZ) the modal was
-  opened from regardless of what's typed there, so this is now redundant-but-harmless rather than a
-  real "which collection does this go in" decision. **This bulk-add upserts by
-  `{weaponKey, mode, buildName}` — it never wholesale-replaces the `Loadout` collection** the way
-  the draws/calendar bulk-adds replace their whole array; doing that here would wipe every loadout
-  in the database. A block matching an existing build updates it in place; otherwise it's inserted,
-  and weapon-level badges still propagate to sibling builds afterward via `Loadout.updateMany`, same
-  as `edit_loadout_`. The Loadouts page's "Replace Multiple" button currently routes into this exact
-  same modal/handler too (see `.claude/rules/manage-panel.md` (deferred-work note)) — its upsert behavior already
-  covers replace semantics for anything pasted back in.
-- **Bulk-remove/Bulk-delete (draws/calendar/loadouts) all fuzzy-match by name rather than requiring
-  an exact match or a database ID**, added 2026-07-09 as the first bulk-removal capability the bot
-  has ever had. Reuses `utils/search.js`'s `fuzzyMatch` — same punctuation-insensitive matching as
-  every autocomplete route — and reports both what was removed and what didn't match anything, so a
-  typo'd title doesn't just silently do nothing. Loadout bulk-delete lines are `Weapon` (removes
-  every build of that weapon, scoped to whichever MP/DMZ page the modal was opened from) or
-  `Weapon | Build Name` (removes just that one build) — dropped their own Mode segment in the
-  2026-07-12 redesign for the same reason single-add/edit did.
-- **"Copy Attachments"** is a new button next to Copy Code, replying with the plain attachment list
-  (one per line, no bullets/backticks/formatting — meant to be pasted straight into Gunsmith)
-  ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared
-  `dmz`/`mp`-prefixed button router, alongside the existing `copy`/`next`/`prev` actions.
+**Card layout, second pass (per `loadouts_ui.json`):** weapon name is now the top `# ` heading, with optional Meta/Best-in-category/Top-N-in-category "badges" directly below it as one bold line (see `buildBadgesLine()`) — the category label that used to sit as a small overline above the weapon name moved down into the footer instead (`{category} • Build N of M • Last updated <t:X:D>`). "Attachments"/"Gunsmith Code" are real `### ` H3 headings now (not bold text), each attachment line is backtick-wrapped, and the divider that used to sit between Gunsmith Code and the image was removed entirely — the image now sits directly under whichever text block precedes it. Divider `spacing` on this specific card is `1`, not the `2` used elsewhere in the bot (calendar/draws/etc.) — intentional per this reference file, not an oversight. The optional flavor-text `description` sits right below the top divider (above Attachments, was above the divider before) as a real Discord blockquote (`> `) instead of italic text, run through `toSentenceCase()` first since admin-typed descriptions aren't always capitalized correctly.
+- **Badges** (`Loadout.isMeta` boolean + `Loadout.categoryRank` free-form string + `Loadout.isToxic` boolean) only render when actually granted — `buildBadgesLine()` returns `null` (nothing shown) if none are set. `categoryRank` is intentionally NOT a fixed `'best'|'top3'` enum — not every category tops out at exactly 3, so it stores `'best'` or `'top{N}'` (`'top3'`, `'top4'`, `'top5'`, ...), one field not two independent booleans, because "Best in category" and "Top N in category" are mutually exclusive tiers of the same ranking. `isToxic` ("Toxic" — Harkirat's term for an unbalanced/cheese pick) is a fully separate, independent flag — a build can be Toxic regardless of its Meta status or category rank (e.g. NA-45 is Toxic-only with no Meta/rank; Striker is Meta+Best+Toxic all at once), added after badges already existed once real data needed it. "Best", "Top N", and "Toxic" each use a DIFFERENT emoji (`emojiMap.js`'s `best`/`top`/`toxic`) — don't reuse one for another. Badges are joined with the `blank` spacer emoji between each granted badge, matching the reference file's exact spacing (no space before `blank`, one space after it).
+- **`Loadout.dmzRangeRank` is the ONLY rank badge field DMZ builds ever use — `categoryRank` is never set for `mode: 'DMZ'`**, added 2026-07-09 once real DMZ badge data existed. `/dmz` has no per-category commands the way MP does (`/ar`, `/smg`, etc.), so a "Best AR"-style badge doesn't read as meaningfully there. `dmzRangeRank` stores either a bare `'best'`/`'top{N}'` (renders as "Best DMZ"/"Top N DMZ" when no combat range role applies — e.g. Type 19, SO-14) or a range-role- qualified `'best-close'`/`'best-midlong'`/`'top{N}-close'`/`'top{N}-midlong'` (e.g. Fennec is "Best Close Range", AS VAL is "Best Mid-Long Range") — same non-enum, parser-validated pattern as `categoryRank`. `buildBadgesLine()` branches entirely on `mode === 'DMZ'`: DMZ builds only ever read `dmzRangeRank`, MP builds only ever read `categoryRank`, reusing the same Best/Top emojis either way — no new emoji assets needed. In `index.js`'s add/edit-loadout handlers, a plain `best`/`topN` admin input still parses into `categoryRank` first (the parser doesn't know mode), then gets rerouted into `dmzRangeRank` (and `categoryRank` cleared) if the loadout's mode is DMZ. Admin input tokens: `best`, `top3`, `bestclose`, `bestmidlong`, `top3close`, `top5midlong` (no space before "close"/"midlong", unlike `topN`'s optional space).
+- **Admin input for badges rides along on the existing "Category | Badges" modal field** as a 2nd pipe-delimited segment (`"AR | meta,best"`, `"AR | meta,top5"`, or `"AR | meta,best,toxic"`) rather than getting its own field — `/manage`'s add/edit-loadout modals already use all 5 of Discord's per-modal field slots, so there was no room for a dedicated badges input. This field used to be "Category | Mode | Badges" (3 segments) before the 2026-07-12 redesign split MP/DMZ into separate pages — Mode no longer needs its own segment since the button itself is already mode-scoped (add reads it from which page you clicked; edit reads it straight off the existing document, since there's no "move this loadout to the other mode" action). `adminParser.js`'s `parseLoadoutBadges()` parses comma-separated, case-insensitive tokens (`meta`, `best`, `toxic`, `topN` in any spacing like `top 5`) and returns any tokens it didn't recognize (e.g. a typo like `bset`) so the admin gets told exactly what didn't apply, instead of a badge silently failing to save with no feedback. The edit modal reconstructs the current badges token list from the DB so re-opening it to change something unrelated doesn't silently clear existing badges.
+- **Badges are a weapon-level property, not a per-build one.** Editing one build's badges via `edit_loadout_` now propagates the same `isMeta`/`categoryRank`/`isToxic` to every OTHER build sharing that weaponKey+mode (`Loadout.updateMany(...)`) — setting "Meta" while editing Build 1 used to leave Build 2/3 of the same weapon showing no badge at all. This propagation only happens on **edit**, not on **add** — the add-loadout modal has nothing pre-filled, so a blank badges field there (the common case when just adding another build variant) would silently wipe existing siblings' badges. Re-editing an existing build is the supported way to (re)sync badges across a weapon's builds; adding a new build doesn't currently inherit them automatically.
+- **`scripts/applyBadgesBulk.js`** is a one-off/re-runnable bulk badge importer — Harkirat pastes a full weapon→badge list (grouped by category) instead of editing every loadout individually via `/manage`. Matches each entry as a fuzzy substring of the stored `weaponKey` (scoped to the category it's listed under, via `utils/search.js`'s `normalizeForSearch`), and propagates to every build of that weapon the same way the `edit_loadout_` handler does. Weapons with no loadout saved yet (e.g. Bal-27, FSS Hurricane, Pharo, and everything under SECONDARIES as of 2026-07-08) are reported as unmatched rather than silently skipped — re-run once those loadouts actually exist.
+- **Loadouts bulk-add's text format is one loadout per block, blocks separated by a blank line**, header line `Weapon | Category | Mode | Build Name | ImageKey | ShareCode | Badges` followed by attachment lines (see `adminParser.js`'s `parseBulkLoadoutList()`). Only Weapon/Category/Mode are required — the rest are optional trailing pipe segments. Mode is STILL a header field here (unlike the single-add modal, which dropped its own Mode segment) purely so `parseBulkLoadoutList()` didn't need touching in the 2026-07-12 MP/DMZ page split — `index.js`'s submit handler force-overrides every parsed entry's `mode` to match whichever page (MP or DMZ) the modal was opened from regardless of what's typed there, so this is now redundant-but-harmless rather than a real "which collection does this go in" decision. **This bulk-add upserts by `{weaponKey, mode, buildName}` — it never wholesale-replaces the `Loadout` collection** the way the draws/calendar bulk-adds replace their whole array; doing that here would wipe every loadout in the database. A block matching an existing build updates it in place; otherwise it's inserted, and weapon-level badges still propagate to sibling builds afterward via `Loadout.updateMany`, same as `edit_loadout_`. The Loadouts page's "Replace Multiple" button currently routes into this exact same modal/handler too (see `.claude/rules/manage-panel.md` (deferred-work note)) — its upsert behavior already covers replace semantics for anything pasted back in.
+- **Bulk-remove/Bulk-delete (draws/calendar/loadouts) all fuzzy-match by name rather than requiring an exact match or a database ID**, added 2026-07-09 as the first bulk-removal capability the bot has ever had. Reuses `utils/search.js`'s `fuzzyMatch` — same punctuation-insensitive matching as every autocomplete route — and reports both what was removed and what didn't match anything, so a typo'd title doesn't just silently do nothing. Loadout bulk-delete lines are `Weapon` (removes every build of that weapon, scoped to whichever MP/DMZ page the modal was opened from) or `Weapon | Build Name` (removes just that one build) — dropped their own Mode segment in the 2026-07-12 redesign for the same reason single-add/edit did.
+- **"Copy Attachments"** is a new button next to Copy Code, replying with the plain attachment list (one per line, no bullets/backticks/formatting — meant to be pasted straight into Gunsmith) ephemeral, same mechanism as Copy Code. Handled by the `copyatt` action in index.js's shared `dmz`/`mp`-prefixed button router, alongside the existing `copy`/`next`/`prev` actions.
 
 
 ## Autocomplete search is punctuation/whitespace-insensitive, not just substring (`utils/search.js`)
-Every autocomplete route in the bot (loadout weapon search across `/dmz`/`/all`/`/<category>`,
-`/patch notes`' version search) used a plain `.includes()` (or an equivalent raw Mongo `$regex`),
-which requires the typed query to appear as one literal, contiguous substring of the stored name —
-so typing `dlq` never matched `DL Q33`, since the space between "DL" and "Q33" breaks that literal
-character sequence. `fuzzyMatch()` strips spaces/hyphens/underscores/periods from both sides before
-comparing, which fixes that whole class of miss (also covers `cx9` matching `CX-9`) without going as
-far as true fuzzy/subsequence matching (skipping letters), which would start returning noisy,
-hard-to-predict matches for a dataset this size.
+Every autocomplete route in the bot (loadout weapon search across `/dmz`/`/all`/`/<category>`, `/patch notes`' version search) used a plain `.includes()` (or an equivalent raw Mongo `$regex`), which requires the typed query to appear as one literal, contiguous substring of the stored name — so typing `dlq` never matched `DL Q33`, since the space between "DL" and "Q33" breaks that literal character sequence. `fuzzyMatch()` strips spaces/hyphens/underscores/periods from both sides before comparing, which fixes that whole class of miss (also covers `cx9` matching `CX-9`) without going as far as true fuzzy/subsequence matching (skipping letters), which would start returning noisy, hard-to-predict matches for a dataset this size.
 
-**`/manage` has no autocomplete options at all** — its Edit/Delete panel actions collect a search
-query through a one-field modal instead (see `.claude/rules/manage-panel.md`), since a
-button can't autocomplete like a slash-command option could. That modal-submit handler
-(`index.js`'s `resolveManagePanelMatches()`) reuses the exact same `fuzzyMatch()` convention as
-every autocomplete route above — same matching behavior, just triggered by a modal submit instead
-of a live-typed option.
+**`/manage` has no autocomplete options at all** — its Edit/Delete panel actions collect a search query through a one-field modal instead (see `.claude/rules/manage-panel.md`), since a button can't autocomplete like a slash-command option could. That modal-submit handler (`index.js`'s `resolveManagePanelMatches()`) reuses the exact same `fuzzyMatch()` convention as every autocomplete route above — same matching behavior, just triggered by a modal submit instead of a live-typed option.
 
 ### Loadout lookup's short/partial-query fallback (2026-07-18, v2 quick-wins batch)
-Autocomplete above only helps if the user actually picks a suggestion — Discord still submits
-whatever raw text was typed as the option's final value if they hit enter without picking one (a real
-live complaint on mobile, where the dropdown is easy to dismiss by accident). `/dmz`'s and the shared
-`/all`+`/<category>` MP fallback's actual lookup query (`Loadout.find({weaponKey, mode})`) is an EXACT
-match against the normalized weaponKey — a short/partial raw query like `loc` almost never equals a
-full weaponKey exactly, so this used to just fail with a generic "not found" and no explanation.
-- **New `findWeaponMatches(query, candidates)`** (`utils/search.js`) — reuses `fuzzyMatch()` against
-  each candidate's `weaponName`, scoped to the same mode/category the autocomplete route itself uses.
-  Only runs as a FALLBACK, after the exact-key lookup misses — the common case (a real autocomplete
-  pick) pays zero extra cost.
-- **Auto-resolve vs. ask, decided by ambiguity, not by query length.** Exactly one fuzzy match
-  auto-resolves (safe — there's only one real candidate it could mean); 2+ matches replies with the
-  actual candidate weapon names and asks the user to pick a suggestion from the dropdown instead of
-  silently guessing which one they meant (verified: `loc` against a sample AR/Sniper set returns BOTH
-  `LOCUS` and `Lockwood 300` — auto-resolving either would've been a real wrong-answer risk). Zero
-  matches falls through to the existing "not found" message, with an added hint (shorter for a query
-  under 3 characters) to type more of the name or use the dropdown.
+Autocomplete above only helps if the user actually picks a suggestion — Discord still submits whatever raw text was typed as the option's final value if they hit enter without picking one (a real live complaint on mobile, where the dropdown is easy to dismiss by accident). `/dmz`'s and the shared `/all`+`/<category>` MP fallback's actual lookup query (`Loadout.find({weaponKey, mode})`) is an EXACT match against the normalized weaponKey — a short/partial raw query like `loc` almost never equals a full weaponKey exactly, so this used to just fail with a generic "not found" and no explanation.
+- **New `findWeaponMatches(query, candidates)`** (`utils/search.js`) — reuses `fuzzyMatch()` against each candidate's `weaponName`, scoped to the same mode/category the autocomplete route itself uses. Only runs as a FALLBACK, after the exact-key lookup misses — the common case (a real autocomplete pick) pays zero extra cost.
+- **Auto-resolve vs. ask, decided by ambiguity, not by query length.** Exactly one fuzzy match auto-resolves (safe — there's only one real candidate it could mean); 2+ matches replies with the actual candidate weapon names and asks the user to pick a suggestion from the dropdown instead of silently guessing which one they meant (verified: `loc` against a sample AR/Sniper set returns BOTH `LOCUS` and `Lockwood 300` — auto-resolving either would've been a real wrong-answer risk). Zero matches falls through to the existing "not found" message, with an added hint (shorter for a query under 3 characters) to type more of the name or use the dropdown.
 
 ### Category-level search synonyms (2026-07-18, same day follow-up — replaces the shelved `/pistols`
 ### command idea)
-A plain name/category match can't help a query like `pistol` at all — most Secondaries weapons
-(Combat Knife, J358, Crossbow, ...) don't literally contain that word, and the category field itself
-was never being matched against in the first place (typing the bot's own category keyword like `smg`
-into `/all` silently returned nothing unless a weapon's name happened to contain those letters by
-coincidence). Working assumption behind adding this (Harkirat's own framing, paraphrased: players
-type what they actually think, not this bot's internal category label — meet them there).
-- **`utils/search.js`'s `resolveCategorySynonym(query)`** maps a normalized query to a real
-  `Loadout.category` value via `CATEGORY_SEARCH_SYNONYMS` — every category's own name/plural/full-word
-  form (`ar`/"assault rifle", `smg`/"submachine gun", `lmg`/"light machine gun",
-  `marksman`/"marksman rifle"/`dmr`, `sniper`/"sniper rifle", `shotgun`), plus `secondary`/
-  `secondaries`/`pistol`/`pistols`/`handgun`/`handguns` → `SECONDARIES`. **Deliberately limited to
-  real, unambiguous weapon-class terminology** — the game's own category names and standard firearm-
-  class words, NOT guessed CODM community slang/nicknames, since a confidently wrong slang mapping
-  would be worse than no mapping at all.
-- **Folded directly into `findWeaponMatches()`** (not a separate function) — a candidate now matches
-  if its `weaponName` fuzzy-matches OR its `category` equals a resolved synonym, deduped by
-  `weaponKey`. This is what BOTH the autocomplete route (`/dmz`/`/all`/`/<category>`) and the
-  short/partial-query exact-lookup fallback above get, automatically, with no separate wiring.
-- **This is the direct replacement for the `/secondaries`→`/secondary`+`/pistols` roadmap idea** (see
-  `docs/ROADMAP.md`) — Discord has no real command-alias mechanism, so a literal `/pistols`
-  shortcut would have needed its own full command registration (a second entry in the command list)
-  either way. Typing "pistol" now surfaces every Secondaries weapon directly within `/secondaries` or
-  `/all`, without adding a command.
+A plain name/category match can't help a query like `pistol` at all — most Secondaries weapons (Combat Knife, J358, Crossbow, ...) don't literally contain that word, and the category field itself was never being matched against in the first place (typing the bot's own category keyword like `smg` into `/all` silently returned nothing unless a weapon's name happened to contain those letters by coincidence). Working assumption behind adding this (Harkirat's own framing, paraphrased: players type what they actually think, not this bot's internal category label — meet them there).
+- **`utils/search.js`'s `resolveCategorySynonym(query)`** maps a normalized query to a real `Loadout.category` value via `CATEGORY_SEARCH_SYNONYMS` — every category's own name/plural/full-word form (`ar`/"assault rifle", `smg`/"submachine gun", `lmg`/"light machine gun", `marksman`/"marksman rifle"/`dmr`, `sniper`/"sniper rifle", `shotgun`), plus `secondary`/ `secondaries`/`pistol`/`pistols`/`handgun`/`handguns` → `SECONDARIES`. **Deliberately limited to real, unambiguous weapon-class terminology** — the game's own category names and standard firearm- class words, NOT guessed CODM community slang/nicknames, since a confidently wrong slang mapping would be worse than no mapping at all.
+- **Folded directly into `findWeaponMatches()`** (not a separate function) — a candidate now matches if its `weaponName` fuzzy-matches OR its `category` equals a resolved synonym, deduped by `weaponKey`. This is what BOTH the autocomplete route (`/dmz`/`/all`/`/<category>`) and the short/partial-query exact-lookup fallback above get, automatically, with no separate wiring.
+- **This is the direct replacement for the `/secondaries`→`/secondary`+`/pistols` roadmap idea** (see `docs/ROADMAP.md`) — Discord has no real command-alias mechanism, so a literal `/pistols` shortcut would have needed its own full command registration (a second entry in the command list) either way. Typing "pistol" now surfaces every Secondaries weapon directly within `/secondaries` or `/all`, without adding a command.
 
 
 ## "Browse other builds" dropdown + alphabetical category sort (2026-07-12/13, follow-up)
-- **`/all`'s category sort dropped `CATEGORY_SORT_ORDER` entirely** (see `docs/DEVLOG.md` →
-  *"2026-07-12 — Post-deploy fixes: discord.js will not open a modal from a modal submit"*) —
-  Harkirat's explicit follow-up call to just go alphabetical instead of hand-confirming a category
-  order. `index.js`'s autocomplete sort is now `category.localeCompare` then `weaponName.localeCompare`,
-  nothing else.
-- **Loadout cards (`/dmz`, `/all`, `/<category>`) gained a "Browse other builds" select-menu
-  dropdown**, one of the two items previously flagged as deferred future work (see the "Next
-  planned work" list below — now implemented, not still pending). Lets a user jump straight to a
-  different weapon's card without re-running the slash command. `utils/loadoutRender.js`'s
-  `buildCategoryBrowseRow()` builds it; `buildLoadoutCard()` takes a new `categoryBuilds` option
-  (every `Loadout` doc sharing the card's scope — same `category`+`mode:'MP'` for MP cards, or
-  every `mode:'DMZ'` doc for DMZ cards, since `/dmz` has no per-category commands the way MP does)
-  and renders the row only when there's more than one WEAPON to browse to.
-  - **One entry per weapon, not per build** — an earlier version listed every individual build with
-    a "[Build N of M]" suffix (e.g. `SO-14 [Build 1 of 2]`), but that was simplified per Harkirat's
-    follow-up request: selecting a weapon from the dropdown always opens it at build index 0 (Prev/
-    Next already covers browsing between that weapon's own build variants). Deduped by `weaponKey`
-    via a Map, sorted alphabetically by weapon name. Selected option's `value` is just the bare
-    `weaponKey`.
-  - **The dropdown row lives OUTSIDE the container**, as a top-level sibling passed into
-    `withShareButton([containerPayload, browseRow], isEphemeral)` — NOT because Discord disallows a
-    select menu nested inside a Container (a wrong theory floated mid-session; `/settings` and
-    `/manage` both nest selects inside their containers successfully), just per Harkirat's explicit
-    layout preference.
-  - **REAL BUG (found live, 2026-07-13): the select-menu handler was originally placed inside
-    `if (interaction.isButton())` in index.js instead of `if (interaction.isStringSelectMenu())`** —
-    a plain misplacement from when the handler was first added, sitting right after the `set_page_`
-    button handler which reads as adjacent but is actually one whole top-level block away. A
-    `StringSelectMenuInteraction` never satisfies `isButton()`, so the entire handler was dead code:
-    no error, no log, nothing — Discord just timed out the interaction after ~3s with a bare "This
-    interaction failed", and several rounds of plausible-sounding fixes (container-nesting theory,
-    defer-before-query reordering, empty-result guard) never touched the actual problem because none
-    of them were checked against a real firing interaction. Only adding a `console.log` at the very
-    top of `isStringSelectMenu()` and comparing it against a log inside the (unreachable) handler
-    revealed the mismatch. Moved into the correct block, now working. See
-    `[[feedback_verify_fix_actually_works]]` in memory for the general lesson.
-  - **Discord's 25-option select cap is a silent truncation**, not an error — not expected to bite
-    at the collection's current size (~100-200 docs total across ALL categories combined), but if a
-    single category (or all of DMZ) ever exceeds 25 distinct weapons, revisit this rather than
-    assuming every weapon is always reachable through the dropdown.
-  - Added at all 3 render sites that needed it: `commands/dmz.js`'s `execute()`, `index.js`'s MP
-    fallback route (`/all`+`/<category>`), and both the dmz/mp pagination handler AND the browse
-    handler itself (paging or browsing again from an already-browsed card needs the same fresh
-    `categoryBuilds` fetch, not just the initial slash-command response).
+- **`/all`'s category sort dropped `CATEGORY_SORT_ORDER` entirely** (see `docs/DEVLOG.md` → *"2026-07-12 — Post-deploy fixes: discord.js will not open a modal from a modal submit"*) — Harkirat's explicit follow-up call to just go alphabetical instead of hand-confirming a category order. `index.js`'s autocomplete sort is now `category.localeCompare` then `weaponName.localeCompare`, nothing else.
+- **Loadout cards (`/dmz`, `/all`, `/<category>`) gained a "Browse other builds" select-menu dropdown**, one of the two items previously flagged as deferred future work (see the "Next planned work" list below — now implemented, not still pending). Lets a user jump straight to a different weapon's card without re-running the slash command. `utils/loadoutRender.js`'s `buildCategoryBrowseRow()` builds it; `buildLoadoutCard()` takes a new `categoryBuilds` option (every `Loadout` doc sharing the card's scope — same `category`+`mode:'MP'` for MP cards, or every `mode:'DMZ'` doc for DMZ cards, since `/dmz` has no per-category commands the way MP does) and renders the row only when there's more than one WEAPON to browse to.
+  - **One entry per weapon, not per build** — an earlier version listed every individual build with a "[Build N of M]" suffix (e.g. `SO-14 [Build 1 of 2]`), but that was simplified per Harkirat's follow-up request: selecting a weapon from the dropdown always opens it at build index 0 (Prev/ Next already covers browsing between that weapon's own build variants). Deduped by `weaponKey` via a Map, sorted alphabetically by weapon name. Selected option's `value` is just the bare `weaponKey`.
+  - **The dropdown row lives OUTSIDE the container**, as a top-level sibling passed into `withShareButton([containerPayload, browseRow], isEphemeral)` — NOT because Discord disallows a select menu nested inside a Container (a wrong theory floated mid-session; `/settings` and `/manage` both nest selects inside their containers successfully), just per Harkirat's explicit layout preference.
+  - **REAL BUG (found live, 2026-07-13): the select-menu handler was originally placed inside `if (interaction.isButton())` in index.js instead of `if (interaction.isStringSelectMenu())`** — a plain misplacement from when the handler was first added, sitting right after the `set_page_` button handler which reads as adjacent but is actually one whole top-level block away. A `StringSelectMenuInteraction` never satisfies `isButton()`, so the entire handler was dead code: no error, no log, nothing — Discord just timed out the interaction after ~3s with a bare "This interaction failed", and several rounds of plausible-sounding fixes (container-nesting theory, defer-before-query reordering, empty-result guard) never touched the actual problem because none of them were checked against a real firing interaction. Only adding a `console.log` at the very top of `isStringSelectMenu()` and comparing it against a log inside the (unreachable) handler revealed the mismatch. Moved into the correct block, now working. See `[[feedback_verify_fix_actually_works]]` in memory for the general lesson.
+  - **Discord's 25-option select cap is a silent truncation**, not an error — not expected to bite at the collection's current size (~100-200 docs total across ALL categories combined), but if a single category (or all of DMZ) ever exceeds 25 distinct weapons, revisit this rather than assuming every weapon is always reachable through the dropdown.
+  - Added at all 3 render sites that needed it: `commands/dmz.js`'s `execute()`, `index.js`'s MP fallback route (`/all`+`/<category>`), and both the dmz/mp pagination handler AND the browse handler itself (paging or browsing again from an already-browsed card needs the same fresh `categoryBuilds` fetch, not just the initial slash-command response).
 

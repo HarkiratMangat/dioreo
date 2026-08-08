@@ -208,4 +208,78 @@ a "NEW session, same state -> reports"   "CONSERVATION" yes "$(run "$SESS" "$tr_
 mkdir -p "$TMP/plain"
 a "non-repo directory is silent" "COMPLETENESS SWEEP" no "$(run "$TMP/plain" "" pr)"
 
+
+# ══ PASSES 4 & 5 — change-shaped demands + the derivation requirement ══════════════════════════════
+# These exist because pass 3's registry asks the SAME question every session. Each proof below pins a
+# demand to the property that triggers it, and — just as importantly — pins that it stays QUIET when
+# that property is absent. A demand that fires on everything is the failure mode four hooks here warn
+# about, so the negative cases are the load-bearing half.
+
+# $1 name · $2.. relative paths to create+modify on the branch
+mkfiles() {
+  local d="$TMP/$1"; shift
+  mkdir -p "$d"; git -C "$d" init --quiet -b main
+  echo seed > "$d/seed.txt"
+  git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m init
+  git -C "$d" checkout --quiet -b feat
+  local f
+  for f in "$@"; do mkdir -p "$d/$(dirname "$f")"; printf 'a substantial content line for %s\n' "$f" > "$d/$f"; done
+  git -C "$d" add -A; git -C "$d" -c user.email=t@t -c user.name=t commit --quiet -m change
+  printf '%s' "$d"
+}
+
+TR="$TMP/derive-absent.jsonl"
+printf '%s\n' "$FILLER" > "$TR"
+TR_OK="$TMP/derive-present.jsonl"
+{ printf '%s\n' "$FILLER"
+  printf '{"type":"tool_use","name":"mcp__sequential-thinking__sequentialthinking","input":{"thought":"x"}}\n'; } > "$TR_OK"
+
+# ---- scope conservation: a tracking list changed => account for the closed item's whole scope ----
+out=$(run "$(mkfiles scope docs/db-deferred-list.md)" "$TR" pr)
+a "tracking-list change demands SCOPE CONSERVATION" "SCOPE CONSERVATION" yes "$out"
+
+# ---- ...and does NOT demand it for an unrelated file ----
+out=$(run "$(mkfiles noscope docs/other.md)" "$TR" pr)
+a "unrelated change does not demand scope conservation" "SCOPE CONSERVATION" no "$out"
+
+# ---- bulk transform => name the downstream heuristics ----
+many=$(for i in $(seq 1 16); do printf 'docs/f%s.md ' "$i"; done)
+# shellcheck disable=SC2086
+out=$(run "$(mkfiles bulk $many)" "$TR" pr)
+a "16-file change demands DOWNSTREAM HEURISTICS" "DOWNSTREAM HEURISTICS" yes "$out"
+
+# ---- a migration/reflow script alone is enough, even with few files ----
+out=$(run "$(mkfiles script scripts/reflow-thing.mjs)" "$TR" pr)
+a "a reflow script demands DOWNSTREAM HEURISTICS" "DOWNSTREAM HEURISTICS" yes "$out"
+
+# ---- new enforcement => prove it can fail ----
+out=$(run "$(mkfiles hooky .claude/hooks/new-guard.sh)" "$TR" pr)
+a "a new hook demands NEW ENFORCEMENT proof" "NEW ENFORCEMENT" yes "$out"
+
+# ---- a parsed file => run the parser across the change ----
+out=$(run "$(mkfiles parsed docs/ideas/diors-notes.md)" "$TR" pr)
+a "notes-file change demands PARSED BY SOMETHING" "PARSED BY SOMETHING" yes "$out"
+
+# ---- derivation: demanded on a wide change when no derivation ran ----
+# shellcheck disable=SC2086
+out=$(run "$(mkfiles wide $many)" "$TR" pr)
+a "wide change demands DERIVE THE ANGLES" "DERIVE THE ANGLES" yes "$out"
+
+# ---- ...and is SATISFIED when the transcript carries a real sequential-thinking tool_use ----
+# shellcheck disable=SC2086
+out=$(run "$(mkfiles wideok $many)" "$TR_OK" pr)
+a "a real derivation satisfies the demand" "DERIVE THE ANGLES" no "$out"
+
+# ---- ...and a trivial change never triggers it (this is what stops it firing on everything) ----
+out=$(run "$(mkfiles tiny docs/one.md)" "$TR" pr)
+a "a 1-file change does NOT demand derivation" "DERIVE THE ANGLES" no "$out"
+
+# ---- SELF-POISONING GUARD: writing this hook's own source must not count as a derivation ----
+TR_WRITE="$TMP/derive-write.jsonl"
+{ printf '%s\n' "$FILLER"
+  printf '{"type":"tool_use","name":"Write","input":{"file_path":"x.sh","content":"rg -c sequential-thinking__sequentialthinking"}}\n'; } > "$TR_WRITE"
+# shellcheck disable=SC2086
+out=$(run "$(mkfiles poison $many)" "$TR_WRITE" pr)
+a "a Write containing the detector does NOT count as derivation" "DERIVE THE ANGLES" yes "$out"
+
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

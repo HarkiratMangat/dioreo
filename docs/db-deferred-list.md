@@ -1,54 +1,29 @@
+---
+kind: record
+status: live
+---
+
 # Deferred list — Dioreo (`db-deferred-list.md`)
 
-**Dioreo's own deferred work**: confirmed bugs, time/condition reminders, the maintenance /
-tech-debt long-tail, and the handful of features big enough to warrant their own dedicated session.
-If a session working *only* in this repo would need to know it, it belongs here.
+**Dioreo's own deferred work**: confirmed bugs, time/condition reminders, the maintenance / tech-debt long-tail, and the handful of features big enough to warrant their own dedicated session. If a session working *only* in this repo would need to know it, it belongs here.
 
-**History:** split out of the cross-project tracker on **2026-07-25 15:56 EDT** (tracked in-repo, so it
-gets real `git diff`/`git log` history like the rest of `docs/`), then **renamed and completed
-2026-07-25 21:43 EDT** — that first pass moved only the tech-debt list and left this project's bugs,
-reminders, and resolved items sitting in the cross-project file, which defeated the point. This pass
-pulled all of them in, added the priority legend, and moved resolved entries out to
-`docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is
-now `/Applications/Claude Code/meta-deferred-list.md`.
+**History:** split out of the cross-project tracker on **2026-07-25 15:56 EDT** (tracked in-repo, so it gets real `git diff`/`git log` history like the rest of `docs/`), then **renamed and completed 2026-07-25 21:43 EDT** — that first pass moved only the tech-debt list and left this project's bugs, reminders, and resolved items sitting in the cross-project file, which defeated the point. This pass pulled all of them in, added the priority legend, and moved resolved entries out to `docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is now `/Applications/Claude Code/meta-deferred-list.md`.
 
 ## Closing the loop back to the notes file
-When a Queued/bug item here that was **filed FROM `docs/ideas/diors-notes.md`** ships or gets fixed,
-go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a
-separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31,
-shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions,
-because closing THIS file's entry was treated as the finish line and the originating bullet was never
-revisited — even though the shipping commit's own code comment cited the notes-file line number. A
-filed item's real origin is worth a quick grep for ("notes L###" or the item's own wording) whenever
-you check something off here.
+When a Queued/bug item here that was **filed FROM `docs/ideas/diors-notes.md`** ships or gets fixed, go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31, shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions, because closing THIS file's entry was treated as the finish line and the originating bullet was never revisited — even though the shipping commit's own code comment cited the notes-file line number. A filed item's real origin is worth a quick grep for ("notes L###" or the item's own wording) whenever you check something off here.
 
 ## What is NOT in this file
-- **The feature roadmap** — `docs/ROADMAP.md` is authoritative (v2 remaining · v3 · v4 · v5 ·
-  housekeeping). This file is deliberately NOT a copy of it: pointer, not duplicate.
-  **⇄ Reality check 2026-07-27 19:45 EDT:** 7 items were found in BOTH files, so "not a copy" was not
-  holding on its own. Each now carries a `⇄` cross-reference to its twin. Division of labour:
-  **ROADMAP = which version it belongs to; this file = size, decided design, and when it gets a
-  session.** Appearing in both is allowed — appearing in both *without* the `⇄` marker is the bug.
-- **Resolved / dropped items** — `docs/archive/resolved-list.md` (except standing 🚫 decided-no calls,
-  which stay below on purpose so nobody re-raises them).
-- **Cross-project work, MarkEdit-extension bugs, Claude/Anthropic product feedback** —
-  `/Applications/Claude Code/meta-deferred-list.md`.
+- **The feature roadmap** — `docs/ROADMAP.md` is authoritative (v2 remaining · v3 · v4 · v5 · housekeeping). This file is deliberately NOT a copy of it: pointer, not duplicate.
+  **⇄ Reality check 2026-07-27 19:45 EDT:** 7 items were found in BOTH files, so "not a copy" was not holding on its own. Each now carries a `⇄` cross-reference to its twin. Division of labour: **ROADMAP = which version it belongs to; this file = size, decided design, and when it gets a session.** Appearing in both is allowed — appearing in both *without* the `⇄` marker is the bug.
+- **Resolved / dropped items** — `docs/archive/resolved-list.md` (except standing 🚫 decided-no calls, which stay below on purpose so nobody re-raises them).
+- **Cross-project work, MarkEdit-extension bugs, Claude/Anthropic product feedback** — `/Applications/Claude Code/meta-deferred-list.md`.
 - **Design gaps we're knowingly living with** — `docs/reference/platform-constraints.md`.
 
 ## 🏷️ Priority & effort tags
-Every OPEN item carries `[Priority · Effort]` (+ optional flags). Two axes: one for *what to focus on*,
-one for *what can be bundled cheaply*. Resolved items don't need one.
-- **Priority** (urgency + impact + risk + blocking): **P0** now (broken+user-facing / blocking / due) ·
-  **P1** soon (clear value, no reason to wait) · **P2** eventually (real, not pressing) · **P3** someday/parked.
-- **Effort** (scope ONLY — ⚠️ it does NOT carry the model choice; see the grid below): **XS** minutes ·
-  **S** part of a session · **M** a session · **L** its own big/multi-session job.
-  ⚠️ **No `XL` tier, deliberately.** Measured 2026-08-06: completion is **S 35% · M 28% · XS 14% ·
-  L 11%** (1 of 9, and that one was retired). L is already a parking label, so a bigger bucket would
-  make parking easier. ✅ **Rule instead: an `L` item carries a named FIRST SLICE (an S or M) or a
-  decomposition, or it is not schedulable.**
-- **Model + reasoning effort** — a **separate axis**, chosen from task properties, never from the
-  effort tier. Rows = *premise risk* (are the facts given and checkable?), columns = *deliberation
-  load* (one place → whole system):
+Every OPEN item carries `[Priority · Effort]` (+ optional flags). Two axes: one for *what to focus on*, one for *what can be bundled cheaply*. Resolved items don't need one.
+- **Priority** (urgency + impact + risk + blocking): **P0** now (broken+user-facing / blocking / due) · **P1** soon (clear value, no reason to wait) · **P2** eventually (real, not pressing) · **P3** someday/parked.
+- **Effort** (scope ONLY — ⚠️ it does NOT carry the model choice; see the grid below): **XS** minutes · **S** part of a session · **M** a session · **L** its own big/multi-session job. ⚠️ **No `XL` tier, deliberately.** Measured 2026-08-06: completion is **S 35% · M 28% · XS 14% · L 11%** (1 of 9, and that one was retired). L is already a parking label, so a bigger bucket would make parking easier. ✅ **Rule instead: an `L` item carries a named FIRST SLICE (an S or M) or a decomposition, or it is not schedulable.**
+- **Model + reasoning effort** — a **separate axis**, chosen from task properties, never from the effort tier. Rows = *premise risk* (are the facts given and checkable?), columns = *deliberation load* (one place → whole system):
 
   | | Delib Low | Med | High | Very high |
   |---|---|---|---|---|
@@ -56,2109 +31,500 @@ one for *what can be bundled cheaply*. Resolved items don't need one.
   | **Premise Med** | `Sonnet5-Medium` | `Sonnet5-High` | `Sonnet5-XHigh` | `Opus5-High` |
   | **Premise High** | `Opus5-Medium` | `Opus5-High` | `Opus5-XHigh` | `Opus5-Max` |
 
-  Effort buys **breadth**; model buys **judgement/self-correction**. Every cell is exactly ONE combo —
-  if torn, take the lower and say why. Off-grid only by naming a trigger: `Sonnet5-Max` (exhaustive
-  sweep, costly miss — usually beaten by writing a script) · `Opus5-Low` (downshift for high-volume
-  triage). Escalate on EVENTS: two wrong hypotheses → +1 effort · a false premise → Sonnet→Opus ·
-  silent-failure surface → Sonnet→Opus · 🔻 **scope turned out mechanical → step DOWN.**
-  ⚠️ **Never calibrate on past usage** — `max`/`low` never used, `xhigh` once; Harkirat built this
-  system so Claude would choose, so his history is downstream of that advice, not evidence.
+  Effort buys **breadth**; model buys **judgement/self-correction**. Every cell is exactly ONE combo — if torn, take the lower and say why. Off-grid only by naming a trigger: `Sonnet5-Max` (exhaustive sweep, costly miss — usually beaten by writing a script) · `Opus5-Low` (downshift for high-volume triage). Escalate on EVENTS: two wrong hypotheses → +1 effort · a false premise → Sonnet→Opus · silent-failure surface → Sonnet→Opus · 🔻 **scope turned out mechanical → step DOWN.** ⚠️ **Never calibrate on past usage** — `max`/`low` never used, `xhigh` once; Harkirat built this system so Claude would choose, so his history is downstream of that advice, not evidence.
 - **Flags:** 🔗 bundle-with:\<what\> · 🧩 needs-design · ⛓️ blocked-by/blocks:\<what\>.
-- **Combos:** P0/P1+XS/S = quick win (do now / bundle) · P1+L = schedule its own session · P2+XS/S =
-  bundle-only · P3 = ignore till relevant.
-- ⚠️ **STANDING RULE, not optional (Harkirat's explicit ask, 2026-08-07 10:22 EDT):** every item gets a
-  model+effort tag from the grid above (`[P· E · Model<ver>-<eff>]`), not just the ones that "feel like"
-  a real build. It's a REFERENCE for whichever session picks the item up, not a binding order — that
-  session judges the model for real once the actual task and its current context are in hand, and may
-  supersede it. **Keep it updated**: if an item's scope, details, or premise change while editing it,
-  re-run the grid and update the tag in the same edit — a stale model tag next to fresh scope is worse
-  than no tag, because it reads as considered when it no longer is. Earlier entries in this file
-  written before this rule (plain `[P0 · S]` with no model) are not retroactively wrong; add the tag
-  the next time that item is touched, don't do a blanket sweep just to backfill it.
+- **Combos:** P0/P1+XS/S = quick win (do now / bundle) · P1+L = schedule its own session · P2+XS/S = bundle-only · P3 = ignore till relevant.
+- ⚠️ **STANDING RULE, not optional (Harkirat's explicit ask, 2026-08-07 10:22 EDT):** every item gets a model+effort tag from the grid above (`[P· E · Model<ver>-<eff>]`), not just the ones that "feel like" a real build. It's a REFERENCE for whichever session picks the item up, not a binding order — that session judges the model for real once the actual task and its current context are in hand, and may supersede it. **Keep it updated**: if an item's scope, details, or premise change while editing it, re-run the grid and update the tag in the same edit — a stale model tag next to fresh scope is worse than no tag, because it reads as considered when it no longer is. Earlier entries in this file written before this rule (plain `[P0 · S]` with no model) are not retroactively wrong; add the tag the next time that item is touched, don't do a blanket sweep just to backfill it.
 
-Full spec: `reference_priority_tier_system` memory. Canonical copy of this legend:
-`/Applications/Claude Code/meta-deferred-list.md`.
+Full spec: `reference_priority_tier_system` memory. Canonical copy of this legend: `/Applications/Claude Code/meta-deferred-list.md`.
 
-**Model tags refreshed 2026-07-25 21:43 EDT:** every `Opus4.8-*` tag was rewritten to the equivalent
-`Opus5-*` — the tier mapping is direct and Opus 4.8 is superseded, so the old tags were pointing at a
-model Harkirat no longer runs. Effort letters (H/M/L) unchanged.
+**Model tags refreshed 2026-07-25 21:43 EDT:** every `Opus4.8-*` tag was rewritten to the equivalent `Opus5-*` — the tier mapping is direct and Opus 4.8 is superseded, so the old tags were pointing at a model Harkirat no longer runs. Effort letters (H/M/L) unchanged.
 
 ---
 
 ## 🐞 Active Bugs — broken behaviour, not yet fixed
-*Moved in from the cross-project tracker's 🐞 section 2026-07-25 21:43 EDT. **Rule:** the moment a bot bug
-is reported or found, it lands here with a repro + a `[Priority · Effort]` tag (most start P0); it only
-leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a
-buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a
-scratchpad for 2 days.*
+*Moved in from the cross-project tracker's 🐞 section 2026-07-25 21:43 EDT. **Rule:** the moment a bot bug is reported or found, it lands here with a repro + a `[Priority · Effort]` tag (most start P0); it only leaves when fixed (→ `docs/archive/resolved-list.md`) or proven not-a-bug. A session that touches a buggy area checks here FIRST — this section exists because the `/manage` Edit bug once sat buried in a scratchpad for 2 days.*
 
-- `[P1 · M · Sonnet5-High]` **✅ ROOT CAUSE CONFIRMED 2026-08-07 16:43 EDT via A/B test: the
-  single-hop "pagination perf hybrid" (2026-08-06 22:17 EDT) IS what's causing a button's animated
-  emoji to go permanently blank after a re-render.** *Filed 2026-08-07 16:40 EDT from Harkirat's
-  live testing across `/calendar` and `/draw prices`.* **Model pick reasoning:** premise now
-  LOW (confirmed, not theorized) but the FIX still needs Harkirat's call — see below · deliberation
-  High — this touches a deliberate, documented, already-shipped perf optimization
-  (`utils/sendV2Payload.js`'s single-hop path) spanning draws/calendar/drawprices/settings
-  pagination; any fix trades back some of the latency win. Tie-break: wrong-but-confident on the FIX
-  choice costs a lot → stays Sonnet, High.
+- `[P1 · M · Sonnet5-High]` **✅ ROOT CAUSE CONFIRMED 2026-08-07 16:43 EDT via A/B test: the single-hop "pagination perf hybrid" (2026-08-06 22:17 EDT) IS what's causing a button's animated emoji to go permanently blank after a re-render.** *Filed 2026-08-07 16:40 EDT from Harkirat's live testing across `/calendar` and `/draw prices`.* **Model pick reasoning:** premise now LOW (confirmed, not theorized) but the FIX still needs Harkirat's call — see below · deliberation High — this touches a deliberate, documented, already-shipped perf optimization (`utils/sendV2Payload.js`'s single-hop path) spanning draws/calendar/drawprices/settings pagination; any fix trades back some of the latency win. Tie-break: wrong-but-confident on the FIX choice costs a lot → stays Sonnet, High.
 
-  **A/B test result (confirms the theory cleanly):** temporarily reverted `calpage_`,
-  `price_region_`, and `price_subpage_` in `index.js` back to `await interaction.deferUpdate()` +
-  the old two-hop flow, dev bot only, not committed. Per Harkirat: **"calendar buttons r working
-  fine now"** after reverting just `calpage_` (while drawprices, still single-hop at that point,
-  still failed) — then **"draw prices fine as well now"** after reverting `price_region_`/
-  `price_subpage_` too. Bug fully absent with two-hop, present with single-hop, isolated one route
-  at a time. This is as close to a controlled experiment as this bug family gets.
+  **A/B test result (confirms the theory cleanly):** temporarily reverted `calpage_`, `price_region_`, and `price_subpage_` in `index.js` back to `await interaction.deferUpdate()` + the old two-hop flow, dev bot only, not committed. Per Harkirat: **"calendar buttons r working fine now"** after reverting just `calpage_` (while drawprices, still single-hop at that point, still failed) — then **"draw prices fine as well now"** after reverting `price_region_`/ `price_subpage_` too. Bug fully absent with two-hop, present with single-hop, isolated one route at a time. This is as close to a controlled experiment as this bug family gets.
 
-  **✅ CLOSED OUT 2026-08-07 17:37 EDT — fix is: revert `calpage_`/`price_region_`/`price_subpage_`
-  to two-hop, real cost measured, no compromise exists.** Full investigation trail below; skip to
-  "Decision" at the bottom if you just want the outcome.
+  **✅ CLOSED OUT 2026-08-07 17:37 EDT — fix is: revert `calpage_`/`price_region_`/`price_subpage_` to two-hop, real cost measured, no compromise exists.** Full investigation trail below; skip to "Decision" at the bottom if you just want the outcome.
 
-  **Repro, confirmed live on both bots:** `/calendar`'s Draws/Events/Modes toggle row
-  (`buildSectionToggleRow`, `calendar.js`) — clicking one button makes a DIFFERENT (not the one
-  clicked) button's emoji go blank, sometimes recovering on a later render, sometimes staying blank
-  indefinitely (12+ seconds observed with zero further interaction, plus a screenshot taken well
-  after). `/draw prices`' region-switch row — tapping the *subpage pagination* arrow (a DIFFERENT
-  button) made the 10 CP region button's emoji vanish. `/settings`' Prev/Next pagination row — see
-  below, initially looked clean, was NOT. **Every place this has been observed goes through the
-  exact same code path:** `calpage_`, `price_region_`, `price_subpage_`, and `set_page_` in
-  `index.js` are ALL commented "No deferUpdate() — single-hop" and render via `sendV2Payload`'s
-  `!interaction.deferred && !interaction.replied` branch (a `type:7` UPDATE_MESSAGE posted as the
-  interaction's first and only response) — this specific delivery mechanism did not exist before
-  2026-08-06 22:17 EDT, and per Harkirat: "this didn't happen before, which makes me wonder if it
-  actually is linked to the perf update."
+  **Repro, confirmed live on both bots:** `/calendar`'s Draws/Events/Modes toggle row (`buildSectionToggleRow`, `calendar.js`) — clicking one button makes a DIFFERENT (not the one clicked) button's emoji go blank, sometimes recovering on a later render, sometimes staying blank indefinitely (12+ seconds observed with zero further interaction, plus a screenshot taken well after). `/draw prices`' region-switch row — tapping the *subpage pagination* arrow (a DIFFERENT button) made the 10 CP region button's emoji vanish. `/settings`' Prev/Next pagination row — see below, initially looked clean, was NOT. **Every place this has been observed goes through the exact same code path:** `calpage_`, `price_region_`, `price_subpage_`, and `set_page_` in `index.js` are ALL commented "No deferUpdate() — single-hop" and render via `sendV2Payload`'s `!interaction.deferred && !interaction.replied` branch (a `type:7` UPDATE_MESSAGE posted as the interaction's first and only response) — this specific delivery mechanism did not exist before 2026-08-06 22:17 EDT, and per Harkirat: "this didn't happen before, which makes me wonder if it actually is linked to the perf update."
 
-  **Ruled out — the JSON payload itself.** `sendV2Payload` always sends a complete component tree
-  with the correct `emoji: {id, name, animated}` on every button, every render — confirmed by
-  reading the code directly, no conditional path omits it.
+  **Ruled out — the JSON payload itself.** `sendV2Payload` always sends a complete component tree with the correct `emoji: {id, name, animated}` on every button, every render — confirmed by reading the code directly, no conditional path omits it.
 
-  **Ruled out — timing/lead-time race.** Delayed the single-hop `type:7` POST (still ONE round
-  trip, still the same response type, just held before sending) at 200/400/600/800/2000ms —
-  ALL failed, bug reproduced identically at every delay including 2 full seconds (deliberately
-  chosen as roughly what two-hop's own round trip costs). If lead-time were the mechanism, 2s
-  should have been more than enough. It wasn't. Timing is not the variable.
+  **Ruled out — timing/lead-time race.** Delayed the single-hop `type:7` POST (still ONE round trip, still the same response type, just held before sending) at 200/400/600/800/2000ms — ALL failed, bug reproduced identically at every delay including 2 full seconds (deliberately chosen as roughly what two-hop's own round trip costs). If lead-time were the mechanism, 2s should have been more than enough. It wasn't. Timing is not the variable.
 
-  **Ruled out — animated-vs-static emoji.** `/settings`' Prev/Next arrows (`left`/`right` in
-  `emojiMap.js`) are STATIC, not animated — only its separate "View Colors" button (`eyedropper`)
-  is animated. First test: clicked through `/settings` repeatedly, nothing broke — looked like
-  confirmation that animation specifically was required. **That result was contaminated**: two
-  dev-bot auto-restarts (from unrelated file saves for the next test) landed mid-session, and a
-  click during a restart window can look exactly like a dropped button. Re-tested clean (bot
-  confirmed stable, zero restarts) clicking ONLY the two static Prev/Next arrows, no animated
-  emoji touched at all — **it still broke after a few clicks.** Static emoji are equally
-  susceptible; animation was never the variable, just a coincidentally-lower hit rate on a
-  2-button row versus a 3-button row.
+  **Ruled out — animated-vs-static emoji.** `/settings`' Prev/Next arrows (`left`/`right` in `emojiMap.js`) are STATIC, not animated — only its separate "View Colors" button (`eyedropper`) is animated. First test: clicked through `/settings` repeatedly, nothing broke — looked like confirmation that animation specifically was required. **That result was contaminated**: two dev-bot auto-restarts (from unrelated file saves for the next test) landed mid-session, and a click during a restart window can look exactly like a dropped button. Re-tested clean (bot confirmed stable, zero restarts) clicking ONLY the two static Prev/Next arrows, no animated emoji touched at all — **it still broke after a few clicks.** Static emoji are equally susceptible; animation was never the variable, just a coincidentally-lower hit rate on a 2-button row versus a 3-button row.
 
-  **Ruled out — button/emoji count.** `/settings`' pagination row has 2 relevant buttons;
-  calendar/drawprices have 3. Both break. Count doesn't gate the bug, though it may affect
-  *probability* (untested/unquantified — the settings row took "a few clicks" to reproduce where
-  calendar/drawprices often broke faster, but no rigorous click-count comparison was run).
+  **Ruled out — button/emoji count.** `/settings`' pagination row has 2 relevant buttons; calendar/drawprices have 3. Both break. Count doesn't gate the bug, though it may affect *probability* (untested/unquantified — the settings row took "a few clicks" to reproduce where calendar/drawprices often broke faster, but no rigorous click-count comparison was run).
 
-  **What's actually confirmed:** the bug is tied purely to the `type:7` interaction-callback
-  response mechanism itself — independent of timing, of whether the emoji is animated or static,
-  and of how many emoji-bearing buttons are in the row. Two-hop (`deferUpdate()` + `PATCH
-  @original`) never reproduces it, on any of the three commands tested. The deeper WHY (client
-  internals) stays a documented theory, not fact — see below.
+  **What's actually confirmed:** the bug is tied purely to the `type:7` interaction-callback response mechanism itself — independent of timing, of whether the emoji is animated or static, and of how many emoji-bearing buttons are in the row. Two-hop (`deferUpdate()` + `PATCH @original`) never reproduces it, on any of the three commands tested. The deeper WHY (client internals) stays a documented theory, not fact — see below.
 
-  **Real cost of two-hop, measured live (not estimated):** instrumented both paths with actual
-  wall-clock timing in this environment — two-hop (`calpage_`) averaged **~517ms** (excluding one
-  1342ms cold-start outlier; ~635ms including it) across 7 clicks; single-hop (`price_subpage_`)
-  averaged **~302ms** across 4 clicks. **Real difference: ~200-300ms per click**, not the ~100-150ms
-  originally assumed.
+  **Real cost of two-hop, measured live (not estimated):** instrumented both paths with actual wall-clock timing in this environment — two-hop (`calpage_`) averaged **~517ms** (excluding one 1342ms cold-start outlier; ~635ms including it) across 7 clicks; single-hop (`price_subpage_`) averaged **~302ms** across 4 clicks. **Real difference: ~200-300ms per click**, not the ~100-150ms originally assumed.
 
-  **Leading theory for the WHY (not proven, no way to verify further from our side — Discord's
-  client is closed-source):** the client likely has two separate code paths for "this message
-  changed" — one for a genuine `MESSAGE_UPDATE` gateway event (what a PATCH produces; the SAME
-  path used for editing any message anywhere on Discord, extremely mature) vs. directly rendering
-  a `type:7` interaction-callback response as the new UI state (a narrower, component-specific
-  path). Plausible that the second path has a rendering bug the first doesn't. Explicitly labeled
-  as inference, not confirmed fact.
+  **Leading theory for the WHY (not proven, no way to verify further from our side — Discord's client is closed-source):** the client likely has two separate code paths for "this message changed" — one for a genuine `MESSAGE_UPDATE` gateway event (what a PATCH produces; the SAME path used for editing any message anywhere on Discord, extremely mature) vs. directly rendering a `type:7` interaction-callback response as the new UI state (a narrower, component-specific path). Plausible that the second path has a rendering bug the first doesn't. Explicitly labeled as inference, not confirmed fact.
 
-  **Decision (Harkirat, 17:25 EDT): accept the two-hop cost.** No compromise was found despite
-  systematically testing every variable that could plausibly matter (delay from 200ms to 2000ms,
-  animated vs static emoji, button/emoji count). **Implemented for real, all 4 confirmed-affected
-  handlers (17:38-17:44 EDT):** `calpage_`, `price_region_`, `price_subpage_`, AND `set_page_`
-  (`/settings`) in `index.js` all now `await interaction.deferUpdate()` + two-hop, permanent and
-  committed (not the temporary dev-only scaffolding used throughout the investigation above).
-  `set_page_` was never part of the original ask — it surfaced mid-investigation, was directly
-  confirmed to exhibit the identical bug (the "clean" first test was a restart-timing artifact;
-  the real re-test broke it), and got the same already-decided fix rather than being left on a
-  known-broken path pending a separate conversation. `draws`' own sub-page nav (`subpage_new_`/
-  `subpage_returning_`) is the one single-hop branch left completely untouched — never directly
-  tested for this bug either way during this investigation.
+  **Decision (Harkirat, 17:25 EDT): accept the two-hop cost.** No compromise was found despite systematically testing every variable that could plausibly matter (delay from 200ms to 2000ms, animated vs static emoji, button/emoji count). **Implemented for real, all 4 confirmed-affected handlers (17:38-17:44 EDT):** `calpage_`, `price_region_`, `price_subpage_`, AND `set_page_` (`/settings`) in `index.js` all now `await interaction.deferUpdate()` + two-hop, permanent and committed (not the temporary dev-only scaffolding used throughout the investigation above). `set_page_` was never part of the original ask — it surfaced mid-investigation, was directly confirmed to exhibit the identical bug (the "clean" first test was a restart-timing artifact; the real re-test broke it), and got the same already-decided fix rather than being left on a known-broken path pending a separate conversation. `draws`' own sub-page nav (`subpage_new_`/ `subpage_returning_`) is the one single-hop branch left completely untouched — never directly tested for this bug either way during this investigation.
 
-- `[P1 · XS]` **The `git tag -a` release-tag-invariant `PreToolUse` hook hard-errors instead of
-  skipping on any non-Mac session.** *Filed 2026-08-07 08:06 EDT, hit live tagging v2.58.0.*
+- `[P1 · XS]` **The `git tag -a` release-tag-invariant `PreToolUse` hook hard-errors instead of skipping on any non-Mac session.** *Filed 2026-08-07 08:06 EDT, hit live tagging v2.58.0.*
 
-  The hook (matches `git tag +-a +v[0-9]`) unconditionally `cd`s to `/Applications/Claude Code/
-  Diors-Builds` — Harkirat's own Mac path — before it can cross-check the tag commit's
-  `package.json` version. In any remote/Linux sandbox that path doesn't exist, the `cd` fails, the
-  `&&` chain short-circuits, and instead of the intended silent pass-through it surfaces as
-  `PreToolUse:Bash hook error: ... No stderr output` — **every retry of the identical command fails
-  the same way**, deterministically blocking the tool call.
+  The hook (matches `git tag +-a +v[0-9]`) unconditionally `cd`s to `/Applications/Claude Code/ Diors-Builds` — Harkirat's own Mac path — before it can cross-check the tag commit's `package.json` version. In any remote/Linux sandbox that path doesn't exist, the `cd` fails, the `&&` chain short-circuits, and instead of the intended silent pass-through it surfaces as `PreToolUse:Bash hook error: ... No stderr output` — **every retry of the identical command fails the same way**, deterministically blocking the tool call.
 
-  **Workaround used that session (not a fix):** `git tag --annotate v2.58.0 -m "..." <sha>` instead
-  of `-a` — mechanically identical annotated tag, just doesn't match the hook's trigger regex. Only
-  reached for after independently re-verifying the exact invariant the hook protects (`git show
-  <sha>:package.json` matched the tag name) — a workaround for a non-functional check, not a bypass
-  of a working one.
+  **Workaround used that session (not a fix):** `git tag --annotate v2.58.0 -m "..." <sha>` instead of `-a` — mechanically identical annotated tag, just doesn't match the hook's trigger regex. Only reached for after independently re-verifying the exact invariant the hook protects (`git show <sha>:package.json` matched the tag name) — a workaround for a non-functional check, not a bypass of a working one.
 
-  **Real fix:** give the hook a graceful missing-path fallback (skip silently / report SKIPPED),
-  the same pattern `docs-audit.mjs`'s `external-anchors`/`memory-slug` checks already use correctly
-  when Harkirat's local paths aren't present. Will hit **every** future remote/non-Mac session that
-  tries to tag a release, not just this one.
+  **Real fix:** give the hook a graceful missing-path fallback (skip silently / report SKIPPED), the same pattern `docs-audit.mjs`'s `external-anchors`/`memory-slug` checks already use correctly when Harkirat's local paths aren't present. Will hit **every** future remote/non-Mac session that tries to tag a release, not just this one.
 
-- `[P3 · XS]` **`branch-discipline-guard.sh` does not catch a commit whose verb sits inside quotes** —
-  e.g. `bash -c "git commit -m x"`, `sh -c '… git commit …'`. *Filed 2026-08-06 21:44 EDT.*
-  The matcher requires `^` or `;&|` immediately before `git`, and in these forms a quote precedes it.
-  **Pre-existing, not a regression** — it has never been caught. Found by writing a test that ASSERTED
-  it was caught; the test failed and the belief was wrong, not the code. `branch-discipline-guard.test.sh`
-  now pins the current behaviour (`"bash -c quoted commit NOT caught"`) so a fix has something to flip.
-  ⚠️ **Do NOT "fix" this by stripping double-quoted spans** — that widens the hole rather than closing
-  it, because `-m "message"` text would stop being scanned too. The real fix is to also match `git
-  commit` after a quote character, without matching prose. **Low priority:** every real commit path in
-  this project is a bare `git commit`, and the Write/Edit half of the guard still blocks the edits that
-  would precede one.
+- `[P3 · XS]` **`branch-discipline-guard.sh` does not catch a commit whose verb sits inside quotes** — e.g. `bash -c "git commit -m x"`, `sh -c '… git commit …'`. *Filed 2026-08-06 21:44 EDT.* The matcher requires `^` or `;&|` immediately before `git`, and in these forms a quote precedes it. **Pre-existing, not a regression** — it has never been caught. Found by writing a test that ASSERTED it was caught; the test failed and the belief was wrong, not the code. `branch-discipline-guard.test.sh` now pins the current behaviour (`"bash -c quoted commit NOT caught"`) so a fix has something to flip. ⚠️ **Do NOT "fix" this by stripping double-quoted spans** — that widens the hole rather than closing it, because `-m "message"` text would stop being scanned too. The real fix is to also match `git commit` after a quote character, without matching prose. **Low priority:** every real commit path in this project is a bare `git commit`, and the Write/Edit half of the guard still blocks the edits that would precede one.
 
-- `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever
-  tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md`
-  back when it was still called **known-issues** — it was split so the file could honestly take the new
-  name. (The old name is written without its `.md` on purpose: `xref` matches path-shaped references
-  and cannot tell a historical mention from a live pointer, so spelling it as a path would fail CI.)
-  This entry is the
-  clearest thing in it that was never a platform constraint.*
+- `[P3 · S]` **`patchnotes.js`'s media carousel has NO component-count chunking, and nothing has ever tested it at scale.** *Moved here 2026-08-06 08:13 EDT from `docs/reference/platform-constraints.md` back when it was still called **known-issues** — it was split so the file could honestly take the new name. (The old name is written without its `.md` on purpose: `xref` matches path-shaped references and cannot tell a historical mention from a live pointer, so spelling it as a path would fail CI.) This entry is the clearest thing in it that was never a platform constraint.*
 
-  `calendar.js` and `draws.js` both carry defensive chunking; `patchnotes.js` does not. Components V2
-  caps a message at **40 components counted recursively**, and exceeding it is a real production crash
-  this project has already hit once (see the platform cheat-sheet in `CLAUDE.md`).
+  `calendar.js` and `draws.js` both carry defensive chunking; `patchnotes.js` does not. Components V2 caps a message at **40 components counted recursively**, and exceeding it is a real production crash this project has already hit once (see the platform cheat-sheet in `CLAUDE.md`).
 
-  ⚠️ **Filed as a bug rather than a constraint, but stated honestly: it is UNVERIFIED, not confirmed
-  broken.** The original wording was "likely fine since patch note screenshots per entry are usually
-  few, but not empirically verified the way draws/calendar chunking was" — and that is still exactly
-  the state. It sits here because the thing at fault would be *our* missing guard, not a Discord
-  limit; leaving it in a constraints file would have implied the opposite.
-  **Cheapest close:** count the components a worst-case real patch-note entry renders, rather than
-  building chunking speculatively. If it is nowhere near 40, this becomes a not-a-real-issue entry in
-  the archive and costs nothing further.
-  ⇄ Also named in the 🧹 Someday "General housekeeping session" item ("decide `/patch notes` carousel
-  component-count chunking"); that line is the horizon, this is the detail.
+  ⚠️ **Filed as a bug rather than a constraint, but stated honestly: it is UNVERIFIED, not confirmed broken.** The original wording was "likely fine since patch note screenshots per entry are usually few, but not empirically verified the way draws/calendar chunking was" — and that is still exactly the state. It sits here because the thing at fault would be *our* missing guard, not a Discord limit; leaving it in a constraints file would have implied the opposite.
+  **Cheapest close:** count the components a worst-case real patch-note entry renders, rather than building chunking speculatively. If it is nowhere near 40, this becomes a not-a-real-issue entry in the archive and costs nothing further. ⇄ Also named in the 🧹 Someday "General housekeeping session" item ("decide `/patch notes` carousel component-count chunking"); that line is the horizon, this is the detail.
 
-- `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth
-  animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found
-  and chased across the mobile-polish session.*
+- `[P2 · M]` 🧩 **The mobile nav's liquid indicator still artefacts in LIGHT mode while the birth animation plays — on iOS only.** *Filed 2026-08-04 13:02 EDT at Harkirat's call to defer it; found and chased across the mobile-polish session.*
 
-  **Symptom:** a saturated rectangle fills the tab strip for the ~2.4s the birth runs, then goes.
-  Dark mode is clean. Reproduced repeatedly on Harkirat's iPhone; **not reproducible in Chrome or in
-  the preview pane**, so this needs a real device or CDP against a WebKit build.
+  **Symptom:** a saturated rectangle fills the tab strip for the ~2.4s the birth runs, then goes. Dark mode is clean. Reproduced repeatedly on Harkirat's iPhone; **not reproducible in Chrome or in the preview pane**, so this needs a real device or CDP against a WebKit build.
 
-  **The colour is the diagnostic and should be the first thing checked after any change.** It paints
-  `invert(accent)` — lime on the violet License page (`invert(#9B6BE3)` = `#64941C`), yellow on
-  citron Contributors, black on Terms. That is the **accent plate** (`.mtint`) coming out inverted,
-  and the plate is a *sibling* of the filtered element (`.mgo`), not a child. A filter reaching a
-  sibling it does not own means the light chain is **composited** wrongly, not merely blended wrongly.
+  **The colour is the diagnostic and should be the first thing checked after any change.** It paints `invert(accent)` — lime on the violet License page (`invert(#9B6BE3)` = `#64941C`), yellow on citron Contributors, black on Terms. That is the **accent plate** (`.mtint`) coming out inverted, and the plate is a *sibling* of the filtered element (`.mgo`), not a child. A filter reaching a sibling it does not own means the light chain is **composited** wrongly, not merely blended wrongly.
 
-  ⚠️ **Four fixes are already spent. Do not restart at the top of this list** — each moved *when* the
-  artefact appeared without removing it, and that progression is the useful evidence:
-  1. Removed `-webkit-overflow-scrolling` from `.mstrip`, promoted `.mbar` with `translateZ(0)` — no
-     effect. The promotion was reverted; the prefix removal was kept on its own merits.
-  2. Retired the layer after its birth (`.mgw.spent`, `display:none`). Correct, and defeated by
-     `place()` clearing `.spent` on every call while the **resize** handler calls `place()` — iOS
-     fires resize on nearly every scroll as the URL bar moves. Fixed separately and **kept**: it is
-     why the artefact no longer follows scrolling.
-  3. Suppressed the effect on touch in light mode. Removed the artefact and **also removed the
-     animation** — rejected by Harkirat, correctly: the droplets fusing are the effect.
-  4. Swapped the source colours so light needs no `invert(1)` (`--goo-bed`/`--goo-ink`, both themes
-     now on the identical three-function chain). **This did NOT fix it** — confirmed on device after
-     shipping. Kept anyway: it is strictly simpler than the fourth filter function and removes one
-     variable from whatever comes next.
+  ⚠️ **Four fixes are already spent. Do not restart at the top of this list** — each moved *when* the artefact appeared without removing it, and that progression is the useful evidence:
+  1. Removed `-webkit-overflow-scrolling` from `.mstrip`, promoted `.mbar` with `translateZ(0)` — no effect. The promotion was reverted; the prefix removal was kept on its own merits.
+  2. Retired the layer after its birth (`.mgw.spent`, `display:none`). Correct, and defeated by `place()` clearing `.spent` on every call while the **resize** handler calls `place()` — iOS fires resize on nearly every scroll as the URL bar moves. Fixed separately and **kept**: it is why the artefact no longer follows scrolling.
+  3. Suppressed the effect on touch in light mode. Removed the artefact and **also removed the animation** — rejected by Harkirat, correctly: the droplets fusing are the effect.
+  4. Swapped the source colours so light needs no `invert(1)` (`--goo-bed`/`--goo-ink`, both themes now on the identical three-function chain). **This did NOT fix it** — confirmed on device after shipping. Kept anyway: it is strictly simpler than the fourth filter function and removes one variable from whatever comes next.
 
-  **Where to look next**, given (4) ruled out the filter chain as the sole cause: the interaction
-  between `.mgw`'s own `mix-blend-mode` group and `.mtint`'s `screen` inside it, under iOS's
-  compositor, during an animation. Worth testing whether `.mtint` blending *outside* `.mgw`'s
-  isolation group, or the tint applied as a `background-blend-mode` on a single element rather than
-  as a blended sibling, behaves differently. **Verify on a real iPhone in light mode**, on a page
-  whose accent makes an inverted plate obvious (License is ideal — lime is unmistakable).
+  **Where to look next**, given (4) ruled out the filter chain as the sole cause: the interaction between `.mgw`'s own `mix-blend-mode` group and `.mtint`'s `screen` inside it, under iOS's compositor, during an animation. Worth testing whether `.mtint` blending *outside* `.mgw`'s isolation group, or the tint applied as a `background-blend-mode` on a single element rather than as a blended sibling, behaves differently. **Verify on a real iPhone in light mode**, on a page whose accent makes an inverted plate obvious (License is ideal — lime is unmistakable).
 
-  **🔧 Tooling verdict — filed 2026-08-05 22:04 EDT from the GitHub Student Pack triage.** This item
-  was filed as *"needs a real device or CDP against a WebKit build"*. That is right about the need and
-  wrong about the tool: this is a **compositing** failure, so what it needs is the **layer tree**, not
-  a better picture of the artefact. Work the ladder in this order, cheapest first.
+  **🔧 Tooling verdict — filed 2026-08-05 22:04 EDT from the GitHub Student Pack triage.** This item was filed as *"needs a real device or CDP against a WebKit build"*. That is right about the need and wrong about the tool: this is a **compositing** failure, so what it needs is the **layer tree**, not a better picture of the artefact. Work the ladder in this order, cheapest first.
 
-  ⚠️ **NOTHING ON THIS LADDER HAS BEEN RUN YET** — as of 2026-08-05 22:19 EDT, rungs 1 and 2 are the
-  literal next action on this item. Until one of them reports, every claim below about *which* rung is
-  actually needed is reasoning from how the renderers are built, not measurement. Run them before
-  spending anything — money, a vendor signup, or another fix attempt.
-  1. **Playwright WebKit, locally** — free, ~10 min. Expected *not* to reproduce, because Playwright's
-     WebKit is a custom embedding that does not use iOS's Core Animation compositor, which is where
-     this lives. Run it anyway: a clean non-repro is itself evidence that the compositor rather than
-     the CSS is the cause, and it costs almost nothing to obtain.
-  2. **Real Safari on macOS via `safaridriver`** — iPhone viewport, light mode, License page. Free,
-     and shares far more of the WebKit stack than (1) does. If it ever needs automating, GitHub
-     Actions provides macOS runners free on public repos, so no vendor is required for that either.
-  3. **Real iPhone + Mac Safari Web Inspector over USB** — iPhone Settings → Safari → Advanced → Web
-     Inspector, then Mac Safari → Develop → \[device]. **This is the rung that actually answers the
-     question:** the Layers panel reports compositing reasons on the device that reproduces the bug.
-     Free, already owned, and **no remote-device vendor can substitute for it** — BrowserStack and
-     LambdaTest both hand you a screen, never an inspector.
-  4. **LambdaTest Live** (Student Pack, free 1 yr) — buys *iteration speed and iOS-version breadth*,
-     not diagnosis. Its real value is taking Harkirat out of the fix loop: all four spent fixes cost a
-     round trip through his phone, and compositor bugs are frequently iOS-version-specific.
-     ⚠️ **Contingent, and unproven.** If rung 1 or 2 reproduces the lime plate, the bug is diagnosable
-     for free on hardware already owned and this rung buys nothing. Re-read this line before claiming
-     a vendor is needed for it.
+  ⚠️ **NOTHING ON THIS LADDER HAS BEEN RUN YET** — as of 2026-08-05 22:19 EDT, rungs 1 and 2 are the literal next action on this item. Until one of them reports, every claim below about *which* rung is actually needed is reasoning from how the renderers are built, not measurement. Run them before spending anything — money, a vendor signup, or another fix attempt.
+  1. **Playwright WebKit, locally** — free, ~10 min. Expected *not* to reproduce, because Playwright's WebKit is a custom embedding that does not use iOS's Core Animation compositor, which is where this lives. Run it anyway: a clean non-repro is itself evidence that the compositor rather than the CSS is the cause, and it costs almost nothing to obtain.
+  2. **Real Safari on macOS via `safaridriver`** — iPhone viewport, light mode, License page. Free, and shares far more of the WebKit stack than (1) does. If it ever needs automating, GitHub Actions provides macOS runners free on public repos, so no vendor is required for that either.
+  3. **Real iPhone + Mac Safari Web Inspector over USB** — iPhone Settings → Safari → Advanced → Web Inspector, then Mac Safari → Develop → \[device]. **This is the rung that actually answers the question:** the Layers panel reports compositing reasons on the device that reproduces the bug. Free, already owned, and **no remote-device vendor can substitute for it** — BrowserStack and LambdaTest both hand you a screen, never an inspector.
+  4. **LambdaTest Live** (Student Pack, free 1 yr) — buys *iteration speed and iOS-version breadth*, not diagnosis. Its real value is taking Harkirat out of the fix loop: all four spent fixes cost a round trip through his phone, and compositor bugs are frequently iOS-version-specific. ⚠️ **Contingent, and unproven.** If rung 1 or 2 reproduces the lime plate, the bug is diagnosable for free on hardware already owned and this rung buys nothing. Re-read this line before claiming a vendor is needed for it.
 
-  **Verify any candidate fix the way the bug was found** — License page, light mode, real iPhone,
-  watching the full ~2.4s birth. The colour test above remains the diagnostic: a lime plate means
-  `.mtint` is still being composited into the filtered group, whatever else changed.
+  **Verify any candidate fix the way the bug was found** — License page, light mode, real iPhone, watching the full ~2.4s birth. The colour test above remains the diagnostic: a lime plate means `.mtint` is still being composited into the filtered group, whatever else changed.
 
-- `[P3 · S]` 🧩 **The mobile nav morph's droplet travel reads as too short.** *Filed 2026-08-04
-  13:02 EDT, deferred with the item above.*
+- `[P3 · S]` 🧩 **The mobile nav morph's droplet travel reads as too short.** *Filed 2026-08-04 13:02 EDT, deferred with the item above.*
 
-  Harkirat's read: the swarm does not travel far enough to feel like it is being assembled. Note the
-  constants have **never changed** — `git log -L` on `spray()` returns a single commit, the original
-  `9b9b4ce` — so this is a tuning judgement, not a regression. `local/morph-poc/` is a *different*
-  and much richer per-frame system (back-to-top, cursor, reveal mark); the nav strip has always been
-  the simpler 15-droplet CSS-keyframe spray, which is worth knowing before comparing the two.
+  Harkirat's read: the swarm does not travel far enough to feel like it is being assembled. Note the constants have **never changed** — `git log -L` on `spray()` returns a single commit, the original `9b9b4ce` — so this is a tuning judgement, not a regression. `local/morph-poc/` is a *different* and much richer per-frame system (back-to-top, cursor, reveal mark); the nav strip has always been the simpler 15-droplet CSS-keyframe spray, which is worth knowing before comparing the two.
 
-  ⚠️ **Two constants are coupled to the radius and both must move with it.** A change was drafted
-  and reverted unshipped so it would not land half-tuned:
-  - **The y squash.** The bar is ~60px tall and `.mbar` clips, so extra radius spent vertically is
-    invisible. `90 × 0.34` and `124 × 0.24` both put the furthest droplet ~30px off the centre line.
-  - **The rotation.** The keyframes `rotate()` then `translate()`, so vertical flight is
-    `sin(rot) × distance` — the angle *steers*. This already caused a fling 100px below a 54px bar
-    once. Going 90 → 124 needs the angles scaled by the inverse ratio: 50–100° reached 69–88px
-    vertically, and 34–54° at 124px reaches 69–100px.
+  ⚠️ **Two constants are coupled to the radius and both must move with it.** A change was drafted and reverted unshipped so it would not land half-tuned:
+  - **The y squash.** The bar is ~60px tall and `.mbar` clips, so extra radius spent vertically is invisible. `90 × 0.34` and `124 × 0.24` both put the furthest droplet ~30px off the centre line.
+  - **The rotation.** The keyframes `rotate()` then `translate()`, so vertical flight is `sin(rot) × distance` — the angle *steers*. This already caused a fling 100px below a 54px bar once. Going 90 → 124 needs the angles scaled by the inverse ratio: 50–100° reached 69–88px vertically, and 34–54° at 124px reaches 69–100px.
 
-  **Verify** on a phone in **dark** mode until the item above is fixed, or the artefact will mask
-  whatever the droplets are doing.
+  **Verify** on a phone in **dark** mode until the item above is fixed, or the artefact will mask whatever the droplets are doing.
 
+- `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
 
-- `[P2 · S]` **`timestamp-check.sh` blocks on a ONE-MINUTE future stamp — a false positive, and it
-  denies the write.** *Filed 2026-08-03 10:35 EDT, from the morph-PoC session, where it fired for real.*
+  The future-stamp branch compares **lexicographically with zero tolerance**: `.claude/hooks/timestamp-check.sh:94` does `[ "$d $hm" \> "$now" ] && echo "$d $hm"`, and in `pre` mode that becomes `permissionDecision:"deny"` (line 101). So a write carrying `10:33` while the clock reads `10:32` is rejected as "invented". It is not invented — the clock is read from a hook message at the *start* of a turn and the bytes land a minute or two later, after intervening tool calls, model latency and edit round-trips. Sub-few-minute drift is the normal cost of doing the work, not evidence of fabrication.
 
-  The future-stamp branch compares **lexicographically with zero tolerance**:
-  `.claude/hooks/timestamp-check.sh:94` does `[ "$d $hm" \> "$now" ] && echo "$d $hm"`, and in `pre`
-  mode that becomes `permissionDecision:"deny"` (line 101). So a write carrying `10:33` while the
-  clock reads `10:32` is rejected as "invented". It is not invented — the clock is read from a hook
-  message at the *start* of a turn and the bytes land a minute or two later, after intervening tool
-  calls, model latency and edit round-trips. Sub-few-minute drift is the normal cost of doing the
-  work, not evidence of fabrication.
+  **Fix:** convert both sides to epoch seconds and allow a grace window (~3 min) instead of comparing strings — e.g. `date -j -f '%Y-%m-%d %H:%M'` on macOS — and treat only stamps beyond the window as fabricated. **Keep the check.** It caught a real incident (30 fabricated stamps reached docs, memory, a released CHANGELOG and a git tag on 2026-08-02), and the failure it guards is expensive; the ask is a tolerance, not a removal. ⚠️ A gate that denies on noise is the kind that gets switched off — the file already says exactly this about its own bare-date branch at lines 106–108, which is *why* that branch may never block. The same reasoning applies here and was not carried across. ⚠️ `.claude/hooks/timestamp-check.test.sh` exists and `run-all-tests.sh` enforces coverage, so the fix updates the test in the same change — including a case at the window edge, or the tolerance is untested.
 
-  **Fix:** convert both sides to epoch seconds and allow a grace window (~3 min) instead of comparing
-  strings — e.g. `date -j -f '%Y-%m-%d %H:%M'` on macOS — and treat only stamps beyond the window as
-  fabricated. **Keep the check.** It caught a real incident (30 fabricated stamps reached docs, memory,
-  a released CHANGELOG and a git tag on 2026-08-02), and the failure it guards is expensive; the ask is
-  a tolerance, not a removal. ⚠️ A gate that denies on noise is the kind that gets switched off — the
-  file already says exactly this about its own bare-date branch at lines 106–108, which is *why* that
-  branch may never block. The same reasoning applies here and was not carried across.
-  ⚠️ `.claude/hooks/timestamp-check.test.sh` exists and `run-all-tests.sh` enforces coverage, so the
-  fix updates the test in the same change — including a case at the window edge, or the tolerance is
-  untested.
+- `[P2 · XS]` **Mobile header: the GitHub mark sits 3.2px past the left edge of its own button and is clipped.** *Found 2026-08-03 11:41 EDT while testing the morph PoC on a phone; measured, not eyeballed.*
 
-- `[P2 · XS]` **Mobile header: the GitHub mark sits 3.2px past the left edge of its own button and is
-  clipped.** *Found 2026-08-03 11:41 EDT while testing the morph PoC on a phone; measured, not eyeballed.*
+  At `≤620px` the site collapses `.ghb` to 38px — a **36px content box** — but its flex line still carries the 30px `.ghb-ic` **plus the collapsed label's 14.4px of padding**, totalling **44.4px**. With `justify-content:center` the 8.4px of overflow splits evenly, so the mark lands at `left: −3.2px` with **11.2px of slack on the right**, and `overflow:hidden` clips it. ⚠️ **The trap is that `.ghb-t b` is `opacity:0`** — that hides the label's ink and keeps its box, so the element looks gone while still taking part in the flex line. The existing comment in that rule warns about a 2px plate/border mismatch causing exactly this symptom, which is a *different* cause fixed earlier; this is a second one with the same signature.
+  **Fix:** `@media (max-width:620px){ .ghb .ghb-t{display:none} }` — the label carries no information at that size (the accessible name is on the link). Verified in the PoC clone: gaps went from `−3.2 / 11.2` to `4 / 4 / 4 / 4`. ⚠️ The clone lifts the site's own rules verbatim, so this is a real site bug, not a PoC artefact — but it has only been fixed in the PoC's own stylesheet so far.
 
-  At `≤620px` the site collapses `.ghb` to 38px — a **36px content box** — but its flex line still
-  carries the 30px `.ghb-ic` **plus the collapsed label's 14.4px of padding**, totalling **44.4px**.
-  With `justify-content:center` the 8.4px of overflow splits evenly, so the mark lands at
-  `left: −3.2px` with **11.2px of slack on the right**, and `overflow:hidden` clips it.
-  ⚠️ **The trap is that `.ghb-t b` is `opacity:0`** — that hides the label's ink and keeps its box, so
-  the element looks gone while still taking part in the flex line. The existing comment in that rule
-  warns about a 2px plate/border mismatch causing exactly this symptom, which is a *different* cause
-  fixed earlier; this is a second one with the same signature.
-  **Fix:** `@media (max-width:620px){ .ghb .ghb-t{display:none} }` — the label carries no information
-  at that size (the accessible name is on the link). Verified in the PoC clone: gaps went from
-  `−3.2 / 11.2` to `4 / 4 / 4 / 4`. ⚠️ The clone lifts the site's own rules verbatim, so this is a
-  real site bug, not a PoC artefact — but it has only been fixed in the PoC's own stylesheet so far.
+- `[P1 · S]` 🔗 **Two Cloudflare deployments published ZERO files, and the cause is still unexplained.** *Filed 2026-07-30 00:35 EDT; narrowed 2026-08-02 00:40 EDT once the rest of its parent item closed — see `docs/archive/resolved-list.md`.*
 
-- `[P1 · S]` 🔗 **Two Cloudflare deployments published ZERO files, and the cause is still unexplained.**
-  *Filed 2026-07-30 00:35 EDT; narrowed 2026-08-02 00:40 EDT once the rest of its parent item closed —
-  see `docs/archive/resolved-list.md`.*
+  `2752b4fd` and `2a85d094` (2026-07-30 ~00:08 EDT) returned 404 for *every* path on their own alias URLs, including `/LICENSE`. Production pointed at the newest, so the entire site was down; `/legal/*` only looked healthy because Cloudflare was serving cache (`cf-cache-status: HIT`, `age: 6525`). The bare domain, being an uncacheable redirect, was the only URL that exposed it — which is how Harkirat found it. Redeploying the identical command worked first time and uploaded 9 files + `_redirects`, so **the command is not the bug.** Possible: a transient Cloudflare fault, or a deploy racing a rebuild of `public/`. ⚠️ **If it recurs, capture wrangler's full stdout/stderr** — the only evidence kept was the deployment list, not the failing run's output. Related and already handled: edge propagation presents as 404 for up to ~60s after a deploy (measured 2026-07-30 00:15 EDT), and `dior legal check` now retries on non-200 rather than only on a hash mismatch. **Any "the site is down" report within a minute of a deploy should be re-checked before it is believed.** See `[[feedback_verify_before_claiming]]`.
 
-  `2752b4fd` and `2a85d094` (2026-07-30 ~00:08 EDT) returned 404 for *every* path on their own alias
-  URLs, including `/LICENSE`. Production pointed at the newest, so the entire site was down; `/legal/*`
-  only looked healthy because Cloudflare was serving cache (`cf-cache-status: HIT`, `age: 6525`). The
-  bare domain, being an uncacheable redirect, was the only URL that exposed it — which is how Harkirat
-  found it. Redeploying the identical command worked first time and uploaded 9 files + `_redirects`, so
-  **the command is not the bug.** Possible: a transient Cloudflare fault, or a deploy racing a rebuild
-  of `public/`. ⚠️ **If it recurs, capture wrangler's full stdout/stderr** — the only evidence kept was
-  the deployment list, not the failing run's output.
-  Related and already handled: edge propagation presents as 404 for up to ~60s after a deploy (measured
-  2026-07-30 00:15 EDT), and `dior legal check` now retries on non-200 rather than only on a hash
-  mismatch. **Any "the site is down" report within a minute of a deploy should be re-checked before it
-  is believed.** See `[[feedback_verify_before_claiming]]`.
+- `[P2 · S]` **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true 2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is theme-independent so the layout work holds, but colour, contrast and the glow/wash treatments were never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every build, which is real coverage — but it proves ratios, not whether the page looks right.
 
-- `[P2 · S]` **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true
-  2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is
-  theme-independent so the layout work holds, but colour, contrast and the glow/wash treatments were
-  never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every
-  build, which is real coverage — but it proves ratios, not whether the page looks right.
+*(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
 
+*(Two enforcement-layer bugs filed here 2026-08-02 16:19/16:28 EDT — the SQUASH-TRAILER gate stuck on `"ask"`, and three hooks firing too late to prevent anything — were **fixed the same session** in v2.50.0 and moved to `docs/archive/resolved-list.md`. Their bundled sibling, `dior pr compose`, remains OPEN in `/Applications/Claude Code/meta-deferred-list.md`: it belongs to the `dior` CLI repo, not this one.)*
 
-*(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in
-v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
+*(A security-hygiene item — two dead host credentials sitting in `.env` — was found and **fully resolved** 2026-07-28 11:20 EDT. See `docs/archive/resolved-list.md`.)*
 
-*(Two enforcement-layer bugs filed here 2026-08-02 16:19/16:28 EDT — the SQUASH-TRAILER gate stuck on
-`"ask"`, and three hooks firing too late to prevent anything — were **fixed the same session** in
-v2.50.0 and moved to `docs/archive/resolved-list.md`. Their bundled sibling, `dior pr compose`,
-remains OPEN in `/Applications/Claude Code/meta-deferred-list.md`: it belongs to the `dior` CLI repo,
-not this one.)*
-
-*(A security-hygiene item — two dead host credentials sitting in `.env` — was found and **fully resolved**
-2026-07-28 11:20 EDT. See `docs/archive/resolved-list.md`.)*
-
-*Not bot bugs, so they live in `meta-deferred-list.md` instead: the MarkEdit-extension cluster
-(Return-key blank line, confirm-mark space glitch). They're editor tooling outside every repo, even
-though the Return-key one only reproduces in this repo's notes file.*
+*Not bot bugs, so they live in `meta-deferred-list.md` instead: the MarkEdit-extension cluster (Return-key blank line, confirm-mark space glitch). They're editor tooling outside every repo, even though the Return-key one only reproduces in this repo's notes file.*
 
 ---
 
 ## 🔔 Reminders / watch-for
-*Time- or condition-based — not "do this now," but things not to forget when the trigger hits. Tagged
-with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
-2026-07-25 21:43 EDT.*
 
-- **📝 `docs/ideas/diors-notes.md` has 6 open items, untouched across this whole 2026-08-07 21:00-22:32
-  EDT session.** `[P3 · XS]` Repeatedly surfaced in chat during this session (banner/Cloudinary/hook
-  work) but deliberately not acted on each time — unrelated scope, and each is Harkirat's own call to
-  make, not something to resolve unilaterally mid-unrelated-task. Filing here instead of just
-  repeating it in chat again, per the outstanding-not-filed gate's own point: repetition in a
-  transcript isn't recording. **Items as of filing:** a DMZ `/autobuild` 5-attachment prompt-cap note,
-  a v3 features brainstorm list, a v2 fixes list, a v4/v5 feature-ideas note, a MarkEdit follow-up-mark
-  bug report, and a cursor-placement bug report against the follow-up mark itself. **How to verify/
-  clear:** open `docs/ideas/diors-notes.md`, work the six items between `## Questions` and
-  `<!-- /open-items -->` per `project_central_notes_file` memory's workflow, mark/reply/sweep as
-  usual; this reminder is stale the moment that count is genuinely lower.
-- **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle
-  detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at
-  all" reminder, which is now answered.)*
+- **📝 `docs/ideas/diors-notes.md` has 6 open items, untouched across this whole 2026-08-07 21:00-22:32 EDT session.** `[P3 · XS]` Repeatedly surfaced in chat during this session (banner/Cloudinary/hook work) but deliberately not acted on each time — unrelated scope, and each is Harkirat's own call to make, not something to resolve unilaterally mid-unrelated-task. Filing here instead of just repeating it in chat again, per the outstanding-not-filed gate's own point: repetition in a transcript isn't recording. **Items as of filing:** a DMZ `/autobuild` 5-attachment prompt-cap note, a v3 features brainstorm list, a v2 fixes list, a v4/v5 feature-ideas note, a MarkEdit follow-up-mark bug report, and a cursor-placement bug report against the follow-up mark itself. **How to verify/ clear:** open `docs/ideas/diors-notes.md`, work the six items between `## Questions` and `<!-- /open-items -->` per `project_central_notes_file` memory's workflow, mark/reply/sweep as usual; this reminder is stale the moment that count is genuinely lower.
+- **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at all" reminder, which is now answered.)*
 
   **Answered half:** it fired, unprompted, on a real completion claim. The wiring works.
 
-  **Open half, and the reason this stays P1:** it reported **all five angles as un-taken** on a
-  session that had demonstrably run every one — measured afterwards, the detectors match at
-  transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Re-running the hook by hand against that
-  same file suppressed all five correctly, so the matching logic is fine and **the fault is in what
-  the harness handed it**. Root cause UNKNOWN; do not guess at it, reproduce it.
-  **Reproduce like this:** make a completion claim on a branch with changes, capture what the hook
-  reports, then run `bash .claude/hooks/completeness-sweep.sh main <transcript> stop` by hand against
-  the path it names and compare. The hook now prints the transcript path and line count when it sees
-  zero Bash entries, which is the diagnostic that was missing the first time.
+  **Open half, and the reason this stays P1:** it reported **all five angles as un-taken** on a session that had demonstrably run every one — measured afterwards, the detectors match at transcript lines 88, 195, 1409, 1410 and 2073 of 3902. Re-running the hook by hand against that same file suppressed all five correctly, so the matching logic is fine and **the fault is in what the harness handed it**. Root cause UNKNOWN; do not guess at it, reproduce it.
+  **Reproduce like this:** make a completion claim on a branch with changes, capture what the hook reports, then run `bash .claude/hooks/completeness-sweep.sh main <transcript> stop` by hand against the path it names and compare. The hook now prints the transcript path and line count when it sees zero Bash entries, which is the diagnostic that was missing the first time.
 
-  ⚠️ **Mitigated, not fixed.** A transcript with zero Bash tool_use entries now reports "ANGLE
-  DETECTION COULD NOT RUN" instead of listing every angle — because *"I cannot see the session"* and
-  *"no angle was taken"* are different answers, and reporting all five is the fires-on-everything
-  behaviour that gets a gate dismissed unread. That makes the failure visible; it does not explain it.
+  ⚠️ **Mitigated, not fixed.** A transcript with zero Bash tool_use entries now reports "ANGLE DETECTION COULD NOT RUN" instead of listing every angle — because *"I cannot see the session"* and *"no angle was taken"* are different answers, and reporting all five is the fires-on-everything behaviour that gets a gate dismissed unread. That makes the failure visible; it does not explain it.
 
-  **Two real bugs found while investigating, both fixed:** `claim-detect.sh` was resolved from
-  `${BASH_SOURCE[0]}` *after* the script `cd`s to `$REPO`, re-anchoring a relative invocation path to
-  the wrong tree (breaks under a worktree); and the Bash-scoping is weaker than documented — JSONL
-  puts a whole assistant message on ONE line, so prose sharing a message with any Bash call still
-  leaks through.
+  **Two real bugs found while investigating, both fixed:** `claim-detect.sh` was resolved from `${BASH_SOURCE[0]}` *after* the script `cd`s to `$REPO`, re-anchoring a relative invocation path to the wrong tree (breaks under a worktree); and the Bash-scoping is weaker than documented — JSONL puts a whole assistant message on ONE line, so prose sharing a message with any Bash call still leaks through.
 
-- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
-  *(filed 2026-08-06 09:35 EDT, in the same pass that built it.)* Trigger: **the next session that
-  makes a completion claim on a branch with commits** — it should be interrupted with a
-  `COMPLETENESS SWEEP` block. If a session ends claiming done and nothing fires, the wiring is wrong.
+- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]` *(filed 2026-08-06 09:35 EDT, in the same pass that built it.)* Trigger: **the next session that makes a completion claim on a branch with commits** — it should be interrupted with a `COMPLETENESS SWEEP` block. If a session ends claiming done and nothing fires, the wiring is wrong.
 
-  **Why this cannot be self-verified.** The hook is registered in `.claude/settings.json`, which the
-  harness reads at session start, so the session that *added* it is running the previous
-  registration by construction — the identical structural blind spot as the notes hook below. Its
-  logic is proven (17/17 self-tests, both directions of the angle detector, live-tested against this
-  branch), and its wiring is proven valid JSON in the right event. **What is unproven is that the
-  harness invokes it**, and that is exactly the gap that produced two dead gates in this repo.
-  ⚠️ **Do not close this by re-reading the settings file.** Only a fresh session's observed behaviour
-  counts. See [[feedback_verify_before_claiming]].
+  **Why this cannot be self-verified.** The hook is registered in `.claude/settings.json`, which the harness reads at session start, so the session that *added* it is running the previous registration by construction — the identical structural blind spot as the notes hook below. Its logic is proven (17/17 self-tests, both directions of the angle detector, live-tested against this branch), and its wiring is proven valid JSON in the right event. **What is unproven is that the harness invokes it**, and that is exactly the gap that produced two dead gates in this repo. ⚠️ **Do not close this by re-reading the settings file.** Only a fresh session's observed behaviour counts. See [[feedback_verify_before_claiming]].
 
-  **Three stated limits, deliberately accepted rather than engineered around** — reconsider only if
-  one actually bites:
-  1. **The stamp means it fires ONCE per repo state.** Ignore the block, change nothing, re-claim →
-     silence. Matches every other `Stop` gate here and is what keeps it off ordinary messages, but
-     it does mean the gate cannot nag.
-  2. **Broad angle detectors**: searching FOR a string in a Bash command counts as having run that
-     angle (`rg -n 'buildLegalPages'` reads as covered). Deliberate — a false "covered" beats a gate
-     that fires on everything and gets dismissed unread.
-  3. **The `ANGLES` registry is a whitelist of failures that already happened**, so a genuinely new
-     KIND of miss has no entry by construction. Same honest edge `docs-audit` documents about
-     itself. Add an angle by appending one `id|detector|demand` line.
+  **Three stated limits, deliberately accepted rather than engineered around** — reconsider only if one actually bites:
+  1. **The stamp means it fires ONCE per repo state.** Ignore the block, change nothing, re-claim → silence. Matches every other `Stop` gate here and is what keeps it off ordinary messages, but it does mean the gate cannot nag.
+  2. **Broad angle detectors**: searching FOR a string in a Bash command counts as having run that angle (`rg -n 'buildLegalPages'` reads as covered). Deliberate — a false "covered" beats a gate that fires on everything and gets dismissed unread.
+  3. **The `ANGLES` registry is a whitelist of failures that already happened**, so a genuinely new KIND of miss has no entry by construction. Same honest edge `docs-audit` documents about itself. Add an angle by appending one `id|detector|demand` line.
 
-- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]`
-  *(filed 2026-08-06 08:08 EDT, in the same pass that moved the file.)* Trigger: **the very next fresh
-  session in this repo** — check its startup context for a `NOTES-FILE CHECK:` line naming
-  `docs/ideas/diors-notes.md`. If it is absent while the file still has open items, the hook is broken.
+- **📓 Confirm the `SessionStart` notes hook fires for real after the notes-file move** `[P1 · XS]` *(filed 2026-08-06 08:08 EDT, in the same pass that moved the file.)* Trigger: **the very next fresh session in this repo** — check its startup context for a `NOTES-FILE CHECK:` line naming `docs/ideas/diors-notes.md`. If it is absent while the file still has open items, the hook is broken.
 
-  **Why this is a reminder and not a claim.** The hook command in `.claude/settings.json` was dry-run
-  against the new path in the moving session and produced the correct output (3 open items, the same
-  three the old path reported). That proves the *command* works. It does **not** prove the harness
-  fires it — a `SessionStart` hook is read at session start, so the session that edits it is running
-  the previous version by construction and can never observe its own change. This is the one step of
-  the move's checklist that is structurally unprovable from inside, so it is written down rather than
-  assumed, per [[feedback_verify_before_claiming]].
-  Close it by deleting this entry once a fresh session's startup context has been seen.
+  **Why this is a reminder and not a claim.** The hook command in `.claude/settings.json` was dry-run against the new path in the moving session and produced the correct output (3 open items, the same three the old path reported). That proves the *command* works. It does **not** prove the harness fires it — a `SessionStart` hook is read at session start, so the session that edits it is running the previous version by construction and can never observe its own change. This is the one step of the move's checklist that is structurally unprovable from inside, so it is written down rather than assumed, per [[feedback_verify_before_claiming]]. Close it by deleting this entry once a fresh session's startup context has been seen.
 
-- **🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED** `[P1 · XS]`
-  *(filed 2026-08-04 16:23 EDT; **rewritten 2026-08-06 00:36 EDT** because it had gone stale in the
-  worst way — see below)*. Trigger: the next session that touches this repo, or any report that a
-  site/bot change "did not land".
+- **🚀 `main` IS WELL AHEAD OF THE DEPLOYED BOT — and the VM's actual version is UNVERIFIED** `[P1 · XS]` *(filed 2026-08-04 16:23 EDT; **rewritten 2026-08-06 00:36 EDT** because it had gone stale in the worst way — see below)*. Trigger: the next session that touches this repo, or any report that a site/bot change "did not land".
 
-  ⚠️ **This entry previously read "v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running
-  v2.51.3", and by 2026-08-06 `main` was at v2.55.5.** Both numbers were copies of state that nothing
-  updated, so the item quietly understated the gap by several releases while looking precise — the
-  exact failure [[feedback_no_duplicated_state_in_prose]] describes. It is now written so it cannot
-  rot: **`main`'s version is whatever `package.json` says, and the VM's is whatever the VM says.**
-  **Never write either number back into this entry — go and read them.**
+  ⚠️ **This entry previously read "v2.52.0 is MERGED but NOT DEPLOYED — the VM is still running v2.51.3", and by 2026-08-06 `main` was at v2.55.5.** Both numbers were copies of state that nothing updated, so the item quietly understated the gap by several releases while looking precise — the exact failure [[feedback_no_duplicated_state_in_prose]] describes. It is now written so it cannot rot: **`main`'s version is whatever `package.json` says, and the VM's is whatever the VM says.** **Never write either number back into this entry — go and read them.**
 
-  **FIRST STEP IS TO MEASURE, NOT TO DEPLOY.** Nobody has checked what the VM is actually running;
-  `./scripts/vmstatus.sh` reports it. Only once that number is known can anyone judge whether a deploy
-  is wanted — and **several releases since v2.52.0 carried real bot and site code**, not just records,
-  so this is not automatically a docs-only backlog.
+  **FIRST STEP IS TO MEASURE, NOT TO DEPLOY.** Nobody has checked what the VM is actually running; `./scripts/vmstatus.sh` reports it. Only once that number is known can anyone judge whether a deploy is wanted — and **several releases since v2.52.0 carried real bot and site code**, not just records, so this is not automatically a docs-only backlog.
 
-  Deploy is a separate, optional step and is deliberately NOT implied by a merge — Harkirat asked for
-  "commit, push, pr, and merge" and said nothing about deploying, so it was held. On the VM:
-  `./scripts/deploy.sh` (git pull → restart), then verify with `scripts/vmstatus.sh`. **Ask first.**
+  Deploy is a separate, optional step and is deliberately NOT implied by a merge — Harkirat asked for "commit, push, pr, and merge" and said nothing about deploying, so it was held. On the VM: `./scripts/deploy.sh` (git pull → restart), then verify with `scripts/vmstatus.sh`. **Ask first.**
 
-  ⚠️ **The SITE half is already live regardless.** `.github/workflows/deploy-site.yml` publishes
-  `public/` to Cloudflare Pages on any merge to `main` that touches it, so the renamed site went out
-  with the merge while the bot on the VM is still the old build. That split is normal here and is
-  exactly why "merged" must never be reported as "live" — say which of the two actually happened.
+  ⚠️ **The SITE half is already live regardless.** `.github/workflows/deploy-site.yml` publishes `public/` to Cloudflare Pages on any merge to `main` that touches it, so the renamed site went out with the merge while the bot on the VM is still the old build. That split is normal here and is exactly why "merged" must never be reported as "live" — say which of the two actually happened.
 
-- **🔇 LIFT the `chronicle-drift` suppression when the journey-pages rework starts** `[P2 · XS]`
-  *(filed 2026-08-06 00:20 EDT, Harkirat's call)*. **Trigger:** the first session that touches the
-  three journey/chronicle pages (`public/changelog/index.html`, `detailed.html`, `devlog.html`).
+- **🔇 LIFT the `chronicle-drift` suppression when the journey-pages rework starts** `[P2 · XS]` *(filed 2026-08-06 00:20 EDT, Harkirat's call)*. **Trigger:** the first session that touches the three journey/chronicle pages (`public/changelog/index.html`, `detailed.html`, `devlog.html`).
 
-  The check reported the same known drift on every run and grew by a line per release. A warning
-  that is always present and always expected trains everyone to read past the whole WARN block,
-  which camouflages the next real one — so it was suppressed rather than left to be ignored.
+  The check reported the same known drift on every run and grew by a line per release. A warning that is always present and always expected trains everyone to read past the whole WARN block, which camouflages the next real one — so it was suppressed rather than left to be ignored.
 
-  **It is suppressed, not deleted, and not silent** — `SUPPRESS_CHRONICLE_DRIFT` in
-  `scripts/docs-audit.mjs`. It still runs, still examines both pairs (so a broken matcher still
-  shows as "examined 0"), and still prints one line per run stating how far behind the pages are.
-  It is gated on `DOCS_AUDIT_ROOT` being absent, so `docs-audit.test.mjs`'s
-  `proves("a changelog entry whose built page was never regenerated")` keeps exercising the real
-  logic — a suppression that disabled its own failure test would be the dead gate this repo has
-  already paid for twice.
+  **It is suppressed, not deleted, and not silent** — `SUPPRESS_CHRONICLE_DRIFT` in `scripts/docs-audit.mjs`. It still runs, still examines both pairs (so a broken matcher still shows as "examined 0"), and still prints one line per run stating how far behind the pages are. It is gated on `DOCS_AUDIT_ROOT` being absent, so `docs-audit.test.mjs`'s `proves("a changelog entry whose built page was never regenerated")` keeps exercising the real logic — a suppression that disabled its own failure test would be the dead gate this repo has already paid for twice.
 
-  **To lift:** flip the constant to `false`, delete its comment block, run `npm run site`, and
-  commit the resynced `public/changelog/`. Also revisit CI's `public/`-staleness exclusion and
-  `deploy-site.yml`'s changelog-only skip — both were correct for unreachable pages and become
-  wrong the moment those pages are reachable again.
-- **🎓 CLAIM the three GitHub Student Pack offers that were actually adopted** `[P2 · XS]`
-  *(filed 2026-08-05 22:08 EDT — a full triage of all 85 offers ran this session)*. Trigger: before
-  student status lapses, or the next time the iOS nav bug is picked up. **Harkirat claims these, not
-  Claude — they are account actions.**
+  **To lift:** flip the constant to `false`, delete its comment block, run `npm run site`, and commit the resynced `public/changelog/`. Also revisit CI's `public/`-staleness exclusion and `deploy-site.yml`'s changelog-only skip — both were correct for unreachable pages and become wrong the moment those pages are reachable again.
+- **🎓 CLAIM the three GitHub Student Pack offers that were actually adopted** `[P2 · XS]` *(filed 2026-08-05 22:08 EDT — a full triage of all 85 offers ran this session)*. Trigger: before student status lapses, or the next time the iOS nav bug is picked up. **Harkirat claims these, not Claude — they are account actions.**
   - **LambdaTest** (Live plan, free 1 yr) — the iteration rung on the liquid-indicator bug above.
-  - **BrowserStack** (Automate Mobile, 1 parallel/1 user, free 1 yr) — claim now, **wire nothing yet**;
-    see the Someday entry for why the CI case is weaker than it looks.
+  - **BrowserStack** (Automate Mobile, 1 parallel/1 user, free 1 yr) — claim now, **wire nothing yet**; see the Someday entry for why the CI case is weaker than it looks.
   - **GitHub Pro** — arrives with the pack; only matters if the repo ever goes private.
 
-  Optional, lossless, no project dependency: Name.com's free domain (a defensive `dioreo.dev`
-  registration is on-point — LICENSE §1.5/§18.3 treats the name as a protected Brand Asset), Termius
-  Pro (SSH to the VM, incl. from a phone), 1Password, FrontendMasters, Polypane ⚠️ *Chromium — it will
-  not help the iOS bug*, CodeScene, DeepScan, JetBrains, Codespaces, WorkingCopy, Requestly.
+  Optional, lossless, no project dependency: Name.com's free domain (a defensive `dioreo.dev` registration is on-point — LICENSE §1.5/§18.3 treats the name as a protected Brand Asset), Termius Pro (SSH to the VM, incl. from a phone), 1Password, FrontendMasters, Polypane ⚠️ *Chromium — it will not help the iOS bug*, CodeScene, DeepScan, JetBrains, Codespaces, WorkingCopy, Requestly.
 
-  ⚠️ **MongoDB's $50 Atlas credit is worth $0 here** — confirmed with Harkirat 2026-08-05 22:04 EDT: the cluster
-  is on the **M0 free plan**, and credits only offset a paid cluster. Claim it for the free University
-  certification if wanted; treat the credit as a contingency that activates only if M0's limits ever
-  bite. If the cluster is ever upgraded it **must stay Azure Canada Central** — *"Your data is stored
-  in Canada"* is a published claim with its own row in `docs/legal/PRIVACY.md`'s verification appendix.
+  ⚠️ **MongoDB's $50 Atlas credit is worth $0 here** — confirmed with Harkirat 2026-08-05 22:04 EDT: the cluster is on the **M0 free plan**, and credits only offset a paid cluster. Claim it for the free University certification if wanted; treat the credit as a contingency that activates only if M0's limits ever bite. If the cluster is ever upgraded it **must stay Azure Canada Central** — *"Your data is stored in Canada"* is a published claim with its own row in `docs/legal/PRIVACY.md`'s verification appendix.
 
-  📌 **The pack offers this project no cost reduction, and that is a checked result, not an oversight.**
-  Every line is already $0 or credit-funded: GCP always-free tier + the $300/$10-mo credits · Cloudflare
-  Pages free · Atlas M0 · Cloudinary free tier · Vertex AI billed against those same GCP credits at a
-  few loadouts a week (`.claude/rules/autobuild.md`). Nothing among the 85 touches Vertex, the only
-  line that could ever become real spend.
+  📌 **The pack offers this project no cost reduction, and that is a checked result, not an oversight.** Every line is already $0 or credit-funded: GCP always-free tier + the $300/$10-mo credits · Cloudflare Pages free · Atlas M0 · Cloudinary free tier · Vertex AI billed against those same GCP credits at a few loadouts a week (`.claude/rules/autobuild.md`). Nothing among the 85 touches Vertex, the only line that could ever become real spend.
 
-- **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE)
-  (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a
-  question the existing data cannot: is the low usage caused by the rule or by the tool? It has never
-  existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule.
-  **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
+- **⏰ 2026-08-09 17:00 EDT — CLOSE OUT the 7-day MCP observation window** `[P2 · M]` 🧩 needs-design (TS-DEADLINE) (opened 2026-08-02 14:43 EDT). `sequential-thinking` is **UNRESTRICTED for the window** to answer a question the existing data cannot: is the low usage caused by the rule or by the tool? It has never existed unrestricted (**310 pre-rule transcripts, present in 0**), so "used twice" measures the rule. **Harkirat asked for a dedicated session for the analysis** — do not analyse it inline.
   **Close-out (all four, in order):**
-  1. Re-run the instrument **UNCHANGED** — editing it voids the comparison. **`--to` is EXCLUSIVE, so
-     it must be `2026-08-10` to include the final day:**
-     `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds`
-     (**08-02 COUNTS** — measurement starts the day the window opened. The two sessions that ran
-     before 17:00 EDT are excluded by session id, hardcoded in the instrument so no flag is needed.)
-  2. Compare only against the **pre-registered** baseline + criteria in
-     `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`. Baseline (Diors-only,
-     instrument v2, bucketed by session START): **35 sessions · 18,939 turns · median 276**
-     (mean 541.1 is outlier-driven — compare on the MEDIAN) · **290,915 cache reads per turn** ·
-     0.014 seq-calls/100 turns · 0.49 memory writes/session · `search_graph` 1 · 18 compactions ·
-     models sonnet-5 / opus-5 / opus-4-8.
-     ⚠️ **Check the model + effort mix AND the tool profile FIRST.** An Opus-skewed week moves every
-     number on its own. And the treatment period is KNOWN in advance to be website/design-heavy while
-     the baseline was audit/debug-heavy — design work is precisely sequential-thinking's declared fit
-     case, so a high trigger rate shows it fires on DESIGN, not that it is generally useful. A low
-     rate even in its best-fit week is the strongest possible evidence the other way.
-  3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT
-     it fired, never whether it helped. **Watch for novelty**: a spike of 2–3 thought runs with no
-     decision attached is the tool being new, not useful.
-  4. Record the verdict **with data** in `~/.claude/CLAUDE.md` + `project_context_token_budget`.
-  ⚠️ **The suspension AUTO-EXPIRES** — `.claude/hooks/mcp-layer-check.sh` flips to chasing the
-  close-out on 2026-08-10 (boundary tested). So the rule reinstates itself even if this item is
-  missed; what would be lost is the *analysis*, not the guardrail.
-  **Also under observation:** whether the 2026-08-02 MCP fixes hold — memory writes/session, recall
-  usage, `search_graph` adoption, `ctx-execute*` share. If those do not move, the SessionStart routing
-  hook failed the same way prose did, which is the more valuable finding.
+  1. Re-run the instrument **UNCHANGED** — editing it voids the comparison. **`--to` is EXCLUSIVE, so it must be `2026-08-10` to include the final day:** `node scripts/mcp-observation-metrics.mjs --from 2026-08-02 --to 2026-08-10 --label treatment --project -Applications-Claude-Code-Diors-Builds` (**08-02 COUNTS** — measurement starts the day the window opened. The two sessions that ran before 17:00 EDT are excluded by session id, hardcoded in the instrument so no flag is needed.)
+  2. Compare only against the **pre-registered** baseline + criteria in `docs/superpowers/specs/2026-08-02-mcp-observation-window-protocol.md`. Baseline (Diors-only, instrument v2, bucketed by session START): **35 sessions · 18,939 turns · median 276** (mean 541.1 is outlier-driven — compare on the MEDIAN) · **290,915 cache reads per turn** · 0.014 seq-calls/100 turns · 0.49 memory writes/session · `search_graph` 1 · 18 compactions · models sonnet-5 / opus-5 / opus-4-8. ⚠️ **Check the model + effort mix AND the tool profile FIRST.** An Opus-skewed week moves every number on its own. And the treatment period is KNOWN in advance to be website/design-heavy while the baseline was audit/debug-heavy — design work is precisely sequential-thinking's declared fit case, so a high trigger rate shows it fires on DESIGN, not that it is generally useful. A low rate even in its best-fit week is the strongest possible evidence the other way.
+  3. Read `local/mcp-observation-log.md` for the *why/outcome* of each use — the transcript shows THAT it fired, never whether it helped. **Watch for novelty**: a spike of 2–3 thought runs with no decision attached is the tool being new, not useful.
+  4. Record the verdict **with data** in `~/.claude/CLAUDE.md` + `project_context_token_budget`. ⚠️ **The suspension AUTO-EXPIRES** — `.claude/hooks/mcp-layer-check.sh` flips to chasing the close-out on 2026-08-10 (boundary tested). So the rule reinstates itself even if this item is missed; what would be lost is the *analysis*, not the guardrail.
+  **Also under observation:** whether the 2026-08-02 MCP fixes hold — memory writes/session, recall usage, `search_graph` adoption, `ctx-execute*` share. If those do not move, the SessionStart routing hook failed the same way prose did, which is the more valuable finding.
 
-- `[P1 · XS · Harkirat action, not a build]` **Finish the GitHub Projects roadmap board's view setup.**
-  Added 2026-07-26 12:12 EDT. The board (https://github.com/users/HarkiratMangat/projects/2) has all 15
-  items and every custom field (`Status`/`Priority`/`Effort`/`Model suggestion`/`Flags`) populated via the
-  API, but GitHub's GraphQL API has NO view-creation/management mutations at all (confirmed via
-  introspection) — so it still only has the one default view GitHub creates automatically (`View 1`,
-  Table layout). Two manual steps in the GitHub UI finish the design agreed on earlier:
-  1. Open the board → click **View 1**'s dropdown (or the view tab itself) → **Edit layout** → change
-     layout from **Table** to **Board** → set **Group by: Status** → rename the view (double-click its
-     tab, or the "..." menu → Rename) to something like **"Status board."**
-  2. Click the **+** next to the view tabs → **New view** → keep layout **Table** → name it **"By
-     Priority"** → set **Group by: Priority**.
+- `[P1 · XS · Harkirat action, not a build]` **Finish the GitHub Projects roadmap board's view setup.** Added 2026-07-26 12:12 EDT. The board (https://github.com/users/HarkiratMangat/projects/2) has all 15 items and every custom field (`Status`/`Priority`/`Effort`/`Model suggestion`/`Flags`) populated via the API, but GitHub's GraphQL API has NO view-creation/management mutations at all (confirmed via introspection) — so it still only has the one default view GitHub creates automatically (`View 1`, Table layout). Two manual steps in the GitHub UI finish the design agreed on earlier:
+  1. Open the board → click **View 1**'s dropdown (or the view tab itself) → **Edit layout** → change layout from **Table** to **Board** → set **Group by: Status** → rename the view (double-click its tab, or the "..." menu → Rename) to something like **"Status board."**
+  2. Click the **+** next to the view tabs → **New view** → keep layout **Table** → name it **"By Priority"** → set **Group by: Priority**.
 
-  Both are a couple minutes total, no data changes, purely view/display config. Nothing else is pending
-  on the board itself.
-- `[P2 · XS · passive watch]` **Watch that GCP holds long-term.** Cutover was 2026-07-17; the Discord
-  alerting + `scripts/vmstatus.sh` are the watch mechanism. The original "staying green through
-  ~2026-07-24" checkpoint has passed with no incident recorded in the alert log or DEVLOG — but that's
-  absence-of-record, not a positive health check, so confirm live with `scripts/vmstatus.sh` before
-  treating it as fully settled. (The Render service itself is long since deleted — see
-  `docs/archive/resolved-list.md`; this item is purely about whether the GCP replacement keeps holding.)
-- `[P2 · S · admin-only impact, not urgent]` **Live-test the `/manage` loadout UX overhaul (v2.23.0) +
-  `/settings` passive idle-timeout (v2.22.0) in real Discord.** Both deployed live to the GCP VM
-  2026-07-19 (confirmed via `scripts/vmstatus.sh`), neither behaviorally click-tested by Harkirat yet.
-  For loadouts: run through Add/Edit/Bulk Add on `/manage`, confirm the new "How Images Work" info block
-  + field placeholders read right, and confirm `checkImageExists()` actually warns on a
-  deliberately-wrong Cloudinary key. For settings: open `/settings`, leave it untouched the full 10
-  minutes, confirm the buttons go dead with zero clicks. Explicitly deprioritized by Harkirat himself
-  (2026-07-19) — admin-only surface, doesn't affect normal user-facing commands. Remove once he's
-  actually run through both. **Bundle candidate:** the `/manage` per-slot-metadata fix shipped
-  2026-07-24 18:07 EDT is also awaiting one real click-through, so test them in the same sitting.
-- `[P2 · passive watch · Claude's own call, not Harkirat's ask]` **Revisit splitting `docs/CHANGELOG.md`
-  / `docs/DEVLOG.md` into an active + archive file.** ⚠️ **Both files grow every release, so any figure
-  written here is stale on arrival — measure at decision time: `wc -l docs/CHANGELOG.md docs/DEVLOG.md`.**
-  For the trend only: ~730 lines each on 2026-07-18, roughly doubled by 2026-07-25, and still climbing
-  (both were materially larger again by 2026-07-28 — the numbers previously pinned here had drifted
-  ~40-55% low without anyone noticing, which is itself the argument for the split). Bumped P3 → P2
-  on that basis; still Claude's own call, not something Harkirat asked for. Harkirat explicitly said
-  **not** to add a maintained ToC to these (their `## vX.Y.Z` / `## YYYY-MM-DD` headers are already
-  uniform and grep-able, so a ToC would duplicate that for no gain — unlike CLAUDE.md's ToC, which
-  earned its keep on non-uniform prose headings); the archive-split is the actual lever. He explicitly
-  asked to be reminded of this since it's easy to forget. 🔗 Natural bundle with the `.claude/rules/`
-  two-tier rework below — same "split always-on bulk into on-demand detail" shape.
+  Both are a couple minutes total, no data changes, purely view/display config. Nothing else is pending on the board itself.
+- `[P2 · XS · passive watch]` **Watch that GCP holds long-term.** Cutover was 2026-07-17; the Discord alerting + `scripts/vmstatus.sh` are the watch mechanism. The original "staying green through ~2026-07-24" checkpoint has passed with no incident recorded in the alert log or DEVLOG — but that's absence-of-record, not a positive health check, so confirm live with `scripts/vmstatus.sh` before treating it as fully settled. (The Render service itself is long since deleted — see `docs/archive/resolved-list.md`; this item is purely about whether the GCP replacement keeps holding.)
+- `[P2 · S · admin-only impact, not urgent]` **Live-test the `/manage` loadout UX overhaul (v2.23.0) + `/settings` passive idle-timeout (v2.22.0) in real Discord.** Both deployed live to the GCP VM 2026-07-19 (confirmed via `scripts/vmstatus.sh`), neither behaviorally click-tested by Harkirat yet. For loadouts: run through Add/Edit/Bulk Add on `/manage`, confirm the new "How Images Work" info block
+  + field placeholders read right, and confirm `checkImageExists()` actually warns on a deliberately-wrong Cloudinary key. For settings: open `/settings`, leave it untouched the full 10 minutes, confirm the buttons go dead with zero clicks. Explicitly deprioritized by Harkirat himself (2026-07-19) — admin-only surface, doesn't affect normal user-facing commands. Remove once he's actually run through both. **Bundle candidate:** the `/manage` per-slot-metadata fix shipped 2026-07-24 18:07 EDT is also awaiting one real click-through, so test them in the same sitting.
+- `[P2 · passive watch · Claude's own call, not Harkirat's ask]` **Revisit splitting `docs/CHANGELOG.md` / `docs/DEVLOG.md` into an active + archive file.** ⚠️ **Both files grow every release, so any figure written here is stale on arrival — measure at decision time: `wc -l docs/CHANGELOG.md docs/DEVLOG.md`.** For the trend only: ~730 lines each on 2026-07-18, roughly doubled by 2026-07-25, and still climbing (both were materially larger again by 2026-07-28 — the numbers previously pinned here had drifted ~40-55% low without anyone noticing, which is itself the argument for the split). Bumped P3 → P2 on that basis; still Claude's own call, not something Harkirat asked for. Harkirat explicitly said **not** to add a maintained ToC to these (their `## vX.Y.Z` / `## YYYY-MM-DD` headers are already uniform and grep-able, so a ToC would duplicate that for no gain — unlike CLAUDE.md's ToC, which earned its keep on non-uniform prose headings); the archive-split is the actual lever. He explicitly asked to be reminded of this since it's easy to forget. 🔗 Natural bundle with the `.claude/rules/` two-tier rework below — same "split always-on bulk into on-demand detail" shape.
 
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
 
-- **⏱️ Git-workflow efficiency: audit the hook ecosystem + fix real execution-bundling waste**
-  `[P2 · M · Opus5-High]` *(filed 2026-08-07 20:27 EDT after Harkirat's direct pushback on a
-  ~20-minute, ~65-tool-call v2.60.0 merge flow — "is your handoff checking prior hooks... does it
-  actually consider tackling a core issue or is it just relying on more hooks."; **model pick
-  revised 20:28 EDT**, same session, after he pushed back on the FIRST pick too — "it clearly also
-  shows from this very handoff creation phase of this session of how close minded you can be.")*
-  **Model pick reasoning:** the first pick (Sonnet5-Medium) rated this a checklist-shaped task and
-  read that as low premise-risk. Wrong basis — the actual demonstrated failure mode during THIS
-  session's handoff-writing was interpretive narrowness on self-reflective "what am I missing" work,
-  caught twice by Harkirat directly (first the hook-density-audit angle, then the step-count-vs-
-  call-count distinction), not a knowledge gap or mechanical difficulty. Premise risk is HIGH because
-  my own first-pass judgment on this exact category of task is demonstrated unreliable, not
-  hypothetically risky · deliberation High to match — this needs genuinely broad consideration across
-  ~22 scripts plus the meta-question of what's still being missed, not a bounded checklist run →
-  Opus, High. Effort tier buys breadth; model is the judgment lever, and the judgment lever is what
-  failed twice here.
-  **Full detail + worked examples:** `local/handoff/2026-08-07-git-workflow-efficiency-hooks-
-  handoff.md` (gitignored — this pointer is the only tracked reference to it). **What to do:**
-  (1) audit all ~22 non-test `.claude/hooks/*.sh` scripts for redundancy/dead-weight/consolidation
-  opportunity, report findings before touching `settings.json`; (2) surface the "is the 3-file-
-  changelog ritual still the right size" question to Harkirat directly rather than deciding it;
-  (3) apply the concrete execution-bundling fixes already identified (version bump should be 1 Bash
-  call not 3; independent changelog-family file edits should batch in one message; `git tag` +
-  `git push origin <tag>` should chain; don't re-run `docs:audit` after every single small fix); this
-  one (item 0 in the handoff) needs no new hook and no dedicated session to start — it should already
-  be standing practice. **How to verify:** re-run a comparable merge flow and count actual tool calls
-  against this session's ~65-call baseline.
+- **✍️ Extend soft-wrapping to CODE COMMENTS** `[P2 · M · Sonnet5-High]` *(filed 2026-08-08 12:30 EDT — Harkirat asked directly during the v2.63.0 session; answered with a recommendation, filed so it is tracked rather than parked.)* **Model pick reasoning:** premise Low — the measurement is done and the invariant is unusually strong, so there is little to be wrong *about* · deliberation Med-High — it touches all 128 source files and the tool has to understand three comment syntaxes without ever moving a byte of code. Tie-break: the risk is breadth (a comment form nobody enumerated), not a false premise → Sonnet, High.
+  **Measured 2026-08-08 12:28 EDT:** **6,193 of 10,174 comment lines (60.9%) continue a sentence onto the next line, across all 128 tracked `.js`/`.mjs`/`.sh` files** — essentially the same ratio as the Markdown tree before its reflow (64.6%), so the searchability argument carries over unchanged. This repo's comments are unusually essay-like ("why" narratives, not line-by-line narration), which is exactly the content a phrase search should find. **Recommendation: do it, but only for BLOCK comments** — the multi-line `//` runs and `/** … */` headers. Leave short trailing/inline comments alone; they are already one line and wrapping them buys nothing. **Do not reuse `scripts/reflow-prose.mjs`** — it is a Markdown parser and knows nothing about comment syntax, string literals containing `//`, or code.
+  **The invariant that makes it safe, and it is stronger than the Markdown one:** every **non-comment byte must be identical**, `node --check` / `bash -n` must still pass on every file, and the comment text tokens must be conserved. That is a total, mechanically checkable contract — a reflow that touches one byte of code fails immediately, so the blast radius is bounded in a way the Markdown pass never was.
+  **The one real counter-argument, stated honestly:** editors do not reliably soft-wrap *code* the way every Markdown editor wraps prose, so a 900-character comment line can mean horizontal scrolling where word-wrap is off. That is a genuine ergonomic cost and it is Harkirat's call, not a technical blocker — it did not apply to Markdown, where MarkEdit and GitHub both always wrap.
+- **🔔 WARN on an OVERDUE dated reminder in this file** `[P2 · S · Sonnet5-Medium]` *(filed 2026-08-08 12:39 EDT — proposed during the v2.63.0 session and filed rather than left in chat.)* The 🔔 Reminders section holds time-boxed commitments (the MCP observation window's close-out, the TEMPORARY MEMORY.md budget bump) and **nothing checks whether their date has passed**. Each is currently defended by prose saying "do not let this drift into a silent permanent change" — which is exactly what prose has repeatedly failed to do here. A docs-audit check that parses a `YYYY-MM-DD` in a Reminders entry and WARNs once it is in the past turns that sentence into a gate. **This was chosen over a `review_by:` front-matter field**, which was considered and rejected in the same session: this file already owns time-boxed items, and a parallel mechanism would split them across two places.
+- **⏳ `npm run docs:audit:test` takes ~96s and it is now the slowest thing in `npm test`** `[P3 · S · Sonnet5-Medium]` *(measured 2026-08-08 12:20 EDT: `check` 4.6s, `docs:audit:test` 95.9s, `docs:reflow:test` 0.3s, `docs:reflow` 0.7s.)* It builds a fresh git fixture per proof and there are now 65 of them, so it scales linearly with the check roster — the v2.63.0 session added 6 proofs and pushed the whole suite past a 2-minute timeout. **Nothing is broken and CI's limit is far higher**, so this is comfort, not correctness. The obvious fix is building the fixture ONCE per run and resetting it between proofs (`git stash`/`git checkout -- .`) rather than `mkdtemp` + `git init` 65 times. ⚠️ Whatever is done must not weaken the isolation the fixture provides — the deliberate SPACE in its tmpdir name and its `-b main` assertion both exist because a shared or inherited fixture certified the wrong thing before.
+- **⏱️ Git-workflow efficiency: audit the hook ecosystem + fix real execution-bundling waste** `[P2 · M · Opus5-High]` *(filed 2026-08-07 20:27 EDT after Harkirat's direct pushback on a ~20-minute, ~65-tool-call v2.60.0 merge flow — "is your handoff checking prior hooks... does it actually consider tackling a core issue or is it just relying on more hooks."; **model pick revised 20:28 EDT**, same session, after he pushed back on the FIRST pick too — "it clearly also shows from this very handoff creation phase of this session of how close minded you can be.")*
+  **Model pick reasoning:** the first pick (Sonnet5-Medium) rated this a checklist-shaped task and read that as low premise-risk. Wrong basis — the actual demonstrated failure mode during THIS session's handoff-writing was interpretive narrowness on self-reflective "what am I missing" work, caught twice by Harkirat directly (first the hook-density-audit angle, then the step-count-vs- call-count distinction), not a knowledge gap or mechanical difficulty. Premise risk is HIGH because my own first-pass judgment on this exact category of task is demonstrated unreliable, not hypothetically risky · deliberation High to match — this needs genuinely broad consideration across ~22 scripts plus the meta-question of what's still being missed, not a bounded checklist run → Opus, High. Effort tier buys breadth; model is the judgment lever, and the judgment lever is what failed twice here.
+  **Full detail + worked examples:** `local/handoff/2026-08-07-git-workflow-efficiency-hooks- handoff.md` (gitignored — this pointer is the only tracked reference to it). **What to do:** (1) audit all ~22 non-test `.claude/hooks/*.sh` scripts for redundancy/dead-weight/consolidation opportunity, report findings before touching `settings.json`; (2) surface the "is the 3-file- changelog ritual still the right size" question to Harkirat directly rather than deciding it; (3) apply the concrete execution-bundling fixes already identified (version bump should be 1 Bash call not 3; independent changelog-family file edits should batch in one message; `git tag` + `git push origin <tag>` should chain; don't re-run `docs:audit` after every single small fix); this one (item 0 in the handoff) needs no new hook and no dedicated session to start — it should already be standing practice. **How to verify:** re-run a comparable merge flow and count actual tool calls against this session's ~65-call baseline.
 
-- **🚨 CI/lint gate for over-100-char `setPlaceholder()` calls** `[P2 · S · Sonnet5-Medium]` *(filed
-  2026-08-07 15:52 EDT from the calendar bulk-modal placeholder incident.)* **Model pick reasoning:**
-  premise Low — the constraint itself is settled fact (Discord's discord.js hard-throws
-  `ExpectedConstraintError` past 100 chars, verified live) · deliberation Med — writing a static
-  AST/regex scan of every `.setPlaceholder(...)` call across `commands/*.js` (same shape as
-  `scripts/checkEmojiCaptures.js`'s existing proxy-based scan) is mechanical, but wiring it into
-  `npm test`/CI the same way needs care not to false-positive on template-literal placeholders. Tie-break
-  n/a, straightforward build → Sonnet, Medium.
-  A real production incident (`commands/manage.js`'s `buildCalendarBulkModal()`, 181 chars, shipped in
-  v2.59.0) crashed the modal-builder before `showModal()` ever ran — both bulk add/replace buttons
-  looked completely dead in prod, indistinguishable from a `deferReply()` timeout bug fixed in the SAME
-  release. Nothing currently catches this class of bug before it ships. See
-  `docs/reference/platform-constraints.md`'s new entry for the full incident writeup.
-- **📖 Rework `docs/ideas/diors-notes.md`'s upper section (lines 1–59) + expand the comment-convention
-  leading-verb list** `[P2 · M · Sonnet5-High]` *(filed 2026-08-07 12:10 EDT from notes L14 — Harkirat's
-  ask.)* **Model pick reasoning:** premise Med — what to fold where is mostly clear from his ask, but the
-  exact resulting structure is a judgment call · deliberation Med-High — this file has `SessionStart`
-  hooks (`notes-open-items.sh`, `notes-followups.sh`) that scan by explicit heading/marker position, and a
-  2026-08-06 attempt to reorganize this exact file silently zeroed the open-item count by moving a
-  boundary the hook relied on (see notes L63's own history) — so a restructure here carries real blast
-  radius, not just prose cleanup. Tie-break: a wrong move fails *silently* (a hook miscounts, nobody
-  notices) rather than loudly → stays Sonnet, effort raised to High.
-  Harkirat's ask: the long chain of HTML comments at the top of the file (lines 7–13, "HOW THIS FILE
-  WORKS") reads as a raw dump rather than a proper section — fold it into a structured section, possibly
-  renamed "How this file works" or "Claude readme," or folded into the 🔑 Legend section instead. As part
-  of the same session, expand the comment-writing lead-verb conventions (notes L45–54:
-  FIXED/IMPLEMENTED/SHIPPED/ANSWERED/etc.) with clearer guidance on word choice. **Whatever the new
-  structure, re-verify `notes-open-items.sh` and `notes-followups.sh` against it in the same change** —
-  dry-run the open-item count before and after, the same check that caught the 2026-08-06 near-miss.
+- **🚨 CI/lint gate for over-100-char `setPlaceholder()` calls** `[P2 · S · Sonnet5-Medium]` *(filed 2026-08-07 15:52 EDT from the calendar bulk-modal placeholder incident.)* **Model pick reasoning:** premise Low — the constraint itself is settled fact (Discord's discord.js hard-throws `ExpectedConstraintError` past 100 chars, verified live) · deliberation Med — writing a static AST/regex scan of every `.setPlaceholder(...)` call across `commands/*.js` (same shape as `scripts/checkEmojiCaptures.js`'s existing proxy-based scan) is mechanical, but wiring it into `npm test`/CI the same way needs care not to false-positive on template-literal placeholders. Tie-break n/a, straightforward build → Sonnet, Medium. A real production incident (`commands/manage.js`'s `buildCalendarBulkModal()`, 181 chars, shipped in v2.59.0) crashed the modal-builder before `showModal()` ever ran — both bulk add/replace buttons looked completely dead in prod, indistinguishable from a `deferReply()` timeout bug fixed in the SAME release. Nothing currently catches this class of bug before it ships. See `docs/reference/platform-constraints.md`'s new entry for the full incident writeup.
 
-- **📏 Decide a hard-wrap policy for AI-written prose (comments, memory, CHANGELOG/DEVLOG, docs)**
-  `[P2 · S · Sonnet5-High]` *(filed 2026-08-07 10:22 EDT — Harkirat's ask, he'll pick this up next
-  session.)* **Model pick reasoning (grid, not a feeling):** premise Med — the technical claims about
-  rg/diff/wc behavior are checkable and mostly true, but "which policy is actually right for THIS repo"
-  is a real judgment call, not given · deliberation Med-High — weighing one policy against a convention
-  used consistently across dozens of files, plus scoping whether/how `dior text unwrap` gets applied.
-  Tie-break: wrong here more likely from missing a consideration (breadth) than believing something
-  false (premise) → stays Sonnet, effort raised to High rather than jumping to Opus.
-  A separate Claude session surfaced a real, technically-sound problem: hard-wrapping prose at a fixed
-  column width (this repo's convention is ~100–120 chars) breaks the assumption line-oriented tools
-  rely on — one line = one logical unit. Concretely: `rg`/`grep` miss a phrase split across a wrap
-  boundary (it never appears on one line, even though it's one sentence to a human); `git diff` shows
-  a whole reflowed paragraph as changed when only a few words moved, because shifting the wrap point
-  cascades through every later line; `wc -l` overcounts a single sentence as 2–3 lines, skewing any
-  size heuristic built on line counts. `fd`/`find` are unaffected (filename/metadata only, not content).
+  **The tension:** this is the OPPOSITE of current practice. Every file in this repo written by past sessions — `CLAUDE.md`, every memory file, `docs/CHANGELOG.md`, `docs/DEVLOG.md`, every `.claude/rules/*.md` — is deliberately hard-wrapped at ~100–120 chars, consistently, for a long time. That's not an oversight to silently reverse mid-session.
 
-  **The tension:** this is the OPPOSITE of current practice. Every file in this repo written by past
-  sessions — `CLAUDE.md`, every memory file, `docs/CHANGELOG.md`, `docs/DEVLOG.md`, every `.claude/rules/*.md`
-  — is deliberately hard-wrapped at ~100–120 chars, consistently, for a long time. That's not an
-  oversight to silently reverse mid-session.
+  **Already-built tooling that's directly relevant, not a gap to fill from scratch:** `dior text unwrap <file> [--out <dir>|--in-place]` (`~/.config/dior/text.zsh`, added 2026-08-03 21:24 EDT) rejoins hard-wrapped lines back into flowing paragraphs, respecting code fences/tables/front matter — it's a CLI port of the MarkEdit extension `markedit-dior-unwrap.js` ("Hard-Break Fixer"). So this isn't "build a reflow tool," it's a policy decision plus (if adopted) running tooling that already exists.
 
-  **Already-built tooling that's directly relevant, not a gap to fill from scratch:** `dior text unwrap
-  <file> [--out <dir>|--in-place]` (`~/.config/dior/text.zsh`, added 2026-08-03 21:24 EDT) rejoins
-  hard-wrapped lines back into flowing paragraphs, respecting code fences/tables/front matter — it's a
-  CLI port of the MarkEdit extension `markedit-dior-unwrap.js` ("Hard-Break Fixer"). So this isn't
-  "build a reflow tool," it's a policy decision plus (if adopted) running tooling that already exists.
+  **What actually needs deciding:** (1) going forward, should NEW prose I write — comments, memory, CHANGELOG entries — be soft-wrapped (one logical line per sentence/paragraph, let the editor/terminal wrap for display) instead of hard-wrapped? (2) if yes, does existing content get reflowed too (via `dior text unwrap`, presumably file-by-file or a scripted sweep), or does it stay as-is and only new writing changes? (3) does this apply repo-wide uniformly, or differently for code comments vs. markdown docs vs. commit messages? No implementation has started — this is scoped as a decision session, not a coding task.
 
-  **What actually needs deciding:** (1) going forward, should NEW prose I write — comments, memory,
-  CHANGELOG entries — be soft-wrapped (one logical line per sentence/paragraph, let the editor/terminal
-  wrap for display) instead of hard-wrapped? (2) if yes, does existing content get reflowed too (via
-  `dior text unwrap`, presumably file-by-file or a scripted sweep), or does it stay as-is and only new
-  writing changes? (3) does this apply repo-wide uniformly, or differently for code comments vs.
-  markdown docs vs. commit messages? No implementation has started — this is scoped as a decision
-  session, not a coding task.
+- **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent + mascot twinkle/float** `[P2 · M]` (filed 2026-08-04 22:07 EDT; merged with the standalone mascot-animation item 2026-08-05 09:32 EDT — Harkirat's call, one Opus-5 session covers the whole hero area rather than two separate ones). **Recommended: Opus 5, High effort** — this is genuinely novel creative+technical work (repurposing the existing goo/metaball engine in a new context, plus a font decision with its own licensing check), not a quick CSS tweak. Two DISTINCT surfaces bundled here on purpose — do not conflate them into one treatment, they have different scopes and different constraints:
 
-- **🌀 Hero "Dioreo" — fluid-morph birth + mixed-typography accent + mascot twinkle/float** `[P2 · M]`
-  (filed 2026-08-04 22:07 EDT; merged with the standalone mascot-animation item 2026-08-05 09:32 EDT
-  — Harkirat's call, one Opus-5 session covers the whole hero area rather than two separate ones).
-  **Recommended: Opus 5, High effort** — this is genuinely novel creative+technical work (repurposing
-  the existing goo/metaball engine in a new context, plus a font decision with its own licensing
-  check), not a quick CSS tweak. Two DISTINCT surfaces bundled here on purpose — do not conflate them
-  into one treatment, they have different scopes and different constraints:
+  **① The H1 text.** The `<em>Dioreo</em>` inside the landing-page hero `<h1>` in `indexPage()` (`scripts/buildLegalPages.js`, styled by the `h1 em{...}` rule in `COMPONENT_CSS`). Currently plain `color:var(--accent-t)`, no animation.
 
-  **① The H1 text.** The `<em>Dioreo</em>` inside the landing-page hero `<h1>` in `indexPage()`
-  (`scripts/buildLegalPages.js`, styled by the `h1 em{...}` rule in `COMPONENT_CSS`). Currently plain
-  `color:var(--accent-t)`, no animation.
+  **Three quick prototypes were built live and REJECTED** ("basic and boring") — don't re-propose any of them from scratch: (A) a one-time gradient sweep reusing the exact hover-sweep technique freed up when the nav wordmark became an image (see the nav-logo-swap commit, same session); (B) a continuous shimmer plus a soft accent glow; (C) a spring/overshoot bounce-in on load.
 
-  **Three quick prototypes were built live and REJECTED** ("basic and boring") — don't re-propose any
-  of them from scratch: (A) a one-time gradient sweep reusing the exact hover-sweep technique freed up
-  when the nav wordmark became an image (see the nav-logo-swap commit, same session); (B) a continuous
-  shimmer plus a soft accent glow; (C) a spring/overshoot bounce-in on load.
+  **What Harkirat asked for instead, in his own words:** "use the fluid morph to birth the dioreo text" — reuse the site's existing metaball/goo engine (`MORPH_JS`, documented at length in `.claude/rules/legal-site.md`) rather than a generic fade/slide/bounce. The closest existing precedent is the desktop nav pill's `birth()` — droplets converge from a wide ring into the final shape on page load — so "Dioreo" should visually assemble/coalesce into place the same way, not just transition in.
 
-  **What Harkirat asked for instead, in his own words:** "use the fluid morph to birth the dioreo
-  text" — reuse the site's existing metaball/goo engine (`MORPH_JS`, documented at length in
-  `.claude/rules/legal-site.md`) rather than a generic fade/slide/bounce. The closest existing
-  precedent is the desktop nav pill's `birth()` — droplets converge from a wide ring into the final
-  shape on page load — so "Dioreo" should visually assemble/coalesce into place the same way, not just
-  transition in.
+  He also wants a **typography mix**: set "Dioreo" in a different, more expressive display/script face against the otherwise plain sans-serif headline — the "one decorative accent word inside a sans headline" pattern. The site currently vendors only `var(--display)`/`var(--serif)`/`var(--mono)` — no script/decorative face exists yet, so this needs an actual font pick plus a licence check (OFL/MIT, matching the NOTICE §1 vendoring rule) before anything lands in `public/assets/`.
 
-  He also wants a **typography mix**: set "Dioreo" in a different, more expressive display/script face
-  against the otherwise plain sans-serif headline — the "one decorative accent word inside a sans
-  headline" pattern. The site currently vendors only `var(--display)`/`var(--serif)`/`var(--mono)` — no
-  script/decorative face exists yet, so this needs an actual font pick plus a licence check (OFL/MIT,
-  matching the NOTICE §1 vendoring rule) before anything lands in `public/assets/`.
+  **Constraints to carry in, all measured/documented already in `legal-site.md` — don't re-derive or guess them:**
+  - The goo filter's dilation is **anisotropic** and was *measured*, not derived (see "THE DESKTOP INDICATOR'S GEOMETRY IS MEASURED" in that file) — assume a filter chain that works at the nav pill's size will NOT transfer to a full headline's size/shape unchanged.
+  - `prefers-reduced-motion` must yield the plain static heading, no exceptions — every other morph module in `MORPH_JS` does this and builds nothing liquid at all in that mode.
+  - **iOS renders the SVG crush as hard circles where the CSS blur/contrast crush renders liquid** — the nav goo already had to split into two different engines (desktop SVG vs. mobile CSS chain) for exactly this reason; verify on-device before calling this done, not just in a desktop browser.
 
-  **Constraints to carry in, all measured/documented already in `legal-site.md` — don't re-derive or
-  guess them:**
-  - The goo filter's dilation is **anisotropic** and was *measured*, not derived (see "THE DESKTOP
-    INDICATOR'S GEOMETRY IS MEASURED" in that file) — assume a filter chain that works at the nav
-    pill's size will NOT transfer to a full headline's size/shape unchanged.
-  - `prefers-reduced-motion` must yield the plain static heading, no exceptions — every other morph
-    module in `MORPH_JS` does this and builds nothing liquid at all in that mode.
-  - **iOS renders the SVG crush as hard circles where the CSS blur/contrast crush renders liquid** —
-    the nav goo already had to split into two different engines (desktop SVG vs. mobile CSS chain) for
-    exactly this reason; verify on-device before calling this done, not just in a desktop browser.
+  **② The mascot image**, separately — `public/assets/dioreo-mascot.webp`, rendered via `wordmark(null, ...)` → `.wm-hero` in the same file, landing page only. Filed as its own item 2026-08-05 09:09 EDT, folded in here 09:32 EDT.
 
-  **② The mascot image**, separately — `public/assets/dioreo-mascot.webp`, rendered via
-  `wordmark(null, ...)` → `.wm-hero` in the same file, landing page only. Filed as its own item
-  2026-08-05 09:09 EDT, folded in here 09:32 EDT.
+  **What was asked, in Harkirat's own words:** "slightly animate it on the website so like the stars twinkle or it feels like the mascot is kind of floating/flying or something." Scope: a subtle, continuous idle treatment on the static hero image — not a one-shot entrance, not the goo/morph engine. Two independent pieces, either or both:
+  - **Float/bob**: a slow, small-amplitude `translateY` loop (a few px, several-second period) on the whole `.wm-hero` image — reads as "floating," cheap, no new assets needed.
+  - **Twinkle**: the sparkles/stars baked into the mascot artwork itself twinkling. Since they're part of one flat raster image (not separate DOM elements), this needs either (a) a CSS filter/opacity pulse on the whole image dosed subtly enough it doesn't wash out the mascot too, or (b) — better fidelity — asking for a version of the asset with the star/sparkle elements isolated on their own layer, so they can animate independently of the character. Don't attempt a pixel-level star cutout via CSS masking against the flat PNG; that's the "measure the renderer" trap this codebase has hit before with the goo filter (see `reference_goo_metaball_recipe` memory) — ask for a layered source instead of reverse-engineering one.
+  - **Must respect `prefers-reduced-motion`**: snap to the static image, no exceptions — same rule every other morph module in `MORPH_JS` already follows.
+  - **Verify**: load the landing page, confirm continuous subtle motion at rest (no interaction needed), confirm it stops under reduced-motion, confirm it doesn't fight the existing `.wm-hero` hover/focus scale nudge (`transform:scale(1.05)` on `.mark.live:hover .wm` — N/A here since the landing mark isn't a link, but re-check if that changes).
 
-  **What was asked, in Harkirat's own words:** "slightly animate it on the website so like the stars
-  twinkle or it feels like the mascot is kind of floating/flying or something." Scope: a subtle,
-  continuous idle treatment on the static hero image — not a one-shot entrance, not the goo/morph
-  engine. Two independent pieces, either or both:
-  - **Float/bob**: a slow, small-amplitude `translateY` loop (a few px, several-second period) on the
-    whole `.wm-hero` image — reads as "floating," cheap, no new assets needed.
-  - **Twinkle**: the sparkles/stars baked into the mascot artwork itself twinkling. Since they're part
-    of one flat raster image (not separate DOM elements), this needs either (a) a CSS
-    filter/opacity pulse on the whole image dosed subtly enough it doesn't wash out the mascot too,
-    or (b) — better fidelity — asking for a version of the asset with the star/sparkle elements
-    isolated on their own layer, so they can animate independently of the character. Don't attempt a
-    pixel-level star cutout via CSS masking against the flat PNG; that's the "measure the renderer"
-    trap this codebase has hit before with the goo filter (see `reference_goo_metaball_recipe` memory)
-    — ask for a layered source instead of reverse-engineering one.
-  - **Must respect `prefers-reduced-motion`**: snap to the static image, no exceptions — same rule
-    every other morph module in `MORPH_JS` already follows.
-  - **Verify**: load the landing page, confirm continuous subtle motion at rest (no interaction
-    needed), confirm it stops under reduced-motion, confirm it doesn't fight the existing `.wm-hero`
-    hover/focus scale nudge (`transform:scale(1.05)` on `.mark.live:hover .wm` — N/A here since the
-    landing mark isn't a link, but re-check if that changes).
+- **🌐 Version-control `~/.claude`, then promote the point-of-use guards globally** `[P2 · M]` 🔗bundle (filed 2026-08-02 15:36 EDT). Two coupled pieces — **do them in this order**, because editing an unversioned global config with no backup is what makes the second half risky.
 
-- **🌐 Version-control `~/.claude`, then promote the point-of-use guards globally** `[P2 · M]` 🔗bundle
-  (filed 2026-08-02 15:36 EDT). Two coupled pieces — **do them in this order**, because editing an
-  unversioned global config with no backup is what makes the second half risky.
+  **① Make `~/.claude` a LOCAL-ONLY git repo** (Harkirat's call: no GitHub remote). ⚠️ **An allowlist `.gitignore` is mandatory, not stylistic.** Measured: the directory is **1,119 MB** while the config worth versioning is **236 KB** — a 4,700× difference. A naive `git add .` tries to commit 557 MB of session transcripts, 296 MB of `security/` and 181 MB of `plugins/`. Ignore everything, then un-ignore: `.gitignore`, `CLAUDE.md`, `RTK.md`, `settings.json`, `keybindings.json`, `hooks/**`, `agents/**`, `plans/**`. Deliberately excluded: `projects/` (transcripts — huge and private), `security/`, `plugins/`, `context-mode/`, `uploads/`, `cache/`, `telemetry/`, `debug/`, `tasks/`, `backups/`, `skills/` (third-party, 5 MB), and **`mcp-needs-auth-cache.json`** (auth state). ✅ **Verified safe to track: `~/.claude/settings.json` holds NO secrets** — only `theme`, `hooks`, `permissions`, `enabledPlugins`, `statusLine` and similar. Checked 2026-08-02 15:36 EDT. ✅ **Dry-run already done and reverted.** `git init` + allowlist staged exactly **18 files / 2,802 lines**, with no transcripts, plugins, cache or auth included. It was reverted rather than left half-done, so the next session starts from a clean directory. **Verify the staged set again before the first commit — check, then commit, never the reverse.**
+  **Why it matters:** every global hook lives there unversioned with no backup. This project already learned that lesson once, which is why `.claude/settings.json` was promoted out of gitignored `settings.local.json` into tracked git. Promoting more hooks into an unversioned directory walks straight back into it.
 
-  **① Make `~/.claude` a LOCAL-ONLY git repo** (Harkirat's call: no GitHub remote).
-  ⚠️ **An allowlist `.gitignore` is mandatory, not stylistic.** Measured: the directory is **1,119 MB**
-  while the config worth versioning is **236 KB** — a 4,700× difference. A naive `git add .` tries to
-  commit 557 MB of session transcripts, 296 MB of `security/` and 181 MB of `plugins/`. Ignore
-  everything, then un-ignore: `.gitignore`, `CLAUDE.md`, `RTK.md`, `settings.json`,
-  `keybindings.json`, `hooks/**`, `agents/**`, `plans/**`. Deliberately excluded: `projects/`
-  (transcripts — huge and private), `security/`, `plugins/`, `context-mode/`, `uploads/`, `cache/`,
-  `telemetry/`, `debug/`, `tasks/`, `backups/`, `skills/` (third-party, 5 MB), and
-  **`mcp-needs-auth-cache.json`** (auth state).
-  ✅ **Verified safe to track: `~/.claude/settings.json` holds NO secrets** — only `theme`, `hooks`,
-  `permissions`, `enabledPlugins`, `statusLine` and similar. Checked 2026-08-02 15:36 EDT.
-  ✅ **Dry-run already done and reverted.** `git init` + allowlist staged exactly **18 files / 2,802
-  lines**, with no transcripts, plugins, cache or auth included. It was reverted rather than left
-  half-done, so the next session starts from a clean directory. **Verify the staged set again before
-  the first commit — check, then commit, never the reverse.**
-  **Why it matters:** every global hook lives there unversioned with no backup. This project already
-  learned that lesson once, which is why `.claude/settings.json` was promoted out of gitignored
-  `settings.local.json` into tracked git. Promoting more hooks into an unversioned directory walks
-  straight back into it.
+  **② THEN promote the point-of-use guards from this repo to global.** Portability was measured, not assumed: **`rg-flag-guard.sh` has 0 project-specific references** (fully generic), while **`mcp-layer-check.sh` has 7** — so that one must be SPLIT, never promoted whole. Promote: `rg-flag-guard`, the shellcheck-on-edit hook, `typos-check`, `timestamp-check` and the clock injector. Keep local: the memory-index and linksee/fragmentation checks. ⚠️ **Take each hook's `.test.sh` with it.** `rg-flag-guard` was the only hook written without tests and the only one that regressed — four false-positive classes, three of them patched by observation before any test existed.
 
-  **② THEN promote the point-of-use guards from this repo to global.**
-  Portability was measured, not assumed: **`rg-flag-guard.sh` has 0 project-specific references**
-  (fully generic), while **`mcp-layer-check.sh` has 7** — so that one must be SPLIT, never promoted
-  whole. Promote: `rg-flag-guard`, the shellcheck-on-edit hook, `typos-check`, `timestamp-check` and
-  the clock injector. Keep local: the memory-index and linksee/fragmentation checks.
-  ⚠️ **Take each hook's `.test.sh` with it.** `rg-flag-guard` was the only hook written without tests
-  and the only one that regressed — four false-positive classes, three of them patched by observation
-  before any test existed.
+  **③ The open question to decide there, NOT settled here:** should the global `CLAUDE.md`'s **`Available CLI Superpowers`** section move out to an on-demand reference with a one-line pointer? Measured: it is **3,441 B of 27,189** (12.7%) — the SMALLEST of the four sections (MCP Servers 9,218, Turn Discipline 8,886, Tool Preferences 5,636), so the saving is ~850 tokens/session. **Moving it into a HOOK saves nothing** — a SessionStart hook is injected every session too, same pipe, and it becomes bash-escaped JSON that is far harder to hand-edit. The only real gain is making it **on-demand**, mirroring this repo's own 2026-07-22 CLAUDE.md modularization. Modest win, global blast radius, so decide it deliberately rather than in passing.
 
-  **③ The open question to decide there, NOT settled here:** should the global `CLAUDE.md`'s
-  **`Available CLI Superpowers`** section move out to an on-demand reference with a one-line pointer?
-  Measured: it is **3,441 B of 27,189** (12.7%) — the SMALLEST of the four sections (MCP Servers 9,218,
-  Turn Discipline 8,886, Tool Preferences 5,636), so the saving is ~850 tokens/session. **Moving it
-  into a HOOK saves nothing** — a SessionStart hook is injected every session too, same pipe, and it
-  becomes bash-escaped JSON that is far harder to hand-edit. The only real gain is making it
-  **on-demand**, mirroring this repo's own 2026-07-22 CLAUDE.md modularization. Modest win, global
-  blast radius, so decide it deliberately rather than in passing.
+  **The principle worth carrying in:** what makes a guard work is being **point-of-use**, not being a hook. `rg-flag-guard` fires at the moment the wrong flag is typed. A session-start catalogue — which is what the CLI ROUTING block in `mcp-layer-check.sh` is — is structurally the same shape as the CLAUDE.md prose that failed 788× vs 4×. Do not promote catalogues; promote interventions.
 
-  **The principle worth carrying in:** what makes a guard work is being **point-of-use**, not being a
-  hook. `rg-flag-guard` fires at the moment the wrong flag is typed. A session-start catalogue — which
-  is what the CLI ROUTING block in `mcp-layer-check.sh` is — is structurally the same shape as the
-  CLAUDE.md prose that failed 788× vs 4×. Do not promote catalogues; promote interventions.
+- **🧪 Migrate the hand-rolled hook test suites to `bats`** `[P3 · M]` (filed 2026-08-02 15:25 EDT; scope corrected 2026-08-02 18:45 EDT). `bats-core` is installed. ⚠️ **It said "the four suites … 43 assertions"; there are now SEVENTEEN suites** — v2.50.0 wired the suite into `npm test`/CI and wrote the eight that were missing. The count in the original wording was a copy of state that nothing updated, exactly what `feedback_no_duplicated_state_in_prose` warns about. They are hand-written bash with hand-rolled `assert` helpers, and **two of them shipped with real bugs the same day they were written**: one grepped a needle that also matches the HEALTHY output line, and one grepped `"decision":"block"` while `jq -n` pretty-prints it *with a space*. Both reported PASS while verifying nothing. A real framework gives proper assertions, TAP output and per-case isolation, and removes the class. ⚠️ **Not urgent and NOT a correctness gap today** — all four suites currently pass and were fixed to discriminate. This is about the assertion *machinery* being homemade, not the coverage.
+  **Direction:** convert ONE suite first and confirm the same failures still get caught before touching the rest. ⚠️ Pick the smallest **at the time you start** (`typos-check` is 5 cases today; `timestamp-check` was the smallest at 9 and is now the LARGEST at 35) — do not trust a count written here, run `rg -c '^\s*a ' .claude/hooks/*.test.sh`. Keep each suite's WHY-comments — they carry the incidents the tests exist for, and those are worth more than the assertions. ⚠️ **Do not migrate mid-observation-window if it touches `mcp-layer-check`** — that hook is part of the running experiment.
 
-- **🧪 Migrate the hand-rolled hook test suites to `bats`** `[P3 · M]` (filed 2026-08-02 15:25 EDT;
-  scope corrected 2026-08-02 18:45 EDT). `bats-core` is installed. ⚠️ **It said "the four suites …
-  43 assertions"; there are now SEVENTEEN suites** — v2.50.0 wired the suite into `npm test`/CI and
-  wrote the eight that were missing. The count in the original wording was a copy of state that
-  nothing updated, exactly what `feedback_no_duplicated_state_in_prose` warns about. They are
-  hand-written bash with
-  hand-rolled `assert` helpers, and **two of them shipped with real bugs the same day they were
-  written**: one grepped a needle that also matches the HEALTHY output line, and one grepped
-  `"decision":"block"` while `jq -n` pretty-prints it *with a space*. Both reported PASS while
-  verifying nothing. A real framework gives proper assertions, TAP output and per-case isolation, and
-  removes the class.
-  ⚠️ **Not urgent and NOT a correctness gap today** — all four suites currently pass and were fixed to
-  discriminate. This is about the assertion *machinery* being homemade, not the coverage.
-  **Direction:** convert ONE suite first and confirm the same failures still get caught before
-  touching the rest. ⚠️ Pick the smallest **at the time you start** (`typos-check` is 5 cases today;
-  `timestamp-check` was the smallest at 9 and is now the LARGEST at 35) — do not trust a count
-  written here, run `rg -c '^\s*a ' .claude/hooks/*.test.sh`. Keep each suite's WHY-comments —
-  they carry the incidents the tests exist for, and those are worth more than the assertions.
-  ⚠️ **Do not migrate mid-observation-window if it touches `mcp-layer-check`** — that hook is part of
-  the running experiment.
+- **🧠 Distil the linksee auto-capture queue, and declare a North Star** `[P2 · S]` (filed 2026-08-02 14:49 EDT). **19 auto-captured memories are still RAW USER UTTERANCES.** ⚠️ `dream()` reports `distill_total: 8` because it **serves a BATCH of up to 8 per call** — the true backlog is `SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%'` = **19**. I first "corrected" the 19 down to 8 on the strength of one `dream()` call; the batch size is not the total, and the session-start banner was right. **Draining it takes ~3 `dream()` calls, not one.** **Why it matters — this is the "junk memories" problem, concretely.** The Stop hook captures by heuristic with no LLM in the path, so it files raw chat as insight. Live examples: memory **7357** is *"lets finalize and merge the open PRs…"* stored as a **`learning`**; **3496** is a task instruction stored as a **`caveat`**. A future session recalling "learnings" gets served Harkirat's to-do list. **Each raw row also drags ~10 `affects` paths of unrelated files with it**, so it pollutes file-history recall too.
+  **How:** `dream()` returns the queue; rewrite each via `remember({memory_id, content})` with a one-line `what`, a real `why`, and **`"distilled": true`** — that marker is REQUIRED, it is what stops the next Stop-hook sync wiping the rewrite and resurrecting the raw utterance (`DELETE … WHERE source LIKE '%session_id%' AND distilled != 1`). Drain up to 8 per `dream()` call. A row with no real decision in it gets `type: "note", state: "superseded"` — retired in place, never deleted.
+  **Also:** `north_star` is **null**, which `dream()` flags itself — without one there is no frame for triaging proposals. Declare via `declare_anchor(node_type: "north_star")`, but that is **Harkirat's call to state**, not mine to invent. ⚠️ **Not mechanical — it is a judgement rewrite of his memories**, which is why it is queued for its own session rather than tacked onto the end of a long one.
 
-- **🧠 Distil the linksee auto-capture queue, and declare a North Star** `[P2 · S]`
-  (filed 2026-08-02 14:49 EDT). **19 auto-captured memories are still RAW USER UTTERANCES.**
-  ⚠️ `dream()` reports `distill_total: 8` because it **serves a BATCH of up to 8 per call** — the true
-  backlog is `SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%'` = **19**. I first
-  "corrected" the 19 down to 8 on the strength of one `dream()` call; the batch size is not the total,
-  and the session-start banner was right. **Draining it takes ~3 `dream()` calls, not one.**
-  **Why it matters — this is the "junk memories" problem, concretely.** The Stop hook captures by
-  heuristic with no LLM in the path, so it files raw chat as insight. Live examples: memory **7357**
-  is *"lets finalize and merge the open PRs…"* stored as a **`learning`**; **3496** is a task
-  instruction stored as a **`caveat`**. A future session recalling "learnings" gets served Harkirat's
-  to-do list. **Each raw row also drags ~10 `affects` paths of unrelated files with it**, so it
-  pollutes file-history recall too.
-  **How:** `dream()` returns the queue; rewrite each via `remember({memory_id, content})` with a
-  one-line `what`, a real `why`, and **`"distilled": true`** — that marker is REQUIRED, it is what
-  stops the next Stop-hook sync wiping the rewrite and resurrecting the raw utterance
-  (`DELETE … WHERE source LIKE '%session_id%' AND distilled != 1`). Drain up to 8 per `dream()` call.
-  A row with no real decision in it gets `type: "note", state: "superseded"` — retired in place,
-  never deleted.
-  **Also:** `north_star` is **null**, which `dream()` flags itself — without one there is no frame for
-  triaging proposals. Declare via `declare_anchor(node_type: "north_star")`, but that is **Harkirat's
-  call to state**, not mine to invent.
-  ⚠️ **Not mechanical — it is a judgement rewrite of his memories**, which is why it is queued for its
-  own session rather than tacked onto the end of a long one.
+*Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]` tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken by items added since. (A count used to live here; it went stale the moment an item was added, so the tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
 
-*Real, self-contained builds; spin each up as its own session at the tagged setup. **Read the `[P…]`
-tags below for what's urgent** — the 2026-07-18 "all P2, none urgent right now" call has been overtaken
-by items added since. (A count used to live here; it went stale the moment an item was added, so the
-tags are the source of truth instead — see `feedback_no_duplicated_state_in_prose`.)*
+- `[P2 · S · 🔗bundle]` **Bulk-resync `public/changelog/` before those pages go back in the nav.** *Filed 2026-08-02 02:45 EDT, at Harkirat's instruction.* The three chronicle pages are withdrawn from the nav and reachable by nobody, so **both** the CI freshness gate and the deploy workflow now exclude `public/changelog/` — a changelog or devlog edit no longer forces a rebuild+commit of HTML no reader is served. The deliberate cost is that those built pages drift behind their sources. **Before those pages are linked again: run `npm run site`, commit `public/changelog/`, and remove the two exclusions** (one in `.github/workflows/ci.yml`, one in `.github/workflows/deploy-site.yml`) plus the `!public/changelog/**` negation in the deploy trigger. `chronicle-drift` (WARN) reports how far behind they are in the meantime — it is a meter, not an error. 🔗 Bundles with the chronicle-page design work, since that is when they become reachable.
 
-- `[P2 · S · 🔗bundle]` **Bulk-resync `public/changelog/` before those pages go back in the nav.**
-  *Filed 2026-08-02 02:45 EDT, at Harkirat's instruction.* The three chronicle pages are withdrawn
-  from the nav and reachable by nobody, so **both** the CI freshness gate and the deploy workflow now
-  exclude `public/changelog/` — a changelog or devlog edit no longer forces a rebuild+commit of HTML
-  no reader is served. The deliberate cost is that those built pages drift behind their sources.
-  **Before those pages are linked again: run `npm run site`, commit `public/changelog/`, and remove the
-  two exclusions** (one in `.github/workflows/ci.yml`, one in `.github/workflows/deploy-site.yml`) plus
-  the `!public/changelog/**` negation in the deploy trigger. `chronicle-drift` (WARN) reports how far
-  behind they are in the meantime — it is a meter, not an error. 🔗 Bundles with the chronicle-page
-  design work, since that is when they become reachable.
+- `[P2 · L · 🧩needs-design · ⛓️blocked-on-design]` **Rebuild Contributing and Contributors as two DISTINCT pages.** *Filed 2026-08-02 01:10 EDT.* They currently share `warmShell()`; the decision is that they stop sharing it and become their own things, sharing only header, footer and tokens.
 
-- `[P2 · L · 🧩needs-design · ⛓️blocked-on-design]` **Rebuild Contributing and Contributors as two
-  DISTINCT pages.** *Filed 2026-08-02 01:10 EDT.* They currently share `warmShell()`; the decision is
-  that they stop sharing it and become their own things, sharing only header, footer and tokens.
-
-  - ⏸️ **PARKED 2026-08-02 23:00 EDT at Harkirat's call. Dropped from P1 to P2.** His words: *"its
-    buggy to say the least. needs heavy designing and discussion work. honestly i'm tired of this…
-    let's defer this redesign to some other time. just leave the current design as-is on the website
-    for now."* **The LIVE SITE IS UNCHANGED and stays that way** — nothing from this exploration
-    reached `scripts/buildLegalPages.js`, `public/`, or either source Markdown file. Zero risk of a
-    half-applied redesign: every artefact is in gitignored `local/`.
-    ⚠️ **Do not restart this from the top.** Two full exploration passes are already paid for. Read
-    the settled decisions below before proposing anything, and expect the next session to be about
-    *design quality and discussion*, not about choosing a direction — the direction is chosen.
-  - ⛔ **DO NOT RESURFACE THIS UNPROMPTED — Harkirat's explicit request, 2026-08-02 23:03 EDT.**
-    Do not raise it in a session-opening summary, do not offer to pick it up, do not list it among
-    "what's next", and do not treat its P2 tag or its 🧩 flag as a prompt to suggest it. He is tired
-    of it and knows exactly where it is. **This item is READ-WHEN-ASKED.** It stays here so that the
-    moment he *does* raise it nothing has to be re-derived — that is its only job. The same applies
-    to its offshoot in `docs/ideas/design-ideas.md` and to the parked landing-page ticket-tear
-    item below, which was already blocked behind this one.
-  - ✅ **SETTLED — the structural fork is ANSWERED** (it was the blocking question for two sessions):
-    **constellation on desktop, a full-width STACK on mobile.** Harkirat, 2026-08-02 22:42 EDT: *"on
-    desktop id say constellation looks coolest… as for mobile, i think the naive reflow… might
-    actually work best (again with a heavy design heal to actually make it nice)."* Gradient bands,
-    gradient cards, a swipe deck and scroll-driven ground inversion were all built and all rejected.
-  - ⚠️ **The desktop fork CANNOT be judged on a phone, and that wasted a round.** Constellation and
-    bands collapse into the same object at 375px — the constellation's identity is free coordinates
-    plus convergence curves, which need width, and bands' identity is a full-bleed field with a
-    CURSOR-following orb, and a phone has no cursor. Mobile and desktop are **independent choices**;
-    the mobile form does not have to be the desktop one's degradation.
-  - ⚠️ **"Naive reflow" was a mislabel that nearly buried the winning answer.** It was presented as
-    the failure case; it was in fact the *unstyled* version of the right answer, judged by how
-    finished it looked rather than whether the structure held. On a phone a quiet full-width read
-    beats a mechanic. **Never let an unstyled option carry a pejorative name in a comparison.**
-  - **Current work-in-progress: `local/site-redesign/mockup-v2.html`** (gitignored; run it with
-    `python3 -m http.server --directory local/site-redesign` — a `file://` URL renders as a static
-    snapshot in the preview pane and will not respond). It implements both chosen forms and **is
-    known to still need heavy design work**. What is worth keeping from it:
-    - The **convergence hub** — all four curves terminate at one node, `CREDITED — by name, and it
-      cannot be withdrawn`, because that convergence *is* the page's claim under §5.6.
-    - The **CLA gate**: a ring sitting ON the Code curve, since the CLA is literally a gate on that
-      one path and no other. It is positioned by measuring the path at its arc-length midpoint, not
-      from a constant.
-    - **Four route hues re-spread** to rose 348° · amber 40° · mint 158° · periwinkle 232° (gaps
-      52/118/74/116). mockup-v1's set had three warm values 19–26° apart that read as one colour.
-      Code takes the page's own accent, because the one route that binds you should be the page's
-      colour. These are page-local and only have to clear `contrastAudit` at 4.5:1 in both themes.
+  - ⏸️ **PARKED 2026-08-02 23:00 EDT at Harkirat's call. Dropped from P1 to P2.** His words: *"its buggy to say the least. needs heavy designing and discussion work. honestly i'm tired of this… let's defer this redesign to some other time. just leave the current design as-is on the website for now."* **The LIVE SITE IS UNCHANGED and stays that way** — nothing from this exploration reached `scripts/buildLegalPages.js`, `public/`, or either source Markdown file. Zero risk of a half-applied redesign: every artefact is in gitignored `local/`. ⚠️ **Do not restart this from the top.** Two full exploration passes are already paid for. Read the settled decisions below before proposing anything, and expect the next session to be about *design quality and discussion*, not about choosing a direction — the direction is chosen.
+  - ⛔ **DO NOT RESURFACE THIS UNPROMPTED — Harkirat's explicit request, 2026-08-02 23:03 EDT.** Do not raise it in a session-opening summary, do not offer to pick it up, do not list it among "what's next", and do not treat its P2 tag or its 🧩 flag as a prompt to suggest it. He is tired of it and knows exactly where it is. **This item is READ-WHEN-ASKED.** It stays here so that the moment he *does* raise it nothing has to be re-derived — that is its only job. The same applies to its offshoot in `docs/ideas/design-ideas.md` and to the parked landing-page ticket-tear item below, which was already blocked behind this one.
+  - ✅ **SETTLED — the structural fork is ANSWERED** (it was the blocking question for two sessions): **constellation on desktop, a full-width STACK on mobile.** Harkirat, 2026-08-02 22:42 EDT: *"on desktop id say constellation looks coolest… as for mobile, i think the naive reflow… might actually work best (again with a heavy design heal to actually make it nice)."* Gradient bands, gradient cards, a swipe deck and scroll-driven ground inversion were all built and all rejected.
+  - ⚠️ **The desktop fork CANNOT be judged on a phone, and that wasted a round.** Constellation and bands collapse into the same object at 375px — the constellation's identity is free coordinates plus convergence curves, which need width, and bands' identity is a full-bleed field with a CURSOR-following orb, and a phone has no cursor. Mobile and desktop are **independent choices**; the mobile form does not have to be the desktop one's degradation.
+  - ⚠️ **"Naive reflow" was a mislabel that nearly buried the winning answer.** It was presented as the failure case; it was in fact the *unstyled* version of the right answer, judged by how finished it looked rather than whether the structure held. On a phone a quiet full-width read beats a mechanic. **Never let an unstyled option carry a pejorative name in a comparison.**
+  - **Current work-in-progress: `local/site-redesign/mockup-v2.html`** (gitignored; run it with `python3 -m http.server --directory local/site-redesign` — a `file://` URL renders as a static snapshot in the preview pane and will not respond). It implements both chosen forms and **is known to still need heavy design work**. What is worth keeping from it:
+    - The **convergence hub** — all four curves terminate at one node, `CREDITED — by name, and it cannot be withdrawn`, because that convergence *is* the page's claim under §5.6.
+    - The **CLA gate**: a ring sitting ON the Code curve, since the CLA is literally a gate on that one path and no other. It is positioned by measuring the path at its arc-length midpoint, not from a constant.
+    - **Four route hues re-spread** to rose 348° · amber 40° · mint 158° · periwinkle 232° (gaps 52/118/74/116). mockup-v1's set had three warm values 19–26° apart that read as one colour. Code takes the page's own accent, because the one route that binds you should be the page's colour. These are page-local and only have to clear `contrastAudit` at 4.5:1 in both themes.
     - The **named-section roster** for Contributors, which is the settled answer to emptiness.
-  - ⚠️ **Verification traps paid for in that file, all real:** a mask on a parent applies to its whole
-    SUBTREE (it was fading the outermost route names to ~60%); an animation on `transform` REPLACES a
-    `translate(-50%,-50%)` used for centring; `nth-child` counts non-`.mk` siblings; `[hidden]` is
-    (0,1,0) and loses to any class that sets `display`; and **`document.timeline.currentTime` is
-    frozen at 0 in the preview pane**, so animations never advance and elements measure at their
-    from-state — strip the intro class to measure settled geometry.
-  - The **cross-referenced contributor index** was split out and parked separately in
-    `docs/ideas/design-ideas.md` (parked on timing, not merit — one contributor, one release).
-  - **Approved mockup: `local/site-redesign/mockup-v1.html`** (gitignored, open it directly).
-    **Contributing = "The Interchange"** — four ways in (bug report · security · idea · code) on
-    tinted lanes, converging on one shared track that ends at *merged & credited*. The route DIAGRAM is
-    the page's spine. **Contributors = "The Plate"** — an engraved steel plate, screwed down, maker's
-    mark at the top, rows engraved beneath.
-  - ⚠️ **NODES, NEVER NUMERALS on Contributing.** `warmShell()`'s rule is "no numbers anywhere — the
-    number series is what tells a reader *these bind you*". A step sequence would *earn* numerals
-    semantically, but they are the legal set's signature and an invitation must not borrow it. Harkirat
-    was shown this conflict and the node form was kept.
-  - ⚠️ **SUPERSEDED BY THE REFERENCE RESEARCH — read `local/site-redesign/reference-research.md`
-    before touching any of this.** *Updated 2026-08-02 18:19 EDT.* The nine-site crawl settled
-    question 1 outright and reframed the rest: **Contributors' emptiness is solved STRUCTURALLY, not
-    by resizing** — cut the roster into many small NAMED sections (ensambles.eu/creditos), so no
-    section is expected to be full and one name never reads as a gap. That retires *both* routes
-    below (shrink-the-plate and reserved-slot). Harkirat has also released these two pages from the
-    legal set's design language entirely — the Interchange/Plate mockup is a **fallback only**, and
-    two distinct identities is fine. Dark AND light both required; he prefers dark.
-  - ✅ **ANSWERED 2026-08-02 22:42 EDT — kept only for the reasoning.** The question below was "which
-    structure carries the four routes"; the answer is **(a) constellation on desktop**, with a
-    full-width stack on mobile rather than any of the fallbacks sketched here. Do not re-ask it.
-    **(a) Constellation** (ensambles) — four markers as free coordinates, each owning a hue, label
-    unfolding on hover and the page aura shifting with it. Delivers the four independent hues as a
-    live mechanic and is spatially unlike anything else on the site, which is the changelog lesson
-    (*the GRID separates page families; colour is the weakest carrier*). Risk: scattered coordinates
-    do not survive 375px, and the site has never been checked on a real phone — needs a deliberate
-    mobile fallback, not a reflow.
-    **(b) Gradient bands** (siberia) — each route a full-bleed gradient field with mono caps labels
-    and a cursor-following orb. Bolder at a glance, degrades to a plain stack on mobile for free, but
-    separates the pages by *colour*, which the changelog work found to be the weakest carrier.
-    **(c) Constellation with a band fallback below the breakpoint** — best of both, but genuinely two
-    layouts to build and keep in sync.
-    *Asked 2026-08-02 17:20 EDT; Harkirat dismissed the question to prioritise the hook audit, so it
-    is still open. My lean is (a).* Verify by building the chosen one and checking BOTH themes at
-    desktop and at 375px — the two checks this subsystem has repeatedly skipped.
-  - **The three ORIGINAL open questions, kept for the record — 1 is answered above, 2 and 3 apply
-    only if the fallback mockup is revived:**
-    1. **Contributors' emptiness.** There is genuinely one name, so the plate is mostly bare and the
-       dashed "unengraved" row currently reads as a rendering bug rather than as reserved space. Two
-       honest routes: shrink the plate so emptiness is not the dominant impression and let the
-       surrounding cards carry the page (my lean), or make the reserved slot unmistakably deliberate.
-    2. **Lane colours on Contributing.** The mockup gives each lane its own hue, which is four colours
-       the site's palette never accounted for. Alternative: four tints of periwinkle.
-    3. **The Contributors accent.** If the plate survives, it becomes **steel `#C9CEDA`** — achromatic,
-       so it collides with none of the six hues and answers this outright. `#F8FF4A` citron is still a
-       placeholder and would retire. Gold was already ruled out at 18° from Terms amber.
-  - **Then, and only then:** the ticket-tear animation on the landing-page cards. Harkirat's words —
-    "it looks 'eh okay' at best, it needs a heavy redesign, but hold off until AFTER the
-    contributing/contributor page redesigns", because the cards are those pages' front doors.
-  - Constraints that must survive: `warmStructAudit()` keys off source heading text, so renaming a
-    heading in `CONTRIBUTING.md` silently drops that section to plain prose and **no other gate sees
-    it** — update `WARM_STRUCT` in the same change. Both pages close with the trademark notice as part
-    of their own text now, and their footers pass `disc:false`.
+  - ⚠️ **Verification traps paid for in that file, all real:** a mask on a parent applies to its whole SUBTREE (it was fading the outermost route names to ~60%); an animation on `transform` REPLACES a `translate(-50%,-50%)` used for centring; `nth-child` counts non-`.mk` siblings; `[hidden]` is (0,1,0) and loses to any class that sets `display`; and **`document.timeline.currentTime` is frozen at 0 in the preview pane**, so animations never advance and elements measure at their from-state — strip the intro class to measure settled geometry.
+  - The **cross-referenced contributor index** was split out and parked separately in `docs/ideas/design-ideas.md` (parked on timing, not merit — one contributor, one release).
+  - **Approved mockup: `local/site-redesign/mockup-v1.html`** (gitignored, open it directly). **Contributing = "The Interchange"** — four ways in (bug report · security · idea · code) on tinted lanes, converging on one shared track that ends at *merged & credited*. The route DIAGRAM is the page's spine. **Contributors = "The Plate"** — an engraved steel plate, screwed down, maker's mark at the top, rows engraved beneath.
+  - ⚠️ **NODES, NEVER NUMERALS on Contributing.** `warmShell()`'s rule is "no numbers anywhere — the number series is what tells a reader *these bind you*". A step sequence would *earn* numerals semantically, but they are the legal set's signature and an invitation must not borrow it. Harkirat was shown this conflict and the node form was kept.
+  - ⚠️ **SUPERSEDED BY THE REFERENCE RESEARCH — read `local/site-redesign/reference-research.md` before touching any of this.** *Updated 2026-08-02 18:19 EDT.* The nine-site crawl settled question 1 outright and reframed the rest: **Contributors' emptiness is solved STRUCTURALLY, not by resizing** — cut the roster into many small NAMED sections (ensambles.eu/creditos), so no section is expected to be full and one name never reads as a gap. That retires *both* routes below (shrink-the-plate and reserved-slot). Harkirat has also released these two pages from the legal set's design language entirely — the Interchange/Plate mockup is a **fallback only**, and two distinct identities is fine. Dark AND light both required; he prefers dark.
+  - ✅ **ANSWERED 2026-08-02 22:42 EDT — kept only for the reasoning.** The question below was "which structure carries the four routes"; the answer is **(a) constellation on desktop**, with a full-width stack on mobile rather than any of the fallbacks sketched here. Do not re-ask it. **(a) Constellation** (ensambles) — four markers as free coordinates, each owning a hue, label unfolding on hover and the page aura shifting with it. Delivers the four independent hues as a live mechanic and is spatially unlike anything else on the site, which is the changelog lesson (*the GRID separates page families; colour is the weakest carrier*). Risk: scattered coordinates do not survive 375px, and the site has never been checked on a real phone — needs a deliberate mobile fallback, not a reflow. **(b) Gradient bands** (siberia) — each route a full-bleed gradient field with mono caps labels and a cursor-following orb. Bolder at a glance, degrades to a plain stack on mobile for free, but separates the pages by *colour*, which the changelog work found to be the weakest carrier. **(c) Constellation with a band fallback below the breakpoint** — best of both, but genuinely two layouts to build and keep in sync. *Asked 2026-08-02 17:20 EDT; Harkirat dismissed the question to prioritise the hook audit, so it is still open. My lean is (a).* Verify by building the chosen one and checking BOTH themes at desktop and at 375px — the two checks this subsystem has repeatedly skipped.
+  - **The three ORIGINAL open questions, kept for the record — 1 is answered above, 2 and 3 apply only if the fallback mockup is revived:**
+    1. **Contributors' emptiness.** There is genuinely one name, so the plate is mostly bare and the dashed "unengraved" row currently reads as a rendering bug rather than as reserved space. Two honest routes: shrink the plate so emptiness is not the dominant impression and let the surrounding cards carry the page (my lean), or make the reserved slot unmistakably deliberate.
+    2. **Lane colours on Contributing.** The mockup gives each lane its own hue, which is four colours the site's palette never accounted for. Alternative: four tints of periwinkle.
+    3. **The Contributors accent.** If the plate survives, it becomes **steel `#C9CEDA`** — achromatic, so it collides with none of the six hues and answers this outright. `#F8FF4A` citron is still a placeholder and would retire. Gold was already ruled out at 18° from Terms amber.
+  - **Then, and only then:** the ticket-tear animation on the landing-page cards. Harkirat's words — "it looks 'eh okay' at best, it needs a heavy redesign, but hold off until AFTER the contributing/contributor page redesigns", because the cards are those pages' front doors.
+  - Constraints that must survive: `warmStructAudit()` keys off source heading text, so renaming a heading in `CONTRIBUTING.md` silently drops that section to plain prose and **no other gate sees it** — update `WARM_STRUCT` in the same change. Both pages close with the trademark notice as part of their own text now, and their footers pass `disc:false`.
 
-- `[P1 · M]` **The site has NEVER been checked on a real phone since the desktop pass.** *Filed
-  2026-08-02 00:40 EDT, at Harkirat's instruction, before merging v2.47.0.* Everything in that release
-  was designed, measured and verified at desktop widths — the nav restaging, the sticky section
-  headings, the ticket tear, the footer rebuild, the back-to-top parking, the page-load pill
-  animation. **None of it has been looked at on a device.** Chrome's emulator is not a substitute and
-  is explicitly distrusted here: the mobile metaball uses a different engine *because* an SVG filter
-  renders as hard circles on real iOS and as liquid in the CSS chain, which no emulator would have
-  shown.
-  Specific things to check, because each has a known reason to be suspicious:
-  - **Sticky section headings** are scoped to `min-width:981px` and are OFF below it, by design — the
-    mobile nav is itself sticky at `top:54px`. Confirm nothing collides at the boundary.
-  - **The desktop pill's page-load animation** is skipped on coarse pointers via the `still` flag.
-    Confirm it is genuinely skipped and the mobile strip's own convergence still plays.
-  - **The ticket tear** uses a rotate about `left top` plus a shadow; hover does not exist on touch, so
-    confirm the cards read correctly at rest and that `:active` does something sensible.
-  - **The footer's `.nodisc` single-row layout** collapses to one column at 760px — check the sign-off
-    and link row do not overlap.
-  - **Every hover rule** is machine-wrapped in `(hover:hover)`, but `hoverGuardAudit` proves the WRAP,
-    not the behaviour. Latching is the failure mode to look for.
-  Serve it to the phone with `python3 -m http.server 8899 --bind 0.0.0.0 --directory public` and browse
-  the machine's LAN address. ⚠️ `.claude/launch.json` binds localhost only, so it will NOT reach a phone.
+- `[P1 · M]` **The site has NEVER been checked on a real phone since the desktop pass.** *Filed 2026-08-02 00:40 EDT, at Harkirat's instruction, before merging v2.47.0.* Everything in that release was designed, measured and verified at desktop widths — the nav restaging, the sticky section headings, the ticket tear, the footer rebuild, the back-to-top parking, the page-load pill animation. **None of it has been looked at on a device.** Chrome's emulator is not a substitute and is explicitly distrusted here: the mobile metaball uses a different engine *because* an SVG filter renders as hard circles on real iOS and as liquid in the CSS chain, which no emulator would have shown. Specific things to check, because each has a known reason to be suspicious:
+  - **Sticky section headings** are scoped to `min-width:981px` and are OFF below it, by design — the mobile nav is itself sticky at `top:54px`. Confirm nothing collides at the boundary.
+  - **The desktop pill's page-load animation** is skipped on coarse pointers via the `still` flag. Confirm it is genuinely skipped and the mobile strip's own convergence still plays.
+  - **The ticket tear** uses a rotate about `left top` plus a shadow; hover does not exist on touch, so confirm the cards read correctly at rest and that `:active` does something sensible.
+  - **The footer's `.nodisc` single-row layout** collapses to one column at 760px — check the sign-off and link row do not overlap.
+  - **Every hover rule** is machine-wrapped in `(hover:hover)`, but `hoverGuardAudit` proves the WRAP, not the behaviour. Latching is the failure mode to look for. Serve it to the phone with `python3 -m http.server 8899 --bind 0.0.0.0 --directory public` and browse the machine's LAN address. ⚠️ `.claude/launch.json` binds localhost only, so it will NOT reach a phone.
 
-- `[P2 · M · 🧩needs-design]` **Legal site: redesign the section scrollspy.** *Filed 2026-08-01 22:05 EDT,
-  from Harkirat's desktop pass.* His words: "While I love that you implemented a scrollspy, I feel like
-  you could improve its design, functionality and animation. Please get creative and think outside the
-  box for something more unique." What exists today is `.rail` in `scripts/buildLegalPages.js` — a
-  sticky left column of numbered slots, tracked by the `paint()` loop in the legal shell's scroll
-  script, which highlights the slot whose heading last crossed a 130px line and nudges the rail's own
-  scrollbox to keep it visible. It works and it is plain. **Not a bug — an open design brief**, so it
-  wants options put in front of him before anything is built (`feedback_ask_before_visual_rework`).
-  Constraints that are already load-bearing and must survive any redesign: the index is rendered
-  TWICE (desktop rail + mobile `.msecd`) and tracking keys on section ID, never on an index into a flat
-  slot list, because whichever copy sits later in the DOM would otherwise win; the rail must not become
-  a second scrollbar; and its containing block is `.cols`, not `.page`, which is what stops it
-  travelling into the footer. Sections are now wrapped in `<section class="dsec">` by `sectionise()`
-  and each heading is sticky, so a redesign has structure to work with that it did not have before.
+- `[P2 · M · 🧩needs-design]` **Legal site: redesign the section scrollspy.** *Filed 2026-08-01 22:05 EDT, from Harkirat's desktop pass.* His words: "While I love that you implemented a scrollspy, I feel like you could improve its design, functionality and animation. Please get creative and think outside the box for something more unique." What exists today is `.rail` in `scripts/buildLegalPages.js` — a sticky left column of numbered slots, tracked by the `paint()` loop in the legal shell's scroll script, which highlights the slot whose heading last crossed a 130px line and nudges the rail's own scrollbox to keep it visible. It works and it is plain. **Not a bug — an open design brief**, so it wants options put in front of him before anything is built (`feedback_ask_before_visual_rework`). Constraints that are already load-bearing and must survive any redesign: the index is rendered TWICE (desktop rail + mobile `.msecd`) and tracking keys on section ID, never on an index into a flat slot list, because whichever copy sits later in the DOM would otherwise win; the rail must not become a second scrollbar; and its containing block is `.cols`, not `.page`, which is what stops it travelling into the footer. Sections are now wrapped in `<section class="dsec">` by `sectionise()` and each heading is sticky, so a redesign has structure to work with that it did not have before.
 
-- `[P2 · M · 🧩needs-design · 🔗bundle]` **Legal site: use the fluid morph on something other than the
-  nav.** *Filed 2026-08-01 22:05 EDT, from the same pass.* His words: "I also want to sprinkle our
-  fluid morphing animation/system to some other elements in the website so it doesn't feel like a
-  standalone design choice. Idk where but if we get an opportunity, let me know." So the deliverable is
-  first a **shortlist of candidate surfaces with a recommendation**, not an implementation.
-  ⛔ **THE SCROLLSPY IS RULED OUT AS A MORPH TARGET — Harkirat, 2026-08-02 23:40 EDT:** *"no dont use
-  the morph for the scrollspy, i plan to make you properly dehaul/redesign that scrollspy in the
-  future anyway."* This item used to say it "bundles naturally with the scrollspy item above, which is
-  the most obvious candidate surface"; that is now **false** and the bundle is broken. The scrollspy
-  redesign above stands entirely on its own.
+- `[P2 · M · 🧩needs-design · 🔗bundle]` **Legal site: use the fluid morph on something other than the nav.** *Filed 2026-08-01 22:05 EDT, from the same pass.* His words: "I also want to sprinkle our fluid morphing animation/system to some other elements in the website so it doesn't feel like a standalone design choice. Idk where but if we get an opportunity, let me know." So the deliverable is first a **shortlist of candidate surfaces with a recommendation**, not an implementation. ⛔ **THE SCROLLSPY IS RULED OUT AS A MORPH TARGET — Harkirat, 2026-08-02 23:40 EDT:** *"no dont use the morph for the scrollspy, i plan to make you properly dehaul/redesign that scrollspy in the future anyway."* This item used to say it "bundles naturally with the scrollspy item above, which is the most obvious candidate surface"; that is now **false** and the bundle is broken. The scrollspy redesign above stands entirely on its own.
   ---
-  🔴 **STATUS 2026-08-03 08:29 EDT — THREE DESIGNS BUILT, ALL THREE REJECTED. Read this before
-  proposing a fourth.** Work happened in a PoC artifact that clones the real landing page (built by
-  `local/`-side scratch files, never committed; the repo carries none of it, and `stash@{0}` is a
-  first-draft generator version that is now three designs stale — **drop it, do not pop it**).
-  - **Rejected — 7px travelling bar.** *"the bar and the morph feel like 2 different elements stacked
-    on top of each other instead of 1 build morph."* A sliver has almost no area, so the crush paints
-    it as a hard stick and the droplets beside it read as a separate particle layer.
-  - **Rejected — 40px capsule carrying the row number.** *"arguably worse and a very lazy attempt at
-    utilizing the animation. its not creative at all."* Bar→capsule is the same idea twice: **a blob
-    that translates between slots**, which is what the nav already does. Translation is spoken for.
-  - **Rejected — the row hairline as nine overlapping segments that bead apart and ripple.**
-    *"SOOO unrefined and choppy. the complete opposite of fluid morph."* The IDEA was sound (fission/
-    fusion rather than translation) but the MEDIUM cannot carry it, and that is the reusable finding:
-    it was N rigid rectangles translating on staggered delays with a blur asked to hide that they are
-    rigid. It cannot. Overlapping them fixes the seam at rest and is worse in motion.
-  - ✅ **What DID work and should survive into any next attempt:** the **reveal-toggle fission** (one
-    blob splits into two as the disclosure opens, bridge thinning 9px→0 as the halves reach ±13px,
-    re-merging on close) and the **back-to-top coalescence + click burst**. Both verified in-browser.
+  🔴 **STATUS 2026-08-03 08:29 EDT — THREE DESIGNS BUILT, ALL THREE REJECTED. Read this before proposing a fourth.** Work happened in a PoC artifact that clones the real landing page (built by `local/`-side scratch files, never committed; the repo carries none of it, and `stash@{0}` is a first-draft generator version that is now three designs stale — **drop it, do not pop it**).
+  - **Rejected — 7px travelling bar.** *"the bar and the morph feel like 2 different elements stacked on top of each other instead of 1 build morph."* A sliver has almost no area, so the crush paints it as a hard stick and the droplets beside it read as a separate particle layer.
+  - **Rejected — 40px capsule carrying the row number.** *"arguably worse and a very lazy attempt at utilizing the animation. its not creative at all."* Bar→capsule is the same idea twice: **a blob that translates between slots**, which is what the nav already does. Translation is spoken for.
+  - **Rejected — the row hairline as nine overlapping segments that bead apart and ripple.** *"SOOO unrefined and choppy. the complete opposite of fluid morph."* The IDEA was sound (fission/ fusion rather than translation) but the MEDIUM cannot carry it, and that is the reusable finding: it was N rigid rectangles translating on staggered delays with a blur asked to hide that they are rigid. It cannot. Overlapping them fixes the seam at rest and is worse in motion.
+  - ✅ **What DID work and should survive into any next attempt:** the **reveal-toggle fission** (one blob splits into two as the disclosure opens, bridge thinning 9px→0 as the halves reach ±13px, re-merging on close) and the **back-to-top coalescence + click burst**. Both verified in-browser.
   - 📐 **The rule this settled, now recorded as a case in `reference_goo_metaball_recipe`:** DOM boxes
-    + `#dbgoo` can do **2–4 compact masses merging and parting at short range**; they **cannot** do a
-    body of liquid deforming, a line breaking into a wave, or anything spanning hundreds of px. That
-    needs the isosurface computed per frame — a canvas scalar field or a per-frame SVG path.
-    **Ask which of the two kinds a candidate surface is before designing for it.** All three rejects
-    were the second kind attempted with the first kind's tools.
-  - **Next decision (Harkirat's, not a build task):** accept the medium's ceiling and use the effect
-    only where a few masses merge at close range, **or** move to a canvas metaball field for anything
-    meant to read as actual liquid. Verify any future attempt the way these were: drive the animation
-    from the console and assert the *shape* changes frame to frame (neck width crossing the 4.5px
-    paint floor, per-move re-rolled randomisation), never by eye alone.
-  - 🔬 **A WORKING PoC EXISTS — resume from it, do not restart.** *2026-08-03 09:54 EDT.* Artifact
-    (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`.
-    It clones the real landing page and layers the effects on. Sources now live in
-    **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full
-    map, build command and per-item diagnosis in **`local/handoff/2026-08-03-morph-poc-handoff.md`**.
-    ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location
-    a later session can find.** The next session had to hunt through
-    `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is
-    gitignored, so nothing about the repo changes, but the files survive the session that made them.
-    ⚠️ That handoff is in gitignored `local/` and can vanish, so the load-bearing parts are duplicated
-    here rather than referenced.
-    - ✅ **ACCEPTED by Harkirat: the liquid cursor.** It REPLACES the native pointer (`cursor:none`,
-      restored on toggle-off / pointerleave / tab hidden — never on `blur`, which any screen recorder
-      trips). Seven orbiting masses, tight tracking, deforms to an I-beam over prose and a halo over
-      controls, `position:fixed` + client coords so no scroll term can be wrong.
-    - ✅ **RESOLVED 2026-08-03 10:10 EDT — reveal pill invisible when closed.** The goo layer was
-      appended to `<details>`, and a *closed* `<details>` renders no child but `<summary>`. Moved to
-      `.rev`'s parent (`.foot`, `position:relative`), inserted BEFORE `.rev` so tree order keeps the
-      panel painted over it, and all coordinates measured against that host. **Verified by looking at
-      the closed control** — the inline styles had read perfect twice against a blank screen.
-    - ✅ **RESOLVED 2026-08-03 10:30 EDT — but NOT by the fix written here, and the redirect is the
-      lesson.** This said to drop the rect and trace the perimeter with ~32 blobs. That was built, and
-      Harkirat rejected it on sight: *"you're applying the fluid morph to the borders of the
-      rectangular card, when in fact you should scrap the rectangle and make the literal spill its
-      background element, unrestricting its shape."* Correct — **morphing a rectangle's BORDER still
-      leaves a rectangle.** The panel now gives up its background, border and radius entirely and the
-      spill IS its ground: a ring of discs seated on a path inset by the blob radius (the silhouette)
-      plus a spine down the middle (the fill), every mass ordered by straight-line distance from where
-      the spout lands, so the liquid spreads outward from the landing point.
-      Retuned once more after *"too large, too bright, too many bubbly surfaces… smoother, less curves
-      but larger curves, a natural background element rather than a show piece"*: `OUT` 10→4, `RB`
-      22→34, `SPACE` 13→26 (78 masses → 34, larger radii = longer flatter arcs), jitter roughly halved,
-      and the body **soaks** from full accent toward the panel's own `--raised` as it lands. That last
-      part also removed a problem instead of solving it — at full accent the body text had to be
-      knocked out to a luminance-computed near-black; over a quarter-accent wash the site's own ink
-      reads fine.
-    - ✅ **RESOLVED 2026-08-03 10:26 EDT — back-to-top reappearing after a tap, and it was never what
-      two previous fixes assumed.** Both earlier attempts chased a second *birth* (a `settling` flag,
-      then re-arm at `scrollY < 4`). Instrumenting the live control settled it: `on` is **never**
-      re-added after a launch, but computed opacity ran 0.91 → 0.33 → 0.02 between 604ms and 846ms.
-      Removing `on` and `birth` in one statement hands the fade to the `.totop` transition — and
-      `birth` is also what hides `.tt-ring`/`.tt-ar`, so for ~300ms after the liquid flew away the real
-      button chrome popped back and faded out behind it. Fix: drop `on` while `birth` still applies
-      (`.totop.birth` carries `transition:none`, so it goes to 0 instantly), flush with
-      `void tt.offsetWidth`, then drop `birth`. Re-measured: opacity 0 from 604ms onward.
-    - ✅ **ADDED 2026-08-03 10:33 EDT — the liquid cursor tints to the surface under it**, easing back
-      to the page accent on the way out. ⚠️ Only possible because `#dbgoo-p` is an **SVG alpha matrix**
-      that leaves RGB alone; the CSS blur/contrast crush drives every channel to 0 or 1 and would map
-      amber and lime to the same yellow. Surfaces announce themselves three different ways and
-      assuming one left two of them flat — the rows scope `--accent`, the `.inv` cards scope **`--ia`**
-      (`#8B9BFF`, `#F8FF4A`) and leave `--accent` at the page value, and the GitHub button scopes no
-      variable at all (its colour is its own `color`). Resolver runs most-local-first and compares
-      `--accent` against the PAGE value rather than merely reading it. ⚠️ A control's own `color` is
-      **not** always wearable: the back-to-top computes to `rgb(0,0,0)` and turned the swarm black on
-      hover, so a candidate is rejected unless it clears 1.6:1 against the page ground — a contrast
-      test, not a darkness test, so it holds in both themes.
-    - ✅ **ROUND 3, 2026-08-03 11:00 EDT — four more, all verified against a live renderer.**
-      · **Mark**: rests as a soft-cornered RECTANGLE (`26%`) and *breaks away* on hover — its own
-      eight-value `border-radius` is driven per frame, so the silhouette deforms instead of the box
-      being scaled. The old read was exact: *"it literally just feels like it's being stretched out
-      towards the left/right and then pulled back in."* Buds now ORBIT (measured 15.6 × 15.7px of
-      travel, was 4.1 × 0.8 — a slide with a curve on it). ⚠️ The orbit rate has to be its own
-      constant; deriving it from the radius clock gave ~0.86 rad/s and looked static.
-      · **Spill**: 19 masses (from 34, from 78). The wavefront is now ANISOTROPIC (`WX 0.52 / WY
-      1.35`) — a plain radial spread grows a circle from the landing point, which is precisely what a
-      falling drop looks like and was read as *"looks like a droplet than a spill."*
-      · **Close bug**: the soak was computed straight from `t`, so closing drove `t` back under 0.5
-      and the body UN-soaked to full accent while leaving — the *"changes colors to a vibrant orange
-      and gets stuck on screen."* It latches now; the text was also held to `fill 0.12` so body and
-      copy empty out together (measured: masses 0 and textOp 0 both by t=306ms), and the close is
-      300ms not 420ms.
-      · **PoC 05 — the header buttons as liquid**, with the shipped pair beside them to compare. The
-      core keeps the control's box (a button has a label and a hit area, unlike a puddle) and the
-      liquid happens at the EDGE. ⚠️ `computer hover` cannot drive a real CSS `:hover` in this
-      harness, so the capsule's 32→108px expansion is UNCONFIRMED by automation — verified only that
-      the masses animate and the core's radius varies under a dispatched `pointerenter`.
-    - ⚠️ **THE TINT RESOLVER TOOK THREE PASSES AND THE MIDDLE ONE MADE IT WORSE — the reusable bit is
-      why.** Pass 2 dropped a "must differ from body ink" guard to fix the GitHub button flashing
-      white then reverting to orange (`.ghb:hover` resolves to `var(--ink)`, which IS `document.body`'s
-      colour, so the guard accepted the mid-transition values and refused the destination). Dropping it
-      fixed that and immediately turned the swarm near-white over the Terms row and over the reveal's
-      `<summary>`, because **row 01's scoped `--accent` equals the page accent**, so it falls past the
-      accent check into the borrow-the-control's-`color` step. **Judging by COLOUR cannot separate
-      these cases** — the GitHub button's wanted colour and the row's unwanted one are both
-      `--ink`-family. Judging by whether the element paints its own CHIP can: borrow a control's ink
-      only if it has a real border or background. Verified across all eight surfaces at once by
-      calling the resolver directly rather than hit-testing, after two earlier probes failed for
-      positional reasons and not logical ones.
-    - ✅ **ROUND 4, 2026-08-03 11:27 EDT — eight more. Three findings are reusable:**
-      · **A shape smaller than ~4× the blur's σ cannot keep its own geometry — the crush owns the
-      silhouette.** The resting mark would not read as a rectangle at ANY radius, because a 14×6.5 box
-      meets `#dbgoo-r`'s σ=3.2 blur (half its own height) and the alpha crush then thresholds what
-      survives. Nothing about the radius was wrong; it was being destroyed downstream. Fixed by
-      drawing the resting shape as **`.rv-plate`, a plain UNFILTERED element**, which hands over to
-      the filtered mark on wake — which is what "breaks away from the rectangle" actually means.
-      · **A ring of similar masses around a perimeter is a CLOUD, by construction.** Many convex bumps
-      of similar size is what a cloud *is*, and that is exactly how it was read. A body of liquid has
-      long smooth runs and a couple of gentle waists, so the silhouette must come from a FEW large
-      overlapping masses of UNEQUAL size, where most of the boundary is one mass's arc. **Count
-      creates cloudiness; asymmetry creates character.** Ring, end caps and spine are all gone —
-      three masses, no interior fill needed.
-      · **Use ELLIPSES on a wide surface.** Covering a 3.6:1 panel's CORNERS with circles forces a
-      radius so large the body overshot by 40–73px a side (measured). Ellipses matched to the panel's
-      aspect cover the same copy at ~33/31/17/23px. And **derive rx/ry from where the COPY ends, not
-      from the panel box**: two conditions must hold at the copy's top edge, where the ellipses are
-      narrowest — neighbours must still overlap there, and the outermost must still reach the first
-      character. Both are solved for. Verified 0 uncovered points of 546 sampled, repeatedly.
-      · Also: arc-length seating **cannot be trusted to reach a path's extremes** (a flattened path's
-      side segments have zero length, so the extremes survive only as ~4px arcs — 25px of a 553px
-      perimeter — and evenly-spaced masses skipped them, leaving the body 5.6px *inside* the panel's
-      left edge). Superseded by the three-ellipse layout, but the lesson stands for any future path
-      seating. The `slide` is outward-only; the copy is tied to `fill` with **no floor** so the last
-      mass and the last of the text go together; the mark **drains into the body** leaving a 6.5×5.5
-      remnant; open takes 1100ms; mark rates ×0.7; label reads **"Hide"** and "Prefer email?" takes a
-      **strike-through** while open. PoC 05 went 14 small fast masses → 6 large slow ones, because
-      many small masses on independent clocks is *boiling*, not morphing.
-    - 🔴 **ROUND 5, 2026-08-03 11:43 EDT — THE MOBILE PASS, AND IT INVALIDATED THE WHOLE APPROACH FOR
-      THE BODY. Read this before building any further surface.** Every effect had been built on SVG
-      `filter:url()`, and on a phone the reveal showed as *"3 balls orbiting the rectangle"* with the
-      card as *"3 large circles — an even worse cloud"*. Contact sheets off two screen recordings
-      (`ffmpeg select+tile`) show discrete hard-edged circles that never merge.
-      · **This was already written down and I built past it.** Dead end 3 in
-      [[reference_goo_metaball_recipe]]: *"SVG filters read as hard circles on iOS where the CSS chain
-      reads as liquid — never reproduced on desktop Chrome."* CLAUDE.md says the same: desktop uses
-      the SVG alpha crush and mobile uses the CSS crush, **deliberately and separately**.
-      · **AND THERE IS A SECOND, SCALE-DEPENDENT REASON THE UNION APPROACH COULD NEVER WORK HERE.**
-      The alpha crush composites overlapping OPAQUE shapes to alpha 1 *before* the blur, so σ only
-      softens the OUTER boundary. Masses must be small relative to σ to merge at all; at ~100px, σ=3.2
-      is invisible and what you see is the plain geometric union — which is why three ellipses read as
-      three tangent circles with cusps no matter how they were tuned. **The rule to carry forward:
-      metaball merging is a function of mass size ÷ σ, not of spacing.**
-      · **Fix: the body is now ONE `<path>` recomputed every frame** — a superellipse
-      (`|x/A|^n + |y/B|^n = 1`, n≈4, which hugs a 3.6:1 panel where an ellipse overshoots) with three
-      low harmonics riding on it, sampled at 30 points and emitted as closed Catmull-Rom → cubic
-      Béziers. `A`/`B` are **solved** so the copy sits inside the contour at its thinnest, worst-case
-      harmonic dip divided out. No filter, nothing to merge — so the iOS failure and the cusp failure
-      both disappear at once, and it is finally *one large smooth fluid blob*.
-      · **The filtered layers now stand down on touch** (`!fine`): the reveal keeps its crisp plate as
-      the mark, the back-to-top uses the plain control, and the button PoC drops its goo. The
-      progress ring is **clamped** — iOS rubber-banding reports scrollY below 0 and past `docMax`, and
-      the URL bar showing/hiding changes `innerHeight` mid-scroll, which is the "resets the circle
-      outline" report.
-      · ⚠️ **A sibling does not inherit a custom property.** `--rv-body` was being set on the goo
-      layer while the new path lives in a sibling `<svg>`, so the body rendered at full accent instead
-      of its soaked colour. Set it on the shared host.
-      · **Still filtered, so still wrong on iOS:** the mark's buds and the button PoC. They are hidden
-      on touch rather than ported to the CSS crush — porting them needs the bed + blend recipe
-      (opaque backdrop, `lighten`/`multiply`), which is a separate job.
-    - ✅ **ROUND 6, 2026-08-03 11:58 EDT — four fixes, and one of them is a process lesson.**
-      · **"Too smooth / no dynamic element" was the RATES, not the amplitudes.** The harmonics ran at
-      0.33–0.73 rad/s — 9 to 19 SECONDS for one circuit — so in any glance the outline was effectively
-      static (measured: 4.3px of vertex travel over 10 frames). At ~2.4× it is 14.3px/s and 19.5px
-      over 2s, with the four waves beating against each other because no two rates share a factor.
-      · **"Overly large" was the EXPONENT.** Covering a wide panel's corners is what drives overshoot,
-      and the superellipse exponent controls exactly that: at n=4 the contour needed A=198 against a
-      182 half-width; at n≈5 it needs 184. Margins went 41/18/22/29 → 15/12/6/7. **Raising n is free
-      — a squircle still reads smooth.** A second lever: making the harmonics **outward-only** removes
-      the ~13% inflation that existed purely so the smallest moment still cleared the text.
-      · **"The mark doesn't change on mobile" was MY OWN GUARD, and it is the lesson.** I had gated the
-      mark behind `fine` because its filtered buds render as hard circles on iOS. That hid the broken
-      layer *and* every awake state with it — the mark simply stayed a rectangle forever. ⚠️ **Hiding
-      a surface from the platform that cannot render it is not a fix.** The mark is now a computed
-      path like the body, so nothing under `.rev` is filtered and touch gets exactly what desktop
-      gets. `#dbgoo-r` is deleted; do not re-add it.
-      · **Same mistake, same fix, on the back-to-top:** the earlier pass skipped the whole coalescence
-      on a coarse pointer, which quietly removed the particle animation from mobile. Now only the
-      FILTER is dropped there (`.totop.nogoo`), so the droplets still converge — crisp rather than
-      liquid, an honest downgrade, but a real animation that cannot produce the artefact.
-      · **The stuck "gradient circle" was the filter REGION.** `#dbgoo-c` is 260% of a 44px layer —
-      a ~114px disc, which is the size of the thing that was showing. `opacity:0` does not prevent
-      that: the element is still in the paint tree and a filtered one still allocates its region.
-      `.tt-ink` now carries `visibility:hidden` between births. Verified nothing paints for 2.5s after
-      a tap, with the filter off.
-    - ⛔ **THE CSS CRUSH DOES NOT TRANSFER TO THE BACK-TO-TOP — built, measured, reverted
-      2026-08-03 12:03 EDT. Do not re-attempt without reading this.** Two rounds of notes here said
-      "the full fix is the CSS blur/contrast crush with the bed + blend recipe, a separate job". It
-      was built. **The masses merged correctly — the crush is fine — and the black bed rendered as a
-      solid square.** The recipe's precondition is an opaque backdrop with *no isolating ancestor*
-      between the blend group and it; `.totop` is `position:fixed; z-index:55`, so it is its own
-      stacking context and `mix-blend-mode:lighten` composites inside it, against a background that
-      `.birth` sets transparent. Black against nothing stays black. Nor can it be patched by giving
-      the button an opaque background: the bed is inset −90px, far outside a 46px control.
-      **The nav works because it sits ON a bar; a floating control has no surface to sit on.** The
-      recipe memory's "no scroll container between it and that backdrop" was too narrow and has been
-      corrected. Coarse pointers therefore keep the unfiltered droplets — crisp circles converging,
-      an honest downgrade chosen over the iOS artefact and over removing the animation entirely.
-    - 🛑 **THE CARD SURFACE IS ABANDONED — Harkirat, 2026-08-03 12:05 EDT: "just revert it back to the
-      old card style."** Four rounds of rework (perimeter ring → three ellipses → one computed
-      superellipse path) never got it past "bad on mobile", and the spill apparatus is gone with it:
-      body path, resting plate, spout, beads, drain-to-a-remnant, soak colour, wavefront. `.rv-b` is
-      the shipped panel again, untouched. **The findings above are kept because they are platform
-      facts worth having, not because the surface is coming back.**
-      **What survives, and is the thing to port:** the mark's own morph (the filtered core with an
-      eight-value per-frame border-radius plus three orbiting buds — the version he called *"very well
-      done and truly morphing"*), the **Reveal → Hide** label, and the **strike-through** on the
-      question once it is answered. The mark no longer pours: it is a control's indicator, not the
-      source of a liquid.
-      ⚠️ `#dbgoo-r` is BACK — the buds merging is the one thing here that genuinely needs the filter.
-      That re-accepts the iOS hard-circle trade on this surface, knowingly.
-      ⚠️ Back-to-top on touch: **birth dropped, destruction kept.** Narrower than the earlier guard,
-      which skipped both and quietly took the whole effect off mobile.
-    - ✅ **SHIPPED TO THE LIVE SITE 2026-08-03 13:08 EDT — six surfaces, ported out of the PoC into
-      `scripts/buildLegalPages.js` + `scripts/lib/chronicle.js`.** The PoC is now history; the code
-      lives in `MORPH_JS` (four self-selecting modules), `GOO_SVG` (three new filters beside the
-      nav's) and `COMPONENT_CSS`. `local/morph-poc/` is kept only as the record of how it was found.
-      - **What shipped:** the reveal's morphing mark (desktop) with **Reveal → Hide** and the
-        strike-through · the GitHub-button alignment fix · the liquid cursor site-wide · the
-        scroll-linked landing rows **extended to the `.inv` tickets** · back-to-top birth +
-        destruction. The header buttons stayed **as shipped** — PoC 05 was deliberately not ported.
-      - **Every number below was measured against a live renderer, not read off the styles.**
-        Mark morph **3.65** mean shape-change per 0.14s across the eight radii (3.67 predicted, 3.63
-        in the PoC) with the radii spanning 51.9 points awake and collapsing to a flat `50%` asleep ·
-        cursor tint correct on **all seven** surfaces at once, including row 01 whose scoped
-        `--accent` equals the page accent · click burst leaves the tip at **11.02px painted** against
-        a 4.5px floor while trailing masses fall to 1.1px and fly 109px · back-to-top opacity **0 at
-        855ms and never returning** (the bug that survived two fixes) · the GitHub mark now sits
-        **dead centre**, 4px each side, where it used to hang 3.2px outside its own button.
-      - ⚠️ **`.on` ON THE BACK-TO-TOP MOVED OWNERS, and both hosts had to change.** `shell()`'s
-        inline script and `chronicle.js`'s each toggled it from their own scroll handler; a birth
-        animates across ~42 frames, so two writers fought every one of them. `MORPH_JS` owns `.on`,
-        the click and the reduced-motion `fire` fallback now; the hosts keep only the ring's progress
-        and the `--lift` that parks the button above the footer. **If a third template ever grows a
-        `.totop`, it inherits the behaviour by having the button — do not re-add a toggle.**
-      - ⚠️ **The landing page had NO `GOO_SVG` at all** — it is the one template that never carried
-        the filter defs, because it has no nav bar to put an indicator in. It needs them now.
-      - ⚠️ **Verification could not use the visible browser and the reason is worth keeping.** The
-        in-app preview pane AND real Chrome both reported `document.hidden` with **0 rAF frames in
-        2s**, and `screencapture -x` failed with *"could not create image from display"* — the
-        documented tell for a sleeping display. Waking it fixed the desktop passes. The **coarse-
-        pointer and reduced-motion branches cannot be reached by resizing a window** (`fine` is what
-        gates them, not width), so they were driven through **CDP `Emulation.setEmulatedMedia`** on a
-        headless Chromium — real media engine, real frame loop. Scripts kept in the session
-        scratchpad pattern `emulate.ts` + `probe-*.js`; re-create rather than hunt for them.
-      - ⚠️ **No regexes in `MORPH_JS`, deliberately.** It is emitted from inside a template literal,
-        where the generator eats a lone backslash — an escaped paren written in the source reaches
-        the page as a bare paren, turning it into a capture group. That changes a regex's MEANING
-        without changing its syntax, so `scriptSyntaxAudit()` cannot catch it. Colour parsing is
-        hand-scanned instead. (The related backtick-in-a-CSS-comment trap fired twice during this
-        port, exactly as documented; `node --check` caught both.)
-    - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the
-      tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea:
-      extra temporary shards that fly further and evaporate, plus a core implosion that springs back
-      past its resting size.
-    - `[P2 · M]` **Reduce-motion toggle**, explicitly queued by Harkirat for after the above: turns the
-      morph off site-wide, reverts the homepage rows to their original bar/hue with no animation, and
-      switches the nav to plain pills.
-  - ⚠️ **HOW TO VERIFY ANIMATION AT ALL — this cost most of a session.** Chrome pauses its render loop
-    when the window is backgrounded: `requestAnimationFrame` never fires, CSS transitions never
-    advance, `document.timeline.currentTime` stays 0. Reading computed/inline styles then "passes"
-    while the screen shows nothing. **Run `open -a "Google Chrome"` first, then assert rAF is alive
-    before trusting any visual check.**
-    ⚠️ **A SLEEPING DISPLAY PRESENTS IDENTICALLY — 2026-08-03 10:05 EDT, several turns lost.**
-    `document.hidden` was `true` and rAF dead while AppleScript correctly reported Chrome frontmost
-    with the right tab active, so "front the window" looked done and wasn't. **The tell is that
-    `screencapture -x` fails with *"could not create image from display"*.** Wake the display, then
-    re-assert. Assert with TWO consecutive rAF timestamps, not one callback — a single frame can fire
-    once without the loop advancing.
-    ⚠️ **And instrumenting the page beat recording it.** Reading numbers across frames from inside the
-    page — blob count, radii, neighbour gaps, computed opacity per frame — found every defect this
-    session: a radius under the paint floor, the back-to-top fade misdiagnosed twice as a re-birth,
-    and a hit test silently returning `null` because the target was off-screen. Screenshots then
-    confirmed the look. One caution learned the same day: a failing *probe* is not a failing
-    *feature* — the GitHub button was reported as "not tinting" when in fact the pointer could never
-    be over it. For motion, take a screen recording and read consecutive
-    frames (`ffmpeg -vf "select=...,tile=NxM"` into a contact sheet) — that method found every real
-    defect here; eyeballing and style-reading found none.
-  ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the
-  SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately
-  (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a
-  fitted filter chain; and the geometry constants are MEASURED against the renderer, not derived — see
-  `reference_goo_metaball_recipe` and `feedback_measure_the_renderer_not_the_model`. Any new surface
-  with a different element height needs its dilation re-measured with the canvas method.
+    + `#dbgoo` can do **2–4 compact masses merging and parting at short range**; they **cannot** do a body of liquid deforming, a line breaking into a wave, or anything spanning hundreds of px. That needs the isosurface computed per frame — a canvas scalar field or a per-frame SVG path. **Ask which of the two kinds a candidate surface is before designing for it.** All three rejects were the second kind attempted with the first kind's tools.
+  - **Next decision (Harkirat's, not a build task):** accept the medium's ceiling and use the effect only where a few masses merge at close range, **or** move to a canvas metaball field for anything meant to read as actual liquid. Verify any future attempt the way these were: drive the animation from the console and assert the *shape* changes frame to frame (neck width crossing the 4.5px paint floor, per-move re-rolled randomisation), never by eye alone.
+  - 🔬 **A WORKING PoC EXISTS — resume from it, do not restart.** *2026-08-03 09:54 EDT.* Artifact (same URL on every republish): `https://claude.ai/code/artifact/f198f8ce-b35f-4532-8f53-c5023b179284`. It clones the real landing page and layers the effects on. Sources now live in **`local/morph-poc/`** (`compose.mjs` + `morph.css` + `morph.js` → `morph-poc.html`), with a full map, build command and per-item diagnosis in **`local/handoff/2026-08-03-morph-poc-handoff.md`**. ⚠️ **They were moved there 2026-08-03 10:37 EDT because "the session scratchpad" is not a location a later session can find.** The next session had to hunt through `/private/tmp/claude-501/.../<dead-session-id>/scratchpad/` to recover them. `local/` is gitignored, so nothing about the repo changes, but the files survive the session that made them. ⚠️ That handoff is in gitignored `local/` and can vanish, so the load-bearing parts are duplicated here rather than referenced.
+    - ✅ **ACCEPTED by Harkirat: the liquid cursor.** It REPLACES the native pointer (`cursor:none`, restored on toggle-off / pointerleave / tab hidden — never on `blur`, which any screen recorder trips). Seven orbiting masses, tight tracking, deforms to an I-beam over prose and a halo over controls, `position:fixed` + client coords so no scroll term can be wrong.
+    - ✅ **RESOLVED 2026-08-03 10:10 EDT — reveal pill invisible when closed.** The goo layer was appended to `<details>`, and a *closed* `<details>` renders no child but `<summary>`. Moved to `.rev`'s parent (`.foot`, `position:relative`), inserted BEFORE `.rev` so tree order keeps the panel painted over it, and all coordinates measured against that host. **Verified by looking at the closed control** — the inline styles had read perfect twice against a blank screen.
+    - ✅ **RESOLVED 2026-08-03 10:30 EDT — but NOT by the fix written here, and the redirect is the lesson.** This said to drop the rect and trace the perimeter with ~32 blobs. That was built, and Harkirat rejected it on sight: *"you're applying the fluid morph to the borders of the rectangular card, when in fact you should scrap the rectangle and make the literal spill its background element, unrestricting its shape."* Correct — **morphing a rectangle's BORDER still leaves a rectangle.** The panel now gives up its background, border and radius entirely and the spill IS its ground: a ring of discs seated on a path inset by the blob radius (the silhouette) plus a spine down the middle (the fill), every mass ordered by straight-line distance from where the spout lands, so the liquid spreads outward from the landing point. Retuned once more after *"too large, too bright, too many bubbly surfaces… smoother, less curves but larger curves, a natural background element rather than a show piece"*: `OUT` 10→4, `RB` 22→34, `SPACE` 13→26 (78 masses → 34, larger radii = longer flatter arcs), jitter roughly halved, and the body **soaks** from full accent toward the panel's own `--raised` as it lands. That last part also removed a problem instead of solving it — at full accent the body text had to be knocked out to a luminance-computed near-black; over a quarter-accent wash the site's own ink reads fine.
+    - ✅ **RESOLVED 2026-08-03 10:26 EDT — back-to-top reappearing after a tap, and it was never what two previous fixes assumed.** Both earlier attempts chased a second *birth* (a `settling` flag, then re-arm at `scrollY < 4`). Instrumenting the live control settled it: `on` is **never** re-added after a launch, but computed opacity ran 0.91 → 0.33 → 0.02 between 604ms and 846ms. Removing `on` and `birth` in one statement hands the fade to the `.totop` transition — and `birth` is also what hides `.tt-ring`/`.tt-ar`, so for ~300ms after the liquid flew away the real button chrome popped back and faded out behind it. Fix: drop `on` while `birth` still applies (`.totop.birth` carries `transition:none`, so it goes to 0 instantly), flush with `void tt.offsetWidth`, then drop `birth`. Re-measured: opacity 0 from 604ms onward.
+    - ✅ **ADDED 2026-08-03 10:33 EDT — the liquid cursor tints to the surface under it**, easing back to the page accent on the way out. ⚠️ Only possible because `#dbgoo-p` is an **SVG alpha matrix** that leaves RGB alone; the CSS blur/contrast crush drives every channel to 0 or 1 and would map amber and lime to the same yellow. Surfaces announce themselves three different ways and assuming one left two of them flat — the rows scope `--accent`, the `.inv` cards scope **`--ia`** (`#8B9BFF`, `#F8FF4A`) and leave `--accent` at the page value, and the GitHub button scopes no variable at all (its colour is its own `color`). Resolver runs most-local-first and compares `--accent` against the PAGE value rather than merely reading it. ⚠️ A control's own `color` is **not** always wearable: the back-to-top computes to `rgb(0,0,0)` and turned the swarm black on hover, so a candidate is rejected unless it clears 1.6:1 against the page ground — a contrast test, not a darkness test, so it holds in both themes.
+    - ✅ **ROUND 3, 2026-08-03 11:00 EDT — four more, all verified against a live renderer.** · **Mark**: rests as a soft-cornered RECTANGLE (`26%`) and *breaks away* on hover — its own eight-value `border-radius` is driven per frame, so the silhouette deforms instead of the box being scaled. The old read was exact: *"it literally just feels like it's being stretched out towards the left/right and then pulled back in."* Buds now ORBIT (measured 15.6 × 15.7px of travel, was 4.1 × 0.8 — a slide with a curve on it). ⚠️ The orbit rate has to be its own constant; deriving it from the radius clock gave ~0.86 rad/s and looked static. · **Spill**: 19 masses (from 34, from 78). The wavefront is now ANISOTROPIC (`WX 0.52 / WY 1.35`) — a plain radial spread grows a circle from the landing point, which is precisely what a falling drop looks like and was read as *"looks like a droplet than a spill."* · **Close bug**: the soak was computed straight from `t`, so closing drove `t` back under 0.5 and the body UN-soaked to full accent while leaving — the *"changes colors to a vibrant orange and gets stuck on screen."* It latches now; the text was also held to `fill 0.12` so body and copy empty out together (measured: masses 0 and textOp 0 both by t=306ms), and the close is 300ms not 420ms. · **PoC 05 — the header buttons as liquid**, with the shipped pair beside them to compare. The core keeps the control's box (a button has a label and a hit area, unlike a puddle) and the liquid happens at the EDGE. ⚠️ `computer hover` cannot drive a real CSS `:hover` in this harness, so the capsule's 32→108px expansion is UNCONFIRMED by automation — verified only that the masses animate and the core's radius varies under a dispatched `pointerenter`.
+    - ⚠️ **THE TINT RESOLVER TOOK THREE PASSES AND THE MIDDLE ONE MADE IT WORSE — the reusable bit is why.** Pass 2 dropped a "must differ from body ink" guard to fix the GitHub button flashing white then reverting to orange (`.ghb:hover` resolves to `var(--ink)`, which IS `document.body`'s colour, so the guard accepted the mid-transition values and refused the destination). Dropping it fixed that and immediately turned the swarm near-white over the Terms row and over the reveal's `<summary>`, because **row 01's scoped `--accent` equals the page accent**, so it falls past the accent check into the borrow-the-control's-`color` step. **Judging by COLOUR cannot separate these cases** — the GitHub button's wanted colour and the row's unwanted one are both `--ink`-family. Judging by whether the element paints its own CHIP can: borrow a control's ink only if it has a real border or background. Verified across all eight surfaces at once by calling the resolver directly rather than hit-testing, after two earlier probes failed for positional reasons and not logical ones.
+    - ✅ **ROUND 4, 2026-08-03 11:27 EDT — eight more. Three findings are reusable:** · **A shape smaller than ~4× the blur's σ cannot keep its own geometry — the crush owns the silhouette.** The resting mark would not read as a rectangle at ANY radius, because a 14×6.5 box meets `#dbgoo-r`'s σ=3.2 blur (half its own height) and the alpha crush then thresholds what survives. Nothing about the radius was wrong; it was being destroyed downstream. Fixed by drawing the resting shape as **`.rv-plate`, a plain UNFILTERED element**, which hands over to the filtered mark on wake — which is what "breaks away from the rectangle" actually means. · **A ring of similar masses around a perimeter is a CLOUD, by construction.** Many convex bumps of similar size is what a cloud *is*, and that is exactly how it was read. A body of liquid has long smooth runs and a couple of gentle waists, so the silhouette must come from a FEW large overlapping masses of UNEQUAL size, where most of the boundary is one mass's arc. **Count creates cloudiness; asymmetry creates character.** Ring, end caps and spine are all gone — three masses, no interior fill needed. · **Use ELLIPSES on a wide surface.** Covering a 3.6:1 panel's CORNERS with circles forces a radius so large the body overshot by 40–73px a side (measured). Ellipses matched to the panel's aspect cover the same copy at ~33/31/17/23px. And **derive rx/ry from where the COPY ends, not from the panel box**: two conditions must hold at the copy's top edge, where the ellipses are narrowest — neighbours must still overlap there, and the outermost must still reach the first character. Both are solved for. Verified 0 uncovered points of 546 sampled, repeatedly. · Also: arc-length seating **cannot be trusted to reach a path's extremes** (a flattened path's side segments have zero length, so the extremes survive only as ~4px arcs — 25px of a 553px perimeter — and evenly-spaced masses skipped them, leaving the body 5.6px *inside* the panel's left edge). Superseded by the three-ellipse layout, but the lesson stands for any future path seating. The `slide` is outward-only; the copy is tied to `fill` with **no floor** so the last mass and the last of the text go together; the mark **drains into the body** leaving a 6.5×5.5 remnant; open takes 1100ms; mark rates ×0.7; label reads **"Hide"** and "Prefer email?" takes a **strike-through** while open. PoC 05 went 14 small fast masses → 6 large slow ones, because many small masses on independent clocks is *boiling*, not morphing.
+    - 🔴 **ROUND 5, 2026-08-03 11:43 EDT — THE MOBILE PASS, AND IT INVALIDATED THE WHOLE APPROACH FOR THE BODY. Read this before building any further surface.** Every effect had been built on SVG `filter:url()`, and on a phone the reveal showed as *"3 balls orbiting the rectangle"* with the card as *"3 large circles — an even worse cloud"*. Contact sheets off two screen recordings (`ffmpeg select+tile`) show discrete hard-edged circles that never merge. · **This was already written down and I built past it.** Dead end 3 in [[reference_goo_metaball_recipe]]: *"SVG filters read as hard circles on iOS where the CSS chain reads as liquid — never reproduced on desktop Chrome."* CLAUDE.md says the same: desktop uses the SVG alpha crush and mobile uses the CSS crush, **deliberately and separately**. · **AND THERE IS A SECOND, SCALE-DEPENDENT REASON THE UNION APPROACH COULD NEVER WORK HERE.** The alpha crush composites overlapping OPAQUE shapes to alpha 1 *before* the blur, so σ only softens the OUTER boundary. Masses must be small relative to σ to merge at all; at ~100px, σ=3.2 is invisible and what you see is the plain geometric union — which is why three ellipses read as three tangent circles with cusps no matter how they were tuned. **The rule to carry forward: metaball merging is a function of mass size ÷ σ, not of spacing.** · **Fix: the body is now ONE `<path>` recomputed every frame** — a superellipse (`|x/A|^n + |y/B|^n = 1`, n≈4, which hugs a 3.6:1 panel where an ellipse overshoots) with three low harmonics riding on it, sampled at 30 points and emitted as closed Catmull-Rom → cubic Béziers. `A`/`B` are **solved** so the copy sits inside the contour at its thinnest, worst-case harmonic dip divided out. No filter, nothing to merge — so the iOS failure and the cusp failure both disappear at once, and it is finally *one large smooth fluid blob*. · **The filtered layers now stand down on touch** (`!fine`): the reveal keeps its crisp plate as the mark, the back-to-top uses the plain control, and the button PoC drops its goo. The progress ring is **clamped** — iOS rubber-banding reports scrollY below 0 and past `docMax`, and the URL bar showing/hiding changes `innerHeight` mid-scroll, which is the "resets the circle outline" report. · ⚠️ **A sibling does not inherit a custom property.** `--rv-body` was being set on the goo layer while the new path lives in a sibling `<svg>`, so the body rendered at full accent instead of its soaked colour. Set it on the shared host. · **Still filtered, so still wrong on iOS:** the mark's buds and the button PoC. They are hidden on touch rather than ported to the CSS crush — porting them needs the bed + blend recipe (opaque backdrop, `lighten`/`multiply`), which is a separate job.
+    - ✅ **ROUND 6, 2026-08-03 11:58 EDT — four fixes, and one of them is a process lesson.** · **"Too smooth / no dynamic element" was the RATES, not the amplitudes.** The harmonics ran at 0.33–0.73 rad/s — 9 to 19 SECONDS for one circuit — so in any glance the outline was effectively static (measured: 4.3px of vertex travel over 10 frames). At ~2.4× it is 14.3px/s and 19.5px over 2s, with the four waves beating against each other because no two rates share a factor. · **"Overly large" was the EXPONENT.** Covering a wide panel's corners is what drives overshoot, and the superellipse exponent controls exactly that: at n=4 the contour needed A=198 against a 182 half-width; at n≈5 it needs 184. Margins went 41/18/22/29 → 15/12/6/7. **Raising n is free — a squircle still reads smooth.** A second lever: making the harmonics **outward-only** removes the ~13% inflation that existed purely so the smallest moment still cleared the text. · **"The mark doesn't change on mobile" was MY OWN GUARD, and it is the lesson.** I had gated the mark behind `fine` because its filtered buds render as hard circles on iOS. That hid the broken layer *and* every awake state with it — the mark simply stayed a rectangle forever. ⚠️ **Hiding a surface from the platform that cannot render it is not a fix.** The mark is now a computed path like the body, so nothing under `.rev` is filtered and touch gets exactly what desktop gets. `#dbgoo-r` is deleted; do not re-add it. · **Same mistake, same fix, on the back-to-top:** the earlier pass skipped the whole coalescence on a coarse pointer, which quietly removed the particle animation from mobile. Now only the FILTER is dropped there (`.totop.nogoo`), so the droplets still converge — crisp rather than liquid, an honest downgrade, but a real animation that cannot produce the artefact. · **The stuck "gradient circle" was the filter REGION.** `#dbgoo-c` is 260% of a 44px layer — a ~114px disc, which is the size of the thing that was showing. `opacity:0` does not prevent that: the element is still in the paint tree and a filtered one still allocates its region. `.tt-ink` now carries `visibility:hidden` between births. Verified nothing paints for 2.5s after a tap, with the filter off.
+    - ⛔ **THE CSS CRUSH DOES NOT TRANSFER TO THE BACK-TO-TOP — built, measured, reverted 2026-08-03 12:03 EDT. Do not re-attempt without reading this.** Two rounds of notes here said "the full fix is the CSS blur/contrast crush with the bed + blend recipe, a separate job". It was built. **The masses merged correctly — the crush is fine — and the black bed rendered as a solid square.** The recipe's precondition is an opaque backdrop with *no isolating ancestor* between the blend group and it; `.totop` is `position:fixed; z-index:55`, so it is its own stacking context and `mix-blend-mode:lighten` composites inside it, against a background that `.birth` sets transparent. Black against nothing stays black. Nor can it be patched by giving the button an opaque background: the bed is inset −90px, far outside a 46px control. **The nav works because it sits ON a bar; a floating control has no surface to sit on.** The recipe memory's "no scroll container between it and that backdrop" was too narrow and has been corrected. Coarse pointers therefore keep the unfiltered droplets — crisp circles converging, an honest downgrade chosen over the iOS artefact and over removing the animation entirely.
+    - 🛑 **THE CARD SURFACE IS ABANDONED — Harkirat, 2026-08-03 12:05 EDT: "just revert it back to the old card style."** Four rounds of rework (perimeter ring → three ellipses → one computed superellipse path) never got it past "bad on mobile", and the spill apparatus is gone with it: body path, resting plate, spout, beads, drain-to-a-remnant, soak colour, wavefront. `.rv-b` is the shipped panel again, untouched. **The findings above are kept because they are platform facts worth having, not because the surface is coming back.**
+      **What survives, and is the thing to port:** the mark's own morph (the filtered core with an eight-value per-frame border-radius plus three orbiting buds — the version he called *"very well done and truly morphing"*), the **Reveal → Hide** label, and the **strike-through** on the question once it is answered. The mark no longer pours: it is a control's indicator, not the source of a liquid. ⚠️ `#dbgoo-r` is BACK — the buds merging is the one thing here that genuinely needs the filter. That re-accepts the iOS hard-circle trade on this surface, knowingly. ⚠️ Back-to-top on touch: **birth dropped, destruction kept.** Narrower than the earlier guard, which skipped both and quietly took the whole effect off mobile.
+    - ✅ **SHIPPED TO THE LIVE SITE 2026-08-03 13:08 EDT — six surfaces, ported out of the PoC into `scripts/buildLegalPages.js` + `scripts/lib/chronicle.js`.** The PoC is now history; the code lives in `MORPH_JS` (four self-selecting modules), `GOO_SVG` (three new filters beside the nav's) and `COMPONENT_CSS`. `local/morph-poc/` is kept only as the record of how it was found.
+      - **What shipped:** the reveal's morphing mark (desktop) with **Reveal → Hide** and the strike-through · the GitHub-button alignment fix · the liquid cursor site-wide · the scroll-linked landing rows **extended to the `.inv` tickets** · back-to-top birth + destruction. The header buttons stayed **as shipped** — PoC 05 was deliberately not ported.
+      - **Every number below was measured against a live renderer, not read off the styles.** Mark morph **3.65** mean shape-change per 0.14s across the eight radii (3.67 predicted, 3.63 in the PoC) with the radii spanning 51.9 points awake and collapsing to a flat `50%` asleep · cursor tint correct on **all seven** surfaces at once, including row 01 whose scoped `--accent` equals the page accent · click burst leaves the tip at **11.02px painted** against a 4.5px floor while trailing masses fall to 1.1px and fly 109px · back-to-top opacity **0 at 855ms and never returning** (the bug that survived two fixes) · the GitHub mark now sits **dead centre**, 4px each side, where it used to hang 3.2px outside its own button.
+      - ⚠️ **`.on` ON THE BACK-TO-TOP MOVED OWNERS, and both hosts had to change.** `shell()`'s inline script and `chronicle.js`'s each toggled it from their own scroll handler; a birth animates across ~42 frames, so two writers fought every one of them. `MORPH_JS` owns `.on`, the click and the reduced-motion `fire` fallback now; the hosts keep only the ring's progress and the `--lift` that parks the button above the footer. **If a third template ever grows a `.totop`, it inherits the behaviour by having the button — do not re-add a toggle.**
+      - ⚠️ **The landing page had NO `GOO_SVG` at all** — it is the one template that never carried the filter defs, because it has no nav bar to put an indicator in. It needs them now.
+      - ⚠️ **Verification could not use the visible browser and the reason is worth keeping.** The in-app preview pane AND real Chrome both reported `document.hidden` with **0 rAF frames in 2s**, and `screencapture -x` failed with *"could not create image from display"* — the documented tell for a sleeping display. Waking it fixed the desktop passes. The **coarse- pointer and reduced-motion branches cannot be reached by resizing a window** (`fine` is what gates them, not width), so they were driven through **CDP `Emulation.setEmulatedMedia`** on a headless Chromium — real media engine, real frame loop. Scripts kept in the session scratchpad pattern `emulate.ts` + `probe-*.js`; re-create rather than hunt for them.
+      - ⚠️ **No regexes in `MORPH_JS`, deliberately.** It is emitted from inside a template literal, where the generator eats a lone backslash — an escaped paren written in the source reaches the page as a bare paren, turning it into a capture group. That changes a regex's MEANING without changing its syntax, so `scriptSyntaxAudit()` cannot catch it. Colour parsing is hand-scanned instead. (The related backtick-in-a-CSS-comment trap fired twice during this port, exactly as documented; `node --check` caught both.)
+    - `[P3 · S]` **Click burst wants to be more destructive.** Only trailing masses fly out today; the tip must survive (the native cursor is hidden, so the pointer can never disappear). Unbuilt idea: extra temporary shards that fly further and evaporate, plus a core implosion that springs back past its resting size.
+    - `[P2 · M]` **Reduce-motion toggle**, explicitly queued by Harkirat for after the above: turns the morph off site-wide, reverts the homepage rows to their original bar/hue with no animation, and switches the nav to plain pills.
+  - ⚠️ **HOW TO VERIFY ANIMATION AT ALL — this cost most of a session.** Chrome pauses its render loop when the window is backgrounded: `requestAnimationFrame` never fires, CSS transitions never advance, `document.timeline.currentTime` stays 0. Reading computed/inline styles then "passes" while the screen shows nothing. **Run `open -a "Google Chrome"` first, then assert rAF is alive before trusting any visual check.** ⚠️ **A SLEEPING DISPLAY PRESENTS IDENTICALLY — 2026-08-03 10:05 EDT, several turns lost.** `document.hidden` was `true` and rAF dead while AppleScript correctly reported Chrome frontmost with the right tab active, so "front the window" looked done and wasn't. **The tell is that `screencapture -x` fails with *"could not create image from display"*.** Wake the display, then re-assert. Assert with TWO consecutive rAF timestamps, not one callback — a single frame can fire once without the loop advancing. ⚠️ **And instrumenting the page beat recording it.** Reading numbers across frames from inside the page — blob count, radii, neighbour gaps, computed opacity per frame — found every defect this session: a radius under the paint floor, the back-to-top fade misdiagnosed twice as a re-birth, and a hit test silently returning `null` because the target was off-screen. Screenshots then confirmed the look. One caution learned the same day: a failing *probe* is not a failing *feature* — the GitHub button was reported as "not tinting" when in fact the pointer could never be over it. For motion, take a screen recording and read consecutive frames (`ffmpeg -vf "select=...,tile=NxM"` into a contact sheet) — that method found every real defect here; eyeballing and style-reading found none. ⚠️ The metaball system is not portable by copy-paste and the reasons are recorded: desktop uses the SVG `#dbgoo` alpha crush and mobile uses the CSS `blur/contrast` crush, deliberately and separately (an SVG filter renders the swarm as hard circles on iOS); the accent must come from a BLEND, never a fitted filter chain; and the geometry constants are MEASURED against the renderer, not derived — see `reference_goo_metaball_recipe` and `feedback_measure_the_renderer_not_the_model`. Any new surface with a different element height needs its dilation re-measured with the canvas method.
 
-- `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed
-  2026-07-31 12:10 EDT from notes L187.* Harkirat's own wording is important: "automatically disappears
-  from **view** instead of having to manually be removed" — this is display filtering, NOT deletion.
-  `/calendar` already has most of this (the Active/All toggle + `isEventEnded()` in `calendar.js`, tied
-  to each event's own end date or `bpEnd` for "All Season" entries) — the real gap is **`/draws` has NO
-  equivalent mechanism at all**, confirmed by grep (verified 2026-07-31 12:10 EDT — zero hits for
-  expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended"
-  means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it
-  gets its own Active/All toggle like `/calendar`'s or something simpler.
-- `[P3 · M · Sonnet5-M · ⛓️deferred to v4 by Harkirat]` **User-data deletion path (self-service).**
-  ⬇️ **DOWNGRADED P1 → P3 and pushed to v4 on 2026-08-06 12:20 EDT, Harkirat's explicit call:**
-  *"The privacy self deletion isn't a priority. They can email me if needed. That self deletion thing
-  is honestly a v4 feature."* **Do not re-propose it as near-term work.**
-  ⚠️ **This does NOT make the privacy policy inaccurate — checked, not assumed.** `PRIVACY.md` §7.1
-  already discloses that there is no self-service delete, states the email route as the live
-  mechanism, and calls a `/settings` option *"planned"* with **no timeline attached**. Deferring it
-  keeps every sentence in that section true. If that wording ever gains a date, this becomes
-  time-sensitive again.
-  Original framing, kept:
-  *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no
-  automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no
-  reset — it only overwrites individual values. Only `AlertLog` prunes (30 days, `utils/alertStore.js`).
-  Removing the bot from a Discord account stops interaction but leaves the record sitting indefinitely.
-  `docs/legal/PRIVACY.md` §7.1 **honestly discloses this** and commits to manual deletion within 30 days
-  of an email request — so the promise is currently kept by hand, and every day it stays manual is a
-  standing obligation on Harkirat personally. Needed: (a) a self-service delete in `/settings`
-  (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records
-  untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** —
-  they currently describe the manual process as the only route.
-- `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT
-  from notes L104 — Harkirat raised this earlier and it had **never been filed anywhere**, so it was
-  sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a
-  DMZ build is silently treated as MP and loses its DMZ-mode metadata. Needed: teach the prompt to
-  **detect** a DMZ build, **record its full attachment set**, and **differentiate** it from MP so it gets
-  the DMZ metadata. **Known constraint:** "DMZ partials are the 5-attachment prompt cap" — DMZ builds
-  exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap,
-  and the fix has to address the cap (batching or a second pass), not just the prompt wording.
-  Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
+- `[P2 · M]` **`/draws`/`/calendar`: auto-expire old data from view once the season ends.** *Filed 2026-07-31 12:10 EDT from the notes file.* Harkirat's own wording is important: "automatically disappears from **view** instead of having to manually be removed" — this is display filtering, NOT deletion. `/calendar` already has most of this (the Active/All toggle + `isEventEnded()` in `calendar.js`, tied to each event's own end date or `bpEnd` for "All Season" entries) — the real gap is **`/draws` has NO equivalent mechanism at all**, confirmed by grep (verified 2026-07-31 12:10 EDT — zero hits for expiry/filter logic in `draws.js`). Needs a design call before building: what "the season has ended" means for a draw specifically (its own release date passing? `bpEnd`? `rankEnd`?), and whether it gets its own Active/All toggle like `/calendar`'s or something simpler.
+- `[P3 · M · Sonnet5-M · ⛓️deferred to v4 by Harkirat]` **User-data deletion path (self-service).** ⬇️ **DOWNGRADED P1 → P3 and pushed to v4 on 2026-08-06 12:20 EDT, Harkirat's explicit call:** *"The privacy self deletion isn't a priority. They can email me if needed. That self deletion thing is honestly a v4 feature."* **Do not re-propose it as near-term work.** ⚠️ **This does NOT make the privacy policy inaccurate — checked, not assumed.** `PRIVACY.md` §7.1 already discloses that there is no self-service delete, states the email route as the live mechanism, and calls a `/settings` option *"planned"* with **no timeline attached**. Deferring it keeps every sentence in that section true. If that wording ever gains a date, this becomes time-sensitive again. Original framing, kept: *Filed 2026-07-28 21:36 EDT during the licence/ToS/privacy drafting session.* **There is currently no automated deletion of `UserPreference` records anywhere in the codebase**, and `/settings` has no reset — it only overwrites individual values. Only `AlertLog` prunes (30 days, `utils/alertStore.js`). Removing the bot from a Discord account stops interaction but leaves the record sitting indefinitely. `docs/legal/PRIVACY.md` §7.1 **honestly discloses this** and commits to manual deletion within 30 days of an email request — so the promise is currently kept by hand, and every day it stays manual is a standing obligation on Harkirat personally. Needed: (a) a self-service delete in `/settings` (with a confirm step), (b) a reset-to-defaults, and (c) optionally an automatic sweep of records untouched for N months. **When this ships, update `PRIVACY.md` §7.1 and §9.1 in the SAME change** — they currently describe the manual process as the only route.
+- `[P1 · M · Opus5-M]` **`/autobuild`: recognise DMZ builds, not just MP.** *Filed 2026-07-28 01:41 EDT from the notes file — Harkirat raised this earlier and it had **never been filed anywhere**, so it was sitting only in the scratchpad.* The PoC only ever taught the vision prompt about **MP** builds, so a DMZ build is silently treated as MP and loses its DMZ-mode metadata. Needed: teach the prompt to **detect** a DMZ build, **record its full attachment set**, and **differentiate** it from MP so it gets the DMZ metadata. **Known constraint:** "DMZ partials are the 5-attachment prompt cap" — DMZ builds exceed the attachment limit the prompt currently sends, so partial capture is a symptom of that cap, and the fix has to address the cap (batching or a second pass), not just the prompt wording. Subsystem detail + the other open follow-ups: `.claude/rules/autobuild.md`.
 
-  ✅ **UNBLOCKED 2026-08-06 18:48 EDT — Harkirat supplied the reference screenshots.** They live in
-  `local/Screenshots/` (gitignored), so the **knowledge is written up in `.claude/rules/autobuild.md`'s
-  "MP vs DMZ" section**, which is the authoritative reference for this work. Read it before touching the
-  prompt. *(Earlier in the same session I marked this unblocked by inferring the roster from backfilled
-  DB rows; he overruled that and was right — a derived artefact cannot establish ground truth. This
-  unblock is the real thing: actual in-game UI.)*
+  ✅ **UNBLOCKED 2026-08-06 18:48 EDT — Harkirat supplied the reference screenshots.** They live in `local/Screenshots/` (gitignored), so the **knowledge is written up in `.claude/rules/autobuild.md`'s "MP vs DMZ" section**, which is the authoritative reference for this work. Read it before touching the prompt. *(Earlier in the same session I marked this unblocked by inferring the roster from backfilled DB rows; he overruled that and was right — a derived artefact cannot establish ground truth. This unblock is the real thing: actual in-game UI.)*
 
   🔴 **Three assumptions the obvious implementation would make, all of them WRONG:**
-  1. **MP is NOT 5 slots.** MP shows up to the same nine slot positions as DMZ; what it has is a 5-attachment
-     **equip cap** (`ATTACHMENTS ● ● ● ● ●`). *That is what "DMZ partials are the 5-attachment prompt
-     cap" actually means — the cap is right for MP and truncates DMZ.*
-  2. **Slot COUNT cannot identify the mode.** `IMG_5643` is a DMZ SVD with **five** slots (low weapon
-     ). Counting slots misclassifies it as MP. **Why the count varies differs by mode:** in **MP** the
-     roster is intrinsic to the weapon and rarity does not affect it; in **DMZ** rarity DOES change the
-     total (max 9) on top of the weapon's own restrictions/uniques/renames — so never hardcode a
-     per-weapon DMZ slot count, and never read a short DMZ build as a failed extraction.
-  3. **Slot POSITION cannot identify the slot.** AS VAL has no Muzzle at all; SVD renders gaps where
-     Barrel/Perk/Laser would be. Read the LABEL, always.
+  1. **MP is NOT 5 slots.** MP shows up to the same nine slot positions as DMZ; what it has is a 5-attachment **equip cap** (`ATTACHMENTS ● ● ● ● ●`). *That is what "DMZ partials are the 5-attachment prompt cap" actually means — the cap is right for MP and truncates DMZ.*
+  2. **Slot COUNT cannot identify the mode.** `IMG_5643` is a DMZ SVD with **five** slots (low weapon ). Counting slots misclassifies it as MP. **Why the count varies differs by mode:** in **MP** the roster is intrinsic to the weapon and rarity does not affect it; in **DMZ** rarity DOES change the total (max 9) on top of the weapon's own restrictions/uniques/renames — so never hardcode a per-weapon DMZ slot count, and never read a short DMZ build as a failed extraction.
+  3. **Slot POSITION cannot identify the slot.** AS VAL has no Muzzle at all; SVD renders gaps where Barrel/Perk/Laser would be. Read the LABEL, always.
 
-  **Classify by UI chrome instead** (full table in the rule): `PEN.`/`PEN. MULTI` in a full-width bottom
-  stat bar → DMZ · `SELECT BLUEPRINTS` / blueprint code in the title → MP · `EQUIP`/`CUSTOMIZE` tabs →
-  DMZ. Require **two agreeing signals**; on conflict return unknown rather than guessing, since a build
-  filed under the wrong mode is worse than one that asks. ⚠️ **Don't lean on the `ATTACHMENTS ●●●●●` dot
-  row** (Harkirat: *"i wouldnt fixate on those dot elements"*) — small repeated glyphs are what a vision
-  model miscounts, and a miscount silently flips the mode.
+  **Classify by UI chrome instead** (full table in the rule): `PEN.`/`PEN. MULTI` in a full-width bottom stat bar → DMZ · `SELECT BLUEPRINTS` / blueprint code in the title → MP · `EQUIP`/`CUSTOMIZE` tabs → DMZ. Require **two agreeing signals**; on conflict return unknown rather than guessing, since a build filed under the wrong mode is worse than one that asks. ⚠️ **Don't lean on the `ATTACHMENTS ●●●●●` dot row** (Harkirat: *"i wouldnt fixate on those dot elements"*) — small repeated glyphs are what a vision model miscounts, and a miscount silently flips the mode.
 
-  🔑 **A weapon can RENAME canonical slots, ADD unique ones, OMIT others, and MOVE them in the grid.**
-  Aliases (Harkirat, 2026-08-06 19:10 EDT — "usually the alternatives will fall under these relabels…
-  not always, but VERY likely"): Muzzle←`Bowstring` · Barrel←`Limb` · Underbarrel←`Foregrip`/`Trigger
-  Action` · Ammunition←`Mag`/`Bolt`. **Unique extras with no canonical equivalent:** `Guard` (Shorty),
-  `Smoothbore` (R9-0) — both sit *alongside* that weapon's own Underbarrel, so they are additions, not
-  renames. 🔴 **And position moves even for canonically-named slots:** the Shorty pushes `Ammunition`
-  to the final chip (where Rear Grip lives) and the R9-0 puts it in the **top row** in Stock's place.
-  So a fixed nine-name allow-list fails three ways — drops renames, rejects uniques, expects absent
-  slots — and grid-position mapping fails outright. Take the label verbatim, map to canonical
-  separately, and treat an unknown label as a new alias to ASK about, never a parse failure.
-  ⛔ *Ignore the top-right `MAX`/`GOLD` badge — it is an internal weapon LEVELING display, not rarity
-  and not a mode signal (Harkirat, 2026-08-06 19:16 EDT).*
+  🔑 **A weapon can RENAME canonical slots, ADD unique ones, OMIT others, and MOVE them in the grid.** Aliases (Harkirat, 2026-08-06 19:10 EDT — "usually the alternatives will fall under these relabels… not always, but VERY likely"): Muzzle←`Bowstring` · Barrel←`Limb` · Underbarrel←`Foregrip`/`Trigger Action` · Ammunition←`Mag`/`Bolt`. **Unique extras with no canonical equivalent:** `Guard` (Shorty), `Smoothbore` (R9-0) — both sit *alongside* that weapon's own Underbarrel, so they are additions, not renames. 🔴 **And position moves even for canonically-named slots:** the Shorty pushes `Ammunition` to the final chip (where Rear Grip lives) and the R9-0 puts it in the **top row** in Stock's place. So a fixed nine-name allow-list fails three ways — drops renames, rejects uniques, expects absent slots — and grid-position mapping fails outright. Take the label verbatim, map to canonical separately, and treat an unknown label as a new alias to ASK about, never a parse failure. ⛔ *Ignore the top-right `MAX`/`GOLD` badge — it is an internal weapon LEVELING display, not rarity and not a mode signal (Harkirat, 2026-08-06 19:16 EDT).*
 
   **The build, now fully specified:**
-  1. Pass `{ maxAttachments: 9 }` for DMZ — `utils/visionExtract.js` already accepts it;
-     `utils/autobuildPipeline.js:148` just never passes it.
-  2. Un-hardcode `mode: 'MP'` through `autobuildPipeline.js` (~lines 17, 131, 157, 186, 241, 263 —
-     sibling lookup, duplicate check, saved doc).
-  3. Widen the review card beyond its fixed 5 slots (`visionExtract.js:255` pads/truncates to exactly
-     `maxAttachments`).
-  4. Add mode detection to the prompt per the table above, and **keep the existing empty/restricted
-     skip wording** — it is what stops a 9-cap from inventing phantom attachments on a 5-slot weapon.
-  5. Handle weapon-specific slot names (`Trigger Action` for revolvers; Crossbow's
-     `Bowstring`/`Limb`/`Bolt`). No fixed nine-name allow-list.
-  ⚠️ **Ask Harkirat for the DMZ equip cap if it matters** — the screenshots show up to 9 equipped and no
-  visible dot-budget, but "9 is the max" is inferred from the widest example, not confirmed.
-- `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20
-  runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run:
-  `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to
-  run on Node.js 24: actions/checkout@v4, actions/setup-node@v4.`
-  **What it actually is:** a JavaScript action declares its own runtime in its `action.yml`, and both of
-  these declare `using: node20`. GitHub is retiring Node 20 from the runners and force-running those
-  actions on Node 24 in the meantime ([changelog,
-  2025-09-19](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)).
-  Nothing is broken today; it becomes a hard failure when the shim is dropped. **This is about the
-  actions, not about our Node version** — the VM runs Node 24 already and `ci.yml` pins its own
-  `node-version` separately, so neither is the thing being warned about.
-  **Three call sites, all `@v4` → `@v5`:** `.github/workflows/ci.yml` (`actions/checkout`,
-  `actions/setup-node`) · `.github/workflows/sync-v3-pre-release.yml` (`actions/checkout`). The v5
-  releases are the same actions recompiled for Node 24 — no API change to absorb.
-  ⚠️ **`checkout@v5` keeps the depth-1 default, so `ci.yml`'s `fetch-depth: 0` must survive the bump.**
-  Measured on a real shallow clone: 42 false hash-chain errors and 1 tag visible instead of 100+.
-  `scripts/docs-audit.mjs`'s `ci-wiring` check already asserts `fetch-depth: 0` is present, so dropping
-  it fails CI rather than silently degrading the audit — but read that assertion before trusting it.
-  **It self-verifies:** merging to `main` triggers `sync-v3-pre-release.yml`, so both workflows get
-  exercised by the PR that changes them. Watch that run rather than assuming it passed.
-- `[P3 · XS · any model]` **GitHub achievement badges — Pull Shark + Pair Extraordinaire.** Added
-  2026-07-28 15:52 EDT (Harkirat's ask). **Pull Shark is not showing despite 42 merged PRs because all
-  three of his repos are PRIVATE** (`diors-builds`, `dior-cli`, `gif-background-remover`) — verified via
-  `gh repo list`. Two things to try, cheapest first: (1) enable **Settings → Profile → "Include private
-  contributions on my profile"**, which some report backfills it; (2) failing that, it needs merged PRs
-  on a **public** repo — a small public repo of his own reaches bronze (2 PRs) quickly. **Pair
-  Extraordinaire needs a co-author who is a DIFFERENT GitHub account than the commit author** — his own
-  noreply address self-co-authoring does not count, and `noreply@anthropic.com` maps to no account. The
-  workaround he wants to try: co-author with a bot account (Copilot-style, e.g.
-  `Co-authored-by: Copilot <ID+Copilot@users.noreply.github.com>`) on a real merged PR. ⚠️ Confirm the
-  exact bot account id before relying on it — unverified as of filing.
-- `[P1 · L · Opus5-H · 🧩needs-design]` **Line-by-line audit + restructure of the entire documentation,
-  memory, and enforcement surface.** Added 2026-07-27 22:35 EDT (Harkirat's ask). **Goal: everything
-  *correct and current*.** These files have grown substantially and a great deal changed in the last
-  week — the v2.36.x release-convention overhaul alone touched 8 repo docs, 4 memories, and 3 hooks — so
-  they are due a proper inspection rather than another incremental patch.
-  **Scope — read every file, line by line, not just grep:** `CLAUDE.md` · all `.claude/rules/*.md` ·
-  every `docs/` file incl. `reference/`, `superpowers/specs/`, and the archives · every memory file +
-  `MEMORY.md` · `docs/SESSION-START.md` · the hooks and nudges in `.claude/settings.json` ·
-  `.github/workflows/` · the working agreement and every feedback/reference/preference memory.
-  **Check for:** stale content (claims that were true once) · gaps and missing pieces · outright
-  mistakes/errors · things not caught up with recent changes · broken or missing cross-links and
-  `[[wikilinks]]` · duplicated content that has drifted apart between copies · contradictions *between*
-  files and *within* a single file · counts/numbers that rot (the `CLAUDE.md` memory-file count has been
-  wrong at least 3 times) · rules stated as prose that should be hooks · and anything else worth flagging
-  that isn't listed here.
-  **Then restructure/reorganize/reword** where the file has outgrown its shape.
+  1. Pass `{ maxAttachments: 9 }` for DMZ — `utils/visionExtract.js` already accepts it; `utils/autobuildPipeline.js:148` just never passes it.
+  2. Un-hardcode `mode: 'MP'` through `autobuildPipeline.js` (~lines 17, 131, 157, 186, 241, 263 — sibling lookup, duplicate check, saved doc).
+  3. Widen the review card beyond its fixed 5 slots (`visionExtract.js:255` pads/truncates to exactly `maxAttachments`).
+  4. Add mode detection to the prompt per the table above, and **keep the existing empty/restricted skip wording** — it is what stops a 9-cap from inventing phantom attachments on a 5-slot weapon.
+  5. Handle weapon-specific slot names (`Trigger Action` for revolvers; Crossbow's `Bowstring`/`Limb`/`Bolt`). No fixed nine-name allow-list. ⚠️ **Ask Harkirat for the DMZ equip cap if it matters** — the screenshots show up to 9 equipped and no visible dot-budget, but "9 is the max" is inferred from the widest example, not confirmed.
+- `[P2 · XS · any model]` **Bump the GitHub Actions to `@v5` — they run on a deprecated Node 20 runtime.** Filed 2026-07-29 11:44 EDT, from a warning Harkirat spotted on the v2.42.0 CI run: `Warning: Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4.`
+  **What it actually is:** a JavaScript action declares its own runtime in its `action.yml`, and both of these declare `using: node20`. GitHub is retiring Node 20 from the runners and force-running those actions on Node 24 in the meantime ([changelog, 2025-09-19](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)). Nothing is broken today; it becomes a hard failure when the shim is dropped. **This is about the actions, not about our Node version** — the VM runs Node 24 already and `ci.yml` pins its own `node-version` separately, so neither is the thing being warned about.
+  **Three call sites, all `@v4` → `@v5`:** `.github/workflows/ci.yml` (`actions/checkout`, `actions/setup-node`) · `.github/workflows/sync-v3-pre-release.yml` (`actions/checkout`). The v5 releases are the same actions recompiled for Node 24 — no API change to absorb. ⚠️ **`checkout@v5` keeps the depth-1 default, so `ci.yml`'s `fetch-depth: 0` must survive the bump.** Measured on a real shallow clone: 42 false hash-chain errors and 1 tag visible instead of 100+. `scripts/docs-audit.mjs`'s `ci-wiring` check already asserts `fetch-depth: 0` is present, so dropping it fails CI rather than silently degrading the audit — but read that assertion before trusting it.
+  **It self-verifies:** merging to `main` triggers `sync-v3-pre-release.yml`, so both workflows get exercised by the PR that changes them. Watch that run rather than assuming it passed.
+- `[P3 · XS · any model]` **GitHub achievement badges — Pull Shark + Pair Extraordinaire.** Added 2026-07-28 15:52 EDT (Harkirat's ask). **Pull Shark is not showing despite 42 merged PRs because all three of his repos are PRIVATE** (`diors-builds`, `dior-cli`, `gif-background-remover`) — verified via `gh repo list`. Two things to try, cheapest first: (1) enable **Settings → Profile → "Include private contributions on my profile"**, which some report backfills it; (2) failing that, it needs merged PRs on a **public** repo — a small public repo of his own reaches bronze (2 PRs) quickly. **Pair Extraordinaire needs a co-author who is a DIFFERENT GitHub account than the commit author** — his own noreply address self-co-authoring does not count, and `noreply@anthropic.com` maps to no account. The workaround he wants to try: co-author with a bot account (Copilot-style, e.g. `Co-authored-by: Copilot <ID+Copilot@users.noreply.github.com>`) on a real merged PR. ⚠️ Confirm the exact bot account id before relying on it — unverified as of filing.
+- `[P1 · L · Opus5-H · 🧩needs-design]` **Line-by-line audit + restructure of the entire documentation, memory, and enforcement surface.** Added 2026-07-27 22:35 EDT (Harkirat's ask). **Goal: everything *correct and current*.** These files have grown substantially and a great deal changed in the last week — the v2.36.x release-convention overhaul alone touched 8 repo docs, 4 memories, and 3 hooks — so they are due a proper inspection rather than another incremental patch.
+  **Scope — read every file, line by line, not just grep:** `CLAUDE.md` · all `.claude/rules/*.md` · every `docs/` file incl. `reference/`, `superpowers/specs/`, and the archives · every memory file + `MEMORY.md` · `docs/SESSION-START.md` · the hooks and nudges in `.claude/settings.json` · `.github/workflows/` · the working agreement and every feedback/reference/preference memory.
+  **Check for:** stale content (claims that were true once) · gaps and missing pieces · outright mistakes/errors · things not caught up with recent changes · broken or missing cross-links and `[[wikilinks]]` · duplicated content that has drifted apart between copies · contradictions *between* files and *within* a single file · counts/numbers that rot (the `CLAUDE.md` memory-file count has been wrong at least 3 times) · rules stated as prose that should be hooks · and anything else worth flagging that isn't listed here. **Then restructure/reorganize/reword** where the file has outgrown its shape.
 
   ---
-  **📌 FOLDED IN 2026-07-28 01:41 EDT — from the memory-migration session's five audit passes.**
-  That session swept for one thing (memory-path references) and kept finding unrelated defects, so what
-  it could NOT finish is recorded here instead of being lost. **Read this before starting: it tells you
-  what is already done, so you don't redo it, and what is genuinely untouched.**
+  **📌 FOLDED IN 2026-07-28 01:41 EDT — from the memory-migration session's five audit passes.** That session swept for one thing (memory-path references) and kept finding unrelated defects, so what it could NOT finish is recorded here instead of being lost. **Read this before starting: it tells you what is already done, so you don't redo it, and what is genuinely untouched.**
 
   **✅ ALREADY DONE — do not repeat (verified, with evidence, that session):**
-  - **Memory/slug pointers are CLEAN everywhere.** Every surface below was swept for the old slug, for
-    memory-store pointers, and for the retired "fixed store is move-proof" rule: repo docs, `CLAUDE.md`,
-    `.claude/rules/`, `docs/` incl. `archive/` + `superpowers/`, **all `*.js`/`*.sh` code (zero hits)**,
-    `.claude/settings.json` + `settings.local.json` (both tracked since v2.39.0), `~/.claude`
-    (skills/hooks/agents/commands/plans — still unversioned), `.remember`, the
-    Gif + shared-root memory stores, `dior-cli`, both cross-project docs, and the MCP stores
-    (perseus-vault, linksee, codebase-memory). Remaining old-slug mentions are **historical
-    changelog/DEVLOG entries, deliberately preserved**. **This dimension does not need re-auditing.**
+  - **Memory/slug pointers are CLEAN everywhere.** Every surface below was swept for the old slug, for memory-store pointers, and for the retired "fixed store is move-proof" rule: repo docs, `CLAUDE.md`, `.claude/rules/`, `docs/` incl. `archive/` + `superpowers/`, **all `*.js`/`*.sh` code (zero hits)**, `.claude/settings.json` + `settings.local.json` (both tracked since v2.39.0), `~/.claude` (skills/hooks/agents/commands/plans — still unversioned), `.remember`, the Gif + shared-root memory stores, `dior-cli`, both cross-project docs, and the MCP stores (perseus-vault, linksee, codebase-memory). Remaining old-slug mentions are **historical changelog/DEVLOG entries, deliberately preserved**. **This dimension does not need re-auditing.**
   - Store integrity (index ↔ disk, frontmatter, `[[wikilinks]]`) for all three memory stores.
-  - Every `.claude/rules/` `paths:` glob verified to match real files (a dead glob = a rule that silently
-    never loads).
+  - Every `.claude/rules/` `paths:` glob verified to match real files (a dead glob = a rule that silently never loads).
   - Tag ↔ `package.json` correctness for the newest 25 tags; all cited CHANGELOG SHAs resolve.
   - Both `SessionStart` hooks dry-run after their parsed files were edited.
 
   **❌ NOT DONE — the real remaining scope, in priority order:**
-  1. **Code context comments — ZERO coverage.** `index.js` (~3.3k lines) and every `commands/`,
-     `utils/`, `models/`, `scripts/` file were **never read** for comment accuracy. This repo
-     deliberately carries "why" comments next to fixed bugs and platform workarounds, so a comment that
-     outlived its code is exactly the silent rot this audit exists for. **Highest-value target.**
-  2. **`.claude/rules/*.md` bodies** — structure verified, **content never read** (~51k tokens across
-     13 files).
-  3. **`docs/archive/`, and the CHANGELOG/DEVLOG bodies** — only headers, versions, and SHAs were
-     checked; the prose was never read.
-  4. **Folder cleanup (Harkirat's ask).** `local/` holds ageing artifacts: `crash report.txt`,
-     `session-report-*.html` (364K), `claude-code-receipts-*` (both formats), and `Screenshots/`
-     (~13M, the bulk). *(The loose handoff files this item used to list by name were consolidated into
-     `local/handoff/` on 2026-08-06 19:36 EDT, renamed from their old scheme to
-     `<date>-<topic>-handoff.md`. They are no longer at `local/`'s root, though several — including the
-     completed memory-migration one — are still candidates for pruning.)* **`local/` is
-     Harkirat's personal scratch folder — never delete from it unprompted; propose a list and let him
-     choose.** Also sweep `/Applications/Claude Code/local/`, `docs/archive/`, and
-     `local/claude md backup/` (a full stale `.claude` snapshot, now carrying a `_README` marker).
-  5. **A general defect class worth a dedicated pass:** *present-tense claims that duplicate
-     machine-checkable state.* Four were found already wrong by 37–59% (see
-     `feedback_no_duplicated_state_in_prose` memory). Also **retired-infrastructure guidance written in
-     the present tense** — Render/Railway instructions read as live until corrected, and dead
-     credentials for both sat in `.env`. Hunt both patterns deliberately; grep for the *idea*, not a
-     string.
-  **Why P1/L:** the same week produced three separate instances of exactly this failure — a self-
-  contradictory clause inside one spec that had propagated into five files (v2.36.0), a source-of-truth
-  memory still teaching a retired convention while the repo docs were correct (v2.36.3), and a rule
-  documented in four places whose *trigger* existed in none (the v3 sync). Each was found by accident.
-  **Method note, learned the hard way this week:** grep alone will not find these — the v2.36.3 miss
-  survived two grep sweeps because it phrased the same idea differently. Read the files. And **verify
-  every check itself before trusting it**: a "every version has a summary line" check reported 23 false
-  gaps because it demanded an exact heading the convention doesn't use.
-  **Bundle with:** the `[P2 · S]` sweep-script item below — anything mechanically checkable that this
-  audit finds should leave as a script/CI check, not as more prose.
+  1. **Code context comments — ZERO coverage.** `index.js` (~3.3k lines) and every `commands/`, `utils/`, `models/`, `scripts/` file were **never read** for comment accuracy. This repo deliberately carries "why" comments next to fixed bugs and platform workarounds, so a comment that outlived its code is exactly the silent rot this audit exists for. **Highest-value target.**
+  2. **`.claude/rules/*.md` bodies** — structure verified, **content never read** (~51k tokens across 13 files).
+  3. **`docs/archive/`, and the CHANGELOG/DEVLOG bodies** — only headers, versions, and SHAs were checked; the prose was never read.
+  4. **Folder cleanup (Harkirat's ask).** `local/` holds ageing artifacts: `crash report.txt`, `session-report-*.html` (364K), `claude-code-receipts-*` (both formats), and `Screenshots/` (~13M, the bulk). *(The loose handoff files this item used to list by name were consolidated into `local/handoff/` on 2026-08-06 19:36 EDT, renamed from their old scheme to `<date>-<topic>-handoff.md`. They are no longer at `local/`'s root, though several — including the completed memory-migration one — are still candidates for pruning.)* **`local/` is Harkirat's personal scratch folder — never delete from it unprompted; propose a list and let him choose.** Also sweep `/Applications/Claude Code/local/`, `docs/archive/`, and `local/claude md backup/` (a full stale `.claude` snapshot, now carrying a `_README` marker).
+  5. **A general defect class worth a dedicated pass:** *present-tense claims that duplicate machine-checkable state.* Four were found already wrong by 37–59% (see `feedback_no_duplicated_state_in_prose` memory). Also **retired-infrastructure guidance written in the present tense** — Render/Railway instructions read as live until corrected, and dead credentials for both sat in `.env`. Hunt both patterns deliberately; grep for the *idea*, not a string.
+  **Why P1/L:** the same week produced three separate instances of exactly this failure — a self- contradictory clause inside one spec that had propagated into five files (v2.36.0), a source-of-truth memory still teaching a retired convention while the repo docs were correct (v2.36.3), and a rule documented in four places whose *trigger* existed in none (the v3 sync). Each was found by accident.
+  **Method note, learned the hard way this week:** grep alone will not find these — the v2.36.3 miss survived two grep sweeps because it phrased the same idea differently. Read the files. And **verify every check itself before trusting it**: a "every version has a summary line" check reported 23 false gaps because it demanded an exact heading the convention doesn't use.
+  **Bundle with:** the `[P2 · S]` sweep-script item below — anything mechanically checkable that this audit finds should leave as a script/CI check, not as more prose.
 
-- `[P2 · M · Opus5-H · ⚠️touches-prod]` **Rename the production database off Mongoose's `test` default.**
-  Added 2026-07-26 13:24 EDT; Harkirat explicitly deferred this to its own session mid-bring-up. The prod
-  Atlas `MONGODB_URI` carries no database path, so Mongoose silently defaulted to a db literally named
-  **`test`** — that's where all 5 live collections (`loadouts` 133, `alertlogs` 180, `userpreferences` 15,
-  `alertcounters` 6, `seasonaldatas` 1) actually sit. Nothing is broken; it's a naming/clarity problem that
-  gets riskier to fix the longer it waits. Target `diors-builds` (the local dev clone already uses
-  `diors-builds-dev`, so dev is already correct and needs no change). **This is a live-prod migration, not a
-  config tweak** — it needs: copy `test` → `diors-builds` on Atlas, update `MONGODB_URI` in the VM's `.env`,
-  restart `diors-bot` via systemd, verify with `scripts/vmstatus.sh`, and only then drop the old db after a
-  soak period. Do it in a low-traffic window; the bot is briefly down across the restart. Note the same URI
-  is read by `scripts/` one-off tools, so check those too before dropping `test`.
+- `[P2 · M · Opus5-H · ⚠️touches-prod]` **Rename the production database off Mongoose's `test` default.** Added 2026-07-26 13:24 EDT; Harkirat explicitly deferred this to its own session mid-bring-up. The prod Atlas `MONGODB_URI` carries no database path, so Mongoose silently defaulted to a db literally named **`test`** — that's where all 5 live collections (`loadouts` 133, `alertlogs` 180, `userpreferences` 15, `alertcounters` 6, `seasonaldatas` 1) actually sit. Nothing is broken; it's a naming/clarity problem that gets riskier to fix the longer it waits. Target `diors-builds` (the local dev clone already uses `diors-builds-dev`, so dev is already correct and needs no change). **This is a live-prod migration, not a config tweak** — it needs: copy `test` → `diors-builds` on Atlas, update `MONGODB_URI` in the VM's `.env`, restart `diors-bot` via systemd, verify with `scripts/vmstatus.sh`, and only then drop the old db after a soak period. Do it in a low-traffic window; the bot is briefly down across the restart. Note the same URI is read by `scripts/` one-off tools, so check those too before dropping `test`.
 
-- `[P1 · M · Opus5-H · 🧩needs-design]` **`.claude/rules/` two-tier rework (card + detail).** Added
-  2026-07-24 23:02 EDT. The 13 rule files total **51.3k tokens — MORE than the 3,272-line CLAUDE.md
-  monolith they replaced** (`accent-and-colors.md` alone is 11.9k). Path-scoping only pays off on narrow
-  sessions; measured, session `2c62ab02` auto-loaded **11 of 13 rules ≈ 42.8k tokens**, so a broad session
-  now costs roughly what the monolith did. **The plan:** split each rule into a ~300-500 token **card**
-  (gotchas + invariants only — the bug-preventing content, stays auto-loading via `paths:`) plus a
-  `docs/reference/<x>-detail.md` (narrative, history, worked examples — never auto-loads, read on demand).
-  Target: **51.3k auto → ~5k auto**, the other ~46k one Read away. Start with `accent-and-colors.md` as the
-  proof-of-concept and judge the shape before converting the other 12. **P1 because it's the largest
-  remaining always-on context lever** and it partially defeats the point of the 2026-07-22 modularization
-  until fixed. Content surgery across 13 files + doc cross-ref updates → wants its own session, Opus 5 High.
-  Full cost model + measurements: memory `project_context_token_budget`.
-- `[P2 · L · Opus5-H · 🧩needs-design]` **View Colors — wider colour variety.** juul's avatar returned 6
-  of 8 requested colours and missed a useful yellow (assume one root cause). Keep the existing
-  2-4-on-one-page behaviour for genuinely minimal images (juul's banner correctly returned 4). Real
-  algorithm work; **determinism is a hard constraint** (Refresh's change-detection depends on it). Levers:
-  over-clustering K=1.5× + the 30-RGB merge. Full subsystem detail: `.claude/rules/accent-and-colors.md`.
-  ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list (horizon only — the detail above is canonical).
-- `[P2 · L · Opus5-H]` **Real "search + multi-select" admin flow.** For `/manage`'s "Delete Multiple" (all
-  entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're
-  placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full
-  subsystem detail: `.claude/rules/manage-panel.md`.
-- `[P2 · S · Sonnet5-M · 🔗bundle-with the CI expansion above]` **Make the records-consistency sweep a
-  script (and then a CI job).** Filed 2026-07-27 20:40 EDT. A one-off script run this session caught two
-  real defects that reading had missed: 7 items duplicated across `ROADMAP.md` and `db-deferred-list.md`
-  while both headers claimed they didn't duplicate each other, and `docs/README.md`'s chore checklist
-  telling you to tag the squash commit when every real tag points at the finalize commit. Checks worth
-  keeping: newest `package.json` == newest `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every
-  changelog version has a tag and a summary line; every cited SHA resolves; no cross-file duplicate item
-  titles without a `⇄` marker; `MEMORY.md` indexes every memory file (and every indexed file exists);
-  the canonical memory dir exists and contains `MEMORY.md`.
-  **⚠️ Note (2026-07-28 01:41 EDT): the old "`CLAUDE.md`'s memory-file count matches the store" check is
-  retired — that count was deleted rather than maintained.** A number in prose is a copy of state nothing
-  updates; it rots and becomes the misinformation it was meant to catch. **Generalize the check instead:
-  the real class of bug is any present-tense count/size claim in a doc.** A sweep on 2026-07-28 found
-  four already wrong by 37–59% (`CLAUDE.md` "~180 lines" at 287, CHANGELOG "1,366" at 2,126, DEVLOG
-  "1,792" at 2,460). Prefer a structural test ("does it exist / contain X") or a dated measurement
-  ("was N on DATE") over a bare present-tense number, and have the script flag new ones.
-  **Extended 2026-07-27 21:27 EDT** by the lagged-backfill convention (see the resolved "1 commit + 1 tag"
-  item in `archive/resolved-list.md`) — three more machine-checkable invariants, and note the script should
-  **perform** the backfill, not merely flag it, since it is a mechanical additive edit:
-  1. every entry **except the newest** cites a SHA that resolves (the newest legitimately has no hash yet
-     — exempt it, don't fail on it). From **v2.36.0 on** the cited SHA must equal the commit its tag points
-     at; for **v2.33.0–v2.35.15** it may equal either the tag or the tag's *parent*, since 16 of those 25
-     were tagged on a follow-up finalize commit — a check that demands tag-equality flags all 16 as false
-     positives;
-  2. every entry from **v2.33.0** on cites a PR number (v2.26.0–v2.32.0 predate the PR workflow — hash-only
-     is correct there);
-  3. the tag's `package.json` version equals the entry's version (`git show vX.Y.Z:package.json`) — this is
-     what catches a tag landing on the wrong commit.
-  ⚠️ **The "every version has a summary line" check must not demand a `## vX.Y.Z` heading.** Learned
-  2026-07-27 22:05 EDT: a naive exact-heading check reported **23 false gaps**, because `CHANGELOG-SUMMARY.md`
-  deliberately folds trivial/docs-only releases into a **range heading** (`## v2.18.0–v2.18.3`) or an inline
-  one-line mention. Every one of the 23 was in fact represented. The check must accept heading, range, or
-  mention — otherwise it cries wolf on two dozen entries and gets ignored, which is worse than no check.
-  ⚠️ When mapping PRs, map by **merge-commit hash**, never by parsing squash subjects: a subject can carry
-  two `#N` refs (v2.35.11's real PR is the trailing `#28`) and PRs #1/#9/#10 carry none.
-  `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'` **These are exactly the "checkable rule → make it a hook/CI job, not more prose"
-  case** from the `reference_enforcement_hooks` memory — prose already failed at two of them. Natural fit
-  alongside the Vitest/Biome work below, since it needs the same `ci.yml` surface.
-- `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask).
-  **✅ Sequencing precondition MET 2026-07-27 18:25 EDT — PR
-  [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) is MERGED, shipped as v2.35.8.**
-  `.github/workflows/ci.yml` now exists on `main` and runs `npm ci` → `npm run check` (`node --check`
-  across every non-`node_modules` `.js`) → advisory `npm audit`, triggering on **both `main` and
-  `v3-pre-release`**. So this entry is now purely the *expansion* work; the "merge #11 first" step below
-  is done. (This bullet previously carried a ⚠️ correction stating there was "genuinely no CI at all on
-  `main`" — true when written 2026-07-26 19:06 EDT, false as of the merge. Still true: no test framework
-  and no lint config.) **Tool choices decided 2026-07-26 19:06 EDT
-  (dotenvx-adjacent tooling discussion): Vitest** for the test framework (fast, near-zero-config, ESM-friendly — a good fit
-  given there's no build step) **and Biome** for lint+format (single Rust binary covering both, no
-  ESLint+Prettier config sprawl to build from scratch since neither exists here yet). Real unit/integration
-  coverage for the higher-risk subsystems (loadout search/fuzzy-match, draw-prices math, pagination) would
-  catch real bugs before merge instead of only syntax errors — and `scripts/checkEmojiCaptures.js` (the
-  require-time emoji-capture check, see `docs/DEVLOG.md`'s 2026-07-26 16:04 EDT entry) is a natural first
-  Vitest test since it already exists as a standalone script. **Sequencing: merge PR #11 first** (or
-  rebase this work onto it) — no point building the Vitest/Biome expansion on top of a `ci.yml` that isn't
-  on `main` yet. Needs its own session: merge #11, add Vitest + Biome, decide what's worth covering first,
-  wire both into `ci.yml`.
-  **Also consider `commitlint` in the same pass** (noted 2026-07-26 15:41 EDT while adopting the commit
-  convention): the repo has **no** `commitlint`, `husky`, `semantic-release`, `standard-version`, or
-  `conventional-changelog` installed — verified, not assumed — so `docs/reference/commit-and-branch-naming.md`
-  is enforced entirely by hand. A `commitlint` job in `ci.yml` (or a `husky` `commit-msg` hook) would make
-  the subject format machine-checked, matching the "a checkable rule becomes a hook, not more prose"
-  strategy in the `reference_enforcement_hooks` memory. Worth weighing the two placements: CI catches it at
-  PR time (can't be bypassed, but late), a local hook catches it at commit time (instant, but skippable with
-  `--no-verify`). Knock-on: once subjects are machine-parseable, `conventional-changelog` could draft
-  `docs/CHANGELOG.md` entries instead of them being hand-written every release — though the hand-written
-  entries are currently far richer than a generator would produce, so that part is a genuine tradeoff, not
-  a free win.
+- `[P1 · M · Opus5-H · 🧩needs-design]` **`.claude/rules/` two-tier rework (card + detail).** Added 2026-07-24 23:02 EDT. The 13 rule files total **51.3k tokens — MORE than the 3,272-line CLAUDE.md monolith they replaced** (`accent-and-colors.md` alone is 11.9k). Path-scoping only pays off on narrow sessions; measured, session `2c62ab02` auto-loaded **11 of 13 rules ≈ 42.8k tokens**, so a broad session now costs roughly what the monolith did. **The plan:** split each rule into a ~300-500 token **card** (gotchas + invariants only — the bug-preventing content, stays auto-loading via `paths:`) plus a `docs/reference/<x>-detail.md` (narrative, history, worked examples — never auto-loads, read on demand). Target: **51.3k auto → ~5k auto**, the other ~46k one Read away. Start with `accent-and-colors.md` as the proof-of-concept and judge the shape before converting the other 12. **P1 because it's the largest remaining always-on context lever** and it partially defeats the point of the 2026-07-22 modularization until fixed. Content surgery across 13 files + doc cross-ref updates → wants its own session, Opus 5 High. Full cost model + measurements: memory `project_context_token_budget`.
+- `[P2 · L · Opus5-H · 🧩needs-design]` **View Colors — wider colour variety.** juul's avatar returned 6 of 8 requested colours and missed a useful yellow (assume one root cause). Keep the existing 2-4-on-one-page behaviour for genuinely minimal images (juul's banner correctly returned 4). Real algorithm work; **determinism is a hard constraint** (Refresh's change-detection depends on it). Levers: over-clustering K=1.5× + the 30-RGB merge. Full subsystem detail: `.claude/rules/accent-and-colors.md`. ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list (horizon only — the detail above is canonical).
+- `[P2 · L · Opus5-H]` **Real "search + multi-select" admin flow.** For `/manage`'s "Delete Multiple" (all entities) and Loadouts' "Replace Multiple": search first, then tick which matches to act on. Today they're placeholder paste-a-list flows; this is the genuinely-new interaction they're meant to become. Full subsystem detail: `.claude/rules/manage-panel.md`.
+- `[P2 · S · Sonnet5-M · 🔗bundle-with the CI expansion above]` **Make the records-consistency sweep a script (and then a CI job).** Filed 2026-07-27 20:40 EDT. A one-off script run this session caught two real defects that reading had missed: 7 items duplicated across `ROADMAP.md` and `db-deferred-list.md` while both headers claimed they didn't duplicate each other, and `docs/README.md`'s chore checklist telling you to tag the squash commit when every real tag points at the finalize commit. Checks worth keeping: newest `package.json` == newest `CHANGELOG.md` == newest `CHANGELOG-SUMMARY.md`; every changelog version has a tag and a summary line; every cited SHA resolves; no cross-file duplicate item titles without a `⇄` marker; `MEMORY.md` indexes every memory file (and every indexed file exists); the canonical memory dir exists and contains `MEMORY.md`. **⚠️ Note (2026-07-28 01:41 EDT): the old "`CLAUDE.md`'s memory-file count matches the store" check is retired — that count was deleted rather than maintained.** A number in prose is a copy of state nothing updates; it rots and becomes the misinformation it was meant to catch. **Generalize the check instead: the real class of bug is any present-tense count/size claim in a doc.** A sweep on 2026-07-28 found four already wrong by 37–59% (`CLAUDE.md` "~180 lines" at 287, CHANGELOG "1,366" at 2,126, DEVLOG "1,792" at 2,460). Prefer a structural test ("does it exist / contain X") or a dated measurement ("was N on DATE") over a bare present-tense number, and have the script flag new ones. **Extended 2026-07-27 21:27 EDT** by the lagged-backfill convention (see the resolved "1 commit + 1 tag" item in `archive/resolved-list.md`) — three more machine-checkable invariants, and note the script should **perform** the backfill, not merely flag it, since it is a mechanical additive edit:
+  1. every entry **except the newest** cites a SHA that resolves (the newest legitimately has no hash yet — exempt it, don't fail on it). From **v2.36.0 on** the cited SHA must equal the commit its tag points at; for **v2.33.0–v2.35.15** it may equal either the tag or the tag's *parent*, since 16 of those 25 were tagged on a follow-up finalize commit — a check that demands tag-equality flags all 16 as false positives;
+  2. every entry from **v2.33.0** on cites a PR number (v2.26.0–v2.32.0 predate the PR workflow — hash-only is correct there);
+  3. the tag's `package.json` version equals the entry's version (`git show vX.Y.Z:package.json`) — this is what catches a tag landing on the wrong commit. ⚠️ **The "every version has a summary line" check must not demand a `## vX.Y.Z` heading.** Learned 2026-07-27 22:05 EDT: a naive exact-heading check reported **23 false gaps**, because `CHANGELOG-SUMMARY.md` deliberately folds trivial/docs-only releases into a **range heading** (`## v2.18.0–v2.18.3`) or an inline one-line mention. Every one of the 23 was in fact represented. The check must accept heading, range, or mention — otherwise it cries wolf on two dozen entries and gets ignored, which is worse than no check. ⚠️ When mapping PRs, map by **merge-commit hash**, never by parsing squash subjects: a subject can carry two `#N` refs (v2.35.11's real PR is the trailing `#28`) and PRs #1/#9/#10 carry none. `gh pr list --state merged --limit 60 --json number,mergeCommit -q '.[] | "\(.mergeCommit.oid[0:7]) \(.number)"'` **These are exactly the "checkable rule → make it a hook/CI job, not more prose" case** from the `reference_enforcement_hooks` memory — prose already failed at two of them. Natural fit alongside the Vitest/Biome work below, since it needs the same `ci.yml` surface.
+- `[P2 · M · Sonnet5-M]` **Expand CI beyond syntax-check.** Added 2026-07-25 18:40 EDT (Harkirat's ask). **✅ Sequencing precondition MET 2026-07-27 18:25 EDT — PR [#11](https://github.com/HarkiratMangat/diors-builds/pull/11) is MERGED, shipped as v2.35.8.** `.github/workflows/ci.yml` now exists on `main` and runs `npm ci` → `npm run check` (`node --check` across every non-`node_modules` `.js`) → advisory `npm audit`, triggering on **both `main` and `v3-pre-release`**. So this entry is now purely the *expansion* work; the "merge #11 first" step below is done. (This bullet previously carried a ⚠️ correction stating there was "genuinely no CI at all on `main`" — true when written 2026-07-26 19:06 EDT, false as of the merge. Still true: no test framework and no lint config.) **Tool choices decided 2026-07-26 19:06 EDT (dotenvx-adjacent tooling discussion): Vitest** for the test framework (fast, near-zero-config, ESM-friendly — a good fit given there's no build step) **and Biome** for lint+format (single Rust binary covering both, no ESLint+Prettier config sprawl to build from scratch since neither exists here yet). Real unit/integration coverage for the higher-risk subsystems (loadout search/fuzzy-match, draw-prices math, pagination) would catch real bugs before merge instead of only syntax errors — and `scripts/checkEmojiCaptures.js` (the require-time emoji-capture check, see `docs/DEVLOG.md`'s 2026-07-26 16:04 EDT entry) is a natural first Vitest test since it already exists as a standalone script. **Sequencing: merge PR #11 first** (or rebase this work onto it) — no point building the Vitest/Biome expansion on top of a `ci.yml` that isn't on `main` yet. Needs its own session: merge #11, add Vitest + Biome, decide what's worth covering first, wire both into `ci.yml`. **Also consider `commitlint` in the same pass** (noted 2026-07-26 15:41 EDT while adopting the commit convention): the repo has **no** `commitlint`, `husky`, `semantic-release`, `standard-version`, or `conventional-changelog` installed — verified, not assumed — so `docs/reference/commit-and-branch-naming.md` is enforced entirely by hand. A `commitlint` job in `ci.yml` (or a `husky` `commit-msg` hook) would make the subject format machine-checked, matching the "a checkable rule becomes a hook, not more prose" strategy in the `reference_enforcement_hooks` memory. Worth weighing the two placements: CI catches it at PR time (can't be bypassed, but late), a local hook catches it at commit time (instant, but skippable with `--no-verify`). Knock-on: once subjects are machine-parseable, `conventional-changelog` could draft `docs/CHANGELOG.md` entries instead of them being hand-written every release — though the hand-written entries are currently far richer than a generator would produce, so that part is a genuine tradeoff, not a free win.
 
-- **🎨 Rebuild the Priority·Effort artifact around the new model-selection grid** `[P3 · M · Sonnet5-High]`
-  *(filed 2026-08-06 21:58 EDT — Harkirat's call, "not right now, maybe in a few days or when we have
-  nothing else important to do.")* Full handoff already written, ready to paste into a fresh session:
-  `local/handoff/2026-08-06-tier-system-artifact-handoff.md`. Update the existing artifact **in place**
-  (pass its URL to the Artifact tool — a fresh conversation otherwise mints a new link) to reflect the
-  v2.57.2 grid: effort tier and model choice are separate axes, model comes from the premise-risk ×
-  deliberation-load grid, not from a feeling about importance.
+- **🎨 Rebuild the Priority·Effort artifact around the new model-selection grid** `[P3 · M · Sonnet5-High]` *(filed 2026-08-06 21:58 EDT — Harkirat's call, "not right now, maybe in a few days or when we have nothing else important to do.")* Full handoff already written, ready to paste into a fresh session: `local/handoff/2026-08-06-tier-system-artifact-handoff.md`. Update the existing artifact **in place** (pass its URL to the Artifact tool — a fresh conversation otherwise mints a new link) to reflect the v2.57.2 grid: effort tier and model choice are separate axes, model comes from the premise-risk × deliberation-load grid, not from a feeling about importance.
 
 ---
 
 ## 🧹 Someday / tech-debt
-*Full context lives in `.claude/rules/*.md` (subsystem detail), `docs/reference/platform-constraints.md`
-(accepted gaps), and memory. Model tags re-audited 2026-07-18 against the "tier vs. effort" calibration
-(`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then:
-well-specified execution/polish, not novel design.*
+*Full context lives in `.claude/rules/*.md` (subsystem detail), `docs/reference/platform-constraints.md` (accepted gaps), and memory. Model tags re-audited 2026-07-18 against the "tier vs. effort" calibration (`feedback_suggest_model_switch`) — the three Sonnet5-H items below were downgraded from Opus then: well-specified execution/polish, not novel design.*
 
-- **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment**
-  `[P3 · S]` 🧩 needs-design (filed 2026-08-02 14:43 EDT). The *data* was repaired (see the resolved
-  list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the
-  server gets `env: {}` in `~/.claude.json`, and there is no config file anywhere, so linksee falls
-  back to guessing a project from a folder name. A session touching `~/Library/...` can still spawn a
-  junk entity.
-  **Standing defence, already in force and sufficient:** recall by `query` (FTS5, crosses entities),
-  never by `entity_name`; pass `entity_name` explicitly on every write. Encoded in the skill's
-  frontmatter, `reference_tool_capability_tests`, and both MCP stores.
-  **Direction if ever picked up:** investigate whether `map_projects` / `recall({scope_to_roots})`
-  can be populated to pin a project root, or raise it upstream. Low priority — the defence works and
-  the repair is repeatable.
+- **🧩 Linksee still derives entity names from PATH SEGMENTS — new sessions can re-fragment** `[P3 · S]` 🧩 needs-design (filed 2026-08-02 14:43 EDT). The *data* was repaired (see the resolved list — 123 memories re-homed), but the **root cause is untouched**: `map_projects` is empty, the server gets `env: {}` in `~/.claude.json`, and there is no config file anywhere, so linksee falls back to guessing a project from a folder name. A session touching `~/Library/...` can still spawn a junk entity.
+  **Standing defence, already in force and sufficient:** recall by `query` (FTS5, crosses entities), never by `entity_name`; pass `entity_name` explicitly on every write. Encoded in the skill's frontmatter, `reference_tool_capability_tests`, and both MCP stores.
+  **Direction if ever picked up:** investigate whether `map_projects` / `recall({scope_to_roots})` can be populated to pin a project root, or raise it upstream. Low priority — the defence works and the repair is repeatable.
 
-- `[P2 · M · Sonnet5-H]` **The memory index `MEMORY.md` is close to its read limit and needs a
-  compaction pass.** Filed 2026-08-01 16:10 EDT at Harkirat's request, after the harness warned during
-  the changelog-site work. Measured then: **21.1KB against a 24.4KB read limit** — so it is not a
-  tidiness item, it is an approaching failure. Past the limit the index stops loading in full and a
-  session silently starts with an incomplete map of memory, which is exactly the class of failure
-  `project_memory_slug_migration` exists to prevent. **(That 24.4KB figure was later found not to
-  reproduce — see CLAUDE.md's canonical-memory-path note; the enforced budget is a deliberate safety
-  margin, not a measured platform limit.)**
-  The fix is mechanical but must not lose anything: **one line per entry in the index**, detail pushed
-  down into the topic files themselves, and genuinely stale or superseded entries merged or deleted
-  (several already carry "SUPERSEDED"/"PARKED" markers). Target under 17.1KB (superseded by the note
-  below — re-derive the target from whatever the live budget is when this session actually happens).
-  ⚠️ **Do not do this as a side-quest inside another task.** It rewrites the file every future session
-  reads first; it wants its own session with Harkirat able to see the before/after, and the working
-  agreement's no-half-measures rule applies — every pointer that moves has to still resolve.
-  ⚠️ **The enforced budget was TEMPORARILY bumped 16,000 → 20,000 bytes on 2026-08-08 00:52 EDT**
-  (Harkirat's direct request — `.claude/hooks/memory-index-check.sh`, memory
-  `project_memory_index_scaling`, CLAUDE.md's canonical-memory-path note) rather than trimmed, since a
-  quick look found the index's points genuinely worth keeping and not easily trimmable, and 98 lines
-  didn't justify forcing a full compaction session right then. **This item is still the real fix** —
-  when it happens, revert the hook's default back to 16,000 (or pick a fresh number honestly, don't
-  just keep 20,000 by default) as part of the same pass.
-- `[P2 · S · any model]` **`docs/DEVLOG.md`: a run of dated Part A entries physically sits AFTER the
-  Part B ledger.** Found 2026-07-29 11:44 EDT while appending the v2.42.1 entry — I anchored on
-  `# Part B — Lessons Ledger` believing it marked the end of Part A, and the TOC check failed on
-  ordering. It doesn't: **everything from the first dated heading below the ledger's thematic sections
-  through to EOF** is Part-A-style journey prose, even though Part B's own header says *"no dated
-  entries"* and the TOC lists them all under Part A. Re-derive the split with
-  `awk 'NR>P && /^## 20[0-9][0-9]-/' docs/DEVLOG.md` where `P` is the `# Part B` line — as of filing
-  that was 36 entries correctly above it and 19 below, the misplaced run starting at
-  `2026-07-27 08:02 EDT`. Almost certainly an append-to-EOF habit that outran the structure. ⚠️ My first
-  write-up of this item put the run's start nine entries too late; the `### Lessons` subsections *inside*
-  each entry look like ledger sections at a glance. Map it before moving anything.
-  **Why it matters beyond tidiness:** the next session appending an entry hits the same trap, and
-  `devlog-toc` only catches it as an ordering error *after* the fact — it compares the TOC against every
-  `^## 20…` heading in the file regardless of which Part it is in, so the misplacement itself is
-  invisible to the audit.
-  **The fix is mechanical:** move the contiguous block from the first dated heading after the ledger to
-  EOF up to just before `# Part B`, leaving the ledger as the file's last section. Verify with
-  `npm run docs:audit -- --only devlog-toc` plus a heading-count comparison before and after — same set,
-  same order, ledger last. **Consider adding a check** that no `^## 20` heading appears after the Part B
-  marker; that is the invariant this violates and nothing currently states it. 🔗 Bundle-with the
-  `[P1 · L]` documentation audit in the Queued section, which already covers "restructure where the file
-  has outgrown its shape" — this is a concrete instance of exactly that, recorded here so it doesn't get
-  lost inside a large item.
-- `[P2 · M · 🧩needs-design · ⛓️blocked-by nothing, just deferred]` **Give the dev bot a real Cloudinary
-  write namespace instead of the fail-closed block.** Filed 2026-07-27 18:40 EDT alongside the guard in
-  `utils/cloudinaryDevGuard.js` (v2.35.9). The guard currently refuses **every** Cloudinary write when
-  `NODE_ENV=development`, which is correct and safe but means the dev bot cannot exercise the image
-  workflow at all — a real gap for the v3 items that touch images (`/autobuild`, `/admin` loadout images,
-  patch notes). The clean version is a parallel dev namespace, and it is **not uniform across the three
-  caches**, which is why it wasn't done inline:
-  - `temp_draws` and `patch_notes` bake the folder into the `public_id` (`temp_draws/{slug}`,
-    `patch_notes/{id}/{index}`), and their prune sweeps scan by `prefix: ${FOLDER}/` — so dev-scoping the
-    `FOLDER` const alone namespaces upload, read, and prune end-to-end. Genuinely easy.
-  - **`gun-builds` does not.** Loadout `public_id` is the bare `imageKey`, with the folder carried only in
-    `asset_folder` (a decoupled dashboard label). Dev-scoping needs the `public_id` itself prefixed, and
-    then `buildImageUrl()` in `utils/loadoutRender.js` has to agree — otherwise dev-uploaded images 404 on
-    render while prod-existing ones still resolve, which is a confusing half-working state.
-  Do this when a v3 feature actually needs dev-side image writes, not preemptively. Alternative worth
-  pricing at the same time: a separate free Cloudinary account for `.env.dev`, which is cleaner but makes
-  every existing loadout render broken in dev (their URLs live in Mongo pointing at prod).
-- `[P3 · XS · Harkirat action, not a build]` **Revoke the now-dead `RENDER_API_KEY`** (and `RAILWAY_TOKEN`,
-  confirmed same dead-credential status). Filed 2026-07-27 20:20 EDT, downgraded P1→P3 2026-07-27 23:23 EDT
-  (Harkirat: "not concerned about the render/railway keys"). Confirmed 2026-07-27 23:23 EDT: **zero code
-  references** to either var anywhere in `commands/`, `utils/`, `models/`, or `index.js` — only `.env`
-  itself and historical docs mention them, so revoking carries no code risk whenever it happens. Revoke
-  in each dashboard (Render: Account Settings → API Keys; Railway: Account Settings → Tokens), then drop
-  both lines from `.env` locally and on the VM. No longer time-sensitive.
-- `[P3 · XS · Harkirat action, not a build · ⛓️blocked-by:/help command]` **Update the bot's Discord
-  Developer Portal listing** (filed 2026-07-18, notes) — description, name, and banner image. Folded
-  into v3 2026-07-27 23:23 EDT (Harkirat's call) — downgraded from a standalone P1 since the description
-  rewrite depends on `/help` shipping first. Pure Discord Dev Portal task, not something Claude has UI
-  access to do.
-  ⚠️ **The NAME half is no longer blocked and no longer P3** *(updated 2026-08-04 16:21 EDT)*. The
-  project was renamed to **Dioreo** in v2.52.0 and the live site, the licence, the Terms and the
-  Privacy Policy now all say Dioreo — while the production Discord application is still called
-  *Dior's Builds*, so the bot introduces itself in Discord under a name none of its own documents
-  use. That is a real inconsistency a user can see, and it does not depend on `/help`. **Rename the
-  production application in the Developer Portal — `[P1 · XS]`, Harkirat only.** The description and
-  banner stay blocked on `/help` as before. *(The DEV application `Dioreo (Dev)` has carried the new
-  name since 2026-07-26 and needs nothing.)*
-  ⇄ Also on `docs/ROADMAP.md`'s v3 list (canonical scope/dependency detail).
-- `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable**
-  *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries
-  `Dior <diorswrld@discord.com>`, which is not a verified address on the GitHub account, so GitHub renders
-  the author as flat text with no profile link. Verified via
-  `gh api repos/HarkiratMangat/Diors-Builds/commits --jq '.[].author.login'` → `null`. **Already fixed
-  going forward**: the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>`
-  (see memory `feedback_git_commit_identity`), so all NEW commits link correctly — this item is only about
-  the existing history. Fixing it means a `filter-repo`/`filter-branch` rewrite of every pushed commit:
-  all SHAs change, the GCP VM pulls from this repo, and the 37 backfilled version tags would need
-  re-pointing. Cosmetic benefit vs. real blast radius — decide whether it's worth it at all before
-  scoping a session.
-- `[P2 · M · Sonnet5-H]` **General housekeeping session** — delete leftover `*.bak-*` config backups, sweep
-  stale absolute paths, dead-code / stale-comment / unused-dependency review, decide `/patch notes` carousel
-  component-count chunking.
-  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
-- `[P3 · S]` **Tool-discovery session (filed 2026-07-26 19:32 EDT)** — deferred by Harkirat's own request
-  during a dotenvx-adjacent tooling discussion, not yet scoped for a session. Candidates raised: `procs`
-  (modern `ps`, ties to the recurring stray-`node`-process hunt in `feedback_multiple_bot_instances`),
-  `git-delta` (nicer `git diff`/`show`), `zoxide`, `hyperfine` (ties to the "Pagination perf" item below),
-  Knip (automates the unused-file/dependency audits already done by hand at least twice), `act` (run
-  `ci.yml` locally once PR #11 merges), and a free-tier uptime/status-page service tying into the deferred
-  `/status` command + vmstatus overhaul. Nothing decided — just don't lose the list.
-- `[P2 · M · Sonnet5-H]` **Pagination perf hybrid** — single `UPDATE_MESSAGE` for the light string-building
-  commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated
-  command) but the design itself is ALREADY decided — what's left is careful, well-specified execution
-  across call sites, not open design work.
-  ✅ **IMPLEMENTED 2026-08-06 22:19 EDT, on `docs/timestamp-check-tolerance-fix` (folded in at
-  Harkirat's request — branch keeps its original name, renamed by whichever session merges it).**
-  `sendV2Payload()` now goes single-hop on its own: if the interaction isn't yet acked
-  (`!interaction.deferred && !interaction.replied`) it POSTs the real content straight to the
-  interaction-callback endpoint (`type:7` UPDATE_MESSAGE) instead of ack-then-patch; already-deferred
-  paths (initial slash invocation, View Colors and every other heavy path) are unaffected — they still
-  patch, unchanged. All 7 light call sites in `index.js` converted: draws pagination + sub-page,
-  calendar page toggle, settings page-nav + binary-toggle, drawprices region + subpage. Fixed one
-  latent bug found while removing the settings toggle's `deferUpdate()`: it used to pass the REAL
-  interaction straight through when `actingUser === interaction.user`, relying on `deferUpdate()`
-  having already run to make settings.js's own deferral guard a no-op — with that call gone it would
-  have fired a genuine `deferReply()` (a NEW message) instead of staying single-hop. Now always
-  synthetic with a no-op override, matching every other branch. `node --check` clean, `npm test`
-  21/21, dev bot boots clean and registers commands with no errors. **Not yet click-tested live in
-  Discord** — needs Harkirat (or the next session) to actually click Prev/Next on each of the four
-  commands and confirm the panel updates instantly with no double-flicker.
-  ⚠️ **Left out on purpose, same heuristic, worth a follow-up:** `/alerts`' own `alerts_explain`/
-  `alerts_back`/`alerts_page_` pagination (pure `buildAlertsPanel()` string-building, zero DB/network)
-  and the settings `set_` dropdown handler (region-mode etc., index.js ~line 1151) — not named in the
-  original design, left untouched to keep this change scoped to what was agreed.
+- `[P2 · M · Sonnet5-H]` **The memory index `MEMORY.md` is close to its read limit and needs a compaction pass.** Filed 2026-08-01 16:10 EDT at Harkirat's request, after the harness warned during the changelog-site work. Measured then: **21.1KB against a 24.4KB read limit** — so it is not a tidiness item, it is an approaching failure. Past the limit the index stops loading in full and a session silently starts with an incomplete map of memory, which is exactly the class of failure `project_memory_slug_migration` exists to prevent. **(That 24.4KB figure was later found not to reproduce — see CLAUDE.md's canonical-memory-path note; the enforced budget is a deliberate safety margin, not a measured platform limit.)** The fix is mechanical but must not lose anything: **one line per entry in the index**, detail pushed down into the topic files themselves, and genuinely stale or superseded entries merged or deleted (several already carry "SUPERSEDED"/"PARKED" markers). Target under 17.1KB (superseded by the note below — re-derive the target from whatever the live budget is when this session actually happens). ⚠️ **Do not do this as a side-quest inside another task.** It rewrites the file every future session reads first; it wants its own session with Harkirat able to see the before/after, and the working agreement's no-half-measures rule applies — every pointer that moves has to still resolve. ⚠️ **The enforced budget was TEMPORARILY bumped 16,000 → 20,000 bytes on 2026-08-08 00:52 EDT** (Harkirat's direct request — `.claude/hooks/memory-index-check.sh`, memory `project_memory_index_scaling`, CLAUDE.md's canonical-memory-path note) rather than trimmed, since a quick look found the index's points genuinely worth keeping and not easily trimmable, and 98 lines didn't justify forcing a full compaction session right then. **This item is still the real fix** — when it happens, revert the hook's default back to 16,000 (or pick a fresh number honestly, don't just keep 20,000 by default) as part of the same pass.
+- `[P2 · S · any model]` **`docs/DEVLOG.md`: a run of dated Part A entries physically sits AFTER the Part B ledger.** Found 2026-07-29 11:44 EDT while appending the v2.42.1 entry — I anchored on `# Part B — Lessons Ledger` believing it marked the end of Part A, and the TOC check failed on ordering. It doesn't: **everything from the first dated heading below the ledger's thematic sections through to EOF** is Part-A-style journey prose, even though Part B's own header says *"no dated entries"* and the TOC lists them all under Part A. Re-derive the split with `awk 'NR>P && /^## 20[0-9][0-9]-/' docs/DEVLOG.md` where `P` is the `# Part B` line — as of filing that was 36 entries correctly above it and 19 below, the misplaced run starting at `2026-07-27 08:02 EDT`. Almost certainly an append-to-EOF habit that outran the structure. ⚠️ My first write-up of this item put the run's start nine entries too late; the `### Lessons` subsections *inside* each entry look like ledger sections at a glance. Map it before moving anything.
+  **Why it matters beyond tidiness:** the next session appending an entry hits the same trap, and `devlog-toc` only catches it as an ordering error *after* the fact — it compares the TOC against every `^## 20…` heading in the file regardless of which Part it is in, so the misplacement itself is invisible to the audit.
+  **The fix is mechanical:** move the contiguous block from the first dated heading after the ledger to EOF up to just before `# Part B`, leaving the ledger as the file's last section. Verify with `npm run docs:audit -- --only devlog-toc` plus a heading-count comparison before and after — same set, same order, ledger last. **Consider adding a check** that no `^## 20` heading appears after the Part B marker; that is the invariant this violates and nothing currently states it. 🔗 Bundle-with the `[P1 · L]` documentation audit in the Queued section, which already covers "restructure where the file has outgrown its shape" — this is a concrete instance of exactly that, recorded here so it doesn't get lost inside a large item.
+- `[P2 · M · 🧩needs-design · ⛓️blocked-by nothing, just deferred]` **Give the dev bot a real Cloudinary write namespace instead of the fail-closed block.** Filed 2026-07-27 18:40 EDT alongside the guard in `utils/cloudinaryDevGuard.js` (v2.35.9). The guard currently refuses **every** Cloudinary write when `NODE_ENV=development`, which is correct and safe but means the dev bot cannot exercise the image workflow at all — a real gap for the v3 items that touch images (`/autobuild`, `/admin` loadout images, patch notes). The clean version is a parallel dev namespace, and it is **not uniform across the three caches**, which is why it wasn't done inline:
+  - `temp_draws` and `patch_notes` bake the folder into the `public_id` (`temp_draws/{slug}`, `patch_notes/{id}/{index}`), and their prune sweeps scan by `prefix: ${FOLDER}/` — so dev-scoping the `FOLDER` const alone namespaces upload, read, and prune end-to-end. Genuinely easy.
+  - **`gun-builds` does not.** Loadout `public_id` is the bare `imageKey`, with the folder carried only in `asset_folder` (a decoupled dashboard label). Dev-scoping needs the `public_id` itself prefixed, and then `buildImageUrl()` in `utils/loadoutRender.js` has to agree — otherwise dev-uploaded images 404 on render while prod-existing ones still resolve, which is a confusing half-working state. Do this when a v3 feature actually needs dev-side image writes, not preemptively. Alternative worth pricing at the same time: a separate free Cloudinary account for `.env.dev`, which is cleaner but makes every existing loadout render broken in dev (their URLs live in Mongo pointing at prod).
+- `[P3 · XS · Harkirat action, not a build]` **Revoke the now-dead `RENDER_API_KEY`** (and `RAILWAY_TOKEN`, confirmed same dead-credential status). Filed 2026-07-27 20:20 EDT, downgraded P1→P3 2026-07-27 23:23 EDT (Harkirat: "not concerned about the render/railway keys"). Confirmed 2026-07-27 23:23 EDT: **zero code references** to either var anywhere in `commands/`, `utils/`, `models/`, or `index.js` — only `.env` itself and historical docs mention them, so revoking carries no code risk whenever it happens. Revoke in each dashboard (Render: Account Settings → API Keys; Railway: Account Settings → Tokens), then drop both lines from `.env` locally and on the VM. No longer time-sensitive.
+- `[P3 · XS · Harkirat action, not a build · ⛓️blocked-by:/help command]` **Update the bot's Discord Developer Portal listing** (filed 2026-07-18, notes) — description, name, and banner image. Folded into v3 2026-07-27 23:23 EDT (Harkirat's call) — downgraded from a standalone P1 since the description rewrite depends on `/help` shipping first. Pure Discord Dev Portal task, not something Claude has UI access to do. ⚠️ **The NAME half is no longer blocked and no longer P3** *(updated 2026-08-04 16:21 EDT)*. The project was renamed to **Dioreo** in v2.52.0 and the live site, the licence, the Terms and the Privacy Policy now all say Dioreo — while the production Discord application is still called *Dior's Builds*, so the bot introduces itself in Discord under a name none of its own documents use. That is a real inconsistency a user can see, and it does not depend on `/help`. **Rename the production application in the Developer Portal — `[P1 · XS]`, Harkirat only.** The description and banner stay blocked on `/help` as before. *(The DEV application `Dioreo (Dev)` has carried the new name since 2026-07-26 and needs nothing.)* ⇄ Also on `docs/ROADMAP.md`'s v3 list (canonical scope/dependency detail).
+- `[P3 · S · Harkirat decision first, then Sonnet5-M]` **Commit attribution: back-catalogue is unclickable** *(filed 2026-07-27 11:10 EDT)* — every Diors-Builds commit made before 2026-07-27 11:10 EDT carries `Dior <diorswrld@discord.com>`, which is not a verified address on the GitHub account, so GitHub renders the author as flat text with no profile link. Verified via `gh api repos/HarkiratMangat/Diors-Builds/commits --jq '.[].author.login'` → `null`. **Already fixed going forward**: the global git identity is now `dior <21996007+HarkiratMangat@users.noreply.github.com>` (see memory `feedback_git_commit_identity`), so all NEW commits link correctly — this item is only about the existing history. Fixing it means a `filter-repo`/`filter-branch` rewrite of every pushed commit: all SHAs change, the GCP VM pulls from this repo, and the 37 backfilled version tags would need re-pointing. Cosmetic benefit vs. real blast radius — decide whether it's worth it at all before scoping a session.
+- `[P2 · M · Sonnet5-H]` **General housekeeping session** — delete leftover `*.bak-*` config backups, sweep stale absolute paths, dead-code / stale-comment / unused-dependency review, decide `/patch notes` carousel component-count chunking. ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
+- `[P3 · S]` **Tool-discovery session (filed 2026-07-26 19:32 EDT)** — deferred by Harkirat's own request during a dotenvx-adjacent tooling discussion, not yet scoped for a session. Candidates raised: `procs` (modern `ps`, ties to the recurring stray-`node`-process hunt in `feedback_multiple_bot_instances`), `git-delta` (nicer `git diff`/`show`), `zoxide`, `hyperfine` (ties to the "Pagination perf" item below), Knip (automates the unused-file/dependency audits already done by hand at least twice), `act` (run `ci.yml` locally once PR #11 merges), and a free-tier uptime/status-page service tying into the deferred `/status` command + vmstatus overhaul. Nothing decided — just don't lose the list.
+- `[P2 · M · Sonnet5-H]` **Pagination perf hybrid** — single `UPDATE_MESSAGE` for the light string-building commands; keep defer-then-patch for heavy/attachment paths. Cross-cutting (touches every paginated command) but the design itself is ALREADY decided — what's left is careful, well-specified execution across call sites, not open design work. ✅ **IMPLEMENTED 2026-08-06 22:19 EDT, on `docs/timestamp-check-tolerance-fix` (folded in at Harkirat's request — branch keeps its original name, renamed by whichever session merges it).** `sendV2Payload()` now goes single-hop on its own: if the interaction isn't yet acked (`!interaction.deferred && !interaction.replied`) it POSTs the real content straight to the interaction-callback endpoint (`type:7` UPDATE_MESSAGE) instead of ack-then-patch; already-deferred paths (initial slash invocation, View Colors and every other heavy path) are unaffected — they still patch, unchanged. All 7 light call sites in `index.js` converted: draws pagination + sub-page, calendar page toggle, settings page-nav + binary-toggle, drawprices region + subpage. Fixed one latent bug found while removing the settings toggle's `deferUpdate()`: it used to pass the REAL interaction straight through when `actingUser === interaction.user`, relying on `deferUpdate()` having already run to make settings.js's own deferral guard a no-op — with that call gone it would have fired a genuine `deferReply()` (a NEW message) instead of staying single-hop. Now always synthetic with a no-op override, matching every other branch. `node --check` clean, `npm test` 21/21, dev bot boots clean and registers commands with no errors. **Not yet click-tested live in Discord** — needs Harkirat (or the next session) to actually click Prev/Next on each of the four commands and confirm the panel updates instantly with no double-flicker. ⚠️ **Left out on purpose, same heuristic, worth a follow-up:** `/alerts`' own `alerts_explain`/ `alerts_back`/`alerts_page_` pagination (pure `buildAlertsPanel()` string-building, zero DB/network) and the settings `set_` dropdown handler (region-mode etc., index.js ~line 1151) — not named in the original design, left untouched to keep this change scoped to what was agreed.
 
-  📌 **RE-RAISED by Harkirat 2026-08-06 18:10 EDT and slotted as the SECOND of four agreed sessions**
-  (after the `timestamp-check.sh` fix, before the `index.js` split — which it bundles with, since both
-  touch every component branch). His words: the left/right buttons *"currently send a back n forth
-  request or something instead of 1 combined request."* That is exactly the double round-trip traced
-  below, so **nothing here needs re-deriving and the hybrid design is not up for re-litigation.**
-  ⚠️ **I filed a DUPLICATE of this on 2026-08-06 18:14 EDT** in 🐞 Active Bugs, tagged 🧩needs-design,
-  after searching for "twice / two calls / double-call" and never for **"round-trip"** — the one phrase
-  this entry actually uses. Removed 2026-08-06 18:24 EDT. Two lessons, both live: a duplicate filing is
-  worse than no filing, because mine would have sent a session to re-open a design Harkirat settled on
-  2026-07-14; and **searching a tracker means searching the words the tracker uses**, not the words the
-  reporter used. Check 🧹 Someday and `docs/ROADMAP.md` before filing anything as a new bug.
+  📌 **RE-RAISED by Harkirat 2026-08-06 18:10 EDT and slotted as the SECOND of four agreed sessions** (after the `timestamp-check.sh` fix, before the `index.js` split — which it bundles with, since both touch every component branch). His words: the left/right buttons *"currently send a back n forth request or something instead of 1 combined request."* That is exactly the double round-trip traced below, so **nothing here needs re-deriving and the hybrid design is not up for re-litigation.** ⚠️ **I filed a DUPLICATE of this on 2026-08-06 18:14 EDT** in 🐞 Active Bugs, tagged 🧩needs-design, after searching for "twice / two calls / double-call" and never for **"round-trip"** — the one phrase this entry actually uses. Removed 2026-08-06 18:24 EDT. Two lessons, both live: a duplicate filing is worse than no filing, because mine would have sent a session to re-open a design Harkirat settled on 2026-07-14; and **searching a tracker means searching the words the tracker uses**, not the words the reporter used. Check 🧹 Someday and `docs/ROADMAP.md` before filing anything as a new bug.
 
-  **The full investigation and the agreed shape, moved here 2026-08-06 08:13 EDT** from
-  `docs/reference/platform-constraints.md` when it was split and renamed from **known-issues**.
-  It was never a platform constraint — it is our own architecture with a decided fix, and this list is
-  where decided-but-unbuilt work lives. Kept verbatim in substance so nothing is re-derived:
+  **The full investigation and the agreed shape, moved here 2026-08-06 08:13 EDT** from `docs/reference/platform-constraints.md` when it was split and renamed from **known-issues**. It was never a platform constraint — it is our own architecture with a decided fix, and this list is where decided-but-unbuilt work lives. Kept verbatim in substance so nothing is re-derived:
 
-  Pagination/toggle clicks (draws' New/Returning switch, calendar and draw-prices sub-page nav, etc.)
-  have a **structural double network round-trip, not a CPU or DB bug** — investigated 2026-07-14 after
-  Harkirat flagged it "feels slow". Every `await` on the hot path was traced for both `/draws`'
-  view-switch and `/calendar`'s sub-page nav: 1 `deferUpdate()` round-trip, 2 concurrent Mongo reads
-  (`prefs` + `SeasonalData`), then a SEPARATE `rest.patch(Routes.webhookMessage(...))` round-trip to
-  actually update the message. `buildContainer()` itself is pure sync string-building — no image or
-  attachment work happens on this path at all. The View-Colors-incident-style cause was ruled out too:
-  Harkirat's saved `accentColorStyle` is `'preset'`, which returns `presetHex` immediately with no live
-  Discord fetch.
+  Pagination/toggle clicks (draws' New/Returning switch, calendar and draw-prices sub-page nav, etc.) have a **structural double network round-trip, not a CPU or DB bug** — investigated 2026-07-14 after Harkirat flagged it "feels slow". Every `await` on the hot path was traced for both `/draws`' view-switch and `/calendar`'s sub-page nav: 1 `deferUpdate()` round-trip, 2 concurrent Mongo reads (`prefs` + `SeasonalData`), then a SEPARATE `rest.patch(Routes.webhookMessage(...))` round-trip to actually update the message. `buildContainer()` itself is pure sync string-building — no image or attachment work happens on this path at all. The View-Colors-incident-style cause was ruled out too: Harkirat's saved `accentColorStyle` is `'preset'`, which returns `presetHex` immediately with no live Discord fetch.
 
-  **The agreed shape is a HYBRID, not a blanket conversion** (Harkirat's call, 2026-07-14), split by
-  what each handler does before it can respond:
-  - Pure string-building paginated commands (draws, calendar, drawprices, settings) → single
-    `UPDATE_MESSAGE`, one hop. They finish well inside Discord's 3s ACK window, so the margin
-    `deferUpdate()` buys isn't needed.
-  - Anything doing heavy work before replying — View Colors (k-means extraction, swatch/gradient PNG
-    generation, the ffmpeg still-frame) and any attachment-generating path → **KEEP** defer-then-patch;
-    blowing the 3s ACK is a real risk there.
+  **The agreed shape is a HYBRID, not a blanket conversion** (Harkirat's call, 2026-07-14), split by what each handler does before it can respond:
+  - Pure string-building paginated commands (draws, calendar, drawprices, settings) → single `UPDATE_MESSAGE`, one hop. They finish well inside Discord's 3s ACK window, so the margin `deferUpdate()` buys isn't needed.
+  - Anything doing heavy work before replying — View Colors (k-means extraction, swatch/gradient PNG generation, the ffmpeg still-frame) and any attachment-generating path → **KEEP** defer-then-patch; blowing the 3s ACK is a real risk there.
 
-  Heuristic: *"does this path do CPU or image/network work before it replies?"* → heavy stays defer,
-  light goes single-hop.
-  ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list as "Pagination double round-trip perf fix" (horizon only — the design detail above is canonical).
-- `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, notes L59)* read-only
-  check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as
-  designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above
-  only if confirmed. ⚠️ *This used to claim it was also tracked in the file then called
-  **known-issues** — it never was. Found 2026-08-06 08:14 EDT while sweeping that file's rename to
-  `docs/reference/platform-constraints.md`: it held six entries and none of
-  them was about Cloudinary folders. A cross-reference to a file that does not carry the item reads as
-  corroboration and supplies none, so it is removed rather than repointed.*
-  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
-- `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** —
-  retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B.
-  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
-- `[P1 · S · 🧩needs-design]` **Why did both v2.55.5 defects surface only AFTER the merge — did a gate
-  fail, or is there a coverage hole?** — *(Harkirat's question, 2026-08-06 00:40 EDT. **Deferred to a
-  morning session at his instruction — do NOT investigate inline.** Filed so the question is not lost;
-  the leads below are hypotheses to test, not findings.)*
+  Heuristic: *"does this path do CPU or image/network work before it replies?"* → heavy stays defer, light goes single-hop. ⇄ Also on `docs/ROADMAP.md`'s **remaining-v2** list as "Pagination double round-trip perf fix" (horizon only — the design detail above is canonical).
+- `[P2 · XS · Sonnet5-L]` **Verify Cloudinary folder organization** — *(new 2026-07-18, the notes file)* read-only check that draw thumbnails land in `temp_draws/` and patch-notes images in `patch_notes/{patchId}/` as designed; Harkirat noticed assets that look like they're in the main folder. Escalate to a 🐞 bug above only if confirmed. ⚠️ *This used to claim it was also tracked in the file then called **known-issues** — it never was. Found 2026-08-06 08:14 EDT while sweeping that file's rename to `docs/reference/platform-constraints.md`: it held six entries and none of them was about Cloudinary folders. A cross-reference to a file that does not carry the item reads as corroboration and supplies none, so it is removed rather than repointed.* ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
+- `[P3 · M · Opus5-M · ⛓️blocked-by:token budget]` **Full DEVLOG backfill from prior chat transcripts** — retrieve the old transcripts and merge their reasoning into DEVLOG's Part A/B. ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
+- `[P1 · S · 🧩needs-design]` **Why did both v2.55.5 defects surface only AFTER the merge — did a gate fail, or is there a coverage hole?** — *(Harkirat's question, 2026-08-06 00:40 EDT. **Deferred to a morning session at his instruction — do NOT investigate inline.** Filed so the question is not lost; the leads below are hypotheses to test, not findings.)*
 
-  **The two defects:** the merged DEVLOG entry claimed *"Filed, not done"* about the design-history
-  fold when nothing had been filed; and the deploy reminder carried two hardcoded version numbers that
-  had rotted several releases out of date. Both were caught by the `Stop` outstanding-items gate
-  **after** `gh pr merge` had already run.
+  **The two defects:** the merged DEVLOG entry claimed *"Filed, not done"* about the design-history fold when nothing had been filed; and the deploy reminder carried two hardcoded version numbers that had rotted several releases out of date. Both were caught by the `Stop` outstanding-items gate **after** `gh pr merge` had already run.
 
   **Leads to check — each is a guess until measured:**
-  1. **Timing.** `release-ready-check.sh` fires at `PreToolUse` on `gh pr merge`; the outstanding-items
-     gate fires at `Stop`, i.e. per assistant message. If the false claim was written *before* the
-     merge and only *summarised* after it, the two gates would have been looking at different moments,
-     and neither was wrong — they just do not overlap. Verify against the actual turn order.
-  2. **Coverage, not failure.** `release-ready-check.sh` asserts a DEVLOG entry **exists**; nothing
-     asserts its sentences are **true**. That limit is already documented in this file's
-     🧮 docs-audit section: *"Nothing verifies a changelog entry DESCRIBES what shipped."* A claim of
-     "filed" inside a record may simply be outside every gate's reach.
-  3. **Nothing checks a filed item's own accuracy.** `docs-audit`'s `xref` verifies paths resolve; no
-     check asks whether a reminder's *content* is still true. A stale version number inside a correct
-     path is invisible to every gate that exists.
-  4. **Was any gate silently degraded?** Cheapest to rule out first — `npm run test:hooks` and confirm
-     the relevant hooks are still registered and executable in `.claude/settings.json`.
+  1. **Timing.** `release-ready-check.sh` fires at `PreToolUse` on `gh pr merge`; the outstanding-items gate fires at `Stop`, i.e. per assistant message. If the false claim was written *before* the merge and only *summarised* after it, the two gates would have been looking at different moments, and neither was wrong — they just do not overlap. Verify against the actual turn order.
+  2. **Coverage, not failure.** `release-ready-check.sh` asserts a DEVLOG entry **exists**; nothing asserts its sentences are **true**. That limit is already documented in this file's 🧮 docs-audit section: *"Nothing verifies a changelog entry DESCRIBES what shipped."* A claim of "filed" inside a record may simply be outside every gate's reach.
+  3. **Nothing checks a filed item's own accuracy.** `docs-audit`'s `xref` verifies paths resolve; no check asks whether a reminder's *content* is still true. A stale version number inside a correct path is invisible to every gate that exists.
+  4. **Was any gate silently degraded?** Cheapest to rule out first — `npm run test:hooks` and confirm the relevant hooks are still registered and executable in `.claude/settings.json`.
 
-  **Do not conclude "the hooks failed" or "the hooks are fine" without running (4) first.** If the
-  answer is a coverage hole rather than a failure, the follow-up question is whether it is *worth*
-  closing — a checker for prose truthfulness may not be buildable, and saying so honestly is a
-  legitimate outcome.
-- `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, notes L34)* a rich but
-  noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so
-  Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse
-  `reference_vm_bot_commands` card. ("Not anytime soon.")
-  ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
+  **Do not conclude "the hooks failed" or "the hooks are fine" without running (4) first.** If the answer is a coverage hole rather than a failure, the follow-up question is whether it is *worth* closing — a checker for prose truthfulness may not be buildable, and saying so honestly is a legitimate outcome.
+- `[P3 · M · Opus5-M]` **Write a user-friendly bot/ops guide** — *(new 2026-07-18, the notes file)* a rich but noob-friendly how-to for operating the bot end-to-end (GCP VM, hosting, deploy flow, status/logs), so Harkirat can self-serve. Distinct from `docs/reference/deployment-and-ops.md` and the terse `reference_vm_bot_commands` card. ("Not anytime soon.") ⇄ Also on `docs/ROADMAP.md`'s **v5** list (version horizon).
 
-  **📚 Widened 2026-08-05 23:10 EDT — this item is one half of a larger docs system Harkirat
-  described in a mini brainstorming side-session.** Nothing is decided; the notes below exist so the
-  thinking isn't lost, **not** as an agreed design. Treat the whole thing as still open to discussion,
-  including whether to do it at all.
+  **📚 Widened 2026-08-05 23:10 EDT — this item is one half of a larger docs system Harkirat described in a mini brainstorming side-session.** Nothing is decided; the notes below exist so the thinking isn't lost, **not** as an agreed design. Treat the whole thing as still open to discussion, including whether to do it at all.
 
-  **What he actually wants**, in his words: a *detailed interactive help doc for the bot and its
-  commands* — how each one works, what it does, the quirks — **and** a *detailed guide for the
-  admin-based commands*: maintaining the data, using every aspect of `/manage` and `/autobuild`, and
-  how the backend is handled (Cloudinary caching, the Gemini/Vertex extraction, and so on).
+  **What he actually wants**, in his words: a *detailed interactive help doc for the bot and its commands* — how each one works, what it does, the quirks — **and** a *detailed guide for the admin-based commands*: maintaining the data, using every aspect of `/manage` and `/autobuild`, and how the backend is handled (Cloudinary caching, the Gemini/Vertex extraction, and so on).
 
-  That is **two products, not one**: a player-facing command reference, and an admin operations
-  manual. This filed item is the *infrastructure* half of the second one. **Open question: do they
-  merge into a single manual with two parts, or stay separate?** Writing them independently risks two
-  half-guides, which is the main reason this note exists at all.
+  That is **two products, not one**: a player-facing command reference, and an admin operations manual. This filed item is the *infrastructure* half of the second one. **Open question: do they merge into a single manual with two parts, or stay separate?** Writing them independently risks two half-guides, which is the main reason this note exists at all.
 
-  **The one structural idea worth not losing** — every `commands/*.js` exports
-  `data: new SlashCommandBuilder()` with names, descriptions, typed options, and `addChoices()`, and
-  those option descriptions are *already written in player-facing voice*. Discord renders its own
-  command picker from that same object, so a reference **generated** from `.data.toJSON()` cannot drift
-  from what a user sees in the client. Hand-written command docs always drift; generation removes the
-  failure mode structurally rather than by discipline. Hand-written overlays then carry the part that
-  can't be generated (quirks, examples, screenshots), with a `docs-audit` coverage check so a new
-  undocumented command fails rather than passing silently.
+  **The one structural idea worth not losing** — every `commands/*.js` exports `data: new SlashCommandBuilder()` with names, descriptions, typed options, and `addChoices()`, and those option descriptions are *already written in player-facing voice*. Discord renders its own command picker from that same object, so a reference **generated** from `.data.toJSON()` cannot drift from what a user sees in the client. Hand-written command docs always drift; generation removes the failure mode structurally rather than by discipline. Hand-written overlays then carry the part that can't be generated (quirks, examples, screenshots), with a `docs-audit` coverage check so a new undocumented command fails rather than passing silently.
 
-  **Full thinking is in `docs/ideas/docs-system.md`** (tracked, but not published — nothing in
-  `docs/ideas/` feeds the site build), with a short pointer entry beside it in
-  `docs/ideas/design-ideas.md` — a single numbered guide covering: the five-criterion rubric any docs tool has to
-  survive here · why a docs framework is the wrong answer · the two products and their different
-  failure modes · the `SlashCommandBuilder` generation design and its coverage gate · the admin
-  manual's structure and its public/private fork · tooling by tier, plus MCPs, services and apps ·
-  a full examination of hosted platforms (Mintlify specifically, including the one capability this
-  plan cannot match) · information architecture and the build pipeline · what it touches in existing
-  CI/deploy machinery · a phased plan · a risk register · and an honest case for doing nothing.
+  **Full thinking is in `docs/ideas/docs-system.md`** (tracked, but not published — nothing in `docs/ideas/` feeds the site build), with a short pointer entry beside it in `docs/ideas/design-ideas.md` — a single numbered guide covering: the five-criterion rubric any docs tool has to survive here · why a docs framework is the wrong answer · the two products and their different failure modes · the `SlashCommandBuilder` generation design and its coverage gate · the admin manual's structure and its public/private fork · tooling by tier, plus MCPs, services and apps · a full examination of hosted platforms (Mintlify specifically, including the one capability this plan cannot match) · information architecture and the build pipeline · what it touches in existing CI/deploy machinery · a phased plan · a risk register · and an honest case for doing nothing.
 
-  ⚠️ **That guide is NOT the definitive answer and NOT the end of the discussion**, and it says so in
-  its own opening banner. Harkirat is explicitly still open to other ideas, other tools and other
-  shapes entirely; Claude should keep looking rather than treat the file as settled. **Nothing has
-  been concretely planned or outlined** — its phases are a sketch of *an* order, not a chosen one, and
-  its "settled" decisions are reasoning open to being overturned by a better argument or a tool nobody
-  checked. If a future session finds something better, **change the guide rather than defend it.**
+  ⚠️ **That guide is NOT the definitive answer and NOT the end of the discussion**, and it says so in its own opening banner. Harkirat is explicitly still open to other ideas, other tools and other shapes entirely; Claude should keep looking rather than treat the file as settled. **Nothing has been concretely planned or outlined** — its phases are a sketch of *an* order, not a chosen one, and its "settled" decisions are reasoning open to being overturned by a better argument or a tool nobody checked. If a future session finds something better, **change the guide rather than defend it.**
 
-  ⚠️ **Two live constraints any version of this must survive**, both already paid for elsewhere:
-  `docs/legal/PRIVACY.md` §2.6 promises *"no analytics, no third-party scripts"*, which disqualifies
-  Algolia, Mermaid's runtime renderer and every hosted docs service; and a troubleshooting section must
-  never tell anyone to paste a **raw** Cloudinary error, because that object carries the live API key
-  and secret (see the hard invariant in CLAUDE.md).
+  ⚠️ **Two live constraints any version of this must survive**, both already paid for elsewhere: `docs/legal/PRIVACY.md` §2.6 promises *"no analytics, no third-party scripts"*, which disqualifies Algolia, Mermaid's runtime renderer and every hosted docs service; and a troubleshooting section must never tell anyone to paste a **raw** Cloudinary error, because that object carries the live API key and secret (see the hard invariant in CLAUDE.md).
 
-  **If only one piece is ever done: Pagefind.** Static search over the existing site, no decisions
-  required, no third-party requests, benefits all 10 live pages — and it is a cheap honest test of
-  whether extending a 10,037-line generator is as comfortable as the plan assumes.
+  **If only one piece is ever done: Pagefind.** Static search over the existing site, no decisions required, no third-party requests, benefits all 10 live pages — and it is a cheap honest test of whether extending a 10,037-line generator is as comfortable as the plan assumes.
 
-  📌 **The `[P3 · M]` tag covers the original ops-guide scope only.** The full system is plainly larger
-  — re-tag once the scope question above is actually answered, rather than inflating it on speculation.
-- `[P3 · M · Opus5-M]` **Ship the redesigned changelog artifact** — the "Armory Terminal" visual, paused.
-  ⇄ Also on `docs/ROADMAP.md`'s **v3** list (version horizon).
-- `[P3 · XS · Sonnet5-L · 🔗bundle-with next VM/ops touch]` **Guest disk-usage peaks in `scripts/vmpeaks.sh`**
-  — small add mirroring the new `rampeak()` now that the Ops Agent (2026-07-17) provides the metric.
-  🔗 Natural bundle with the "Watch that GCP holds long-term" reminder above, which is also a VM/ops touch.
-- `[P3 · M · 🧩needs-design · ⛓️blocked-by: claiming BrowserStack]` **Real-iOS screenshot regression
-  harness for the site's mobile nav** — *(filed 2026-08-05 22:08 EDT out of the GitHub Student Pack
-  triage)*. BrowserStack's Automate Mobile plan drives real iOS Safari and captures frames, which is
-  the only automated way to catch a repeat of the light-mode liquid-indicator artefact without
-  Harkirat's phone in the loop.
+  📌 **The `[P3 · M]` tag covers the original ops-guide scope only.** The full system is plainly larger — re-tag once the scope question above is actually answered, rather than inflating it on speculation.
+- `[P3 · M · Opus5-M]` **Ship the redesigned changelog artifact** — the "Armory Terminal" visual, paused. ⇄ Also on `docs/ROADMAP.md`'s **v3** list (version horizon).
+- `[P3 · XS · Sonnet5-L · 🔗bundle-with next VM/ops touch]` **Guest disk-usage peaks in `scripts/vmpeaks.sh`** — small add mirroring the new `rampeak()` now that the Ops Agent (2026-07-17) provides the metric. 🔗 Natural bundle with the "Watch that GCP holds long-term" reminder above, which is also a VM/ops touch.
+- `[P3 · M · 🧩needs-design · ⛓️blocked-by: claiming BrowserStack]` **Real-iOS screenshot regression harness for the site's mobile nav** — *(filed 2026-08-05 22:08 EDT out of the GitHub Student Pack triage)*. BrowserStack's Automate Mobile plan drives real iOS Safari and captures frames, which is the only automated way to catch a repeat of the light-mode liquid-indicator artefact without Harkirat's phone in the loop.
   **Two honest reasons this sits at P3 rather than P1 — both must be solved BEFORE building it:**
-  1. **It would only catch regressions after they ship.** `deploy-site.yml` publishes on merge to
-     `main` and there are no PR preview deployments, so a job pointed at `dioreo.app` tests
-     already-live bytes. Fixing that means Cloudflare Pages preview deployments, or a BrowserStack
-     Local tunnel from the runner — *that* is the real first task, not the screenshots.
-  2. **Diffing a 2.4s animation is flaky by construction.** Frame timing on a remote real device is
-     not deterministic, so a naive whole-page baseline will throw false failures and get muted — and
-     a muted gate is worse than no gate, which is the lesson `.claude/hooks/run-all-tests.sh` exists
-     to enforce. Design a *specific* assertion instead: sample the tab-strip pixel region for the
-     inverted-accent hue the bug actually produces (lime on the License page).
-  ⚠️ Needs BrowserStack credentials as repo secrets — fine on a solo repo — and the plan is
-  **1 parallel / 1 user**, so runs queue behind each other.
+  1. **It would only catch regressions after they ship.** `deploy-site.yml` publishes on merge to `main` and there are no PR preview deployments, so a job pointed at `dioreo.app` tests already-live bytes. Fixing that means Cloudflare Pages preview deployments, or a BrowserStack Local tunnel from the runner — *that* is the real first task, not the screenshots.
+  2. **Diffing a 2.4s animation is flaky by construction.** Frame timing on a remote real device is not deterministic, so a naive whole-page baseline will throw false failures and get muted — and a muted gate is worse than no gate, which is the lesson `.claude/hooks/run-all-tests.sh` exists to enforce. Design a *specific* assertion instead: sample the tab-strip pixel region for the inverted-accent hue the bug actually produces (lime on the License page). ⚠️ Needs BrowserStack credentials as repo secrets — fine on a solo repo — and the plan is **1 parallel / 1 user**, so runs queue behind each other.
 
 ### 🧮 `scripts/docs-audit.mjs` — the limits it does NOT cover (filed 2026-07-29 02:10 EDT, v2.42.0)
-*These are the honest edges of the documentation audit, filed so a future session improves the program
-rather than rediscovering them. **None is a bug** — each is a known boundary that the audit states in
-its own output on every run. Read `.claude/rules/scripts-and-migrations.md` first; run
-`node scripts/docs-audit.mjs --list` for the live check roster.*
+*These are the honest edges of the documentation audit, filed so a future session improves the program rather than rediscovering them. **None is a bug** — each is a known boundary that the audit states in its own output on every run. Read `.claude/rules/scripts-and-migrations.md` first; run `node scripts/docs-audit.mjs --list` for the live check roster.*
 
-- `[P3 · L · 🧩needs-design]` **Nothing verifies a changelog entry DESCRIBES what shipped.**
-  `version-sync` proves the number matches `package.json` and `hash-chain` proves the commit resolves,
-  but an entry saying "fixed the parser" for a change that broke it passes every check. Content
-  accuracy is the largest uncovered surface. Plausible direction: compare an entry's claimed scope
-  against the diff's touched paths and flag entries that mention subsystems the diff never touched —
-  cheap, coarse, and would have caught real cases. Anything stronger needs a model in the loop.
-- `[P3 · L · 🧩needs-design]` **The audit is a WHITELIST of failures that already happened.** Every
-  check encodes a past mistake, so a genuinely new *category* of drift has no check by construction.
-  Nothing currently notices "this doc has not been touched in N releases while its subsystem changed
-  every one of them". A staleness-by-correlation check (doc mtime vs. the code it documents) is the
-  most promising generic detector and does not exist.
-- `[P2 · M]` **A PR opened in the GitHub web UI fires NO local hook.** CI still runs the tree checks,
-  so those hold — but `records-close-check.sh` (notes file + memory closure) is session-scoped by
-  nature and never runs. That path is genuinely unguarded today. Fix direction: a GitHub Action that
-  posts a PR comment listing the open notes items and whether memory was written since the branch
-  point. It cannot *block* on judgement, but it can put the question in front of a human.
-- `[P3 · S]` **`xref`'s bare-filename half is WARN-only, and must stay that way until gitignored files
-  are resolvable.** Gitignored files are working-tree-LOCAL: `docs/ideas/Harkirats-Space.md` resolves in the
-  main tree and not in a worktree or fresh clone, so "missing" and "not here right now" are genuinely
-  indistinguishable. A tracked manifest of expected-but-ignored paths would let this become an ERROR.
-- `[P3 · S]` **`archive-conservation` traces items by a 6-word fingerprint**, so an item reworded
-  heavily during a sweep reports as untraceable (WARN, by design). Fine in practice; worth revisiting
-  if the false-positive rate ever becomes annoying enough to be ignored.
-- `[P3 · XS]` **`root-docs` reports a VACUOUS PASS on `main` until `LICENSE`/`NOTICE` land** from the
-  `docs/license-terms-privacy` branch. Expected and self-correcting — noted so nobody "fixes" it by
-  deleting the check.
+- `[P3 · L · 🧩needs-design]` **Nothing verifies a changelog entry DESCRIBES what shipped.** `version-sync` proves the number matches `package.json` and `hash-chain` proves the commit resolves, but an entry saying "fixed the parser" for a change that broke it passes every check. Content accuracy is the largest uncovered surface. Plausible direction: compare an entry's claimed scope against the diff's touched paths and flag entries that mention subsystems the diff never touched — cheap, coarse, and would have caught real cases. Anything stronger needs a model in the loop.
+- `[P3 · L · 🧩needs-design]` **The audit is a WHITELIST of failures that already happened.** Every check encodes a past mistake, so a genuinely new *category* of drift has no check by construction. Nothing currently notices "this doc has not been touched in N releases while its subsystem changed every one of them". A staleness-by-correlation check (doc mtime vs. the code it documents) is the most promising generic detector and does not exist.
+- `[P2 · M]` **A PR opened in the GitHub web UI fires NO local hook.** CI still runs the tree checks, so those hold — but `records-close-check.sh` (notes file + memory closure) is session-scoped by nature and never runs. That path is genuinely unguarded today. Fix direction: a GitHub Action that posts a PR comment listing the open notes items and whether memory was written since the branch point. It cannot *block* on judgement, but it can put the question in front of a human.
+- `[P3 · S]` **`xref`'s bare-filename half is WARN-only, and must stay that way until gitignored files are resolvable.** Gitignored files are working-tree-LOCAL: `docs/ideas/Harkirats-Space.md` resolves in the main tree and not in a worktree or fresh clone, so "missing" and "not here right now" are genuinely indistinguishable. A tracked manifest of expected-but-ignored paths would let this become an ERROR.
+- `[P3 · S]` **`archive-conservation` traces items by a 6-word fingerprint**, so an item reworded heavily during a sweep reports as untraceable (WARN, by design). Fine in practice; worth revisiting if the false-positive rate ever becomes annoying enough to be ignored.
+- `[P3 · XS]` **`root-docs` reports a VACUOUS PASS on `main` until `LICENSE`/`NOTICE` land** from the `docs/license-terms-privacy` branch. Expected and self-correcting — noted so nobody "fixes" it by deleting the check.
 
 ---
 
 ## 🚫 Decided-no — don't re-raise
-*Standing calls that stay VISIBLE here (rather than moving to the archive) precisely so a future session
-doesn't re-open them as if they were new.*
+*Standing calls that stay VISIBLE here (rather than moving to the archive) precisely so a future session doesn't re-open them as if they were new.*
 
-- **8 of the 24 GitHub Advanced Security code-scanning alerts opened 2026-08-06 23:53 EDT on
-  `scripts/buildLegalPages.js` / `scripts/lib/chronicle.js` — dismissed as false positives, not fixed**
-  *(triaged 2026-08-08 01:30 EDT; the other 16 alerts WERE real and fixed on
-  `fix/codeql-alert-remediation`, #3–15 and #19 by the esc()/stripTags/labelOf escaping fix, #1–2 by
-  the workflow-permissions fix — one branch, one PR, since both were the same triage pass)*.
-  Each of these 8 is
-  a `js/bad-tag-filter` or `js/incomplete-multi-character-sanitization` finding inside one of the
-  generator's build-time **audit/gate functions** — `structureAudit()`, `crossRefAudit()`,
-  `scriptSyntaxAudit()` (buildLegalPages.js), and the text-classification helpers in `liftLessons()`/
-  `foldIndex()` (chronicle.js). All eight share one property that makes them non-issues: the
-  tag-stripped/case-sensitive-matched string is used **only to compare against or classify already-
-  rendered, self-authored HTML** (`Set.has()`, a `.test()` against `/^lessons?\b/` or
-  `/table of contents/`, or a syntax-check of a script block written to a throwaway temp file) — it is
-  **never re-embedded into any page actually served to a reader**. There is no flow from these
-  functions back into `public/`. Verified by reading each call site's full function body before
-  dismissing, not by reading the CodeQL summary alone:
-  - **`js/bad-tag-filter`** (alerts #22–24, `<script` regex missing the `i` flag) — `scriptSyntaxAudit()`
-    line ~9199/9315 extract already-built page text for the content-verification gates, and line ~9754
-    extracts `<script>` blocks from our own output to run `node --check` on them for a syntax gate. A
-    case-mismatch here would at worst make an audit slightly less thorough against content this
-    generator itself produced — not an injection path, since the source is never attacker-controlled.
-  - **`js/incomplete-multi-character-sanitization`** (alerts #16, #17 in chronicle.js; #18, #20, #21 in
-    buildLegalPages.js) — same shape: `line 670`/`698` (chronicle.js) strip tags only to run a boolean
-    `.test()` against the resulting text, never to emit it; `structureAudit()` (line ~9519) and
-    `crossRefAudit()` (line ~9567) strip tags/comments from already-built HTML or source Markdown purely
-    to build comparison `Set`s; and the `<!--...-->` strip in `parseBlocks()` (line ~529) feeds text
-    that still passes through `esc()` in `inline()` before it ever reaches an HTML sink, so even an
-    incomplete strip there is neutralized downstream.
-  Real-world exploitability was already low across the board (every source Markdown file is this repo's
-  own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records — never user-submitted), and
-  these 8 specifically have no code path back to served output at all. Don't re-open without a genuine
-  new flow into these functions (e.g. if any of them ever starts taking untrusted input).
-- **A 9th alert (`js/incomplete-multi-character-sanitization`, `scripts/buildLegalPages.js:5613`,
-  `stripTags()`'s tag-strip regex) is CodeQL's OWN false positive on the fix for alert #19 above** —
-  suppressed inline with `// lgtm[...]` rather than fought further, and the reasoning is worth keeping
-  distinct from the 8 above because it's a genuinely different class of false positive: the other 8 had
-  no sink at all; this one has a real sink, and the fix is real, but CodeQL's dataflow evaluates the
-  first `.replace(/<[^>]*>/g, '')` call in isolation and doesn't credit the UNCONDITIONAL
-  `.replace(/[<>]/g, callback)` immediately after it, even though that second call is a mathematical
-  guarantee — it runs on every code path, no branch skips it, and it replaces every remaining `<`/`>`
-  with an entity, so no tag-shaped fragment can survive to the sink. Tried CodeQL's own advisory-
-  recommended shape (a single combined-character-class replace with a callback, matching the rule's own
-  `## Example` fix) before concluding this — it still re-triggered (as alert #26, after #25 auto-closed
-  on the first attempt), which is what confirmed this is the tool's dataflow-composition limit, not a
-  code defect. Re-open only if CodeQL's rule ever proves able to trace safety through an unconditional
-  compound `.replace()` chain (or if `stripTags()`'s two-step structure changes).
-- **Dependabot vulnerabilities** — tracked, decided not worth acting on. Rationale:
-  `project_dependabot_vulnerabilities_deferred` memory.
-- **A maintained ToC for `CHANGELOG.md` / `DEVLOG.md`** — Harkirat's explicit call: their headers are
-  already uniform and grep-able. The archive-split reminder above is the accepted lever instead.
-- **GitHub Student Developer Pack — the offers rejected on merit** *(triage 2026-08-05 22:09 EDT; all
-  85 offers assessed against the real stack — the adopted three are in the 🔔 claim reminder above,
-  and the source table Harkirat extracted is `local/pack_summary.md`)*. Each was considered and
-  declined for the stated reason; don't re-raise without new information.
-  - **Sentry, and any third-party error-reporting or analytics SDK** — ✅ **re-evaluated 2026-08-06
-    15:49 EDT. Verdict: not now, ON THE TECHNICAL MERITS — and there is a cheaper thing to try FIRST
-    that nobody has enabled.** This also closes the separate `[P3 · S]` "re-evaluate Sentry" item that
-    had been sitting in 🗂️ Queued *contradicting this entry* — the tracker held both the question and
-    its answer.
-    ⚠️ **CORRECTED 2026-08-06 15:49 EDT.** The first version of this verdict rested on the published
-    Privacy Policy ("it names Sentry and says None present, therefore no"). Harkirat rejected that
-    reasoning outright: *"the privacy policy shouldn't be the decision maker when it comes to
-    implementing things or trying things. It's only advisory but I'm open to changing the policy."*
-    He is right, and the argument was circular — the policy says "None present" **because** we chose
-    not to adopt one, so quoting it back is our own past decision wearing an external constraint's
-    clothes. The amendment is a **cost line**, not a wall. See
-    [[feedback_policy_is_advisory_not_a_veto]].
-    **The actual technical case, measured:**
-    · **Diversity, not volume, is what kills it.** Cloud Logging holds **19 ERROR entries over 30 days,
-      and 15 of them are the same `Shard 0 error: Unexpected server response: 503`.** ⚠️ *(An earlier
-      draft of this entry said "2 errors" from the AlertLog store — that number is real but measures
-      something else: `sendAlert` throttles to 1/min per `level:title`, so AlertLog counts what was
-      ANNOUNCED, not what happened. The tiers disagreeing is the finding, not an error in either.)*
-      Sentry's core value is fingerprinting many occurrences of **many distinct** exceptions and
-      tracking regressions across releases. There is essentially **one** recurring error here, and it is
-      a transient network condition rather than a bug. Grouping would show a single row — which is
-      exactly what the free option below already gives.
-    · **The practical want was already delivered.** The reason to want grouping was "I can't tell what
-      an alert means or whether to act". v2.57.0's plain-language layer + paired recovery signal answer
-      that directly, without a vendor.
-    · 🔎 **The real alternative was never named, and it is free and already in the stack: Google Cloud
-      Error Reporting.** It does automatic grouping/dedup and new-error notification, consumes the
-      stack traces `utils/logger.js` ALREADY emits to Cloud Logging, needs **no SDK inside the bot
-      process** (so no RAM on a 969MB e2-micro), no new vendor, and no data leaving the existing
-      processor — which means **no policy amendment either**.
-    ✅ **DONE — Error Reporting was enabled and wired 2026-08-06 15:52 EDT (v2.57.0)**, at Harkirat's
-    instruction, after this evaluation surfaced it. `utils/logger.js` now attaches `serviceContext` to
-    ERROR entries; verified end to end by reporting a test event, seeing it grouped, then deleting it.
-    ⚠️ It stays empty until the VM is deployed past v2.46.0. Setup + traps:
-    `docs/reference/deployment-and-ops.md`.
-    **Recommendation:** live with Error Reporting for a while first. If a real gap survives — breadcrumbs,
-    release-health, crash-free-session rate, none of which Error Reporting does — then Sentry becomes a
-    genuine question again, and the policy amendment is priced in rather than treated as a blocker.
-    **Not a permanent no.**
-    *(The policy consequence, kept as a COST, not a reason:)* `docs/legal/PRIVACY.md`'s verification appendix **names Sentry,
-    PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises
-    *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it.
-    Adopting one costs a policy amendment + a new US sub-processor disclosure + a policy version bump
-    + a `public/` rebuild and redeploy — real work, and the reason to be sure the gain is real first.
-    Whatever gets adopted, the three-tier model (errors/alerts/noise) must keep its three tiers: the
-    standing rule is that they are never collapsed into one number, by a vendor or by anything else —
-    that is about not losing a distinction, not about refusing tools. ⚠️ **The policy check applies to
-    ANY third-party SDK, not only Sentry** — read the appendix before adding one, so the amendment is
-    priced in rather than discovered afterwards.
-  - **SimpleAnalytics** — same published-claim problem, and Cloudflare Web Analytics is free,
-    cookieless, and already in the stack.
-  - **Codecov** — `npm test` is `node --check` + docs-audit + hook tests + one dedup test. Coverage
-    would accurately report ~0%. A badge that says so is worse than no badge.
-  - **Imgbot** — opens automated PRs into a repo where **every merge mints a version**, so an image
-    squeeze would force a release.
-  - **Doppler** — puts secrets behind a network fetch at systemd boot: added failure surface on a
-    working `.env`, for no gain.
-  - **DevCycle / ConfigCat** — a runtime feature-flag service is a network dependency inside a
-    Discord bot, replacing a documented and working `v3-pre-release` branch strategy.
-  - **Datadog / New Relic / Honeybadger** — agent overhead on a 1GB e2-micro, against monitoring
-    (AlertLog, `vmstatus.sh`, `vmpeaks.sh`, the Ops Agent) that already exists and is understood.
-  - **Travis CI** — its only benefit is free *private* builds, a contingency GitHub Pro already
-    covers on the platform already wired. It cannot replace Actions either: `deploy-site.yml` and
-    `sync-v3-pre-release.yml` are GitHub-native and stay put, so adopting it means running **two** CI
-    systems. And it would break a gate — `scripts/docs-audit.mjs`'s `ci-wiring` check reads
-    `.github/workflows/ci.yml` by literal path, fails with an ERROR if it is missing, and asserts four
-    literal strings in its contents; `syntax-check` is also the verified required-status-check
-    context name settled 2026-08-02 17:16 EDT.
-  - **Cloud credits — Azure, Heroku, VS Dev Essentials** — Harkirat's standing rule: credits are
-    never a reason to redo working infrastructure. Render → Railway → GCP is already two migrations.
-  - **GitHub Pages** (Cloudflare Pages is wired with auto-deploy and a custom domain) · **Namecheap
-    SSL** (Cloudflare TLS is free and automatic) · **.TECH** (redundant with Name.com's offer) ·
-    **Dashlane** (redundant with 1Password).
-  - **GitHub Copilot** — listed but **not claimable**: new sign-ups were paused as of this triage.
-    Re-check if it reopens; it costs nothing and does not displace Claude Code.
+- **8 of the 24 GitHub Advanced Security code-scanning alerts opened 2026-08-06 23:53 EDT on `scripts/buildLegalPages.js` / `scripts/lib/chronicle.js` — dismissed as false positives, not fixed** *(triaged 2026-08-08 01:30 EDT; the other 16 alerts WERE real and fixed on `fix/codeql-alert-remediation`, #3–15 and #19 by the esc()/stripTags/labelOf escaping fix, #1–2 by the workflow-permissions fix — one branch, one PR, since both were the same triage pass)*. Each of these 8 is a `js/bad-tag-filter` or `js/incomplete-multi-character-sanitization` finding inside one of the generator's build-time **audit/gate functions** — `structureAudit()`, `crossRefAudit()`, `scriptSyntaxAudit()` (buildLegalPages.js), and the text-classification helpers in `liftLessons()`/ `foldIndex()` (chronicle.js). All eight share one property that makes them non-issues: the tag-stripped/case-sensitive-matched string is used **only to compare against or classify already- rendered, self-authored HTML** (`Set.has()`, a `.test()` against `/^lessons?\b/` or `/table of contents/`, or a syntax-check of a script block written to a throwaway temp file) — it is **never re-embedded into any page actually served to a reader**. There is no flow from these functions back into `public/`. Verified by reading each call site's full function body before dismissing, not by reading the CodeQL summary alone:
+  - **`js/bad-tag-filter`** (alerts #22–24, `<script` regex missing the `i` flag) — `scriptSyntaxAudit()` line ~9199/9315 extract already-built page text for the content-verification gates, and line ~9754 extracts `<script>` blocks from our own output to run `node --check` on them for a syntax gate. A case-mismatch here would at worst make an audit slightly less thorough against content this generator itself produced — not an injection path, since the source is never attacker-controlled.
+  - **`js/incomplete-multi-character-sanitization`** (alerts #16, #17 in chronicle.js; #18, #20, #21 in buildLegalPages.js) — same shape: `line 670`/`698` (chronicle.js) strip tags only to run a boolean `.test()` against the resulting text, never to emit it; `structureAudit()` (line ~9519) and `crossRefAudit()` (line ~9567) strip tags/comments from already-built HTML or source Markdown purely to build comparison `Set`s; and the `<!--...-->` strip in `parseBlocks()` (line ~529) feeds text that still passes through `esc()` in `inline()` before it ever reaches an HTML sink, so even an incomplete strip there is neutralized downstream. Real-world exploitability was already low across the board (every source Markdown file is this repo's own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records — never user-submitted), and these 8 specifically have no code path back to served output at all. Don't re-open without a genuine new flow into these functions (e.g. if any of them ever starts taking untrusted input).
+- **A 9th alert (`js/incomplete-multi-character-sanitization`, `scripts/buildLegalPages.js:5613`, `stripTags()`'s tag-strip regex) is CodeQL's OWN false positive on the fix for alert #19 above** — suppressed inline with `// lgtm[...]` rather than fought further, and the reasoning is worth keeping distinct from the 8 above because it's a genuinely different class of false positive: the other 8 had no sink at all; this one has a real sink, and the fix is real, but CodeQL's dataflow evaluates the first `.replace(/<[^>]*>/g, '')` call in isolation and doesn't credit the UNCONDITIONAL `.replace(/[<>]/g, callback)` immediately after it, even though that second call is a mathematical guarantee — it runs on every code path, no branch skips it, and it replaces every remaining `<`/`>` with an entity, so no tag-shaped fragment can survive to the sink. Tried CodeQL's own advisory- recommended shape (a single combined-character-class replace with a callback, matching the rule's own `## Example` fix) before concluding this — it still re-triggered (as alert #26, after #25 auto-closed on the first attempt), which is what confirmed this is the tool's dataflow-composition limit, not a code defect. Re-open only if CodeQL's rule ever proves able to trace safety through an unconditional compound `.replace()` chain (or if `stripTags()`'s two-step structure changes).
+- **Dependabot vulnerabilities** — tracked, decided not worth acting on. Rationale: `project_dependabot_vulnerabilities_deferred` memory.
+- **A maintained ToC for `CHANGELOG.md` / `DEVLOG.md`** — Harkirat's explicit call: their headers are already uniform and grep-able. The archive-split reminder above is the accepted lever instead.
+- **GitHub Student Developer Pack — the offers rejected on merit** *(triage 2026-08-05 22:09 EDT; all 85 offers assessed against the real stack — the adopted three are in the 🔔 claim reminder above, and the source table Harkirat extracted is `local/pack_summary.md`)*. Each was considered and declined for the stated reason; don't re-raise without new information.
+  - **Sentry, and any third-party error-reporting or analytics SDK** — ✅ **re-evaluated 2026-08-06 15:49 EDT. Verdict: not now, ON THE TECHNICAL MERITS — and there is a cheaper thing to try FIRST that nobody has enabled.** This also closes the separate `[P3 · S]` "re-evaluate Sentry" item that had been sitting in 🗂️ Queued *contradicting this entry* — the tracker held both the question and its answer. ⚠️ **CORRECTED 2026-08-06 15:49 EDT.** The first version of this verdict rested on the published Privacy Policy ("it names Sentry and says None present, therefore no"). Harkirat rejected that reasoning outright: *"the privacy policy shouldn't be the decision maker when it comes to implementing things or trying things. It's only advisory but I'm open to changing the policy."* He is right, and the argument was circular — the policy says "None present" **because** we chose not to adopt one, so quoting it back is our own past decision wearing an external constraint's clothes. The amendment is a **cost line**, not a wall. See [[feedback_policy_is_advisory_not_a_veto]].
+    **The actual technical case, measured:** · **Diversity, not volume, is what kills it.** Cloud Logging holds **19 ERROR entries over 30 days, and 15 of them are the same `Shard 0 error: Unexpected server response: 503`.** ⚠️ *(An earlier draft of this entry said "2 errors" from the AlertLog store — that number is real but measures something else: `sendAlert` throttles to 1/min per `level:title`, so AlertLog counts what was ANNOUNCED, not what happened. The tiers disagreeing is the finding, not an error in either.)* Sentry's core value is fingerprinting many occurrences of **many distinct** exceptions and tracking regressions across releases. There is essentially **one** recurring error here, and it is a transient network condition rather than a bug. Grouping would show a single row — which is exactly what the free option below already gives. · **The practical want was already delivered.** The reason to want grouping was "I can't tell what an alert means or whether to act". v2.57.0's plain-language layer + paired recovery signal answer that directly, without a vendor. · 🔎 **The real alternative was never named, and it is free and already in the stack: Google Cloud Error Reporting.** It does automatic grouping/dedup and new-error notification, consumes the stack traces `utils/logger.js` ALREADY emits to Cloud Logging, needs **no SDK inside the bot process** (so no RAM on a 969MB e2-micro), no new vendor, and no data leaving the existing processor — which means **no policy amendment either**. ✅ **DONE — Error Reporting was enabled and wired 2026-08-06 15:52 EDT (v2.57.0)**, at Harkirat's instruction, after this evaluation surfaced it. `utils/logger.js` now attaches `serviceContext` to ERROR entries; verified end to end by reporting a test event, seeing it grouped, then deleting it. ⚠️ It stays empty until the VM is deployed past v2.46.0. Setup + traps: `docs/reference/deployment-and-ops.md`.
+    **Recommendation:** live with Error Reporting for a while first. If a real gap survives — breadcrumbs, release-health, crash-free-session rate, none of which Error Reporting does — then Sentry becomes a genuine question again, and the policy amendment is priced in rather than treated as a blocker. **Not a permanent no.** *(The policy consequence, kept as a COST, not a reason:)* `docs/legal/PRIVACY.md`'s verification appendix **names Sentry, PostHog, Mixpanel and Google Analytics explicitly** and states *"None present"*; §2.6 promises *"no analytics, no third-party scripts"*, and the summary block and Appendix A repeat it. Adopting one costs a policy amendment + a new US sub-processor disclosure + a policy version bump
+    + a `public/` rebuild and redeploy — real work, and the reason to be sure the gain is real first. Whatever gets adopted, the three-tier model (errors/alerts/noise) must keep its three tiers: the standing rule is that they are never collapsed into one number, by a vendor or by anything else — that is about not losing a distinction, not about refusing tools. ⚠️ **The policy check applies to ANY third-party SDK, not only Sentry** — read the appendix before adding one, so the amendment is priced in rather than discovered afterwards.
+  - **SimpleAnalytics** — same published-claim problem, and Cloudflare Web Analytics is free, cookieless, and already in the stack.
+  - **Codecov** — `npm test` is `node --check` + docs-audit + hook tests + one dedup test. Coverage would accurately report ~0%. A badge that says so is worse than no badge.
+  - **Imgbot** — opens automated PRs into a repo where **every merge mints a version**, so an image squeeze would force a release.
+  - **Doppler** — puts secrets behind a network fetch at systemd boot: added failure surface on a working `.env`, for no gain.
+  - **DevCycle / ConfigCat** — a runtime feature-flag service is a network dependency inside a Discord bot, replacing a documented and working `v3-pre-release` branch strategy.
+  - **Datadog / New Relic / Honeybadger** — agent overhead on a 1GB e2-micro, against monitoring (AlertLog, `vmstatus.sh`, `vmpeaks.sh`, the Ops Agent) that already exists and is understood.
+  - **Travis CI** — its only benefit is free *private* builds, a contingency GitHub Pro already covers on the platform already wired. It cannot replace Actions either: `deploy-site.yml` and `sync-v3-pre-release.yml` are GitHub-native and stay put, so adopting it means running **two** CI systems. And it would break a gate — `scripts/docs-audit.mjs`'s `ci-wiring` check reads `.github/workflows/ci.yml` by literal path, fails with an ERROR if it is missing, and asserts four literal strings in its contents; `syntax-check` is also the verified required-status-check context name settled 2026-08-02 17:16 EDT.
+  - **Cloud credits — Azure, Heroku, VS Dev Essentials** — Harkirat's standing rule: credits are never a reason to redo working infrastructure. Render → Railway → GCP is already two migrations.
+  - **GitHub Pages** (Cloudflare Pages is wired with auto-deploy and a custom domain) · **Namecheap SSL** (Cloudflare TLS is free and automatic) · **.TECH** (redundant with Name.com's offer) · **Dashlane** (redundant with 1Password).
+  - **GitHub Copilot** — listed but **not claimable**: new sign-ups were paused as of this triage. Re-check if it reopens; it costs nothing and does not displace Claude Code.

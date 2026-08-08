@@ -83,7 +83,7 @@ const SeasonalDataSchema = new mongoose.Schema({
         category: { type: String, enum: ['draw', 'event', 'playlist'], default: 'event' }
     }],
 
-    // Per-page /calendar banners (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- ONE banner per page
+    // Per-page /calendar banners (added 2026-07-31 17:20 EDT, the notes file follow-up) -- ONE banner per page
     // (Draws/Events/Playlists), independently settable via /manage's Calendar "Banners" action.
     // Re-hosted through utils/calendarBannerCache.js (same Cloudinary caching philosophy as draw
     // thumbnails/patch images). Blank/'' = show nothing for that page, not a placeholder.

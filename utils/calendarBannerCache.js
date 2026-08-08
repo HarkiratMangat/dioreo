@@ -3,7 +3,7 @@
 // CALENDAR PAGE BANNER CLOUDINARY CACHE
 // ==========================================
 // One banner image per /calendar page (Draws/Events/Playlists), independently settable via
-// /manage's Calendar "Banners" action (added 2026-07-31 17:20 EDT, notes L184 follow-up). Same
+// /manage's Calendar "Banners" action (added 2026-07-31 17:20 EDT, the notes file follow-up). Same
 // re-host-so-a-dead-external-link-can't-break-the-command philosophy as utils/cloudinaryCache.js
 // (draw thumbnails) and utils/patchNotesCache.js (patch screenshots), but far simpler retention:
 // exactly 3 possible public_ids ever exist (calendar_banners/draws|events|playlists), each just

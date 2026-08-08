@@ -1,68 +1,21 @@
 ---
+kind: rule
+status: live
 paths:
   - "models/**"
 ---
 
 # Data models (`models/`) & the schema-save gotcha
 
-*Loads when you touch `models/**`. The universal "declare the field in the schema or it silently won't
-persist" rule also lives in root CLAUDE.md's invariants.*
+*Loads when you touch `models/**`. The universal "declare the field in the schema or it silently won't persist" rule also lives in root CLAUDE.md's invariants.*
 
 ## Database schema gotcha
-Mongoose only persists fields **declared in the schema**. Several past bugs were
-exactly this: code setting `doc.someNewField = x; await doc.save()` where
-`someNewField` was never added to the Mongoose schema — it looked like it worked
-(in-memory) but silently reverted on the next fresh fetch. **Whenever you add a new
-field anywhere in the codebase, add it to the corresponding schema in `models/` in
-the same change**, or it will not actually save.
+Mongoose only persists fields **declared in the schema**. Several past bugs were exactly this: code setting `doc.someNewField = x; await doc.save()` where `someNewField` was never added to the Mongoose schema — it looked like it worked (in-memory) but silently reverted on the next fresh fetch. **Whenever you add a new field anywhere in the codebase, add it to the corresponding schema in `models/` in the same change**, or it will not actually save.
 
 ## Data models (`models/`)
-- `SeasonalData.js` — one global document (`docType: 'global'`). Holds
-  `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`, `bpEnd`/`rankEnd`/`dmzEnd` (each paired with
-  a `${field}TBD` boolean, live + draft — added 2026-07-31 14:00 EDT, see design-decisions.md),
-  `patchNotes[]` (title = season # & name, NOT "Balance Changes for..." — see
-  patchnotes.js), `newDraws[]`/`returningDraws[]`, `calendar[]` (with `endDate`/
-  `isOngoing` for "All Season" events, plus **`category`** — `'draw'|'event'|'playlist'`,
-  default `'event'`, added 2026-07-31 12:10 EDT for the 3-section calendar redesign; set via the
-  bulk parser's `d•`/`p•`/`e•` prefix or the single add/edit modal's Category field — see
-  `.claude/rules/design-decisions.md`), and `drawsBannerUrl`/`eventsBannerUrl`/`playlistsBannerUrl`
-  (added 2026-07-31 17:20 EDT — one optional per-page banner image for `/calendar`, re-hosted via
-  `utils/calendarBannerCache.js`, blank = show nothing; see that file + `commands/manage.js`'s
-  "Banners" action).
-  - **`draft` (added 2026-07-30 22:24 EDT)** — a next-season staging sub-document mirroring
-    `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`/`bpEnd`/`rankEnd`/`dmzEnd`/`newDraws[]`/
-    `returningDraws[]`/`calendar[]` (no `patchNotes` — that already has its own overlap-safe "Add New
-    Season" flow). Exists because this whole document is a SINGLE global doc — editing next-season
-    data directly during the overlap window between "current season not over" and "new season
-    announced" immediately overwrites what's live. `/manage` → "Next Season Draft" stages into these
-    fields; "Promote to Live" (`index.js`'s `mng_draftpromoteconfirm` handler) copies them onto the
-    top-level fields in one save and clears the draft — see `.claude/rules/manage-panel.md`.
-- `UserPreference.js` — per-user. `seasonalVisibility` is a **shared** toggle
-  covering `/season end`, `/draws`, `/patch notes`, `/calendar`, `/draw prices`
-  together (Option A design decision — see `.claude/rules/design-decisions.md`). `timestampVisibility`,
-  `settingsVisibility`, `defaultRegion`, `loadoutVisibility` are each independent.
-  `calendarEventFilter` (`'active'|'all'`, default `'all'`) backs `/calendar`'s
-  "Show Active Events Only"/"Show All Events" filter — **moved to `/settings`' Preferences page
-  entirely 2026-07-31 14:00 EDT** (reverses the original "deliberately NOT exposed in /settings"
-  call from the same session's earlier 3-section redesign); `/calendar` just reads it, `/settings`'
-  toggle is the only place it's ever written now. `accentColorStyle`
-  (`'avatar'|'banner'|'preset'`, default `'preset'` — flipped back from `'avatar'`
-  2026-08-08 00:24 EDT, see `.claude/rules/accent-and-colors.md`; `'default'` is the old
-  value name for `'preset'`, still treated identically) plus the independently-cached
-  `avatarColorHex`/`avatarColorSource` and `bannerColorHex`/`bannerColorSource` pairs
-  back the accent color system — see `.claude/rules/accent-and-colors.md`.
-- `Loadout.js` — weapon loadouts, `mode: 'MP' | 'DMZ'` (MP max 5 attachments, DMZ max 9).
-  `description` (optional flavor text) and `shareCode` (the actual copyable in-game Gunsmith
-  code) were added during the builds.xlsx migration — see `.claude/rules/loadouts.md` for why
-  `shareCode` is separate from `buildName` despite `/manage`'s modal labeling the latter
-  "Build Name / Share Code". Has a compound index on `{ category: 1, mode: 1 }` — every
-  autocomplete keystroke and every `/<category>` command filters on this pair together;
-  harmless at the current collection size (~100-200 docs) but cheap to add ahead of it
-  actually mattering.
-- `BotInstance.js` (added 2026-07-25) — lock doc backing the startup single-instance guard, one
-  PER BOT TOKEN (`_id` = a hash of `BOT_TOKEN`, not a fixed singleton -- a production bot and a
-  separate test/dev bot application must be allowed to run simultaneously even against the same
-  Mongo cluster). `hostname`/`pid`/`startedAt`/`lastHeartbeat`, refreshed on a 10s interval by
-  whichever process holds a given token's lock. See `utils/instanceLock.js` and `docs/ROADMAP.md`'s
-  "Single-instance guard" entry for the full mechanism.
+- `SeasonalData.js` — one global document (`docType: 'global'`). Holds `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`, `bpEnd`/`rankEnd`/`dmzEnd` (each paired with a `${field}TBD` boolean, live + draft — added 2026-07-31 14:00 EDT, see design-decisions.md), `patchNotes[]` (title = season # & name, NOT "Balance Changes for..." — see patchnotes.js), `newDraws[]`/`returningDraws[]`, `calendar[]` (with `endDate`/ `isOngoing` for "All Season" events, plus **`category`** — `'draw'|'event'|'playlist'`, default `'event'`, added 2026-07-31 12:10 EDT for the 3-section calendar redesign; set via the bulk parser's `d•`/`p•`/`e•` prefix or the single add/edit modal's Category field — see `.claude/rules/design-decisions.md`), and `drawsBannerUrl`/`eventsBannerUrl`/`playlistsBannerUrl` (added 2026-07-31 17:20 EDT — one optional per-page banner image for `/calendar`, re-hosted via `utils/calendarBannerCache.js`, blank = show nothing; see that file + `commands/manage.js`'s "Banners" action).
+  - **`draft` (added 2026-07-30 22:24 EDT)** — a next-season staging sub-document mirroring `currentSeasonTitle`/`bpTitle`/`rankTitle`/`dmzTitle`/`bpEnd`/`rankEnd`/`dmzEnd`/`newDraws[]`/ `returningDraws[]`/`calendar[]` (no `patchNotes` — that already has its own overlap-safe "Add New Season" flow). Exists because this whole document is a SINGLE global doc — editing next-season data directly during the overlap window between "current season not over" and "new season announced" immediately overwrites what's live. `/manage` → "Next Season Draft" stages into these fields; "Promote to Live" (`index.js`'s `mng_draftpromoteconfirm` handler) copies them onto the top-level fields in one save and clears the draft — see `.claude/rules/manage-panel.md`.
+- `UserPreference.js` — per-user. `seasonalVisibility` is a **shared** toggle covering `/season end`, `/draws`, `/patch notes`, `/calendar`, `/draw prices` together (Option A design decision — see `.claude/rules/design-decisions.md`). `timestampVisibility`, `settingsVisibility`, `defaultRegion`, `loadoutVisibility` are each independent. `calendarEventFilter` (`'active'|'all'`, default `'all'`) backs `/calendar`'s "Show Active Events Only"/"Show All Events" filter — **moved to `/settings`' Preferences page entirely 2026-07-31 14:00 EDT** (reverses the original "deliberately NOT exposed in /settings" call from the same session's earlier 3-section redesign); `/calendar` just reads it, `/settings`' toggle is the only place it's ever written now. `accentColorStyle` (`'avatar'|'banner'|'preset'`, default `'preset'` — flipped back from `'avatar'` 2026-08-08 00:24 EDT, see `.claude/rules/accent-and-colors.md`; `'default'` is the old value name for `'preset'`, still treated identically) plus the independently-cached `avatarColorHex`/`avatarColorSource` and `bannerColorHex`/`bannerColorSource` pairs back the accent color system — see `.claude/rules/accent-and-colors.md`.
+- `Loadout.js` — weapon loadouts, `mode: 'MP' | 'DMZ'` (MP max 5 attachments, DMZ max 9). `description` (optional flavor text) and `shareCode` (the actual copyable in-game Gunsmith code) were added during the builds.xlsx migration — see `.claude/rules/loadouts.md` for why `shareCode` is separate from `buildName` despite `/manage`'s modal labeling the latter "Build Name / Share Code". Has a compound index on `{ category: 1, mode: 1 }` — every autocomplete keystroke and every `/<category>` command filters on this pair together; harmless at the current collection size (~100-200 docs) but cheap to add ahead of it actually mattering.
+- `BotInstance.js` (added 2026-07-25) — lock doc backing the startup single-instance guard, one PER BOT TOKEN (`_id` = a hash of `BOT_TOKEN`, not a fixed singleton -- a production bot and a separate test/dev bot application must be allowed to run simultaneously even against the same Mongo cluster). `hostname`/`pid`/`startedAt`/`lastHeartbeat`, refreshed on a 10s interval by whichever process holds a given token's lock. See `utils/instanceLock.js` and `docs/ROADMAP.md`'s "Single-instance guard" entry for the full mechanism.
 

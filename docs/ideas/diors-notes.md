@@ -1,24 +1,38 @@
-# A dynamic scratchpad for Harkirat's thoughts and notes for the diors-builds discord bot project.
-***Note Purpose:** This note is a personal scratchpad used to jot down thoughts and ideas freely.
-**Note Organization:** The note may contain duplicate or overlapping thoughts, and points might not strictly adhere to the provided sub-sections.
-**Note Reliability:** This note is not the definitive source of truth for the project and should be used with discretion.
-**Claude:** Read this file at the start of each session, when prompted, or while navigating our "Document" flow. See the 🔑 Legend section below for exactly how the ✓/✗/confirmation marks and date-stamps work — follow it precisely rather than improvising a variant. As needed, reorganize, restructure, reword, or merge the thoughts and notes to keep it tidy. Keep your own inline/block HTML comments to ONE continuous physical line each (let MarkEdit's own soft-wrap handle how it displays — a manual line break inside a comment is what causes text to jump around oddly, per Harkirat's 2026-07-18 request); a real bulleted list inside a comment is the one exception and can stay one bullet per line. **Filing something? See `## 📍 Where everything else lives` at the very bottom of this file first** — it stays last on purpose (the `SessionStart` hook scans up to that heading to count open items), not because it's low-priority.*
+---
+kind: idea
+status: live
+---
 
-<!-- HOW THIS FILE WORKS (reworked 2026-07-18, Claude — replaces the old "filed stays unmarked" note, then reworked again same day for the confirmation-gate rule below): this is a SCRATCHPAD, not a store, so thoughts don't live here forever. -->
-<!-- 1. New thoughts land in the working sections below as raw INTAKE. -->
-<!-- 2. On a tidy pass, each actionable thought is FILED into its real home — a feature/bug → docs/ROADMAP.md (the authoritative roadmap, moved out of CLAUDE.md 2026-07-22) + both CHANGELOG roadmaps; a workflow lesson → memory; a deferred maintenance/tech-debt item → docs/db-deferred-list.md (split out of the cross-project tracker 2026-07-25 15:56 EDT); a reminder/cross-project item → /Applications/Claude Code/meta-deferred-list.md — and then LEAVES the working sections. The roadmap is NOT duplicated here (see the pointer further down); docs/ROADMAP.md is the roadmap source of truth, and CLAUDE.md (invariants + nav map) + the .claude/rules/*.md files it maps to are the source of truth for architecture/design. -->
-<!-- 3. A thought that's RESOLVED is marked in place per the 🔑 Legend below (`[x] ✓`/`[x] ✗`, a mark-date, and eventually Harkirat's own confirmation mark once he's picked one). -->
-<!-- 4. A resolved item is ONLY swept out of this file once it carries Harkirat's confirmation mark (added 2026-07-18, per his own catch: Claude's ✓/✗ alone isn't proof he's actually SEEN the answer yet) — without that mark, it stays in the working section indefinitely, no matter how many sessions pass. Marks made in the SAME session stay put regardless either way, confirmed or not. -->
-<!-- 5. The sweep destination is docs/archive/graveyard.md — a SEPARATE FILE, no longer a section at the bottom of this one (split out 2026-07-25 21:43 EDT, Harkirat's ask; it was dead archive bloating every read of an active scratchpad, the same token-conscious reasoning behind his 2026-07-24 "don't read the Graveyard by default" rule, taken to its conclusion). Don't read it by default; open it only to look something up or when running the sweep itself. Its full sweep rules live in its own header. -->
-<!-- Never silently delete — always file or move. Every tidy is snapshotted to docs/archive/ first, so nothing is ever truly lost. Last tidied 2026-08-03 19:46 EDT (full ℋ-confirmed sweep — see docs/archive/graveyard.md's 2026-08-03 sweep block). MOVED to docs/ (2026-07-18) — this file and its archive/ snapshots are now tracked in git (no longer gitignored under local/); the full history of that decision is in docs/archive/graveyard.md. -->
-<!-- ⚠️ "Harkirat's Space" is NO LONGER a section in this file — Harkirat moved it out to its own separate file, /Applications/Claude Code/Diors-Builds/docs/ideas/Harkirats-Space.md (private, gitignored — path corrected 2026-07-28 22:55 EDT; it had said local/ since the file moved). This file therefore has NO off-limits divider anymore and is fully fair game to tidy end-to-end. Don't go looking for a private section inside here; if you need the separate Harkirats-Space.md, it's off-limits unless Harkirat says otherwise that session. --> ※ [2026-08-07 09:40 EDT] Do we really need this long comment thread up here? Couldn’t this stuff just be folded into a proper, nice, structured section of its own? Or implemented into the legend section? Maybe renaming that appropriately into a “how this file works” or a “claude readme” section or something? Honestly, despite the earlier cleanup of this file, this entire upper area (lines 1-59) still needs a significant rework. I’d advise you file it under deferred list accordingly. As part of that session, I’d also like to expand your comments convention/leading verb words and choices more clearly. ※ ∴ [2026-08-07 12:10 EDT] Filed, not built — `[P2 · M · Sonnet5-High]` in `docs/db-deferred-list.md`'s 🗂️ Queued section, capturing both asks (fold the comment thread into a real "How this file works"/Legend section, and expand the lead-verb conventions). Not doing it inline right now because this file's hooks scan by exact heading/marker position and a restructure needs its own careful pass with the hook re-verified after, not squeezed in alongside today's other asks. ∵
+# Dioreo — Harkirat's scratchpad
+
+*A personal scratchpad for thoughts and ideas, written freely. It may hold duplicate or overlapping thoughts, and items don't always sit under the right sub-section. **It is not a source of truth for the project** — read it with discretion, and see `## 📖 How this file works` for where the real answers live.*
+
+## 📖 How this file works
+
+**Read this file at the start of every session**, when prompted, and during the "Document" flow. Follow the `## 🔑 Legend` below exactly for the ✓/✗/confirmation marks and date-stamps rather than improvising a variant. Tidying as you go is welcome: reorganize, restructure, reword and merge freely.
+
+**This is a SCRATCHPAD, not a store — nothing lives here permanently.** The lifecycle:
+
+1. **Intake.** A new thought lands in the working sections below, raw and unedited.
+2. **Filed.** On a tidy pass it goes to its real home and then *leaves* the working sections. `## 📍 Where everything else lives` is the routing table. Nothing here duplicates those homes — in particular the roadmap lives only in `docs/ROADMAP.md`, and architecture/design "why" lives only in `CLAUDE.md` plus the `.claude/rules/*.md` files it maps to.
+3. **Marked.** A resolved thought is marked in place per the Legend: `[x] ✓` or `[x] ✗`, a mark-date, and eventually Harkirat's own confirmation mark.
+4. **Confirmed.** It is swept out **only once it carries Harkirat's confirmation mark** — his catch, 2026-07-18: Claude's own ✓/✗ is not evidence he has actually SEEN the answer. Without that mark it stays put indefinitely, however many sessions pass. Marks made in the *same* session always stay put, confirmed or not.
+5. **Swept.** The destination is `docs/archive/graveyard.md`, a separate file since 2026-07-25 21:43 EDT — dead archive was bloating every read of an active scratchpad. Don't read it by default; open it only to look something up or to run a sweep. Its own header carries the sweep rules.
+
+**Never silently delete — file it or move it.** Every tidy is snapshotted to `docs/archive/` first, so nothing is ever truly lost. Last tidied 2026-08-03 19:46 EDT (full ℋ-confirmed sweep; see that date's block in the graveyard).
+
+**Writing HTML comments in this file: ONE continuous physical line each.** MarkEdit soft-wraps, so a manual line break inside a comment makes the rendered sentence jump around — Harkirat's request, 2026-07-18, and now enforced by `.claude/hooks/notes-hardwrap-check.sh`. A real bulleted list inside a comment is the one exception and may keep one bullet per line.
+
+**"Harkirat's Space" is not a section here.** It moved to its own private, gitignored file at `docs/ideas/Harkirats-Space.md`. So this file has **no off-limits divider** and is fair game to tidy end to end; the separate file is off-limits unless he says otherwise that session.
+
+**Two `SessionStart` hooks parse this file, so its shape is load-bearing.** `notes-open-items.sh` counts open items between `## Questions` and the `<!-- /open-items -->` marker on the last line of the working sections; `notes-followups.sh` reports unresolved follow-up marks. Neither depends on section ORDER any more, so headings can be rearranged freely — but **re-run both and compare the counts before and after any structural edit.** A 2026-08-06 attempt silently took the open-item count from 3 to 0, which is indistinguishable from a tidy file.
+
+※ [2026-08-07 09:40 EDT] Do we really need this long comment thread up here? Couldn’t this stuff just be folded into a proper, nice, structured section of its own? Or implemented into the legend section? Maybe renaming that appropriately into a “how this file works” or a “claude readme” section or something? Honestly, despite the earlier cleanup of this file, this entire upper area (lines 1-59) still needs a significant rework. I’d advise you file it under deferred list accordingly. As part of that session, I’d also like to expand your comments convention/leading verb words and choices more clearly. ※ ∴ [2026-08-07 12:10 EDT] Filed, not built — `[P2 · M · Sonnet5-High]` in `docs/db-deferred-list.md`'s 🗂️ Queued section, capturing both asks (fold the comment thread into a real "How this file works"/Legend section, and expand the lead-verb conventions). Not doing it inline right now because this file's hooks scan by exact heading/marker position and a restructure needs its own careful pass with the hook re-verified after, not squeezed in alongside today's other asks. ∵ ∴ [2026-08-08 11:52 EDT] **Built — this section is the answer.** The seven-comment chain is now prose under a real `## 📖 How this file works` heading, and the lead-verb list below grew from 8 verbs to 17 with a decision procedure for the pairs that actually get confused. Two things I fixed while in here rather than reproducing them: the old preamble told you to look for `## 📍` **"at the very bottom of this file"** and justified it with the hook's scan range — both stale since 2026-08-06, when that section moved up and the hook switched to the `<!-- /open-items -->` marker. Hook counts verified unchanged across the restructure (6 open, 2 follow-ups), which is the check the 2026-08-06 near-miss taught us to run. ∵
 
 ---
 
 ## 🔑 Legend
-*How this file's own marks work, decided 2026-07-18, reorganized 2026-07-24 (Harkirat flagged his own
-edit-pass to this section was a raw dump, not properly organized — see the filing note in `docs/archive/graveyard.md` for
-what changed and why). Read this before adding to, reading, or acting on anything below.*
+*How this file's own marks work, decided 2026-07-18, reorganized 2026-07-24 (Harkirat flagged his own edit-pass to this section was a raw dump, not properly organized — see the filing note in `docs/archive/graveyard.md` for what changed and why). Read this before adding to, reading, or acting on anything below.*
 
 **The marks:**
 - **`[x] ✓ ~~text~~`** — closed, and it SHIPPED / got a real answer. Rendered GREEN (`#3fb950`) in MarkEdit.
@@ -43,18 +57,36 @@ what changed and why). Read this before adding to, reading, or acting on anythin
 - One continuous physical line per comment — let MarkEdit's own soft-wrap handle display, don't hard-break a sentence across lines. A real bulleted list is the one exception (one bullet per line), with a blank line before the next item's own comment.
 - Format: `<!-- WHAT YOU DID <the real-world date, even if in the past> (Claude): your comment, one line. -->`
 - **The lead verb is standardized, not free choice (added 2026-08-03 19:40 EDT — Harkirat's catch: "RESOLVED" reads right for a bug, "IMPLEMENTED" for a feature, and the file had been mixing both across item types with no rule).** Pick by what actually happened, in this order:
-  - **FIXED** — a confirmed bug got corrected.
-  - **IMPLEMENTED** (built, not yet released) or **SHIPPED** (built AND out in a tagged version) — new capability, feature, or extension work. Prefer SHIPPED once a real version number covers it.
-  - **ANSWERED** — a question got a real answer; nothing in the codebase changed.
-  - **FILED** — routed to its real home (ROADMAP / db-deferred-list / meta-deferred-list) but not built — pair with `- [ ]`, never `[x]` (see the checkbox rule above).
-  - **ADOPTED** — a workflow/process suggestion was agreed to and is now standing practice.
+  **Something changed in the codebase:**
+  - **FIXED** — a confirmed bug got corrected. Use only when there was a real defect, not merely an improvement.
+  - **IMPLEMENTED** — new capability built, not yet in a tagged release.
+  - **SHIPPED** — built AND out in a tagged version. Prefer this over IMPLEMENTED once a real version number covers it, and name the version.
+  - **PARTIAL** — some of the ask landed and some did not. Say which half, and leave the item `- [ ]` if the remainder is still wanted.
   - **REORGANIZED** — existing content restructured; nothing new was added or built.
-  - **REVIEWED** — something (a proposal, a doc, an idea) was evaluated and given a real verdict, without necessarily building or changing anything as a result.
-  - **DEFERRED** — discussed on purpose and deliberately not acted on yet; leave the item unchecked, not `[x]`.
+
+  **Nothing changed; the item gained knowledge:**
+  - **ANSWERED** — a question got a real answer.
+  - **VERIFIED** — an existing claim was checked and found TRUE. Distinct from ANSWERED: it means a check was actually run, so say which one.
+  - **MEASURED** — numbers were gathered. Put the number in the comment; a measurement whose value lives only in the chat is not recorded.
+  - **CORRECTED** — a previously recorded answer or comment here was WRONG and has been rewritten. Not FIXED — that word is for the codebase, and conflating them hides how often the record itself was the defect.
+  - **REVIEWED** — a proposal, doc or idea was evaluated and given a real verdict, without necessarily changing anything.
+
+  **Routed elsewhere, or deliberately not done:**
+  - **FILED** — routed to its real home (ROADMAP / db-deferred-list / meta-deferred-list) but NOT built. Pair with `- [ ]`, never `[x]`. Filing is not building.
+  - **DEFERRED** — discussed on purpose and consciously not acted on *yet*; still wanted. Leave unchecked.
+  - **DECLINED** — decided against on the merits, and not coming back. Pair with `[x] ✗`. The difference from DEFERRED is whether it is still wanted; do not soften a real no into a deferral.
+  - **SUPERSEDED** — overtaken by a different decision or a later item. Name what replaced it.
+  - **DUPLICATE** — the same thing is already tracked elsewhere. Name the surviving item.
+  - **ADOPTED** — a workflow/process suggestion was agreed and is now standing practice.
+
+  **Waiting on something:**
+  - **BLOCKED** — cannot proceed, and the blocker is named. State exactly what is needed and from whom, or the item silently becomes a deferral nobody is tracking.
+  - **UNBLOCKED** — the blocker cleared. Leave the item **unchecked**: unblocked is not built.
+
+  *Picking between the pairs that actually get confused: FIXED vs CORRECTED = codebase vs this record · IMPLEMENTED vs SHIPPED = is there a version number · ANSWERED vs VERIFIED = reasoned vs actually ran the check · FILED vs DEFERRED = it has a home vs it has a decision · DEFERRED vs DECLINED = still wanted vs not.*
   - Comments written before 2026-08-03 predate this convention and are left as-is — their meaning is still clear from context, and rewriting ~100 historical comments for word-choice consistency isn't worth the risk of corrupting an otherwise-accurate record. Apply the convention going forward only.
 
-**Outside MarkEdit:** every mark in this file is PLAIN TEXT to any other tool (GitHub, `cat`, another
-editor) — the colors are a local MarkEdit-only rendering layer, never baked into the committed characters.
+**Outside MarkEdit:** every mark in this file is PLAIN TEXT to any other tool (GitHub, `cat`, another editor) — the colors are a local MarkEdit-only rendering layer, never baked into the committed characters.
 
 ---
 
@@ -72,9 +104,7 @@ editor) — the colors are a local MarkEdit-only rendering layer, never baked in
 | Workflow lesson or standing rule | **memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` |
 | Resolved **and** ℋ-confirmed item from this file | **`docs/archive/graveyard.md`** (swept, never deleted) |
 
-**This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless.
-New feature ideas start here as intake in the sections above, then get filed to the right home on the
-next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
+**This scratchpad no longer duplicates the roadmap** — that was the main thing making the file endless. New feature ideas start here as intake in the sections above, then get filed to the right home on the next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
 
 ---
 
@@ -87,7 +117,7 @@ next tidy. To see or change the roadmap, go to `docs/ROADMAP.md`.
   <!-- • DRAW thumbnails: designed to be auto-rehosted by the bot into the `temp_draws/` folder (utils/cloudinaryCache.js — you give a URL, Cloudinary fetches the bytes; public_id = slug of the draw title). You shouldn't need to hand-manage these. -->
   <!-- • PATCH-NOTES images: designed to auto-cache into `patch_notes/{patchId}/` (utils/patchNotesCache.js), season-based retention. -->
   <!-- • OPEN part (now FILED, not resolved): whether they're ACTUALLY landing in those folders in your live account (you think they look like they're in the main folder) is a read-only verify item → CLAUDE.md "Verify Cloudinary folder organization" + CHANGELOG Known-issues. And the "make the image/naming flow self-explanatory" ask is folded into the filed "/manage loadout data-entry UX overhaul". -->
-※ [2026-08-07 09:51 EDT]  ※※ ∴ [2026-08-07 12:10 EDT] This one's empty as far as I can read it — just the auto-stamp with no text between the marks. Guessing it's the cursor-placement bug you reported at L126 (typing landing in the wrong spot near the mark) rather than an intentional note. Let me know what you meant to say here, or if it's safe to delete as a stray artifact. ∵
+※ [2026-08-07 09:51 EDT]  ※※ ∴ [2026-08-07 12:10 EDT] This one's empty as far as I can read it — just the auto-stamp with no text between the marks. Guessing it's the cursor-placement bug you reported at L126 (typing landing in the wrong spot near the mark) rather than an intentional note. Let me know what you meant to say here, or if it's safe to delete as a stray artifact. ∵ ∴ [2026-08-08 11:52 EDT] **Answered, and my guess was wrong — do NOT delete this.** Your explanation: the `※` in front of the timestamp was being consumed as the CLOSING mark for the bug described on that line (the backticked-mark parsing bug, L153), so the follow-up you inserted afterwards opened a region that never closed. You typed a single bare `※` by hand to close it off, which is why it reads as empty. So it is a deliberate repair, not an artifact — **leave it in place until the MarkEdit backtick bug is fixed**, since removing it would re-open the same unterminated region for the next follow-up added below it. Recorded here because a future tidy pass would otherwise "clean up" an empty mark on sight. It is also direct evidence for the cross-project bug at L153, now noted in that entry. ∵
 
 - [ ] "DMZ partials are the 5-attachment prompt cap”, adjust and update the prompt to detect these DMZ builds, record their full attachments, and differentiate that build from MP (like so it understands and recognizes this a DMZ build and deserves the DMZ mode metadata). I believe for the PoC we only programmed it for MP builds, so that’s something we actually need to implement properly now.
   <!-- BLOCKED 2026-07-24 18:07 EDT (Claude): real work I can't safely start yet. /autobuild's vision prompt is MP-only (fixed 5-slot cap) and I don't know DMZ's actual slot layout (up to 9 slots, different positions) well enough to write a reliable detection+extraction prompt without guessing. Still need from you: one DMZ screenshot with EMPTY slots so the labels are visible, OR a plain list of the fixed slot positions top-to-bottom. Once that lands this is a real, scoped autobuild-session task (extend the prompt to detect mode:DMZ, cap at 9 instead of 5, tag DMZ metadata). -->

@@ -1,3 +1,8 @@
+---
+kind: plan
+status: frozen
+---
+
 # /autobuild Loadout Automation PoC Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -62,8 +67,7 @@ console.log(failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`);
 
 - [ ] **Step 2: Run it to confirm it currently fails**
 
-Run: `node /private/tmp/claude-501/-Applications-Claude-Code-Diors-Builds/535689ee-aa29-4f2f-83d4-44407a4c8f58/scratchpad/test-code-corrector.js`
-Expected: throws `TypeError: correctGunsmithCode is not a function` (export doesn't exist yet).
+Run: `node /private/tmp/claude-501/-Applications-Claude-Code-Diors-Builds/535689ee-aa29-4f2f-83d4-44407a4c8f58/scratchpad/test-code-corrector.js` Expected: throws `TypeError: correctGunsmithCode is not a function` (export doesn't exist yet).
 
 - [ ] **Step 3: Implement `correctGunsmithCode`**
 
@@ -108,8 +112,7 @@ module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, pars
 
 - [ ] **Step 4: Run the verification script again**
 
-Run: `node /private/tmp/claude-501/-Applications-Claude-Code-Diors-Builds/535689ee-aa29-4f2f-83d4-44407a4c8f58/scratchpad/test-code-corrector.js`
-Expected: `ALL PASS`, all 5 lines show `PASS`.
+Run: `node /private/tmp/claude-501/-Applications-Claude-Code-Diors-Builds/535689ee-aa29-4f2f-83d4-44407a4c8f58/scratchpad/test-code-corrector.js` Expected: `ALL PASS`, all 5 lines show `PASS`.
 
 - [ ] **Step 5: Commit**
 
@@ -250,8 +253,7 @@ extractLoadoutFromImage(process.argv[2])
     .catch(err => console.error('FAILED:', err.message));
 ```
 
-Run: `node /private/tmp/.../scratchpad/test-vision-extract.js "<a real image URL>"`
-Expected: a JSON object with `weaponName`, `gunsmithCode`, and a 5-element `attachments` array printed, no `FAILED:` line. Sanity-check the extracted weapon name is plausible for whatever image you used — exact accuracy isn't the point of this check, confirming the full round trip (download → Gemini call → JSON parse → returned shape) works with zero thrown errors is.
+Run: `node /private/tmp/.../scratchpad/test-vision-extract.js "<a real image URL>"` Expected: a JSON object with `weaponName`, `gunsmithCode`, and a 5-element `attachments` array printed, no `FAILED:` line. Sanity-check the extracted weapon name is plausible for whatever image you used — exact accuracy isn't the point of this check, confirming the full round trip (download → Gemini call → JSON parse → returned shape) works with zero thrown errors is.
 
 - [ ] **Step 3: Commit**
 
@@ -312,8 +314,7 @@ console.log(failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`);
 
 - [ ] **Step 2: Run it to confirm it currently fails**
 
-Run: `node /private/tmp/.../scratchpad/test-attachment-correct.js`
-Expected: throws (function doesn't exist yet).
+Run: `node /private/tmp/.../scratchpad/test-attachment-correct.js` Expected: throws (function doesn't exist yet).
 
 - [ ] **Step 3: Implement `correctAttachmentName`**
 
@@ -355,8 +356,7 @@ module.exports = { toTitleCase, resolveTier, parseAdminDate, parseItemLine, pars
 
 - [ ] **Step 4: Run the verification script again**
 
-Run: `node /private/tmp/.../scratchpad/test-attachment-correct.js`
-Expected: `ALL PASS`.
+Run: `node /private/tmp/.../scratchpad/test-attachment-correct.js` Expected: `ALL PASS`.
 
 - [ ] **Step 5: Commit**
 
@@ -447,8 +447,7 @@ uploadLoadoutImage(process.argv[2], 'AUTOBUILD-TEST-DELETE-ME')
     .then(result => console.log(JSON.stringify(result)));
 ```
 
-Run: `node /private/tmp/.../scratchpad/test-loadout-image-upload.js "<a real image URL>"`
-Expected: `{"success":true,"error":null}`.
+Run: `node /private/tmp/.../scratchpad/test-loadout-image-upload.js "<a real image URL>"` Expected: `{"success":true,"error":null}`.
 
 Then verify via the Cloudinary MCP tool (`get-asset-details` on public_id `AUTOBUILD-TEST-DELETE-ME`, or `search-assets`) that it actually landed in the `gun-builds` folder under that exact key — then delete it via the MCP tool's `delete-asset` so this test upload doesn't linger in the real account.
 
@@ -516,8 +515,7 @@ console.log(failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`);
 
 - [ ] **Step 3: Run it to confirm it currently fails**
 
-Run: `node /private/tmp/.../scratchpad/test-build-numbering.js`
-Expected: throws (function doesn't exist yet).
+Run: `node /private/tmp/.../scratchpad/test-build-numbering.js` Expected: throws (function doesn't exist yet).
 
 - [ ] **Step 4: Implement `computeWeaponKeyAndBuild`**
 
@@ -561,8 +559,7 @@ module.exports = { buildImageUrl, checkImageExists, buildLoadoutCard, getMpCateg
 
 - [ ] **Step 5: Run the verification script again**
 
-Run: `node /private/tmp/.../scratchpad/test-build-numbering.js`
-Expected: `ALL PASS`.
+Run: `node /private/tmp/.../scratchpad/test-build-numbering.js` Expected: `ALL PASS`.
 
 - [ ] **Step 6: Commit**
 
@@ -796,14 +793,11 @@ Note: `retryImageUpload` is required lazily inside the `if (retryToken)` branch 
 
 - [ ] **Step 4: Verify both files load without error**
 
-Run: `node -e "require('/Applications/Claude Code/Diors-Builds/utils/autobuildPipeline.js'); console.log('pipeline loads OK')"`
-Expected: `pipeline loads OK`.
+Run: `node -e "require('/Applications/Claude Code/Diors-Builds/utils/autobuildPipeline.js'); console.log('pipeline loads OK')"` Expected: `pipeline loads OK`.
 
-Run: `node -e "require('/Applications/Claude Code/Diors-Builds/commands/autobuild.js'); console.log('command loads OK')"`
-Expected: `command loads OK` (the lazy `require` inside `execute()` means the missing `retryImageUpload` export doesn't matter yet — it's only resolved if that code path actually runs).
+Run: `node -e "require('/Applications/Claude Code/Diors-Builds/commands/autobuild.js'); console.log('command loads OK')"` Expected: `command loads OK` (the lazy `require` inside `execute()` means the missing `retryImageUpload` export doesn't matter yet — it's only resolved if that code path actually runs).
 
-Run: `node -c /Applications/Claude\ Code/Diors-Builds/index.js`
-Expected: no output (valid syntax) — confirms the `MANAGE_CUSTOM_ID_PREFIXES` edit from Step 1 didn't break anything.
+Run: `node -c /Applications/Claude\ Code/Diors-Builds/index.js` Expected: no output (valid syntax) — confirms the `MANAGE_CUSTOM_ID_PREFIXES` edit from Step 1 didn't break anything.
 
 - [ ] **Step 5: Commit**
 
@@ -1016,8 +1010,7 @@ Inside the `isButton()` block (starts `index.js:1160`), add the following as its
 
 - [ ] **Step 4: Syntax check**
 
-Run: `node -c /Applications/Claude\ Code/Diors-Builds/index.js && node -c /Applications/Claude\ Code/Diors-Builds/utils/autobuildPipeline.js && echo "SYNTAX OK"`
-Expected: `SYNTAX OK`.
+Run: `node -c /Applications/Claude\ Code/Diors-Builds/index.js && node -c /Applications/Claude\ Code/Diors-Builds/utils/autobuildPipeline.js && echo "SYNTAX OK"` Expected: `SYNTAX OK`.
 
 - [ ] **Step 5: Manual end-to-end verification (checklist — requires real Discord/Mongo/Cloudinary access)**
 
@@ -1171,8 +1164,7 @@ Inside the `isModalSubmit()` block (`index.js:2200`), add:
 
 - [ ] **Step 5: Syntax check**
 
-Run: `node -c /Applications/Claude\ Code/Diors-Builds/index.js && node -c /Applications/Claude\ Code/Diors-Builds/utils/autobuildPipeline.js && echo "SYNTAX OK"`
-Expected: `SYNTAX OK`.
+Run: `node -c /Applications/Claude\ Code/Diors-Builds/index.js && node -c /Applications/Claude\ Code/Diors-Builds/utils/autobuildPipeline.js && echo "SYNTAX OK"` Expected: `SYNTAX OK`.
 
 - [ ] **Step 6: Manual verification**
 
@@ -1218,8 +1210,7 @@ If a non-gitignored template file already exists (e.g. `.env.example`), add a `G
 
 - [ ] **Step 2: Full-repo syntax sanity check**
 
-Run: `node -c index.js && node -c commands/autobuild.js && node -c utils/autobuildPipeline.js && node -c utils/visionExtract.js && node -c utils/loadoutImageCache.js && node -c utils/adminParser.js && node -c utils/loadoutRender.js && echo "ALL SYNTAX OK"`
-Expected: `ALL SYNTAX OK`.
+Run: `node -c index.js && node -c commands/autobuild.js && node -c utils/autobuildPipeline.js && node -c utils/visionExtract.js && node -c utils/loadoutImageCache.js && node -c utils/adminParser.js && node -c utils/loadoutRender.js && echo "ALL SYNTAX OK"` Expected: `ALL SYNTAX OK`.
 
 - [ ] **Step 3: Confirm no other bot instance is running before any local boot test**
 

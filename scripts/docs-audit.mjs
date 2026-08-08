@@ -62,6 +62,11 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "n
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+// Static, NOT a dynamic import inside the check. The runner calls `c.run()` SYNCHRONOUSLY
+// (`out = c.run() || []`), so an async check body returns an unawaited Promise and the check
+// verifies NOTHING while reporting a clean pass — the vacuous-pass failure this file warns about,
+// caught here on its first run by reading the ledger instead of the verdict.
+import { reflow } from "./reflow-prose.mjs";
 
 // DOCS_AUDIT_ROOT exists so scripts/docs-audit.test.mjs can point the whole audit at a fixture tree
 // and PROVE each check fires. That matters more than usual here: this repo has already shipped a
@@ -920,6 +925,270 @@ check(
     }
     // 4 assertions over ci.yml: audit step, self-test step, fetch-depth, branch triggers.
     return { findings: out, examined: 4 };
+  }
+);
+
+/* --------------------------- doc-frontmatter ------------------------ */
+// Added 2026-08-08 11:39 EDT with the front-matter rollout.
+//
+// WHY A KIND FIELD IS NOT REDUNDANT WITH THE FOLDER. At rest it is: `kind` must equal what the path
+// already says, so it carries no information while a file sits still. Its whole value is at MOVE
+// time. CLAUDE.md's own doc-taxonomy section opens by noting that "three reorganizations in two days
+// all came from files sitting in folders whose purpose they didn't match" — and a half-finished move
+// is precisely [[feedback_no_half_measures_on_reorgs]]. A declared kind turns that silent
+// misclassification into a failing check: move the file and forget the field, and CI says so.
+//
+// It also does a second, quieter job — a file opened cold states its own TENSE CONTRACT. `frozen`
+// on a spec is the word that stops a session "helpfully" updating a dated snapshot, which the repo
+// currently prevents with a paragraph of prose in CLAUDE.md that nothing enforces.
+//
+// DELIBERATELY ABSENT: `description`. docs/README.md already carries one line per doc and
+// `readme-map` enforces that it exists. A second copy would be duplicated state that nothing keeps
+// in sync — exactly the failure recorded in [[feedback_no_duplicated_state_in_prose]].
+const FM_KINDS = {
+  rule: ["live"],
+  guide: ["live"],
+  record: ["live"],
+  reference: ["live"],
+  idea: ["live"],
+  legal: ["live"],
+  spec: ["frozen", "superseded"],
+  plan: ["frozen", "superseded"],
+  archive: ["dead"],
+};
+// The location→kind rule. Kept as ordered prefixes so the first match wins, mirroring the taxonomy
+// table in CLAUDE.md. A new docs/ subdirectory MUST be added here, and that is intentional: an
+// unclassifiable doc is a doc whose purpose nobody has decided.
+const FM_RULE = [
+  [".claude/rules/", "rule"],
+  ["docs/archive/", "archive"],
+  ["docs/superpowers/specs/", "spec"],
+  ["docs/superpowers/plans/", "plan"],
+  ["docs/reference/", "reference"],
+  ["docs/ideas/", "idea"],
+  ["docs/legal/", "legal"],
+];
+const fmExpected = (f) => {
+  for (const [prefix, kind] of FM_RULE) if (f.startsWith(prefix)) return kind;
+  if (["CONTRIBUTING.md", "CONTRIBUTORS.md", "SECURITY.md"].includes(f)) return "legal";
+  if (f === "CLAUDE.md") return "guide";
+  if (/^docs\/[^/]+\.md$/.test(f)) return "record";
+  return null;
+};
+
+check(
+  "doc-frontmatter",
+  "ERROR",
+  "every tracked Markdown doc declares a kind/status that matches where it lives",
+  () => {
+    const out = [];
+    let examined = 0;
+    const declaredPublished = new Map();
+    for (const f of tracked()) {
+      if (!f.endsWith(".md")) continue;
+      // Plugin-owned, on someone else's schema — not ours to annotate.
+      if (f.includes("hookify")) continue;
+      const expected = fmExpected(f);
+      if (expected === null) {
+        out.push({
+          msg: `${f} sits somewhere the doc taxonomy does not describe, so its kind cannot be ` +
+            `checked. Add its location to FM_RULE in scripts/docs-audit.mjs and to CLAUDE.md's ` +
+            `doc-taxonomy table — an unclassifiable doc is one whose purpose was never decided.`,
+        });
+        continue;
+      }
+      const text = read(f);
+      if (text === null) continue;
+      examined++;
+      if (!text.startsWith("---\n")) {
+        out.push({ msg: `${f} has no YAML front matter; it must declare kind: ${expected}.` });
+        continue;
+      }
+      const end = text.indexOf("\n---", 3);
+      const fm = end === -1 ? "" : text.slice(4, end + 1);
+      const kind = (fm.match(/^kind:\s*(\S+)/m) || [])[1];
+      const status = (fm.match(/^status:\s*(\S+)/m) || [])[1];
+      const supersededBy = (fm.match(/^superseded_by:\s*(\S+)/m) || [])[1];
+
+      if (!kind) out.push({ msg: `${f} front matter declares no kind: (expected ${expected}).` });
+      else if (kind !== expected) {
+        out.push({
+          msg: `${f} declares kind: ${kind} but its location says ${expected}. Either the file was ` +
+            `moved without updating its front matter — a half-finished reorganization — or it is ` +
+            `filed in the wrong folder. Both are real; fix whichever it is.`,
+        });
+      }
+      const allowed = FM_KINDS[kind] || [];
+      if (!status) out.push({ msg: `${f} front matter declares no status:.` });
+      else if (kind && FM_KINDS[kind] && !allowed.includes(status)) {
+        out.push({
+          msg: `${f} declares status: ${status}, which is not valid for kind: ${kind} ` +
+            `(allowed: ${allowed.join(", ")}).`,
+        });
+      }
+      // A superseded document must say what replaced it, and that target must exist — otherwise
+      // "superseded" is a dead end telling a reader to go somewhere unnamed.
+      if (status === "superseded" && !supersededBy) {
+        out.push({ msg: `${f} is status: superseded but names no superseded_by: target.` });
+      }
+      if (supersededBy) {
+        if (status !== "superseded") {
+          out.push({ msg: `${f} names superseded_by: but its status is ${status}, not superseded.` });
+        }
+        if (!fs.existsSync(path.join(ROOT, supersededBy))) {
+          out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+        }
+      }
+      declaredPublished.set(f, /^published:\s*true\b/m.test(fm));
+    }
+
+    // `published: true` marks a doc that renders to the live dioreo.app site. It exists so a session
+    // editing CONTRIBUTING.md or the Privacy Policy can see, at the top of the file, that the change
+    // is publicly visible — that fact previously lived only inside buildLegalPages.js.
+    //
+    // ⚠️ It is CROSS-CHECKED against the generator's own page tables rather than against a list kept
+    // here, so the field cannot quietly disagree with what actually publishes. A second hand-kept
+    // copy of the roster would be precisely the duplicated state this schema avoids elsewhere.
+    // A tree with no generator (a fixture) legitimately has nothing to cross-check, so its absence
+    // is not a finding here — the build, `scripts-documented` and `ci-wiring` all fail loudly if it
+    // vanishes from the real repo. The vacuous-pass risk that DOES matter is a generator that exists
+    // but yields no sources, which is caught explicitly below.
+    const gen = read("scripts/buildLegalPages.js");
+    if (gen !== null) {
+      const declaredInGenerator = new Set();
+      for (const m of gen.matchAll(/file:\s*'([^']+\.md)'/g)) {
+        const bare = m[1];
+        const full = [...declaredPublished.keys()].find((t) => t === bare || t.endsWith("/" + bare));
+        if (full) declaredInGenerator.add(full);
+      }
+      if (declaredInGenerator.size === 0) {
+        out.push({
+          msg: `no published Markdown sources could be read out of scripts/buildLegalPages.js, so ` +
+            `the published: field verified NOTHING this run. Its page tables were probably ` +
+            `reshaped — update this check in the same change rather than leaving it vacuous.`,
+        });
+      }
+      for (const [f, isPublished] of declaredPublished) {
+        const shouldBe = declaredInGenerator.has(f);
+        if (shouldBe && !isPublished) {
+          out.push({
+            msg: `${f} is rendered to the live site by buildLegalPages.js but does not declare ` +
+              `published: true. Anyone editing it cannot tell the change is publicly visible.`,
+          });
+        } else if (!shouldBe && isPublished) {
+          out.push({
+            msg: `${f} declares published: true but buildLegalPages.js does not render it. Either ` +
+              `the field is stale or the page was dropped from the site.`,
+          });
+        }
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
+/* -------------------------- memory-softwrap ------------------------- */
+// Added 2026-08-08 12:56 EDT, Harkirat: "github ci can't check outside the repo, BUT WE CAN, no? so
+// why not implement it in one of the checks you conduct locally?" — answering my own claim that the
+// memory store could not be covered, which was me letting the WEAKEST consumer set the bar. This
+// audit runs locally before every PR; CI is not the only reader.
+//
+// The memory store was reflowed to soft-wrapped prose alongside the repo (v2.63.0). Nothing stopped
+// it drifting back, and drift there is invisible: memory files never appear in a git diff, so the one
+// signal that surfaces everything else in this repo does not exist for them.
+//
+// ⚠️ It DIFFERS from its sibling memory checks on purpose. They skip outright under DOCS_AUDIT_ROOT
+// ("the memory store is machine-global, not part of this tree"), which also means they can never be
+// proven by the self-test and live on the exempt list. This one resolves to `<root>/memory` under a
+// fixture instead, so `proves()` exercises the real logic. A proven check beats an exempt one.
+//
+// Severity is WARN, not ERROR: hard-wrapped memory is a searchability loss, not a correctness defect,
+// and it is unreachable from CI — an ERROR that can only ever fire on one machine would block merges
+// for a reason the runner cannot even see.
+const MEMORY_WRAP_DIR = process.env.DOCS_AUDIT_ROOT ? join(REPO, "memory") : MEMORY_DIR;
+
+check(
+  "memory-softwrap",
+  "WARN",
+  "memory files are soft-wrapped, the same as the repo's prose",
+  () => {
+    if (!existsSync(MEMORY_WRAP_DIR)) {
+      return {
+        findings: [],
+        skipped: `no memory store at ${MEMORY_WRAP_DIR} — expected on CI, where it is machine-global and absent. NOT a pass.`,
+      };
+    }
+    const out = [];
+    let examined = 0;
+    for (const name of readdirSync(MEMORY_WRAP_DIR)) {
+      if (!name.endsWith(".md")) continue;
+      const p = join(MEMORY_WRAP_DIR, name);
+      let text;
+      try { text = readFileSync(p, "utf8"); } catch { continue; }
+      examined++;
+      // Same rule the repo uses: if reflowing would change it, it is not soft-wrapped. Reusing the
+      // real implementation rather than a second heuristic keeps the two from disagreeing.
+      if (reflow(text) !== text) {
+        out.push({
+          msg: `${name} is hard-wrapped. Memory is prose and is searched with \`rg\`, so a phrase ` +
+            `split across a wrap boundary cannot be found. Fix: ` +
+            `node scripts/reflow-prose.mjs --write "${MEMORY_WRAP_DIR}"/*.md`,
+        });
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
+/* --------------------------- notes-line-refs ------------------------ */
+// Added 2026-08-08 12:10 EDT, after the soft-wrap reflow made the problem impossible to ignore.
+//
+// Code comments and docs had accumulated 22 breadcrumbs of the form "notes L184" pointing into
+// docs/ideas/diors-notes.md. That file is a SCRATCHPAD — items are added, marked, and swept out
+// constantly — so a line number in it is stale the moment anything above it changes. They were
+// already unreliable; reflowing the tree moved the file from 200+ lines to 159 and made 13 of them
+// point past the end of the file, which is how they finally became visible.
+//
+// The durable fix is not "renumber them" but "stop addressing a moving file by offset". Quote a few
+// words of the item instead — that survives edits, and it still says which item you meant.
+//
+// Records and the archive are exempt: CHANGELOG/DEVLOG entries and swept graveyard items are
+// statements about what was true on a date, and back-editing them would be falsifying history.
+check(
+  "notes-line-refs",
+  "ERROR",
+  "no live doc or comment addresses the notes scratchpad by line number",
+  () => {
+    const exempt = (f) =>
+      f === "docs/CHANGELOG.md" ||
+      f === "docs/CHANGELOG-SUMMARY.md" ||
+      f === "docs/DEVLOG.md" ||
+      f === "docs/ideas/diors-notes.md" ||
+      f.startsWith("docs/archive/") ||
+      f.startsWith("docs/superpowers/") ||
+      f.startsWith("public/") ||
+      // This check and its self-test both have to WRITE the offending pattern in order to define
+      // and prove it. Same shape as outstanding-not-filed.sh stripping quoted spans: describing a
+      // violation is not committing one.
+      f === "scripts/docs-audit.mjs" ||
+      f === "scripts/docs-audit.test.mjs";
+    const out = [];
+    let examined = 0;
+    for (const f of tracked()) {
+      if (!/\.(js|mjs|md|sh)$/.test(f) || exempt(f)) continue;
+      const text = read(f);
+      if (text === null) continue;
+      examined++;
+      const hits = text.match(/notes L\d+/g);
+      if (hits) {
+        out.push({
+          msg: `${f} cites ${[...new Set(hits)].join(", ")} — a line number in the notes ` +
+            `scratchpad, which shifts on every edit to that file. Quote a few words of the item ` +
+            `instead; that survives edits and still identifies which item you meant.`,
+        });
+      }
+    }
+    return { findings: out, examined };
   }
 );
 
