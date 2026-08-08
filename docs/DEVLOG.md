@@ -6036,11 +6036,25 @@ different review shapes (one is a two-line YAML addition, the other is a securit
 shared escaping logic). Splitting by file/review-shape was the right call for reviewability; but shipped
 as one *release*, since both came from the same triage pass and there was no reason to burn two version
 numbers and two release cycles on it. Combined by cherry-picking both commits onto a fresh branch off
-`main` rather than merging one branch into the other, which kept the history linear. Second, the 8
+`main` rather than merging one branch into the other, which kept the history linear. Second, the
 dismissed alerts went into `docs/db-deferred-list.md` with the same per-alert reasoning that would have
 gone into a PR review comment — a dismissal without a reason is just a suppressed warning, and the next
 person (or the next scan) to see these alert numbers needs to know why they're not bugs, not just that
 someone decided they weren't.
+
+The PR's own CodeQL re-scan then produced a small, useful loop: the fix for `stripTags()`
+(`.replace(/</g,'&lt;').replace(/>/g,'&gt;')`) tripped a brand-new HIGH-severity alert on the exact
+line it was supposed to close, because CodeQL's dataflow model doesn't compose two chained single-
+character replaces into "provably safe." Switched to the tool's OWN advisory-recommended shape — a
+single combined-character-class replace (`.replace(/[<>]/g, ...)`) — and it re-triggered again, on the
+same line, just under a new alert number. That second failure was the useful signal: the flagged span
+wasn't the hardening line at all, it was the ORIGINAL tag-strip regex a few characters earlier, meaning
+CodeQL evaluates that first `.replace()` call in isolation and doesn't credit whatever runs after it,
+no matter how it's shaped. Since the second call is an unconditional character-class replace with no
+branch around it — every remaining `<`/`>` becomes an entity on every code path, full stop — this is a
+provable false positive from the tool's own dataflow-composition limit, not a code defect, and got
+suppressed inline with a `// lgtm[...]` comment and a written reason rather than chased through a third
+rewrite that would have hit the same wall.
 
 # Part B — Lessons Ledger (thematic)
 

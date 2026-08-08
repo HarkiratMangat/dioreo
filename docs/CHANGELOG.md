@@ -209,6 +209,13 @@ double-escape artifacts across every published page.
 where the flagged string is only ever compared or `.test()`-ed against internally — it never
 reaches a page actually served to a reader.
 
+**A 9th false positive turned up from CodeQL's own re-scan of this PR**, on the `stripTags()` fix
+itself: its dataflow model evaluates the tag-strip regex in isolation and doesn't credit the
+unconditional character-class escape immediately after it, even after matching the tool's own
+advisory-recommended fix shape exactly. Since that escape runs on every code path with no branch
+around it, no residual `<`/`>` can survive — a provable false positive, suppressed inline with
+`// lgtm[...]` rather than chased through further rewrites. Also documented in `docs/db-deferred-list.md`.
+
 Real-world exploitability was already low throughout (every source Markdown this generator
 renders is this repo's own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records —
 never user-submitted), but the escaping gaps were genuine and the fix was free.

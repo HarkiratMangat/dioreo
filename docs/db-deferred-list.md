@@ -2064,6 +2064,20 @@ doesn't re-open them as if they were new.*
   own — `docs/legal/*.md`, `LICENSE`, `NOTICE`, the three changelog records — never user-submitted), and
   these 8 specifically have no code path back to served output at all. Don't re-open without a genuine
   new flow into these functions (e.g. if any of them ever starts taking untrusted input).
+- **A 9th alert (`js/incomplete-multi-character-sanitization`, `scripts/buildLegalPages.js:5613`,
+  `stripTags()`'s tag-strip regex) is CodeQL's OWN false positive on the fix for alert #19 above** —
+  suppressed inline with `// lgtm[...]` rather than fought further, and the reasoning is worth keeping
+  distinct from the 8 above because it's a genuinely different class of false positive: the other 8 had
+  no sink at all; this one has a real sink, and the fix is real, but CodeQL's dataflow evaluates the
+  first `.replace(/<[^>]*>/g, '')` call in isolation and doesn't credit the UNCONDITIONAL
+  `.replace(/[<>]/g, callback)` immediately after it, even though that second call is a mathematical
+  guarantee — it runs on every code path, no branch skips it, and it replaces every remaining `<`/`>`
+  with an entity, so no tag-shaped fragment can survive to the sink. Tried CodeQL's own advisory-
+  recommended shape (a single combined-character-class replace with a callback, matching the rule's own
+  `## Example` fix) before concluding this — it still re-triggered (as alert #26, after #25 auto-closed
+  on the first attempt), which is what confirmed this is the tool's dataflow-composition limit, not a
+  code defect. Re-open only if CodeQL's rule ever proves able to trace safety through an unconditional
+  compound `.replace()` chain (or if `stripTags()`'s two-step structure changes).
 - **Dependabot vulnerabilities** — tracked, decided not worth acting on. Rationale:
   `project_dependabot_vulnerabilities_deferred` memory.
 - **A maintained ToC for `CHANGELOG.md` / `DEVLOG.md`** — Harkirat's explicit call: their headers are

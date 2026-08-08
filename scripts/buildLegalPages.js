@@ -5610,6 +5610,12 @@ const warmHit = k => { WARM_HITS[k] = (WARM_HITS[k] || 0) + 1; };
 // trailing </>-escape is defense in depth for a malformed/unbalanced tag the
 // strip regex missed, since the legend at the CONTRIBUTORS call site below
 // re-embeds this result unescaped.
+// lgtm[js/incomplete-multi-character-sanitization] false positive: CodeQL
+// flags this tag-strip call as an incomplete sanitizer on its own, but it
+// never runs alone — the UNCONDITIONAL /[<>]/g replace on the next line
+// removes every remaining `<`/`>` on every code path, with no branch around
+// it, so no residual tag-shaped fragment can survive to a sink. See
+// docs/db-deferred-list.md's Decided-no entry for the full reasoning.
 const stripTags = s => s.replace(/<[^>]*>/g, '')
     .replace(/[<>]/g, c => (c === '<' ? '&lt;' : '&gt;')).trim();
 const headingInner = h => (h.match(/<span class="ht">([\s\S]*?)<\/span>/) || [, ''])[1];
