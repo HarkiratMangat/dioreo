@@ -25,6 +25,25 @@ active file a given dead item came out of.
 
 ## Shipped / fixed
 
+- ✅ **`/calendar` page banners: width cap was a no-op, and Discord-CDN banner sources expired within
+  ~24-48h — RESOLVED 2026-08-07 22:04 EDT.** `[P2 · S]` Filed 2026-08-07 21:23 EDT. Root cause and
+  the two failed workarounds (`height=auto` → 400; forging `ex=` → still 404, `hm=` is a real
+  signature) are as originally filed. **Fix (Harkirat's call after live-testing both the resize and
+  the workarounds): stop skipping Cloudinary re-hosting for Discord-CDN banner sources.**
+  `utils/calendarBannerCache.js`'s `cacheBannerImage()` now re-hosts every source unconditionally;
+  the stale "Discord CDN doesn't expire" comments were corrected in place. **The width-cap feature
+  itself was then dropped entirely** (not just fixed) — Harkirat live-tested it working (Cloudinary's
+  `c_limit,w_N`, verified aspect-preserving from one dimension) and rejected it anyway: a
+  Cloudinary-transformed derivative has no path back to the original, so the cap also shrank the
+  ZOOMED view, which he didn't want. `commands/calendar.js` now renders the raw (Cloudinary-hosted,
+  durable) banner URL at full resolution, no cap, inline or on zoom.
+  **Same investigation surfaced a second, broader gap**, fixed in the same pass: none of the three
+  Cloudinary re-upload modules (`cloudinaryCache.js`/draws, `patchNotesCache.js`, this file) baked
+  `f_auto,q_auto` into the stored `secure_url`, unlike loadout images — new shared
+  `utils/cloudinaryDeliveryUrl.js` (`withDeliveryDefaults()`, idempotent) now applies it on every
+  upload/lookup across all three, and `scripts/backfillCloudinaryDeliveryDefaults.js` (safe to
+  re-run) fixed everything already stored — ran clean against both dev (25 URLs) and prod (25 URLs),
+  each spot-verified live via `curl`.
 - ✅ **`/calendar`: replace Prev/Next pagination with section-toggle buttons — RESOLVED 2026-08-07
   13:56 EDT (found stale, not built this pass).** `[P2 · M]` Filed 2026-07-31 12:10 EDT during the
   3-section calendar redesign (notes L195), describing the pagination as still Prev/Next with named

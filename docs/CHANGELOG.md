@@ -181,7 +181,42 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.60.0 — 2026-08-07 19:49 EDT (#97) — The bug that looked fixed, and the fix that traded speed for correctness
+## v2.61.0 — 2026-08-07 22:06 EDT (#98) — Calendar banners stop silently expiring, and every Cloudinary URL gets adaptive quality
+
+**`/manage`'s calendar bulk add/replace now reports a per-category breakdown, not just a count.**
+Harkirat bulk-added 23 calendar events with no manual category prefixes and several MP-mode/BR
+titles landed under Events instead of Playlists — the classifier itself turned out correct (an
+explicit `e•` prefix was present in the actual submitted text, not visible in what he'd retyped for
+review), but the confirmation message gave no way to catch it without opening `/calendar` and
+cross-checking by eye. It now lists every title grouped by the category it was actually assigned,
+capped so one giant paste can't blow Discord's 2000-char reply limit.
+
+**`/calendar` page banners were silently going dead within ~24-48h, and the width-cap feature built
+to fix a desktop-width nuisance turned out to be a complete no-op anyway.** The 2026-07-31 decision
+to skip Cloudinary re-hosting for Discord-CDN banner sources ("a real Discord CDN link doesn't
+expire") was built on a false premise — `media.discordapp.net` links are signed with expiring
+`ex=`/`is=`/`hm=` params; decoding a live one showed it had already expired. Two workarounds
+(`height=auto`, forging a later `ex=`) both failed on direct testing. Separately, the width cap
+itself (`capBannerPreviewWidth`) only ever sent `?width=N`, which Discord's resize proxy silently
+ignores without an accompanying `height` — confirmed it had never actually resized anything.
+Fix: `utils/calendarBannerCache.js` now re-hosts every banner source to Cloudinary unconditionally
+(durable, no expiry), and the width cap was dropped entirely rather than fixed — Harkirat live-tested
+a working version and rejected it anyway, since a Cloudinary-transformed derivative has no path back
+to the original, so the cap also shrank the zoomed view. Banners now render at full resolution,
+inline and on zoom, from a durable host.
+
+**Every Cloudinary-hosted image in this bot now uses adaptive format/quality (`f_auto,q_auto`), not
+just loadout screenshots.** Investigating the banner issue surfaced that draw thumbnails and
+patch-note images never applied this either — only loadout images (which build their delivery URL
+fresh at render time) did; the other three modules stored Cloudinary's `secure_url` verbatim, at
+full/original quality. New shared `utils/cloudinaryDeliveryUrl.js` (`withDeliveryDefaults()`,
+idempotent, non-Cloudinary URLs pass through untouched) is now applied on every upload/lookup across
+`cloudinaryCache.js` (draws), `patchNotesCache.js`, and `calendarBannerCache.js` — the standing
+convention going forward for any Cloudinary URL this bot produces. `scripts/
+backfillCloudinaryDeliveryDefaults.js` (safe to re-run) fixed everything already stored on both
+dev and prod (25 URLs each), each spot-verified live.
+
+## v2.60.0 — 2026-08-07 19:49 EDT (#97 · `138b25c`) — The bug that looked fixed, and the fix that traded speed for correctness
 
 **The ACTUAL live bug behind "`/manage`'s calendar bulk buttons still don't work" — a different, earlier
 failure than the one v2.59.0 fixed.** `buildCalendarBulkModal()`'s placeholder text was 181 characters

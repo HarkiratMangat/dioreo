@@ -27,6 +27,7 @@ if (!process.env.CLOUDINARY_URL) {
 }
 
 const { isCloudinaryWriteBlocked } = require('./cloudinaryDevGuard');
+const { withDeliveryDefaults } = require('./cloudinaryDeliveryUrl');
 
 const FOLDER = 'patch_notes';
 
@@ -131,7 +132,7 @@ async function cachePatchImage(patchId, imageIndex, sourceUrl, meta = {}) {
             resource_type: 'image'
         });
         await setPatchImageMetadata(patchId, imageIndex, meta);
-        return { url: result.secure_url, cached: true, error: null };
+        return { url: withDeliveryDefaults(result.secure_url), cached: true, error: null };
     } catch (err) {
         const message = safeErrorMessage(err);
         console.error(`Cloudinary cache upload failed for patch ${patchId} image ${imageIndex} (${sourceUrl}): ${message}`);

@@ -26,6 +26,12 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.61.0 — August 7, 2026
+- **`/manage`'s bulk calendar add/replace now shows exactly which category each event landed in** —
+  no more guessing whether something got filed under the wrong section.
+- **`/calendar` page banners no longer quietly break after a day or two** — they're stored more
+  durably now and always show at full quality/resolution.
+
 ## v2.60.0 — August 7, 2026
 - **Fixed the real cause of `/manage`'s calendar bulk add/replace buttons not working** — a text field
   was quietly too long for Discord to accept, crashing the popup before it could even open.

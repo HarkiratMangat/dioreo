@@ -141,6 +141,7 @@ Part A slots — don't re-file dated deep-dives under Part B.)*
 - 2026-08-07 08:10 EDT — A tag two sandboxes couldn't push, and the hook that couldn't tell them why (v2.58.1)
 - 2026-08-07 11:22 EDT — A fix whose own fix needed fixing, caught by the fix's own gate (v2.58.2)
 - 2026-08-07 13:49 EDT — Wrong database, wrong script, right bug eventually (v2.59.0)
+- 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
 - 2026-08-07 19:49 EDT — The bug behind the bug, and the fix that traded speed for correctness (v2.60.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
@@ -5869,6 +5870,55 @@ own. The lesson worth keeping isn't about the bug; it's that a user who keeps pu
 concrete counter-evidence, rather than accepting "seems fixed," is how a shallow diagnosis turns into a
 real root cause. Full record: `docs/db-deferred-list.md`'s now-closed "button emoji goes blank"
 entry.
+
+## 2026-08-07 22:06 EDT — Banners that were never really resizing, links that were never really durable (v2.61.0)
+
+Two threads this session, both starting from a small visual complaint and both ending somewhere much
+more consequential than the complaint itself.
+
+**Thread one: a calendar bulk-add that looked wrong, but wasn't.** Harkirat bulk-added 23 calendar
+events with no manual category prefixes and several MP-mode/BR titles came back filed under Events
+instead of Playlists. Re-running `guessCalendarCategory()` against the exact stored titles gave the
+*correct* answer for all 23 — proof the classifier itself was fine. Feeding it the same 7 lines with
+an `e•` prefix prepended reproduced the observed data byte-for-byte: the actual submitted text must
+have carried an explicit category override that didn't survive into what got retyped for review. The
+real, durable fix wasn't chasing the missing bytes — it was noticing the confirmation message gave no
+way to catch this class of mistake at all. It now reports every title grouped by the category it was
+actually assigned, so a bad source paste is visible immediately instead of discovered by opening
+`/calendar` and cross-checking by eye.
+
+**Thread two started as "make the banner smaller" and ended as three real, unrelated bugs.** Dropping
+`BANNER_MAX_WIDTH` from 512 to 256 produced no visible change — first sign something deeper was
+wrong. Direct `curl` testing against Discord's `media.discordapp.net` resize proxy found the actual
+bug: a lone `?width=N` is silently ignored, full stop. Only `width` AND `height` together trigger a
+resize, and even then a mismatched box isn't aspect-fit — it's a hard crop. Digging into why the
+banner URL itself looked odd (a signed `media.discordapp.net` link, not the plain `cdn.discordapp.com`
+form) surfaced the bigger issue: these links expire. Decoding the `ex=` timestamp on a banner set a
+week earlier showed it had already died. The 2026-07-31 design decision to skip Cloudinary re-hosting
+for Discord-CDN sources — "a real Discord CDN link doesn't expire" — was true when GitHub Discord
+changed nothing, and false now that the account issues signed URLs for everything. Two workarounds
+(`height=auto`, forging a later `ex=` on the dead signature) both failed on direct testing before
+Harkirat asked for them, closing the door on any clever way around it.
+
+The fix Harkirat picked — always re-host to Cloudinary — got validated live before it got written:
+upload the fresh link, cap it with the existing `c_limit,w_N` transform, curl the result, confirm a
+real 256x144 came back from a 2048x1152 source. It worked. And then Harkirat looked at it and said no
+— the resize also caps the zoomed view, since a Cloudinary derivative has no path back to the
+original, and that trade wasn't worth the desktop-width nuisance it was fixing. The width cap got
+dropped entirely, not patched. The durability fix stayed, because it was never really about the
+resize — Discord CDN banners were a ticking clock regardless of what size they rendered at.
+
+**A fourth thing surfaced by accident, from a single question:** "does it still use the same q_auto
+as the loadout images?" It didn't — and neither did draw thumbnails or patch-note images. Only
+loadout screenshots, which build their delivery URL fresh at render time, ever got Cloudinary's
+adaptive-quality treatment; every other module stored the raw upload URL verbatim, full quality,
+forever. Harkirat's answer wasn't "fix the banner path" — it was "fix the *convention*, everywhere,
+retroactively." One shared helper, wired into all three upload modules, plus a migration script that
+ran clean against both dev and prod (25 URLs each, spot-verified live).
+
+None of these four fixes were the thing originally asked for. The pattern worth keeping: a visual
+complaint that produces no visible change is a signal to measure the actual mechanism, not to guess a
+smaller number next.
 
 # Part B — Lessons Ledger (thematic)
 
