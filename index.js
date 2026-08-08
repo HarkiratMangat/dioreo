@@ -808,6 +808,14 @@ client.on('interactionCreate', async interaction => {
                 return await interaction.respond(filtered.map(p => ({ name: displayTitle(p), value: p._id.toString() })));
             }
 
+            // === ROUTE B2: /help's cmd: option -- suggests across every category's static command list ===
+            if (commandName === 'help') {
+                const { HELP_CATEGORIES } = require('./commands/help');
+                const allCommands = HELP_CATEGORIES.flatMap(c => c.commands);
+                const filtered = allCommands.filter(c => fuzzyMatch(focusedValue, c.name)).slice(0, 25);
+                return await interaction.respond(filtered.map(c => ({ name: c.name, value: c.name })));
+            }
+
             // Standard Loadout Dictionary Autocomplete Mapping
             const Loadout = require('./models/Loadout');
             let queryFilter = {};
@@ -1052,6 +1060,14 @@ client.on('interactionCreate', async interaction => {
                 isTextMode: !(interaction.message.flags?.bitfield & 32768),
                 accentColor
             });
+        }
+
+        // B2. HELP CATEGORY SELECTOR
+        if (interaction.customId === 'help_category') {
+            await interaction.deferUpdate();
+            const helpCommand = client.commands.get('help');
+            const syntheticInteraction = buildSyntheticInteraction(interaction, { deferReply: async () => { } });
+            return await helpCommand.execute(syntheticInteraction, interaction.values[0]);
         }
 
         // C. PATCH NOTES HISTORY SELECTOR
