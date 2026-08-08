@@ -62,7 +62,7 @@ const SECTION_CHAR_BUDGET = 3800;
 // when it's actually removed from `newDraws`/`returningDraws` (normally a season rollover), same as
 // `/draws` already behaves with no end-date concept at all -- there is no real "ended" state to
 // detect for a dateOnly entry until the season-expiry feature (`docs/db-deferred-list.md`'s Queued
-// "draws/calendar auto-expire on season end", filed from notes L112) gets built on purpose.
+// "draws/calendar auto-expire on season end", filed from the notes file) gets built on purpose.
 function isEventEnded(event, seasonalDoc, nowMs) {
     if (event.dateOnly) return false;
     if (event.isOngoing) {
@@ -184,7 +184,7 @@ const PAGE_DEFS = [
     { page: 2, label: 'Modes', emojiKey: 'modes' }
 ];
 
-// Per-page banner fields (added 2026-07-31 17:20 EDT, notes L184 follow-up) -- indexed by the same
+// Per-page banner fields (added 2026-07-31 17:20 EDT, the notes file follow-up) -- indexed by the same
 // numeric page used everywhere else in this file. Blank/'' = show nothing for that page, not a
 // placeholder -- see utils/calendarBannerCache.js + /manage's "Banners" action.
 const BANNER_FIELDS_BY_PAGE = ['drawsBannerUrl', 'eventsBannerUrl', 'playlistsBannerUrl'];

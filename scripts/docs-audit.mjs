@@ -1082,6 +1082,58 @@ check(
   }
 );
 
+/* --------------------------- notes-line-refs ------------------------ */
+// Added 2026-08-08 12:10 EDT, after the soft-wrap reflow made the problem impossible to ignore.
+//
+// Code comments and docs had accumulated 22 breadcrumbs of the form "notes L184" pointing into
+// docs/ideas/diors-notes.md. That file is a SCRATCHPAD — items are added, marked, and swept out
+// constantly — so a line number in it is stale the moment anything above it changes. They were
+// already unreliable; reflowing the tree moved the file from 200+ lines to 159 and made 13 of them
+// point past the end of the file, which is how they finally became visible.
+//
+// The durable fix is not "renumber them" but "stop addressing a moving file by offset". Quote a few
+// words of the item instead — that survives edits, and it still says which item you meant.
+//
+// Records and the archive are exempt: CHANGELOG/DEVLOG entries and swept graveyard items are
+// statements about what was true on a date, and back-editing them would be falsifying history.
+check(
+  "notes-line-refs",
+  "ERROR",
+  "no live doc or comment addresses the notes scratchpad by line number",
+  () => {
+    const exempt = (f) =>
+      f === "docs/CHANGELOG.md" ||
+      f === "docs/CHANGELOG-SUMMARY.md" ||
+      f === "docs/DEVLOG.md" ||
+      f === "docs/ideas/diors-notes.md" ||
+      f.startsWith("docs/archive/") ||
+      f.startsWith("docs/superpowers/") ||
+      f.startsWith("public/") ||
+      // This check and its self-test both have to WRITE the offending pattern in order to define
+      // and prove it. Same shape as outstanding-not-filed.sh stripping quoted spans: describing a
+      // violation is not committing one.
+      f === "scripts/docs-audit.mjs" ||
+      f === "scripts/docs-audit.test.mjs";
+    const out = [];
+    let examined = 0;
+    for (const f of tracked()) {
+      if (!/\.(js|mjs|md|sh)$/.test(f) || exempt(f)) continue;
+      const text = read(f);
+      if (text === null) continue;
+      examined++;
+      const hits = text.match(/notes L\d+/g);
+      if (hits) {
+        out.push({
+          msg: `${f} cites ${[...new Set(hits)].join(", ")} — a line number in the notes ` +
+            `scratchpad, which shifts on every edit to that file. Quote a few words of the item ` +
+            `instead; that survives edits and still identifies which item you meant.`,
+        });
+      }
+    }
+    return { findings: out, examined };
+  }
+);
+
 /* ----------------------------- rule-globs --------------------------- */
 check(
   "rule-globs",

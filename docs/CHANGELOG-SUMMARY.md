@@ -26,6 +26,9 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.63.0 — August 8, 2026
+- **Nothing changed in the bot.** A documentation-only release: the project's own notes and reference files were reformatted so they're easier to search, and each one now says at the top what kind of document it is and whether it's published to the website. Purely internal housekeeping — no command, screen or behaviour is different.
+
 ## v2.62.1 — August 8, 2026
 - **Nothing changed in the bot.** Closed out a batch of automated security scanner findings on the legal/docs site's page generator and its build pipeline — all internal, nothing you'd notice.
 

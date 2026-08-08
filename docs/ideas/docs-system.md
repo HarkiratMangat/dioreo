@@ -21,7 +21,7 @@ Two questions were asked in one session: *what tooling would build an interactiv
 
 **They turn out to have the same answer applied twice.**
 
-- **On tooling:** don't adopt a documentation framework. Extend the generator that already exists. The gap is search and structure, not authoring — there are already ~16,400 lines of written prose and nobody can search a word of it.
+- **On tooling:** don't adopt a documentation framework. Extend the generator that already exists. The gap is search and structure, not authoring — there are already ~337,000 words of written prose and nobody can search a word of it.
 - **On content:** don't write a command reference. **Generate** it from the `SlashCommandBuilder` definitions, because that source of truth already exists and any copy of it will drift.
 
 Both are the same principle: **derive from the source of truth; never maintain a second copy of state.** That is already this project's governing idea — it is why `docs-audit` exists, why the memory index carries a structural test instead of a file count, and why "no duplicated state in prose" is a standing rule. It matters more for documentation than anywhere else, because documentation is *entirely* copied state unless it is deliberately derived.
@@ -37,7 +37,7 @@ Measured 2026-08-05 22:50 EDT. Every judgement below rests on these numbers.
 | | |
 |---|---|
 | `scripts/buildLegalPages.js` | **10,037 lines** (+ `scripts/lib/chronicle.js` at 1,177) |
-| Prose already written | **~16,400 lines as measured 2026-08-05** — DEVLOG 4,802 · CHANGELOG 4,232 · `.claude/rules/` 3,621 · db-deferred-list 1,547 · `docs/reference/` 1,041 · CLAUDE.md 507 · ROADMAP 451. ⚠️ **A dated snapshot, not live state** — it had already rotted by 2026-08-06 08:32 EDT (DEVLOG 5,242 after the design-history fold; `docs/reference/` smaller by the same move). The figure is here to size the *problem*, and the order of magnitude is what matters. Re-derive with `wc -l` rather than trusting these numbers. |
+| Prose already written | **~337,000 words across the tracked Markdown tree, measured 2026-08-08 12:05 EDT** — DEVLOG 79,840 · CHANGELOG 60,197 · db-deferred-list 27,474 · CLAUDE.md 7,751 · ROADMAP 6,126. ⚠️ **Counted in WORDS, not lines, since 2026-08-08 12:05 EDT** — the tree moved to soft-wrapped prose (one logical line per paragraph), which took the same content from ~31,000 physical lines to ~12,100 without removing a word. Any older figure quoted in lines is measuring wrap width, not volume. Re-derive with `git ls-files -z '*.md' | xargs -0 cat | wc -w`. ⚠️ **A dated snapshot, not live state** — it had already rotted by 2026-08-06 08:32 EDT (DEVLOG 5,242 after the design-history fold; `docs/reference/` smaller by the same move). The figure is here to size the *problem*, and the order of magnitude is what matters. Re-derive with `wc -l` rather than trusting these numbers. |
 | Built site | 10 HTML pages, 4.2 MB — including **3 parked `public/changelog/` pages** |
 | Search | **None.** All 5 matches for search-library names in the generator are the word "search" in comments |
 | Code surface | 12 commands · 32 utils · 6 models |
@@ -305,7 +305,7 @@ Roughly one devDependency, one line in the build script, one input element and a
 
 **One thing to decide, not discover: does the index get committed?** `public/` is committed build output, so consistency says yes — but a search index is a pile of generated shards, and committing it adds real diff noise to every documentation change and puts it under CI's `public/`-staleness comparison. The alternative, generating it at deploy time, conflicts with Cloudflare Pages running an empty build command. **Committing is probably right**; the point is to choose deliberately rather than find out via a 400-file diff.
 
-16,400 lines of unsearchable prose is the actual problem, and this is the cheapest possible fix. It is also a good *first* move for a second reason: it honestly tests whether extending a 10k-line generator is comfortable. If it's painful, that is real evidence for reconsidering the generator — far better learned here than three document families in.
+~337,000 words of unsearchable prose is the actual problem, and this is the cheapest possible fix. It is also a good *first* move for a second reason: it honestly tests whether extending a 10k-line generator is comfortable. If it's painful, that is real evidence for reconsidering the generator — far better learned here than three document families in.
 
 > ⚠️ **The corollary matters as much as the recommendation.** Algolia DocSearch is the obvious alternative, is free for docs sites, and is **wrong here** — a third-party script making third-party requests, falsifying §2.6 exactly as Sentry would. Pagefind costs nothing in policy terms because nothing leaves the reader's browser.
 
@@ -321,7 +321,7 @@ Worth diagramming: the interaction router, the three-tier error model, the loado
 
 ### 5.2 Tier 2 — quality and correctness
 
-Unglamorous, and what actually keeps 16,400 lines from rotting.
+Unglamorous, and what actually keeps ~337,000 words of prose from rotting.
 
 - **`lychee`** (Rust, fast) — link checker. `docs-audit`'s `xref` check already verifies repo paths named in docs, but **external URL rot is uncovered**, and a docs site is mostly links.
 - **`vale`** — prose linter with configurable rules, fully offline. For a project this opinionated about voice, Vale is what makes "voice" **enforceable rather than aspirational**. Three specific jobs here, in descending order of value:
@@ -608,7 +608,7 @@ Ordered so each phase is independently useful, none blocks on an undecided quest
 
 ### 9.2 The honest case for doing nothing
 
-Nothing here is broken. No user is blocked. The bot works, the site is live, the records are current. The costs of inaction are real but slow: 16,400 lines stay unsearchable, three built pages stay dark, new readers keep re-deriving what is already written, and `chronicle-drift` keeps warning about output nobody reads.
+Nothing here is broken. No user is blocked. The bot works, the site is live, the records are current. The costs of inaction are real but slow: ~337,000 words stay unsearchable, three built pages stay dark, new readers keep re-deriving what is already written, and `chronicle-drift` keeps warning about output nobody reads.
 
 **Nothing gets worse over time** — which is exactly why this belongs on a someday list rather than a roadmap, and why Phase 0 is scoped to be worth doing even if nothing follows it.
 

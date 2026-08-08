@@ -76,6 +76,38 @@ if printf '%s' "$last" | grep -qiE "${PROMISE_VERB}[^.!?]{0,90}${PROMISE_WHERE}"
   exit 0
 fi
 
+# THIRD SHAPE — the deferral written into a FILE instead of said out loud (added 2026-08-08 12:30 EDT,
+# Harkirat's catch: *"you still have to add a note or a memory about soft wrapping those comments...
+# I guess follow up on that point, that also begs the question that is that another edge case that
+# the deferral hook failed to catch or…?"* — it was).
+#
+# He asked a direct question ("should we soft-wrap your code comments too?"). I answered it by writing
+# "an open question, not an oversight" into CLAUDE.md and never said a word about it in chat. Both
+# branches above inspect only my final MESSAGE, so parking a decision inside a document is invisible
+# to them: nothing was claimed as outstanding, and nothing was promised. The doc even reads as
+# diligent — it names the gap — while the person who asked never gets an answer.
+#
+# So this branch looks at what the turn WROTE, not what it said. Writing an explicit
+# not-deciding marker into an authoritative file has to be accompanied by filing it somewhere a
+# future session will look.
+#
+# Deliberately EXCLUDED: the tracking lists, the scratchpad, docs/ideas/** and docs/superpowers/**.
+# Those exist to hold undecided things — docs/ideas is defined as "forward-looking, explicitly
+# undecided" — so open-question language there is the file doing its job, not a deferral hiding.
+written=$(tail -n +"$ln" "$tp" \
+  | jq -r 'select(.message.content) | .message.content[]? | select(.type=="tool_use")
+           | select(.name=="Edit" or .name=="Write" or .name=="NotebookEdit")
+           | select((.input.file_path // "") | test("db-deferred-list|meta-deferred-list|diors-notes|resolved-list|graveyard|docs/ideas/|docs/superpowers/|CHANGELOG|DEVLOG") | not)
+           | (.input.new_string // .input.content // "")' 2>/dev/null)
+
+PARKED='open question, not an|remains an open question|is an open question|an open question[,.]|left as-is for now|left open for now|not (yet )?decided|to be decided|still undecided|\bTBD\b'
+
+if [ -n "$written" ] && printf '%s' "$written" | grep -qiE "$PARKED" \
+   && [ "${filed:-0}" -eq 0 ]; then
+  jq -n '{decision:"block",reason:"YOU PARKED A DECISION INSIDE A FILE — this turn wrote open-question / not-yet-decided language into an authoritative file (CLAUDE.md, a rule file, docs/reference, or code), and did NOT file it in any tracking list.\n\nThis is the 2026-08-08 miss. Harkirat asked directly whether the soft-wrap policy should extend to code comments. The answer written was \"an open question, not an oversight\" — into CLAUDE.md — and nothing was ever said back to him. The other two branches of this gate only read your final MESSAGE, so a decision parked in a document is invisible to them, and the document even reads as diligent because it names the gap.\n\nDo ONE of these, now: (a) answer it — you were asked, so give a recommendation; (b) file it in docs/db-deferred-list.md with a priority/effort tag so a future session picks it up; or (c) drop the open-question wording if it is not actually open.\n\nWriting down that something is undecided is not the same as telling the person who asked. Note the tracking lists, the scratchpad and docs/ideas are exempt — those files exist to hold undecided things."}'
+  exit 0
+fi
+
 if printf '%s' "$last" | grep -qiE "$TELL" && [ "${filed:-0}" -eq 0 ]; then
   jq -n '{decision:"block",reason:"OUTSTANDING ITEM NAMED BUT NOT FILED — your last message flags something as still outstanding / left for later / for a future session, and this turn did NOT touch docs/db-deferred-list.md, the meta-deferred-list, the notes file, or an archive list.\n\nThis is the exact failure of 2026-08-02: five consecutive messages ended with \"still outstanding: the linksee distill queue\" and it was never filed — Harkirat had to ask. Repetition FEELS like recording; it is not. A limitation that lives only in a chat message is indistinguishable from one nobody noticed.\n\nFile it NOW, in this turn, with a direction someone could act on — priority/effort tag, what to do, and how to verify. Then say so. If it genuinely needs no file (already tracked elsewhere, or resolved this turn), say WHERE it lives and this gate will pass.\n\nA gate proves a list was opened, never that the right thing was written in it — that judgement is still yours."}'
   exit 0

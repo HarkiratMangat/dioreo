@@ -25,7 +25,7 @@ status: live
 
 **The two ideas worth not losing**, if the rest is never read: the command reference should be **generated** from the `SlashCommandBuilder` definitions, since Discord renders its own command picker from the same object and a generated reference therefore cannot drift; and the same generated spec can feed an **in-Discord surface** as well as the website, so one source serves both.
 
-**Why it is parked rather than queued.** Nothing is broken and nobody is blocked — the cost of inaction is slow, not sharp. The one piece that would stand alone regardless is static search over the ~16,400 lines of prose that already exist and cannot currently be searched at all.
+**Why it is parked rather than queued.** Nothing is broken and nobody is blocked — the cost of inaction is slow, not sharp. The one piece that would stand alone regardless is static search over the ~337,000 words of prose that already exist and cannot currently be searched at all.
 
 ---
 

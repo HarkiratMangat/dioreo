@@ -93,6 +93,29 @@ Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>
 - ⚠️ **Test a hook the way the hook RUNS** — a non-interactive shell. This machine's interactive aliases (`find`→`bfs`, `git`→`rtk`) make probes succeed where the real hook fails; that is how the BSD-find bug nearly escaped a second time.
 - ⚠️ **Ask of every gate: at the moment this fires, can the thing it complains about still be prevented?** If not it is documentation wearing a hook's clothes. Full audit + the defect classes: memory `reference_enforcement_hooks`.
 
+### ✍️ Markdown prose is SOFT-WRAPPED — one logical line per paragraph (decided 2026-08-08 11:00 EDT, Harkirat)
+**Do not hard-wrap prose in a `.md` file.** A paragraph, list item or quoted paragraph is ONE physical line; the editor wraps it for display. This reverses a long-standing ~100–120 column convention, and the whole tree was reflowed in the same change (v2.63.0), so there is no mixed-style transition period to respect.
+
+**Why, measured rather than asserted:** at decision time **13,582 of 21,020 prose lines (64.6%)** continued a sentence onto the next line, so most multi-word phrases physically did not exist on any single line and `rg` could not match them. That is a search tool silently failing on the repo's own documentation.
+
+- **Scope: Markdown prose only.** Code comments in `.js`/`.sh` were NOT reflowed. That is a scoping decision, and it is **filed, not floating** — `docs/db-deferred-list.md` → 🗂️ Queued → "Extend soft-wrapping to CODE COMMENTS", with the measurement (6,193 of 10,174 comment lines, 60.9%, all 128 source files), a recommendation, and the invariant that would make it safe. Tables, code fences, indented code and YAML front matter are never reflowed.
+- **`npm run docs:reflow` is wired into `npm test`**, so a hard-wrapped paragraph fails the suite rather than relying on anyone remembering. `--write` applies it.
+- ⚠️ **Never reach for `dior text unwrap` on this tree.** Verified 2026-08-08 11:05 EDT: it collapses an N-line blockquote to a single `>`, destroying the bare `>` that separates quoted paragraphs — it merged two distinct paragraphs in `docs/legal/TERMS.md` and dropped that file's `## PLEASE READ` heading into the body. Use `scripts/reflow-prose.mjs`, which is verified three independent ways. Full detail + the traps already paid for: `.claude/rules/scripts-and-migrations.md`.
+
+### 📋 Every tracked doc declares `kind:` / `status:` front matter (added 2026-08-08 12:05 EDT)
+Every tracked `.md` opens with YAML front matter, enforced by docs-audit's `doc-frontmatter` (ERROR):
+
+```yaml
+kind:   rule | guide | record | reference | idea | legal | spec | plan | archive
+status: live | frozen | superseded | dead      # + superseded_by: <path> when superseded
+published: true                                # ONLY on sources that render to dioreo.app
+```
+
+- **`kind` must match the file's location** — that is the point. At rest it is redundant with the folder; its value is at MOVE time, turning a half-finished reorganization into a failing check instead of a silent misfiling. It also makes a file state its own tense contract when opened cold: **`frozen` on a dated spec is the word that stops a session "helpfully" updating a snapshot.**
+- **`published: true` is cross-checked against `buildLegalPages.js`'s own page tables**, so the flag cannot drift from what actually publishes. It exists so a session editing `CONTRIBUTING.md` or the Privacy Policy can see at the top of the file that the change is publicly visible.
+- ⚠️ **Do NOT add `description`, `updated`, `title` or `tags`.** Each was considered and rejected: `docs/README.md` already carries descriptions (enforced by `readme-map`), git already knows the dates, the H1 is already the title, and nothing would consume tags. A field nothing checks is duplicated state that rots and then misleads — see `feedback_no_duplicated_state_in_prose`.
+- `buildLegalPages.js` strips front matter at the source-read boundary. Measured before shipping: an unstripped block rendered `kind: legal` as visible body text on the live Terms page while **every existing build gate still reported success**.
+
 ### Maintaining context comments — please keep doing this
 This codebase has inline comments explaining **why** something is written a certain way, not just what it does — especially around fixed bugs, Discord platform quirks, and non-obvious decisions. When you edit a file: keep existing context comments accurate (update/remove them if your change makes them stale, don't leave outdated explanations next to new code); add a comment in the same style when you fix a bug, make a non-obvious choice, or work around a platform limitation; prefer explaining *reasoning* over narrating *what* the code does line-by-line.
 

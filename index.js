@@ -2057,7 +2057,7 @@ client.on('interactionCreate', async interaction => {
             }
 
             // Bulk Format Guide (rebuilt into a rich Components V2 view 2026-07-31 17:20 EDT, same-
-            // day follow-up -- was a plain-text reply, notes L189) -- a real structured reference, not a
+            // day follow-up -- was a plain-text reply, the notes file) -- a real structured reference, not a
             // modal/DB action, so it's handled here before any of the group-specific branches. Opens
             // pre-selected to the page that was clicked; utils/manageGuides.js's select-menu row
             // lets switching to any other topic without leaving the guide (mng_guide_pick handler,
@@ -2820,7 +2820,7 @@ client.on('interactionCreate', async interaction => {
                     : upsertDrawsByTitle(seasonalDoc.newDraws, validDraws);
                 finalArray.sort((a, b) => new Date(a.date) - new Date(b.date));
                 seasonalDoc.newDraws = finalArray;
-                // Actual titles, not just counts (notes L186, 2026-07-31 12:10 EDT) -- "added 2" told
+                // Actual titles, not just counts (the notes file, 2026-07-31 12:10 EDT) -- "added 2" told
                 // you nothing about WHICH 2 without opening the page and checking yourself.
                 const newTitleList = validDraws.map(d => `"${d.title}"`).join(', ');
                 updated.push((mode === 'add'
@@ -3101,7 +3101,7 @@ client.on('interactionCreate', async interaction => {
             seasonalDoc.calendar.sort((a, b) => new Date(a.date) - new Date(b.date));
             await seasonalDoc.save();
 
-            // Real Discord timestamps instead of plain toDateString() text (notes L185, 2026-07-31
+            // Real Discord timestamps instead of plain toDateString() text (the notes file, 2026-07-31
             // 12:10 EDT) -- renders in the viewer's own local time/format instead of a fixed string.
             return interaction.followUp({ content: `✅ **Event Added:** "${title}" (<t:${Math.floor(startDate.getTime() / 1000)}:D> -- ${isOngoing ? 'All Season' : `<t:${Math.floor(endDate.getTime() / 1000)}:D>`}).` });
         }

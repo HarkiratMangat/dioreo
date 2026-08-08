@@ -14,13 +14,15 @@ HOOK="$(dirname "$0")/outstanding-not-filed.sh"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 pass=0; fail=0
 
-mk() { # $1=assistant text  $2=optional file_path edited this turn
-  python3 - "$TMP/t.jsonl" "$1" "${2:-}" <<'PY'
+mk() { # $1=assistant text  $2=optional file_path edited  $3=optional new_string written
+  python3 - "$TMP/t.jsonl" "$1" "${2:-}" "${3:-}" <<'PY'
 import json,sys
-path,text,edited=sys.argv[1],sys.argv[2],sys.argv[3]
+path,text,edited,body=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4]
 rows=[{"type":"user","message":{"role":"user","content":"do the thing"}}]
 if edited:
-    rows.append({"type":"assistant","message":{"content":[{"type":"tool_use","name":"Edit","input":{"file_path":edited}}]}})
+    inp={"file_path":edited}
+    if body: inp["new_string"]=body
+    rows.append({"type":"assistant","message":{"content":[{"type":"tool_use","name":"Edit","input":inp}]}})
 rows.append({"type":"assistant","message":{"content":[{"type":"text","text":text}]}})
 with open(path,"w") as f:
     for r in rows: f.write(json.dumps(r,separators=(",",":"))+"\n")
@@ -95,6 +97,31 @@ mk "I'll add the frontmatter to the remaining files and rerun the audit."
 assert "ordinary task planning passes"            pass
 mk "I'll write the reflow script next, then verify it against the site build."
 assert "'I'll write the script' passes"           pass
+
+# 5g. THE THIRD SHAPE — a decision parked inside a file, with nothing said in chat and nothing filed.
+#     Verbatim shape of the 2026-08-08 miss: the answer to "should this cover code comments?" was
+#     written into CLAUDE.md as "an open question" and never surfaced to Harkirat.
+mk "Done — scope is Markdown only for now." "/Applications/Claude Code/Diors-Builds/CLAUDE.md" \
+   "Scope: Markdown prose only. Code comments are NOT covered and remain an open question, not an oversight."
+assert "'open question' written into CLAUDE.md BLOCKS"  block
+
+mk "Updated the rule." "/Applications/Claude Code/Diors-Builds/.claude/rules/models.md" \
+   "Whether this extends to embedded docs is still undecided."
+assert "'still undecided' in a rule file BLOCKS"        block
+
+# 5h. …discharged when it IS filed somewhere a future session looks.
+mk "Filed it in the deferred list." "/Applications/Claude Code/Diors-Builds/docs/db-deferred-list.md" \
+   "New item: whether to soft-wrap code comments is an open question. [P2 - M]"
+assert "same wording, but written to the deferred list passes" pass
+
+# 5i. FALSE-POSITIVE GUARD — docs/ideas exists to hold undecided things, so it must never fire there.
+mk "Sketched the proposal." "/Applications/Claude Code/Diors-Builds/docs/ideas/docs-system.md" \
+   "Whether to adopt a framework is an open question, deliberately left open for now."
+assert "open-question language in docs/ideas passes"    pass
+
+mk "Refactored the renderer." "/Applications/Claude Code/Diors-Builds/utils/loadoutRender.js" \
+   "// Build the container and return it. No open items here."
+assert "ordinary code edit passes"                      pass
 
 # 6. An ordinary completion message must never trip it.
 mk "Merged and tagged v2.48.0. Memory index clean, docs:audit exit 0."
