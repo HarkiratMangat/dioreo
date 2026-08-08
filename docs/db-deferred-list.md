@@ -418,6 +418,17 @@ though the Return-key one only reproduces in this repo's notes file.*
 with the priority they'll BE at when the trigger fires. Moved in from the cross-project tracker
 2026-07-25 21:43 EDT.*
 
+- **📝 `docs/ideas/diors-notes.md` has 6 open items, untouched across this whole 2026-08-07 21:00-22:32
+  EDT session.** `[P3 · XS]` Repeatedly surfaced in chat during this session (banner/Cloudinary/hook
+  work) but deliberately not acted on each time — unrelated scope, and each is Harkirat's own call to
+  make, not something to resolve unilaterally mid-unrelated-task. Filing here instead of just
+  repeating it in chat again, per the outstanding-not-filed gate's own point: repetition in a
+  transcript isn't recording. **Items as of filing:** a DMZ `/autobuild` 5-attachment prompt-cap note,
+  a v3 features brainstorm list, a v2 fixes list, a v4/v5 feature-ideas note, a MarkEdit follow-up-mark
+  bug report, and a cursor-placement bug report against the follow-up mark itself. **How to verify/
+  clear:** open `docs/ideas/diors-notes.md`, work the six items between `## Questions` and
+  `<!-- /open-items -->` per `project_central_notes_file` memory's workflow, mark/reply/sweep as
+  usual; this reminder is stale the moment that count is genuinely lower.
 - **🔎 `completeness-sweep.sh` DOES fire at `Stop` — confirmed 2026-08-06 12:35 EDT — but its angle
   detection was WRONG on that first fire** `[P1 · S]` *(re-scoped from the original "does it fire at
   all" reminder, which is now answered.)*
