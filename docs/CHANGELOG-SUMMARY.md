@@ -26,6 +26,10 @@ A peek at what's planned (not built yet):
 
 ---
 
+## v2.61.1 — August 7, 2026
+- **Nothing changed in the bot.** Corrected an internal design note that still described the old
+  (now-reversed) calendar-banner behavior from v2.61.0.
+
 ## v2.61.0 — August 7, 2026
 - **`/manage`'s bulk calendar add/replace now shows exactly which category each event landed in** —
   no more guessing whether something got filed under the wrong section.

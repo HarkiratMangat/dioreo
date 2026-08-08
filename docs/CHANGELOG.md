@@ -181,7 +181,16 @@ changelog until v3 actually launches.
 
 ---
 
-## v2.61.0 — 2026-08-07 22:06 EDT (#98) — Calendar banners stop silently expiring, and every Cloudinary URL gets adaptive quality
+## v2.61.1 — 2026-08-07 22:17 EDT (#99) — Design-notes correction, no code change
+
+`.claude/rules/design-decisions.md`'s calendar-banner entry still asserted the reversed 2026-07-31
+call ("prefer Discord's own CDN, it doesn't expire") after v2.61.0 shipped the opposite behavior —
+corrected in place (struck through, not deleted, so the reasoning trail stays readable) rather than
+left to mislead the next session that touches this area. `.claude/rules/loadout-images-and-metadata.md`
+and this file's own rules-navigation table also updated to cover `calendarBannerCache.js` and the new
+`f_auto,q_auto` convention, which weren't mentioned anywhere before this.
+
+## v2.61.0 — 2026-08-07 22:06 EDT (#98 · `87ed7a5`) — Calendar banners stop silently expiring, and every Cloudinary URL gets adaptive quality
 
 **`/manage`'s calendar bulk add/replace now reports a per-category breakdown, not just a count.**
 Harkirat bulk-added 23 calendar events with no manual category prefixes and several MP-mode/BR
