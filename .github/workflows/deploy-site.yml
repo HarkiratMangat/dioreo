@@ -45,6 +45,13 @@ on:
   # drifted and nobody wants to wait for the next qualifying merge.
   workflow_dispatch:
 
+# GITHUB_TOKEN is never used to write anything here — checkout, npm ci, a local
+# rebuild-and-diff, and the Cloudflare publish step authenticates with its own
+# CLOUDFLARE_API_TOKEN secret, not GITHUB_TOKEN. Scoped down per CodeQL's
+# actions/missing-workflow-permissions finding.
+permissions:
+  contents: read
+
 # One deploy at a time. Two overlapping publishes to the same Pages project is
 # the shape of the unexplained zero-file deploys recorded in
 # docs/db-deferred-list.md, so they are serialised rather than cancelled —

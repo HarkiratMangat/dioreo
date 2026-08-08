@@ -16,6 +16,13 @@ on:
   pull_request:
     branches: [main, v3-pre-release]
 
+# No step here pushes, comments, or otherwise writes with GITHUB_TOKEN — checkout,
+# npm ci, and local checks only — so the default (broad, write-capable) token
+# permissions are strictly more than this workflow needs. Scoped down per
+# CodeQL's actions/missing-workflow-permissions finding.
+permissions:
+  contents: read
+
 jobs:
   syntax-check:
     runs-on: ubuntu-latest
